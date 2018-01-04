@@ -211,8 +211,10 @@ Persistence.NetworkPersistenceManager = class extends Common.Object {
    * @param {!Workspace.UISourceCode} fileSystemUISourceCode
    */
   async _bind(networkUISourceCode, fileSystemUISourceCode) {
-    if (networkUISourceCode[this._bindingSymbol] || fileSystemUISourceCode[this._bindingSymbol])
-      return;
+    if (networkUISourceCode[this._bindingSymbol])
+      this._unbind(networkUISourceCode);
+    if (fileSystemUISourceCode[this._bindingSymbol])
+      this._unbind(fileSystemUISourceCode);
     var binding = new Persistence.PersistenceBinding(networkUISourceCode, fileSystemUISourceCode, true);
     networkUISourceCode[this._bindingSymbol] = binding;
     fileSystemUISourceCode[this._bindingSymbol] = binding;
@@ -349,7 +351,7 @@ Persistence.NetworkPersistenceManager = class extends Common.Object {
    * @param {!Workspace.UISourceCode} uiSourceCode
    */
   _networkUISourceCodeRemoved(uiSourceCode) {
-    if (uiSourceCode.project().type() === Workspace.projectTypes.Network)
+    if (uiSourceCode.project().type() !== Workspace.projectTypes.Network)
       return;
     this._unbind(uiSourceCode);
     this._networkUISourceCodeForEncodedPath.delete(this._encodedPathFromUrl(uiSourceCode.url()));

@@ -147,14 +147,6 @@
     }
 
     /**
-     * @param {number} callId
-     * @param {string} script
-     */
-    evaluateForTestInFrontend(callId, script) {
-      this._dispatchOnInspectorFrontendAPI('evaluateForTestInFrontend', [callId, script]);
-    }
-
-    /**
      * @param {!{r: number, g: number, b: number, a: number}} color
      */
     eyeDropperPickedColor(color) {
@@ -670,6 +662,21 @@
      */
     readyForTest() {
       DevToolsAPI.sendMessageToEmbedder('readyForTest', [], null);
+    }
+
+    /**
+     * @override
+     */
+    connectionReady() {
+      DevToolsAPI.sendMessageToEmbedder('connectionReady', [], null);
+    }
+
+    /**
+     * @override
+     * @param {boolean} value
+     */
+    setOpenNewWindowForPopups(value) {
+      DevToolsAPI.sendMessageToEmbedder('setOpenNewWindowForPopups', [value], null);
     }
 
     /**

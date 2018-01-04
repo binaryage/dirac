@@ -592,10 +592,6 @@
     deviceModeModel._applyTouch(true, true);
   };
 
-  TestSuite.prototype.enableAutoAttachToCreatedPages = function() {
-    Common.settingForTest('autoAttachToCreatedPages').set(true);
-  };
-
   TestSuite.prototype.waitForDebuggerPaused = function() {
     var debuggerModel = SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
     if (debuggerModel.debuggerPausedDetails)
@@ -906,11 +902,22 @@
   };
 
   TestSuite.prototype.testWindowInitializedOnNavigateBack = function() {
+    var test = this;
+    test.takeControl();
     var messages = ConsoleModel.consoleModel.messages();
-    this.assertEquals(1, messages.length);
-    var text = messages[0].messageText;
-    if (text.indexOf('Uncaught') !== -1)
-      this.fail(text);
+    if (messages.length === 1) {
+      checkMessages();
+    } else {
+      ConsoleModel.consoleModel.addEventListener(
+          ConsoleModel.ConsoleModel.Events.MessageAdded, checkMessages.bind(this), this);
+    }
+
+    function checkMessages() {
+      var messages = ConsoleModel.consoleModel.messages();
+      test.assertEquals(1, messages.length);
+      test.assertTrue(messages[0].messageText.indexOf('Uncaught') === -1);
+      test.releaseControl();
+    }
   };
 
   TestSuite.prototype.testConsoleContextNames = function() {
@@ -1202,7 +1209,7 @@
       if (SDK.targetManager.targets().length >= n)
         callback.call(null);
       else
-        this.addSniffer(SDK.TargetManager.prototype, 'addTarget', checkTargets.bind(this));
+        this.addSniffer(SDK.TargetManager.prototype, 'createTarget', checkTargets.bind(this));
     }
   };
 
