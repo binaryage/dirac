@@ -32,7 +32,7 @@
    ['rum "0.10.8" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-   ['com.rpl/specter "1.0.5" :scope "test"]
+   ['com.rpl/specter "1.1.0" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
    ['org.clojure/tools.reader "1.1.1" :scope "test"]
 
