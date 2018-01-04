@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='65.0.3300.2';
-Protocol.BakedInspectorBackendAPIChromeRev='d1842c49ccba4a7659d8503b3defa9ae3e1b1658';
+Protocol.BakedInspectorBackendAPIChromeTag='65.0.3311.2';
+Protocol.BakedInspectorBackendAPIChromeRev='eb0c49746e7222bd8dd9d472cd2f1644987ab4e8';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -242,7 +242,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Network.dataReceived", ["requestId", "timestamp", "dataLength", "encodedDataLength"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.eventSourceMessageReceived", ["requestId", "timestamp", "eventName", "eventId", "data"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.loadingFailed", ["requestId", "timestamp", "type", "errorText", "canceled", "blockedReason"]);\n'
-+ 'Protocol.inspectorBackend.registerEvent("Network.loadingFinished", ["requestId", "timestamp", "encodedDataLength"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Network.loadingFinished", ["requestId", "timestamp", "encodedDataLength", "blockedCrossSiteDocument"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.requestIntercepted", ["interceptionId", "request", "frameId", "resourceType", "isNavigationRequest", "redirectUrl", "authChallenge", "responseErrorReason", "responseStatusCode", "responseHeaders"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.requestServedFromCache", ["requestId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.requestWillBeSent", ["requestId", "loaderId", "documentURL", "request", "timestamp", "wallTime", "initiator", "redirectResponse", "type", "frameId"]);\n'
@@ -351,7 +351,6 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Page.screencastFrameAck", [{"name": "sessionId", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.searchInResource", [{"name": "frameId", "type": "string", "optional": false}, {"name": "url", "type": "string", "optional": false}, {"name": "query", "type": "string", "optional": false}, {"name": "caseSensitive", "type": "boolean", "optional": true}, {"name": "isRegex", "type": "boolean", "optional": true}], ["result"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.setAdBlockingEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Page.setAutoAttachToCreatedPages", [{"name": "autoAttach", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.setDeviceMetricsOverride", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "deviceScaleFactor", "type": "number", "optional": false}, {"name": "mobile", "type": "boolean", "optional": false}, {"name": "scale", "type": "number", "optional": true}, {"name": "screenWidth", "type": "number", "optional": true}, {"name": "screenHeight", "type": "number", "optional": true}, {"name": "positionX", "type": "number", "optional": true}, {"name": "positionY", "type": "number", "optional": true}, {"name": "dontSetVisibleSize", "type": "boolean", "optional": true}, {"name": "screenOrientation", "type": "object", "optional": true}, {"name": "viewport", "type": "object", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.setDeviceOrientationOverride", [{"name": "alpha", "type": "number", "optional": false}, {"name": "beta", "type": "number", "optional": false}, {"name": "gamma", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.setDocumentContent", [{"name": "frameId", "type": "string", "optional": false}, {"name": "html", "type": "string", "optional": false}], [], false);\n'

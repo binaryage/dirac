@@ -3880,8 +3880,9 @@ Protocol.NetworkDispatcher.prototype.loadingFailed = function(requestId, timesta
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {number} encodedDataLength
+ * @param {boolean=} opt_blockedCrossSiteDocument
  */
-Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, timestamp, encodedDataLength) {};
+Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, timestamp, encodedDataLength, opt_blockedCrossSiteDocument) {};
 /**
  * @param {Protocol.Network.InterceptionId} interceptionId
  * @param {Protocol.Network.Request} request
@@ -4662,20 +4663,6 @@ Protocol.PageAgent.SetAdBlockingEnabledResponse;
  * @param {!Protocol.PageAgent.SetAdBlockingEnabledRequest} obj
  * @return {!Promise<!Protocol.PageAgent.SetAdBlockingEnabledResponse>} */
 Protocol.PageAgent.prototype.invoke_setAdBlockingEnabled = function(obj) {};
-
-/**
- * @param {boolean} autoAttach
- * @return {!Promise<undefined>}
- */
-Protocol.PageAgent.prototype.setAutoAttachToCreatedPages = function(autoAttach) {};
-/** @typedef {!{autoAttach: boolean}} */
-Protocol.PageAgent.SetAutoAttachToCreatedPagesRequest;
-/** @typedef {Object|undefined} */
-Protocol.PageAgent.SetAutoAttachToCreatedPagesResponse;
-/**
- * @param {!Protocol.PageAgent.SetAutoAttachToCreatedPagesRequest} obj
- * @return {!Promise<!Protocol.PageAgent.SetAutoAttachToCreatedPagesResponse>} */
-Protocol.PageAgent.prototype.invoke_setAutoAttachToCreatedPages = function(obj) {};
 
 /**
  * @param {number} width
