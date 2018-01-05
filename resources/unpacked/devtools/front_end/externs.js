@@ -270,11 +270,6 @@ DevToolsHost.getInactiveSelectionForegroundColor = function() {};
 /**
  * @return {boolean}
  */
-DevToolsHost.isUnderTest = function() {};
-
-/**
- * @return {boolean}
- */
 DevToolsHost.isHostedMode = function() {};
 
 /**
@@ -906,6 +901,15 @@ Element.prototype.animate = function(keyframes, timing) {};
  */
 Element.prototype.addEventListener = function(type, listener, options) {};
 
+/**
+ * @override
+ * @param {string} type
+ * @param {(!EventListener|!function (!Event): (boolean|undefined)|null)} listener
+ * @param {(boolean|!{capture: (boolean|undefined), once: (boolean|undefined), passive: (boolean|undefined)})=} options
+ * @this {EventTarget}
+ */
+Element.prototype.removeEventListener = function(type, listener, options) {};
+
 var acorn = {
   /**
    * @param {string} text
@@ -1070,3 +1074,9 @@ Console.prototype.context = function(context) {};
  * @return {string}
  */
 var ls = function(strings, vararg) {};
+
+/**
+ * @constructor
+ * @param {function(!Array<*>)} callback
+ */
+var ResizeObserver = function(callback) {};

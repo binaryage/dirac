@@ -73,8 +73,11 @@ Sources.JavaScriptCompilerPlugin = class {
     if (!currentExecutionContext)
       return;
 
-    this._compiling = true;
     var code = this._textEditor.text();
+    if (code.length > 1024 * 1024)
+      return;
+
+    this._compiling = true;
     var result = await runtimeModel.compileScript(code, '', false, currentExecutionContext.id);
 
     this._compiling = false;
@@ -96,6 +99,22 @@ Sources.JavaScriptCompilerPlugin = class {
   }
 
   _compilationFinishedForTest() {
+  }
+
+  /**
+   * @override
+   * @return {!Array<!UI.ToolbarItem>}
+   */
+  rightToolbarItems() {
+    return [];
+  }
+
+  /**
+   * @override
+   * @return {!Array<!UI.ToolbarItem>}
+   */
+  leftToolbarItems() {
+    return [];
   }
 
   /**

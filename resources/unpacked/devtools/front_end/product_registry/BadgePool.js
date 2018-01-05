@@ -13,6 +13,8 @@ ProductRegistry.BadgePool = class {
     if (!forceShow) {
       this._setting = Common.settings.moduleSetting('product_registry.badges-visible');
       this._setting.addChangeListener(this._settingUpdated.bind(this));
+      if (this._setting.get())
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.ShowedThirdPartyBadges);
     }
   }
 
@@ -154,7 +156,7 @@ ProductRegistry.BadgePool = class {
     var reportLink =
         'https://docs.google.com/forms/d/e/1FAIpQLSchz2FdcQ-rRllzl8BbhWaTRRY-12BpPjW6Hr9e1-BpCA083w/viewform' +
         '?entry_1425918171=' + encodeURIComponent((parsedUrl.domain() + parsedUrl.path).substr(0, 100));
-    popupElement.appendChild(UI.createExternalLink(reportLink, 'Report mismatch', 'product-registry-link'));
+    popupElement.appendChild(UI.XLink.create(reportLink, 'Report mismatch', 'product-registry-link'));
 
     var dialog = new UI.Dialog();
     dialog.setContentAnchorBox(badgeElement.boxInWindow());

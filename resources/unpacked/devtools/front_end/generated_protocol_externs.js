@@ -3880,8 +3880,9 @@ Protocol.NetworkDispatcher.prototype.loadingFailed = function(requestId, timesta
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {number} encodedDataLength
+ * @param {boolean=} opt_blockedCrossSiteDocument
  */
-Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, timestamp, encodedDataLength) {};
+Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, timestamp, encodedDataLength, opt_blockedCrossSiteDocument) {};
 /**
  * @param {Protocol.Network.InterceptionId} interceptionId
  * @param {Protocol.Network.Request} request
@@ -4547,10 +4548,12 @@ Protocol.PageAgent.prototype.invoke_navigateToHistoryEntry = function(obj) {};
  * @param {number=} opt_marginRight
  * @param {string=} opt_pageRanges
  * @param {boolean=} opt_ignoreInvalidPageRanges
+ * @param {string=} opt_headerTemplate
+ * @param {string=} opt_footerTemplate
  * @return {!Promise<?string>}
  */
-Protocol.PageAgent.prototype.printToPDF = function(opt_landscape, opt_displayHeaderFooter, opt_printBackground, opt_scale, opt_paperWidth, opt_paperHeight, opt_marginTop, opt_marginBottom, opt_marginLeft, opt_marginRight, opt_pageRanges, opt_ignoreInvalidPageRanges) {};
-/** @typedef {!{paperHeight: (number|undefined), scale: (number|undefined), displayHeaderFooter: (boolean|undefined), marginBottom: (number|undefined), paperWidth: (number|undefined), marginLeft: (number|undefined), printBackground: (boolean|undefined), marginRight: (number|undefined), ignoreInvalidPageRanges: (boolean|undefined), pageRanges: (string|undefined), marginTop: (number|undefined), landscape: (boolean|undefined)}} */
+Protocol.PageAgent.prototype.printToPDF = function(opt_landscape, opt_displayHeaderFooter, opt_printBackground, opt_scale, opt_paperWidth, opt_paperHeight, opt_marginTop, opt_marginBottom, opt_marginLeft, opt_marginRight, opt_pageRanges, opt_ignoreInvalidPageRanges, opt_headerTemplate, opt_footerTemplate) {};
+/** @typedef {!{paperHeight: (number|undefined), scale: (number|undefined), footerTemplate: (string|undefined), displayHeaderFooter: (boolean|undefined), marginBottom: (number|undefined), paperWidth: (number|undefined), headerTemplate: (string|undefined), marginLeft: (number|undefined), printBackground: (boolean|undefined), marginRight: (number|undefined), ignoreInvalidPageRanges: (boolean|undefined), pageRanges: (string|undefined), marginTop: (number|undefined), landscape: (boolean|undefined)}} */
 Protocol.PageAgent.PrintToPDFRequest;
 /** @typedef {!{data: string}} */
 Protocol.PageAgent.PrintToPDFResponse;
@@ -4660,20 +4663,6 @@ Protocol.PageAgent.SetAdBlockingEnabledResponse;
  * @param {!Protocol.PageAgent.SetAdBlockingEnabledRequest} obj
  * @return {!Promise<!Protocol.PageAgent.SetAdBlockingEnabledResponse>} */
 Protocol.PageAgent.prototype.invoke_setAdBlockingEnabled = function(obj) {};
-
-/**
- * @param {boolean} autoAttach
- * @return {!Promise<undefined>}
- */
-Protocol.PageAgent.prototype.setAutoAttachToCreatedPages = function(autoAttach) {};
-/** @typedef {!{autoAttach: boolean}} */
-Protocol.PageAgent.SetAutoAttachToCreatedPagesRequest;
-/** @typedef {Object|undefined} */
-Protocol.PageAgent.SetAutoAttachToCreatedPagesResponse;
-/**
- * @param {!Protocol.PageAgent.SetAutoAttachToCreatedPagesRequest} obj
- * @return {!Promise<!Protocol.PageAgent.SetAutoAttachToCreatedPagesResponse>} */
-Protocol.PageAgent.prototype.invoke_setAutoAttachToCreatedPages = function(obj) {};
 
 /**
  * @param {number} width
@@ -5084,6 +5073,20 @@ Protocol.SecurityAgent.EnableResponse;
 Protocol.SecurityAgent.prototype.invoke_enable = function(obj) {};
 
 /**
+ * @param {boolean} ignore
+ * @return {!Promise<undefined>}
+ */
+Protocol.SecurityAgent.prototype.setIgnoreCertificateErrors = function(ignore) {};
+/** @typedef {!{ignore: boolean}} */
+Protocol.SecurityAgent.SetIgnoreCertificateErrorsRequest;
+/** @typedef {Object|undefined} */
+Protocol.SecurityAgent.SetIgnoreCertificateErrorsResponse;
+/**
+ * @param {!Protocol.SecurityAgent.SetIgnoreCertificateErrorsRequest} obj
+ * @return {!Promise<!Protocol.SecurityAgent.SetIgnoreCertificateErrorsResponse>} */
+Protocol.SecurityAgent.prototype.invoke_setIgnoreCertificateErrors = function(obj) {};
+
+/**
  * @param {number} eventId
  * @param {Protocol.Security.CertificateErrorAction} action
  * @return {!Promise<undefined>}
@@ -5131,7 +5134,7 @@ Protocol.Security.SecurityState = {
     Info: "info"
 };
 
-/** @typedef {!{securityState:(Protocol.Security.SecurityState), summary:(string), description:(string), mixedContentType:(Protocol.Security.MixedContentType), certificate:(!Array<string>)}} */
+/** @typedef {!{securityState:(Protocol.Security.SecurityState), title:(string), summary:(string), description:(string), mixedContentType:(Protocol.Security.MixedContentType), certificate:(!Array<string>)}} */
 Protocol.Security.SecurityStateExplanation;
 
 /** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), containedMixedForm:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(Protocol.Security.SecurityState), displayedInsecureContentStyle:(Protocol.Security.SecurityState)}} */

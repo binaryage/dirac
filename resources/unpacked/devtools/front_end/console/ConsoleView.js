@@ -49,6 +49,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._sidebar = new Console.ConsoleSidebar(this._badgePool);
     this._sidebar.addEventListener(Console.ConsoleSidebar.Events.FilterSelected, this._onFilterChanged.bind(this));
     this._isSidebarOpen = false;
+    this._filter = new Console.ConsoleViewFilter(this._onFilterChanged.bind(this));
 
     var toolbar = new UI.Toolbar('', this.element);
     var isLogManagementEnabled = Runtime.experiments.isEnabled('logManagement');
@@ -57,8 +58,12 @@ Console.ConsoleView = class extends UI.VBox {
           new UI.SplitWidget(true /* isVertical */, false /* secondIsSidebar */, 'console.sidebar.width', 100);
       this._splitWidget.setMainWidget(this._searchableView);
       this._splitWidget.setSidebarWidget(this._sidebar);
-      this._splitWidget.hideSidebar();
       this._splitWidget.show(this.element);
+      this._splitWidget.hideSidebar();
+      this._splitWidget.enableShowModeSaving();
+      this._isSidebarOpen = this._splitWidget.showMode() === UI.SplitWidget.ShowMode.Both;
+      if (this._isSidebarOpen)
+        this._filter._levelMenuButton.setEnabled(false);
       toolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton('console sidebar'));
       this._splitWidget.addEventListener(UI.SplitWidget.Events.ShowModeChanged, event => {
         this._isSidebarOpen = event.data === UI.SplitWidget.ShowMode.Both;
@@ -87,7 +92,6 @@ Console.ConsoleView = class extends UI.VBox {
      * @type {!Array.<!Console.ConsoleView.RegexMatchRange>}
      */
     this._regexMatchRanges = [];
-    this._filter = new Console.ConsoleViewFilter(this._onFilterChanged.bind(this));
 
     this._consoleContextSelector = new Console.ConsoleContextSelector();
 
@@ -162,6 +166,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._messagesElement.id = 'console-messages';
     this._messagesElement.classList.add('monospace');
     this._messagesElement.addEventListener('click', this._messagesClicked.bind(this), true);
+    this._messagesElement.addEventListener('paste', this._messagesPasted.bind(this), true);
 
     this._viewportThrottler = new Common.Throttler(50);
 
@@ -435,8 +440,11 @@ Console.ConsoleView = class extends UI.VBox {
    * @override
    */
   focus() {
-    if (!this._prompt.hasFocus())
+    if (!this._prompt.hasFocus()) {
+      var oldScrollTop = this._viewport.element.scrollTop;
       this._prompt.focus();
+      this._viewport.element.scrollTop = oldScrollTop;
+    }
   }
 
   /**
@@ -1366,10 +1374,7 @@ Console.ConsoleView = class extends UI.VBox {
       var clickedOutsideMessageList = event.target === this._messagesElement;
       if (clickedOutsideMessageList)
         this._prompt.moveCaretToEndOfPrompt();
-      // Prevent scrolling when expanding objects in console, but focus the prompt anyway.
-      var oldScrollTop = this._viewport.element.scrollTop;
       this.focus();
-      this._viewport.element.scrollTop = oldScrollTop;
     }
     // TODO: fix this.
     var groupMessage = event.target.enclosingNodeOrSelfWithClass('console-group-title');
@@ -1378,6 +1383,15 @@ Console.ConsoleView = class extends UI.VBox {
     var consoleGroupViewMessage = groupMessage.message;
     consoleGroupViewMessage.setCollapsed(!consoleGroupViewMessage.collapsed());
     this._updateMessageList();
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  _messagesPasted(event) {
+    if (UI.isEditing())
+      return;
+    this._prompt.focus();
   }
 
   _registerShortcuts() {
@@ -1686,7 +1700,8 @@ Console.ConsoleView = class extends UI.VBox {
      */
     function updateViewportState() {
       this._muteViewportUpdates = false;
-      this._viewport.setStickToBottom(this._messagesElement.isScrolledToBottom());
+      if (this.isShowing())
+        this._viewport.setStickToBottom(this._messagesElement.isScrolledToBottom());
       if (this._maybeDirtyWhileMuted) {
         this._scheduleViewportRefresh();
         delete this._maybeDirtyWhileMuted;
@@ -1745,7 +1760,13 @@ Console.ConsoleViewFilter = class {
     this._textFilterUI = new UI.ToolbarInput(
         Common.UIString('Filter'), 0.2, 1, Common.UIString('e.g. /event\\d/ -cdn url:a.com'),
         this._suggestionBuilder.completions.bind(this._suggestionBuilder));
-    this._textFilterUI.addEventListener(UI.ToolbarInput.Event.TextChanged, this._onFilterChanged, this);
+    this._textFilterSetting = Common.settings.createSetting('console.textFilter', '');
+    if (this._textFilterSetting.get())
+      this._textFilterUI.setValue(this._textFilterSetting.get());
+    this._textFilterUI.addEventListener(UI.ToolbarInput.Event.TextChanged, () => {
+      this._textFilterSetting.set(this._textFilterUI.value());
+      this._onFilterChanged();
+    });
     this._filterParser = new TextUtils.FilterParser(filterKeys);
     this._currentFilter = new Console.ConsoleFilter('', [], null, this._messageLevelFiltersSetting.get());
     this._updateCurrentFilter();

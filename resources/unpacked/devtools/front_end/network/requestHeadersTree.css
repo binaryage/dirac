@@ -64,10 +64,14 @@
 .tree-outline .header-name {
     color: rgb(33%, 33%, 33%);
     display: inline-block;
-    margin-right: 0.5em;
+    margin-right: 0.25em;
     font-weight: bold;
     vertical-align: top;
     white-space: pre-wrap;
+}
+
+.tree-outline .header-separator {
+    user-select: none;
 }
 
 .tree-outline .header-value {
@@ -80,4 +84,15 @@
 
 .tree-outline .empty-request-header {
     color: rgba(33%, 33%, 33%, 0.5);
+}
+
+.request-headers-show-more-button {
+    border: none;
+    border-radius: 3px;
+    display: inline-block;
+    font-size: 12px;
+    font-family: sans-serif;
+    cursor: pointer;
+    margin: 0 4px;
+    padding: 2px 4px;
 }

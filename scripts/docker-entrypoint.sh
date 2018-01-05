@@ -14,7 +14,7 @@ init_travis_env() {
   #export DIRAC_CHROME_DRIVER_BROWSER_LOG_LEVEL= # https://bugs.chromium.org/p/chromedriver/issues/detail?id=817#c35
   #export TRAVIS_SKIP_CHROMIUM_UPDATE=1
   #export TRAVIS_DONT_CACHE_CHROMEDRIVER=1
-  #export TRAVIS_USE_CUSTOM_CHROMEDRIVER=http://x.binaryage.com/chromedriver.zip
+  export TRAVIS_USE_CUSTOM_CHROMEDRIVER=https://storage.googleapis.com/chromedriver-data/continuous/chromedriver_linux64_2.34.527066.zip
 
   echo "====================================================================================================================="
   set -x

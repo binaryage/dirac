@@ -468,7 +468,13 @@ UI.ViewManager._ContainerWidget = class extends UI.VBox {
    * @override
    */
   wasShown() {
-    this._materialize();
+    this._materialize().then(() => {
+      this._wasShownForTest();
+    });
+  }
+
+  _wasShownForTest() {
+    // This method is sniffed in tests.
   }
 };
 
@@ -485,6 +491,7 @@ UI.ViewManager._ExpandableContainerWidget = class extends UI.VBox {
     this.registerRequiredCSS('ui/viewContainers.css');
 
     this._titleElement = createElementWithClass('div', 'expandable-view-title');
+    UI.ARIAUtils.markAsLink(this._titleElement);
     this._titleExpandIcon = UI.Icon.create('smallicon-triangle-right', 'title-expand-icon');
     this._titleElement.appendChild(this._titleExpandIcon);
     this._titleElement.createTextChild(view.title());
@@ -523,6 +530,7 @@ UI.ViewManager._ExpandableContainerWidget = class extends UI.VBox {
     if (this._titleElement.classList.contains('expanded'))
       return this._materialize();
     this._titleElement.classList.add('expanded');
+    UI.ARIAUtils.setExpanded(this._titleElement, true);
     this._titleExpandIcon.setIconType('smallicon-triangle-down');
     return this._materialize().then(() => this._widget.show(this.element));
   }
@@ -531,6 +539,7 @@ UI.ViewManager._ExpandableContainerWidget = class extends UI.VBox {
     if (!this._titleElement.classList.contains('expanded'))
       return;
     this._titleElement.classList.remove('expanded');
+    UI.ARIAUtils.setExpanded(this._titleElement, false);
     this._titleExpandIcon.setIconType('smallicon-triangle-right');
     this._materialize().then(() => this._widget.detach());
   }
