@@ -1883,10 +1883,11 @@ Protocol.DOMSnapshotAgent = function(){};
 
 /**
  * @param {!Array<string>} computedStyleWhitelist
+ * @param {boolean=} opt_includeEventListeners
  * @return {!Promise<?Array<Protocol.DOMSnapshot.DOMNode>>}
  */
-Protocol.DOMSnapshotAgent.prototype.getSnapshot = function(computedStyleWhitelist) {};
-/** @typedef {!{computedStyleWhitelist: !Array<string>}} */
+Protocol.DOMSnapshotAgent.prototype.getSnapshot = function(computedStyleWhitelist, opt_includeEventListeners) {};
+/** @typedef {!{includeEventListeners: (boolean|undefined), computedStyleWhitelist: !Array<string>}} */
 Protocol.DOMSnapshotAgent.GetSnapshotRequest;
 /** @typedef {!{layoutTreeNodes: !Array<Protocol.DOMSnapshot.LayoutTreeNode>, domNodes: !Array<Protocol.DOMSnapshot.DOMNode>, computedStyles: !Array<Protocol.DOMSnapshot.ComputedStyle>}} */
 Protocol.DOMSnapshotAgent.GetSnapshotResponse;
@@ -1895,7 +1896,7 @@ Protocol.DOMSnapshotAgent.GetSnapshotResponse;
  * @return {!Promise<!Protocol.DOMSnapshotAgent.GetSnapshotResponse>} */
 Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
-/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), isClickable:(boolean|undefined)}} */
+/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
 /** @typedef {!{boundingBox:(Protocol.DOM.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
@@ -2367,10 +2368,11 @@ Protocol.EmulationAgent.prototype.invoke_setTouchEmulationEnabled = function(obj
  * @param {Protocol.Emulation.VirtualTimePolicy} policy
  * @param {number=} opt_budget
  * @param {number=} opt_maxVirtualTimeTaskStarvationCount
+ * @param {boolean=} opt_waitForNavigation
  * @return {!Promise<?Protocol.Runtime.Timestamp>}
  */
-Protocol.EmulationAgent.prototype.setVirtualTimePolicy = function(policy, opt_budget, opt_maxVirtualTimeTaskStarvationCount) {};
-/** @typedef {!{policy: Protocol.Emulation.VirtualTimePolicy, maxVirtualTimeTaskStarvationCount: (number|undefined), budget: (number|undefined)}} */
+Protocol.EmulationAgent.prototype.setVirtualTimePolicy = function(policy, opt_budget, opt_maxVirtualTimeTaskStarvationCount, opt_waitForNavigation) {};
+/** @typedef {!{policy: Protocol.Emulation.VirtualTimePolicy, maxVirtualTimeTaskStarvationCount: (number|undefined), waitForNavigation: (boolean|undefined), budget: (number|undefined)}} */
 Protocol.EmulationAgent.SetVirtualTimePolicyRequest;
 /** @typedef {!{virtualTimeBase: Protocol.Runtime.Timestamp}} */
 Protocol.EmulationAgent.SetVirtualTimePolicyResponse;
@@ -4810,6 +4812,19 @@ Protocol.PageAgent.StopLoadingResponse;
  * @param {!Protocol.PageAgent.StopLoadingRequest} obj
  * @return {!Promise<!Protocol.PageAgent.StopLoadingResponse>} */
 Protocol.PageAgent.prototype.invoke_stopLoading = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.crash = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.CrashRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.CrashResponse;
+/**
+ * @param {!Protocol.PageAgent.CrashRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.CrashResponse>} */
+Protocol.PageAgent.prototype.invoke_crash = function(obj) {};
 
 /**
  * @return {!Promise<undefined>}
