@@ -55,6 +55,7 @@ UI.InspectorView = class extends UI.VBox {
     this._drawerTabbedPane.rightToolbar().appendToolbarItem(closeDrawerButton);
     this._drawerSplitWidget.installResizer(this._drawerTabbedPane.headerElement());
     this._drawerSplitWidget.setSidebarWidget(this._drawerTabbedPane);
+    this._drawerTabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this._drawerTabSelected, this);
 
     // Create main area tabbed pane.
     this._tabbedLocation = UI.viewManager.createTabbedLocation(
@@ -303,6 +304,14 @@ UI.InspectorView = class extends UI.VBox {
     var tabId = /** @type {string} */ (event.data['tabId']);
     dirac.notifyPanelSwitch(tabId);
     Host.userMetrics.panelShown(tabId);
+  }
+
+  /**
+   * @param {!Common.Event} event
+   */
+  _drawerTabSelected(event) {
+    var tabId = /** @type {string} */ (event.data['tabId']);
+    Host.userMetrics.drawerShown(tabId);
   }
 
   /**
