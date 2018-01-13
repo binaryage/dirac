@@ -446,6 +446,34 @@ Protocol.BrowserAgent.GetVersionResponse;
 Protocol.BrowserAgent.prototype.invoke_getVersion = function(obj) {};
 
 /**
+ * @param {string=} opt_query
+ * @return {!Promise<?Array<Protocol.Browser.Histogram>>}
+ */
+Protocol.BrowserAgent.prototype.getHistograms = function(opt_query) {};
+/** @typedef {!{query: (string|undefined)}} */
+Protocol.BrowserAgent.GetHistogramsRequest;
+/** @typedef {!{histograms: !Array<Protocol.Browser.Histogram>}} */
+Protocol.BrowserAgent.GetHistogramsResponse;
+/**
+ * @param {!Protocol.BrowserAgent.GetHistogramsRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.GetHistogramsResponse>} */
+Protocol.BrowserAgent.prototype.invoke_getHistograms = function(obj) {};
+
+/**
+ * @param {string} name
+ * @return {!Promise<?Protocol.Browser.Histogram>}
+ */
+Protocol.BrowserAgent.prototype.getHistogram = function(name) {};
+/** @typedef {!{name: string}} */
+Protocol.BrowserAgent.GetHistogramRequest;
+/** @typedef {!{histogram: Protocol.Browser.Histogram}} */
+Protocol.BrowserAgent.GetHistogramResponse;
+/**
+ * @param {!Protocol.BrowserAgent.GetHistogramRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.GetHistogramResponse>} */
+Protocol.BrowserAgent.prototype.invoke_getHistogram = function(obj) {};
+
+/**
  * @param {Protocol.Browser.WindowID} windowId
  * @return {!Promise<?Protocol.Browser.Bounds>}
  */
@@ -501,6 +529,12 @@ Protocol.Browser.WindowState = {
 
 /** @typedef {!{left:(number|undefined), top:(number|undefined), width:(number|undefined), height:(number|undefined), windowState:(Protocol.Browser.WindowState|undefined)}} */
 Protocol.Browser.Bounds;
+
+/** @typedef {!{low:(number), high:(number), count:(number)}} */
+Protocol.Browser.Bucket;
+
+/** @typedef {!{name:(string), sum:(number), count:(number), buckets:(!Array<Protocol.Browser.Bucket>)}} */
+Protocol.Browser.Histogram;
 /** @interface */
 Protocol.BrowserDispatcher = function() {};
 Protocol.CSS = {};
@@ -3450,10 +3484,11 @@ Protocol.NetworkAgent.prototype.invoke_emulateNetworkConditions = function(obj) 
 /**
  * @param {number=} opt_maxTotalBufferSize
  * @param {number=} opt_maxResourceBufferSize
+ * @param {number=} opt_maxPostDataSize
  * @return {!Promise<undefined>}
  */
-Protocol.NetworkAgent.prototype.enable = function(opt_maxTotalBufferSize, opt_maxResourceBufferSize) {};
-/** @typedef {!{maxTotalBufferSize: (number|undefined), maxResourceBufferSize: (number|undefined)}} */
+Protocol.NetworkAgent.prototype.enable = function(opt_maxTotalBufferSize, opt_maxResourceBufferSize, opt_maxPostDataSize) {};
+/** @typedef {!{maxTotalBufferSize: (number|undefined), maxPostDataSize: (number|undefined), maxResourceBufferSize: (number|undefined)}} */
 Protocol.NetworkAgent.EnableRequest;
 /** @typedef {Object|undefined} */
 Protocol.NetworkAgent.EnableResponse;
@@ -3516,6 +3551,20 @@ Protocol.NetworkAgent.GetResponseBodyResponse;
  * @param {!Protocol.NetworkAgent.GetResponseBodyRequest} obj
  * @return {!Promise<!Protocol.NetworkAgent.GetResponseBodyResponse>} */
 Protocol.NetworkAgent.prototype.invoke_getResponseBody = function(obj) {};
+
+/**
+ * @param {Protocol.Network.RequestId} requestId
+ * @return {!Promise<?string>}
+ */
+Protocol.NetworkAgent.prototype.getRequestPostData = function(requestId) {};
+/** @typedef {!{requestId: Protocol.Network.RequestId}} */
+Protocol.NetworkAgent.GetRequestPostDataRequest;
+/** @typedef {!{postData: string}} */
+Protocol.NetworkAgent.GetRequestPostDataResponse;
+/**
+ * @param {!Protocol.NetworkAgent.GetRequestPostDataRequest} obj
+ * @return {!Promise<!Protocol.NetworkAgent.GetRequestPostDataResponse>} */
+Protocol.NetworkAgent.prototype.invoke_getRequestPostData = function(obj) {};
 
 /**
  * @param {Protocol.Network.InterceptionId} interceptionId
@@ -3774,7 +3823,7 @@ Protocol.Network.RequestReferrerPolicy = {
     StrictOriginWhenCrossOrigin: "strict-origin-when-cross-origin"
 };
 
-/** @typedef {!{url:(string), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), mixedContentType:(Protocol.Security.MixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority), referrerPolicy:(Protocol.Network.RequestReferrerPolicy), isLinkPreload:(boolean|undefined)}} */
+/** @typedef {!{url:(string), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), hasPostData:(boolean|undefined), mixedContentType:(Protocol.Security.MixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority), referrerPolicy:(Protocol.Network.RequestReferrerPolicy), isLinkPreload:(boolean|undefined)}} */
 Protocol.Network.Request;
 
 /** @typedef {!{status:(string), origin:(string), logDescription:(string), logId:(string), timestamp:(Protocol.Network.TimeSinceEpoch), hashAlgorithm:(string), signatureAlgorithm:(string), signatureData:(string)}} */
