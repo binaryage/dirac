@@ -9,7 +9,7 @@
    ['org.clojure/clojurescript "1.9.946" :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "0.3.465"]
+  [['org.clojure/core.async "0.4.474"]
    ['org.clojure/tools.logging "0.4.0"]
    ['org.clojure/tools.cli "0.3.5"]
    ['org.clojure/tools.nrepl "0.2.13"]
@@ -17,13 +17,13 @@
    ['http-kit "2.2.0"]
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
-   ['funcool/cuerdas "2.0.4"]])
+   ['funcool/cuerdas "2.0.5"]])
 
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.5.8" :scope "test"]
-   ['binaryage/chromex "0.5.14" :scope "test"]
+   ['binaryage/chromex "0.5.15" :scope "test"]
    ['binaryage/devtools "0.9.8" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.44" :scope "test"]
@@ -56,7 +56,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.24"
+(defproject binaryage/dirac "1.2.25"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

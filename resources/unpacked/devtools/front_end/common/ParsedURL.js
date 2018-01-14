@@ -93,6 +93,18 @@ Common.ParsedURL = class {
   }
 
   /**
+   * @param {string} fileURL
+   * @param {boolean} isWindows
+   * @return {string}
+   */
+  static urlToPlatformPath(fileURL, isWindows) {
+    console.assert(fileURL.startsWith('file://'), 'This must be a file URL.');
+    if (isWindows)
+      return fileURL.substr('file:///'.length).replace(/\//g, '\\');
+    return fileURL.substr('file://'.length);
+  }
+
+  /**
    * @param {string} url
    * @return {string}
    */
