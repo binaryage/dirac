@@ -130,9 +130,9 @@ Elements.ElementsPanel = class extends UI.Panel {
    * @param {!SDK.DOMModel} domModel
    */
   modelAdded(domModel) {
-    var treeOutline = new Elements.ElementsTreeOutline(domModel, true, true);
+    var treeOutline = new Elements.ElementsTreeOutline(true, true);
     treeOutline.setWordWrap(Common.moduleSetting('domWordWrap').get());
-    treeOutline.wireToDOMModel();
+    treeOutline.wireToDOMModel(domModel);
     treeOutline.addEventListener(
         Elements.ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedNodeChanged, this);
     treeOutline.addEventListener(
@@ -155,7 +155,7 @@ Elements.ElementsPanel = class extends UI.Panel {
    */
   modelRemoved(domModel) {
     var treeOutline = Elements.ElementsTreeOutline.forDOMModel(domModel);
-    treeOutline.unwireFromDOMModel();
+    treeOutline.unwireFromDOMModel(domModel);
     this._treeOutlines.remove(treeOutline);
     var header = this._treeOutlineHeaders.get(treeOutline);
     if (header)
@@ -230,15 +230,16 @@ Elements.ElementsPanel = class extends UI.Panel {
     super.wasShown();
     this._breadcrumbs.update();
 
-    for (var i = 0; i < this._treeOutlines.length; ++i) {
-      var treeOutline = this._treeOutlines[i];
+    var domModels = SDK.targetManager.models(SDK.DOMModel);
+    for (var domModel of domModels) {
+      var treeOutline = Elements.ElementsTreeOutline.forDOMModel(domModel);
       treeOutline.setVisible(true);
 
       if (!treeOutline.rootDOMNode) {
-        if (treeOutline.domModel().existingDocument())
-          this._documentUpdated(treeOutline.domModel(), treeOutline.domModel().existingDocument());
+        if (domModel.existingDocument())
+          this._documentUpdated(domModel, domModel.existingDocument());
         else
-          treeOutline.domModel().requestDocumentPromise();
+          domModel.requestDocumentPromise();
       }
     }
   }
@@ -278,9 +279,9 @@ Elements.ElementsPanel = class extends UI.Panel {
   _selectedNodeChanged(event) {
     var selectedNode = /** @type {?SDK.DOMNode} */ (event.data.node);
     var focus = /** @type {boolean} */ (event.data.focus);
-    for (var i = 0; i < this._treeOutlines.length; ++i) {
-      if (!selectedNode || selectedNode.domModel() !== this._treeOutlines[i].domModel())
-        this._treeOutlines[i].selectDOMNode(null);
+    for (var treeOutline of this._treeOutlines) {
+      if (!selectedNode || Elements.ElementsTreeOutline.forDOMModel(selectedNode.domModel()) !== treeOutline)
+        treeOutline.selectDOMNode(null);
     }
 
     this._breadcrumbs.setSelectedNode(selectedNode);
@@ -589,9 +590,9 @@ Elements.ElementsPanel = class extends UI.Panel {
    * @param {boolean=} focus
    */
   selectDOMNode(node, focus) {
-    for (var i = 0; i < this._treeOutlines.length; ++i) {
-      var treeOutline = this._treeOutlines[i];
-      if (treeOutline.domModel() === node.domModel())
+    for (var treeOutline of this._treeOutlines) {
+      var outline = Elements.ElementsTreeOutline.forDOMModel(node.domModel());
+      if (outline === treeOutline)
         treeOutline.selectDOMNode(node, focus);
       else
         treeOutline.selectDOMNode(null);
@@ -619,43 +620,30 @@ Elements.ElementsPanel = class extends UI.Panel {
    * @param {!KeyboardEvent} event
    */
   handleShortcut(event) {
-    /**
-     * @param {!Elements.ElementsTreeOutline} treeOutline
-     */
-    function handleUndoRedo(treeOutline) {
-      if (UI.KeyboardShortcut.eventHasCtrlOrMeta(event) && !event.shiftKey &&
-          (event.key === 'Z' || event.key === 'z')) {  // Z key
-        treeOutline.domModel().undo();
-        event.handled = true;
-        return;
-      }
-
-      var isRedoKey = Host.isMac() ?
-          event.metaKey && event.shiftKey && (event.key === 'Z' || event.key === 'z') :  // Z key
-          event.ctrlKey && (event.key === 'Y' || event.key === 'y');                     // Y key
-      if (isRedoKey) {
-        treeOutline.domModel().redo();
-        event.handled = true;
-      }
-    }
-
-    if (UI.isEditing() && event.keyCode !== UI.KeyboardShortcut.Keys.F2.code)
+    if (this._treeOutlines.find(to => to.editing()))
       return;
 
-    var treeOutline = null;
-    for (var i = 0; i < this._treeOutlines.length; ++i) {
-      if (this._treeOutlines[i].selectedDOMNode())
-        treeOutline = this._treeOutlines[i];
-    }
+    var treeOutline = this._treeOutlines.find(to => !!to.selectedDOMNode());
     if (!treeOutline)
       return;
 
-    if (!treeOutline.editing()) {
-      handleUndoRedo.call(null, treeOutline);
-      if (event.handled) {
-        this._stylesWidget.forceUpdate();
-        return;
-      }
+    if (UI.KeyboardShortcut.eventHasCtrlOrMeta(event) && !event.shiftKey &&
+        (event.key === 'Z' || event.key === 'z')) {  // Z key
+      SDK.domModelUndoStack.undo();
+      event.handled = true;
+    }
+
+    var isRedoKey = Host.isMac() ?
+        event.metaKey && event.shiftKey && (event.key === 'Z' || event.key === 'z') :  // Z key
+        event.ctrlKey && (event.key === 'Y' || event.key === 'y');                     // Y key
+    if (isRedoKey) {
+      SDK.domModelUndoStack.redo();
+      event.handled = true;
+    }
+
+    if (event.handled) {
+      this._stylesWidget.forceUpdate();
+      return;
     }
 
     treeOutline.handleShortcut(event);

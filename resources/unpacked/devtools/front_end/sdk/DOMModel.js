@@ -366,14 +366,14 @@ SDK.DOMNode = class {
 
   /**
    * @param {string} name
-   * @param {function(?Protocol.Error, number)=} callback
+   * @param {function(?Protocol.Error, ?SDK.DOMNode)=} callback
    */
   setNodeName(name, callback) {
     this._agent.invoke_setNodeName({nodeId: this.id, name}).then(response => {
       if (!response[Protocol.Error])
         this._domModel.markUndoableState();
       if (callback)
-        callback(response[Protocol.Error] || null, response.nodeId);
+        callback(response[Protocol.Error] || null, this._domModel.nodeForId(response.nodeId));
     });
   }
 
@@ -765,7 +765,7 @@ SDK.DOMNode = class {
   /**
    * @param {!SDK.DOMNode} targetNode
    * @param {?SDK.DOMNode} anchorNode
-   * @param {function(?Protocol.Error, !Protocol.DOM.NodeId=)=} callback
+   * @param {function(?Protocol.Error, ?SDK.DOMNode)=} callback
    */
   moveTo(targetNode, anchorNode, callback) {
     this._agent
@@ -775,7 +775,7 @@ SDK.DOMNode = class {
           if (!response[Protocol.Error])
             this._domModel.markUndoableState();
           if (callback)
-            callback(response[Protocol.Error] || null, response.nodeId);
+            callback(response[Protocol.Error] || null, this._domModel.nodeForId(response.nodeId));
         });
   }
 
@@ -978,7 +978,7 @@ SDK.DeferredDOMNode = class {
    * @param {number} backendNodeId
    */
   constructor(target, backendNodeId) {
-    this._domModel = target.model(SDK.DOMModel);
+    this._domModel = /** @type {!SDK.DOMModel} */ (target.model(SDK.DOMModel));
     this._backendNodeId = backendNodeId;
   }
 
@@ -993,8 +993,6 @@ SDK.DeferredDOMNode = class {
    * @return {!Promise<?SDK.DOMNode>}
    */
   async resolvePromise() {
-    if (!this._domModel)
-      return null;
     var nodeIds = await this._domModel.pushNodesByBackendIdsToFrontend(new Set([this._backendNodeId]));
     return nodeIds && nodeIds.get(this._backendNodeId) || null;
   }
@@ -1006,9 +1004,15 @@ SDK.DeferredDOMNode = class {
     return this._backendNodeId;
   }
 
+  /**
+   * @return {!SDK.DOMModel}
+   */
+  domModel() {
+    return this._domModel;
+  }
+
   highlight() {
-    if (this._domModel)
-      this._domModel.overlayModel().highlightDOMNode(undefined, undefined, this._backendNodeId);
+    this._domModel.overlayModel().highlightDOMNode(undefined, undefined, this._backendNodeId);
   }
 };
 
@@ -1301,6 +1305,7 @@ SDK.DOMModel = class extends SDK.SDKModel {
       this._document = new SDK.DOMDocument(this, payload);
     else
       this._document = null;
+    SDK.domModelUndoStack._dispose(this);
     this.dispatchEventToListeners(SDK.DOMModel.Events.DocumentUpdated, this);
   }
 
@@ -1518,22 +1523,11 @@ SDK.DOMModel = class extends SDK.SDKModel {
     return this._agent.querySelectorAll(nodeId, selectors);
   }
 
-  markUndoableState() {
-    this._agent.markUndoableState();
-  }
-
   /**
-   * @return {!Promise}
+   * @param {boolean=} minorChange
    */
-  undo() {
-    return this._agent.undo();
-  }
-
-  /**
-   * @return {!Promise}
-   */
-  redo() {
-    return this._agent.redo();
+  markUndoableState(minorChange) {
+    SDK.domModelUndoStack._markUndoableState(this, minorChange || false);
   }
 
   /**
@@ -1569,6 +1563,13 @@ SDK.DOMModel = class extends SDK.SDKModel {
    */
   resumeModel() {
     return this._agent.enable();
+  }
+
+  /**
+   * @override
+   */
+  dispose() {
+    SDK.domModelUndoStack._dispose(this);
   }
 };
 
@@ -1726,3 +1727,82 @@ SDK.DOMDispatcher = class {
     this._domModel._distributedNodesUpdated(insertionPointId, distributedNodes);
   }
 };
+
+SDK.DOMModelUndoStack = class {
+  constructor() {
+    /** @type {!Array<!SDK.DOMModel>} */
+    this._stack = [];
+    this._index = 0;
+    /** @type {?SDK.DOMModel} */
+    this._lastModelWithMinorChange = null;
+  }
+
+  /**
+   * @param {!SDK.DOMModel} model
+   * @param {boolean} minorChange
+   */
+  _markUndoableState(model, minorChange) {
+    // Both minor and major changes get into the stack, but minor updates are coalesced.
+    // Commit major undoable state in the old model upon model switch.
+    if (this._lastModelWithMinorChange && model !== this._lastModelWithMinorChange) {
+      this._lastModelWithMinorChange.markUndoableState();
+      this._lastModelWithMinorChange = null;
+    }
+
+    // Previous minor change is already in the stack.
+    if (minorChange && this._lastModelWithMinorChange === model)
+      return;
+
+    this._stack = this._stack.slice(0, this._index);
+    this._stack.push(model);
+    this._index = this._stack.length;
+
+    // Delay marking as major undoable states in case of minor operations until the
+    // major or model switch.
+    if (minorChange) {
+      this._lastModelWithMinorChange = model;
+    } else {
+      model._agent.markUndoableState();
+      this._lastModelWithMinorChange = null;
+    }
+  }
+
+  /**
+   * @return {!Promise}
+   */
+  undo() {
+    if (this._index === 0)
+      return Promise.resolve();
+    --this._index;
+    this._lastModelWithMinorChange = null;
+    return this._stack[this._index]._agent.undo();
+  }
+
+  /**
+   * @return {!Promise}
+   */
+  redo() {
+    if (this._index >= this._stack.length)
+      return Promise.resolve();
+    ++this._index;
+    this._lastModelWithMinorChange = null;
+    return this._stack[this._index - 1]._agent.redo();
+  }
+
+  /**
+   * @param {!SDK.DOMModel} model
+   */
+  _dispose(model) {
+    var shift = 0;
+    for (var i = 0; i < this._index; ++i) {
+      if (this._stack[i] === model)
+        ++shift;
+    }
+    this._stack.remove(model);
+    this._index -= shift;
+    if (this._lastModelWithMinorChange === model)
+      this._lastModelWithMinorChange = null;
+  }
+};
+
+SDK.domModelUndoStack = new SDK.DOMModelUndoStack();
