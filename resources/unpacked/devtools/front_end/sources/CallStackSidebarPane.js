@@ -196,7 +196,6 @@ Sources.CallStackSidebarPane = class extends UI.SimpleView {
   createElementForItem(item) {
     var element = createElementWithClass('div', 'call-frame-item');
     var title = element.createChild('div', 'call-frame-item-title');
-    title.createChild('div', 'call-frame-title-text').textContent = this._itemTitle(item);
     const titleElement = title.createChild('div', 'call-frame-title-text');
     titleElement.textContent = this._itemTitle(item);
     if (dirac.hasBeautifyFunctionNames) {
