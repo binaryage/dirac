@@ -431,6 +431,8 @@ function printStyleSection(section, omitLonghands, includeSelectorGroupMarks) {
 
   TestRunner.addResult(selectorText);
   ElementsTestRunner.dumpStyleTreeOutline(section.propertiesTreeOutline, (omitLonghands ? 1 : 2));
+  if (!section._showAllButton.classList.contains('hidden'))
+    TestRunner.addResult(section._showAllButton.textContent);
   TestRunner.addResult('');
 }
 
@@ -840,7 +842,7 @@ ElementsTestRunner.generateUndoTest = function(testBody) {
           ElementsTestRunner.dumpElementsTree(testNode);
         }
 
-        TestRunner.domModel.undo().then(redo);
+        SDK.domModelUndoStack.undo().then(redo);
       }
     }
 
@@ -855,7 +857,7 @@ ElementsTestRunner.generateUndoTest = function(testBody) {
           ElementsTestRunner.dumpElementsTree(testNode);
         }
 
-        TestRunner.domModel.redo().then(done);
+        SDK.domModelUndoStack.redo().then(done);
       }
     }
 
