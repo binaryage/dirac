@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='65.0.3320.2';
-Protocol.BakedInspectorBackendAPIChromeRev='5f0fe2596774b5d8d7a42fdcd1da18e411d540ea';
+Protocol.BakedInspectorBackendAPIChromeTag='65.0.3324.2';
+Protocol.BakedInspectorBackendAPIChromeRev='a2442deb0fb803cb584bd6e2379987316bc35786';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -176,7 +176,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("HeadlessExperimental.ScreenshotParamsFormat", {Jpeg: "jpeg", Png: "png"});\n'
 + 'Protocol.inspectorBackend.registerEvent("HeadlessExperimental.mainFrameReadyForScreenshots", []);\n'
 + 'Protocol.inspectorBackend.registerEvent("HeadlessExperimental.needsBeginFramesChanged", ["needsBeginFrames"]);\n'
-+ 'Protocol.inspectorBackend.registerCommand("HeadlessExperimental.beginFrame", [{"name": "frameTime", "type": "number", "optional": true}, {"name": "deadline", "type": "number", "optional": true}, {"name": "interval", "type": "number", "optional": true}, {"name": "screenshot", "type": "object", "optional": true}], ["hasDamage", "mainFrameContentUpdated", "screenshotData"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("HeadlessExperimental.beginFrame", [{"name": "frameTime", "type": "number", "optional": true}, {"name": "deadline", "type": "number", "optional": true}, {"name": "interval", "type": "number", "optional": true}, {"name": "noDisplayUpdates", "type": "boolean", "optional": true}, {"name": "screenshot", "type": "object", "optional": true}], ["hasDamage", "mainFrameContentUpdated", "screenshotData"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("HeadlessExperimental.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("HeadlessExperimental.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IO.close", [{"name": "handle", "type": "string", "optional": false}], [], false);\n'
