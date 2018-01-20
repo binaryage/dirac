@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='65.0.3324.2';
-Protocol.BakedInspectorBackendAPIChromeRev='a2442deb0fb803cb584bd6e2379987316bc35786';
+Protocol.BakedInspectorBackendAPIChromeTag='66.0.3326.2';
+Protocol.BakedInspectorBackendAPIChromeRev='c6abefd153ea09f3734a7f5d409e316a0accd9d2';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -124,6 +124,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("DOM.setNodeValue", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "value", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.setOuterHTML", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "outerHTML", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.undo", [], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOM.getFrameOwner", [{"name": "frameId", "type": "string", "optional": false}], ["nodeId"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("DOMDebugger.DOMBreakpointType", {SubtreeModified: "subtree-modified", AttributeModified: "attribute-modified", NodeRemoved: "node-removed"});\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMDebugger.getEventListeners", [{"name": "objectId", "type": "string", "optional": false}, {"name": "depth", "type": "number", "optional": true}, {"name": "pierce", "type": "boolean", "optional": true}], ["listeners"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMDebugger.removeDOMBreakpoint", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "type", "type": "string", "optional": false}], [], false);\n'
@@ -231,6 +232,9 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Memory.prepareForLeakDetection", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.setPressureNotificationsSuppressed", [{"name": "suppressed", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.simulatePressureNotification", [{"name": "level", "type": "string", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Memory.startSampling", [{"name": "samplingInterval", "type": "number", "optional": true}, {"name": "suppressRandomness", "type": "boolean", "optional": true}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Memory.stopSampling", [], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Memory.getSamplingProfile", [], ["profile"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.ErrorReason", {Failed: "Failed", Aborted: "Aborted", TimedOut: "TimedOut", AccessDenied: "AccessDenied", ConnectionClosed: "ConnectionClosed", ConnectionReset: "ConnectionReset", ConnectionRefused: "ConnectionRefused", ConnectionAborted: "ConnectionAborted", ConnectionFailed: "ConnectionFailed", NameNotResolved: "NameNotResolved", InternetDisconnected: "InternetDisconnected", AddressUnreachable: "AddressUnreachable"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.ConnectionType", {None: "none", Cellular2g: "cellular2g", Cellular3g: "cellular3g", Cellular4g: "cellular4g", Bluetooth: "bluetooth", Ethernet: "ethernet", Wifi: "wifi", Wimax: "wimax", Other: "other"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.CookieSameSite", {Strict: "Strict", Lax: "Lax"});\n'
