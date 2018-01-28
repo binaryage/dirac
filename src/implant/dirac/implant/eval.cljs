@@ -312,26 +312,26 @@
 (defn console-log! [& args]
   (eval-with-callback! :default (apply console-log-template "log" args)))
 
-; -- serialization of evaluations -------------------------------------------------------------------------------------------
+; -- processing of evaluations ----------------------------------------------------------------------------------------------
 
-; We want to serialize all eval requests. In other words: we don't want to have two or more evaluations "in-flight".
-;
-; Without serialization the results could be unpredictably out of order, for example imagine we get two network requests:
+; Also look into implementation of process-message :eval-js, there is a deliberate delay before processing eval-js requests
+; This means printing messages in tunnel have better chance to complete before a subsequent eval is executed.
+; Without the delay the results could be unpredictably out of order, for example imagine we get two network requests:
 ; 1. print output "some warning"
 ; 2. eval "some code"
 ; And we call js/dirac.evalInCurrentContext to process both of them in quick order.
 ; Without serialization, the code evaluation result could appear in the console above the warning
 ; because of async nature of dirac.evalInCurrentContext and async nature of console API (chrome debugger protocol).
 ;
-; Also look into implementation of process-message :eval-js, there is a deliberate delay before processing eval-js requests
-; This means printing messages in tunnel have better chance to complete before a subsequent eval is executed.
+; Originally I implemented this as a fully serialized queue, but that had to be relaxed because of
+; https://github.com/binaryage/dirac/issues/74
 
 (defonce eval-requests (chan))
 
 (defn start-eval-request-queue-processing-loop! []
   (go-loop []
     (if-let [[context code silent? handler] (<! eval-requests)]
-      (let [call-handler! (fn [result-code value error]
+      (let [call-handler! (fn [_result-code value error]
                             (if (some? error)
                               (display-user-error! error))
                             (if handler
@@ -341,18 +341,19 @@
         (case (first install-result)
           ::failure (let [reason (second install-result)]
                       (call-handler! ::install-failure reason (missing-runtime-msg reason)))
-          ::ok (let [eval-result (<! (call-eval-with-timeout! context code eval-time-limit silent?))]
-                 (case (first eval-result)
-                   ::ok (call-handler! ::ok (second eval-result))
-                   ::internal-error (call-handler! ::internal-error
+          ::ok (go
+                 (let [eval-result (<! (call-eval-with-timeout! context code eval-time-limit silent?))]
+                   (case (first eval-result)
+                     ::ok (call-handler! ::ok (second eval-result))
+                     ::internal-error (call-handler! ::internal-error
+                                                     (second eval-result)
+                                                     (internal-eval-error-msg code (second eval-result)))
+                     ::eval-timeout (call-handler! ::eval-timeout
                                                    (second eval-result)
-                                                   (internal-eval-error-msg code (second eval-result)))
-                   ::eval-timeout (call-handler! ::eval-timeout
-                                                 (second eval-result)
-                                                 (eval-timeout-msg code))
-                   (call-handler! ::unknown-problem
-                                  (second eval-result)
-                                  (eval-problem-msg code (first eval-result) (second eval-result))))))
+                                                   (eval-timeout-msg code))
+                     (call-handler! ::unknown-problem
+                                    (second eval-result)
+                                    (eval-problem-msg code (first eval-result) (second eval-result)))))))
         (recur))
       (log "Leaving start-eval-request-queue-processing-loop!"))))
 
