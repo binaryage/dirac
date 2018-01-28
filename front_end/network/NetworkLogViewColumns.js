@@ -540,7 +540,8 @@ Network.NetworkLogViewColumns = class {
       show: popover => {
         var manager = anchor.request ? SDK.NetworkManager.forRequest(anchor.request) : null;
         var content = Components.DOMPresentationUtils.buildStackTracePreviewContents(
-            manager ? manager.target() : null, this._popupLinkifier, initiator.stack);
+            manager ? manager.target() : null, this._popupLinkifier, initiator.stack,
+            () => popover.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent));
         popover.contentElement.appendChild(content);
         return Promise.resolve(true);
       },
@@ -726,11 +727,7 @@ Network.NetworkLogViewColumns._defaultColumns = [
     align: DataGrid.DataGrid.Align.Right,
     sortingFunction: Network.NetworkRequestNode.RequestPropertyComparator.bind(null, 'duration')
   },
-  {
-    id: 'priority',
-    title: Common.UIString('Priority'),
-    sortingFunction: Network.NetworkRequestNode.InitialPriorityComparator
-  },
+  {id: 'priority', title: Common.UIString('Priority'), sortingFunction: Network.NetworkRequestNode.PriorityComparator},
   {
     id: 'connectionid',
     title: Common.UIString('Connection ID'),

@@ -39,7 +39,7 @@ ElementsTestRunner.nodeWithId = function(idValue, callback) {
  * @param {function(!Element): boolean} matchFunction
  * @param {!Function} callback
  */
-ElementsTestRunner.findNode = function(matchFunction, callback) {
+ElementsTestRunner.findNode = async function(matchFunction, callback) {
   callback = TestRunner.safeWrap(callback);
   var result = null;
   var pendingRequests = 0;
@@ -76,10 +76,9 @@ ElementsTestRunner.findNode = function(matchFunction, callback) {
       callback(null);
   }
 
-  TestRunner.domModel.requestDocument(doc => {
-    pendingRequests++;
-    doc.getChildNodes(processChildren.bind(null, doc));
-  });
+  var doc = TestRunner.domModel.existingDocument() || await TestRunner.domModel.requestDocument();
+  pendingRequests++;
+  doc.getChildNodes(processChildren.bind(null, doc));
 };
 
 /**
@@ -196,7 +195,7 @@ ElementsTestRunner.firstMediaTextElementInSection = function(section) {
 };
 
 ElementsTestRunner.querySelector = async function(selector, callback) {
-  var doc = await TestRunner.domModel.requestDocumentPromise();
+  var doc = await TestRunner.domModel.requestDocument();
   var nodeId = await TestRunner.domModel.querySelector(doc.id, selector);
   callback(TestRunner.domModel.nodeForId(nodeId));
 };
@@ -243,6 +242,12 @@ ElementsTestRunner.waitForStyles = function(idValue, callback, requireRebuild) {
   }
 
   waitForStylesRebuild(nodeWithId, callback, requireRebuild);
+};
+
+ElementsTestRunner.waitForStyleCommitted = function(next) {
+  TestRunner.addSniffer(Elements.StylePropertyTreeElement.prototype, '_editingCommitted', (...args) => {
+    Promise.all(args).then(next);
+  });
 };
 
 ElementsTestRunner.waitForStylesForClass = function(classValue, callback, requireRebuild) {
@@ -784,6 +789,17 @@ ElementsTestRunner.expandElementsTree = function(callback) {
   ElementsTestRunner.findNode(function() {
     return false;
   }, onAllNodesAvailable);
+};
+
+ElementsTestRunner.expandAndDump = function() {
+  TestRunner.addResult('\nDump tree');
+  let callback;
+  let result = new Promise(f => callback = f);
+  ElementsTestRunner.expandElementsTree(() => {
+    ElementsTestRunner.dumpElementsTree();
+    callback();
+  });
+  return result;
 };
 
 ElementsTestRunner.dumpDOMAgentTree = function(node) {
