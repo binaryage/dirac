@@ -108,6 +108,9 @@
 (defn ^:devtools focus-console-prompt! [devtools-id]
   (verbs/automate-devtools! devtools-id {:action :focus-console-prompt}))
 
+(defn ^:devtools focus-best-console-prompt! [devtools-id]
+  (verbs/automate-devtools! devtools-id {:action :focus-best-console-prompt}))
+
 (defn ^:devtools clear-console-prompt! [devtools-id]
   (verbs/automate-devtools! devtools-id {:action :clear-console-prompt}))
 
