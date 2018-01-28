@@ -34,10 +34,10 @@
 (declare load-javascript)
 (declare tear-down-env)
 
-; normally cljs-repl driven by piggiback calls setup/tear-down for each evaluation
+; normally cljs-repl driven by piggieback calls setup/tear-down for each evaluation
 ; piggieback works around it by wrapping env and doing -setup only once and ignoring -tear-down calls
 ; this complicated the piggieback implementation so I decided to do it here instead and simplify our version of piggieback
-(defrecord WeaselREPLEnv [id options server client-response-promise cached-setup]
+(defrecord WeaselREPLEnv [id options server client-response-promises cached-setup]
   cljs.repl/IJavaScriptEnv
   (-setup [this opts]
     (let [cached-setup-value @(:cached-setup this)]
@@ -46,8 +46,12 @@
         (reset! (:cached-setup this) (setup-env this opts))
         cached-setup-value)))
   (-evaluate [this filename line js]
-    (log/trace (str this) "-evaluate called" filename line "\n" js)
-    (request-eval this js filename))
+    ; Dirac is normally producing unique synthetic filenames, e.g. repl://dirac-repl/dirac/bbbc0eea-1/repl-job-000006.cljs
+    ; so we assume we can use it to form unique eval-id to track evaluation life-cycle
+    ; this is a hack: I don't want to break WeaselREPLEnv contract
+    (let [eval-id (str (or filename "<unknown>") (if (some? line) (str ":" line)))]
+      (log/trace (str this) "-evaluate called" eval-id "\n" js)
+      (request-eval this eval-id js filename)))
   (-load [this provides url]
     (log/trace (str this) "-load called" (str this) provides url)
     (load-javascript this provides url))
@@ -91,12 +95,25 @@
   {:pre [(instance? WeaselREPLEnv env)]}
   (reset! (:server env) server))
 
-(defn get-client-response-promise-atom [env]
-  {:pre [(instance? WeaselREPLEnv env)]}
-  (let [client-response-promise-atom (:client-response-promise env)]
-    (assert client-response-promise-atom)
-    (assert (instance? Atom client-response-promise-atom))
-    client-response-promise-atom))
+(defn get-client-response-promise [env eval-id]
+  {:pre [(instance? WeaselREPLEnv env)
+         (some? eval-id)]}
+  (let [client-response-promises-atom (:client-response-promises env)]
+    (assert (some? client-response-promises-atom))
+    (assert (instance? Atom client-response-promises-atom))
+    (get @client-response-promises-atom eval-id)))
+
+(defn swap-client-response-promise! [env eval-id f & args]
+  (let [client-response-promises-atom (:client-response-promises env)]
+    (assert (some? client-response-promises-atom))
+    (assert (instance? Atom client-response-promises-atom))
+    (swap! client-response-promises-atom (fn [state]
+                                           (if-some [new-promise (apply f (get state eval-id) args)]
+                                             (assoc state eval-id new-promise)
+                                             (dissoc state eval-id))))))
+
+(defn reset-client-response-promise! [env eval-id new-promise]
+  (swap-client-response-promise! env eval-id (constantly new-promise)))
 
 ; -- message builders -------------------------------------------------------------------------------------------------------
 
@@ -104,9 +121,10 @@
   {:op   :error
    :type :occupied})
 
-(defn make-eval-js-request-message [js & [filename]]
-  (cond-> {:op   :eval-js
-           :code js}
+(defn make-eval-js-request-message [eval-id js & [filename]]
+  (cond-> {:op      :eval-js
+           :eval-id eval-id
+           :code    js}
           (some? filename) (merge {:file filename})))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
@@ -118,8 +136,9 @@
 
 (defmethod process-message :result [env message]
   (let [result (:value message)
-        client-response-promise @(get-client-response-promise-atom env)]
-    (when client-response-promise                                                                                             ; silently ignore results delivered after timeout, TODO: implement id matching or something here
+        eval-id (:eval-id message)
+        client-response-promise (get-client-response-promise env eval-id)]
+    (when client-response-promise                                                                                             ; silently ignore results delivered after timeout, TODO: maybe warn in log?
       (assert (instance? IDeref client-response-promise))
       (deliver client-response-promise result))))
 
@@ -134,25 +153,23 @@
 
 ; -- env helpers ------------------------------------------------------------------------------------------------------------
 
-(defn promise-new-client-response! [env]
-  {:pre [(instance? WeaselREPLEnv env)]}
-  (let [response-promise-atom (get-client-response-promise-atom env)]
-    (assert (instance? Atom response-promise-atom))
-    (assert (nil? @response-promise-atom) "promise-new-client-response! previous response promise pending")
-    (reset! response-promise-atom (promise))))
+(defn promise-new-client-response! [env eval-id]
+  {:pre [(instance? WeaselREPLEnv env)
+         (some? eval-id)]}
+  (log/trace (str env) (str "Create promised response for eval " eval-id " ..."))
+  (reset-client-response-promise! env eval-id (promise)))
 
-(defn wait-for-promised-response! [env]
-  {:pre [(instance? WeaselREPLEnv env)]}
-  (let [response-promise-atom (get-client-response-promise-atom env)]
-    (assert (instance? Atom response-promise-atom))
-    (let [response-promise @response-promise-atom]
-      (assert response-promise "wait-for-promised-response! expected non-nil pending promise")
-      (assert (instance? IDeref response-promise))
-      (log/trace (str env) "Waiting for promised response...")
-      (let [response @response-promise]                                                                                       ; <===== WILL BLOCK! TODO: implement a timeout
-        (log/trace (str env) "Got promised response.")
-        (reset! response-promise-atom nil)
-        response))))
+(defn wait-for-promised-response! [env eval-id]
+  {:pre [(instance? WeaselREPLEnv env)
+         (some? eval-id)]}
+  (let [response-promise (get-client-response-promise env eval-id)]
+    (assert (some? response-promise) (str "expected some pending promise for eval " eval-id))
+    (assert (instance? IDeref response-promise))
+    (log/trace (str env) (str "Waiting for promised response for eval " eval-id " ..."))
+    (let [response @response-promise]                                                                                         ; <===== WILL BLOCK! TODO: implement a timeout
+      (log/trace (str env) (str "Got promised response for eval " eval-id))
+      (reset-client-response-promise! env eval-id nil)
+      response)))
 
 (defn send-occupied-response-close-channel-and-reject-client! [env channel]
   (log/debug (str env) "Client already connected. Rejecting new client with occupied message on channel" channel)
@@ -194,13 +211,18 @@
   (server/destroy! (get-server env))
   (log/debug (str env) "Weasel server stopped."))
 
-(defn request-eval [env js & [filename]]
-  (promise-new-client-response! env)
+(defn request-eval [env eval-id js & [filename]]
+  (promise-new-client-response! env eval-id)
   (let [client @(server/get-first-client-promise (get-server env))                                                            ; <===== MIGHT BLOCK if there is currently no client connected TODO: implement timeout
         ready? @(get-client-ready-promise)]                                                                                   ; <===== MIGHT BLOCK until we receive client :ready signal
     (assert ready?)
-    (server/send! client (make-eval-js-request-message js filename)))
-  (wait-for-promised-response! env))                                                                                          ; <===== WILL BLOCK! until client responds
+    (server/send! client (make-eval-js-request-message eval-id js filename)))
+  (wait-for-promised-response! env eval-id))                                                                                  ; <===== WILL BLOCK! until client responds
+
+(defonce load-javascript-counter-atom (atom 0))
 
 (defn load-javascript [env provides _]
-  (request-eval env (str "goog.require('" (cmp/munge (first provides)) "')")))                                                ; what is this?
+  (let [counter (swap! load-javascript-counter-atom inc)
+        eval-id (str "<load-javascript-" counter ">")
+        js (str "goog.require('" (cmp/munge (first provides)) "')")]
+    (request-eval env eval-id js)))                                                                                           ; what is this?
