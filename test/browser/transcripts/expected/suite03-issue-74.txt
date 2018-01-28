@@ -1,0 +1,91 @@
+ns               Testing dirac.tests.tasks.suite03.issue-74
+extension        reset extension state
+extension        set extension options:{:target-url "http://localhost:<port>"}
+extension        set extension options:{:open-as "window"}
+automate         open-scenario! ["issue-74"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #1
+devtools #1      implant initialized
+devtools #1      reset devtools settings
+devtools #1      setCurrentPanel: elements
+devtools #1      devtools ready
+devtools #1      namespacesCache is cool now
+automate #1      switch-to-console-panel!
+devtools #1      setCurrentPanel: console
+devtools #1      console initialized
+devtools #1      adopt-prompt-element use-parinfer? true
+devtools #1      setDiracPromptMode('status')
+devtools #1      ConsoleView constructed
+devtools #1      displayWelcomeMessage
+automate #1      switch-prompt-to-dirac!
+devtools #1      switched console prompt to 'dirac'
+devtools #1      init-repl!
+devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #1      setDiracPromptStatusStyle('info')
+devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #1      setDiracPromptNS('cljs.user')
+devtools #1      setDiracPromptMode('edit')
+automate #1      enable-console-feedback!
+automate #1      console-enter! ["(require 'dirac.tests.scenarios.issue-74.core)"]
+devtools #1      DC.info> (require 'dirac.tests.scenarios.issue-74.core)
+devtools #1      send-eval-request: (require 'dirac.tests.scenarios.issue-74.core)
+devtools #1      repl eval job started
+automate #1      console-exec-and-match! ["(in-ns 'dirac.tests.scenarios.issue-74.core)" "setDiracPromptNS('dirac.tests.scenarios.issue-74.core')"]
+devtools #1      repl eval job ended
+devtools #1      DC.info> (in-ns 'dirac.tests.scenarios.issue-74.core)
+devtools #1      send-eval-request: (in-ns 'dirac.tests.scenarios.issue-74.core)
+devtools #1      repl eval job started
+devtools #1      setDiracPromptNS('dirac.tests.scenarios.issue-74.core')
+devtools #1      repl eval job ended
+testing          break on js-debugger, eval code in scope, resume
+automate #1      console-enter! ["(fn-with-breakpoint)"]
+devtools #1      DC.info> (fn-with-breakpoint)
+devtools #1      send-eval-request: (fn-with-breakpoint)
+devtools #1      repl eval job started
+devtools #1      setCurrentPanel: sources
+automate #1      focus-best-console-prompt!
+devtools #1      showDrawer
+automate #1      console-exec-and-match! ["(inc a)" "info> 43"]
+devtools #1      DC.info> (inc a)
+devtools #1      send-eval-request: (inc a)
+devtools #1      repl eval job started
+devtools #1      DF.info> 43
+devtools #1      repl eval job ended
+automate #1      simulate-global-action! ["F8"]
+devtools #1      DF.info> 84
+devtools #1      repl eval job ended
+∎
+testing          break on js-debugger, change var in scope, resume
+automate #1      console-enter! ["(fn-with-breakpoint)"]
+devtools #1      DC.info> (fn-with-breakpoint)
+devtools #1      send-eval-request: (fn-with-breakpoint)
+devtools #1      repl eval job started
+automate #1      focus-best-console-prompt!
+automate #1      console-exec-and-match! ["(set! js/a 30)" ["DF.warning> js/a is shadowed" "info> 30"]]
+devtools #1      DC.info> (set! js/a 30)
+devtools #1      send-eval-request: (set! js/a 30)
+devtools #1      repl eval job started
+devtools #1      present-server-side-output! stderr/plain-text > WARNING: js/a is shadowed by a local at line 1 repl://<path>
+devtools #1      DF.warning> js/a is shadowed by a local at line 1 repl://<path>
+devtools #1      DF.info> 30
+devtools #1      repl eval job ended
+automate #1      simulate-global-action! ["F8"]
+devtools #1      DF.info> 60
+devtools #1      repl eval job ended
+∎
+testing          break on js-debugger in async fn should not affect us
+automate #1      console-exec-and-match! ["(fn-with-async-breakpoint)" "info> 100"]
+devtools #1      DC.info> (fn-with-async-breakpoint)
+devtools #1      send-eval-request: (fn-with-async-breakpoint)
+devtools #1      repl eval job started
+devtools #1      DF.info> 100
+devtools #1      repl eval job ended
+∎
+automate #1      disable-console-feedback!
+automate #1      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #1
+automate         close-scenario! ["scenario-tab#1"]
+summary          Automated 19 actions with 5 check-points containing 0 assertions.
+                 0 failures, 0 errors.
