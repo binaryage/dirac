@@ -65,11 +65,17 @@
           (expect-event! weasel :open)
           (weasel-client/send! weasel {:op :ready :ident (str weasel)})
           (expect-op-msg! weasel :eval-js)
-          (weasel-client/send! weasel {:op :result :value (success-value)})
+          (weasel-client/send! weasel {:op      :result
+                                       :eval-id (:eval-id (get-last-message))
+                                       :value   (success-value)})
           (expect-op-msg! weasel :eval-js)
-          (weasel-client/send! weasel {:op :result :value (success-value)})
+          (weasel-client/send! weasel {:op      :result
+                                       :eval-id (:eval-id (get-last-message))
+                                       :value   (success-value)})
           (expect-op-msg! weasel :eval-js)
-          (weasel-client/send! weasel {:op :result :value (success-value)})
+          (weasel-client/send! weasel {:op      :result
+                                       :eval-id (:eval-id (get-last-message))
+                                       :value   (success-value)})
           ; TODO: review this, we should introduce special :op for prompt refresh
           ;(expect-ns-msg! tunnel "cljs.user")
           ;(expect-ns-msg! tunnel "cljs.user")
