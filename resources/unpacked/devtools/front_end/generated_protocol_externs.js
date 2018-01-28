@@ -2841,16 +2841,16 @@ Protocol.InputAgent.prototype.invoke_dispatchTouchEvent = function(obj) {};
  * @param {string} type
  * @param {number} x
  * @param {number} y
- * @param {Protocol.Input.TimeSinceEpoch} timestamp
  * @param {string} button
+ * @param {Protocol.Input.TimeSinceEpoch=} opt_timestamp
  * @param {number=} opt_deltaX
  * @param {number=} opt_deltaY
  * @param {number=} opt_modifiers
  * @param {number=} opt_clickCount
  * @return {!Promise<undefined>}
  */
-Protocol.InputAgent.prototype.emulateTouchFromMouseEvent = function(type, x, y, timestamp, button, opt_deltaX, opt_deltaY, opt_modifiers, opt_clickCount) {};
-/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), deltaX: (number|undefined), timestamp: Protocol.Input.TimeSinceEpoch, button: string, deltaY: (number|undefined), y: number, x: number, type: string}} */
+Protocol.InputAgent.prototype.emulateTouchFromMouseEvent = function(type, x, y, button, opt_timestamp, opt_deltaX, opt_deltaY, opt_modifiers, opt_clickCount) {};
+/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), deltaX: (number|undefined), timestamp: (Protocol.Input.TimeSinceEpoch|undefined), button: string, deltaY: (number|undefined), y: number, x: number, type: string}} */
 Protocol.InputAgent.EmulateTouchFromMouseEventRequest;
 /** @typedef {Object|undefined} */
 Protocol.InputAgent.EmulateTouchFromMouseEventResponse;
@@ -2988,6 +2988,7 @@ Protocol.InspectorDispatcher = function() {};
  */
 Protocol.InspectorDispatcher.prototype.detached = function(reason) {};
 Protocol.InspectorDispatcher.prototype.targetCrashed = function() {};
+Protocol.InspectorDispatcher.prototype.targetReloadedAfterCrash = function() {};
 Protocol.LayerTree = {};
 
 
@@ -3374,6 +3375,19 @@ Protocol.MemoryAgent.StopSamplingResponse;
  * @param {!Protocol.MemoryAgent.StopSamplingRequest} obj
  * @return {!Promise<!Protocol.MemoryAgent.StopSamplingResponse>} */
 Protocol.MemoryAgent.prototype.invoke_stopSampling = function(obj) {};
+
+/**
+ * @return {!Promise<?Protocol.Memory.SamplingProfile>}
+ */
+Protocol.MemoryAgent.prototype.getAllTimeSamplingProfile = function() {};
+/** @typedef {Object|undefined} */
+Protocol.MemoryAgent.GetAllTimeSamplingProfileRequest;
+/** @typedef {!{profile: Protocol.Memory.SamplingProfile}} */
+Protocol.MemoryAgent.GetAllTimeSamplingProfileResponse;
+/**
+ * @param {!Protocol.MemoryAgent.GetAllTimeSamplingProfileRequest} obj
+ * @return {!Promise<!Protocol.MemoryAgent.GetAllTimeSamplingProfileResponse>} */
+Protocol.MemoryAgent.prototype.invoke_getAllTimeSamplingProfile = function(obj) {};
 
 /**
  * @return {!Promise<?Protocol.Memory.SamplingProfile>}
@@ -4622,10 +4636,11 @@ Protocol.PageAgent.prototype.invoke_handleJavaScriptDialog = function(obj) {};
  * @param {string} url
  * @param {string=} opt_referrer
  * @param {Protocol.Page.TransitionType=} opt_transitionType
+ * @param {Protocol.Page.FrameId=} opt_frameId
  * @return {!Promise<?Protocol.Page.FrameId>}
  */
-Protocol.PageAgent.prototype.navigate = function(url, opt_referrer, opt_transitionType) {};
-/** @typedef {!{url: string, referrer: (string|undefined), transitionType: (Protocol.Page.TransitionType|undefined)}} */
+Protocol.PageAgent.prototype.navigate = function(url, opt_referrer, opt_transitionType, opt_frameId) {};
+/** @typedef {!{url: string, referrer: (string|undefined), frameId: (Protocol.Page.FrameId|undefined), transitionType: (Protocol.Page.TransitionType|undefined)}} */
 Protocol.PageAgent.NavigateRequest;
 /** @typedef {!{loaderId: Protocol.Network.LoaderId, errorText: string, frameId: Protocol.Page.FrameId}} */
 Protocol.PageAgent.NavigateResponse;

@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='66.0.3326.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='c6abefd153ea09f3734a7f5d409e316a0accd9d2';
+Protocol.BakedSupportedCSSPropertiesChromeTag='66.0.3333.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='88cb40472589c10a69db35fa5b802a7440e09289';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -348,6 +348,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"svg": true, "name": "ry"},\n'
 + ' {"name": "scale"},\n'
 + ' {"name": "scroll-behavior"},\n'
++ ' {"name": "scroll-customization"},\n'
 + ' {"longhands": ["scroll-margin-top", "scroll-margin-right", "scroll-margin-bottom", "scroll-margin-left"], "name": "scroll-margin"},\n'
 + ' {"longhands": ["scroll-margin-block-start", "scroll-margin-block-end"], "name": "scroll-margin-block"},\n'
 + ' {"name": "scroll-margin-block-end"},\n'

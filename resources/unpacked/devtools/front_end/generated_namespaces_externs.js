@@ -105,8 +105,6 @@ var Network = {};
 /** @const */
 var NetworkLog = {};
 /** @const */
-var NetworkPriorities = {};
-/** @const */
 var NetworkTestRunner = {};
 /** @const */
 var ObjectUI = {};
