@@ -100,6 +100,14 @@ Object.assign(window.dirac, (function() {
     return dirac._namespacesCache[namespaceName];
   }
 
+  function dispatchEventsForAction(action) {
+    return new Promise((resolve) => {
+      const continuation = () => resolve("performed document action: '" + action + "'");
+      const keyboard = Keysim.Keyboard.US_ENGLISH;
+      keyboard.dispatchEventsForAction(action, document, continuation);
+    });
+  }
+
   // --- lazy APIs --------------------------------------------------------------------------------------------------------
   // calling any of these functions will trigger loading dirac_lazy overlay
   // which will eventually overwrite those functions when fully loaded
@@ -207,6 +215,7 @@ Object.assign(window.dirac, (function() {
     deduplicate: deduplicate,
     stableSort: stableSort,
     getNamespace: getNamespace,
+    dispatchEventsForAction: dispatchEventsForAction,
 
     // -- LAZY INTERFACE ------------------------------------------------------------------------------------------------
     lookupCurrentContext: lookupCurrentContext,

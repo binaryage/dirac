@@ -82,6 +82,11 @@
   (when-let [console-view (get-console-view)]
     (ocall console-view "dispatchEventsForPromptAction" action)))
 
+(defn dispatch-global-action! [action]
+  {:pre [(string? action)]}
+  (let [dirac (get-dirac-api)]
+    (ocall dirac "dispatchEventsForAction" action)))
+
 (defn enable-console-feedback! []
   (when-let [console-view (get-console-view)]
     (ocall console-view "enableConsoleFeedback")
@@ -142,6 +147,7 @@
     :focus-best-console-prompt (focus-best-console-prompt!)
     :dispatch-console-prompt-input (dispatch-console-prompt-input! (:input command))
     :dispatch-console-prompt-action (dispatch-console-prompt-action! (:input command))
+    :dispatch-global-action (dispatch-global-action! (:input command))
     :enable-console-feedback (enable-console-feedback!)
     :disable-console-feedback (disable-console-feedback!)
     :get-suggest-box-representation (get-suggest-box-representation)

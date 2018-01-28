@@ -12,6 +12,10 @@
       (throw (ex-info "Unable to obtain ConsoleView instance from DevTools" nil)))
     (throw (ex-info "Unable to obtain Console.ConsoleView from DevTools" nil))))
 
+(defn get-dirac-api []
+  (or (gget "dirac")
+      (throw (ex-info "Unable to obtain dirac" nil))))
+
 (defn get-inspector-view []
   (if-let [inspector-view (gget "?UI.?inspectorView")]
     inspector-view

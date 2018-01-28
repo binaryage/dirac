@@ -178,6 +178,11 @@
   (verbs/automate-devtools! devtools-id {:action :dispatch-console-prompt-action
                                          :input  action}))
 
+(defn ^:devtools simulate-global-action! [devtools-id action]
+  {:pre [(string? action)]}
+  (verbs/automate-devtools! devtools-id {:action :dispatch-global-action
+                                         :input  action}))
+
 (defn ^:devtools console-enter! [devtools-id input]
   (go
     (<! (focus-console-prompt! devtools-id))
