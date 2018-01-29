@@ -24,7 +24,7 @@
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.5.8" :scope "test"]
    ['binaryage/chromex "0.5.15" :scope "test"]
-   ['binaryage/devtools "0.9.8" :scope "test"]
+   ['binaryage/devtools "0.9.9" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.44" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
@@ -34,7 +34,7 @@
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['com.rpl/specter "1.1.0" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
-   ['org.clojure/tools.reader "1.1.1" :scope "test"]
+   ['org.clojure/tools.reader "1.2.1" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
@@ -56,7 +56,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.25"
+(defproject binaryage/dirac "1.2.26"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

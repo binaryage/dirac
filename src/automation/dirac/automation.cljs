@@ -108,6 +108,9 @@
 (defn ^:devtools focus-console-prompt! [devtools-id]
   (verbs/automate-devtools! devtools-id {:action :focus-console-prompt}))
 
+(defn ^:devtools focus-best-console-prompt! [devtools-id]
+  (verbs/automate-devtools! devtools-id {:action :focus-best-console-prompt}))
+
 (defn ^:devtools clear-console-prompt! [devtools-id]
   (verbs/automate-devtools! devtools-id {:action :clear-console-prompt}))
 
@@ -176,6 +179,11 @@
 (defn ^:devtools simulate-console-action! [devtools-id action]
   {:pre [(string? action)]}
   (verbs/automate-devtools! devtools-id {:action :dispatch-console-prompt-action
+                                         :input  action}))
+
+(defn ^:devtools simulate-global-action! [devtools-id action]
+  {:pre [(string? action)]}
+  (verbs/automate-devtools! devtools-id {:action :dispatch-global-action
                                          :input  action}))
 
 (defn ^:devtools console-enter! [devtools-id input]

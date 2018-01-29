@@ -1,6 +1,5 @@
 (ns dirac.runtime.output
-  (:require [goog.array :as garray]
-            [clojure.string :as string]
+  (:require [clojure.string :as string]
             [dirac.runtime.prefs :refer [get-prefs pref]]))
 
 (def re-split (js/RegExp. "(---<.*?>---)" "g"))
@@ -55,9 +54,7 @@
               x))]
     (map * soup)))
 
-; -- public api -------------------------------------------------------------------------------------------------------------
-
-(defn boil-rich-text [text]
+(defn prepare-formatted-text [text]
   (let [marked-text (-> text
                         mark-code
                         mark-ansi)
@@ -65,3 +62,26 @@
         format-string (build-format-string soup)
         boiled-soup (boil-soup soup)]
     (cons format-string boiled-soup)))
+
+; -- html preparation -------------------------------------------------------------------------------------------------------
+
+(def re-format-char (js/RegExp. (str "%(.)") "g"))
+
+(defn build-html-from-formatted-string [format & args]
+  (let [index-atom (atom 0)
+        replacer (fn [match]
+                   (let [format-char (second match)
+                         value (nth args @index-atom)
+                         html-snippet (case format-char
+                                        "s" (str value)
+                                        "c" (str "</span><span style=\"" value "\">"))]
+                     (swap! index-atom inc)
+                     html-snippet))
+        unbalanced-html (.replace format re-format-char replacer)]
+    (str "<span>" unbalanced-html "</span>")))
+
+; -- public api -------------------------------------------------------------------------------------------------------------
+
+(defn build-html [text]
+  (let [format+args (prepare-formatted-text text)]
+    (apply build-html-from-formatted-string format+args)))

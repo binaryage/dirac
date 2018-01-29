@@ -1635,6 +1635,20 @@ Protocol.DOMAgent.UndoResponse;
  * @return {!Promise<!Protocol.DOMAgent.UndoResponse>} */
 Protocol.DOMAgent.prototype.invoke_undo = function(obj) {};
 
+/**
+ * @param {Protocol.Page.FrameId} frameId
+ * @return {!Promise<?Protocol.DOM.NodeId>}
+ */
+Protocol.DOMAgent.prototype.getFrameOwner = function(frameId) {};
+/** @typedef {!{frameId: Protocol.Page.FrameId}} */
+Protocol.DOMAgent.GetFrameOwnerRequest;
+/** @typedef {!{nodeId: Protocol.DOM.NodeId}} */
+Protocol.DOMAgent.GetFrameOwnerResponse;
+/**
+ * @param {!Protocol.DOMAgent.GetFrameOwnerRequest} obj
+ * @return {!Promise<!Protocol.DOMAgent.GetFrameOwnerResponse>} */
+Protocol.DOMAgent.prototype.invoke_getFrameOwner = function(obj) {};
+
 /** @typedef {number} */
 Protocol.DOM.NodeId;
 
@@ -1930,7 +1944,7 @@ Protocol.DOMSnapshotAgent.GetSnapshotResponse;
  * @return {!Promise<!Protocol.DOMSnapshotAgent.GetSnapshotResponse>} */
 Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
-/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined)}} */
+/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
 /** @typedef {!{boundingBox:(Protocol.DOM.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
@@ -2470,11 +2484,12 @@ Protocol.HeadlessExperimentalAgent = function(){};
  * @param {Protocol.Runtime.Timestamp=} opt_frameTime
  * @param {Protocol.Runtime.Timestamp=} opt_deadline
  * @param {number=} opt_interval
+ * @param {boolean=} opt_noDisplayUpdates
  * @param {Protocol.HeadlessExperimental.ScreenshotParams=} opt_screenshot
  * @return {!Promise<?boolean>}
  */
-Protocol.HeadlessExperimentalAgent.prototype.beginFrame = function(opt_frameTime, opt_deadline, opt_interval, opt_screenshot) {};
-/** @typedef {!{interval: (number|undefined), deadline: (Protocol.Runtime.Timestamp|undefined), frameTime: (Protocol.Runtime.Timestamp|undefined), screenshot: (Protocol.HeadlessExperimental.ScreenshotParams|undefined)}} */
+Protocol.HeadlessExperimentalAgent.prototype.beginFrame = function(opt_frameTime, opt_deadline, opt_interval, opt_noDisplayUpdates, opt_screenshot) {};
+/** @typedef {!{interval: (number|undefined), deadline: (Protocol.Runtime.Timestamp|undefined), frameTime: (Protocol.Runtime.Timestamp|undefined), screenshot: (Protocol.HeadlessExperimental.ScreenshotParams|undefined), noDisplayUpdates: (boolean|undefined)}} */
 Protocol.HeadlessExperimentalAgent.BeginFrameRequest;
 /** @typedef {!{hasDamage: boolean, screenshotData: string, mainFrameContentUpdated: boolean}} */
 Protocol.HeadlessExperimentalAgent.BeginFrameResponse;
@@ -2826,16 +2841,16 @@ Protocol.InputAgent.prototype.invoke_dispatchTouchEvent = function(obj) {};
  * @param {string} type
  * @param {number} x
  * @param {number} y
- * @param {Protocol.Input.TimeSinceEpoch} timestamp
  * @param {string} button
+ * @param {Protocol.Input.TimeSinceEpoch=} opt_timestamp
  * @param {number=} opt_deltaX
  * @param {number=} opt_deltaY
  * @param {number=} opt_modifiers
  * @param {number=} opt_clickCount
  * @return {!Promise<undefined>}
  */
-Protocol.InputAgent.prototype.emulateTouchFromMouseEvent = function(type, x, y, timestamp, button, opt_deltaX, opt_deltaY, opt_modifiers, opt_clickCount) {};
-/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), deltaX: (number|undefined), timestamp: Protocol.Input.TimeSinceEpoch, button: string, deltaY: (number|undefined), y: number, x: number, type: string}} */
+Protocol.InputAgent.prototype.emulateTouchFromMouseEvent = function(type, x, y, button, opt_timestamp, opt_deltaX, opt_deltaY, opt_modifiers, opt_clickCount) {};
+/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), deltaX: (number|undefined), timestamp: (Protocol.Input.TimeSinceEpoch|undefined), button: string, deltaY: (number|undefined), y: number, x: number, type: string}} */
 Protocol.InputAgent.EmulateTouchFromMouseEventRequest;
 /** @typedef {Object|undefined} */
 Protocol.InputAgent.EmulateTouchFromMouseEventResponse;
@@ -2973,6 +2988,7 @@ Protocol.InspectorDispatcher = function() {};
  */
 Protocol.InspectorDispatcher.prototype.detached = function(reason) {};
 Protocol.InspectorDispatcher.prototype.targetCrashed = function() {};
+Protocol.InspectorDispatcher.prototype.targetReloadedAfterCrash = function() {};
 Protocol.LayerTree = {};
 
 
@@ -3332,11 +3348,71 @@ Protocol.MemoryAgent.SimulatePressureNotificationResponse;
  * @return {!Promise<!Protocol.MemoryAgent.SimulatePressureNotificationResponse>} */
 Protocol.MemoryAgent.prototype.invoke_simulatePressureNotification = function(obj) {};
 
+/**
+ * @param {number=} opt_samplingInterval
+ * @param {boolean=} opt_suppressRandomness
+ * @return {!Promise<undefined>}
+ */
+Protocol.MemoryAgent.prototype.startSampling = function(opt_samplingInterval, opt_suppressRandomness) {};
+/** @typedef {!{samplingInterval: (number|undefined), suppressRandomness: (boolean|undefined)}} */
+Protocol.MemoryAgent.StartSamplingRequest;
+/** @typedef {Object|undefined} */
+Protocol.MemoryAgent.StartSamplingResponse;
+/**
+ * @param {!Protocol.MemoryAgent.StartSamplingRequest} obj
+ * @return {!Promise<!Protocol.MemoryAgent.StartSamplingResponse>} */
+Protocol.MemoryAgent.prototype.invoke_startSampling = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.MemoryAgent.prototype.stopSampling = function() {};
+/** @typedef {Object|undefined} */
+Protocol.MemoryAgent.StopSamplingRequest;
+/** @typedef {Object|undefined} */
+Protocol.MemoryAgent.StopSamplingResponse;
+/**
+ * @param {!Protocol.MemoryAgent.StopSamplingRequest} obj
+ * @return {!Promise<!Protocol.MemoryAgent.StopSamplingResponse>} */
+Protocol.MemoryAgent.prototype.invoke_stopSampling = function(obj) {};
+
+/**
+ * @return {!Promise<?Protocol.Memory.SamplingProfile>}
+ */
+Protocol.MemoryAgent.prototype.getAllTimeSamplingProfile = function() {};
+/** @typedef {Object|undefined} */
+Protocol.MemoryAgent.GetAllTimeSamplingProfileRequest;
+/** @typedef {!{profile: Protocol.Memory.SamplingProfile}} */
+Protocol.MemoryAgent.GetAllTimeSamplingProfileResponse;
+/**
+ * @param {!Protocol.MemoryAgent.GetAllTimeSamplingProfileRequest} obj
+ * @return {!Promise<!Protocol.MemoryAgent.GetAllTimeSamplingProfileResponse>} */
+Protocol.MemoryAgent.prototype.invoke_getAllTimeSamplingProfile = function(obj) {};
+
+/**
+ * @return {!Promise<?Protocol.Memory.SamplingProfile>}
+ */
+Protocol.MemoryAgent.prototype.getSamplingProfile = function() {};
+/** @typedef {Object|undefined} */
+Protocol.MemoryAgent.GetSamplingProfileRequest;
+/** @typedef {!{profile: Protocol.Memory.SamplingProfile}} */
+Protocol.MemoryAgent.GetSamplingProfileResponse;
+/**
+ * @param {!Protocol.MemoryAgent.GetSamplingProfileRequest} obj
+ * @return {!Promise<!Protocol.MemoryAgent.GetSamplingProfileResponse>} */
+Protocol.MemoryAgent.prototype.invoke_getSamplingProfile = function(obj) {};
+
 /** @enum {string} */
 Protocol.Memory.PressureLevel = {
     Moderate: "moderate",
     Critical: "critical"
 };
+
+/** @typedef {!{size:(number), count:(number), stack:(!Array<string>)}} */
+Protocol.Memory.SamplingProfileNode;
+
+/** @typedef {!{samples:(!Array<Protocol.Memory.SamplingProfileNode>)}} */
+Protocol.Memory.SamplingProfile;
 /** @interface */
 Protocol.MemoryDispatcher = function() {};
 Protocol.Network = {};
@@ -4560,10 +4636,11 @@ Protocol.PageAgent.prototype.invoke_handleJavaScriptDialog = function(obj) {};
  * @param {string} url
  * @param {string=} opt_referrer
  * @param {Protocol.Page.TransitionType=} opt_transitionType
+ * @param {Protocol.Page.FrameId=} opt_frameId
  * @return {!Promise<?Protocol.Page.FrameId>}
  */
-Protocol.PageAgent.prototype.navigate = function(url, opt_referrer, opt_transitionType) {};
-/** @typedef {!{url: string, referrer: (string|undefined), transitionType: (Protocol.Page.TransitionType|undefined)}} */
+Protocol.PageAgent.prototype.navigate = function(url, opt_referrer, opt_transitionType, opt_frameId) {};
+/** @typedef {!{url: string, referrer: (string|undefined), frameId: (Protocol.Page.FrameId|undefined), transitionType: (Protocol.Page.TransitionType|undefined)}} */
 Protocol.PageAgent.NavigateRequest;
 /** @typedef {!{loaderId: Protocol.Network.LoaderId, errorText: string, frameId: Protocol.Page.FrameId}} */
 Protocol.PageAgent.NavigateResponse;

@@ -160,10 +160,10 @@ Sources.CallStackSidebarPane = class extends UI.SimpleView {
     } else {
       if (hiddenCallFramesCount === 1) {
         this._blackboxedMessageElement.firstChild.textContent =
-            Common.UIString('1 stack frame is hidden (black-boxed).');
+            Common.UIString('1 stack frame is hidden (blackboxed).');
       } else {
         this._blackboxedMessageElement.firstChild.textContent =
-            Common.UIString('%d stack frames are hidden (black-boxed).', hiddenCallFramesCount);
+            Common.UIString('%d stack frames are hidden (blackboxed).', hiddenCallFramesCount);
       }
       this._blackboxedMessageElement.classList.remove('hidden');
     }
@@ -196,8 +196,6 @@ Sources.CallStackSidebarPane = class extends UI.SimpleView {
   createElementForItem(item) {
     var element = createElementWithClass('div', 'call-frame-item');
     var title = element.createChild('div', 'call-frame-item-title');
-    if (item.promiseCreationFrame)
-      title.createChild('div', 'call-frame-chained-arrow').textContent = '\u2935';
     const titleElement = title.createChild('div', 'call-frame-title-text');
     titleElement.textContent = this._itemTitle(item);
     if (dirac.hasBeautifyFunctionNames) {
@@ -278,8 +276,6 @@ Sources.CallStackSidebarPane = class extends UI.SimpleView {
       return UI.beautifyFunctionName(item.debuggerCallFrame.functionName);
     if (item.runtimeCallFrame)
       return UI.beautifyFunctionName(item.runtimeCallFrame.functionName);
-    if (item.promiseCreationFrame)
-      return Common.UIString('chained at');
     return item.asyncStackHeader || '';
   }
 
@@ -292,8 +288,8 @@ Sources.CallStackSidebarPane = class extends UI.SimpleView {
       return item.debuggerCallFrame.location();
     if (!item.debuggerModel)
       return null;
-    if (item.runtimeCallFrame || item.promiseCreationFrame) {
-      var frame = item.runtimeCallFrame || item.promiseCreationFrame;
+    if (item.runtimeCallFrame) {
+      var frame = item.runtimeCallFrame;
       return new SDK.DebuggerModel.Location(item.debuggerModel, frame.scriptId, frame.lineNumber, frame.columnNumber);
     }
     return null;
@@ -423,8 +419,6 @@ Sources.CallStackSidebarPane = class extends UI.SimpleView {
   _copyStackTrace() {
     var text = [];
     for (var item of this._items) {
-      if (item.promiseCreationFrame)
-        continue;
       var itemText = this._itemTitle(item);
       var location = this._itemLocation(item);
       var uiLocation = location ? Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location) : null;
@@ -453,7 +447,6 @@ Sources.CallStackSidebarPane._defaultMaxAsyncStackChainDepth = 32;
  *     debuggerCallFrame: (SDK.DebuggerModel.CallFrame|undefined),
  *     asyncStackHeader: (string|undefined),
  *     runtimeCallFrame: (Protocol.Runtime.CallFrame|undefined),
- *     promiseCreationFrame: (Protocol.Runtime.CallFrame|undefined),
  *     debuggerModel: (!SDK.DebuggerModel|undefined)
  * }}
  */

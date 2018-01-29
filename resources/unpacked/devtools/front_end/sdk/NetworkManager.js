@@ -45,9 +45,9 @@ SDK.NetworkManager = class extends SDK.SDKModel {
 
     // Limit buffer when talking to a remote device.
     if (Runtime.queryParam('remoteFrontend') || Runtime.queryParam('ws'))
-      this._networkAgent.enable(10000000, 5000000);
+      this._networkAgent.enable(10000000, 5000000, SDK.NetworkManager.MAX_EAGER_POST_REQUEST_BODY_LENGTH);
     else
-      this._networkAgent.enable();
+      this._networkAgent.enable(undefined, undefined, SDK.NetworkManager.MAX_EAGER_POST_REQUEST_BODY_LENGTH);
 
     this._bypassServiceWorkerSetting = Common.settings.createSetting('bypassServiceWorker', false);
     if (this._bypassServiceWorkerSetting.get())
@@ -115,6 +115,19 @@ SDK.NetworkManager = class extends SDK.SDKModel {
     var response = await manager._networkAgent.invoke_getResponseBody({requestId: request.requestId()});
     var error = response[Protocol.Error] || null;
     return {error: error, content: error ? null : response.body, encoded: response.base64Encoded};
+  }
+
+
+  /**
+   * @param {!SDK.NetworkRequest} request
+   * @return {!Promise<?string>}
+   */
+  static requestPostData(request) {
+    var manager = SDK.NetworkManager.forRequest(request);
+    if (manager)
+      return manager._networkAgent.getRequestPostData(request.backendRequestId());
+    console.error('No network manager for request');
+    return /** @type {!Promise<?string>} */ (Promise.resolve(null));
   }
 
   /**
@@ -256,6 +269,8 @@ SDK.NetworkManager.BlockedPattern;
 
 SDK.NetworkManager._networkManagerForRequestSymbol = Symbol('NetworkManager');
 
+SDK.NetworkManager.MAX_EAGER_POST_REQUEST_BODY_LENGTH = 64 * 1024;  // bytes
+
 /**
  * @implements {Protocol.NetworkDispatcher}
  * @unrestricted
@@ -293,7 +308,7 @@ SDK.NetworkDispatcher = class {
   _updateNetworkRequestWithRequest(networkRequest, request) {
     networkRequest.requestMethod = request.method;
     networkRequest.setRequestHeaders(this._headersMapToHeadersArray(request.headers));
-    networkRequest.requestFormData = request.postData;
+    networkRequest.setRequestFormData(!!request.hasPostData, request.postData || null);
     networkRequest.setInitialPriority(request.initialPriority);
     networkRequest.mixedContentType = request.mixedContentType || Protocol.Security.MixedContentType.None;
     networkRequest.setReferrerPolicy(request.referrerPolicy);
@@ -491,6 +506,8 @@ SDK.NetworkDispatcher = class {
   dataReceived(requestId, time, dataLength, encodedDataLength) {
     var networkRequest = this._inflightRequestsById[requestId];
     if (!networkRequest)
+      networkRequest = this._maybeAdoptMainResourceRequest(requestId);
+    if (!networkRequest)
       return;
 
     networkRequest.resourceSize += dataLength;
@@ -510,6 +527,8 @@ SDK.NetworkDispatcher = class {
    */
   loadingFinished(requestId, finishTime, encodedDataLength, blockedCrossSiteDocument) {
     var networkRequest = this._inflightRequestsById[requestId];
+    if (!networkRequest)
+      networkRequest = this._maybeAdoptMainResourceRequest(requestId);
     if (!networkRequest)
       return;
     this._finishNetworkRequest(networkRequest, finishTime, encodedDataLength, blockedCrossSiteDocument);
@@ -712,7 +731,7 @@ SDK.NetworkDispatcher = class {
     for (var redirect = originalNetworkRequest.redirectSource(); redirect; redirect = redirect.redirectSource())
       redirectCount++;
 
-    originalNetworkRequest.setRequestId(requestId + ':redirected.' + redirectCount);
+    originalNetworkRequest.markAsRedirect(redirectCount);
     this._finishNetworkRequest(originalNetworkRequest, time, -1);
     var newNetworkRequest = this._createNetworkRequest(
         requestId, originalNetworkRequest.frameId, originalNetworkRequest.loaderId, redirectURL,
@@ -722,11 +741,33 @@ SDK.NetworkDispatcher = class {
   }
 
   /**
+   * @param {string} requestId
+   * @return {?SDK.NetworkRequest}
+   */
+  _maybeAdoptMainResourceRequest(requestId) {
+    var request = SDK.multitargetNetworkManager._inflightMainResourceRequests.get(requestId);
+    if (!request)
+      return null;
+    var oldDispatcher = SDK.NetworkManager.forRequest(request)._dispatcher;
+    delete oldDispatcher._inflightRequestsById[requestId];
+    delete oldDispatcher._inflightRequestsByURL[request.url()];
+    this._inflightRequestsById[requestId] = request;
+    this._inflightRequestsByURL[request.url()] = request;
+    request[SDK.NetworkManager._networkManagerForRequestSymbol] = this._manager;
+    return request;
+  }
+
+  /**
    * @param {!SDK.NetworkRequest} networkRequest
    */
   _startNetworkRequest(networkRequest) {
     this._inflightRequestsById[networkRequest.requestId()] = networkRequest;
     this._inflightRequestsByURL[networkRequest.url()] = networkRequest;
+    // The following relies on the fact that loaderIds and requestIds are
+    // globally unique and that the main request has them equal.
+    if (networkRequest.loaderId === networkRequest.requestId())
+      SDK.multitargetNetworkManager._inflightMainResourceRequests.set(networkRequest.requestId(), networkRequest);
+
     this._manager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestStarted, networkRequest);
   }
 
@@ -751,6 +792,7 @@ SDK.NetworkDispatcher = class {
     this._manager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, networkRequest);
     delete this._inflightRequestsById[networkRequest.requestId()];
     delete this._inflightRequestsByURL[networkRequest.url()];
+    SDK.multitargetNetworkManager._inflightMainResourceRequests.delete(networkRequest.requestId());
 
     if (blockedCrossSiteDocument) {
       var message = Common.UIString(
@@ -798,6 +840,8 @@ SDK.MultitargetNetworkManager = class extends Common.Object {
     this._userAgentOverride = '';
     /** @type {!Set<!Protocol.NetworkAgent>} */
     this._agents = new Set();
+    /** @type {!Map<string, !SDK.NetworkRequest>} */
+    this._inflightMainResourceRequests = new Map();
     /** @type {!SDK.NetworkManager.Conditions} */
     this._networkConditions = SDK.NetworkManager.NoThrottlingConditions;
     /** @type {?Promise} */
@@ -852,6 +896,12 @@ SDK.MultitargetNetworkManager = class extends Common.Object {
    * @param {!SDK.Target} target
    */
   targetRemoved(target) {
+    for (var entry of this._inflightMainResourceRequests) {
+      var manager = SDK.NetworkManager.forRequest(/** @type {!SDK.NetworkRequest} */ (entry[1]));
+      if (manager.target() !== target)
+        continue;
+      this._inflightMainResourceRequests.delete(/** @type {string} */ (entry[0]));
+    }
     this._agents.delete(target.networkAgent());
   }
 

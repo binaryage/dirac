@@ -216,29 +216,68 @@ Components.DOMPresentationUtils.buildImagePreviewContents = function(
  * @param {?SDK.Target} target
  * @param {!Components.Linkifier} linkifier
  * @param {!Protocol.Runtime.StackTrace=} stackTrace
+ * @param {function()=} contentUpdated
  * @return {!Element}
  */
-Components.DOMPresentationUtils.buildStackTracePreviewContents = function(target, linkifier, stackTrace) {
+Components.DOMPresentationUtils.buildStackTracePreviewContents = function(
+    target, linkifier, stackTrace, contentUpdated) {
   var element = createElement('span');
   element.style.display = 'inline-block';
   var shadowRoot = UI.createShadowRootWithCoreStyles(element, 'components/domUtils.css');
   var contentElement = shadowRoot.createChild('table', 'stack-preview-container');
+  var debuggerModel = target ? target.model(SDK.DebuggerModel) : null;
+  var totalHiddenCallFramesCount = 0;
 
   /**
    * @param {!Protocol.Runtime.StackTrace} stackTrace
+   * @return {boolean}
    */
   function appendStackTrace(stackTrace) {
+    var hiddenCallFrames = 0;
     for (var stackFrame of stackTrace.callFrames) {
       var row = createElement('tr');
       row.createChild('td').textContent = '\n';
       row.createChild('td', 'function-name').textContent = UI.beautifyFunctionName(stackFrame.functionName);
       var link = linkifier.maybeLinkifyConsoleCallFrame(target, stackFrame);
       if (link) {
+        link.addEventListener('contextmenu', populateContextMenu.bind(null, link));
+        if (debuggerModel) {
+          var location = debuggerModel.createRawLocationByScriptId(
+              stackFrame.scriptId, stackFrame.lineNumber, stackFrame.columnNumber);
+          if (location && Bindings.blackboxManager.isBlackboxedRawLocation(location)) {
+            row.classList.add('blackboxed');
+            ++hiddenCallFrames;
+          }
+        }
+
         row.createChild('td').textContent = ' @ ';
         row.createChild('td').appendChild(link);
       }
       contentElement.appendChild(row);
     }
+    totalHiddenCallFramesCount += hiddenCallFrames;
+    return stackTrace.callFrames.length === hiddenCallFrames;
+  }
+
+  /**
+   * @param {!Element} link
+   * @param {!Event} event
+   */
+  function populateContextMenu(link, event) {
+    var contextMenu = new UI.ContextMenu(event);
+    event.consume(true);
+    var uiLocation = Components.Linkifier.uiLocation(link);
+    if (uiLocation && Bindings.blackboxManager.canBlackboxUISourceCode(uiLocation.uiSourceCode)) {
+      if (Bindings.blackboxManager.isBlackboxedUISourceCode(uiLocation.uiSourceCode)) {
+        contextMenu.debugSection().appendItem(
+            ls`Stop blackboxing`, () => Bindings.blackboxManager.unblackboxUISourceCode(uiLocation.uiSourceCode));
+      } else {
+        contextMenu.debugSection().appendItem(
+            ls`Blackbox script`, () => Bindings.blackboxManager.blackboxUISourceCode(uiLocation.uiSourceCode));
+      }
+    }
+    contextMenu.appendApplicableItems(event);
+    contextMenu.show();
   }
 
   if (!stackTrace)
@@ -258,8 +297,26 @@ Components.DOMPresentationUtils.buildStackTracePreviewContents = function(target
         UI.asyncStackTraceLabel(asyncStackTrace.description);
     row.createChild('td');
     row.createChild('td');
-    appendStackTrace(asyncStackTrace);
+    if (appendStackTrace(asyncStackTrace))
+      row.classList.add('blackboxed');
     asyncStackTrace = asyncStackTrace.parent;
+  }
+
+  if (totalHiddenCallFramesCount) {
+    var row = contentElement.createChild('tr', 'show-blackboxed-link');
+    row.createChild('td').textContent = '\n';
+    var cell = row.createChild('td');
+    cell.colSpan = 4;
+    var showAllLink = cell.createChild('span', 'link');
+    if (totalHiddenCallFramesCount === 1)
+      showAllLink.textContent = ls`Show 1 more blackboxed frame`;
+    else
+      showAllLink.textContent = ls`Show ${totalHiddenCallFramesCount} more blackboxed frames`;
+    showAllLink.addEventListener('click', () => {
+      contentElement.classList.add('show-blackboxed');
+      if (contentUpdated)
+        contentUpdated();
+    }, false);
   }
 
   return element;

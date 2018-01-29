@@ -408,6 +408,10 @@ var dirac = {
     * @return {string}
     */
     stringEscape: function (string) {},
+    /**
+    * @param {string} action
+    */
+    dispatchEventsForAction: function(action) {},
     lookupCurrentContext: function() {},
     /**
     * @param {string} code

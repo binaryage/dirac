@@ -9,15 +9,15 @@
 Persistence.Automapping = class {
   /**
    * @param {!Workspace.Workspace} workspace
-   * @param {function(!Persistence.PersistenceBinding)} onBindingCreated
-   * @param {function(!Persistence.PersistenceBinding)} onBindingRemoved
+   * @param {function(!Persistence.AutomappingBinding)} onBindingCreated
+   * @param {function(!Persistence.AutomappingBinding)} onBindingRemoved
    */
   constructor(workspace, onBindingCreated, onBindingRemoved) {
     this._workspace = workspace;
 
     this._onBindingCreated = onBindingCreated;
     this._onBindingRemoved = onBindingRemoved;
-    /** @type {!Set<!Persistence.PersistenceBinding>} */
+    /** @type {!Set<!Persistence.AutomappingBinding>} */
     this._bindings = new Set();
 
     this._enabled = true;
@@ -178,11 +178,47 @@ Persistence.Automapping = class {
     if (networkSourceCode[Persistence.Automapping._processingPromise] ||
         networkSourceCode[Persistence.Automapping._binding] || !this._enabled)
       return;
-    var createBindingPromise = this._createBinding(networkSourceCode).then(onBinding.bind(this));
+    var createBindingPromise =
+        this._createBinding(networkSourceCode).then(validateBinding.bind(this)).then(onBinding.bind(this));
     networkSourceCode[Persistence.Automapping._processingPromise] = createBindingPromise;
 
     /**
-     * @param {?Persistence.PersistenceBinding} binding
+     * @param {?Persistence.AutomappingBinding} binding
+     * @return {!Promise<?Persistence.AutomappingBinding>}
+     * @this {Persistence.Automapping}
+     */
+    async function validateBinding(binding) {
+      if (!binding)
+        return null;
+      if (binding.network.contentType().isFromSourceMap() || !binding.fileSystem.contentType().isTextType())
+        return binding;
+
+      await Promise.all([binding.network.requestContent(), binding.fileSystem.requestContent()]);
+
+      if (networkSourceCode[Persistence.Automapping._processingPromise] !== createBindingPromise)
+        return null;
+
+      var fileSystemContent = binding.fileSystem.workingCopy();
+      var networkContent = binding.network.workingCopy();
+      var target = Bindings.NetworkProject.targetForUISourceCode(binding.network);
+      var isValid = false;
+      if (target && target.isNodeJS()) {
+        var rewrappedNetworkContent =
+            Persistence.Persistence.rewrapNodeJSContent(binding.fileSystem, fileSystemContent, networkContent);
+        isValid = fileSystemContent === rewrappedNetworkContent;
+      } else {
+        // Trim trailing whitespaces because V8 adds trailing newline.
+        isValid = fileSystemContent.trimRight() === networkContent.trimRight();
+      }
+      if (!isValid) {
+        this._prevalidationFailedForTest(binding);
+        return null;
+      }
+      return binding;
+    }
+
+    /**
+     * @param {?Persistence.AutomappingBinding} binding
      * @this {Persistence.Automapping}
      */
     function onBinding(binding) {
@@ -208,6 +244,12 @@ Persistence.Automapping = class {
       }
       this._onBindingCreated.call(null, binding);
     }
+  }
+
+  /**
+   * @param {!Persistence.AutomappingBinding} binding
+   */
+  _prevalidationFailedForTest(binding) {
   }
 
   _onBindingFailedForTest() {
@@ -238,25 +280,25 @@ Persistence.Automapping = class {
 
   /**
    * @param {!Workspace.UISourceCode} networkSourceCode
-   * @return {!Promise<?Persistence.PersistenceBinding>}
+   * @return {!Promise<?Persistence.AutomappingBinding>}
    */
   _createBinding(networkSourceCode) {
     if (networkSourceCode.url().startsWith('file://')) {
       var fileSourceCode = this._fileSystemUISourceCodes.get(networkSourceCode.url());
       var binding =
-          fileSourceCode ? new Persistence.PersistenceBinding(networkSourceCode, fileSourceCode, false) : null;
+          fileSourceCode ? new Persistence.AutomappingBinding(networkSourceCode, fileSourceCode, false) : null;
       return Promise.resolve(binding);
     }
 
     var networkPath = Common.ParsedURL.extractPath(networkSourceCode.url());
     if (networkPath === null)
-      return Promise.resolve(/** @type {?Persistence.PersistenceBinding} */ (null));
+      return Promise.resolve(/** @type {?Persistence.AutomappingBinding} */ (null));
 
     if (networkPath.endsWith('/'))
       networkPath += 'index.html';
     var similarFiles = this._filesIndex.similarFiles(networkPath).map(path => this._fileSystemUISourceCodes.get(path));
     if (!similarFiles.length)
-      return Promise.resolve(/** @type {?Persistence.PersistenceBinding} */ (null));
+      return Promise.resolve(/** @type {?Persistence.AutomappingBinding} */ (null));
 
     return this._pullMetadatas(similarFiles.concat(networkSourceCode)).then(onMetadatas.bind(this));
 
@@ -270,7 +312,7 @@ Persistence.Automapping = class {
         // If networkSourceCode does not have metadata, try to match against active folders.
         if (activeFiles.length !== 1)
           return null;
-        return new Persistence.PersistenceBinding(networkSourceCode, activeFiles[0], false);
+        return new Persistence.AutomappingBinding(networkSourceCode, activeFiles[0], false);
       }
 
       // Try to find exact matches, prioritizing active folders.
@@ -279,7 +321,7 @@ Persistence.Automapping = class {
         exactMatches = this._filterWithMetadata(similarFiles, networkMetadata);
       if (exactMatches.length !== 1)
         return null;
-      return new Persistence.PersistenceBinding(networkSourceCode, exactMatches[0], true);
+      return new Persistence.AutomappingBinding(networkSourceCode, exactMatches[0], true);
     }
   }
 
@@ -433,5 +475,21 @@ Persistence.Automapping.FolderIndex = class {
     var encodedPath = this._encoder.encode(path);
     var commonPrefix = this._index.longestPrefix(encodedPath, true);
     return this._encoder.decode(commonPrefix);
+  }
+};
+
+/**
+ * @unrestricted
+ */
+Persistence.AutomappingBinding = class {
+  /**
+   * @param {!Workspace.UISourceCode} network
+   * @param {!Workspace.UISourceCode} fileSystem
+   * @param {boolean} exactMatch
+   */
+  constructor(network, fileSystem, exactMatch) {
+    this.network = network;
+    this.fileSystem = fileSystem;
+    this.exactMatch = exactMatch;
   }
 };

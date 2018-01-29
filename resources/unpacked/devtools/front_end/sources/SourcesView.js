@@ -109,8 +109,11 @@ Sources.SourcesView = class extends UI.VBox {
       row.createChild('div', 'tabbed-pane-placeholder-key').textContent = shortcutKeyText;
       row.createChild('div', 'tabbed-pane-placeholder-value').textContent = shortcut.description;
     }
-    if (Runtime.experiments.isEnabled('persistence2'))
-      element.createChild('div').textContent = Common.UIString('Drop in a folder to add to workspace');
+    element.createChild('div').textContent = Common.UIString('Drop in a folder to add to workspace');
+
+    element.appendChild(UI.XLink.create(
+        'https://developers.google.com/web/tools/chrome-devtools/sources?utm_source=devtools&utm_campaign=2018Q1',
+        'Learn more'));
 
     return element;
   }

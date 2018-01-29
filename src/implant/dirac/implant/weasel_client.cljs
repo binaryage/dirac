@@ -31,9 +31,10 @@
       (js->clj :keywordize-keys true)
       (update :status keyword)))
 
-(defn prepare-result-message [result]
-  {:op    :result
-   :value (massage-result result)})
+(defn prepare-result-message [result eval-id]
+  {:op      :result
+   :eval-id eval-id
+   :value   (massage-result result)})
 
 ; -- message sending --------------------------------------------------------------------------------------------------------
 
@@ -58,16 +59,19 @@
 (defmethod process-message :eval-js [message]
   (let [options (ws-client/get-options @current-client)
         pre-eval-delay (:pre-eval-delay options)
+        eval-id (:eval-id message)
         code (:code message)]
+    (assert (some? eval-id) (str "expected some eval-id in " message))
     (go
       ; there might be some output printing messages in flight in the tunnel, so we give the tunnel some time to process them
       (if (some? pre-eval-delay)
         (<! (timeout pre-eval-delay)))
-      (let [[result error] (<! (eval/eval-in-current-context! code))]
-        (prepare-result-message (cond
-                                  (some? error) (js-obj "status" "error" "value" error)
-                                  (foreign-code? code) (js-obj "status" "success" "value" result)                             ; note that foreign code does not prepare result structure, so we do it here
-                                  :else result))))))
+      (let [[result error] (<! (eval/eval-in-current-context! code))
+            result-data (cond
+                          (some? error) (js-obj "status" "error" "value" error)
+                          (foreign-code? code) (js-obj "status" "success" "value" result)                                     ; note that foreign code does not prepare result structure, so we do it here
+                          :else result)]
+        (prepare-result-message result-data eval-id)))))
 
 ; -- connection -------------------------------------------------------------------------------------------------------------
 

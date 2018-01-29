@@ -199,12 +199,12 @@ Audits2.Audits2Panel = class extends UI.Panel {
     this._dialog = new UI.Dialog();
     this._dialog.setOutsideClickCallback(event => event.consume(true));
     var root = UI.createShadowRootWithCoreStyles(this._dialog.contentElement, 'audits2/audits2Dialog.css');
-    var auditsViewElement = root.createChild('div', 'audits2-view');
+    var auditsViewElement = root.createChild('div', 'audits2-view vbox');
 
     var closeButton = auditsViewElement.createChild('div', 'dialog-close-button', 'dt-close-button');
     closeButton.addEventListener('click', () => this._cancelAndClose());
 
-    var uiElement = auditsViewElement.createChild('div');
+    var uiElement = auditsViewElement.createChild('div', 'vbox launcher-container');
     var headerElement = uiElement.createChild('header');
     this._headerTitleElement = headerElement.createChild('p');
     this._headerTitleElement.textContent = Common.UIString('Audits to perform');
@@ -706,8 +706,10 @@ class ReportUIFeatures {
 
 /** @type {!Array.<!RegExp>} */
 Audits2.Audits2Panel.KnownBugPatterns = [
-  /Tracing already started/,
-  /^Unable to load the page/,
+  /Parsing problem/,
+  /Read failed/,
+  /Tracing.*already started/,
+  /^Unable to load.*page/,
   /^You must provide a url to the runner/,
   /^You probably have multiple tabs open/,
 ];

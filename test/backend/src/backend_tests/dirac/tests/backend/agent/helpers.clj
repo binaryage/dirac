@@ -31,7 +31,7 @@
     (is (= event expected-event))))
 
 (defn expect-op-msg! [client expected-op]
-  (let [[event & [{:keys [op] :as msg}]] (wait-for-next-event! client)]
+  (let [[event & [{:keys [op]}]] (wait-for-next-event! client)]
     (is (= event :msg))
     (is (= (keyword op) expected-op))))
 
@@ -41,6 +41,6 @@
     (is (= status expected-status) (str "msg=" (pr-str msg)))))
 
 (defn expect-ns-msg! [client expected-ns]
-  (let [[event & [{:keys [ns]} :as msg]] (wait-for-next-event! client)]
+  (let [[event & [{:keys [ns]}]] (wait-for-next-event! client)]
     (is (= event :msg))
     (is (= ns expected-ns))))

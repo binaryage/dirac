@@ -115,8 +115,8 @@
 (defn formatted-log [request-id kind format text]
   (if-not (and (= format "rich-text") (pref :rich-text-enabled))
     (log request-id kind text)
-    (let [soup (output/boil-rich-text text)]
-      (apply log request-id kind soup))))
+    (let [html (output/build-html text)]
+      (log request-id kind "%r" html))))                                                                                      ; we use our custom %r formatter which passes raw HTML to console
 
 (defn with-safe-printing [f]
   (binding [cljs.core/*print-level* (pref :safe-print-level)

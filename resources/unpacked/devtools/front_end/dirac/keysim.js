@@ -328,8 +328,12 @@
          */
 
         Keyboard.prototype.createEventFromKeystroke = function createEventFromKeystroke(type, keystroke, target) {
-            var document = target.ownerDocument;
-            var window = document.defaultView;
+            var doc = target.ownerDocument || document;
+            if (target instanceof Document) {
+                doc = target;
+            }
+
+            var window = doc.defaultView;
             var Event = window.Event;
 
             var event = undefined;
@@ -337,7 +341,7 @@
             try {
                 event = new Event(type);
             } catch (e) {
-                event = document.createEvent('UIEvents');
+                event = doc.createEvent('UIEvents');
             }
 
             event.initEvent(type, true, true);

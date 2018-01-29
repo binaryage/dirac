@@ -5,7 +5,7 @@
             [cljs.reader :as reader]
             [dirac.settings :refer-macros [get-automation-entry-point-key]]
             [dirac.utils :as utils]
-            [dirac.implant.helpers :refer [get-console-view get-inspector-view get-url-params]]
+            [dirac.implant.helpers :refer [get-console-view get-inspector-view get-url-params get-dirac-api]]
             [dirac.implant.options :as options]
             [dirac.implant.automation.scrapers :refer [scrape]]))
 
@@ -19,27 +19,27 @@
       (ocall panel-promise "then" (fn [_panel] true)))))
 
 (defn get-inspector-current-panel-name []
-  (when-let [inspector-view (get-inspector-view)]
-    (when-let [panel (ocall inspector-view "currentPanel")]
-      (oget panel "name"))))
+  (let [inspector-view (get-inspector-view)]
+    (oget inspector-view "_tabbedPane.selectedTabId")))
+
+(defn get-inspector-current-drawer-panel-name []
+  (let [inspector-view (get-inspector-view)]
+    (oget inspector-view "_drawerTabbedPane.selectedTabId")))
 
 (defn inspector-drawer-visible? []
-  (when-let [inspector-view (get-inspector-view)]
-    (ocall inspector-view "drawerVisible")
-    true))
+  (let [inspector-view (get-inspector-view)]
+    (ocall inspector-view "drawerVisible")))
 
 (defn show-inspector-drawer! []
-  (when-let [inspector-view (get-inspector-view)]
+  (let [inspector-view (get-inspector-view)]
     (if-not (inspector-drawer-visible?)
-      (ocall inspector-view "showDrawer"))
+      (ocall inspector-view "_showDrawer"))
     true))
 
-(defn show-view-in-drawer! [view]
-  (let [view-name (name view)
+(defn show-view-in-drawer! [panel]
+  (let [panel-name (name panel)
         inspector-view (get-inspector-view)]
-    (if (ocall inspector-view "drawerVisible")
-      (if-not (= (ocall inspector-view "selectedViewInDrawer") view-name)
-        (ocall inspector-view "showViewInDrawer" view-name true))))
+    (ocall inspector-view "_drawerTabbedPane.selectTab" panel-name true))
   true)
 
 (defn open-drawer-console-if-not-on-console-panel! []
@@ -49,17 +49,17 @@
     true))
 
 (defn switch-to-dirac-prompt! []
-  (when-let [console-view (get-console-view)]
+  (let [console-view (get-console-view)]
     (ocall console-view "switchPrompt" "dirac")
     true))
 
 (defn switch-to-js-prompt! []
-  (when-let [console-view (get-console-view)]
+  (let [console-view (get-console-view)]
     (ocall console-view "switchPrompt" "js")
     true))
 
 (defn focus-console-prompt! []
-  (when-let [console-view (get-console-view)]
+  (let [console-view (get-console-view)]
     (ocall console-view "focus")
     true))
 
@@ -68,32 +68,37 @@
   (focus-console-prompt!))
 
 (defn clear-console-prompt! []
-  (when-let [console-view (get-console-view)]
+  (let [console-view (get-console-view)]
     (ocall console-view "_clearPromptBackwards")
     true))
 
 (defn dispatch-console-prompt-input! [input]
   {:pre [(string? input)]}
-  (when-let [console-view (get-console-view)]
+  (let [console-view (get-console-view)]
     (ocall console-view "dispatchEventsForPromptInput" input)))
 
 (defn dispatch-console-prompt-action! [action]
   {:pre [(string? action)]}
-  (when-let [console-view (get-console-view)]
+  (let [console-view (get-console-view)]
     (ocall console-view "dispatchEventsForPromptAction" action)))
 
+(defn dispatch-global-action! [action]
+  {:pre [(string? action)]}
+  (let [dirac (get-dirac-api)]
+    (ocall dirac "dispatchEventsForAction" action)))
+
 (defn enable-console-feedback! []
-  (when-let [console-view (get-console-view)]
+  (let [console-view (get-console-view)]
     (ocall console-view "enableConsoleFeedback")
     true))
 
 (defn disable-console-feedback! []
-  (when-let [console-view (get-console-view)]
+  (let [console-view (get-console-view)]
     (ocall console-view "disableConsoleFeedback")
     true))
 
 (defn get-suggest-box-representation []
-  (when-let [console-view (get-console-view)]
+  (let [console-view (get-console-view)]
     (ocall console-view "getSuggestBoxRepresentation")))
 
 (defn break! []
@@ -101,7 +106,7 @@
   true)
 
 (defn get-prompt-representation []
-  (when-let [console-view (get-console-view)]
+  (let [console-view (get-console-view)]
     (ocall console-view "getPromptRepresentation")))
 
 (defn trigger-fn-and-wait! [f delay]
@@ -142,6 +147,7 @@
     :focus-best-console-prompt (focus-best-console-prompt!)
     :dispatch-console-prompt-input (dispatch-console-prompt-input! (:input command))
     :dispatch-console-prompt-action (dispatch-console-prompt-action! (:input command))
+    :dispatch-global-action (dispatch-global-action! (:input command))
     :enable-console-feedback (enable-console-feedback!)
     :disable-console-feedback (disable-console-feedback!)
     :get-suggest-box-representation (get-suggest-box-representation)

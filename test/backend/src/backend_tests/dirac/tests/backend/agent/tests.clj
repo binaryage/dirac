@@ -14,15 +14,15 @@
             [dirac.test-lib.mock-nrepl-tunnel-client :as tunnel-client]
             [dirac.test-lib.mock-weasel-client :as weasel-client]
             [dirac.tests.backend.agent.fixtures :as fixtures]
-            [dirac.tests.backend.agent.helpers :as helpers :refer [expect-event! expect-op-msg! expect-ns-msg!
-                                                                   expect-status-msg! get-last-message]]
+            [dirac.tests.backend.agent.helpers :refer [expect-event! expect-op-msg! expect-ns-msg!
+                                                       expect-status-msg! get-last-message]]
             [dirac.tests.backend.agent.state :refer [received-messages]]))
 
 (use-fixtures :once fixtures/setup-test-nrepl-server!)
 
 ; -- protocol templates -----------------------------------------------------------------------------------------------------
 
-(defn make-boostrap-dirac-repl-message []
+(defn make-bootstrap-dirac-repl-message []
   {:op   "eval"
    :code (pr-str `(do
                     (~'require '~'dirac.nrepl)
@@ -59,17 +59,23 @@
         (tunnel-client/send! tunnel {:op      :ready
                                      :version version})
         (expect-op-msg! tunnel :bootstrap)
-        (tunnel-client/send! tunnel (nrepl-message (make-boostrap-dirac-repl-message)))
+        (tunnel-client/send! tunnel (nrepl-message (make-bootstrap-dirac-repl-message)))
         (expect-op-msg! tunnel :bootstrap-info)
         (let [weasel (weasel-client/create! (:weasel-url (get-last-message)))]
           (expect-event! weasel :open)
           (weasel-client/send! weasel {:op :ready :ident (str weasel)})
           (expect-op-msg! weasel :eval-js)
-          (weasel-client/send! weasel {:op :result :value (success-value)})
+          (weasel-client/send! weasel {:op      :result
+                                       :eval-id (:eval-id (get-last-message))
+                                       :value   (success-value)})
           (expect-op-msg! weasel :eval-js)
-          (weasel-client/send! weasel {:op :result :value (success-value)})
+          (weasel-client/send! weasel {:op      :result
+                                       :eval-id (:eval-id (get-last-message))
+                                       :value   (success-value)})
           (expect-op-msg! weasel :eval-js)
-          (weasel-client/send! weasel {:op :result :value (success-value)})
+          (weasel-client/send! weasel {:op      :result
+                                       :eval-id (:eval-id (get-last-message))
+                                       :value   (success-value)})
           ; TODO: review this, we should introduce special :op for prompt refresh
           ;(expect-ns-msg! tunnel "cljs.user")
           ;(expect-ns-msg! tunnel "cljs.user")
