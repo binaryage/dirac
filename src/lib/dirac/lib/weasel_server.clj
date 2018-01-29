@@ -71,7 +71,7 @@
 
 ; -- WeaselREPLEnv construction ---------------------------------------------------------------------------------------------
 
-(def last-env-id (volatile! 0))
+(defonce last-env-id (volatile! 0))
 
 (defn next-env-id! []
   (vswap! last-env-id inc))
@@ -146,15 +146,14 @@
 
 (defmethod process-message :result [env message]
   (let [result (:value message)
-        eval-id (:eval-id message)
-        client-response-promise (get-client-response-promise env eval-id)]
-    (when client-response-promise                                                                                             ; silently ignore results delivered after timeout, TODO: maybe warn in log?
-      (assert (instance? IDeref client-response-promise))
-      (deliver client-response-promise result))))
+        eval-id (:eval-id message)]
+    (if-some [client-response-promise (get-client-response-promise env eval-id)]
+      (deliver client-response-promise result)
+      (log/warn (str "Received eval result without matching eval-id #" eval-id)))))
 
 (defmethod process-message :ready [env message]
   (log/debug (str env) "Received :ready message:\n" (utils/pp message))
-  (if-let [ident (:ident message)]
+  (when-some [ident (:ident message)]
     (log/debug (str env) (str "Client identified as '" ident "'")))
   (mark-client-as-ready!))
 
