@@ -14,20 +14,6 @@
                    :port       9001
                    :port-range 10})
 
-; -- readiness helpers ------------------------------------------------------------------------------------------------------
-
-(defonce client-ready-promise (volatile! (promise)))
-
-(defn mark-client-as-ready! []
-  (assert (not (realized? @client-ready-promise)))
-  (deliver @client-ready-promise true))
-
-(defn mark-client-as-not-ready! []
-  (vreset! client-ready-promise (promise)))
-
-(defn get-client-ready-promise []
-  @client-ready-promise)
-
 ; -- WeaselREPLEnv ----------------------------------------------------------------------------------------------------------
 
 (declare setup-env)
@@ -35,7 +21,8 @@
 (declare load-javascript)
 (declare tear-down-env)
 
-(def initial-env-state {:last-eval-id             0
+(def initial-env-state {:client-ready-promise     nil
+                        :last-eval-id             0
                         :client-response-promises {}})
 
 ; normally cljs-repl driven by piggieback calls setup/tear-down for each evaluation
@@ -125,6 +112,30 @@
          (some? eval-id)]}
   (swap-client-response-promise! env eval-id (constantly new-promise)))
 
+(defn get-client-ready-promise [env]
+  (let [state-atom (get-state-atom env)]
+    (select-one [:client-ready-promise] @state-atom)))
+
+(defn set-client-ready-promise! [env new-val]
+  (let [state-atom (get-state-atom env)]
+    (swap! state-atom #(setval [:client-ready-promise] new-val %))))
+
+(defn mark-client-as-ready! [env]
+  (let [client-ready-promise (get-client-ready-promise env)]
+    (assert (some? client-ready-promise))
+    (assert (not (realized? client-ready-promise)))
+    (deliver client-ready-promise true)))
+
+(defn promise-client-readiness! [env]
+  (let [client-ready-promise (get-client-ready-promise env)]
+    (assert (nil? client-ready-promise))
+    (set-client-ready-promise! env (promise))))
+
+(defn reset-client-readiness! [env]
+  (let [client-ready-promise (get-client-ready-promise env)]
+    (assert (some? client-ready-promise))
+    (set-client-ready-promise! env nil)))
+
 ; -- message builders -------------------------------------------------------------------------------------------------------
 
 (defn make-occupied-error-message []
@@ -155,7 +166,7 @@
   (log/debug (str env) "Received :ready message:\n" (utils/pp message))
   (when-some [ident (:ident message)]
     (log/debug (str env) (str "Client identified as '" ident "'")))
-  (mark-client-as-ready!))
+  (mark-client-as-ready! env))
 
 (defmethod process-message :error [env message]
   (log/error (str env) "DevTools reported error:\n" (utils/pp message)))
@@ -195,18 +206,22 @@
   ; we allow only one client connection at a time
   (if (server/has-clients? server)
     (send-occupied-response-close-channel-and-reject-client! env channel)
-    (do
-      (log/debug (str env) "A client connected" channel)
-      (mark-client-as-not-ready!))))
+    (log/debug (str env) "A client connected" channel)))
 
 (defn on-message [env _server _client message]
   ; we don't need to pass server and client into process-message
   ; because we allow only one client connection and server is stored in the env if needed
   (process-message env message))
 
+(defn wait-for-client-to-get-ready! [env]
+  (let [client-ready-promise (get-client-ready-promise env)]
+    (assert (some? client-ready-promise))
+    @client-ready-promise))
+
 ; -- WeaselREPLEnv implementation -------------------------------------------------------------------------------------------
 
 (defn setup-env [env _opts]
+  (promise-client-readiness! env)
   (let [options (:options env)
         {:keys [after-launch]} options
         server-options (assoc options
@@ -223,15 +238,15 @@
 (defn tear-down-env [env]
   (log/trace "Destroying" (str env))
   (server/destroy! (get-server env))
+  (reset-client-readiness! env)
   (log/debug (str env) "Weasel server stopped.")
   :uninitialized)
 
 (defn request-eval [env js & [filename]]
   (let [eval-id (generate-new-eval-id env)]
     (promise-new-client-response! env eval-id)
-    (let [client @(server/get-first-client-promise (get-server env))                                                          ; <===== MIGHT BLOCK if there is currently no client connected TODO: implement timeout
-          ready? @(get-client-ready-promise)]                                                                                 ; <===== MIGHT BLOCK until we receive client :ready signal
-      (assert ready?)
+    (let [client @(server/get-first-client-promise (get-server env))]                                                         ; <===== MIGHT BLOCK if there is currently no client connected TODO: implement timeout
+      (wait-for-client-to-get-ready! env)                                                                                     ; <===== MIGHT BLOCK until we receive client :ready signal
       (server/send! client (make-eval-js-request-message eval-id js filename)))
     (wait-for-promised-response! env eval-id)))                                                                               ; <===== WILL BLOCK! until client responds
 
