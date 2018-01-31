@@ -1383,7 +1383,8 @@ ObjectUI.ArrayGroupingTreeElement._getOwnPropertyNamesThreshold = 500000;
 ObjectUI.ObjectPropertyPrompt = class extends UI.TextPrompt {
   constructor() {
     super();
-    this.initialize(ObjectUI.javaScriptAutocomplete.completionsForTextInCurrentContext);
+    this.initialize(
+        ObjectUI.javaScriptAutocomplete.completionsForTextInCurrentContext.bind(ObjectUI.javaScriptAutocomplete));
   }
 };
 
