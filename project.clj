@@ -29,7 +29,7 @@
    ['cljs-http "0.1.44" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
-   ['rum "0.10.8" :scope "test"]
+   ['rum "0.11.0" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['com.rpl/specter "1.1.0" :scope "test"]
