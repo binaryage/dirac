@@ -17,7 +17,8 @@
    ['http-kit "2.2.0"]
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
-   ['funcool/cuerdas "2.0.5"]])
+   ['funcool/cuerdas "2.0.5"]
+   ['com.rpl/specter "1.1.0"]])
 
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
@@ -32,7 +33,6 @@
    ['rum "0.11.0" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-   ['com.rpl/specter "1.1.0" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
    ['org.clojure/tools.reader "1.2.1" :scope "test"]
 
