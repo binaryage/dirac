@@ -27,11 +27,11 @@
 
 ; -- backend api ------------------------------------------------------------------------------------------------------------
 
-(defn extract-backend-api [inspector-js-source]
+(defn extract-backend-api [raw-js]
   (let [re (js/RegExp. ";Protocol\\.inspectorBackend\\.register(.*?)\\)" "gm")
         res #js []]
     (loop []
-      (when-let [m (.exec re inspector-js-source)]
+      (when-let [m (.exec re raw-js)]
         (.push res (.substring (first m) 1))
         (recur)))
     (.join res "\n")))
@@ -47,9 +47,9 @@
 
 ; -- backend css ------------------------------------------------------------------------------------------------------------
 
-(defn extract-backend-css [inspector-js-source]
+(defn extract-backend-css [raw-js]
   (let [re (js/RegExp. ";SDK\\.CSSMetadata\\._generatedProperties=(\\[.*\\])" "g")]
-    (if-let [m (re-find re inspector-js-source)]
+    (if-let [m (re-find re raw-js)]
       (second m))))
 
 (defn insert-css-newlines [source]
@@ -64,17 +64,17 @@
 
 (defn scrape-bundled-devtools! []
   (go
-    (let [[window] (<! (tools/create-bundled-devtools-inspector-window!))
+    (info "Retrieving backend API and CSS defs...")
+    (let [[window] (<! (tools/create-bundled-devtools-shell-window!))
           first-tab (first (oget window "tabs"))
           [mhtml] (<! (page-capture/save-as-mhtml (js-obj "tabId" (sugar/get-tab-id first-tab))))
           multipart-mime (<! (utils/convert-blob-to-string mhtml))]
       (<! (tools/remove-window! (sugar/get-window-id window)))
       (try
-        (let [inspector-js (steal-inspector-js multipart-mime)
-              backend-api (steal-backend-api inspector-js)
-              backend-css (steal-backend-css inspector-js)]
+        (let [raw-js (steal-inspector-js multipart-mime)
+              backend-api (steal-backend-api raw-js)
+              backend-css (steal-backend-css raw-js)]
           [backend-api backend-css])
         (catch :default e
           (error "Unable to retrieve or parse inspector.js from bundled DevTools." e)
           [])))))
-

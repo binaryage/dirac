@@ -58,11 +58,17 @@
               first-tab (aget tabs 0)]
           (sugar/get-tab-id first-tab))))))
 
-(defn create-bundled-devtools-inspector-window! []
-  (let [window-params #js {:url   "chrome-devtools://devtools/bundled/inspector.js"
+(defn create-bundled-devtools-window! [url]
+  (let [window-params #js {:url   url
                            :type  "normal"
                            :state "minimized"}]
     (sugar/create-window-and-wait-for-first-tab-completed! window-params)))
+
+(defn create-bundled-devtools-inspector-window! []
+  (create-bundled-devtools-window! "chrome-devtools://devtools/bundled/inspector.js"))
+
+(defn create-bundled-devtools-shell-window! []
+  (create-bundled-devtools-window! "chrome-devtools://devtools/bundled/shell.js"))
 
 (defn remove-window! [window-id]
   (windows/remove window-id))
