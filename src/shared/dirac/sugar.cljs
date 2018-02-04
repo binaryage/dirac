@@ -12,7 +12,7 @@
 ; this is a collection of helper utilities to wrap some common chromex code snippets (runtime, tabs and windows)
 ; for example many callbacks are designed to accept only one parameter as return value
 ; we can repackage such calls and return directly the only return value passed in as parameter
-; anoter area is providing a set of common accessors
+; another area is providing a set of common accessors
 ;
 ; Naming conventions:
 ;   - calls returning a channel should be named "fetch-something"
@@ -55,24 +55,24 @@
       window)))
 
 (defn create-window-and-wait-for-first-tab-completed! [window-params]
-  (let [chrome-event-channel (make-chrome-event-channel (chan))
-        result-chan (chan)]
+  (let [chrome-event-channel (make-chrome-event-channel (chan))]
     (tabs/tap-on-updated-events chrome-event-channel)
     (go
-      (if-let [[window] (<! (windows/create window-params))]
-        (let [tabs (oget window "tabs")
-              tab-id (get-tab-id (first tabs))]
-          (go-loop []
-            (if-let [event (<! chrome-event-channel)]
-              (let [[event-id event-args] event]
-                (case event-id
-                  ::tabs/on-updated (let [[updated-tab-id change-info] event-args]
-                                      (when (and (= tab-id updated-tab-id)
-                                                 (= (oget change-info "?status") "complete"))
-                                        (close! chrome-event-channel)
-                                        (put! result-chan [window tab-id]))))
-                (recur)))))))
-    result-chan))
+      (let [[window] (<! (windows/create window-params))
+            tabs (oget window "tabs")
+            tab-id (get-tab-id (first tabs))]
+        (loop []
+          (let [event (<! chrome-event-channel)
+                [event-id event-args] event]
+            (case event-id
+              ::tabs/on-updated (let [[updated-tab-id change-info] event-args]
+                                  (if (and (= (oget change-info "?status") "complete")
+                                           (= tab-id updated-tab-id))
+                                    (do
+                                      (close! chrome-event-channel)
+                                      [window tab-id])
+                                    (recur)))
+              (recur))))))))
 
 ; -- tab --------------------------------------------------------------------------------------------------------------------
 
