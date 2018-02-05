@@ -932,16 +932,17 @@ generated_scripts = [
   "$resources_out_dir/SupportedCSSProperties.js",
 ]
 
-generated_applications = [
-  "$resources_out_dir/shell.js",
-  "$resources_out_dir/inspector.html",
-  "$resources_out_dir/inspector.js",
-  "$resources_out_dir/toolbox.html",
-  "$resources_out_dir/toolbox.js",
-  "$resources_out_dir/audits2_worker.js",
-  "$resources_out_dir/formatter_worker.js",
-  "$resources_out_dir/heap_snapshot_worker.js",
-]
+# mark for conflicts -- darwin
+generated_applications = [ # -- darwin
+  "$resources_out_dir/shell.js", # -- darwin
+  "$resources_out_dir/inspector.html", # -- darwin
+  "$resources_out_dir/inspector.js", # -- darwin
+  "$resources_out_dir/toolbox.html", # -- darwin
+  "$resources_out_dir/toolbox.js", # -- darwin
+  "$resources_out_dir/audits2_worker.js", # -- darwin
+  "$resources_out_dir/formatter_worker.js", # -- darwin
+  "$resources_out_dir/heap_snapshot_worker.js", # -- darwin
+] # -- darwin
 
 generated_non_autostart_non_remote_modules = [
   "$resources_out_dir/animation/animation_module.js",
