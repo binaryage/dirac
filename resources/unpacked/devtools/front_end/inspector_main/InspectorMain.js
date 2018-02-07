@@ -63,7 +63,7 @@ InspectorMain.InspectorMain = class extends Common.Object {
     var wsParam = Runtime.queryParam('ws');
     var wssParam = Runtime.queryParam('wss');
     if (wsParam || wssParam) {
-      var ws = wsParam ? `ws://${wsParam}` : `wss://${wssParam}`;
+      var ws = wsParam ? `ws://${decodeURIComponent(wsParam)}` : `wss://${decodeURIComponent(/** @type {string} */wssParam)}`;
       this._mainConnection = new SDK.WebSocketConnection(ws, () => this._webSocketConnectionLost(), params);
     } else if (InspectorFrontendHost.isHostedMode()) {
       this._mainConnection = new SDK.StubConnection(params);
