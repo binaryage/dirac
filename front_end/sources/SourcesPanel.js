@@ -77,7 +77,17 @@ Sources.SourcesPanel = class extends UI.Panel {
     var navigatorMenuButton = new UI.ToolbarMenuButton(this._populateNavigatorMenu.bind(this), true);
     navigatorMenuButton.setTitle(Common.UIString('More options'));
     tabbedPane.rightToolbar().appendToolbarItem(navigatorMenuButton);
-    this.editorView.setSidebarWidget(tabbedPane);
+
+    if (UI.viewManager.hasViewsForLocation('run-view-sidebar')) {
+      var navigatorSplitWidget = new UI.SplitWidget(false, true, 'sourcePanelNavigatorSidebarSplitViewState');
+      navigatorSplitWidget.setMainWidget(tabbedPane);
+      navigatorSplitWidget.setSidebarWidget(
+          UI.viewManager.createTabbedLocation(this._revealNavigatorSidebar.bind(this), 'run-view-sidebar')
+              .tabbedPane());
+      this.editorView.setSidebarWidget(navigatorSplitWidget);
+    } else {
+      this.editorView.setSidebarWidget(tabbedPane);
+    }
 
     this._sourcesView = new Sources.SourcesView();
     this._sourcesView.addEventListener(Sources.SourcesView.Events.EditorSelected, this._editorSelected.bind(this));
@@ -116,8 +126,6 @@ Sources.SourcesPanel = class extends UI.Panel {
     SDK.targetManager.addModelListener(
         SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared,
         event => this._debuggerResumed(/** @type {!SDK.DebuggerModel} */ (event.data)));
-    SDK.targetManager.addEventListener(
-        SDK.TargetManager.Events.AvailableNodeTargetsChanged, this._availableNodeTargetsChanged, this);
     Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
     SDK.targetManager.observeTargets(this);
@@ -166,10 +174,6 @@ Sources.SourcesPanel = class extends UI.Panel {
    * @param {!SDK.Target} target
    */
   targetRemoved(target) {
-  }
-
-  _availableNodeTargetsChanged() {
-    this._showThreadsIfNeeded();
   }
 
   _showThreadsIfNeeded() {
