@@ -72,10 +72,10 @@
     (assert backend-url)
     (assert flags)
     (let [html-file-path (get-dirac-inspector-html-file-path)
-          manadatory-params {"devtools_id" devtools-id
-                             "dirac_flags" flags
-                             "ws"          backend-url}
-          all-params (cond-> manadatory-params
+          mandatory-params {"devtools_id" devtools-id
+                            "dirac_flags" flags
+                            "ws"          backend-url}
+          all-params (cond-> mandatory-params
                        ; add optional params
                        reset-settings (assoc "reset_settings" 1)
                        automate (assoc "dirac_automate" 1)
