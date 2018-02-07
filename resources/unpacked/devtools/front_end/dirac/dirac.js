@@ -104,7 +104,7 @@ Object.assign(window.dirac, (function() {
     return new Promise((resolve) => {
       const continuation = () => resolve("performed document action: '" + action + "'");
       const keyboard = Keysim.Keyboard.US_ENGLISH;
-      keyboard.dispatchEventsForAction(action, document, continuation);
+      keyboard.dispatchEventsForAction(action, window["document"], continuation);
     });
   }
 
