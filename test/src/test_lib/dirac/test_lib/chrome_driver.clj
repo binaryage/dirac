@@ -41,9 +41,6 @@
 (defn set-debugging-port! [port]
   (reset! current-chrome-remote-debugging-port port))
 
-(defn get-current-chrome-driver-service []
-  @current-chrome-driver-service)
-
 (defn set-current-chrome-driver-service! [service]
   (reset! current-chrome-driver-service service))
 
