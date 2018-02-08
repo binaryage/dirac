@@ -54,7 +54,6 @@
 (def ^:const TRANSCRIPT_LABEL_PADDING_LENGTH 17)
 (def ^:const TRANSCRIPT_LABEL_PADDING_TYPE :right)
 
-(def ^:const BROWSER_CONNECTION_MINIMAL_COOLDOWN (seconds 4))
 (def ^:const SCRIPT_RUNNER_LAUNCH_DELAY (seconds 2))
 
 (def ^:const FIXTURES_SERVER_HOST "localhost")
@@ -218,9 +217,6 @@
 
 (defmacro get-transcript-label-padding-type []
   TRANSCRIPT_LABEL_PADDING_TYPE)
-
-(defmacro get-browser-connection-minimal-cooldown []
-  BROWSER_CONNECTION_MINIMAL_COOLDOWN)
 
 (defmacro get-script-runner-launch-delay []
   SCRIPT_RUNNER_LAUNCH_DELAY)

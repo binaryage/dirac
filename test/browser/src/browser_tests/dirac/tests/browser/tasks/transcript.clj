@@ -9,7 +9,6 @@
                                     get-script-runner-launch-delay
                                     get-task-disconnected-wait-timeout]]
             [dirac.travis :refer [with-travis-fold]]
-            [dirac.test-lib.chrome-browser :refer [disconnect-browser! reconnect-browser!]]
             [dirac.test-lib.chrome-driver :refer [extract-javascript-logs]]
             [dirac.tests.browser.tasks.task-state :refer [make-task-state]]
             [dirac.tests.browser.tasks.signal-server :refer [create-signal-server! wait-for-signal!]]
@@ -130,8 +129,6 @@
             ; also we want to run our transcript test safely after debugger port is available
             ; for devtools after driver disconnection
             (launch-transcript-test-after-delay! (get-script-runner-launch-delay))
-            (disconnect-browser!)
             (wait-for-signal! signal-server task-state))
           (Thread/sleep (get-task-disconnected-wait-timeout))
-          (reconnect-browser!)
           (write-transcript-and-compare!))))))

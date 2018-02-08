@@ -36,6 +36,7 @@ Console.ConsoleView = class extends UI.VBox {
     super();
     this.setMinimumSize(0, 35);
     this.registerRequiredCSS('console/consoleView.css');
+    this.registerRequiredCSS('object_ui/objectValue.css');
     this.registerRequiredCSS("console/dirac-hacks.css");
     this.registerRequiredCSS("console/dirac-codemirror.css");
     this.registerRequiredCSS("console/dirac-theme.css");
@@ -489,7 +490,7 @@ Console.ConsoleView = class extends UI.VBox {
     } else {
       this._scheduleViewportRefreshForTest(false);
     }
-    this._viewportThrottler.schedule(this._invalidateViewport.bind(this));
+    this._scheduledRefreshPromiseForTest = this._viewportThrottler.schedule(this._invalidateViewport.bind(this));
   }
 
   /**

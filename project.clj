@@ -3,7 +3,7 @@
 (def figwheel-version "0.5.14")
 (def selected-clojure-version "1.9.0")
 (def selected-clojurescript-version "1.9.946")
-(def selenium-version "3.8.1")
+(def selenium-version "3.9.1")
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
@@ -57,7 +57,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.28"
+(defproject binaryage/dirac "1.2.29"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

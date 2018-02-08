@@ -87,8 +87,17 @@ echo -n "" > "$WORK_DIR/dirac/require-implant.js" # when doing advanced build, a
 
 echo "Building devtools in advanced mode..."
 # DANGER! this list of applications must be the same as specified in resources/unpacked/devtools/BUILD.gn (search for "-- darwin")
-./scripts/build/build_release_applications.py inspector toolbox formatter_worker audits2_worker heap_snapshot_worker \
-                                              --input_path "$WORK_DIR" --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" --debug 0
+./scripts/build/build_release_applications.py \
+  audits2_worker \
+  formatter_worker \
+  heap_snapshot_worker \
+  inspector \
+  node_app \
+  shell \
+  toolbox \
+  --input_path "$WORK_DIR" \
+  --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" \
+  --debug 0
 
 popd
 

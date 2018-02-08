@@ -112,11 +112,11 @@ sys.excepthook = error_excepthook
 # darwin: I have deliberately touched these descriptors so I bump into conflicts when anyone touches this
 # => we need to update our release script in scripts/release.sh
 application_descriptors = [ #
-    'inspector.json', #
-    'toolbox.json', #
-    'integration_test_runner.json', #
-    'formatter_worker.json', #
-    'heap_snapshot_worker.json' #
+    'inspector', #
+    'toolbox', #
+    'integration_test_runner', #
+    'formatter_worker', #
+    'heap_snapshot_worker' #
 ] #
 # <------- cut here
 
@@ -256,6 +256,7 @@ common_closure_args = [
     '--extra_annotation_name',
     'suppressGlobalPropertiesCheck',
     '--checks-only',
+    '--allow_method_call_decomposing',
 ]
 
 
