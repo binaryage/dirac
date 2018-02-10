@@ -587,8 +587,150 @@
             "type": "action",
             "category": "Sources",
             "actionId": "sources.close-all",
-            "className": "Sources.SourcesView.CloseAllActionDelegate",
+            "className": "Sources.SourcesView.ActionDelegate",
             "title": "Close All"
+        },
+        {
+            "type": "action",
+            "actionId": "sources.jump-to-previous-location",
+            "className": "Sources.SourcesView.ActionDelegate",
+            "contextTypes": [
+                "Sources.SourcesPanel"
+            ],
+            "bindings": [
+                {
+                    "shortcut": "Alt+Minus"
+                }
+            ]
+        },
+        {
+            "type": "action",
+            "actionId": "sources.jump-to-next-location",
+            "className": "Sources.SourcesView.ActionDelegate",
+            "contextTypes": [
+                "Sources.SourcesPanel"
+            ],
+            "bindings": [
+                {
+                    "shortcut": "Alt+Plus"
+                }
+            ]
+        },
+        {
+            "type": "action",
+            "actionId": "sources.close-editor-tab",
+            "className": "Sources.SourcesView.ActionDelegate",
+            "contextTypes": [
+                "Sources.SourcesPanel"
+            ],
+            "bindings": [
+                {
+                    "shortcut": "Alt+w"
+                }
+            ]
+        },
+        {
+            "type": "action",
+            "actionId": "sources.go-to-line",
+            "className": "Sources.SourcesView.ActionDelegate",
+            "contextTypes": [
+                "Sources.SourcesPanel"
+            ],
+            "bindings": [
+                {
+                    "shortcut": "Ctrl+g"
+                }
+            ]
+        },
+        {
+            "type": "action",
+            "actionId": "sources.go-to-member",
+            "className": "Sources.SourcesView.ActionDelegate",
+            "contextTypes": [
+                "Sources.SourcesPanel"
+            ],
+            "bindings": [
+                {
+                    "platform":"windows,linux",
+                    "shortcut": "Ctrl+Shift+o"
+                },
+                {
+                    "platform":"mac",
+                    "shortcut": "Meta+Shift+o"
+                }
+            ]
+        },
+        {
+            "type": "action",
+            "actionId": "debugger.toggle-breakpoint",
+            "className": "Sources.SourcesView.ActionDelegate",
+            "contextTypes": [
+                "Sources.SourcesPanel"
+            ],
+            "bindings": [
+                {
+                    "platform":"windows,linux",
+                    "shortcut": "Ctrl+b"
+                },
+                {
+                    "platform":"mac",
+                    "shortcut": "Meta+b"
+                }
+            ]
+        },
+        {
+            "type": "action",
+            "actionId": "debugger.toggle-breakpoint-enabled",
+            "className": "Sources.SourcesView.ActionDelegate",
+            "contextTypes": [
+                "Sources.SourcesPanel"
+            ],
+            "bindings": [
+                {
+                    "platform":"windows,linux",
+                    "shortcut": "Ctrl+Shift+b"
+                },
+                {
+                    "platform":"mac",
+                    "shortcut": "Meta+Shift+b"
+                }
+            ]
+        },
+        {
+            "type": "action",
+            "actionId": "sources.save",
+            "className": "Sources.SourcesView.ActionDelegate",
+            "contextTypes": [
+                "Sources.SourcesPanel"
+            ],
+            "bindings": [
+                {
+                    "platform":"windows,linux",
+                    "shortcut": "Ctrl+s"
+                },
+                {
+                    "platform":"mac",
+                    "shortcut": "Meta+s"
+                }
+            ]
+        },
+        {
+            "type": "action",
+            "actionId": "sources.save-all",
+            "className": "Sources.SourcesView.ActionDelegate",
+            "contextTypes": [
+                "Sources.SourcesPanel"
+            ],
+            "bindings": [
+                {
+                    "platform":"windows,linux",
+                    "shortcut": "Ctrl+Shift+s"
+                },
+                {
+                    "platform":"mac",
+                    "shortcut": "Meta+Alt+s"
+                }
+            ]
         },
         {
             "type": "action",
@@ -614,35 +756,6 @@
             "name": "sources-sidebar",
             "category": "Sources",
             "className": "Sources.SourcesPanel"
-        },
-        {
-            "type": "view",
-            "location": "sources-sidebar",
-            "id": "sources.xhrBreakpoints",
-            "title": "XHR/fetch Breakpoints",
-            "order": 5,
-            "hasToolbar": true,
-            "persistence": "permanent",
-            "className": "Sources.XHRBreakpointsSidebarPane"
-        },
-        {
-            "type": "view",
-            "location": "sources-sidebar",
-            "id": "sources.globalListeners",
-            "title": "Global Listeners",
-            "order": 8,
-            "hasToolbar": true,
-            "persistence": "permanent",
-            "className": "Sources.ObjectEventListenersSidebarPane"
-        },
-        {
-            "type": "view",
-            "location": "sources-sidebar",
-            "id": "sources.eventListenerBreakpoints",
-            "title": "Event Listener Breakpoints",
-            "order": 9,
-            "persistence": "permanent",
-            "className": "Sources.EventListenerBreakpointsSidebarPane"
         },
         {
             "type": "view",
@@ -685,13 +798,6 @@
             "contextTypes": [
                 "SDK.DebuggerPausedDetails"
             ],
-            "className": "Sources.XHRBreakpointsSidebarPane"
-        },
-        {
-            "type": "@UI.ContextFlavorListener",
-            "contextTypes": [
-                "SDK.DebuggerPausedDetails"
-            ],
             "className": "Sources.CallStackSidebarPane"
         },
         {
@@ -700,6 +806,34 @@
                 "SDK.DebuggerModel.CallFrame"
             ],
             "className": "Sources.ScopeChainSidebarPane"
+        },
+        {
+            "type": "action",
+            "category": "Debugger",
+            "actionId": "debugger.previous-call-frame",
+            "className": "Sources.CallStackSidebarPane.ActionDelegate",
+            "contextTypes": [
+                "Sources.SourcesPanel"
+            ],
+            "bindings": [
+                {
+                    "shortcut": "Ctrl+,"
+                }
+            ]
+        },
+        {
+            "type": "action",
+            "category": "Debugger",
+            "actionId": "debugger.next-call-frame",
+            "className": "Sources.CallStackSidebarPane.ActionDelegate",
+            "contextTypes": [
+                "Sources.SourcesPanel"
+            ],
+            "bindings": [
+                {
+                    "shortcut": "Ctrl+."
+                }
+            ]
         }
     ],
     "dependencies": [
@@ -721,7 +855,6 @@
         "DebuggerPausedMessage.js",
         "SimpleHistoryManager.js",
         "EditingLocationHistoryManager.js",
-        "EventListenerBreakpointsSidebarPane.js",
         "FilePathScoreFunction.js",
         "FilteredUISourceCodeListProvider.js",
         "GoToLineQuickOpen.js",
@@ -746,15 +879,12 @@
         "FileBasedSearchResultsPane.js",
         "SourcesSearchScope.js",
         "SourcesPanel.js",
-        "XHRBreakpointsSidebarPane.js",
         "JavaScriptCompilerPlugin.js",
-        "SnippetsPlugin.js",
-        "ObjectEventListenersSidebarPane.js"
+        "SnippetsPlugin.js"
     ],
     "resources": [
         "callStackSidebarPane.css",
         "debuggerPausedMessage.css",
-        "eventListenerBreakpoints.css",
         "fileBasedSearchResultsPane.css",
         "javaScriptBreakpointsSidebarPane.css",
         "navigatorTree.css",
@@ -767,7 +897,6 @@
         "sourcesView.css",
         "threadsSidebarPane.css",
         "watchExpressionsSidebarPane.css",
-        "xhrBreakpointsSidebarPane.css",
         "dialog.css"
     ]
 }
