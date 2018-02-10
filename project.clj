@@ -210,7 +210,6 @@
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/tasks/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/tasks"
                                              :optimizations        :none                                                      ; we rely on optimizations :none in test runner
-                                             :external-config      {:devtools/config {:features-to-install :all}}
                                              :source-map           true
                                              :source-map-timestamp true}}
                            :scenarios01
@@ -280,8 +279,7 @@
                                              "test/marion/src/background"]
                             :compiler       {:output-to       "test/marion/resources/unpacked/.compiled/background/background.js"
                                              :output-dir      "test/marion/resources/unpacked/.compiled/background"
-                                             :external-config {:devtools/config {:features-to-install           :all
-                                                                                 :dont-detect-custom-formatters true}}
+                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :optimizations   :none
                                              :source-map      true}}
 
@@ -317,8 +315,7 @@
                                              "src/implant"]
                             :compiler       {:output-to       "resources/unpacked/devtools/front_end/dirac/.compiled/implant/implant.js"
                                              :output-dir      "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
-                                             :external-config {:devtools/config {:features-to-install           :all
-                                                                                 :dont-detect-custom-formatters true}}
+                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :optimizations   :none
                                              :source-map      true}}
 
@@ -333,8 +330,7 @@
                                              "src/background"]
                             :compiler       {:output-to       "resources/unpacked/.compiled/background/dirac.js"
                                              :output-dir      "resources/unpacked/.compiled/background"
-                                             :external-config {:devtools/config {:features-to-install           :all
-                                                                                 :dont-detect-custom-formatters true}}
+                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :optimizations   :none
                                              :source-map      true}}
                            :dirac-options
@@ -348,8 +344,7 @@
                                              "src/options"]
                             :compiler       {:output-to       "resources/unpacked/.compiled/options/dirac.js"
                                              :output-dir      "resources/unpacked/.compiled/options"
-                                             :external-config {:devtools/config {:features-to-install           :all
-                                                                                 :dont-detect-custom-formatters true}}
+                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :optimizations   :none
                                              :source-map      true}}}}}
              :dirac-packed
