@@ -43,6 +43,8 @@ var Coverage = {};
 /** @const */
 var CoverageTestRunner = {};
 /** @const */
+var DOMDebugger = {};
+/** @const */
 var DataGrid = {};
 /** @const */
 var DataGridTestRunner = {};
@@ -90,6 +92,8 @@ var Help = {};
 var Host = {};
 /** @const */
 var InlineEditor = {};
+/** @const */
+var InspectorMain = {};
 /** @const */
 var LayerViewer = {};
 /** @const */
