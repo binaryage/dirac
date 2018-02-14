@@ -30,25 +30,25 @@
 
 (defn register-dirac-extension! [port]
   {:pre [(not @dirac-extension)]}
-  (log "dirac extension connected" (envelope port))
+  (log "dirac extension connected" (envelope port) port)
   (reset! dirac-extension port)
   (flush-pending-messages-to-dirac-extension! port))
 
 (defn unregister-dirac-extension! []
   (let [port @dirac-extension]
     (assert port)
-    (log "dirac extension disconnected" (envelope port))
+    (log "dirac extension disconnected" (envelope port) port)
     (reset! dirac-extension nil)))
 
 ; -- dirac extension event loop ---------------------------------------------------------------------------------------------
 
 (defn post-message-to-dirac-extension! [command]
   (go
-    (if-let [port @dirac-extension]
+    (if-some [port @dirac-extension]
       (post-message! port command)
       (do
-        (register-pending-message-for-dirac-extension! command)
-        (warn "dirac extension is not connected with marion => queing")))))
+        (warn "dirac extension is not connected with marion => queuing..." (pr-str command))
+        (register-pending-message-for-dirac-extension! command)))))
 
 ; -- message dispatch -------------------------------------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@
 (defn run-message-loop! [dirac-extension]
   (register-dirac-extension! dirac-extension)
   (go-loop []
-    (if-let [message (<! dirac-extension)]
+    (if-some [message (<! dirac-extension)]
       (do
         (process-message! message)
         (recur))
@@ -75,7 +75,7 @@
 
 (defn maintain-robust-connection-with-dirac-extension! []
   (go-loop []
-    (if-let [port (<! (helpers/connect-to-dirac-extension!))]
+    (if-some [port (<! (helpers/connect-to-dirac-extension!))]
       (do
         (<! (run-message-loop! port))
         (<! (timeout (get-marion-reconnection-attempt-delay)))                                                                ; do not starve this "thread"
