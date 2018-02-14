@@ -169,7 +169,7 @@ SDK.ConsoleModel = class extends Common.Object {
     if (msg.parameters) {
       var firstParam = msg.parameters[0];
       if (firstParam && firstParam.value == "~~$DIRAC-MSG$~~") {
-        this.dispatchEventToListeners(ConsoleModel.ConsoleModel.Events.DiracMessage, msg);
+        this.dispatchEventToListeners(SDK.ConsoleModel.Events.DiracMessage, msg);
         return;
       }
     }

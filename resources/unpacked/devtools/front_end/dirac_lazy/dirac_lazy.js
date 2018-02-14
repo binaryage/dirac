@@ -188,9 +188,9 @@ Object.assign(window.dirac, (function() {
       return;
     }
     const sanitizedText = text || "";
-    const msg = new ConsoleModel.ConsoleMessage(runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.Other, level,
-      sanitizedText, type, undefined, undefined, undefined, undefined, parameters);
-    ConsoleModel.consoleModel.addMessage(msg);
+    const msg = new SDK.ConsoleMessage(runtimeModel, SDK.ConsoleMessage.MessageSource.Other, level,
+      sanitizedText, type, undefined, undefined, undefined, parameters);
+    SDK.consoleModel.addMessage(msg);
   }
 
   // --- scope info -------------------------------------------------------------------------------------------------------

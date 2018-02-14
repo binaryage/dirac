@@ -679,10 +679,11 @@ Console.ConsoleView = class extends UI.VBox {
     try {
       requestId = message.parameters.shift().value; // request-id
       kind = message.parameters.shift().value;
-    } catch (e) {}
+    } catch (e) {
+    }
 
-    if (kind == "result") {
-      message.type = ConsoleModel.ConsoleMessage.MessageType.Result;
+    if (kind === "result") {
+      message.type = SDK.ConsoleMessage.MessageType.Result;
     }
 
     var originatingMessage = this._pendingDiracCommands[requestId];
@@ -691,7 +692,7 @@ Console.ConsoleView = class extends UI.VBox {
       this._pendingDiracCommands[requestId] = message;
     }
 
-    return kind?("dirac-"+kind):null;
+    return kind ? ("dirac-" + kind) : null;
   }
 
   _levelForFeedback(level) {
@@ -702,7 +703,7 @@ Console.ConsoleView = class extends UI.VBox {
     if (isDiracFlavored) {
       return "DF";
     }
-    if (messageType==ConsoleModel.ConsoleMessage.MessageType.DiracCommand) {
+    if (messageType === SDK.ConsoleMessage.MessageType.DiracCommand) {
       return "DC";
     }
     return "JS";
@@ -711,10 +712,10 @@ Console.ConsoleView = class extends UI.VBox {
   _createViewMessage(message) {
     // this is a HACK to treat REPL messages as Dirac results
     var isDiracFlavoredMessage = message.messageText == "~~$DIRAC-LOG$~~";
-    var extraClasss = null;
+    var extraClass = null;
 
     if (isDiracFlavoredMessage) {
-      extraClasss = this._alterDiracViewMessage(message);
+      extraClass = this._alterDiracViewMessage(message);
     }
 
     var result = this._createViewMessage2(message);
@@ -722,8 +723,8 @@ Console.ConsoleView = class extends UI.VBox {
     if (isDiracFlavoredMessage) {
       var wrapperElement = result.element();
       wrapperElement.classList.add("dirac-flavor");
-      if (extraClasss) {
-        wrapperElement.classList.add(extraClasss);
+      if (extraClass) {
+        wrapperElement.classList.add(extraClass);
       }
     }
 
@@ -732,9 +733,10 @@ Console.ConsoleView = class extends UI.VBox {
         var levelText = this._levelForFeedback(message.level);
         var typeText = this._typeForFeedback(message.type, isDiracFlavoredMessage);
         var messageText = result.contentElement().querySelector(".console-message-text").deepTextContent();
-        var glue = (messageText.indexOf("\n")==-1)?"> ":">\n"; // log multi-line log messages on a new line
-        dirac.feedback(typeText+"."+levelText+glue+messageText);
-      } catch (e) {}
+        var glue = (messageText.indexOf("\n") === -1) ? "> " : ">\n"; // log multi-line log messages on a new line
+        dirac.feedback(typeText + "." + levelText + glue + messageText);
+      } catch (e) {
+      }
     }
 
     return result;
@@ -753,11 +755,11 @@ Console.ConsoleView = class extends UI.VBox {
     if (!runtimeModel) {
       return false;
     }
-    const source = ConsoleModel.ConsoleMessage.MessageSource.Other;
-    const level = ConsoleModel.ConsoleMessage.MessageLevel.Info;
-    const type = ConsoleModel.ConsoleMessage.MessageType.DiracMarkup;
-    const message = new ConsoleModel.ConsoleMessage(runtimeModel, source, level, markup, type);
-    ConsoleModel.consoleModel.addMessage(message);
+    const source = SDK.ConsoleMessage.MessageSource.Other;
+    const level = SDK.ConsoleMessage.MessageLevel.Info;
+    const type = SDK.ConsoleMessage.MessageType.DiracMarkup;
+    const message = new SDK.ConsoleMessage(runtimeModel, source, level, markup, type);
+    SDK.consoleModel.addMessage(message);
     return true;
   }
 
@@ -930,12 +932,12 @@ Console.ConsoleView = class extends UI.VBox {
 
     this._prompt.setText("");
     const runtimeModel = executionContext.runtimeModel;
-    const type = ConsoleModel.ConsoleMessage.MessageType.DiracCommand;
-    const source = ConsoleModel.ConsoleMessage.MessageSource.JS;
-    const level = ConsoleModel.ConsoleMessage.MessageLevel.Info;
-    const commandMessage = new ConsoleModel.ConsoleMessage(runtimeModel, source, level, text, type);
+    const type = SDK.ConsoleMessage.MessageType.DiracCommand;
+    const source = SDK.ConsoleMessage.MessageSource.JS;
+    const level = SDK.ConsoleMessage.MessageLevel.Info;
+    const commandMessage = new SDK.ConsoleMessage(runtimeModel, source, level, text, type);
     commandMessage.setExecutionContextId(executionContext.id);
-    ConsoleModel.consoleModel.addMessage(commandMessage);
+    SDK.consoleModel.addMessage(commandMessage);
 
     this._prompt.history().pushHistoryItem(text);
     this._diracHistorySetting.set(this._prompt.history().historyData().slice(-Console.ConsoleView.persistedHistorySize));
@@ -1973,7 +1975,7 @@ Console.ConsoleCommand.MaxLengthToIgnoreHighlighter = 10000;
 
 Console.ConsoleDiracCommand = class extends Console.ConsoleCommand {
   /**
-   * @param {!ConsoleModel.ConsoleMessage} message
+   * @param {!SDK.ConsoleMessage} message
    * @param {!Components.Linkifier} linkifier
    * @param {!ProductRegistry.BadgePool} badgePool
    * @param {number} nestingLevel
@@ -2008,7 +2010,7 @@ Console.ConsoleDiracCommand = class extends Console.ConsoleCommand {
 Console.ConsoleDiracMarkup = class extends Console.ConsoleCommand {
 
   /**
-   * @param {!ConsoleModel.ConsoleMessage} message
+   * @param {!SDK.ConsoleMessage} message
    * @param {!Components.Linkifier} linkifier
    * @param {!ProductRegistry.BadgePool} badgePool
    * @param {number} nestingLevel
