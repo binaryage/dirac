@@ -33,8 +33,6 @@ var Components = {};
 /** @const */
 var ConsoleCounters = {};
 /** @const */
-var ConsoleModel = {};
-/** @const */
 var ConsoleTestRunner = {};
 /** @const */
 var CookieTable = {};
@@ -107,8 +105,6 @@ var MobileThrottling = {};
 /** @const */
 var Network = {};
 /** @const */
-var NetworkLog = {};
-/** @const */
 var NetworkTestRunner = {};
 /** @const */
 var ObjectUI = {};
@@ -134,6 +130,8 @@ var QuickOpen = {};
 var Resources = {};
 /** @const */
 var SDK = {};
+/** @const */
+var SDKBrowser = {};
 /** @const */
 var SDKTestRunner = {};
 /** @const */

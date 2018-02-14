@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='66.0.3344.4';
-Protocol.BakedInspectorBackendAPIChromeRev='2d00d828c596faaef0eab092764c1ef9f69b1219';
+Protocol.BakedInspectorBackendAPIChromeTag='66.0.3347.3';
+Protocol.BakedInspectorBackendAPIChromeRev='924fafe69b7bf70b30bc9a9e454ec9938e5bfb90';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
