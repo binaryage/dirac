@@ -300,7 +300,8 @@
         "PerformanceMetricsModel.js",
         "../SupportedCSSProperties.js",
         "SupportedCSSPropertiesExtensionMode.js",
-        "FilmStripModel.js"
+        "FilmStripModel.js",
+        "ConsoleModel.js"
     ],
     "skip_compilation": [
         "../SupportedCSSProperties.js"

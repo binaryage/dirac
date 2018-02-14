@@ -467,7 +467,7 @@ Sources.SourcesPanel = class extends UI.Panel {
     this._debugToolbarDrawer.classList.toggle('expanded', enabled);
   }
 
-  _updateDebuggerButtonsAndStatus() {
+  async _updateDebuggerButtonsAndStatus() {
     var currentTarget = UI.context.flavor(SDK.Target);
     var currentDebuggerModel = currentTarget ? currentTarget.model(SDK.DebuggerModel) : null;
     if (!currentDebuggerModel) {
@@ -493,7 +493,12 @@ Sources.SourcesPanel = class extends UI.Panel {
     }
 
     var details = currentDebuggerModel ? currentDebuggerModel.debuggerPausedDetails() : null;
-    this._debuggerPausedMessage.render(details, Bindings.debuggerWorkspaceBinding, Bindings.breakpointManager);
+    await this._debuggerPausedMessage.render(details, Bindings.debuggerWorkspaceBinding, Bindings.breakpointManager);
+    if (details)
+      this._updateDebuggerButtonsAndStatusForTest();
+  }
+
+  _updateDebuggerButtonsAndStatusForTest() {
   }
 
   _clearInterface() {
@@ -851,9 +856,9 @@ Sources.SourcesPanel = class extends UI.Panel {
     } else {
       var executionContext = /** @type {!SDK.ExecutionContext} */ (currentExecutionContext);
       var text = /** @type {string} */ (callFunctionResult.object.value);
-      var message = ConsoleModel.consoleModel.addCommandMessage(executionContext, text);
+      var message = SDK.consoleModel.addCommandMessage(executionContext, text);
       text = SDK.RuntimeModel.wrapObjectLiteralExpressionIfNeeded(text);
-      ConsoleModel.consoleModel.evaluateCommandInConsole(
+      SDK.consoleModel.evaluateCommandInConsole(
           executionContext, message, text,
           /* useCommandLineAPI */ false, /* awaitPromise */ false);
     }
@@ -1185,9 +1190,9 @@ Sources.SourcesPanel.DebuggingActionDelegate = class {
           var text = frame.textEditor.text(frame.textEditor.selection());
           var executionContext = UI.context.flavor(SDK.ExecutionContext);
           if (executionContext) {
-            var message = ConsoleModel.consoleModel.addCommandMessage(executionContext, text);
+            var message = SDK.consoleModel.addCommandMessage(executionContext, text);
             text = SDK.RuntimeModel.wrapObjectLiteralExpressionIfNeeded(text);
-            ConsoleModel.consoleModel.evaluateCommandInConsole(
+            SDK.consoleModel.evaluateCommandInConsole(
                 executionContext, message, text, /* useCommandLineAPI */ true, /* awaitPromise */ false);
           }
         }

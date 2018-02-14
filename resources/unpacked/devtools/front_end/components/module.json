@@ -1,11 +1,8 @@
 {
-    "extensions": [
-    ],
     "dependencies": [
         "bindings",
         "platform",
-        "ui",
-        "network_log"
+        "ui"
     ],
     "scripts": [
         "DOMPresentationUtils.js",
