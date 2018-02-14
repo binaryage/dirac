@@ -71,15 +71,15 @@
 ; -- marion event loop ------------------------------------------------------------------------------------------------------
 
 (defn register-marion! [marion-port]
-  (log "marion connected" (envelope (get-sender marion-port)))
-  (if (state/get-marion-port)
-    (warn "overwriting previous marion port!"))
+  (log "marion connected" (get-sender marion-port))
+  (when-some [existing-marion-port (state/get-marion-port)]
+    (warn "overwriting previous marion port!" (get-sender existing-marion-port) existing-marion-port))
   (state/set-marion-port! marion-port))
 
 (defn unregister-marion! []
-  (if-let [port (state/get-marion-port)]
+  (if-some [marion-port (state/get-marion-port)]
     (do
-      (log "marion disconnected" (envelope (get-sender port)))
+      (log "marion disconnected" (get-sender marion-port) marion-port)
       (state/set-marion-port! nil))
     (warn "unregister-marion! called when no previous marion port!")))
 
@@ -100,7 +100,7 @@
 
 (defn run-marion-message-loop! [context marion-port]
   (go-loop []
-    (when-let [data (<! marion-port)]
+    (when-some [data (<! marion-port)]
       (<! (process-marion-message! context data))
       (recur))
     (unregister-marion!)))

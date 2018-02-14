@@ -29,4 +29,4 @@
     (<! (options/init!))
     (<! (extract-apis!))
     (<! (action/set-active-icons!))                                                                                           ; by default we start with grayed-out icons, see manifest.json
-    (chrome/start-chrome-event-loop!)))
+    (<! (chrome/start-chrome-event-loop!))))
