@@ -306,7 +306,7 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
      */
     function createNodeElement() {
       var valueElement = createElementWithClass('span', 'object-value-node');
-      Components.DOMPresentationUtils.createSpansForNodeTitle(valueElement, /** @type {string} */ (description));
+      ObjectUI.RemoteObjectPreviewFormatter.createSpansForNodeTitle(valueElement, /** @type {string} */ (description));
       valueElement.addEventListener('click', event => {
         Common.Revealer.reveal(value);
         event.consume(true);
@@ -345,7 +345,7 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
     function didGetDetails(response) {
       if (linkify && response && response.location) {
         element.classList.add('linkified');
-        element.addEventListener('click', () => Common.Revealer.reveal(response.location));
+        element.addEventListener('click', () => Common.Revealer.reveal(response.location) && false);
       }
 
       // The includePreview flag is false for formats such as console.dir().
