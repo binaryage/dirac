@@ -623,10 +623,28 @@ Object.assign(window.dirac, (function() {
    * @return {?SDK.Script}
    */
   function getScriptFromSourceCode(uiSourceCode) {
-    const script = Bindings.NetworkProject.getScriptFromSourceCode(uiSourceCode);
+    const target = SDK.targetManager.mainTarget();
+    if (!target) {
+      throw new Error(
+        `getScriptFromSourceCode called when there is no main target\n` +
+        `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
+    }
+    const debuggerModel = /** @type {!SDK.DebuggerModel} */ (target.model(SDK.DebuggerModel));
+    if (!debuggerModel) {
+      throw new Error(
+        `getScriptFromSourceCode called when main target has no debuggerModel target=${target}\n` +
+        `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
+    }
+    const scriptFile = Bindings.debuggerWorkspaceBinding.scriptFile(uiSourceCode, debuggerModel);
+    if (!scriptFile) {
+      throw new Error(
+        `uiSourceCode expected to have scriptFile associated\n` +
+        `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
+    }
+    const script = scriptFile._script;
     if (!script) {
       throw new Error(
-        `uiSourceCode expected to have SDK.Script associated\n` +
+        `uiSourceCode expected to have _script associated\n` +
         `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
     }
     if (!(script instanceof SDK.Script)) {
