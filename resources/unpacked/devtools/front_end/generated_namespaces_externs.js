@@ -15,6 +15,14 @@ var Bindings = {};
 /** @const */
 var BindingsTestRunner = {};
 /** @const */
+var BrowserComponents = {};
+/** @const */
+var BrowserConsole = {};
+/** @const */
+var BrowserDebugger = {};
+/** @const */
+var BrowserSDK = {};
+/** @const */
 var CPUProfilerTestRunner = {};
 /** @const */
 var Changes = {};
@@ -40,8 +48,6 @@ var CookieTable = {};
 var Coverage = {};
 /** @const */
 var CoverageTestRunner = {};
-/** @const */
-var DOMDebugger = {};
 /** @const */
 var DataGrid = {};
 /** @const */
@@ -130,8 +136,6 @@ var QuickOpen = {};
 var Resources = {};
 /** @const */
 var SDK = {};
-/** @const */
-var SDKBrowser = {};
 /** @const */
 var SDKTestRunner = {};
 /** @const */
