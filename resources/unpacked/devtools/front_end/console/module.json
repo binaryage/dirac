@@ -165,7 +165,7 @@
         "dirac",
         "data_grid",
         "object_ui",
-        "sdk_browser",
+        "sdk",
         "product_registry",
         "formatter"
     ],

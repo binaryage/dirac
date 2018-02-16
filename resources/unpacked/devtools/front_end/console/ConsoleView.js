@@ -1188,11 +1188,7 @@ Console.ConsoleView = class extends UI.VBox {
           Common.UIString('Copy visible styled selection'), this._viewport.copyWithStyles.bind(this._viewport));
     }
 
-    var request = SDKBrowser.NetworkLog.requestForConsoleMessage(consoleMessage);
-    if (request && SDK.NetworkManager.canReplayRequest(request)) {
-      contextMenu.debugSection().appendItem(
-          Common.UIString('Replay XHR'), SDK.NetworkManager.replayRequest.bind(null, request));
-    }
+    contextMenu.appendApplicableItems(consoleMessage);
 
     contextMenu.show();
   }
