@@ -78,7 +78,7 @@ UI.SuggestBox = class {
     this._glassPane = new UI.GlassPane();
     this._glassPane.setAnchorBehavior(UI.GlassPane.AnchorBehavior.PreferBottom);
     this._glassPane.setOutsideClickCallback(this.hide.bind(this));
-    var shadowRoot = UI.createShadowRootWithCoreStyles(this._glassPane.contentElement, 'ui/suggestBox.css');
+    const shadowRoot = UI.createShadowRootWithCoreStyles(this._glassPane.contentElement, 'ui/suggestBox.css');
     UI.appendStyle(shadowRoot, "ui/suggestBox-dirac.css");
     shadowRoot.appendChild(this._element);
   }
@@ -117,9 +117,9 @@ UI.SuggestBox = class {
    * @param {!UI.SuggestBox.Suggestions} items
    */
   _updateMaxSize(items) {
-    var maxWidth = this._maxWidth(items);
-    var length = this._maxItemsHeight ? Math.min(this._maxItemsHeight, items.length) : items.length;
-    var maxHeight = length * this._rowHeight;
+    const maxWidth = this._maxWidth(items);
+    const length = this._maxItemsHeight ? Math.min(this._maxItemsHeight, items.length) : items.length;
+    const maxHeight = length * this._rowHeight;
     this._glassPane.setMaxContentSize(new UI.Size(maxWidth, maxHeight));
   }
 
@@ -128,13 +128,13 @@ UI.SuggestBox = class {
    * @return {number}
    */
   _maxWidth(items) {
-    var kMaxWidth = 100000; // dirac: do not limit max-width
+    const kMaxWidth = 100000; // dirac: do not limit max-width
     if (!items.length)
       return kMaxWidth;
-    var maxItem;
-    var maxLength = -Infinity;
-    for (var i = 0; i < items.length; i++) {
-      var length = (items[i].title || items[i].text).length + (items[i].subtitle || '').length;
+    let maxItem;
+    let maxLength = -Infinity;
+    for (let i = 0; i < items.length; i++) {
+      const length = (items[i].title || items[i].text).length + (items[i].subtitle || '').length;
       var length2 = (items[i].epilogue || '').length;
       length = 54 + 6.7*length + 4.9*length2; // dirac's suggestion items are more complex, this is a rough estimate
       if (length > maxLength) {
@@ -142,7 +142,7 @@ UI.SuggestBox = class {
         maxItem = items[i];
       }
     }
-    var element = this.createElementForItem(/** @type {!UI.SuggestBox.Suggestion} */ (maxItem));
+    const element = this.createElementForItem(/** @type {!UI.SuggestBox.Suggestion} */ (maxItem));
     return Math.min(kMaxWidth, UI.measurePreferredSize(element, this._element).width);
   }
 
@@ -179,7 +179,7 @@ UI.SuggestBox = class {
     if (!this.visible() || !this._list.selectedItem())
       return false;
 
-    var suggestion = this._list.selectedItem().text;
+    const suggestion = this._list.selectedItem().text;
     if (!suggestion)
       return false;
 
@@ -192,7 +192,7 @@ UI.SuggestBox = class {
    * @return {boolean}
    */
   acceptSuggestion() {
-    var result = this._applySuggestion();
+    const result = this._applySuggestion();
     this.hide();
     if (!result)
       return false;
@@ -208,21 +208,21 @@ UI.SuggestBox = class {
    * @return {!Element}
    */
   createElementForItem(item) {
-    var query = this._userEnteredText;
-    var element = createElementWithClass('div', 'suggest-box-content-item source-code ' + (item.className || ''));
+    const query = this._userEnteredText;
+    const element = createElementWithClass('div', 'suggest-box-content-item source-code ' + (item.className || ''));
     if (item.iconType) {
-      var icon = UI.Icon.create(item.iconType, 'suggestion-icon');
+      const icon = UI.Icon.create(item.iconType, 'suggestion-icon');
       element.appendChild(icon);
     }
     if (item.isSecondary)
       element.classList.add('secondary');
     element.tabIndex = -1;
     element.createChild("span", "prologue").textContent = (item.prologue || "").trimEnd(50);
-    var maxTextLength = 50 + query.length;
-    var displayText = (item.title || item.text).trimEnd(maxTextLength);
+    const maxTextLength = 50 + query.length;
+    const displayText = (item.title || item.text).trimEnd(maxTextLength);
 
-    var titleElement = element.createChild('span', 'suggestion-title');
-    var index = displayText.toLowerCase().indexOf(query.toLowerCase());
+    const titleElement = element.createChild('span', 'suggestion-title');
+    const index = displayText.toLowerCase().indexOf(query.toLowerCase());
     if (index > 0)
       titleElement.createChild('span', 'pre-query').textContent = displayText.substring(0, index);
     if (index > -1)
@@ -231,7 +231,7 @@ UI.SuggestBox = class {
     element.createChild("span", "epilogue").textContent = (item.epilogue || "").trimEnd(50);
     titleElement.createChild('span', 'spacer');
     if (item.subtitle) {
-      var subtitleElement = element.createChild('span', 'suggestion-subtitle');
+      const subtitleElement = element.createChild('span', 'suggestion-subtitle');
       subtitleElement.textContent = item.subtitle.trimEnd(maxTextLength - displayText.length);
     }
     return element;
@@ -279,7 +279,7 @@ UI.SuggestBox = class {
    * @param {!Event} event
    */
   _onClick(event) {
-    var item = this._list.itemForNode(/** @type {?Node} */ (event.target));
+    const item = this._list.itemForNode(/** @type {?Node} */ (event.target));
     if (!item)
       return;
 
@@ -328,10 +328,10 @@ UI.SuggestBox = class {
       this._items.replaceAll(completions);
 
       if (selectHighestPriority) {
-        var highestPriorityItem = completions[0];
-        var highestPriority = completions[0].priority || 0;
-        for (var i = 0; i < completions.length; i++) {
-          var priority = completions[i].priority || 0;
+        let highestPriorityItem = completions[0];
+        let highestPriority = completions[0].priority || 0;
+        for (let i = 0; i < completions.length; i++) {
+          const priority = completions[i].priority || 0;
           if (highestPriority < priority) {
             highestPriority = priority;
             highestPriorityItem = completions[i];
@@ -353,7 +353,7 @@ UI.SuggestBox = class {
    * @return {boolean}
    */
   keyPressed(event) {
-    var selected = false;
+    let selected = false;
     switch (event.key) {
       case 'Enter':
         return this.enterKeyPressed();
@@ -386,7 +386,7 @@ UI.SuggestBox = class {
     if (!this._userInteracted && this._captureEnter)
       return false;
 
-    var hasSelectedItem = !!this._list.selectedItem() || !!this._onlyCompletion;
+    const hasSelectedItem = !!this._list.selectedItem() || !!this._onlyCompletion;
     this.acceptSuggestion();
 
     // Report the event as non-handled if there is no selected item,
