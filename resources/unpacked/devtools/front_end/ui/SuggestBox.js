@@ -134,8 +134,8 @@ UI.SuggestBox = class {
     let maxItem;
     let maxLength = -Infinity;
     for (let i = 0; i < items.length; i++) {
-      const length = (items[i].title || items[i].text).length + (items[i].subtitle || '').length;
-      var length2 = (items[i].epilogue || '').length;
+      let length = (items[i].title || items[i].text).length + (items[i].subtitle || '').length;
+      const length2 = (items[i].epilogue || '').length;
       length = 54 + 6.7*length + 4.9*length2; // dirac's suggestion items are more complex, this is a rough estimate
       if (length > maxLength) {
         maxLength = length;
