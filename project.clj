@@ -31,11 +31,11 @@
    ['cljs-http "0.1.44" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
-   ['rum "0.11.0" :scope "test"]
+   ['rum "0.11.2" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
-   ['org.clojure/tools.reader "1.2.1" :scope "test"]
+   ['org.clojure/tools.reader "1.2.2" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
