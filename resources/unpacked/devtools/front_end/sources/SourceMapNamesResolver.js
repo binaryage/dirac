@@ -560,7 +560,7 @@ Sources.SourceMapNamesResolver.RemoteObject = class extends SDK.RemoteObject {
       if (properties) {
         for (let i = 0; i < properties.length; ++i) {
           const property = properties[i];
-          const name = property.name;
+          let name = property.name;
           const propertyMapping = Sources.SourceMapNamesResolver.collectMappingRecordsForCompiledName(namesMapping, name);
           if (propertyMapping.length>0) {
             // TODO: how to resolve the case when compiled name matches multiple original names?
