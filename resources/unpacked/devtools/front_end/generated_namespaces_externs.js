@@ -15,6 +15,14 @@ var Bindings = {};
 /** @const */
 var BindingsTestRunner = {};
 /** @const */
+var BrowserComponents = {};
+/** @const */
+var BrowserConsole = {};
+/** @const */
+var BrowserDebugger = {};
+/** @const */
+var BrowserSDK = {};
+/** @const */
 var CPUProfilerTestRunner = {};
 /** @const */
 var Changes = {};
@@ -32,8 +40,6 @@ var Common = {};
 var Components = {};
 /** @const */
 var ConsoleCounters = {};
-/** @const */
-var ConsoleModel = {};
 /** @const */
 var ConsoleTestRunner = {};
 /** @const */
@@ -91,6 +97,8 @@ var Host = {};
 /** @const */
 var InlineEditor = {};
 /** @const */
+var InspectorMain = {};
+/** @const */
 var LayerViewer = {};
 /** @const */
 var Layers = {};
@@ -102,8 +110,6 @@ var Main = {};
 var MobileThrottling = {};
 /** @const */
 var Network = {};
-/** @const */
-var NetworkLog = {};
 /** @const */
 var NetworkTestRunner = {};
 /** @const */

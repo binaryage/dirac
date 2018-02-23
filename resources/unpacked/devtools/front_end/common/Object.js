@@ -60,7 +60,7 @@ Common.Object = class {
    */
   once(eventType) {
     return new Promise(resolve => {
-      var descriptor = this.addEventListener(eventType, event => {
+      const descriptor = this.addEventListener(eventType, event => {
         this.removeEventListener(eventType, descriptor.listener);
         resolve(event.data);
       });
@@ -78,10 +78,12 @@ Common.Object = class {
 
     if (!this._listeners || !this._listeners.has(eventType))
       return;
-    var listeners = this._listeners.get(eventType);
-    for (var i = 0; i < listeners.length; ++i) {
-      if (listeners[i].listener === listener && listeners[i].thisObject === thisObject)
+    const listeners = this._listeners.get(eventType);
+    for (let i = 0; i < listeners.length; ++i) {
+      if (listeners[i].listener === listener && listeners[i].thisObject === thisObject) {
+        listeners[i].disposed = true;
         listeners.splice(i--, 1);
+      }
     }
 
     if (!listeners.length)
@@ -106,10 +108,12 @@ Common.Object = class {
     if (!this._listeners || !this._listeners.has(eventType))
       return;
 
-    var event = /** @type {!Common.Event} */ ({data: eventData});
-    var listeners = this._listeners.get(eventType).slice(0);
-    for (var i = 0; i < listeners.length; ++i)
-      listeners[i].listener.call(listeners[i].thisObject, event);
+    const event = /** @type {!Common.Event} */ ({data: eventData});
+    const listeners = this._listeners.get(eventType).slice(0);
+    for (let i = 0; i < listeners.length; ++i) {
+      if (!listeners[i].disposed)
+        listeners[i].listener.call(listeners[i].thisObject, event);
+    }
   }
 };
 
@@ -119,7 +123,7 @@ Common.Object = class {
 Common.Event;
 
 /**
- * @typedef {!{thisObject: (!Object|undefined), listener: function(!Common.Event)}}
+ * @typedef {!{thisObject: (!Object|undefined), listener: function(!Common.Event), disposed: (boolean|undefined)}}
  */
 Common.Object._listenerCallbackTuple;
 
@@ -137,8 +141,8 @@ Common.EventTarget.EventDescriptor;
  * @param {!Array<!Common.EventTarget.EventDescriptor>} eventList
  */
 Common.EventTarget.removeEventListeners = function(eventList) {
-  for (var i = 0; i < eventList.length; ++i) {
-    var eventInfo = eventList[i];
+  for (let i = 0; i < eventList.length; ++i) {
+    const eventInfo = eventList[i];
     eventInfo.eventTarget.removeEventListener(eventInfo.eventType, eventInfo.listener, eventInfo.thisObject);
   }
   // Do not hold references on unused event descriptors.

@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='66.0.3335.2';
-Protocol.BakedInspectorBackendAPIChromeRev='895678e6b233734f4a45a13e9ef9a4049007e514';
+Protocol.BakedInspectorBackendAPIChromeTag='66.0.3350.0';
+Protocol.BakedInspectorBackendAPIChromeRev='b369e4ed67916ee22841e43c88ea106f31447924';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -236,6 +236,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Memory.startSampling", [{"name": "samplingInterval", "type": "number", "optional": true}, {"name": "suppressRandomness", "type": "boolean", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.stopSampling", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.getAllTimeSamplingProfile", [], ["profile"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Memory.getBrowserSamplingProfile", [], ["profile"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.getSamplingProfile", [], ["profile"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.ErrorReason", {Failed: "Failed", Aborted: "Aborted", TimedOut: "TimedOut", AccessDenied: "AccessDenied", ConnectionClosed: "ConnectionClosed", ConnectionReset: "ConnectionReset", ConnectionRefused: "ConnectionRefused", ConnectionAborted: "ConnectionAborted", ConnectionFailed: "ConnectionFailed", NameNotResolved: "NameNotResolved", InternetDisconnected: "InternetDisconnected", AddressUnreachable: "AddressUnreachable"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.ConnectionType", {None: "none", Cellular2g: "cellular2g", Cellular3g: "cellular3g", Cellular4g: "cellular4g", Bluetooth: "bluetooth", Ethernet: "ethernet", Wifi: "wifi", Wimax: "wimax", Other: "other"});\n'

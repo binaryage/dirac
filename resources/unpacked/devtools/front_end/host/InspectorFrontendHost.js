@@ -41,7 +41,7 @@ Host.InspectorFrontendHostStub = class {
      */
     function stopEventPropagation(event) {
       // Let browser handle Ctrl+/Ctrl- shortcuts in hosted mode.
-      var zoomModifier = Host.isMac() ? event.metaKey : event.ctrlKey;
+      const zoomModifier = Host.isMac() ? event.metaKey : event.ctrlKey;
       if (zoomModifier && (event.keyCode === 187 || event.keyCode === 189))
         event.stopPropagation();
     }
@@ -85,7 +85,7 @@ Host.InspectorFrontendHostStub = class {
    * @return {string}
    */
   platform() {
-    var match = navigator.userAgent.match(/Windows NT/);
+    let match = navigator.userAgent.match(/Windows NT/);
     if (match)
       return 'windows';
     match = navigator.userAgent.match(/Mac OS X/);
@@ -285,8 +285,8 @@ Host.InspectorFrontendHostStub = class {
    * @param {function(!Object<string, string>)} callback
    */
   getPreferences(callback) {
-    var prefs = {};
-    for (var name in window.localStorage)
+    const prefs = {};
+    for (const name in window.localStorage)
       prefs[name] = window.localStorage[name];
     callback(prefs);
   }
@@ -483,8 +483,8 @@ Host.InspectorFrontendAPIImpl = class {
     this._debugFrontend =
         !!Runtime.queryParam('debugFrontend') || (window['InspectorTest'] && window['InspectorTest']['debugTest']);
 
-    var descriptors = InspectorFrontendHostAPI.EventDescriptors;
-    for (var i = 0; i < descriptors.length; ++i)
+    const descriptors = InspectorFrontendHostAPI.EventDescriptors;
+    for (let i = 0; i < descriptors.length; ++i)
       this[descriptors[i][1]] = this._dispatch.bind(this, descriptors[i][0], descriptors[i][2], descriptors[i][3]);
   }
 
@@ -494,7 +494,7 @@ Host.InspectorFrontendAPIImpl = class {
    * @param {boolean} runOnceLoaded
    */
   _dispatch(name, signature, runOnceLoaded) {
-    var params = Array.prototype.slice.call(arguments, 3);
+    const params = Array.prototype.slice.call(arguments, 3);
 
     if (this._debugFrontend)
       setImmediate(innerDispatch);
@@ -511,8 +511,8 @@ Host.InspectorFrontendAPIImpl = class {
         }
         return;
       }
-      var data = {};
-      for (var i = 0; i < signature.length; ++i)
+      const data = {};
+      for (let i = 0; i < signature.length; ++i)
         data[signature[i]] = params[i];
       try {
         InspectorFrontendHost.events.dispatchEventToListeners(name, data);
@@ -534,19 +534,20 @@ Host.InspectorFrontendAPIImpl = class {
 /**
  * @type {!InspectorFrontendHostAPI}
  */
-var InspectorFrontendHost = window.InspectorFrontendHost || null;
+let InspectorFrontendHost = window.InspectorFrontendHost || null;
 window.InspectorFrontendHost = InspectorFrontendHost;
 (function() {
 
   function initializeInspectorFrontendHost() {
+    let proto;
     if (!InspectorFrontendHost) {
       // Instantiate stub for web-hosted mode if necessary.
       window.InspectorFrontendHost = InspectorFrontendHost = new Host.InspectorFrontendHostStub();
     } else {
       // Otherwise add stubs for missing methods that are declared in the interface.
-      var proto = Host.InspectorFrontendHostStub.prototype;
-      for (var name in proto) {
-        var value = proto[name];
+      proto = Host.InspectorFrontendHostStub.prototype;
+      for (const name in proto) {
+        const value = proto[name];
         if (typeof value !== 'function' || InspectorFrontendHost[name])
           continue;
 
@@ -560,7 +561,7 @@ window.InspectorFrontendHost = InspectorFrontendHost;
      */
     function stub(name) {
       console.error('Incompatible embedder: method InspectorFrontendHost.' + name + ' is missing. Using stub instead.');
-      var args = Array.prototype.slice.call(arguments, 1);
+      const args = Array.prototype.slice.call(arguments, 1);
       return proto[name].apply(InspectorFrontendHost, args);
     }
 

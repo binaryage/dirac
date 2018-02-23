@@ -89,12 +89,15 @@ echo "Building devtools in advanced mode..."
 # DANGER! this list of applications must be the same as specified in resources/unpacked/devtools/BUILD.gn (search for "-- darwin")
 ./scripts/build/build_release_applications.py \
   audits2_worker \
+  devtools_app \
   formatter_worker \
   heap_snapshot_worker \
   inspector \
+  js_app \
   node_app \
   shell \
   toolbox \
+  worker_app \
   --input_path "$WORK_DIR" \
   --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" \
   --debug 0

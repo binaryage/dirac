@@ -31,11 +31,11 @@
    ['cljs-http "0.1.44" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
-   ['rum "0.11.0" :scope "test"]
+   ['rum "0.11.2" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
-   ['org.clojure/tools.reader "1.2.1" :scope "test"]
+   ['org.clojure/tools.reader "1.2.2" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
@@ -57,7 +57,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.29"
+(defproject binaryage/dirac "1.2.30"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -210,7 +210,6 @@
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/tasks/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/tasks"
                                              :optimizations        :none                                                      ; we rely on optimizations :none in test runner
-                                             :external-config      {:devtools/config {:features-to-install :all}}
                                              :source-map           true
                                              :source-map-timestamp true}}
                            :scenarios01
@@ -280,8 +279,7 @@
                                              "test/marion/src/background"]
                             :compiler       {:output-to       "test/marion/resources/unpacked/.compiled/background/background.js"
                                              :output-dir      "test/marion/resources/unpacked/.compiled/background"
-                                             :external-config {:devtools/config {:features-to-install           :all
-                                                                                 :dont-detect-custom-formatters true}}
+                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :optimizations   :none
                                              :source-map      true}}
 
@@ -317,8 +315,7 @@
                                              "src/implant"]
                             :compiler       {:output-to       "resources/unpacked/devtools/front_end/dirac/.compiled/implant/implant.js"
                                              :output-dir      "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
-                                             :external-config {:devtools/config {:features-to-install           :all
-                                                                                 :dont-detect-custom-formatters true}}
+                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :optimizations   :none
                                              :source-map      true}}
 
@@ -333,8 +330,7 @@
                                              "src/background"]
                             :compiler       {:output-to       "resources/unpacked/.compiled/background/dirac.js"
                                              :output-dir      "resources/unpacked/.compiled/background"
-                                             :external-config {:devtools/config {:features-to-install           :all
-                                                                                 :dont-detect-custom-formatters true}}
+                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :optimizations   :none
                                              :source-map      true}}
                            :dirac-options
@@ -348,8 +344,7 @@
                                              "src/options"]
                             :compiler       {:output-to       "resources/unpacked/.compiled/options/dirac.js"
                                              :output-dir      "resources/unpacked/.compiled/options"
-                                             :external-config {:devtools/config {:features-to-install           :all
-                                                                                 :dont-detect-custom-formatters true}}
+                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :optimizations   :none
                                              :source-map      true}}}}}
              :dirac-packed

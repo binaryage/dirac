@@ -79,12 +79,12 @@ TextUtils.TextRange = class {
    * @return {!TextUtils.TextRange}
    */
   static fromEdit(oldRange, newText) {
-    var endLine = oldRange.startLine;
-    var endColumn = oldRange.startColumn + newText.length;
-    var lineEndings = newText.computeLineEndings();
+    let endLine = oldRange.startLine;
+    let endColumn = oldRange.startColumn + newText.length;
+    const lineEndings = newText.computeLineEndings();
     if (lineEndings.length > 1) {
       endLine = oldRange.startLine + lineEndings.length - 1;
-      var len = lineEndings.length;
+      const len = lineEndings.length;
       endColumn = lineEndings[len - 1] - lineEndings[len - 2] - 1;
     }
     return new TextUtils.TextRange(oldRange.startLine, oldRange.startColumn, endLine, endColumn);
@@ -167,7 +167,7 @@ TextUtils.TextRange = class {
    * @return {!{startLine: number, startColumn: number, endLine: number, endColumn: number}}
    */
   serializeToObject() {
-    var serializedTextRange = {};
+    const serializedTextRange = {};
     serializedTextRange.startLine = this.startLine;
     serializedTextRange.startColumn = this.startColumn;
     serializedTextRange.endLine = this.endLine;
@@ -219,7 +219,7 @@ TextUtils.TextRange = class {
    * @return {!TextUtils.TextRange}
    */
   relativeTo(line, column) {
-    var relative = this.clone();
+    const relative = this.clone();
 
     if (this.startLine === line)
       relative.startColumn -= column;
@@ -232,6 +232,24 @@ TextUtils.TextRange = class {
   }
 
   /**
+   * @param {number} line
+   * @param {number} column
+   * @return {!TextUtils.TextRange}
+   */
+  relativeFrom(line, column) {
+    const relative = this.clone();
+
+    if (this.startLine === 0)
+      relative.startColumn += column;
+    if (this.endLine === 0)
+      relative.endColumn += column;
+
+    relative.startLine += line;
+    relative.endLine += line;
+    return relative;
+  }
+
+  /**
    * @param {!TextUtils.TextRange} originalRange
    * @param {!TextUtils.TextRange} editedRange
    * @return {!TextUtils.TextRange}
@@ -239,11 +257,11 @@ TextUtils.TextRange = class {
   rebaseAfterTextEdit(originalRange, editedRange) {
     console.assert(originalRange.startLine === editedRange.startLine);
     console.assert(originalRange.startColumn === editedRange.startColumn);
-    var rebase = this.clone();
+    const rebase = this.clone();
     if (!this.follows(originalRange))
       return rebase;
-    var lineDelta = editedRange.endLine - originalRange.endLine;
-    var columnDelta = editedRange.endColumn - originalRange.endColumn;
+    const lineDelta = editedRange.endLine - originalRange.endLine;
+    const columnDelta = editedRange.endColumn - originalRange.endColumn;
     rebase.startLine += lineDelta;
     rebase.endLine += lineDelta;
     if (rebase.startLine === editedRange.endLine)

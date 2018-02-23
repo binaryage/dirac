@@ -4,6 +4,6 @@
 
 (defn install-devtools-if-needed! []
   (when-not-advanced-mode
-    (devtools/install! :all)))
+    (devtools/install!)))
 
 (runonce (install-devtools-if-needed!))

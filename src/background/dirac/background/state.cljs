@@ -67,7 +67,7 @@
 ; -- marion feedback --------------------------------------------------------------------------------------------------------
 
 (defn post-to-marion! [message]
-  (if-let [marion-port (get-marion-port)]
+  (if-some [marion-port (get-marion-port)]
     (post-message! marion-port message)
     (warn "marion not yet connected when called post-to-marion! with message:" (envelope message))))
 

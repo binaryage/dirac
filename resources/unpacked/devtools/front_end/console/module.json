@@ -165,7 +165,7 @@
         "dirac",
         "data_grid",
         "object_ui",
-        "console_model",
+        "sdk",
         "product_registry",
         "formatter"
     ],

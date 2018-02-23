@@ -13,7 +13,7 @@ ConsoleCounters.WarningErrorCounter = class {
     this._counter = createElement('div');
     this._counter.addEventListener('click', Common.console.show.bind(Common.console), false);
     this._toolbarItem = new UI.ToolbarItem(this._counter);
-    var shadowRoot = UI.createShadowRootWithCoreStyles(this._counter, 'console_counters/errorWarningCounter.css');
+    const shadowRoot = UI.createShadowRootWithCoreStyles(this._counter, 'console_counters/errorWarningCounter.css');
 
     this._errors = this._createItem(shadowRoot, 'smallicon-error');
     this._warnings = this._createItem(shadowRoot, 'smallicon-warning');
@@ -22,9 +22,9 @@ ConsoleCounters.WarningErrorCounter = class {
     this._warningCount = -1;
     this._throttler = new Common.Throttler(100);
 
-    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.ConsoleCleared, this._update, this);
-    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, this._update, this);
-    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageUpdated, this._update, this);
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._update, this);
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._update, this);
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, this._update, this);
     this._update();
   }
 
@@ -38,10 +38,10 @@ ConsoleCounters.WarningErrorCounter = class {
    * @return {!{item: !Element, text: !Element}}
    */
   _createItem(shadowRoot, iconType) {
-    var item = createElementWithClass('span', 'counter-item');
-    var icon = item.createChild('label', '', 'dt-icon-label');
+    const item = createElementWithClass('span', 'counter-item');
+    const icon = item.createChild('label', '', 'dt-icon-label');
     icon.type = iconType;
-    var text = icon.createChild('span');
+    const text = icon.createChild('span');
     shadowRoot.appendChild(item);
     return {item: item, text: text};
   }
@@ -69,8 +69,8 @@ ConsoleCounters.WarningErrorCounter = class {
    * @return {!Promise}
    */
   _updateThrottled() {
-    var errors = ConsoleModel.consoleModel.errors();
-    var warnings = ConsoleModel.consoleModel.warnings();
+    const errors = SDK.consoleModel.errors();
+    const warnings = SDK.consoleModel.warnings();
     if (errors === this._errorCount && warnings === this._warningCount)
       return Promise.resolve();
     this._errorCount = errors;

@@ -1,12 +1,9 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/**
- * @unrestricted
- */
 Sources.FileBasedSearchResultsPane = class extends Sources.SearchResultsPane {
   /**
-   * @param {!Workspace.ProjectSearchConfig} searchConfig
+   * @param {!Workspace.SearchConfig} searchConfig
    */
   constructor(searchConfig) {
     super(searchConfig);
@@ -25,7 +22,7 @@ Sources.FileBasedSearchResultsPane = class extends Sources.SearchResultsPane {
    */
   addSearchResult(searchResult) {
     this._searchResults.push(searchResult);
-    var uiSourceCode = searchResult.uiSourceCode;
+    const uiSourceCode = searchResult.uiSourceCode;
     if (!uiSourceCode)
       return;
     this._addFileTreeElement(searchResult);
@@ -35,7 +32,7 @@ Sources.FileBasedSearchResultsPane = class extends Sources.SearchResultsPane {
    * @param {!Sources.FileBasedSearchResult} searchResult
    */
   _addFileTreeElement(searchResult) {
-    var fileTreeElement = new Sources.FileBasedSearchResultsPane.FileTreeElement(this.searchConfig, searchResult);
+    const fileTreeElement = new Sources.FileBasedSearchResultsPane.FileTreeElement(this.searchConfig, searchResult);
     this._treeOutline.appendChild(fileTreeElement);
     // Expand until at least a certain number of matches is expanded.
     if (this._matchesExpandedCount < Sources.FileBasedSearchResultsPane.matchesExpandedByDefaultCount)
@@ -47,9 +44,6 @@ Sources.FileBasedSearchResultsPane = class extends Sources.SearchResultsPane {
 Sources.FileBasedSearchResultsPane.matchesExpandedByDefaultCount = 20;
 Sources.FileBasedSearchResultsPane.fileMatchesShownAtOnce = 20;
 
-/**
- * @unrestricted
- */
 Sources.FileBasedSearchResultsPane.FileTreeElement = class extends UI.TreeElement {
   /**
    * @param {!Workspace.ProjectSearchConfig} searchConfig
@@ -59,6 +53,7 @@ Sources.FileBasedSearchResultsPane.FileTreeElement = class extends UI.TreeElemen
     super('', true);
     this._searchConfig = searchConfig;
     this._searchResult = searchResult;
+    this._initialized = false;
 
     this.toggleOnClick = true;
     this.selectable = false;
@@ -77,7 +72,7 @@ Sources.FileBasedSearchResultsPane.FileTreeElement = class extends UI.TreeElemen
 
   _updateMatchesUI() {
     this.removeChildren();
-    var toIndex =
+    const toIndex =
         Math.min(this._searchResult.searchMatches.length, Sources.FileBasedSearchResultsPane.fileMatchesShownAtOnce);
     if (toIndex < this._searchResult.searchMatches.length) {
       this._appendSearchMatches(0, toIndex - 1);
@@ -97,15 +92,15 @@ Sources.FileBasedSearchResultsPane.FileTreeElement = class extends UI.TreeElemen
   _updateSearchMatches() {
     this.listItemElement.classList.add('search-result');
 
-    var fileNameSpan = createElement('span');
+    const fileNameSpan = createElement('span');
     fileNameSpan.className = 'search-result-file-name';
     fileNameSpan.textContent = this._searchResult.uiSourceCode.fullDisplayName();
     this.listItemElement.appendChild(fileNameSpan);
 
-    var matchesCountSpan = createElement('span');
+    const matchesCountSpan = createElement('span');
     matchesCountSpan.className = 'search-result-matches-count';
 
-    var searchMatchesCount = this._searchResult.searchMatches.length;
+    const searchMatchesCount = this._searchResult.searchMatches.length;
     if (searchMatchesCount === 1)
       matchesCountSpan.textContent = Common.UIString('(%d match)', searchMatchesCount);
     else
@@ -121,34 +116,34 @@ Sources.FileBasedSearchResultsPane.FileTreeElement = class extends UI.TreeElemen
    * @param {number} toIndex
    */
   _appendSearchMatches(fromIndex, toIndex) {
-    var searchResult = this._searchResult;
-    var uiSourceCode = searchResult.uiSourceCode;
-    var searchMatches = searchResult.searchMatches;
+    const searchResult = this._searchResult;
+    const uiSourceCode = searchResult.uiSourceCode;
+    const searchMatches = searchResult.searchMatches;
 
-    var queries = this._searchConfig.queries();
-    var regexes = [];
-    for (var i = 0; i < queries.length; ++i)
+    const queries = this._searchConfig.queries();
+    const regexes = [];
+    for (let i = 0; i < queries.length; ++i)
       regexes.push(createSearchRegex(queries[i], !this._searchConfig.ignoreCase(), this._searchConfig.isRegex()));
 
-    for (var i = fromIndex; i < toIndex; ++i) {
-      var lineNumber = searchMatches[i].lineNumber;
-      var lineContent = searchMatches[i].lineContent;
-      var matchRanges = [];
-      for (var j = 0; j < regexes.length; ++j)
+    for (let i = fromIndex; i < toIndex; ++i) {
+      const lineNumber = searchMatches[i].lineNumber;
+      const lineContent = searchMatches[i].lineContent;
+      let matchRanges = [];
+      for (let j = 0; j < regexes.length; ++j)
         matchRanges = matchRanges.concat(this._regexMatchRanges(lineContent, regexes[j]));
 
-      var anchor = this._createAnchor(uiSourceCode, lineNumber, matchRanges[0].offset);
+      const anchor = this._createAnchor(uiSourceCode, lineNumber, matchRanges[0].offset);
 
-      var numberString = numberToStringWithSpacesPadding(lineNumber + 1, 4);
-      var lineNumberSpan = createElement('span');
+      const numberString = numberToStringWithSpacesPadding(lineNumber + 1, 4);
+      const lineNumberSpan = createElement('span');
       lineNumberSpan.classList.add('search-match-line-number');
       lineNumberSpan.textContent = numberString;
       anchor.appendChild(lineNumberSpan);
 
-      var contentSpan = this._createContentSpan(lineContent, matchRanges);
+      const contentSpan = this._createContentSpan(lineContent, matchRanges);
       anchor.appendChild(contentSpan);
 
-      var searchMatchElement = new UI.TreeElement();
+      const searchMatchElement = new UI.TreeElement();
       searchMatchElement.selectable = false;
       this.appendChild(searchMatchElement);
       searchMatchElement.listItemElement.className = 'search-match source-code';
@@ -160,12 +155,13 @@ Sources.FileBasedSearchResultsPane.FileTreeElement = class extends UI.TreeElemen
    * @param {number} startMatchIndex
    */
   _appendShowMoreMatchesElement(startMatchIndex) {
-    var matchesLeftCount = this._searchResult.searchMatches.length - startMatchIndex;
-    var showMoreMatchesText = Common.UIString('Show all matches (%d more).', matchesLeftCount);
-    this._showMoreMatchesTreeElement = new UI.TreeElement(showMoreMatchesText);
-    this.appendChild(this._showMoreMatchesTreeElement);
-    this._showMoreMatchesTreeElement.listItemElement.classList.add('show-more-matches');
-    this._showMoreMatchesTreeElement.onselect = this._showMoreMatchesElementSelected.bind(this, startMatchIndex);
+    const matchesLeftCount = this._searchResult.searchMatches.length - startMatchIndex;
+    const showMoreMatchesText = Common.UIString('Show all matches (%d more).', matchesLeftCount);
+    const showMoreMatchesTreeElement = new UI.TreeElement(showMoreMatchesText);
+    this.appendChild(showMoreMatchesTreeElement);
+    showMoreMatchesTreeElement.listItemElement.classList.add('show-more-matches');
+    showMoreMatchesTreeElement.onselect =
+        this._showMoreMatchesElementSelected.bind(this, showMoreMatchesTreeElement, startMatchIndex);
   }
 
   /**
@@ -183,7 +179,7 @@ Sources.FileBasedSearchResultsPane.FileTreeElement = class extends UI.TreeElemen
    * @param {!Array.<!TextUtils.SourceRange>} matchRanges
    */
   _createContentSpan(lineContent, matchRanges) {
-    var contentSpan = createElement('span');
+    const contentSpan = createElement('span');
     contentSpan.className = 'search-match-content';
     contentSpan.textContent = lineContent;
     UI.highlightRangesWithStyleClass(contentSpan, matchRanges, 'highlighted-match');
@@ -197,8 +193,8 @@ Sources.FileBasedSearchResultsPane.FileTreeElement = class extends UI.TreeElemen
    */
   _regexMatchRanges(lineContent, regex) {
     regex.lastIndex = 0;
-    var match;
-    var matchRanges = [];
+    let match;
+    const matchRanges = [];
     while ((regex.lastIndex < lineContent.length) && (match = regex.exec(lineContent)))
       matchRanges.push(new TextUtils.SourceRange(match.index, match[0].length));
 
@@ -206,11 +202,12 @@ Sources.FileBasedSearchResultsPane.FileTreeElement = class extends UI.TreeElemen
   }
 
   /**
+   * @param {!UI.TreeElement} showMoreMatchesTreeElement
    * @param {number} startMatchIndex
    * @return {boolean}
    */
-  _showMoreMatchesElementSelected(startMatchIndex) {
-    this.removeChild(this._showMoreMatchesTreeElement);
+  _showMoreMatchesElementSelected(showMoreMatchesTreeElement, startMatchIndex) {
+    this.removeChild(showMoreMatchesTreeElement);
     this._appendSearchMatches(startMatchIndex, this._searchResult.searchMatches.length);
     return false;
   }

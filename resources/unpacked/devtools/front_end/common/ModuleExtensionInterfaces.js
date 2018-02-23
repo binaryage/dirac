@@ -1,6 +1,7 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 /**
  * @interface
  */
@@ -10,33 +11,26 @@ Common.Renderer.prototype = {
   /**
    * @param {!Object} object
    * @param {!Common.Renderer.Options} options
-   * @return {!Promise.<!Element>}
+   * @return {!Promise.<?Node>}
    */
   render(object, options) {}
 };
 
 /**
- * @param {!Object} object
+ * @param {?Object} object
  * @param {!Common.Renderer.Options=} options
- * @return {!Promise.<!Element>}
+ * @return {!Promise.<?Node>}
  */
-Common.Renderer.renderPromise = function(object, options) {
+Common.Renderer.render = function(object, options) {
   if (!object)
     return Promise.reject(new Error('Can\'t render ' + object));
-
-  return self.runtime.extension(Common.Renderer, object).instance().then(render);
-
-  /**
-   * @param {!Common.Renderer} renderer
-   * @return {!Promise.<!Element>}
-   */
-  function render(renderer) {
-    return renderer.render(object, options || {});
-  }
+  return self.runtime.extension(Common.Renderer, object)
+      .instance()
+      .then(renderer => renderer.render(object, options || {}));
 };
 
 /** @typedef {!{title: (string|!Element|undefined), expanded: (boolean|undefined),
- *    editable: (boolean|undefined)}} */
+ *    editable: (boolean|undefined) }} */
 Common.Renderer.Options;
 
 /**
@@ -47,17 +41,9 @@ Common.Revealer = function() {};
 /**
  * @param {?Object} revealable
  * @param {boolean=} omitFocus
- */
-Common.Revealer.reveal = function(revealable, omitFocus) {
-  Common.Revealer.revealPromise(revealable, omitFocus);
-};
-
-/**
- * @param {?Object} revealable
- * @param {boolean=} omitFocus
  * @return {!Promise.<undefined>}
  */
-Common.Revealer.revealPromise = function(revealable, omitFocus) {
+Common.Revealer.reveal = function(revealable, omitFocus) {
   if (!revealable)
     return Promise.reject(new Error('Can\'t reveal ' + revealable));
   return self.runtime.allInstances(Common.Revealer, revealable).then(reveal);
@@ -67,11 +53,22 @@ Common.Revealer.revealPromise = function(revealable, omitFocus) {
    * @return {!Promise.<undefined>}
    */
   function reveal(revealers) {
-    var promises = [];
-    for (var i = 0; i < revealers.length; ++i)
+    const promises = [];
+    for (let i = 0; i < revealers.length; ++i)
       promises.push(revealers[i].reveal(/** @type {!Object} */ (revealable), omitFocus));
     return Promise.race(promises);
   }
+};
+
+/**
+ * @param {?Object} revealable
+ * @return {?string}
+ */
+Common.Revealer.revealDestination = function(revealable) {
+  const extension = self.runtime.extension(Common.Revealer, revealable);
+  if (!extension)
+    return null;
+  return extension.descriptor()['destination'];
 };
 
 Common.Revealer.prototype = {
@@ -127,3 +124,33 @@ Common.Runnable = function() {};
 Common.Runnable.prototype = {
   run() {}
 };
+
+/**
+ * @interface
+ */
+Common.Linkifier = function() {};
+
+Common.Linkifier.prototype = {
+  /**
+   * @param {!Object} object
+   * @param {!Common.Linkifier.Options=} options
+   * @return {!Node}
+   */
+  linkify(object, options) {}
+};
+
+/**
+ * @param {?Object} object
+ * @param {!Common.Linkifier.Options=} options
+ * @return {!Promise<!Node>}
+ */
+Common.Linkifier.linkify = function(object, options) {
+  if (!object)
+    return Promise.reject(new Error('Can\'t linkify ' + object));
+  return self.runtime.extension(Common.Linkifier, object)
+      .instance()
+      .then(linkifier => linkifier.linkify(object, options));
+};
+
+/** @typedef {{tooltip: string}} */
+Common.Linkifier.Options;

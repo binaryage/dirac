@@ -14,32 +14,16 @@ Audits2.Audits2Panel = class extends UI.Panel {
 
     this._protocolService = new Audits2.ProtocolService();
 
-    var toolbar = new UI.Toolbar('', this.element);
-
-    var newButton = new UI.ToolbarButton(Common.UIString('New audit\u2026'), 'largeicon-add');
-    toolbar.appendToolbarItem(newButton);
-    newButton.addEventListener(UI.ToolbarButton.Events.Click, this._showDialog.bind(this));
-
-    var downloadButton = new UI.ToolbarButton(Common.UIString('Download report'), 'largeicon-download');
-    toolbar.appendToolbarItem(downloadButton);
-    downloadButton.addEventListener(UI.ToolbarButton.Events.Click, this._downloadSelected.bind(this));
-
-    toolbar.appendSeparator();
-
-    this._reportSelector = new Audits2.ReportSelector();
-    toolbar.appendToolbarItem(this._reportSelector.comboBox());
-
-    var clearButton = new UI.ToolbarButton(Common.UIString('Clear all'), 'largeicon-clear');
-    toolbar.appendToolbarItem(clearButton);
-    clearButton.addEventListener(UI.ToolbarButton.Events.Click, this._clearAll.bind(this));
+    this._renderToolbar();
 
     this._auditResultsElement = this.contentElement.createChild('div', 'audits2-results-container');
     this._dropTarget = new UI.DropTarget(
         this.contentElement, [UI.DropTarget.Type.File], Common.UIString('Drop audit file here'),
         this._handleDrop.bind(this));
 
-    for (var preset of Audits2.Audits2Panel.Presets)
+    for (const preset of Audits2.Audits2Panel.Presets)
       preset.setting.addChangeListener(this._refreshDialogUI.bind(this));
+
     this._showLandingPage();
     SDK.targetManager.observeModels(SDK.ServiceWorkerManager, this);
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this._refreshDialogUI, this);
@@ -83,17 +67,17 @@ Audits2.Audits2Panel = class extends UI.Panel {
     if (!this._manager)
       return false;
 
-    var mainTarget = SDK.targetManager.mainTarget();
+    const mainTarget = SDK.targetManager.mainTarget();
     if (!mainTarget)
       return false;
 
-    var inspectedURL = mainTarget.inspectedURL().asParsedURL();
-    var inspectedOrigin = inspectedURL && inspectedURL.securityOrigin();
-    for (var registration of this._manager.registrations().values()) {
+    const inspectedURL = mainTarget.inspectedURL().asParsedURL();
+    const inspectedOrigin = inspectedURL && inspectedURL.securityOrigin();
+    for (const registration of this._manager.registrations().values()) {
       if (registration.securityOrigin !== inspectedOrigin)
         continue;
 
-      for (var version of registration.versions.values()) {
+      for (const version of registration.versions.values()) {
         if (version.controlledClients.length > 1)
           return true;
       }
@@ -116,8 +100,8 @@ Audits2.Audits2Panel = class extends UI.Panel {
     if (!this._manager)
       return null;
 
-    var mainTarget = SDK.targetManager.mainTarget();
-    var inspectedURL = mainTarget && mainTarget.inspectedURL();
+    const mainTarget = SDK.targetManager.mainTarget();
+    const inspectedURL = mainTarget && mainTarget.inspectedURL();
     if (inspectedURL && !/^(http|chrome-extension)/.test(inspectedURL)) {
       return Common.UIString(
           'Can only audit HTTP/HTTPS pages and Chrome extensions. ' +
@@ -137,12 +121,12 @@ Audits2.Audits2Panel = class extends UI.Panel {
     if (!this._dialog)
       return;
 
-    var hasActiveServiceWorker = this._hasActiveServiceWorker();
-    var hasAtLeastOneCategory = this._hasAtLeastOneCategory();
-    var unauditablePageMessage = this._unauditablePageMessage();
-    var isDisabled = hasActiveServiceWorker || !hasAtLeastOneCategory || !!unauditablePageMessage;
+    const hasActiveServiceWorker = this._hasActiveServiceWorker();
+    const hasAtLeastOneCategory = this._hasAtLeastOneCategory();
+    const unauditablePageMessage = this._unauditablePageMessage();
+    const isDisabled = hasActiveServiceWorker || !hasAtLeastOneCategory || !!unauditablePageMessage;
 
-    var helpText = '';
+    let helpText = '';
     if (hasActiveServiceWorker) {
       helpText = Common.UIString(
           'Multiple tabs are being controlled by the same service worker. ' +
@@ -157,37 +141,66 @@ Audits2.Audits2Panel = class extends UI.Panel {
     this._dialog.setStartEnabled(!isDisabled);
   }
 
+  _refreshToolbarUI() {
+    this._downloadButton.setEnabled(this._reportSelector.hasCurrentSelection());
+    this._clearButton.setEnabled(this._reportSelector.hasItems());
+  }
+
   _clearAll() {
     this._reportSelector.clearAll();
     this._showLandingPage();
+    this._refreshToolbarUI();
   }
 
   _downloadSelected() {
     this._reportSelector.downloadSelected();
   }
 
+  _renderToolbar() {
+    const toolbar = new UI.Toolbar('', this.element);
+
+    this._newButton = new UI.ToolbarButton(Common.UIString('Perform an audit\u2026'), 'largeicon-add');
+    toolbar.appendToolbarItem(this._newButton);
+    this._newButton.addEventListener(UI.ToolbarButton.Events.Click, this._showDialog.bind(this));
+
+    this._downloadButton = new UI.ToolbarButton(Common.UIString('Download report'), 'largeicon-download');
+    toolbar.appendToolbarItem(this._downloadButton);
+    this._downloadButton.addEventListener(UI.ToolbarButton.Events.Click, this._downloadSelected.bind(this));
+
+    toolbar.appendSeparator();
+
+    this._reportSelector = new Audits2.ReportSelector();
+    toolbar.appendToolbarItem(this._reportSelector.comboBox());
+
+    this._clearButton = new UI.ToolbarButton(Common.UIString('Clear all'), 'largeicon-clear');
+    toolbar.appendToolbarItem(this._clearButton);
+    this._clearButton.addEventListener(UI.ToolbarButton.Events.Click, this._clearAll.bind(this));
+    this._refreshToolbarUI();
+  }
+
   _showLandingPage() {
-    if (this._reportSelector.comboBox().size())
+    if (this._reportSelector.hasCurrentSelection())
       return;
 
     this._auditResultsElement.removeChildren();
-    var landingPage = this._auditResultsElement.createChild('div', 'vbox audits2-landing-page');
-    var landingCenter = landingPage.createChild('div', 'vbox audits2-landing-center');
+    const landingPage = this._auditResultsElement.createChild('div', 'vbox audits2-landing-page');
+    const landingCenter = landingPage.createChild('div', 'vbox audits2-landing-center');
     landingCenter.createChild('div', 'audits2-logo');
-    var text = landingCenter.createChild('div', 'audits2-landing-text');
+    const text = landingCenter.createChild('div', 'audits2-landing-text');
     text.createChild('span', 'audits2-landing-bold-text').textContent = Common.UIString('Audits');
     text.createChild('span').textContent = Common.UIString(
         ' help you identify and fix common problems that affect' +
         ' your site\'s performance, accessibility, and user experience. ');
-    var link = text.createChild('span', 'link');
+    const link = text.createChild('span', 'link');
     link.textContent = Common.UIString('Learn more');
     link.addEventListener(
         'click', () => InspectorFrontendHost.openInNewTab('https://developers.google.com/web/tools/lighthouse/'));
 
-    var newButton = UI.createTextButton(
+    const newButton = UI.createTextButton(
         Common.UIString('Perform an audit\u2026'), this._showDialog.bind(this), '', true /* primary */);
     landingCenter.appendChild(newButton);
     this.setDefaultFocusedElement(newButton);
+    this._refreshToolbarUI();
   }
 
   _showDialog() {
@@ -211,26 +224,27 @@ Audits2.Audits2Panel = class extends UI.Panel {
     if (lighthouseResult === null)
       return;
 
-    var optionElement =
+    const optionElement =
         new Audits2.ReportSelector.Item(lighthouseResult, this._auditResultsElement, this._showLandingPage.bind(this));
     this._reportSelector.prepend(optionElement);
     this._hideDialog();
+    this._refreshToolbarUI();
   }
 
   /**
    * @param {!DataTransfer} dataTransfer
    */
   _handleDrop(dataTransfer) {
-    var items = dataTransfer.items;
+    const items = dataTransfer.items;
     if (!items.length)
       return;
-    var item = items[0];
+    const item = items[0];
     if (item.kind === 'file') {
-      var entry = items[0].webkitGetAsEntry();
+      const entry = items[0].webkitGetAsEntry();
       if (!entry.isFile)
         return;
       entry.file(file => {
-        var reader = new FileReader();
+        const reader = new FileReader();
         reader.onload = () => this._loadedFromFile(/** @type {string} */ (reader.result));
         reader.readAsText(file);
       });
@@ -241,7 +255,7 @@ Audits2.Audits2Panel = class extends UI.Panel {
    * @param {string} profile
    */
   _loadedFromFile(profile) {
-    var data = JSON.parse(profile);
+    const data = JSON.parse(profile);
     if (!data['lighthouseVersion'])
       return;
     this._buildReportUI(/** @type {!ReportRenderer.ReportJSON} */ (data));
@@ -319,17 +333,27 @@ Audits2.Audits2Panel.Presets = [
 
 Audits2.ReportSelector = class {
   constructor() {
+    this._emptyItem = null;
     this._comboBox = new UI.ToolbarComboBox(this._handleChange.bind(this), 'audits2-report');
     this._comboBox.setMaxWidth(270);
     this._comboBox.setMinWidth(200);
     this._itemByOptionElement = new Map();
+    this._setPlaceholderState();
+  }
+
+  _setPlaceholderState() {
+    this._comboBox.setEnabled(false);
+    this._emptyItem = createElement('option');
+    this._emptyItem.label = Common.UIString('(no reports)');
+    this._comboBox.selectElement().appendChild(this._emptyItem);
+    this._comboBox.select(this._emptyItem);
   }
 
   /**
    * @param {!Event} event
    */
   _handleChange(event) {
-    var item = this._selectedItem();
+    const item = this._selectedItem();
     if (item)
       item.select();
   }
@@ -338,8 +362,22 @@ Audits2.ReportSelector = class {
    * @return {!Audits2.ReportSelector.Item}
    */
   _selectedItem() {
-    var option = this._comboBox.selectedOption();
+    const option = this._comboBox.selectedOption();
     return this._itemByOptionElement.get(option);
+  }
+
+  /**
+   * @return {boolean}
+   */
+  hasCurrentSelection() {
+    return !!this._selectedItem();
+  }
+
+  /**
+   * @return {boolean}
+   */
+  hasItems() {
+    return this._itemByOptionElement.size > 0;
   }
 
   /**
@@ -353,22 +391,32 @@ Audits2.ReportSelector = class {
    * @param {!Audits2.ReportSelector.Item} item
    */
   prepend(item) {
-    var optionEl = item.optionElement();
-    var selectEl = this._comboBox.selectElement();
+    if (this._emptyItem) {
+      this._emptyItem.remove();
+      delete this._emptyItem;
+    }
+
+    const optionEl = item.optionElement();
+    const selectEl = this._comboBox.selectElement();
 
     this._itemByOptionElement.set(optionEl, item);
     selectEl.insertBefore(optionEl, selectEl.firstElementChild);
+    this._comboBox.setEnabled(true);
     this._comboBox.select(optionEl);
     item.select();
   }
 
   clearAll() {
-    for (var elem of this._comboBox.options())
+    for (const elem of this._comboBox.options()) {
       this._itemByOptionElement.get(elem).delete();
+      this._itemByOptionElement.delete(elem);
+    }
+
+    this._setPlaceholderState();
   }
 
   downloadSelected() {
-    var item = this._selectedItem();
+    const item = this._selectedItem();
     item.download();
   }
 };
@@ -387,8 +435,8 @@ Audits2.ReportSelector.Item = class {
     this._reportContainer = null;
 
 
-    var url = new Common.ParsedURL(lighthouseResult.url);
-    var timestamp = lighthouseResult.generatedTime;
+    const url = new Common.ParsedURL(lighthouseResult.url);
+    const timestamp = lighthouseResult.generatedTime;
     this._element = createElement('option');
     this._element.label = `${url.domain()} ${new Date(timestamp).toLocaleString()}`;
   }
@@ -411,9 +459,9 @@ Audits2.ReportSelector.Item = class {
   }
 
   download() {
-    var url = new Common.ParsedURL(this._lighthouseResult.url).domain();
-    var timestamp = this._lighthouseResult.generatedTime;
-    var fileName = `${url}-${new Date(timestamp).toISO8601Compact()}.json`;
+    const url = new Common.ParsedURL(this._lighthouseResult.url).domain();
+    const timestamp = this._lighthouseResult.generatedTime;
+    const fileName = `${url}-${new Date(timestamp).toISO8601Compact()}.json`;
     Workspace.fileManager.save(fileName, JSON.stringify(this._lighthouseResult), true);
   }
 
@@ -426,13 +474,13 @@ Audits2.ReportSelector.Item = class {
 
     this._reportContainer = this._resultsView.createChild('div', 'lh-vars lh-root lh-devtools');
 
-    var dom = new DOM(/** @type {!Document} */ (this._resultsView.ownerDocument));
-    var detailsRenderer = new Audits2.DetailsRenderer(dom);
-    var categoryRenderer = new CategoryRenderer(dom, detailsRenderer);
-    var renderer = new Audits2.Audits2Panel.ReportRenderer(dom, categoryRenderer);
+    const dom = new DOM(/** @type {!Document} */ (this._resultsView.ownerDocument));
+    const detailsRenderer = new Audits2.DetailsRenderer(dom);
+    const categoryRenderer = new CategoryRenderer(dom, detailsRenderer);
+    const renderer = new Audits2.Audits2Panel.ReportRenderer(dom, categoryRenderer);
 
-    var templatesHTML = Runtime.cachedResources['audits2/lighthouse/templates.html'];
-    var templatesDOM = new DOMParser().parseFromString(templatesHTML, 'text/html');
+    const templatesHTML = Runtime.cachedResources['audits2/lighthouse/templates.html'];
+    const templatesDOM = new DOMParser().parseFromString(templatesHTML, 'text/html');
     if (!templatesDOM)
       return;
 
@@ -456,7 +504,7 @@ Audits2.DetailsRenderer = class extends DetailsRenderer {
    * @return {!Element}
    */
   renderNode(item) {
-    var element = super.renderNode(item);
+    const element = super.renderNode(item);
     this._replaceWithDeferredNodeBlock(element, item);
     return element;
   }
@@ -466,27 +514,28 @@ Audits2.DetailsRenderer = class extends DetailsRenderer {
    * @param {!DetailsRenderer.NodeDetailsJSON} detailsItem
    */
   async _replaceWithDeferredNodeBlock(origElement, detailsItem) {
-    var mainTarget = SDK.targetManager.mainTarget();
+    const mainTarget = SDK.targetManager.mainTarget();
     if (!this._onMainFrameNavigatedPromise) {
-      var resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel);
+      const resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel);
       this._onMainFrameNavigatedPromise = resourceTreeModel.once(SDK.ResourceTreeModel.Events.MainFrameNavigated);
     }
 
     await this._onMainFrameNavigatedPromise;
 
-    var domModel = mainTarget.model(SDK.DOMModel);
+    const domModel = mainTarget.model(SDK.DOMModel);
     if (!detailsItem.path)
       return;
 
-    var nodeId = await domModel.pushNodeByPathToFrontend(detailsItem.path);
+    const nodeId = await domModel.pushNodeByPathToFrontend(detailsItem.path);
 
     if (!nodeId)
       return;
-    var node = domModel.nodeForId(nodeId);
+    const node = domModel.nodeForId(nodeId);
     if (!node)
       return;
 
-    var element = Components.DOMPresentationUtils.linkifyNodeReference(node, undefined, detailsItem.snippet);
+    const element =
+        await Common.Linkifier.linkify(node, /** @type {!Common.Linkifier.Options} */ ({title: detailsItem.snippet}));
     origElement.title = '';
     origElement.textContent = '';
     origElement.appendChild(element);

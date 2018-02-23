@@ -29,55 +29,84 @@
  */
 
 /**
- * @unrestricted
+ * @implements {SDK.SDKModelObserver<!SDK.DebuggerModel>}
  */
+Bindings.PresentationConsoleMessageManager = class {
+  constructor() {
+    SDK.targetManager.observeModels(SDK.DebuggerModel, this);
+
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+    SDK.consoleModel.addEventListener(
+        SDK.ConsoleModel.Events.MessageAdded,
+        event => this._consoleMessageAdded(/** @type {!SDK.ConsoleMessage} */ (event.data)));
+    SDK.consoleModel.messages().forEach(this._consoleMessageAdded, this);
+  }
+
+  /**
+   * @override
+   * @param {!SDK.DebuggerModel} debuggerModel
+   */
+  modelAdded(debuggerModel) {
+    debuggerModel[Bindings.PresentationConsoleMessageManager._symbol] =
+        new Bindings.PresentationConsoleMessageHelper(debuggerModel);
+  }
+
+  /**
+   * @override
+   * @param {!SDK.DebuggerModel} debuggerModel
+   */
+  modelRemoved(debuggerModel) {
+    debuggerModel[Bindings.PresentationConsoleMessageManager._symbol]._consoleCleared();
+  }
+
+  /**
+   * @param {!SDK.ConsoleMessage} message
+   */
+  _consoleMessageAdded(message) {
+    if (!message.isErrorOrWarning() || !message.runtimeModel() ||
+        message.source === SDK.ConsoleMessage.MessageSource.Violation)
+      return;
+    const debuggerModel = message.runtimeModel().debuggerModel();
+    debuggerModel[Bindings.PresentationConsoleMessageManager._symbol]._consoleMessageAdded(message);
+  }
+
+  _consoleCleared() {
+    for (const debuggerModel of SDK.targetManager.models(SDK.DebuggerModel))
+      debuggerModel[Bindings.PresentationConsoleMessageManager._symbol]._consoleCleared();
+  }
+};
+
+Bindings.PresentationConsoleMessageManager._symbol = Symbol('PresentationConsoleMessageHelper');
+
 Bindings.PresentationConsoleMessageHelper = class {
   /**
-   * @param {!Workspace.Workspace} workspace
+   * @param {!SDK.DebuggerModel} debuggerModel
    */
-  constructor(workspace) {
-    this._workspace = workspace;
+  constructor(debuggerModel) {
+    this._debuggerModel = debuggerModel;
 
-    /** @type {!Object.<string, !Array.<!ConsoleModel.ConsoleMessage>>} */
+    /** @type {!Object.<string, !Array.<!SDK.ConsoleMessage>>} */
     this._pendingConsoleMessages = {};
 
     /** @type {!Array.<!Bindings.PresentationConsoleMessage>} */
     this._presentationConsoleMessages = [];
 
-    ConsoleModel.consoleModel.addEventListener(
-        ConsoleModel.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
-    ConsoleModel.consoleModel.addEventListener(
-        ConsoleModel.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
-    ConsoleModel.consoleModel.messages().forEach(this._consoleMessageAdded, this);
     // TODO(dgozman): setImmediate because we race with DebuggerWorkspaceBinding on ParsedScriptSource event delivery.
-    SDK.targetManager.addModelListener(
-        SDK.DebuggerModel, SDK.DebuggerModel.Events.ParsedScriptSource,
+    debuggerModel.addEventListener(
+        SDK.DebuggerModel.Events.ParsedScriptSource, event => setImmediate(this._parsedScriptSource.bind(this, event)));
+    debuggerModel.addEventListener(
+        SDK.DebuggerModel.Events.FailedToParseScriptSource,
         event => setImmediate(this._parsedScriptSource.bind(this, event)));
-    SDK.targetManager.addModelListener(
-        SDK.DebuggerModel, SDK.DebuggerModel.Events.FailedToParseScriptSource,
-        event => setImmediate(this._parsedScriptSource.bind(this, event)));
-    SDK.targetManager.addModelListener(
-        SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
+    debuggerModel.addEventListener(SDK.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 
     this._locationPool = new Bindings.LiveLocationPool();
   }
 
   /**
-   * @param {!Common.Event} event
-   */
-  _onConsoleMessageAdded(event) {
-    var message = /** @type {!ConsoleModel.ConsoleMessage} */ (event.data);
-    this._consoleMessageAdded(message);
-  }
-
-  /**
-   * @param {!ConsoleModel.ConsoleMessage} message
+   * @param {!SDK.ConsoleMessage} message
    */
   _consoleMessageAdded(message) {
-    if (!message.isErrorOrWarning())
-      return;
-
-    var rawLocation = this._rawLocation(message);
+    const rawLocation = this._rawLocation(message);
     if (rawLocation)
       this._addConsoleMessageToScript(message, rawLocation);
     else
@@ -85,38 +114,33 @@ Bindings.PresentationConsoleMessageHelper = class {
   }
 
   /**
-   * @param {!ConsoleModel.ConsoleMessage} message
+   * @param {!SDK.ConsoleMessage} message
    * @return {?SDK.DebuggerModel.Location}
    */
   _rawLocation(message) {
-    if (!message.runtimeModel())
-      return null;
-    var debuggerModel = message.runtimeModel().debuggerModel();
     if (message.scriptId)
-      return debuggerModel.createRawLocationByScriptId(message.scriptId, message.line, message.column);
-    var callFrame = message.stackTrace && message.stackTrace.callFrames ? message.stackTrace.callFrames[0] : null;
+      return this._debuggerModel.createRawLocationByScriptId(message.scriptId, message.line, message.column);
+    const callFrame = message.stackTrace && message.stackTrace.callFrames ? message.stackTrace.callFrames[0] : null;
     if (callFrame) {
-      return debuggerModel.createRawLocationByScriptId(
+      return this._debuggerModel.createRawLocationByScriptId(
           callFrame.scriptId, callFrame.lineNumber, callFrame.columnNumber);
     }
     if (message.url)
-      return debuggerModel.createRawLocationByURL(message.url, message.line, message.column);
+      return this._debuggerModel.createRawLocationByURL(message.url, message.line, message.column);
     return null;
   }
 
   /**
-   * @param {!ConsoleModel.ConsoleMessage} message
+   * @param {!SDK.ConsoleMessage} message
    * @param {!SDK.DebuggerModel.Location} rawLocation
    */
   _addConsoleMessageToScript(message, rawLocation) {
-    if (message.source === ConsoleModel.ConsoleMessage.MessageSource.Violation)
-      return;
     this._presentationConsoleMessages.push(
         new Bindings.PresentationConsoleMessage(message, rawLocation, this._locationPool));
   }
 
   /**
-   * @param {!ConsoleModel.ConsoleMessage} message
+   * @param {!SDK.ConsoleMessage} message
    */
   _addPendingConsoleMessage(message) {
     if (!message.url)
@@ -130,19 +154,19 @@ Bindings.PresentationConsoleMessageHelper = class {
    * @param {!Common.Event} event
    */
   _parsedScriptSource(event) {
-    var script = /** @type {!SDK.Script} */ (event.data);
+    const script = /** @type {!SDK.Script} */ (event.data);
 
-    var messages = this._pendingConsoleMessages[script.sourceURL];
+    const messages = this._pendingConsoleMessages[script.sourceURL];
     if (!messages)
       return;
 
-    var pendingMessages = [];
-    for (var i = 0; i < messages.length; i++) {
-      var message = messages[i];
-      var rawLocation = this._rawLocation(message);
+    const pendingMessages = [];
+    for (let i = 0; i < messages.length; i++) {
+      const message = messages[i];
+      const rawLocation = this._rawLocation(message);
       if (!rawLocation)
         continue;
-      if (script.debuggerModel.runtimeModel() === message.runtimeModel() && script.scriptId === rawLocation.scriptId)
+      if (script.scriptId === rawLocation.scriptId)
         this._addConsoleMessageToScript(message, rawLocation);
       else
         pendingMessages.push(message);
@@ -156,14 +180,14 @@ Bindings.PresentationConsoleMessageHelper = class {
 
   _consoleCleared() {
     this._pendingConsoleMessages = {};
-    for (var i = 0; i < this._presentationConsoleMessages.length; ++i)
-      this._presentationConsoleMessages[i].dispose();
-    this._presentationConsoleMessages = [];
-    this._locationPool.disposeAll();
+    this._debuggerReset();
   }
 
   _debuggerReset() {
-    this._consoleCleared();
+    for (const message of this._presentationConsoleMessages)
+      message.dispose();
+    this._presentationConsoleMessages = [];
+    this._locationPool.disposeAll();
   }
 };
 
@@ -172,13 +196,13 @@ Bindings.PresentationConsoleMessageHelper = class {
  */
 Bindings.PresentationConsoleMessage = class {
   /**
-   * @param {!ConsoleModel.ConsoleMessage} message
+   * @param {!SDK.ConsoleMessage} message
    * @param {!SDK.DebuggerModel.Location} rawLocation
    * @param {!Bindings.LiveLocationPool} locationPool
    */
   constructor(message, rawLocation, locationPool) {
     this._text = message.messageText;
-    this._level = message.level === ConsoleModel.ConsoleMessage.MessageLevel.Error ?
+    this._level = message.level === SDK.ConsoleMessage.MessageLevel.Error ?
         Workspace.UISourceCode.Message.Level.Error :
         Workspace.UISourceCode.Message.Level.Warning;
     Bindings.debuggerWorkspaceBinding.createLiveLocation(rawLocation, this._updateLocation.bind(this), locationPool);
@@ -190,7 +214,7 @@ Bindings.PresentationConsoleMessage = class {
   _updateLocation(liveLocation) {
     if (this._uiMessage)
       this._uiMessage.remove();
-    var uiLocation = liveLocation.uiLocation();
+    const uiLocation = liveLocation.uiLocation();
     if (!uiLocation)
       return;
     this._uiMessage =
@@ -202,6 +226,3 @@ Bindings.PresentationConsoleMessage = class {
       this._uiMessage.remove();
   }
 };
-
-/** @type {!Bindings.PresentationConsoleMessageHelper} */
-Bindings.presentationConsoleMessageHelper;

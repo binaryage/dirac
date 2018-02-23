@@ -208,13 +208,14 @@
 
 (defn run-message-loop! [client]
   (go-loop []
-    (when-let [message (<! client)]
+    (when-some [message (<! client)]
       (<! (process-message! client message))
-      (recur))
-    (clients/remove-client! client)))
+      (recur))))
 
 ; -- event handlers ---------------------------------------------------------------------------------------------------------
 
 (defn handle-new-connection! [client]
-  (clients/add-client! client)
-  (run-message-loop! client))
+  (go
+    (clients/add-client! client)
+    (<! (run-message-loop! client))
+    (clients/remove-client! client)))

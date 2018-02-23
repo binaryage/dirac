@@ -59,7 +59,7 @@
 (defn run-chrome-event-loop! [chrome-event-channel]
   (log "starting main event loop...")
   (go-loop []
-    (when-let [event (<! chrome-event-channel)]
+    (when-some [event (<! chrome-event-channel)]
       (<! (process-chrome-event! event))
       (recur))
     (log "leaving main event loop")))
