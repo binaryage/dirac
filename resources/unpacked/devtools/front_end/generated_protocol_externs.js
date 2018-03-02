@@ -446,6 +446,19 @@ Protocol.BrowserAgent.GetVersionResponse;
 Protocol.BrowserAgent.prototype.invoke_getVersion = function(obj) {};
 
 /**
+ * @return {!Promise<?Array<string>>}
+ */
+Protocol.BrowserAgent.prototype.getCommandLine = function() {};
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.GetCommandLineRequest;
+/** @typedef {!{arguments: !Array<string>}} */
+Protocol.BrowserAgent.GetCommandLineResponse;
+/**
+ * @param {!Protocol.BrowserAgent.GetCommandLineRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.GetCommandLineResponse>} */
+Protocol.BrowserAgent.prototype.invoke_getCommandLine = function(obj) {};
+
+/**
  * @param {string=} opt_query
  * @return {!Promise<?Array<Protocol.Browser.Histogram>>}
  */
@@ -929,6 +942,9 @@ Protocol.CSS.MediaQueryExpression;
 /** @typedef {!{familyName:(string), isCustomFont:(boolean), glyphCount:(number)}} */
 Protocol.CSS.PlatformFontUsage;
 
+/** @typedef {!{fontFamily:(string), fontStyle:(string), fontVariant:(string), fontWeight:(string), fontStretch:(string), unicodeRange:(string), src:(string), platformFontFamily:(string)}} */
+Protocol.CSS.FontFace;
+
 /** @typedef {!{animationName:(Protocol.CSS.Value), keyframes:(!Array<Protocol.CSS.CSSKeyframeRule>)}} */
 Protocol.CSS.CSSKeyframesRule;
 
@@ -939,7 +955,10 @@ Protocol.CSS.CSSKeyframeRule;
 Protocol.CSS.StyleDeclarationEdit;
 /** @interface */
 Protocol.CSSDispatcher = function() {};
-Protocol.CSSDispatcher.prototype.fontsUpdated = function() {};
+/**
+ * @param {Protocol.CSS.FontFace=} opt_font
+ */
+Protocol.CSSDispatcher.prototype.fontsUpdated = function(opt_font) {};
 Protocol.CSSDispatcher.prototype.mediaQueryResultChanged = function() {};
 /**
  * @param {Protocol.CSS.CSSStyleSheetHeader} header
@@ -1944,7 +1963,7 @@ Protocol.DOMSnapshotAgent.GetSnapshotResponse;
  * @return {!Promise<!Protocol.DOMSnapshotAgent.GetSnapshotResponse>} */
 Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
-/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined)}} */
+/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
 /** @typedef {!{boundingBox:(Protocol.DOM.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
@@ -2491,7 +2510,7 @@ Protocol.HeadlessExperimentalAgent = function(){};
 Protocol.HeadlessExperimentalAgent.prototype.beginFrame = function(opt_frameTime, opt_deadline, opt_interval, opt_noDisplayUpdates, opt_screenshot) {};
 /** @typedef {!{interval: (number|undefined), deadline: (Protocol.Runtime.Timestamp|undefined), frameTime: (Protocol.Runtime.Timestamp|undefined), screenshot: (Protocol.HeadlessExperimental.ScreenshotParams|undefined), noDisplayUpdates: (boolean|undefined)}} */
 Protocol.HeadlessExperimentalAgent.BeginFrameRequest;
-/** @typedef {!{hasDamage: boolean, screenshotData: string, mainFrameContentUpdated: boolean}} */
+/** @typedef {!{hasDamage: boolean, screenshotData: string}} */
 Protocol.HeadlessExperimentalAgent.BeginFrameResponse;
 /**
  * @param {!Protocol.HeadlessExperimentalAgent.BeginFrameRequest} obj
@@ -2534,7 +2553,6 @@ Protocol.HeadlessExperimental.ScreenshotParamsFormat = {
 Protocol.HeadlessExperimental.ScreenshotParams;
 /** @interface */
 Protocol.HeadlessExperimentalDispatcher = function() {};
-Protocol.HeadlessExperimentalDispatcher.prototype.mainFrameReadyForScreenshots = function() {};
 /**
  * @param {boolean} needsBeginFrames
  */
@@ -3421,7 +3439,7 @@ Protocol.Memory.PressureLevel = {
     Critical: "critical"
 };
 
-/** @typedef {!{size:(number), count:(number), stack:(!Array<string>)}} */
+/** @typedef {!{size:(number), total:(number), stack:(!Array<string>)}} */
 Protocol.Memory.SamplingProfileNode;
 
 /** @typedef {!{samples:(!Array<Protocol.Memory.SamplingProfileNode>)}} */

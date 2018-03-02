@@ -141,6 +141,8 @@ var SDKTestRunner = {};
 /** @const */
 var Screencast = {};
 /** @const */
+var Search = {};
+/** @const */
 var Security = {};
 /** @const */
 var SecurityTestRunner = {};
