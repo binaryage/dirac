@@ -5,6 +5,6 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$DEVSERVER_ROOT"
 
-python -m SimpleHTTPServer "$DEVSERVER_PORT"
+python -m http.server "$DEVSERVER_PORT"
 
 popd
