@@ -232,17 +232,14 @@ Sources.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
     if (this._muteSourceCodeEvents)
       return;
     this._innerSetContent(this._uiSourceCode.workingCopy());
-    this.onUISourceCodeContentChanged();
   }
 
   /**
    * @param {!Common.Event} event
    */
   _onWorkingCopyCommitted(event) {
-    if (!this._muteSourceCodeEvents) {
+    if (!this._muteSourceCodeEvents)
       this._innerSetContent(this._uiSourceCode.workingCopy());
-      this.onUISourceCodeContentChanged();
-    }
     this.textEditor.markClean();
     this._updateStyle();
   }
@@ -311,9 +308,6 @@ Sources.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
     this.setEditable(this._canEditSource());
   }
 
-  onUISourceCodeContentChanged() {
-  }
-
   /**
    * @param {string} content
    */
@@ -361,6 +355,7 @@ Sources.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
   }
 
   dispose() {
+    this._errorPopoverHelper.dispose();
     this._disposePlugins();
     if (this._diff)
       this._diff.dispose();
