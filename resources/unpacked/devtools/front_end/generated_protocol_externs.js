@@ -448,15 +448,15 @@ Protocol.BrowserAgent.prototype.invoke_getVersion = function(obj) {};
 /**
  * @return {!Promise<?Array<string>>}
  */
-Protocol.BrowserAgent.prototype.getCommandLine = function() {};
+Protocol.BrowserAgent.prototype.getBrowserCommandLine = function() {};
 /** @typedef {Object|undefined} */
-Protocol.BrowserAgent.GetCommandLineRequest;
+Protocol.BrowserAgent.GetBrowserCommandLineRequest;
 /** @typedef {!{arguments: !Array<string>}} */
-Protocol.BrowserAgent.GetCommandLineResponse;
+Protocol.BrowserAgent.GetBrowserCommandLineResponse;
 /**
- * @param {!Protocol.BrowserAgent.GetCommandLineRequest} obj
- * @return {!Promise<!Protocol.BrowserAgent.GetCommandLineResponse>} */
-Protocol.BrowserAgent.prototype.invoke_getCommandLine = function(obj) {};
+ * @param {!Protocol.BrowserAgent.GetBrowserCommandLineRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.GetBrowserCommandLineResponse>} */
+Protocol.BrowserAgent.prototype.invoke_getBrowserCommandLine = function(obj) {};
 
 /**
  * @param {string=} opt_query
@@ -2518,6 +2518,20 @@ Protocol.HeadlessExperimentalAgent.BeginFrameResponse;
 Protocol.HeadlessExperimentalAgent.prototype.invoke_beginFrame = function(obj) {};
 
 /**
+ * @param {number=} opt_initialDate
+ * @return {!Promise<undefined>}
+ */
+Protocol.HeadlessExperimentalAgent.prototype.enterDeterministicMode = function(opt_initialDate) {};
+/** @typedef {!{initialDate: (number|undefined)}} */
+Protocol.HeadlessExperimentalAgent.EnterDeterministicModeRequest;
+/** @typedef {Object|undefined} */
+Protocol.HeadlessExperimentalAgent.EnterDeterministicModeResponse;
+/**
+ * @param {!Protocol.HeadlessExperimentalAgent.EnterDeterministicModeRequest} obj
+ * @return {!Promise<!Protocol.HeadlessExperimentalAgent.EnterDeterministicModeResponse>} */
+Protocol.HeadlessExperimentalAgent.prototype.invoke_enterDeterministicMode = function(obj) {};
+
+/**
  * @return {!Promise<undefined>}
  */
 Protocol.HeadlessExperimentalAgent.prototype.disable = function() {};
@@ -4069,8 +4083,9 @@ Protocol.NetworkDispatcher.prototype.requestServedFromCache = function(requestId
  * @param {Protocol.Network.Response=} opt_redirectResponse
  * @param {Protocol.Page.ResourceType=} opt_type
  * @param {Protocol.Page.FrameId=} opt_frameId
+ * @param {boolean=} opt_hasUserGesture
  */
-Protocol.NetworkDispatcher.prototype.requestWillBeSent = function(requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, opt_redirectResponse, opt_type, opt_frameId) {};
+Protocol.NetworkDispatcher.prototype.requestWillBeSent = function(requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, opt_redirectResponse, opt_type, opt_frameId, opt_hasUserGesture) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.ResourcePriority} newPriority
@@ -7226,10 +7241,11 @@ Protocol.RuntimeAgent.prototype.invoke_enable = function(obj) {};
  * @param {boolean=} opt_generatePreview
  * @param {boolean=} opt_userGesture
  * @param {boolean=} opt_awaitPromise
+ * @param {boolean=} opt_throwOnSideEffect
  * @return {!Promise<?Protocol.Runtime.RemoteObject>}
  */
-Protocol.RuntimeAgent.prototype.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_contextId, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise) {};
-/** @typedef {!{objectGroup: (string|undefined), includeCommandLineAPI: (boolean|undefined), contextId: (Protocol.Runtime.ExecutionContextId|undefined), silent: (boolean|undefined), generatePreview: (boolean|undefined), returnByValue: (boolean|undefined), expression: string, userGesture: (boolean|undefined), awaitPromise: (boolean|undefined)}} */
+Protocol.RuntimeAgent.prototype.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_contextId, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise, opt_throwOnSideEffect) {};
+/** @typedef {!{objectGroup: (string|undefined), includeCommandLineAPI: (boolean|undefined), contextId: (Protocol.Runtime.ExecutionContextId|undefined), silent: (boolean|undefined), throwOnSideEffect: (boolean|undefined), generatePreview: (boolean|undefined), returnByValue: (boolean|undefined), expression: string, userGesture: (boolean|undefined), awaitPromise: (boolean|undefined)}} */
 Protocol.RuntimeAgent.EvaluateRequest;
 /** @typedef {!{exceptionDetails: Protocol.Runtime.ExceptionDetails, result: Protocol.Runtime.RemoteObject}} */
 Protocol.RuntimeAgent.EvaluateResponse;
