@@ -117,9 +117,10 @@ Main.Main = class {
     Runtime.experiments.register('colorContrastRatio', 'Color contrast ratio line in color picker', true);
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
-    Runtime.experiments.register('oopifInlineDOM', 'OOPIF: inline DOM ', true);
     Runtime.experiments.register('nativeHeapProfiler', 'Native memory sampling heap profiler', true);
     Runtime.experiments.register('networkSearch', 'Network search', true);
+    Runtime.experiments.register('oopifInlineDOM', 'OOPIF: inline DOM ', true);
+    Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
     Runtime.experiments.register('sourceDiff', 'Source diff');
     Runtime.experiments.register(
         'stepIntoAsync', 'Introduce separate step action, stepInto becomes powerful enough to go inside async call');
@@ -218,19 +219,8 @@ Main.Main = class {
     this._registerForwardedShortcuts();
     this._registerMessageSinkListener();
 
-    // Pick first app we could instantiate (for test harness).
-    for (const extension of self.runtime.extensions(Common.AppProvider)) {
-      try {
-        const instance = await extension.instance();
-        if (instance) {
-          this._showAppUI(instance);
-          break;
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
     Main.Main.timeEnd('Main._createAppUI');
+    this._showAppUI(await self.runtime.extension(Common.AppProvider).instance());
   }
 
   /**

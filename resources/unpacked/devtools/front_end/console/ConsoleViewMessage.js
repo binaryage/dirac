@@ -1095,6 +1095,8 @@ Console.ConsoleViewMessage = class {
         break;
       case SDK.ConsoleMessage.MessageLevel.Info:
         this._element.classList.add('console-info-level');
+        if (this._message.type === SDK.ConsoleMessage.MessageType.System)
+          this._element.classList.add('console-system-type');
         break;
       case SDK.ConsoleMessage.MessageLevel.Warning:
         this._element.classList.add('console-warning-level');
