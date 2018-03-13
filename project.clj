@@ -3,7 +3,7 @@
 (def figwheel-version "0.5.15")
 (def selected-clojure-version "1.9.0")
 (def selected-clojurescript-version "1.9.946")
-(def selenium-version "3.10.0")
+(def selenium-version "3.11.0")
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
