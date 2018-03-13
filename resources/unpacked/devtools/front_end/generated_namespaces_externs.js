@@ -131,6 +131,8 @@ var Profiler = {};
 /** @const */
 var Protocol = {};
 /** @const */
+var ProtocolMonitor = {};
+/** @const */
 var QuickOpen = {};
 /** @const */
 var Resources = {};
