@@ -7,6 +7,7 @@
             [chromex.ext.runtime :as runtime]
             [chromex.ext.management :as management]
             [chromex.ext.windows :as windows]
+            [chromex.protocols :refer [get-sender]]
             [dirac.settings :refer-macros [get-dirac-scenario-window-top get-dirac-scenario-window-left
                                            get-dirac-scenario-window-width get-dirac-scenario-window-height
                                            get-dirac-runner-window-top get-dirac-runner-window-left
@@ -88,3 +89,8 @@
         (log (str "found dirac extension id: '" extension-id "'"))
         (runtime/connect extension-id #js {:name "Dirac Marionettist"})))))
 
+(defn get-client-url [client]
+  (let [sender (get-sender client)
+        sender-id (oget sender "id")
+        sender-url (oget sender "url")]
+    (str sender-id ":" sender-url)))
