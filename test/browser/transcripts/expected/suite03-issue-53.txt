@@ -1,0 +1,80 @@
+ns               Testing dirac.tests.tasks.suite03.issue-53
+extension        reset extension state
+extension        set extension options:{:target-url "http://localhost:<port>"}
+extension        set extension options:{:open-as "window"}
+automate         open-scenario! ["issue-53"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #1
+devtools #1      implant initialized
+devtools #1      setCurrentPanel: elements
+devtools #1      devtools ready
+devtools #1      namespacesCache is cool now
+automate #1      switch-to-console-panel!
+devtools #1      setCurrentPanel: console
+devtools #1      console initialized
+devtools #1      adopt-prompt-element use-parinfer? true
+devtools #1      setDiracPromptMode('status')
+devtools #1      ConsoleView constructed
+devtools #1      displayWelcomeMessage
+automate #1      switch-prompt-to-dirac!
+devtools #1      switched console prompt to 'dirac'
+devtools #1      init-repl!
+devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #1      setDiracPromptStatusStyle('info')
+devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #1      setDiracPromptNS('cljs.user')
+devtools #1      setDiracPromptMode('edit')
+automate #1      enable-console-feedback!
+automate #1      console-enter! ["(require 'dirac.tests.scenarios.issue-53.core)"]
+devtools #1      DC.info> (require 'dirac.tests.scenarios.issue-53.core)
+devtools #1      send-eval-request: (require 'dirac.tests.scenarios.issue-53.core)
+devtools #1      repl eval job started
+automate #1      console-exec-and-match! ["(in-ns 'dirac.tests.scenarios.issue-53.core)" "setDiracPromptNS('dirac.tests.scenarios.issue-53.core')"]
+devtools #1      repl eval job ended
+devtools #1      DC.info> (in-ns 'dirac.tests.scenarios.issue-53.core)
+devtools #1      send-eval-request: (in-ns 'dirac.tests.scenarios.issue-53.core)
+devtools #1      repl eval job started
+devtools #1      setDiracPromptNS('dirac.tests.scenarios.issue-53.core')
+devtools #1      repl eval job ended
+testing          test case 1
+automate #1      console-enter! ["(breakpoint-fn1)"]
+devtools #1      DC.info> (breakpoint-fn1)
+devtools #1      send-eval-request: (breakpoint-fn1)
+devtools #1      repl eval job started
+devtools #1      setCurrentPanel: sources
+automate #1      scrape! [:scope-content]
+stdout           displayed 5 items:
+                  * this: Window
+                  * x: 1
+                  * x: 3
+                  * y: 2
+                  * z: <custom>
+automate #1      simulate-global-action! ["F8"]
+devtools #1      DF.info> null
+devtools #1      repl eval job ended
+∎
+testing          test case 2
+automate #1      switch-to-console-panel!
+devtools #1      setCurrentPanel: console
+automate #1      console-enter! ["(breakpoint-fn2 1)"]
+devtools #1      DC.info> (breakpoint-fn2 1)
+devtools #1      send-eval-request: (breakpoint-fn2 1)
+devtools #1      repl eval job started
+devtools #1      setCurrentPanel: sources
+automate #1      scrape! [:scope-content]
+stdout           displayed 3 items:
+                  * one-one: 1
+                  * this: Window
+                  * two-two: 2
+automate #1      simulate-global-action! ["F8"]
+devtools #1      DF.info> null
+devtools #1      repl eval job ended
+∎
+automate #1      disable-console-feedback!
+automate #1      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #1
+automate         close-scenario! ["scenario-tab#1"]
+summary          Automated 17 actions with 3 check-points containing 0 assertions.
+                 0 failures, 0 errors.
