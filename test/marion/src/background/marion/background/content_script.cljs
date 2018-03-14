@@ -37,12 +37,14 @@
   {:pre [(some? scenario-id)
          (some? tab-id)
          (nil? (get @scenario-ids scenario-id))]}
-  (swap! scenario-ids assoc scenario-id tab-id))
+  (swap! scenario-ids assoc scenario-id tab-id)
+  (log "added scenario id" scenario-id "=>" tab-id))
 
 (defn remove-scenario-id! [scenario-id]
   {:pre [(some? scenario-id)
          (some? (get-scenario-tab-id scenario-id))]}
-  (swap! scenario-ids dissoc scenario-id))
+  (swap! scenario-ids dissoc scenario-id)
+  (log "removed scenario id" scenario-id))
 
 ; -- pending scenarios ------------------------------------------------------------------------------------------------------
 ; after opening a new tab with scenario URL, we wait for special signal from scenario page that it finished initialization
@@ -150,6 +152,7 @@
   (go
     (let [sender (get-sender client)
           scenario-url (oget sender "url")]
+      (log "scenario is ready" scenario-url)
       (if-let [callback (get @pending-scenarios scenario-url)]
         (callback message)
         (warn "expected " scenario-url " to be present in pending-scenarios")))
@@ -218,10 +221,12 @@
 ; -- content script message loop --------------------------------------------------------------------------------------------
 
 (defn run-message-loop! [client]
+  (log "entering run-message-loop! of" (helpers/get-client-url client))
   (go-loop []
     (when-some [message (<! client)]
       (<! (process-message! client message))
-      (recur))))
+      (recur))
+    (log "leaving run-message-loop! of" (helpers/get-client-url client))))
 
 ; -- event handlers ---------------------------------------------------------------------------------------------------------
 
