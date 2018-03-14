@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [marion.background.logging :refer [log info warn error]]
                    [devtools.toolbox :refer [envelope]])
-  (:require [cljs.core.async :refer [<! chan timeout put!]]
+  (:require [cljs.core.async :refer [<! chan timeout put! close! alts!]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
             [marion.background.helpers :as helpers]
@@ -10,6 +10,8 @@
             [marion.background.notifications :as notifications]
             [marion.background.dirac :as dirac]
             [marion.background.clients :as clients]
+            [goog.string :as gstring]
+            [goog.string.format]
             [dirac.utils :as utils]))
 
 ; -- scenario ids -----------------------------------------------------------------------------------------------------------
@@ -114,11 +116,20 @@
   (go
     (let [scenario-url (oget message "url")                                                                                   ; something like http://localhost:9080/scenarios/normal.html
           scenario-id (get-next-scenario-id!)
+          timeout-ms 3000
+          timeout-str (gstring/format "%0.2f" (/ timeout-ms 1000.0))
+          timeout-channel (timeout timeout-ms)
           ready-channel (wait-for-scenario-ready! scenario-url)
           tab-id (<! (helpers/create-scenario-with-url! scenario-url))]
-      (<! ready-channel)
-      (add-scenario-id! scenario-id tab-id)
-      (reply-to-message! message scenario-id))))
+      (let [[_ channel] (alts! [ready-channel timeout-channel])]
+        (condp identical? channel
+          ready-channel (do (add-scenario-id! scenario-id tab-id)
+                            (reply-to-message! message scenario-id))
+          timeout-channel (let [error-msg (str "Scenario " scenario-id " didn't get ready in time (" timeout-str "s), "
+                                               "this is probably due to javascript errors during initialization.\n"
+                                               "Inspect page '" scenario-url "'")]
+                            (warn error-msg)
+                            (reply-to-message! message (str "error: " error-msg))))))))
 
 (defn close-scenario! [message]
   (go
