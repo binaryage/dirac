@@ -1,9 +1,8 @@
 (ns marion.background.dirac
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.settings :refer [get-marion-initial-wait-time get-marion-reconnection-attempt-delay]]
+  (:require-macros [dirac.settings :refer [get-marion-reconnection-attempt-delay]]
                    [marion.background.logging :refer [log info warn error]]
                    [devtools.toolbox :refer [envelope]])
-  (:require [cljs.core.async :refer [<! chan timeout]]
+  (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message! get-sender]]
@@ -65,19 +64,18 @@
 ; -- message loop -----------------------------------------------------------------------------------------------------------
 
 (defn run-message-loop! [dirac-extension]
-  (register-dirac-extension! dirac-extension)
-  (go-loop []
-    (if-some [message (<! dirac-extension)]
-      (do
+  (go
+    (register-dirac-extension! dirac-extension)
+    (loop []
+      (when-some [message (<! dirac-extension)]
         (process-message! message)
-        (recur))
-      (unregister-dirac-extension!))))
+        (recur)))
+    (unregister-dirac-extension!)))
 
 (defn maintain-robust-connection-with-dirac-extension! []
   (go-loop []
-    (if-some [port (<! (helpers/connect-to-dirac-extension!))]
-      (do
-        (<! (run-message-loop! port))
-        (<! (timeout (get-marion-reconnection-attempt-delay)))                                                                ; do not starve this "thread"
-        (recur))
-      (error "unable to find a dirac extension to instrument"))))
+    (log "looking for dirac extension...")
+    (when-some [port (<! (helpers/connect-to-dirac-extension!))]
+      (<! (run-message-loop! port)))
+    (<! (timeout (get-marion-reconnection-attempt-delay)))                                                                    ; do not starve this "thread"
+    (recur)))
