@@ -106,6 +106,9 @@
                                                :panel  panel}))
     (<! (verbs/wait-for-panel-switch devtools-id (name panel)))))
 
+(defn ^:devtools wait-for-panel-switch [devtools-id panel]
+  (verbs/wait-for-panel-switch devtools-id (name panel)))
+
 (defn ^:devtools switch-prompt-to-dirac! [devtools-id]
   (verbs/automate-devtools! devtools-id {:action :switch-to-dirac-prompt}))
 
