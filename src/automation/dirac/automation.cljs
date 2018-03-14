@@ -19,7 +19,8 @@
             [dirac.automation.options :as options]
             [dirac.automation.verbs :as verbs]
             [dirac.automation.task :as task]
-            [dirac.utils :as utils]))
+            [dirac.utils :as utils]
+            [clojure.string :as string]))
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
 
@@ -39,8 +40,14 @@
   (options/restore-options!))
 
 (defn open-scenario! [name & [params]]
-  (messages/post-message! #js {:type "marion-open-scenario"
-                               :url  (helpers/get-scenario-url name params)}))
+  (go
+    (let [scenario-id-or-error (<! (messages/post-message! #js {:type "marion-open-scenario"
+                                                                :url  (helpers/get-scenario-url name params)}))]
+      (if (string/starts-with? scenario-id-or-error "error")
+        (let [error-msg (str "Unable to open scenario '" name "' due to " scenario-id-or-error)]
+          (error error-msg)
+          (throw error-msg {}))
+        scenario-id-or-error))))
 
 (defn close-scenario! [scenario-id]
   (messages/post-message! #js {:type        "marion-close-scenario"
