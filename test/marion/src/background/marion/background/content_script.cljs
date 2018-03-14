@@ -5,6 +5,7 @@
   (:require [cljs.core.async :refer [<! chan timeout put! close! alts!]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
+            [dirac.settings :refer [get-marion-open-scenario-timeout]]
             [marion.background.helpers :as helpers]
             [marion.background.feedback :as feedback]
             [marion.background.notifications :as notifications]
@@ -118,7 +119,7 @@
   (go
     (let [scenario-url (oget message "url")                                                                                   ; something like http://localhost:9080/scenarios/normal.html
           scenario-id (get-next-scenario-id!)
-          timeout-ms 3000
+          timeout-ms (get-marion-open-scenario-timeout)
           timeout-str (gstring/format "%0.2f" (/ timeout-ms 1000.0))
           timeout-channel (timeout timeout-ms)
           ready-channel (wait-for-scenario-ready! scenario-url)

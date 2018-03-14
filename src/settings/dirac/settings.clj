@@ -37,6 +37,7 @@
 (def ^:const MARION_STABLE_CONNECTION_TIMEOUT (seconds 2))
 (def ^:const MARION_RECONNECTION_ATTEMPT_DELAY (seconds 2))
 (def ^:const MARION_MESSAGE_REPLY_TIMEOUT (minutes 1))
+(def ^:const MARION_OPEN_SCENARIO_TIMEOUT (seconds 20))                                                                       ; cold start could be quite slow in a docker container on cloud VPS
 
 (def ^:const DEFAULT_TASK_TIMEOUT (minutes 5))
 (def ^:const KILL_TASK_TIMEOUT (seconds 5))
@@ -157,6 +158,9 @@
 
 (defmacro get-marion-message-reply-timeout []
   MARION_MESSAGE_REPLY_TIMEOUT)
+
+(defmacro get-marion-open-scenario-timeout []
+  MARION_OPEN_SCENARIO_TIMEOUT)
 
 (defmacro get-default-task-timeout []
   DEFAULT_TASK_TIMEOUT)
