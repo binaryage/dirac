@@ -8,7 +8,6 @@ automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
 devtools #1      implant initialized
-devtools #1      reset devtools settings
 devtools #1      setCurrentPanel: elements
 devtools #1      devtools ready
 devtools #1      namespacesCache is cool now
@@ -72,7 +71,6 @@ automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #2
 devtools #2      implant initialized
-devtools #2      reset devtools settings
 devtools #2      setCurrentPanel: elements
 devtools #2      devtools ready
 devtools #2      namespacesCache is cool now
@@ -135,7 +133,6 @@ automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #3
 devtools #3      implant initialized
-devtools #3      reset devtools settings
 devtools #3      setCurrentPanel: elements
 devtools #3      devtools ready
 devtools #3      namespacesCache is cool now
@@ -205,7 +202,6 @@ automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #4
 devtools #4      implant initialized
-devtools #4      reset devtools settings
 devtools #4      setCurrentPanel: elements
 devtools #4      devtools ready
 devtools #4      namespacesCache is cool now
