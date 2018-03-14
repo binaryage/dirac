@@ -3,7 +3,8 @@
                    [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout]]
             [chromex.protocols :refer [post-message! get-sender]]
-            [oops.core :refer [oget ocall oapply]]))
+            [oops.core :refer [oget ocall oapply]]
+            [marion.background.helpers :as helpers]))
 
 ; "feedback" are events logged via calling feedback() from dirac extension and dirac frontends
 ; feedback messages should be delivered to current task runner to be appended to current transcript
@@ -22,17 +23,13 @@
   (boolean (some #{client} (get-subscribers))))
 
 (defn subscribe-client! [client]
-  (let [sender (get-sender client)
-        sender-url (oget sender "url")]
-    (log "a client subscribed to feedback:" sender-url)
-    (swap! subscribers conj client)))
+  (swap! subscribers conj client)
+  (log "a client subscribed to feedback:" (helpers/get-client-url client)))
 
 (defn unsubscribe-client! [client]
-  (let [sender (get-sender client)
-        sender-url (oget sender "url")]
-    (log "a client unsubscribed from feedback:" sender-url)
-    (let [remove-item (fn [coll item] (remove #(identical? item %) coll))]
-      (swap! subscribers remove-item client))))
+  (let [remove-item (fn [coll item] (remove #(identical? item %) coll))]
+    (swap! subscribers remove-item client))
+  (log "a client unsubscribed from feedback:" (helpers/get-client-url client)))
 
 (defn unsubscribe-client-if-subscribed! [client]
   (if (is-client-subscribed? client)
