@@ -446,6 +446,19 @@ Protocol.BrowserAgent.GetVersionResponse;
 Protocol.BrowserAgent.prototype.invoke_getVersion = function(obj) {};
 
 /**
+ * @return {!Promise<?Array<string>>}
+ */
+Protocol.BrowserAgent.prototype.getBrowserCommandLine = function() {};
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.GetBrowserCommandLineRequest;
+/** @typedef {!{arguments: !Array<string>}} */
+Protocol.BrowserAgent.GetBrowserCommandLineResponse;
+/**
+ * @param {!Protocol.BrowserAgent.GetBrowserCommandLineRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.GetBrowserCommandLineResponse>} */
+Protocol.BrowserAgent.prototype.invoke_getBrowserCommandLine = function(obj) {};
+
+/**
  * @param {string=} opt_query
  * @return {!Promise<?Array<Protocol.Browser.Histogram>>}
  */
@@ -929,6 +942,9 @@ Protocol.CSS.MediaQueryExpression;
 /** @typedef {!{familyName:(string), isCustomFont:(boolean), glyphCount:(number)}} */
 Protocol.CSS.PlatformFontUsage;
 
+/** @typedef {!{fontFamily:(string), fontStyle:(string), fontVariant:(string), fontWeight:(string), fontStretch:(string), unicodeRange:(string), src:(string), platformFontFamily:(string)}} */
+Protocol.CSS.FontFace;
+
 /** @typedef {!{animationName:(Protocol.CSS.Value), keyframes:(!Array<Protocol.CSS.CSSKeyframeRule>)}} */
 Protocol.CSS.CSSKeyframesRule;
 
@@ -939,7 +955,10 @@ Protocol.CSS.CSSKeyframeRule;
 Protocol.CSS.StyleDeclarationEdit;
 /** @interface */
 Protocol.CSSDispatcher = function() {};
-Protocol.CSSDispatcher.prototype.fontsUpdated = function() {};
+/**
+ * @param {Protocol.CSS.FontFace=} opt_font
+ */
+Protocol.CSSDispatcher.prototype.fontsUpdated = function(opt_font) {};
 Protocol.CSSDispatcher.prototype.mediaQueryResultChanged = function() {};
 /**
  * @param {Protocol.CSS.CSSStyleSheetHeader} header
@@ -1932,10 +1951,11 @@ Protocol.DOMSnapshotAgent = function(){};
 /**
  * @param {!Array<string>} computedStyleWhitelist
  * @param {boolean=} opt_includeEventListeners
+ * @param {boolean=} opt_includePaintOrder
  * @return {!Promise<?Array<Protocol.DOMSnapshot.DOMNode>>}
  */
-Protocol.DOMSnapshotAgent.prototype.getSnapshot = function(computedStyleWhitelist, opt_includeEventListeners) {};
-/** @typedef {!{includeEventListeners: (boolean|undefined), computedStyleWhitelist: !Array<string>}} */
+Protocol.DOMSnapshotAgent.prototype.getSnapshot = function(computedStyleWhitelist, opt_includeEventListeners, opt_includePaintOrder) {};
+/** @typedef {!{includePaintOrder: (boolean|undefined), includeEventListeners: (boolean|undefined), computedStyleWhitelist: !Array<string>}} */
 Protocol.DOMSnapshotAgent.GetSnapshotRequest;
 /** @typedef {!{layoutTreeNodes: !Array<Protocol.DOMSnapshot.LayoutTreeNode>, domNodes: !Array<Protocol.DOMSnapshot.DOMNode>, computedStyles: !Array<Protocol.DOMSnapshot.ComputedStyle>}} */
 Protocol.DOMSnapshotAgent.GetSnapshotResponse;
@@ -1944,13 +1964,13 @@ Protocol.DOMSnapshotAgent.GetSnapshotResponse;
  * @return {!Promise<!Protocol.DOMSnapshotAgent.GetSnapshotResponse>} */
 Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
-/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined)}} */
+/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
 /** @typedef {!{boundingBox:(Protocol.DOM.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
 Protocol.DOMSnapshot.InlineTextBox;
 
-/** @typedef {!{domNodeIndex:(number), boundingBox:(Protocol.DOM.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array<Protocol.DOMSnapshot.InlineTextBox>|undefined), styleIndex:(number|undefined)}} */
+/** @typedef {!{domNodeIndex:(number), boundingBox:(Protocol.DOM.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array<Protocol.DOMSnapshot.InlineTextBox>|undefined), styleIndex:(number|undefined), paintOrder:(number|undefined)}} */
 Protocol.DOMSnapshot.LayoutTreeNode;
 
 /** @typedef {!{properties:(!Array<Protocol.DOMSnapshot.NameValue>)}} */
@@ -2491,12 +2511,26 @@ Protocol.HeadlessExperimentalAgent = function(){};
 Protocol.HeadlessExperimentalAgent.prototype.beginFrame = function(opt_frameTime, opt_deadline, opt_interval, opt_noDisplayUpdates, opt_screenshot) {};
 /** @typedef {!{interval: (number|undefined), deadline: (Protocol.Runtime.Timestamp|undefined), frameTime: (Protocol.Runtime.Timestamp|undefined), screenshot: (Protocol.HeadlessExperimental.ScreenshotParams|undefined), noDisplayUpdates: (boolean|undefined)}} */
 Protocol.HeadlessExperimentalAgent.BeginFrameRequest;
-/** @typedef {!{hasDamage: boolean, screenshotData: string, mainFrameContentUpdated: boolean}} */
+/** @typedef {!{hasDamage: boolean, screenshotData: string}} */
 Protocol.HeadlessExperimentalAgent.BeginFrameResponse;
 /**
  * @param {!Protocol.HeadlessExperimentalAgent.BeginFrameRequest} obj
  * @return {!Promise<!Protocol.HeadlessExperimentalAgent.BeginFrameResponse>} */
 Protocol.HeadlessExperimentalAgent.prototype.invoke_beginFrame = function(obj) {};
+
+/**
+ * @param {number=} opt_initialDate
+ * @return {!Promise<undefined>}
+ */
+Protocol.HeadlessExperimentalAgent.prototype.enterDeterministicMode = function(opt_initialDate) {};
+/** @typedef {!{initialDate: (number|undefined)}} */
+Protocol.HeadlessExperimentalAgent.EnterDeterministicModeRequest;
+/** @typedef {Object|undefined} */
+Protocol.HeadlessExperimentalAgent.EnterDeterministicModeResponse;
+/**
+ * @param {!Protocol.HeadlessExperimentalAgent.EnterDeterministicModeRequest} obj
+ * @return {!Promise<!Protocol.HeadlessExperimentalAgent.EnterDeterministicModeResponse>} */
+Protocol.HeadlessExperimentalAgent.prototype.invoke_enterDeterministicMode = function(obj) {};
 
 /**
  * @return {!Promise<undefined>}
@@ -2534,7 +2568,6 @@ Protocol.HeadlessExperimental.ScreenshotParamsFormat = {
 Protocol.HeadlessExperimental.ScreenshotParams;
 /** @interface */
 Protocol.HeadlessExperimentalDispatcher = function() {};
-Protocol.HeadlessExperimentalDispatcher.prototype.mainFrameReadyForScreenshots = function() {};
 /**
  * @param {boolean} needsBeginFrames
  */
@@ -3421,7 +3454,7 @@ Protocol.Memory.PressureLevel = {
     Critical: "critical"
 };
 
-/** @typedef {!{size:(number), count:(number), stack:(!Array<string>)}} */
+/** @typedef {!{size:(number), total:(number), stack:(!Array<string>)}} */
 Protocol.Memory.SamplingProfileNode;
 
 /** @typedef {!{samples:(!Array<Protocol.Memory.SamplingProfileNode>)}} */
@@ -4051,8 +4084,9 @@ Protocol.NetworkDispatcher.prototype.requestServedFromCache = function(requestId
  * @param {Protocol.Network.Response=} opt_redirectResponse
  * @param {Protocol.Page.ResourceType=} opt_type
  * @param {Protocol.Page.FrameId=} opt_frameId
+ * @param {boolean=} opt_hasUserGesture
  */
-Protocol.NetworkDispatcher.prototype.requestWillBeSent = function(requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, opt_redirectResponse, opt_type, opt_frameId) {};
+Protocol.NetworkDispatcher.prototype.requestWillBeSent = function(requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, opt_redirectResponse, opt_type, opt_frameId, opt_hasUserGesture) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.ResourcePriority} newPriority
@@ -7208,10 +7242,11 @@ Protocol.RuntimeAgent.prototype.invoke_enable = function(obj) {};
  * @param {boolean=} opt_generatePreview
  * @param {boolean=} opt_userGesture
  * @param {boolean=} opt_awaitPromise
+ * @param {boolean=} opt_throwOnSideEffect
  * @return {!Promise<?Protocol.Runtime.RemoteObject>}
  */
-Protocol.RuntimeAgent.prototype.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_contextId, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise) {};
-/** @typedef {!{objectGroup: (string|undefined), includeCommandLineAPI: (boolean|undefined), contextId: (Protocol.Runtime.ExecutionContextId|undefined), silent: (boolean|undefined), generatePreview: (boolean|undefined), returnByValue: (boolean|undefined), expression: string, userGesture: (boolean|undefined), awaitPromise: (boolean|undefined)}} */
+Protocol.RuntimeAgent.prototype.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_contextId, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise, opt_throwOnSideEffect) {};
+/** @typedef {!{objectGroup: (string|undefined), includeCommandLineAPI: (boolean|undefined), contextId: (Protocol.Runtime.ExecutionContextId|undefined), silent: (boolean|undefined), throwOnSideEffect: (boolean|undefined), generatePreview: (boolean|undefined), returnByValue: (boolean|undefined), expression: string, userGesture: (boolean|undefined), awaitPromise: (boolean|undefined)}} */
 Protocol.RuntimeAgent.EvaluateRequest;
 /** @typedef {!{exceptionDetails: Protocol.Runtime.ExceptionDetails, result: Protocol.Runtime.RemoteObject}} */
 Protocol.RuntimeAgent.EvaluateResponse;
@@ -7347,13 +7382,8 @@ Protocol.Runtime.ScriptId;
 /** @typedef {string} */
 Protocol.Runtime.RemoteObjectId;
 
-/** @enum {string} */
-Protocol.Runtime.UnserializableValue = {
-    Infinity: "Infinity",
-    NaN: "NaN",
-    NegativeInfinity: "-Infinity",
-    Negative0: "-0"
-};
+/** @typedef {string} */
+Protocol.Runtime.UnserializableValue;
 
 /** @enum {string} */
 Protocol.Runtime.RemoteObjectType = {
@@ -7363,7 +7393,8 @@ Protocol.Runtime.RemoteObjectType = {
     String: "string",
     Number: "number",
     Boolean: "boolean",
-    Symbol: "symbol"
+    Symbol: "symbol",
+    Bigint: "bigint"
 };
 
 /** @enum {string} */
@@ -7399,7 +7430,8 @@ Protocol.Runtime.ObjectPreviewType = {
     String: "string",
     Number: "number",
     Boolean: "boolean",
-    Symbol: "symbol"
+    Symbol: "symbol",
+    Bigint: "bigint"
 };
 
 /** @enum {string} */
@@ -7430,7 +7462,8 @@ Protocol.Runtime.PropertyPreviewType = {
     Number: "number",
     Boolean: "boolean",
     Symbol: "symbol",
-    Accessor: "accessor"
+    Accessor: "accessor",
+    Bigint: "bigint"
 };
 
 /** @enum {string} */

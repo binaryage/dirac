@@ -50,12 +50,12 @@ stdout           displayed 40 items:
                   * chrome_port.cljs:<line> / chrome_port.cljs:<line>
                   * protocols.cljs:<line> / protocols.cljs:<line>
                   * defaults.cljs:<line> / defaults.cljs:<line>
-                  * VM21 extensions…t_bindings:403 / VM21 extensions::event_bindings:403
-                  * VM27 extensions::utils:138 / VM27 extensions::utils:138
-                  * VM21 extensions…t_bindings:387 / VM21 extensions::event_bindings:387
-                  * VM21 extensions…t_bindings:409 / VM21 extensions::event_bindings:409
-                  * VM27 extensions::utils:138 / VM27 extensions::utils:138
-                  * VM28 extensions::messaging:392 / VM28 extensions::messaging:392
+                  * VM<num> extensions…t_bindings:403 / VM<num> extensions::event_bindings:403
+                  * VM<num> extensions::utils:138 / VM<num> extensions::utils:138
+                  * VM<num> extensions…t_bindings:387 / VM<num> extensions::event_bindings:387
+                  * VM<num> extensions…t_bindings:409 / VM<num> extensions::event_bindings:409
+                  * VM<num> extensions::utils:138 / VM<num> extensions::utils:138
+                  * VM<num> extensions::messaging:392 / VM<num> extensions::messaging:392
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
@@ -112,12 +112,12 @@ stdout           displayed 40 items:
                   * chrome_port.cljs:<line> / chrome_port.cljs:<line>
                   * protocols.cljs:<line> / protocols.cljs:<line>
                   * defaults.cljs:<line> / defaults.cljs:<line>
-                  * VM21 extensions…t_bindings:403 / VM21 extensions::event_bindings:403
-                  * VM27 extensions::utils:138 / VM27 extensions::utils:138
-                  * VM21 extensions…t_bindings:387 / VM21 extensions::event_bindings:387
-                  * VM21 extensions…t_bindings:409 / VM21 extensions::event_bindings:409
-                  * VM27 extensions::utils:138 / VM27 extensions::utils:138
-                  * VM28 extensions::messaging:392 / VM28 extensions::messaging:392
+                  * VM<num> extensions…t_bindings:403 / VM<num> extensions::event_bindings:403
+                  * VM<num> extensions::utils:138 / VM<num> extensions::utils:138
+                  * VM<num> extensions…t_bindings:387 / VM<num> extensions::event_bindings:387
+                  * VM<num> extensions…t_bindings:409 / VM<num> extensions::event_bindings:409
+                  * VM<num> extensions::utils:138 / VM<num> extensions::utils:138
+                  * VM<num> extensions::messaging:392 / VM<num> extensions::messaging:392
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2

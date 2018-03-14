@@ -29,7 +29,6 @@
  */
 /**
  * @unrestricted
- * @implements {SDK.SDKModelObserver<!SDK.DebuggerModel>}
  */
 Bindings.BreakpointManager = class extends Common.Object {
   /**
@@ -44,7 +43,6 @@ Bindings.BreakpointManager = class extends Common.Object {
     this._targetManager = targetManager;
     this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
 
-    this._breakpointsActive = true;
     /** @type {!Map<!Workspace.UISourceCode, !Map<number, !Map<number, !Array<!Bindings.BreakpointManager.Breakpoint>>>>} */
     this._breakpointsForUISourceCode = new Map();
     /** @type {!Map<string, !Bindings.BreakpointManager.Breakpoint>} */
@@ -53,8 +51,6 @@ Bindings.BreakpointManager = class extends Common.Object {
     this._workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
     this._workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     this._workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
-
-    targetManager.observeModels(SDK.DebuggerModel, this);
   }
 
   /**
@@ -67,22 +63,6 @@ Bindings.BreakpointManager = class extends Common.Object {
     if (!url)
       return '';
     return url + ':' + lineNumber + ':' + columnNumber;
-  }
-
-  /**
-   * @override
-   * @param {!SDK.DebuggerModel} debuggerModel
-   */
-  modelAdded(debuggerModel) {
-    if (!this._breakpointsActive)
-      debuggerModel.setBreakpointsActive(this._breakpointsActive);
-  }
-
-  /**
-   * @override
-   * @param {!SDK.DebuggerModel} debuggerModel
-   */
-  modelRemoved(debuggerModel) {
   }
 
   /**
@@ -150,7 +130,6 @@ Bindings.BreakpointManager = class extends Common.Object {
       Common.Revealer.reveal(normalizedLocation);
       uiLocation = normalizedLocation;
     }
-    this.setBreakpointsActive(true);
     return this._innerSetBreakpoint(
         uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber, condition, enabled);
   }
@@ -398,35 +377,12 @@ Bindings.BreakpointManager = class extends Common.Object {
     this.dispatchEventToListeners(
         Bindings.BreakpointManager.Events.BreakpointRemoved, {breakpoint: breakpoint, uiLocation: uiLocation});
   }
-
-  /**
-   * @param {boolean} active
-   */
-  setBreakpointsActive(active) {
-    if (this._breakpointsActive === active)
-      return;
-
-    this._breakpointsActive = active;
-    const debuggerModels = SDK.targetManager.models(SDK.DebuggerModel);
-    for (let i = 0; i < debuggerModels.length; ++i)
-      debuggerModels[i].setBreakpointsActive(active);
-
-    this.dispatchEventToListeners(Bindings.BreakpointManager.Events.BreakpointsActiveStateChanged, active);
-  }
-
-  /**
-   * @return {boolean}
-   */
-  breakpointsActive() {
-    return this._breakpointsActive;
-  }
 };
 
 /** @enum {symbol} */
 Bindings.BreakpointManager.Events = {
   BreakpointAdded: Symbol('breakpoint-added'),
-  BreakpointRemoved: Symbol('breakpoint-removed'),
-  BreakpointsActiveStateChanged: Symbol('BreakpointsActiveStateChanged')
+  BreakpointRemoved: Symbol('breakpoint-removed')
 };
 
 
@@ -465,6 +421,13 @@ Bindings.BreakpointManager.Breakpoint = class {
     this._modelBreakpoints = new Map();
     this._updateState(condition, enabled);
     this._breakpointManager._targetManager.observeModels(SDK.DebuggerModel, this);
+  }
+
+  refreshInDebugger() {
+    if (this._isRemoved)
+      return;
+    for (const breakpoint of this._modelBreakpoints.values())
+      breakpoint._refreshBreakpoint();
   }
 
   /**
@@ -784,10 +747,8 @@ Bindings.BreakpointManager.ModelBreakpoint = class {
     this._breakpoint._currentState = newState;
 
     if (this._debuggerId) {
-      this._resetLocations();
-      this._debuggerModel.removeBreakpoint(this._debuggerId).then(this._didRemoveFromDebugger.bind(this, callback));
-      this._scheduleUpdateInDebugger();
-      this._currentState = null;
+      await this._refreshBreakpoint();
+      callback();
       return;
     }
 
@@ -809,6 +770,16 @@ Bindings.BreakpointManager.ModelBreakpoint = class {
       this._didSetBreakpointInDebugger(callback, result.breakpointId, result.locations);
     else
       this._didSetBreakpointInDebugger(callback, null, []);
+  }
+
+  async _refreshBreakpoint() {
+    if (!this._debuggerId)
+      return;
+    this._resetLocations();
+    await this._debuggerModel.removeBreakpoint(this._debuggerId);
+    this._didRemoveFromDebugger();
+    this._currentState = null;
+    this._scheduleUpdateInDebugger();
   }
 
   /**
@@ -838,20 +809,15 @@ Bindings.BreakpointManager.ModelBreakpoint = class {
     callback();
   }
 
-  /**
-   * @param {function()} callback
-   */
-  _didRemoveFromDebugger(callback) {
+  _didRemoveFromDebugger() {
     if (this._cancelCallback) {
       this._cancelCallback = false;
-      callback();
       return;
     }
 
     this._resetLocations();
     this._debuggerModel.removeBreakpointListener(this._debuggerId, this._breakpointResolved, this);
     delete this._debuggerId;
-    callback();
   }
 
   /**
@@ -901,7 +867,7 @@ Bindings.BreakpointManager.ModelBreakpoint = class {
     this._resetLocations();
     this._currentState = null;
     if (this._debuggerId)
-      this._didRemoveFromDebugger(function() {});
+      this._didRemoveFromDebugger();
   }
 
   _removeEventListeners() {

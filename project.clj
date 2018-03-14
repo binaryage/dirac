@@ -1,9 +1,9 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
-(def figwheel-version "0.5.14")
+(def figwheel-version "0.5.15")
 (def selected-clojure-version "1.9.0")
 (def selected-clojurescript-version "1.9.946")
-(def selenium-version "3.9.1")
+(def selenium-version "3.11.0")
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
@@ -57,7 +57,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.30"
+(defproject binaryage/dirac "1.2.31"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

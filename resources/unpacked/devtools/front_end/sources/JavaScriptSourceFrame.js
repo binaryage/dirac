@@ -183,17 +183,6 @@ Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
   /**
    * @override
    */
-  onUISourceCodeContentChanged() {
-    for (const decoration of this._breakpointDecorations) {
-      if (decoration.breakpoint)
-        decoration.breakpoint.remove();
-    }
-    super.onUISourceCodeContentChanged();
-  }
-
-  /**
-   * @override
-   */
   onTextChanged(oldRange, newRange) {
     this._scriptsPanel.updateLastModificationTime();
     super.onTextChanged(oldRange, newRange);
@@ -491,6 +480,23 @@ Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
         this._popoverHelper.hidePopover();
         event.consume();
       }
+      return;
+    }
+
+    if (UI.shortcutRegistry.eventMatchesAction(event, 'debugger.toggle-breakpoint')) {
+      const selection = this.textEditor.selection();
+      if (!selection)
+        return;
+      this._toggleBreakpoint(selection.startLine, false);
+      event.consume(true);
+      return;
+    }
+    if (UI.shortcutRegistry.eventMatchesAction(event, 'debugger.toggle-breakpoint-enabled')) {
+      const selection = this.textEditor.selection();
+      if (!selection)
+        return;
+      this._toggleBreakpoint(selection.startLine, true);
+      event.consume(true);
       return;
     }
 
@@ -1581,6 +1587,7 @@ Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
     if (!Bindings.CompilerScriptMapping.uiLineHasMapping(this._debuggerSourceCode, lineNumber))
       return;
 
+    Common.moduleSetting('breakpointsActive').set(true);
     this._breakpointManager.setBreakpoint(this._debuggerSourceCode, lineNumber, columnNumber, condition, enabled);
     this._breakpointWasSetForTest(lineNumber, columnNumber, condition, enabled);
   }
@@ -1598,6 +1605,8 @@ Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
    * @override
    */
   dispose() {
+    this._popoverHelper.dispose();
+
     this._breakpointManager.removeEventListener(
         Bindings.BreakpointManager.Events.BreakpointAdded, this._breakpointAdded, this);
     this._breakpointManager.removeEventListener(
@@ -1653,7 +1662,7 @@ Sources.JavaScriptSourceFrame.BreakpointDecoration = class {
   }
 
   update() {
-    if (!!this.condition)
+    if (!this.condition)
       this.element.setIconType('smallicon-inline-breakpoint');
     else
       this.element.setIconType('smallicon-inline-breakpoint-conditional');

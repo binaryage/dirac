@@ -131,6 +131,8 @@ var Profiler = {};
 /** @const */
 var Protocol = {};
 /** @const */
+var ProtocolMonitor = {};
+/** @const */
 var QuickOpen = {};
 /** @const */
 var Resources = {};
@@ -140,6 +142,8 @@ var SDK = {};
 var SDKTestRunner = {};
 /** @const */
 var Screencast = {};
+/** @const */
+var Search = {};
 /** @const */
 var Security = {};
 /** @const */

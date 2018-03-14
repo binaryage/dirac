@@ -218,6 +218,9 @@
 (defn replace-target-url-port-in-options [s]
   (string/replace s #":target-url \"http://localhost:\d+\"" ":target-url \"http://localhost:<port>\""))
 
+(defn replace-vms [s]
+  (string/replace s #" VM\d+" " VM<num>"))
+
 (defn transformer [console-output]
   (-> console-output
       replace-shortened-urls
@@ -230,7 +233,8 @@
       replace-cljs-line-numbers
       replace-js-line-numbers
       replace-js-map-line-numbers
-      replace-target-url-port-in-options))
+      replace-target-url-port-in-options
+      replace-vms))
 
 (defn process-default-state! [label text]
   (cond
