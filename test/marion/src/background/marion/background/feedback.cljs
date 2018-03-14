@@ -1,7 +1,6 @@
 (ns marion.background.feedback
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [marion.background.logging :refer [log info warn error]])
-  (:require [cljs.core.async :refer [<! chan timeout]]
+  (:require-macros [marion.background.logging :refer [log info warn error]])
+  (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
             [chromex.protocols :refer [post-message! get-sender]]
             [oops.core :refer [oget ocall oapply]]
             [marion.background.helpers :as helpers]))
@@ -38,12 +37,13 @@
 ; -- broadcasting -----------------------------------------------------------------------------------------------------------
 
 (defn broadcast-feedback! [message]
-  (let [subscribers (get-subscribers)]
-    (if-not (pos? (count subscribers))
-      (warn "feedback broadcast request while no subscribers registered" message)
-      (doseq [subscriber subscribers]
-        (try
-          (post-message! subscriber message)
-          (catch :default e
-            (warn "cannot post message to a client subscribed to feedback" (helpers/get-client-url subscriber) "\n" e)
-            nil))))))
+  (go
+    (let [subscribers (get-subscribers)]
+      (if-not (pos? (count subscribers))
+        (warn "feedback broadcast request while no subscribers registered" message)
+        (doseq [subscriber subscribers]
+          (try
+            (post-message! subscriber message)
+            (catch :default e
+              (warn "cannot post message to a client subscribed to feedback" (helpers/get-client-url subscriber) "\n" e)
+              nil)))))))

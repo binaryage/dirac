@@ -36,8 +36,9 @@
 ; -- broadcasting -----------------------------------------------------------------------------------------------------------
 
 (defn broadcast-notification! [message]
-  (let [subscribers (get-subscribers)]
-    (if-not (pos? (count subscribers))
-      (warn "notification broadcast request while no subscribers registered" message)
-      (doseq [subscriber subscribers]
-        (post-message! subscriber message)))))
+  (go
+    (let [subscribers (get-subscribers)]
+      (if-not (pos? (count subscribers))
+        (warn "notification broadcast request while no subscribers registered" message)
+        (doseq [subscriber subscribers]
+          (post-message! subscriber message))))))

@@ -92,27 +92,27 @@
   (go
     (reset-scenario-id!)
     (clear-scenario-ids!)
-    (reply-to-message! message)))
+    (<! (reply-to-message! message))))
 
 (defn subscribe-client-to-feedback! [message client]
   (go
     (feedback/subscribe-client! client)
-    (reply-to-message! message)))
+    (<! (reply-to-message! message))))
 
 (defn unsubscribe-client-from-feedback! [message client]
   (go
     (feedback/unsubscribe-client! client)
-    (reply-to-message! message)))
+    (<! (reply-to-message! message))))
 
 (defn subscribe-client-to-notifications! [message client]
   (go
     (notifications/subscribe-client! client)
-    (reply-to-message! message)))
+    (<! (reply-to-message! message))))
 
 (defn unsubscribe-client-from-notifications! [message client]
   (go
     (notifications/unsubscribe-client! client)
-    (reply-to-message! message)))
+    (<! (reply-to-message! message))))
 
 (defn open-scenario! [message]
   (go
@@ -126,12 +126,12 @@
       (let [[_ channel] (alts! [ready-channel timeout-channel])]
         (condp identical? channel
           ready-channel (do (add-scenario-id! scenario-id tab-id)
-                            (reply-to-message! message scenario-id))
+                            (<! (reply-to-message! message scenario-id)))
           timeout-channel (let [error-msg (str "Scenario " scenario-id " didn't get ready in time (" timeout-str "s), "
                                                "this is probably due to javascript errors during initialization.\n"
                                                "Inspect page '" scenario-url "'")]
                             (warn error-msg)
-                            (reply-to-message! message (str "error: " error-msg))))))))
+                            (<! (reply-to-message! message (str "error: " error-msg)))))))))
 
 (defn close-scenario! [message]
   (go
@@ -139,14 +139,14 @@
           tab-id (get-scenario-tab-id scenario-id)]
       (<! (helpers/close-tab-with-id! tab-id))
       (remove-scenario-id! scenario-id)
-      (reply-to-message! message))))
+      (<! (reply-to-message! message)))))
 
 (defn activate-scenario! [message]
   (go
     (let [scenario-id (oget message "scenario-id")
           tab-id (get-scenario-tab-id scenario-id)]
       (<! (helpers/activate-tab! tab-id))
-      (reply-to-message! message))))
+      (<! (reply-to-message! message)))))
 
 (defn scenario-ready! [message client]
   (go
@@ -156,43 +156,43 @@
       (if-let [callback (get @pending-scenarios scenario-url)]
         (callback message)
         (warn "expected " scenario-url " to be present in pending-scenarios")))
-    (reply-to-message! message)))
+    (<! (reply-to-message! message))))
 
 (defn switch-to-task-runner! [message]
   (go
     (when-let [tab-id (<! (helpers/find-runner-tab-id!))]
       (<! (helpers/activate-tab! tab-id))
-      (reply-to-message! message))))
+      (<! (reply-to-message! message)))))
 
 (defn focus-runner-window! [message]
   (go
     (when-let [tab-id (<! (helpers/find-runner-tab-id!))]
       (<! (helpers/focus-window-with-tab-id! tab-id))
-      (reply-to-message! message))))
+      (<! (reply-to-message! message)))))
 
 (defn reposition-runner-window! [message]
   (go
     (<! (helpers/reposition-runner-window!))
-    (reply-to-message! message)))
+    (<! (reply-to-message! message))))
 
 (defn close-all-tabs! [message]
   (go
     (<! (helpers/close-all-scenario-tabs!))
     (clear-scenario-ids!)
-    (reply-to-message! message)))
+    (<! (reply-to-message! message))))
 
 (defn handle-extension-command! [message]
   (dirac/post-message-to-dirac-extension! message))
 
 (defn broadcast-feedback-from-scenario! [message]
   (go
-    (feedback/broadcast-feedback! (oget message "payload"))
-    (reply-to-message! message)))
+    (<! (feedback/broadcast-feedback! (oget message "payload")))
+    (<! (reply-to-message! message))))
 
 (defn broadcast-notification! [message]
   (go
-    (notifications/broadcast-notification! (oget message "payload"))
-    (reply-to-message! message)))
+    (<! (notifications/broadcast-notification! (oget message "payload")))
+    (<! (reply-to-message! message))))
 
 ; -- message dispatch -------------------------------------------------------------------------------------------------------
 
