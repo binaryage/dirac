@@ -99,16 +99,17 @@
       :tear-down (tear-down! message-id message))))
 
 (defn run-marion-message-loop! [context marion-port]
-  (go-loop []
-    (when-some [data (<! marion-port)]
-      (<! (process-marion-message! context data))
-      (recur))
+  (go
+    (register-marion! marion-port)
+    (loop []
+      (when-some [data (<! marion-port)]
+        (<! (process-marion-message! context data))
+        (recur)))
     (unregister-marion!)))
 
 ; -- marion client connection handling --------------------------------------------------------------------------------------
 
 (defn handle-marion-client-connection! [context marion-port]
-  (register-marion! marion-port)
   (run-marion-message-loop! context marion-port))
 
 (defn post-feedback-event! [& args]
