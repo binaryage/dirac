@@ -42,4 +42,8 @@
     (if-not (pos? (count subscribers))
       (warn "feedback broadcast request while no subscribers registered" message)
       (doseq [subscriber subscribers]
-        (post-message! subscriber message)))))
+        (try
+          (post-message! subscriber message)
+          (catch :default e
+            (warn "cannot post message to a client subscribed to feedback" (helpers/get-client-url subscriber) "\n" e)
+            nil))))))
