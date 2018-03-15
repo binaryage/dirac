@@ -21,7 +21,6 @@ export DIRAC_RUNTIME__AGENT_PORT=13041
 export DIRAC_NREPL__WEASEL_PORT=13042
 
 export CHROME_DRIVER_LOG_PATH="$ROOT/target/chromedriver.log"
-export CHROME_LOG_FILE="$ROOT/target/chrome.log"
 export DIRAC_CHROME_DRIVER_VERBOSE=1
 
 source ./scripts/lib/travis.sh

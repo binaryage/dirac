@@ -78,7 +78,6 @@ if [[ -z "${TRAVIS_SKIP_CHROMIUM_SETUP}" ]]; then
 else
   export DIRAC_CHROME_BINARY_PATH=`which chrome`
 fi
-export CHROME_LOG_FILE=`pwd`
 popd
 
 # install chromedriver
