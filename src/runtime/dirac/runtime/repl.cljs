@@ -1,4 +1,5 @@
 (ns dirac.runtime.repl
+  (:refer-clojure :exclude [eval])
   (:require [dirac.runtime.prefs :refer [get-prefs pref]]
             [dirac.runtime.bootstrap :refer [bootstrap!]]
             [dirac.runtime.output :as output]
