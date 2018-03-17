@@ -3,23 +3,25 @@
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.windows :as windows]
-            [chromex.error :as chromex-error]
             [chromex.ext.tabs :as tabs]
-            [dirac.settings :refer-macros [get-dirac-devtools-window-top get-dirac-devtools-window-left
-                                           get-dirac-devtools-window-width get-dirac-devtools-window-height
-                                           get-frontend-handshake-timeout get-frontend-loading-timeout
+            [dirac.settings :refer-macros [get-dirac-devtools-window-top
+                                           get-dirac-devtools-window-left
+                                           get-dirac-devtools-window-width
+                                           get-dirac-devtools-window-height
+                                           get-frontend-handshake-timeout
+                                           get-frontend-loading-timeout
                                            get-intercom-init-timeout]]
             [dirac.i18n :as i18n]
             [dirac.sugar :as sugar]
-            [dirac.background.helpers :as helpers :refer [report-error-in-tab! report-warning-in-tab!
+            [dirac.background.helpers :as helpers :refer [report-error-in-tab!
+                                                          report-warning-in-tab!
                                                           show-connecting-debugger-backend-status!]]
             [dirac.background.devtools :as devtools]
             [dirac.background.debugging :refer [resolve-backend-info resolution-failure? get-resolution-failure-reason]]
             [dirac.background.state :as state]
             [dirac.background.helpers :as helpers]
             [dirac.options.model :as options]
-            [dirac.utils :as utils]
-            [dirac.background.action :as action]))
+            [dirac.utils :as utils]))
 
 ; WARNING: keep this in sync with dirac.js/knownFeatureFlags
 (def flag-keys [:enable-repl
