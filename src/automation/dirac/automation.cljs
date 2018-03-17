@@ -1,5 +1,5 @@
 (ns dirac.automation
-  "High-level automamation API to be used from browser tests.
+  "High-level automation API to be used from browser tests.
 
   All functions here should be called within `go-task` body.
   To open a new devtools instance use `open-devtools!` or a convenience macro `with-devtools`.
@@ -18,7 +18,7 @@
             [dirac.automation.notifications :as notifications]
             [dirac.automation.options :as options]
             [dirac.automation.verbs :as verbs]
-            [dirac.automation.task :as task]
+            [dirac.automation.task]                                                                                           ; required for macros!
             [dirac.utils :as utils]
             [clojure.string :as string]))
 

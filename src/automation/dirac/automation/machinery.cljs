@@ -3,7 +3,6 @@
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log error]]
             [dirac.automation.runner :as runner]
-            [dirac.automation.task :as task]
             [dirac.automation.transcript-host :as transcript]
             [dirac.automation.test :as test]))
 
