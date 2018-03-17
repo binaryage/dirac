@@ -2,7 +2,7 @@
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.15")
 (def selected-clojure-version "1.9.0")
-(def selected-clojurescript-version "1.9.946")
+(def selected-clojurescript-version "1.10.191")
 (def selenium-version "3.11.0")
 
 (def provided-deps
