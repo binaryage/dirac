@@ -252,8 +252,8 @@ SDK.ConsoleModel = class extends Common.Object {
    */
   _queryObjectRequested(runtimeModel, event) {
     const consoleMessage = new SDK.ConsoleMessage(
-        runtimeModel, SDK.ConsoleMessage.MessageSource.ConsoleAPI, SDK.ConsoleMessage.MessageLevel.Info, '', undefined,
-        undefined, undefined, undefined, [event.data.objects]);
+        runtimeModel, SDK.ConsoleMessage.MessageSource.ConsoleAPI, SDK.ConsoleMessage.MessageLevel.Info, '',
+        SDK.ConsoleMessage.MessageType.QueryObjectResult, undefined, undefined, undefined, [event.data.objects]);
     this.addMessage(consoleMessage);
   }
 
@@ -640,7 +640,8 @@ SDK.ConsoleMessage.MessageType = {
   DiracCommand: "diracCommand",
   DiracMarkup: "diracMarkup",
   Command: 'command',
-  System: 'system'
+  System: 'system',
+  QueryObjectResult: 'queryObjectResult'
 };
 
 /**
