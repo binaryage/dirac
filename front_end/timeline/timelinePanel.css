@@ -327,7 +327,7 @@
     flex: auto;
     overflow: auto;
     position: relative;
-    background-color: #f3f3f3;
+    background-color: var(--toolbar-bg-color);
     -webkit-user-select: text;
 }
 
@@ -439,7 +439,7 @@
 
 .timeline-flamechart-resizer {
     flex: 8px 0 0;
-    background-color: #f3f3f3;
+    background-color: var(--toolbar-bg-color);
     border: 1px #a3a3a3;
     border-style: solid none;
     display: flex;
@@ -663,6 +663,10 @@
     padding: 16px 20px;
     margin-top: 40px;
     box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+.-theme-with-dark-background .timeline-landing-warning {
+    background: black;
 }
 
 .timeline-landing-warning-close {
