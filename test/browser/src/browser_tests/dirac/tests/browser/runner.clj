@@ -1,6 +1,5 @@
 (ns dirac.tests.browser.runner
   (:require [clojure.test :refer :all]
-            [clojure.tools.logging :as log]
             [environ.core :refer [env]]
             [clansi :refer [style]]
             [dirac.logging :as logging]

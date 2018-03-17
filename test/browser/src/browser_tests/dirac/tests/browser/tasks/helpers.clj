@@ -13,8 +13,7 @@
                                     get-expected-transcripts-root-path
                                     get-fixtures-server-port
                                     get-fixtures-server-url]]
-            [dirac.test-lib.chrome-driver :refer [get-debugging-port]])
-  (:import [java.net URLEncoder]))
+            [dirac.test-lib.chrome-driver :refer [get-debugging-port]]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
