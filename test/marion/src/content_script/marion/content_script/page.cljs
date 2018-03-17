@@ -1,8 +1,7 @@
 (ns marion.content-script.page
-  (:require-macros [cljs.core.async.macros :refer [go-loop]]
-                   [marion.content-script.logging :refer [log info warn error debug-log]]
+  (:require-macros [marion.content-script.logging :refer [log info warn error debug-log]]
                    [devtools.toolbox :refer [envelope]])
-  (:require [cljs.core.async :refer [<! chan]]
+  (:require [cljs.core.async :refer [<! chan go-loop]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.protocols :refer [post-message!]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]))

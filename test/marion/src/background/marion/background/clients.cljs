@@ -1,8 +1,7 @@
 (ns marion.background.clients
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [marion.background.logging :refer [log info warn error]]
+  (:require-macros [marion.background.logging :refer [log info warn error]]
                    [devtools.toolbox :refer [envelope]])
-  (:require [cljs.core.async :refer [<! chan timeout]]
+  (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
             [marion.background.feedback :as feedback]
