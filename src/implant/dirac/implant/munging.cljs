@@ -1,11 +1,11 @@
 (ns dirac.implant.munging
   (:require [clojure.string :as string]
             [oops.core :refer [oget oset! ocall oapply gcall]]
-            [devtools.munging :as m]))
+            [devtools.munging :as munging]))
 
 (defn is-cljs-function-name? [munged-name]
   (or (empty? munged-name)
-      (m/cljs-fn-name? munged-name)))
+      (munging/cljs-fn-name? munged-name)))
 
 (defn ns-detector [name]
   (let [demunged-name (demunge name)
@@ -19,7 +19,7 @@
                         :include-protocol-ns?      include-protocol-ns?
                         :silence-common-protocols? false
                         :ns-detector               ns-detector}]
-      (m/present-function-name munged-name present-opts))))
+      (munging/present-function-name munged-name present-opts))))
 
 (defn ns-to-relpath [ns ext]
   (str (string/replace (munge ns) \. \/) "." (name ext)))
