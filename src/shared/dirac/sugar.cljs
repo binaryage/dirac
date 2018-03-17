@@ -5,7 +5,6 @@
             [chromex.config :refer-macros [with-muted-error-reporting]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.tabs :as tabs]
-            [chromex.ext.runtime :as runtime]
             [chromex.ext.windows :as windows]
             [dirac.utils :as utils]))
 
