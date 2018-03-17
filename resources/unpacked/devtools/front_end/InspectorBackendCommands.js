@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='67.0.3368.1';
-Protocol.BakedInspectorBackendAPIChromeRev='299e1847171b73d03c6b9f0f2d91945961b16675';
+Protocol.BakedInspectorBackendAPIChromeTag='67.0.3373.0';
+Protocol.BakedInspectorBackendAPIChromeRev='33cfbf0881ebe7ed20da6e6f563c7b45a9344a43';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -536,7 +536,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Runtime.evaluate", [{"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "silent", "type": "boolean", "optional": true}, {"name": "contextId", "type": "number", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}, {"name": "awaitPromise", "type": "boolean", "optional": true}, {"name": "throwOnSideEffect", "type": "boolean", "optional": true}], ["result", "exceptionDetails"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Runtime.getProperties", [{"name": "objectId", "type": "string", "optional": false}, {"name": "ownProperties", "type": "boolean", "optional": true}, {"name": "accessorPropertiesOnly", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "internalProperties", "exceptionDetails"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Runtime.globalLexicalScopeNames", [{"name": "executionContextId", "type": "number", "optional": true}], ["names"], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Runtime.queryObjects", [{"name": "prototypeObjectId", "type": "string", "optional": false}], ["objects"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Runtime.queryObjects", [{"name": "prototypeObjectId", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}], ["objects"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Runtime.releaseObject", [{"name": "objectId", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Runtime.releaseObjectGroup", [{"name": "objectGroup", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Runtime.runIfWaitingForDebugger", [], [], false);\n'
