@@ -1,7 +1,6 @@
 (ns dirac.nrepl.special
   (:require [clojure.main :refer [root-cause repl-caught]]
             [clojure.tools.logging :as log]
-            [clojure.string :as string]
             [dirac.nrepl.controls :as controls]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.helpers :as helpers]
@@ -13,8 +12,7 @@
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.compilers :as compilers]
             [cuerdas.core :as cuerdas])
-  (:import (clojure.lang Namespace)
-           java.io.Writer))
+  (:import (clojure.lang Namespace)))
 
 (def ^:dynamic dirac-command-re #"^\s*\(?dirac!?(|\s+.*?\s*)\)?\s*$")                                                         ; allow both (dirac! ...) and (dirac ...) forms, parentheses are optional
 

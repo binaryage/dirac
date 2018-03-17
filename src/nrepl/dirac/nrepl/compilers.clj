@@ -4,7 +4,6 @@
             [dirac.nrepl.state :as state]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.figwheel :as figwheel]
-            [dirac.nrepl.protocol :as protocol]
             [dirac.lib.utils :as utils])
   (:import (java.util.regex Pattern)))
 

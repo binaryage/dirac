@@ -1,9 +1,5 @@
 (ns dirac.nrepl.requests
-  (:require [clojure.string :as string]
-            [dirac.nrepl.usage :as usage]
-            [dirac.nrepl.sessions :as sessions]
-            [dirac.nrepl.state :as state])
-  (:import (java.util.regex Pattern)))
+  (:require [dirac.nrepl.state :as state]))
 
 (defn ^:dynamic make-handler-conversion-error [handler]
   (str "Handler has to be either a function, a string or a list (code).\n"

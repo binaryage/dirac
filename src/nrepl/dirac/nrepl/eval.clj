@@ -9,16 +9,13 @@
             [dirac.nrepl.version :refer [version]]
             [dirac.nrepl.compilers :as compilers]
             [dirac.nrepl.protocol :as protocol]
-            [dirac.nrepl.helpers :as helpers]
             [dirac.lib.utils :as utils]
             [clojure.tools.reader.reader-types :as readers]
-            [clojure.java.io :as io]
             [cljs.source-map :as sm]
             [clojure.string :as string]
             [cuerdas.core :as cuerdas]
             [clojure.data.json :as json])
-  (:import java.io.Writer
-           java.io.StringReader
+  (:import java.io.StringReader
            (javax.xml.bind DatatypeConverter)))
 
 (defn prepare-current-env-info-response []

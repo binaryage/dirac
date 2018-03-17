@@ -4,9 +4,7 @@
             [cljs.repl :as cljs-repl]
             [dirac.nrepl.sniffer :as sniffer]
             [dirac.nrepl.helpers :as helpers]
-            [dirac.nrepl.protocol :as protocol]
-            [dirac.nrepl.debug :as debug])
-  (:import (clojure.lang IExceptionInfo)))
+            [dirac.nrepl.protocol :as protocol]))
 
 ; -- driver construction ----------------------------------------------------------------------------------------------------
 
@@ -112,7 +110,7 @@
 ; -- sniffer handlers -------------------------------------------------------------------------------------------------------
 
 (defn flush-handler
-  "This method gets callled every time *out* (or *err*) gets flushed.
+  "This method gets called every time *out* (or *err*) gets flushed.
   If flushing is allowed, our job is to send accumulated (recorded) output to client side.
   In case of recording was suppressed, we throw away the content and just flip the flag back instead."
   [driver sniffer-key]

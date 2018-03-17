@@ -2,7 +2,6 @@
   (:require [clojure.tools.logging :as log]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.debug :as debug]
-            [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
             [dirac.backport.string :as backport-string]
             [clojure.string :as string])
   (:import (java.util.regex Pattern)))
@@ -47,7 +46,7 @@
   (if-not (find-dirac-session-descriptor session)
     (let [session-descriptor (make-dirac-session-descriptor session transport tag)]
       (swap! state/session-descriptors concat (list session-descriptor)))
-    (log/error "attempt to add duplicit session descriptor:\n" (debug/pprint-session session))))
+    (log/error "attempt to add duplicate session descriptor:\n" (debug/pprint-session session))))
 
 (defn remove-dirac-session-descriptor! [session]
   (let [session-id (get-session-id session)]
