@@ -82,7 +82,6 @@
                  "src/figwheel"
                  "src/implant"
                  "src/lib"
-                 "src/logging"
                  "src/nrepl"
                  "src/options"
                  "src/project"
@@ -90,6 +89,7 @@
                  "src/runtime"
                  "src/settings"
                  "src/shared"
+                 "src/logging"
 
                  "test/src/test_lib"
                  "test/src/webdriver"
@@ -183,11 +183,11 @@
              {:source-paths ^:replace ["src/project"
                                        "src/settings"
                                        "src/backport"
-                                       "src/logging"
                                        "src/lib"
                                        "src/agent"
                                        "src/nrepl"
                                        "src/shared"
+                                       "src/logging"
                                        "test/src/test_lib"
                                        "test/src/webdriver"
                                        "test/browser/src/browser_tests"
@@ -206,6 +206,7 @@
                                              "src/automation"
                                              "src/runtime"
                                              "src/shared"
+                                             "src/logging"
                                              "test/browser/fixtures/src/tasks"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/tasks/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/tasks"
@@ -224,6 +225,7 @@
                                              "src/automation"
                                              "src/runtime"
                                              "src/shared"
+                                             "src/logging"
                                              "test/browser/fixtures/src/scenarios01"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios01/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/scenarios01"
@@ -237,6 +239,7 @@
                                              "src/automation"
                                              "src/runtime"
                                              "src/shared"
+                                             "src/logging"
                                              "test/browser/fixtures/src/scenarios02"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios02/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/scenarios02"
@@ -255,6 +258,7 @@
                                              "src/automation"
                                              "src/runtime"
                                              "src/shared"
+                                             "src/logging"
                                              "test/browser/fixtures/src/scenarios03"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios03/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/scenarios03"
@@ -276,6 +280,7 @@
                             :source-paths   ["src/settings"
                                              "src/devtools"
                                              "src/shared"
+                                             "src/logging"
                                              "test/marion/src/background"]
                             :compiler       {:output-to       "test/marion/resources/unpacked/.compiled/background/background.js"
                                              :output-dir      "test/marion/resources/unpacked/.compiled/background"
@@ -287,6 +292,7 @@
                            {:notify-command ["scripts/cljsbuild-notify.sh" "marion-content-script"]
                             :source-paths   ["src/settings"
                                              "src/shared"
+                                             "src/logging"
                                              "test/marion/src/content_script"]
                             :compiler       {:output-to              "test/marion/resources/unpacked/.compiled/content_script/content_script.js"
                                              :output-dir             "test/marion/resources/unpacked/.compiled/content_script"
@@ -310,6 +316,7 @@
                             :source-paths   ["src/settings"
                                              "src/lib"
                                              "src/shared"
+                                             "src/logging"
                                              "src/project"
                                              "src/devtools"
                                              "src/implant"]
@@ -325,6 +332,7 @@
                                              "src/lib"
                                              "src/figwheel"
                                              "src/shared"
+                                             "src/logging"
                                              "src/project"
                                              "src/devtools"
                                              "src/background"]
