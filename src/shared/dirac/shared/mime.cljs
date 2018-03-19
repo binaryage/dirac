@@ -1,6 +1,6 @@
 (ns dirac.shared.mime
   (:require [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
+            [dirac.shared.logging :refer [log info warn error]]
             [clojure.string :as string]))
 
 ; poor man's multipart MIME parser

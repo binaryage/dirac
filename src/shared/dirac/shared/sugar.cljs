@@ -1,11 +1,11 @@
 (ns dirac.shared.sugar
   (:require [cljs.core.async :refer [<! chan put! close! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.config :refer-macros [with-muted-error-reporting]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.windows :as windows]
+            [dirac.shared.logging :refer [log info warn error]]
             [dirac.shared.utils :as utils]))
 
 ; this is a collection of helper utilities to wrap some common chromex code snippets (runtime, tabs and windows)
