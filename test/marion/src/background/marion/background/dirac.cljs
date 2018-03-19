@@ -1,11 +1,11 @@
 (ns marion.background.dirac
   (:require-macros [dirac.settings :refer [get-marion-reconnection-attempt-delay]]
-                   [marion.background.logging :refer [log info warn error]]
                    [devtools.toolbox :refer [envelope]])
   (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message! get-sender]]
+            [marion.background.logging :refer [log info warn error]]
             [marion.background.helpers :as helpers]
             [marion.background.feedback :as feedback]))
 

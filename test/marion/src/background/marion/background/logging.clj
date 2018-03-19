@@ -1,27 +1,30 @@
-(ns marion.background.logging)
+(ns marion.background.logging
+  (:require [dirac.logging.toolkit :refer [gen-console-log]]
+            [clojure.string :as string]))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; logging - these need to be macros to preserve source location for devtools
 
 (defonce enabled? true)
+(defonce color "IndianRed")
 
-(defn prefix []
-  ["%cmarion%cbackground"
-   "background-color:purple;color:white;font-weight:bold;padding:0px 3px;border-radius:2px 0px 0px 2px;"
-   "background-color:blue;color:white;font-weight:bold;padding:0px 3px;border-radius:0px 2px 2px 0px;"])
+(defn gen-log [method env args]
+  (if enabled?
+    (let [ns-name (name (:name (:ns env)))
+          prefix (string/replace-first ns-name #"^dirac\." "")]
+      (gen-console-log method args {:prefix   prefix
+                                    :bg-color color}))))
+
+; -- public api -------------------------------------------------------------------------------------------------------------
 
 (defmacro log [& args]
-  (if enabled?
-    `(do (.log js/console ~@(prefix) ~@args) nil)))
+  (gen-log "log" &env args))
 
 (defmacro info [& args]
-  (if enabled?
-    `(do (.info js/console ~@(prefix) ~@args) nil)))
+  (gen-log "info" &env args))
 
 (defmacro error [& args]
-  (if enabled?
-    `(do (.error js/console ~@(prefix) ~@args) nil)))
+  (gen-log "error" &env args))
 
 (defmacro warn [& args]
-  (if enabled?
-    `(do (.warn js/console ~@(prefix) ~@args) nil)))
+  (gen-log "warn" &env args))

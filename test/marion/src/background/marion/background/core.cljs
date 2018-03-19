@@ -1,7 +1,7 @@
 (ns marion.background.core
-  (:require-macros [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
             [oops.core :refer [oget ocall oapply]]
+            [marion.background.logging :refer [log info warn error]]
             [marion.background.chrome :as chrome]
             [marion.background.dirac :as dirac]))
 

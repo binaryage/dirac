@@ -1,5 +1,4 @@
 (ns marion.background.helpers
-  (:require-macros [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout alts! go go-loop close!]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.ext.tabs :as tabs]
@@ -12,7 +11,8 @@
                                            get-dirac-runner-window-top get-dirac-runner-window-left
                                            get-dirac-runner-window-width get-dirac-runner-window-height
                                            get-marion-stable-connection-timeout]]
-            [dirac.shared.sugar :as sugar]))
+            [dirac.shared.sugar :as sugar]
+            [marion.background.logging :refer [log info warn error]]))
 
 (defn find-extension [pred]
   (go

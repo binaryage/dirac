@@ -1,10 +1,10 @@
 (ns marion.background.content-script
-  (:require-macros [marion.background.logging :refer [log info warn error]]
-                   [devtools.toolbox :refer [envelope]])
+  (:require-macros [devtools.toolbox :refer [envelope]])
   (:require [cljs.core.async :refer [<! chan timeout put! close! alts! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
             [dirac.settings :refer [get-marion-open-scenario-timeout]]
+            [marion.background.logging :refer [log info warn error]]
             [marion.background.helpers :as helpers]
             [marion.background.feedback :as feedback]
             [marion.background.notifications :as notifications]

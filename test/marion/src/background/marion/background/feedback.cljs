@@ -1,8 +1,8 @@
 (ns marion.background.feedback
-  (:require-macros [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
             [chromex.protocols :refer [post-message! get-sender]]
             [oops.core :refer [oget ocall oapply]]
+            [marion.background.logging :refer [log info warn error]]
             [marion.background.helpers :as helpers]))
 
 ; "feedback" are events logged via calling feedback() from dirac extension and dirac frontends

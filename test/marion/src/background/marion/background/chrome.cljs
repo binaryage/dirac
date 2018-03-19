@@ -1,9 +1,9 @@
 (ns marion.background.chrome
-  (:require-macros [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.runtime :as runtime]
+            [marion.background.logging :refer [log info warn error]]
             [marion.background.content-script :as content-script]))
 
 ; -- chrome event loop ------------------------------------------------------------------------------------------------------
