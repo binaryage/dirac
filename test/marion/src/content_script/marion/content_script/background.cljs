@@ -16,7 +16,6 @@
 
 (defn process-message! [message]
   (let [type (oget message "?type")]
-    (log "process background page message" type (envelope message))
     (case type
       "feedback-from-extension" (relay-message-to-page! message)
       "feedback-from-devtools" (relay-message-to-page! message)
