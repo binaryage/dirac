@@ -21,7 +21,7 @@
   (let [api (str "console." method)
         prefix (get opts :prefix "?")
         printed-args (map (fn [arg] `(dirac.shared.utils/pprint-str ~arg)) args)
-        msg `(str "[" ~prefix "] " ~@printed-args "\n---")]
+        msg `(str "[" ~prefix "] " ~@printed-args "---")]
     `(oops.core/gcall!+ ~api ~msg)))
 
 (defn gen-console-log [method args opts]
