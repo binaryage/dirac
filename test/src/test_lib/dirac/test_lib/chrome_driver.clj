@@ -161,7 +161,7 @@
               "--disable-default-apps"
               "--noerrdialogs"
               "--enable-logging"
-              "--v=1"
+              "--v=0"
               "--no-sandbox"
               "--disable-setuid-sandbox"                                                                                      ; for docker container https://eshlox.net/2016/11/22/dockerize-behave-selenium-tests/
               load-extensions-arg]]
