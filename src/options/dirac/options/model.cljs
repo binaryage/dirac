@@ -1,6 +1,6 @@
 (ns dirac.options.model
-  (:require-macros [dirac.options.logging :refer [log warn error info]])
-  (:require [cljs.core.async :refer [<! chan close! go go-loop]]
+  (:require [dirac.options.logging :refer [log warn error info]]
+            [cljs.core.async :refer [<! chan close! go go-loop]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [get set]]

@@ -1,5 +1,5 @@
 (ns dirac.options.ui
-  (:require [chromex.logging :refer-macros [log info warn error group group-end]]
+  (:require [dirac.options.logging :refer [log info warn error]]
             [rum.core :as rum :refer-macros [defc]]
             [dirac.options.model :as model]
             [reforms.rum :include-macros true :as fr]

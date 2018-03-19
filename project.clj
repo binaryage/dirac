@@ -319,6 +319,7 @@
                                              "src/logging"
                                              "src/project"
                                              "src/devtools"
+                                             "src/options"
                                              "src/implant"]
                             :compiler       {:output-to       "resources/unpacked/devtools/front_end/dirac/.compiled/implant/implant.js"
                                              :output-dir      "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
@@ -335,6 +336,7 @@
                                              "src/logging"
                                              "src/project"
                                              "src/devtools"
+                                             "src/options"
                                              "src/background"]
                             :compiler       {:output-to       "resources/unpacked/.compiled/background/dirac.js"
                                              :output-dir      "resources/unpacked/.compiled/background"
@@ -347,6 +349,7 @@
                                              "src/lib"
                                              "src/figwheel"
                                              "src/shared"
+                                             "src/logging"
                                              "src/project"
                                              "src/devtools"
                                              "src/options"]
@@ -364,6 +367,7 @@
                            {:source-paths ["src/settings"
                                            "src/lib"
                                            "src/shared"
+                                           "src/logging"
                                            "src/project"
                                            "src/implant"]
                             :compiler     {:output-to     "target/resources/release/devtools/front_end/dirac/.compiled/implant/implant.js"
@@ -375,6 +379,7 @@
                            {:source-paths ["src/settings"
                                            "src/lib"
                                            "src/shared"
+                                           "src/logging"
                                            "src/project"
                                            "src/background"]
                             :compiler     {:output-to     "target/resources/release/.compiled/background.js"
@@ -386,6 +391,7 @@
                            {:source-paths ["src/settings"
                                            "src/lib"
                                            "src/shared"
+                                           "src/logging"
                                            "src/project"
                                            "src/options"]
                             :compiler     {:output-to     "target/resources/release/.compiled/options.js"
