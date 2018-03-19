@@ -1,7 +1,7 @@
 (ns dirac.implant.link-handlers
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [oops.core :refer [gset! oget oset! oset!+ ocall! ocall oapply gget gcall!]]
-            [chromex.logging :refer-macros [log warn error info]]
+            [dirac.implant.logging :refer [log warn error info]]
             [dirac.implant.intercom :as intercom]))
 
 (defn ^:dynamic make-open-request-error-message [error url]

@@ -1,6 +1,6 @@
 (ns dirac.implant.automation
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
-            [chromex.logging :refer-macros [log warn error group group-end]]
+            [dirac.implant.logging :refer [log warn error]]
             [oops.core :refer [oget oset! ocall oapply oset!+ ocall+ oget+ oapply+ gcall+ gset!]]
             [cljs.reader :as reader]
             [dirac.settings :refer-macros [get-automation-entry-point-key]]

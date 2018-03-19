@@ -1,7 +1,7 @@
 (ns dirac.implant.reporter
   (:require [clojure.string :as string]
             [cuerdas.core :as cuerdas]
-            [chromex.logging :refer-macros [log warn error group group-end]]
+            [dirac.implant.logging :refer [log warn error]]
             [oops.core :refer [oget oset! ocall oapply gget gset!]]
             [dirac.implant.feedback :as feedback]
             [dirac.implant.info :as info]

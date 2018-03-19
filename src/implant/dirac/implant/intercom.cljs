@@ -11,7 +11,7 @@
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
             [dirac.implant.version :as implant-version]
             [dirac.utils :as utils]
-            [chromex.logging :refer-macros [log info warn error]]
+            [dirac.implant.logging :refer [log info warn error]]
             [dirac.implant.eval :as eval]
             [dirac.implant.feedback :as feedback]
             [dirac.lib.ws-client :as ws-client]

@@ -1,7 +1,7 @@
 (ns dirac.implant.automation.scrapers
   (:require-macros [dirac.implant.automation.scrapers :refer [safe->>]])
   (:require [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log warn error info]]
+            [dirac.implant.logging :refer [log warn error info]]
             [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [cljs.pprint :refer [pprint]]
             [dirac.implant.automation.reps :refer [select-subrep select-subreps build-rep]]

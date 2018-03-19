@@ -1,6 +1,6 @@
 (ns dirac.implant.helpers
   (:require [oops.core :refer [oget ocall oapply gget gcall gcall!]]
-            [chromex.logging :refer-macros [log warn error group group-end]]))
+            [dirac.implant.logging :refer [log warn error]]))
 
 (defn get-url-params []
   (gget "location.search"))
