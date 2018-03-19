@@ -1,13 +1,16 @@
 (ns dirac.tests.browser.tasks.transcript
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
+            [clojure.java.shell :refer [sh]]
             [clojure.string :as string]
             [clojure.tools.logging :as log]
             [clojure.stacktrace :as stacktrace]
+            [environ.core :refer [env]]
             [clj-webdriver.taxi :as taxi]
             [dirac.settings :refer [get-default-test-html-load-timeout
                                     get-script-runner-launch-delay
-                                    get-task-disconnected-wait-timeout]]
+                                    get-task-disconnected-wait-timeout
+                                    get-transcript-max-chrome-log-lines]]
             [dirac.shared.travis :refer [with-travis-fold]]
             [dirac.test-lib.chrome-driver :refer [extract-javascript-logs]]
             [dirac.tests.browser.tasks.task-state :refer [make-task-state]]
@@ -21,6 +24,12 @@
 
 (defonce ^:dynamic *current-transcript-test* nil)
 (defonce ^:dynamic *current-transcript-suite* nil)
+
+(def chrome-log-file-separator-start
+  ">>>> CHROME LOGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+(def chrome-log-file-separator-end
+  "<<<< CHROME LOGS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 
 ; -- transcript helpers -----------------------------------------------------------------------------------------------------
 
@@ -66,6 +75,26 @@
       (println actual-transcript)
       false)))
 
+(defn present-chrome-log-file []
+  (let [debug-log-path (:chrome-log-file env)
+        max-lines (get-transcript-max-chrome-log-lines)
+        command ["tail" "-n" (str max-lines) debug-log-path]]
+    (try
+      (let [result (apply sh command)]
+        (println)
+        (println chrome-log-file-separator-start)
+        (println "> " (apply str (interpose " " command)))
+        (println (:out result))
+        (println chrome-log-file-separator-end)
+        (println))
+      (catch Throwable e
+        (println)
+        (println chrome-log-file-separator-start)
+        (println (str "Unable to read Chrome log file at '" debug-log-path "'"))
+        (stacktrace/print-stack-trace e)
+        (println chrome-log-file-separator-end)
+        (println)))))
+
 ; -- transcript comparison --------------------------------------------------------------------------------------------------
 
 (defn write-transcript-and-compare! []
@@ -88,11 +117,14 @@
                                     expected-transcript-path)
             (do-report {:type    :pass
                         :message (str (get-transcript-test-label test-name) " passed.")})
-            (do-report {:type     :fail
+            (do
+              (present-chrome-log-file)
+              (do-report {:type     :fail
                         :message  (str (get-transcript-test-label test-name) " failed to match expected transcript.")
                         :expected (str "to match expected transcript " expected-transcript-path)
-                        :actual   (str "didn't match, see " actual-transcript-path)}))))
+                        :actual   (str "didn't match, see " actual-transcript-path)})))))
       (catch Throwable e
+        (present-chrome-log-file)
         (do-report {:type     :fail
                     :message  (str (get-transcript-test-label test-name) " failed with an exception.")
                     :expected "no exception"

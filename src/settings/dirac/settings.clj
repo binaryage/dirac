@@ -65,6 +65,7 @@
 
 (def ^:const TRANSCRIPT_STREAMER_SERVER_HOST "localhost")
 (def ^:const TRANSCRIPT_STREAMER_SERVER_PORT 22556)
+(def ^:const TRANSCRIPT_MAX_CHROME_LOG_LINES 3000)
 
 (def ^:const AUTOMATION_ENTRY_POINT_KEY "diracAutomateDevTools")
 (def ^:const FLUSH_PENDING_FEEDBACK_MESSAGES_KEY "diracFlushPendingFeedbackMessages")
@@ -296,6 +297,9 @@
 
 (defmacro get-transcript-streamer-server-port []
   TRANSCRIPT_STREAMER_SERVER_PORT)
+
+(defmacro get-transcript-max-chrome-log-lines []
+  TRANSCRIPT_MAX_CHROME_LOG_LINES)
 
 (defmacro get-transcript-streamer-server-url []
   (let [port (get-transcript-streamer-server-port)]
