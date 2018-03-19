@@ -1,7 +1,7 @@
 (ns dirac.background.state
-  (:require-macros [dirac.background.logging :refer [log info warn error]]
-                   [devtools.toolbox :refer [envelope]])
-  (:require [oops.core :refer [oget oset! ocall oapply]]
+  (:require-macros [devtools.toolbox :refer [envelope]])
+  (:require [dirac.background.logging :refer [log info warn error]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
             [dirac.utils :as utils]
             [clojure.string :as string]))

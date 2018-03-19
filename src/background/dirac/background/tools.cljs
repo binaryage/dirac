@@ -1,7 +1,7 @@
 (ns dirac.background.tools
-  (:require [cljs.core.async :refer [<! chan timeout close! put! go go-loop]]
+  (:require [dirac.background.logging :refer [log info warn error]]
+            [cljs.core.async :refer [<! chan timeout close! put! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.windows :as windows]
             [chromex.ext.tabs :as tabs]
             [dirac.settings :refer-macros [get-dirac-devtools-window-top

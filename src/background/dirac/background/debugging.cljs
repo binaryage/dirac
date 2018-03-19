@@ -1,6 +1,6 @@
 (ns dirac.background.debugging
-  (:require-macros [dirac.background.logging :refer [log info warn error]])
-  (:require [cljs-http.client :as http]
+  (:require [dirac.background.logging :refer [log info warn error]]
+            [cljs-http.client :as http]
             [oops.core :refer [oget]]
             [cljs.core.async :refer [<! timeout go]]
             [dirac.settings :refer [get-backend-url-resolution-trials

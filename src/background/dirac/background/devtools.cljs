@@ -1,6 +1,6 @@
 (ns dirac.background.devtools
   (:require [oops.core :refer [oget ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
+            [dirac.background.logging :refer [log info warn error]]
             [dirac.background.action :as action]
             [dirac.background.marion :as marion]
             [dirac.background.state :as state]))
