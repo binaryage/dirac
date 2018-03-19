@@ -1,8 +1,8 @@
 (ns marion.content-script.page
-  (:require-macros [marion.content-script.logging :refer [log info warn error debug-log]]
-                   [devtools.toolbox :refer [envelope]])
+  (:require-macros [devtools.toolbox :refer [envelope]])
   (:require [cljs.core.async :refer [<! chan go-loop]]
             [oops.core :refer [oget ocall oapply]]
+            [marion.content-script.logging :refer [log info warn error]]
             [chromex.protocols :refer [post-message!]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]))
 
@@ -17,7 +17,7 @@
 ; -- handle incoming messages from page -------------------------------------------------------------------------------------
 
 (defn handle-marion-message! [port message]
-  (debug-log "received page message, posting it to marion's background page" (envelope message))
+  (log "received page message, posting it to marion's background page" (envelope message))
   (post-message! port message))
 
 (defn marion-message? [message]
