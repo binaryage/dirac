@@ -12,7 +12,7 @@
                                            get-dirac-runner-window-top get-dirac-runner-window-left
                                            get-dirac-runner-window-width get-dirac-runner-window-height
                                            get-marion-stable-connection-timeout]]
-            [dirac.sugar :as sugar]))
+            [dirac.shared.sugar :as sugar]))
 
 (defn find-extension [pred]
   (go

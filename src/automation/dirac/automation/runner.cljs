@@ -4,9 +4,9 @@
             [oops.core :refer [oget oset! ocall oapply gcall! gset!]]
             [dirac.automation.logging :refer [log warn error info]]
             [goog.style :as gstyle]
-            [dirac.utils :refer-macros [runonce]]
+            [dirac.shared.utils :refer [runonce]]
             [dirac.automation.helpers :as helpers]
-            [dirac.cookies :as cookies]
+            [dirac.shared.cookies :as cookies]
             [dirac.automation.status-host :as status-host]
             [dirac.automation.messages :as messages]))
 

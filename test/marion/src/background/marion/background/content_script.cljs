@@ -12,7 +12,7 @@
             [marion.background.clients :as clients]
             [goog.string :as gstring]
             [goog.string.format]
-            [dirac.utils :as utils]))
+            [dirac.shared.utils :as utils]))
 
 ; -- scenario ids -----------------------------------------------------------------------------------------------------------
 ; we want to provide stable mapping between tab-ids and scenario tabs

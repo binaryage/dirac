@@ -4,7 +4,7 @@
             [oops.core :refer [oget oset! ocall oapply oset!+ ocall+ oget+ oapply+ gcall+ gset!]]
             [cljs.reader :as reader]
             [dirac.settings :refer-macros [get-automation-entry-point-key]]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [dirac.implant.helpers :refer [get-console-view get-inspector-view get-url-params get-dirac-api]]
             [dirac.implant.options :as options]
             [dirac.implant.automation.scrapers :refer [scrape]]))

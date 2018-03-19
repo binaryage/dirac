@@ -5,7 +5,7 @@
             [oops.core :refer [oget oset! ocall oapply]]
             [dirac.automation.logging :refer [log info warn error]]
             [dirac.settings :refer-macros [get-marion-message-reply-timeout]]
-            [dirac.utils :as utils]))
+            [dirac.shared.utils :as utils]))
 
 (defonce last-message-id (volatile! 0))
 (defonce message-id-prefix (volatile! ""))

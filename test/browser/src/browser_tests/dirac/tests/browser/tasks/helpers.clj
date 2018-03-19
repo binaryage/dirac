@@ -6,7 +6,7 @@
             [environ.core :refer [env]]
             [cuerdas.core :as cuerdas]
             [clansi]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [dirac.settings :refer [get-launch-task-message
                                     get-kill-task-message
                                     get-actual-transcripts-root-path

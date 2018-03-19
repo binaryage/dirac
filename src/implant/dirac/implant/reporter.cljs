@@ -5,7 +5,7 @@
             [oops.core :refer [oget oset! ocall oapply gget gset!]]
             [dirac.implant.feedback :as feedback]
             [dirac.implant.info :as info]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [dirac.implant.options :as options]))
 
 (def issues-url "https://github.com/binaryage/dirac/issues")

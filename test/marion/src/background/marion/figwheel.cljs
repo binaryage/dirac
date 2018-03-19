@@ -1,6 +1,6 @@
 (ns marion.figwheel
   (:require [figwheel.client :as figwheel]
-            [dirac.utils :refer-macros [runonce]]))
+            [dirac.shared.utils :refer [runonce]]))
 
 ; -------------------------------------------------------------------------------------------------------------------
 ; has to be included before boot

@@ -8,7 +8,7 @@
             [cljs.reader :as reader]
             [dirac.background.helpers :as helpers]
             [dirac.options.model :as options]
-            [dirac.utils :as utils]))
+            [dirac.shared.utils :as utils]))
 
 (declare post-feedback-event!)
 

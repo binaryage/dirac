@@ -10,7 +10,7 @@
             [dirac.automation.logging :refer [log warn error info]]
             [cuerdas.core :as cuerdas]
             [dirac.automation.helpers :as helpers]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [clojure.string :as string]))
 
 (defonce current-transcript (atom nil))

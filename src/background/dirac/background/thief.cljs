@@ -3,13 +3,13 @@
             [cljs.core.async :refer [<! chan timeout go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.ext.page-capture :as page-capture]
-            [dirac.mime :as mime]
-            [dirac.quoted-printable :as qp]
+            [dirac.shared.mime :as mime]
+            [dirac.shared.quoted-printable :as quoted-printable]
             [goog.string :as gstring]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [dirac.background.tools :as tools]
             [clojure.string :as string]
-            [dirac.sugar :as sugar]))
+            [dirac.shared.sugar :as sugar]))
 
 ; -- inspector-js -----------------------------------------------------------------------------------------------------------
 
@@ -23,7 +23,7 @@
         _ (assert (= content-transfer-encoding "quoted-printable"))
         encoded-body (:body parsed-first-part)]
     (case content-transfer-encoding
-      "quoted-printable" (qp/decode-quoted-printable encoded-body))))
+      "quoted-printable" (quoted-printable/decode-quoted-printable encoded-body))))
 
 ; -- backend api ------------------------------------------------------------------------------------------------------------
 

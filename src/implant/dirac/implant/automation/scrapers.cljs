@@ -6,8 +6,8 @@
             [cljs.pprint :refer [pprint]]
             [dirac.implant.automation.reps :refer [select-subrep select-subreps build-rep]]
             [clojure.walk :refer [prewalk postwalk]]
-            [dirac.dom :as dom]
-            [dirac.utils]                                                                                                     ; required by macros
+            [dirac.shared.dom :as dom]
+            [dirac.shared.utils]                                                                                                     ; required by macros
             [clojure.string :as string]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------

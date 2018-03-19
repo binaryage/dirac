@@ -2,5 +2,5 @@
 
 (defmacro with-captured-output [& body]
   `(-> (cljs.core/with-out-str ~@body)
-       (dirac.utils/strip-last-nl)
-       (dirac.utils/trim-leading-nls)))
+       (dirac.shared.utils/strip-last-nl)
+       (dirac.shared.utils/trim-leading-nls)))

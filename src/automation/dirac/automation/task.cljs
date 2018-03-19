@@ -17,7 +17,7 @@
             [dirac.automation.messages :as messages]
             [dirac.automation.launcher :as launcher]
             [dirac.automation.helpers :as helpers]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [dirac.automation.runner :as runner]))
 
 (declare register-global-exception-handler!)

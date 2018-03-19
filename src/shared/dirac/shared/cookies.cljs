@@ -1,5 +1,5 @@
 ; taken from https://github.com/Quantisan/cljs-cookies/blob/4963df43bd4b025f34a34be7b6b37b11fb69d278/src/cljs_cookies/core.cljs
-(ns dirac.cookies
+(ns dirac.shared.cookies
   (:refer-clojure :exclude [empty?])
   (:import goog.net.Cookies))
 

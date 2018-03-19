@@ -1,4 +1,4 @@
-(ns dirac.dom.shim
+(ns dirac.shared.dom.shim
   (:refer-clojure :exclude [parents remove next val empty]))
 
 ; ---------------------------------------------------------------------------------------------------------------------------

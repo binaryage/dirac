@@ -1,4 +1,4 @@
-(ns dirac.mime
+(ns dirac.shared.mime
   (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [clojure.string :as string]))

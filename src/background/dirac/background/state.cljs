@@ -3,7 +3,7 @@
   (:require [dirac.background.logging :refer [log info warn error]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [clojure.string :as string]))
 
 (defonce initial-state

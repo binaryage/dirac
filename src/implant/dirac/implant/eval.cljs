@@ -5,7 +5,7 @@
             [dirac.implant.logging :refer [log warn error]]
             [dirac.implant.feedback :as feedback]
             [clojure.string :as string]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [cljs.tools.reader.edn :as edn]))
 
 (def installation-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md")

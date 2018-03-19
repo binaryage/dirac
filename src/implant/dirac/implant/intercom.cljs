@@ -10,7 +10,7 @@
             [dirac.implant.weasel-client :as weasel-client]
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
             [dirac.implant.version :as implant-version]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [dirac.implant.logging :refer [log info warn error]]
             [dirac.implant.eval :as eval]
             [dirac.implant.feedback :as feedback]

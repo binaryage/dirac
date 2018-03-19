@@ -1,4 +1,4 @@
-(ns dirac.console
+(ns dirac.shared.console
   (:require [goog.log :as glog])
   (:import goog.debug.Console))
 

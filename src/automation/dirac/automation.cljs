@@ -19,7 +19,7 @@
             [dirac.automation.options :as options]
             [dirac.automation.verbs :as verbs]
             [dirac.automation.task]                                                                                           ; required for macros!
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [clojure.string :as string]))
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------

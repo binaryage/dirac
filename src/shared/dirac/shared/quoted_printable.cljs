@@ -1,4 +1,4 @@
-(ns dirac.quoted-printable
+(ns dirac.shared.quoted-printable
   (:require [oops.core :refer [oget oset! ocall oapply gget]]
             [chromex.logging :refer-macros [log info warn error]]))
 

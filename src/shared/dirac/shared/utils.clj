@@ -1,4 +1,4 @@
-(ns dirac.utils
+(ns dirac.shared.utils
   (:require [cljs.env]))
 
 (defmacro runonce [& body]

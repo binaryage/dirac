@@ -5,7 +5,7 @@
     `(do
        (dirac.automation.scenario/feedback! ~printed-form "scenario !>")
        (let [result# ~form
-             pprinted-result# (dirac.utils/strip-last-nl (cljs.core/with-out-str (cljs.pprint/pprint result#)))]
+             pprinted-result# (dirac.shared.utils/strip-last-nl (cljs.core/with-out-str (cljs.pprint/pprint result#)))]
          (dirac.automation.scenario/feedback! pprinted-result# "scenario =>")))))
 
 (defmacro with-feedback [& forms]

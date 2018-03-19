@@ -10,7 +10,7 @@
                                            get-dirac-intercom-key]]
             [dirac.background.action :as action]
             [dirac.background.state :as state]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [cljs.reader :as reader]
             [clojure.string :as string])
   (:import goog.Uri))

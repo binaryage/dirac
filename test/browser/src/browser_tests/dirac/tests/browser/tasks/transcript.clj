@@ -8,7 +8,7 @@
             [dirac.settings :refer [get-default-test-html-load-timeout
                                     get-script-runner-launch-delay
                                     get-task-disconnected-wait-timeout]]
-            [dirac.travis :refer [with-travis-fold]]
+            [dirac.shared.travis :refer [with-travis-fold]]
             [dirac.test-lib.chrome-driver :refer [extract-javascript-logs]]
             [dirac.tests.browser.tasks.task-state :refer [make-task-state]]
             [dirac.tests.browser.tasks.signal-server :refer [create-signal-server! wait-for-signal!]]

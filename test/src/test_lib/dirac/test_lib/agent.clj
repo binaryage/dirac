@@ -2,7 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [dirac.agent.impl :as agent]
             [dirac.settings :refer [get-dirac-agent-boot-time]]
-            [dirac.travis :refer [with-travis-fold]]))
+            [dirac.shared.travis :refer [with-travis-fold]]))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 

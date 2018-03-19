@@ -11,8 +11,8 @@
                                            get-frontend-handshake-timeout
                                            get-frontend-loading-timeout
                                            get-intercom-init-timeout]]
-            [dirac.i18n :as i18n]
-            [dirac.sugar :as sugar]
+            [dirac.shared.i18n :as i18n]
+            [dirac.shared.sugar :as sugar]
             [dirac.background.helpers :as helpers :refer [report-error-in-tab!
                                                           report-warning-in-tab!
                                                           show-connecting-debugger-backend-status!]]
@@ -21,7 +21,7 @@
             [dirac.background.state :as state]
             [dirac.background.helpers :as helpers]
             [dirac.options.model :as options]
-            [dirac.utils :as utils]))
+            [dirac.shared.utils :as utils]))
 
 ; WARNING: keep this in sync with dirac.js/knownFeatureFlags
 (def flag-keys [:enable-repl

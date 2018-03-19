@@ -1,4 +1,4 @@
-(ns dirac.i18n)
+(ns dirac.shared.i18n)
 
 (def cannot-attach-help-url
   "https://github.com/binaryage/dirac/blob/master/docs/faq.md#getting-error-cannot-attach-dirac-devtools-what-now")

@@ -1,8 +1,8 @@
-(ns dirac.dom
+(ns dirac.shared.dom
   (:require [clojure.string :as string]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
-            [dirac.dom.shim]))
+            [dirac.shared.dom.shim]))
 
 ; -- DOM access -------------------------------------------------------------------------------------------------------------
 
