@@ -17,7 +17,7 @@
         prefix-formatting ["%c%s" (get-prefix-style opts) prefix]]
     `(oops.core/gcall!+ ~api ~@prefix-formatting ~@args)))
 
-(defn gen-rel-console-log [method args opts]
+(defn gen-raw-console-log [method args opts]
   (let [api (str "console." method)
         prefix (get opts :prefix "?")
         printed-args (map (fn [arg] `(dirac.shared.utils/pprint-str ~arg)) args)
@@ -26,7 +26,7 @@
 
 (defn gen-console-log [method args opts]
   `(do
-     ~(if (advanced-mode?)
-        (gen-rel-console-log method args opts)
+     ~(if (or (true? (:raw opts)) (advanced-mode?))
+        (gen-raw-console-log method args opts)
         (gen-dev-console-log method args opts))
      nil))
