@@ -22,6 +22,7 @@ export DIRAC_NREPL__WEASEL_PORT=13042
 
 export CHROME_DRIVER_LOG_PATH="$ROOT/target/chromedriver.log"
 export DIRAC_CHROME_DRIVER_VERBOSE=1
+export DIRAC_TEST_BROWSER=1
 
 source ./scripts/lib/travis.sh
 
