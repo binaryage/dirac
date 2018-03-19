@@ -1,5 +1,5 @@
 (ns dirac.logging.toolkit
-  "Support for logging into js console"
+  "Common code for logging into js console"
   (:require [cljs.env]))
 
 (defn get-compiler-optimizations-mode []
@@ -26,11 +26,10 @@
     `(oops.core/gcall!+ ~api ~@prefix-formatting ~@args)))
 
 (defn gen-rel-console-log [method args opts]
-  (let [prefix (get opts :prefix "?")
-        wrapped-args (map (fn [arg] `(dirac.utils/pprint-str ~arg)) args)
-        separated-args (interpose "↦" wrapped-args)
-        msg `(str "[" ~prefix "] " ~@separated-args)
-        api (str "console." method)]
+  (let [api (str "console." method)
+        prefix (get opts :prefix "?")
+        printed-args (map (fn [arg] `(dirac.shared.utils/pprint-str ~arg)) args)
+        msg `(str "[" ~prefix "] " ~@printed-args "\n---")]
     `(oops.core/gcall!+ ~api ~msg)))
 
 (defn gen-console-log [method args opts]
