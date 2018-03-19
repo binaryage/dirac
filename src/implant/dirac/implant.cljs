@@ -167,6 +167,6 @@
     (feedback/post! "implant initialized")
     (info (str "Dirac implant " (get-version) " initialized"))))
 
-; -- intialization ----------------------------------------------------------------------------------------------------------
+; -- initialization ---------------------------------------------------------------------------------------------------------
 
 (runonce (init-implant!))
