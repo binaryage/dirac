@@ -1,14 +1,6 @@
 (ns dirac.logging.toolkit
   "Common code for logging into js console"
-  (:require [cljs.env]))
-
-(defn get-compiler-optimizations-mode []
-  (or (if cljs.env/*compiler*
-        (get-in @cljs.env/*compiler* [:options :optimizations]))
-      :none))
-
-(defn compiler-in-dev-mode? []
-  (= (get-compiler-optimizations-mode) :none))
+  (:require [dirac.shared.utils :refer [advanced-mode?]]))
 
 (defn get-prefix-style [opts]
   (let [fg-color (get opts :fg-color "white")
@@ -34,7 +26,7 @@
 
 (defn gen-console-log [method args opts]
   `(do
-     ~(if (compiler-in-dev-mode?)
-        (gen-dev-console-log method args opts)
-        (gen-rel-console-log method args opts))
+     ~(if (advanced-mode?)
+        (gen-rel-console-log method args opts)
+        (gen-dev-console-log method args opts))
      nil))
