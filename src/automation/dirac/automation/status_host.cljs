@@ -1,6 +1,6 @@
 (ns dirac.automation.status-host
   (:require [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log warn error info]]
+            [dirac.automation.logging :refer [log warn error info]]
             [dirac.automation.helpers :as helpers]
             [dirac.automation.status :as status]))
 

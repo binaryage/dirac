@@ -1,7 +1,7 @@
 (ns dirac.automation.devtools
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log warn error info]]
+            [dirac.automation.logging :refer [log warn error info]]
             [devtools.core :as devtools]
             [devtools.prefs :as devtools-prefs]))
 

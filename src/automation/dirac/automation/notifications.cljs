@@ -1,7 +1,7 @@
 (ns dirac.automation.notifications
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log warn]]
+            [dirac.automation.logging :refer [log warn]]
             [dirac.automation.messages :as messages]
             [cljs.reader :as reader]))
 

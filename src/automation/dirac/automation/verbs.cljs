@@ -2,7 +2,7 @@
   "Low-level automation API"
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log error]]
+            [dirac.automation.logging :refer [log error]]
             [dirac.automation.transcript-host :as transcript]
             [dirac.automation.matchers :as matchers]
             [dirac.automation.messages :as messages]))

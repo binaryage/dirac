@@ -1,5 +1,5 @@
 (ns dirac.automation.runtime
-  (:require [chromex.logging :refer-macros [log warn error info]]
+  (:require [dirac.automation.logging :refer [log warn error info]]
             [oops.core :refer [oset! oget ocall oapply gset! gcall]]
             [dirac.runtime :as runtime]
             [dirac.runtime.prefs :as runtime-prefs]

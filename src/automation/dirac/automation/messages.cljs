@@ -3,7 +3,7 @@
             [cljs.reader :as reader]
             [clojure.string :as str]
             [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error]]
+            [dirac.automation.logging :refer [log info warn error]]
             [dirac.settings :refer-macros [get-marion-message-reply-timeout]]
             [dirac.utils :as utils]))
 

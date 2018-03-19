@@ -1,7 +1,7 @@
 (ns dirac.automation.task
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply gset!]]
-            [chromex.logging :refer-macros [log warn error info]]
+            [dirac.automation.logging :refer [log warn error info]]
             [dirac.settings :refer-macros [get-signal-server-url
                                            get-transcript-streamer-server-url
                                            get-chrome-remote-debugging-port

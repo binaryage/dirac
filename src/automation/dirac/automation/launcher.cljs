@@ -2,7 +2,7 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [goog.string :as string]
             [oops.core :refer [oget oset! oset!+ ocall ocall+ oapply gset! gcall!]]
-            [chromex.logging :refer-macros [log warn error info]]
+            [dirac.automation.logging :refer [log warn error info]]
             [dirac.settings :refer-macros [get-launch-task-key get-launch-task-message
                                            get-kill-task-key get-kill-task-message]]))
 
