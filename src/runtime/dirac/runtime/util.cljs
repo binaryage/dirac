@@ -113,7 +113,7 @@
 (defn is-known-feature? [known-features feature]
   (boolean (some #{feature} known-features)))
 
-(defn sanititze-features! [features feature-groups]
+(defn sanitize-features! [features feature-groups]
   (let [known-features (:all feature-groups)]
     (report-unknown-features! features known-features)
     (filter (partial is-known-feature? known-features) features)))
@@ -124,7 +124,7 @@
                    (nil? features-desc) (:default feature-groups)
                    (seqable? features-desc) features-desc
                    :else [features-desc])]
-    (sanititze-features! features feature-groups)))
+    (sanitize-features! features feature-groups)))
 
 ; -- installer --------------------------------------------------------------------------------------------------------------
 
