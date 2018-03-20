@@ -5,5 +5,5 @@
 
 (defn init! []
   (go
-    (<! (model/init!))
+    (<! (model/go-init!))
     (ui/start-ui!)))

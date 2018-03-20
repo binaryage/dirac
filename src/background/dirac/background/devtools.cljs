@@ -31,11 +31,11 @@
 
 ; -- high-level API ---------------------------------------------------------------------------------------------------------
 
-(defn update-action-button! [backend-tab-id]
+(defn go-update-action-button! [backend-tab-id]
   {:pre [(number? backend-tab-id)]}
   (if (backend-connected? backend-tab-id)
-    (action/update-action-button! backend-tab-id :connected "Dirac is connected")
-    (action/update-action-button! backend-tab-id :waiting "Click to open Dirac DevTools")))
+    (action/go-update-action-button! backend-tab-id :connected "Dirac is connected")
+    (action/go-update-action-button! backend-tab-id :waiting "Click to open Dirac DevTools")))
 
 (defn register! [frontend-tab-id backend-tab-id]
   {:pre [(number? frontend-tab-id)
@@ -43,7 +43,7 @@
   (let [id (state/get-next-devtools-id!)]
     (add! id frontend-tab-id backend-tab-id)
     (marion/post-feedback-event! (str "register devtools #" id))
-    (update-action-button! backend-tab-id)
+    (go-update-action-button! backend-tab-id)
     id))
 
 (defn unregister! [frontend-tab-id]
@@ -52,5 +52,5 @@
     (let [{:keys [id backend-tab-id]} descriptor]
       (remove! id)
       (marion/post-feedback-event! (str "unregister devtools #" id))
-      (update-action-button! backend-tab-id))
+      (go-update-action-button! backend-tab-id))
     (warn "attempt to unregister non-existent devtools with tab-id:" frontend-tab-id)))

@@ -53,7 +53,7 @@
     (let [[window] (<! (windows/get window-id))]
       window)))
 
-(defn create-window-and-wait-for-first-tab-completed! [window-params]
+(defn go-create-window-and-wait-for-first-tab-completed! [window-params]
   (let [chrome-event-channel (make-chrome-event-channel (chan))]
     (tabs/tap-on-updated-events chrome-event-channel)
     (go
@@ -75,24 +75,24 @@
 
 ; -- tab --------------------------------------------------------------------------------------------------------------------
 
-(defn tab-exists? [tab-id]
+(defn go-check-tab-exists? [tab-id]
   (go
     (with-muted-error-reporting
       (if-let [[tab] (<! (tabs/get tab-id))]
         true
         false))))
 
-(defn fetch-tab [tab-id]
+(defn go-fetch-tab [tab-id]
   (go
     (let [[tab] (<! (tabs/get tab-id))]
       tab)))
 
-(defn fetch-tab-window-id [tab-id]
+(defn go-fetch-tab-window-id [tab-id]
   (go
-    (if-let [tab (<! (fetch-tab tab-id))]
+    (if-let [tab (<! (go-fetch-tab tab-id))]
       (get-tab-window-id tab))))
 
-(defn fetch-tab-window [tab-id]
+(defn go-fetch-tab-window [tab-id]
   (go
-    (if-let [tab (<! (fetch-tab tab-id))]
+    (if-let [tab (<! (go-fetch-tab tab-id))]
       (fetch-window (get-tab-window-id tab)))))

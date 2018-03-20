@@ -62,14 +62,14 @@
 
 ; -- robbery entry point ----------------------------------------------------------------------------------------------------
 
-(defn scrape-bundled-devtools! []
+(defn go-scrape-bundled-devtools! []
   (go
     (info "Retrieving backend API and CSS defs...")
-    (let [[window] (<! (tools/create-bundled-devtools-shell-window!))
+    (let [[window] (<! (tools/go-create-bundled-devtools-shell-window!))
           first-tab (first (oget window "tabs"))
           [mhtml] (<! (page-capture/save-as-mhtml (js-obj "tabId" (sugar/get-tab-id first-tab))))
-          multipart-mime (<! (utils/convert-blob-to-string mhtml))]
-      (<! (tools/remove-window! (sugar/get-window-id window)))
+          multipart-mime (<! (utils/go-convert-blob-to-string mhtml))]
+      (<! (tools/go-remove-window! (sugar/get-window-id window)))
       (try
         (let [raw-js (steal-inspector-js multipart-mime)
               backend-api (steal-backend-api raw-js)

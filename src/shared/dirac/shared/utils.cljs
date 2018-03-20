@@ -140,7 +140,7 @@
       (cuerdas/lines)
       (nth n nil)))
 
-(defn convert-blob-to-string [blob]
+(defn go-convert-blob-to-string [blob]
   (let [channel (chan)
         reader (js/FileReader.)]
     (oset! reader "onloadend" #(put! channel (oget reader "result")))

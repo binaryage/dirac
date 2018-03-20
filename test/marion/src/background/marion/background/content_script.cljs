@@ -122,7 +122,7 @@
           timeout-str (gstring/format "%0.2f" (/ timeout-ms 1000.0))
           timeout-channel (timeout timeout-ms)
           ready-channel (wait-for-scenario-ready! scenario-url)
-          tab-id (<! (helpers/create-scenario-with-url! scenario-url))]
+          tab-id (<! (helpers/go-create-scenario-with-url! scenario-url))]
       (let [[_ channel] (alts! [ready-channel timeout-channel])]
         (condp identical? channel
           ready-channel (do (add-scenario-id! scenario-id tab-id)
@@ -137,7 +137,7 @@
   (go
     (let [scenario-id (oget message "scenario-id")
           tab-id (get-scenario-tab-id scenario-id)]
-      (<! (helpers/close-tab-with-id! tab-id))
+      (<! (helpers/go-close-tab-with-id! tab-id))
       (remove-scenario-id! scenario-id)
       (<! (go-reply-to-message! message)))))
 
@@ -145,7 +145,7 @@
   (go
     (let [scenario-id (oget message "scenario-id")
           tab-id (get-scenario-tab-id scenario-id)]
-      (<! (helpers/activate-tab! tab-id))
+      (<! (helpers/go-activate-tab! tab-id))
       (<! (go-reply-to-message! message)))))
 
 (defn go-scenario-ready! [message client]
@@ -160,24 +160,24 @@
 
 (defn go-switch-to-task-runner! [message]
   (go
-    (when-let [tab-id (<! (helpers/find-runner-tab-id!))]
-      (<! (helpers/activate-tab! tab-id))
+    (when-let [tab-id (<! (helpers/go-find-runner-tab-id!))]
+      (<! (helpers/go-activate-tab! tab-id))
       (<! (go-reply-to-message! message)))))
 
 (defn go-focus-runner-window! [message]
   (go
-    (when-let [tab-id (<! (helpers/find-runner-tab-id!))]
-      (<! (helpers/focus-window-with-tab-id! tab-id))
+    (when-let [tab-id (<! (helpers/go-find-runner-tab-id!))]
+      (<! (helpers/go-focus-window-with-tab-id! tab-id))
       (<! (go-reply-to-message! message)))))
 
 (defn go-reposition-runner-window! [message]
   (go
-    (<! (helpers/reposition-runner-window!))
+    (<! (helpers/go-reposition-runner-window!))
     (<! (go-reply-to-message! message))))
 
 (defn go-close-all-tabs! [message]
   (go
-    (<! (helpers/close-all-scenario-tabs!))
+    (<! (helpers/go-close-all-scenario-tabs!))
     (clear-scenario-ids!)
     (<! (go-reply-to-message! message))))
 

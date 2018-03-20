@@ -93,21 +93,21 @@
 (defn tab-log-prefix [tab-id]
   (str "TAB #" tab-id ":"))
 
-(defn log-in-tab! [tab-id method msg]
+(defn go-log-in-tab! [tab-id method msg]
   (let [code (str "console." method "(\"" (utils/escape-double-quotes msg) "\")")]
     (tabs/execute-script tab-id #js {"code" code})))
 
-(defn report-error-in-tab! [tab-id msg]
-  (log-in-tab! tab-id "error" msg)
+(defn go-report-error-in-tab! [tab-id msg]
+  (go-log-in-tab! tab-id "error" msg)
   (error (tab-log-prefix tab-id) msg)
   (state/post-feedback! (str "ERROR " (tab-log-prefix tab-id) " " msg))
-  (action/update-action-button! tab-id :error msg))
+  (action/go-update-action-button! tab-id :error msg))
 
-(defn report-warning-in-tab! [tab-id msg]
-  (log-in-tab! tab-id "warn" msg)
+(defn go-report-warning-in-tab! [tab-id msg]
+  (go-log-in-tab! tab-id "warn" msg)
   (warn (tab-log-prefix tab-id) msg)
   (state/post-feedback! (str "WARNING " (tab-log-prefix tab-id) " " msg))
-  (action/update-action-button! tab-id :warning msg))
+  (action/go-update-action-button! tab-id :warning msg))
 
 ; -- automation support -----------------------------------------------------------------------------------------------------
 
@@ -140,7 +140,7 @@
       (error "failed to unserialize value:" serialized-value e)
       (utils/make-error-struct e))))
 
-(defn automate-action! [automate-fn action]
+(defn go-automate-action! [automate-fn action]
   (let [channel (chan)]
     (let [serialized-action (safe-serialize action)]
       (if-not (instance? js/Error serialized-action)
@@ -156,14 +156,14 @@
         (put! channel serialized-action)))
     channel))
 
-(defn automate-devtools! [devtools-id action]
+(defn go-automate-devtools! [devtools-id action]
   (let [matching-views-to-devtools-id (get-devtools-views devtools-id)
         matching-views-with-automation-support (filter has-automation-support? matching-views-to-devtools-id)]
     (if (> (count matching-views-with-automation-support) 1)
       (warn-about-unexpected-number-views devtools-id matching-views-with-automation-support))
     (if-let [view (first matching-views-with-automation-support)]
       (try
-        (automate-action! (get-automation-entry-point view) action)
+        (go-automate-action! (get-automation-entry-point view) action)
         (catch :default e
           (error (str "unable to automate dirac devtools #" devtools-id) view e)
           (go (utils/make-error-struct e))))
@@ -177,7 +177,7 @@
         (error (str "not all extension tabs got closed after the close-all-extension-tabs! [" (count views) "]") views)
         false))))
 
-(defn close-all-extension-tabs! []
+(defn go-close-all-extension-tabs! []
   (go
     (let [views (extension/get-views #js {:type "tab"})]
       (doseq [view views]
@@ -200,35 +200,37 @@
         "devtools view unexpectedly null")
       (str "unexpected count of devtools views: " (count matching-views)))))
 
-(defn try-install-intercom! [devtools-id handler & [timeout-ms]]
+(defn go-try-install-intercom! [devtools-id handler & [timeout-ms]]
   (let [timeout-chan (if (some? timeout-ms)
                        (timeout timeout-ms))]
-    (go-loop [iteration 1]
-      (let [result (install-intercom! devtools-id handler)]
-        (if (true? result)
-          true
-          (let [wait-chan (timeout 100)
-                [_ ch] (alts! (filterv some? [wait-chan timeout-chan]))]
-            (if (= ch timeout-chan)
-              (str "timeouted after " iteration " trials (" timeout-ms "ms), " result)
-              (recur (inc iteration)))))))))
+    (go
+      (loop [iteration 1]
+        (let [result (install-intercom! devtools-id handler)]
+          (if (true? result)
+            true
+            (let [wait-chan (timeout 100)
+                  [_ ch] (alts! (filterv some? [wait-chan timeout-chan]))]
+              (if (= ch timeout-chan)
+                (str "timeouted after " iteration " trials (" timeout-ms "ms), " result)
+                (recur (inc iteration))))))))))
 
-(defn show-connecting-debugger-backend-status! [tab-id]
-  (action/update-action-button! tab-id :connecting "Attempting to connect debugger backend..."))
+(defn go-show-connecting-debugger-backend-status! [tab-id]
+  (action/go-update-action-button! tab-id :connecting "Attempting to connect debugger backend..."))
 
-(defn wait-for-document-title! [tab-id wanted-title & [timeout-ms]]
+(defn go-wait-for-document-title! [tab-id wanted-title & [timeout-ms]]
   (let [timeout-chan (if (some? timeout-ms)
                        (timeout timeout-ms))]
-    (go-loop [iteration 1]
-      (let [tab-info-chan (tabs/get tab-id)
-            [[result] ch] (alts! (filterv some? [tab-info-chan timeout-chan]))]
-        (if (= ch timeout-chan)
-          (str "timeouted after " iteration " trials (" timeout-ms "ms)")
-          (if-not (some? result)
-            (str "invalid tab-id: " tab-id)
-            (let [title (oget result "?title")]
-              (if (= title wanted-title)
-                true
-                (do
-                  (<! (timeout 100))
-                  (recur (inc iteration)))))))))))
+    (go
+      (loop [iteration 1]
+        (let [tab-info-chan (tabs/get tab-id)
+              [[result] ch] (alts! (filterv some? [tab-info-chan timeout-chan]))]
+          (if (= ch timeout-chan)
+            (str "timeouted after " iteration " trials (" timeout-ms "ms)")
+            (if-not (some? result)
+              (str "invalid tab-id: " tab-id)
+              (let [title (oget result "?title")]
+                (if (= title wanted-title)
+                  true
+                  (do
+                    (<! (timeout 100))
+                    (recur (inc iteration))))))))))))

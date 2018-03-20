@@ -14,32 +14,32 @@
 
 ; -- marion event handlers --------------------------------------------------------------------------------------------------
 
-(defn set-options! [message-id message]
+(defn go-set-options! [message-id message]
   (go
     (let [options (:options message)]
       (post-feedback-event! (str "set extension options:" (pr-str options)))
       (options/set-options! options)
       (state/post-reply! message-id))))
 
-(defn get-options! [message-id _message]
+(defn go-get-options! [message-id _message]
   (go
     (state/post-reply! message-id (options/get-options))))
 
-(defn reset-options! [message-id message]
+(defn go-reset-options! [message-id message]
   (go
     (let [options (:options message)]
       (post-feedback-event! (str "reset extension options:" (pr-str options)))
       (options/reset-options! options)
       (state/post-reply! message-id))))
 
-(defn reset-state! [message-id _message]
+(defn go-reset-state! [message-id _message]
   (go
     (post-feedback-event! (str "reset extension state"))
     (options/reset-to-defaults!)
     (state/reset-devtools-id-counter!)
     (state/post-reply! message-id)))
 
-(defn fire-synthetic-chrome-event! [context message-id message]
+(defn go-fire-synthetic-chrome-event! [context message-id message]
   (go
     (let [handler-fn (:chrome-event-handler context)
           _ (assert (fn? handler-fn))
@@ -47,25 +47,25 @@
           reply (<! (handler-fn chrome-event))]
       (state/post-reply! message-id reply))))
 
-(defn automate-dirac-frontend! [message-id message]
+(defn go-automate-dirac-frontend! [message-id message]
   (go
     (let [{:keys [action]} message
           devtools-id (utils/parse-int (:devtools-id message))]
       (log "automate-dirac-frontend!" (str "#" devtools-id) action (envelope message))
       (if (state/get-devtools-descriptor devtools-id)
-        (let [reply (<! (helpers/automate-devtools! devtools-id action))]
+        (let [reply (<! (helpers/go-automate-devtools! devtools-id action))]
           (state/post-raw-reply! message-id reply))
         (do
           (warn "dirac automation request for missing connection" (str "#" devtools-id) message
                 "existing connections:" (state/get-devtools-descriptors))
           (state/post-reply! message-id ::missing-connection))))))
 
-(defn tear-down! [message-id _message]
+(defn go-tear-down! [message-id _message]
   (go
     ; we want to close all tabs/windows opened (owned) by our extension
     ; chrome driver does not have access to those windows and fails to switch back to its own tab
     ; https://bugs.chromium.org/p/chromium/issues/detail?id=355075
-    (<! (helpers/close-all-extension-tabs!))
+    (<! (helpers/go-close-all-extension-tabs!))
     (state/post-reply! message-id)))
 
 ; -- marion event loop ------------------------------------------------------------------------------------------------------
@@ -83,34 +83,34 @@
       (state/set-marion-port! nil))
     (warn "unregister-marion! called when no previous marion port!")))
 
-(defn process-marion-message! [context data]
+(defn go-process-marion-message! [context data]
   (let [message-id (oget data "id")
         payload (oget data "payload")
         message (reader/read-string payload)
         command (:command message)]
     (log "process-marion-message" message-id command (envelope message))
     (case command
-      :get-options (get-options! message-id message)
-      :reset-options (reset-options! message-id message)
-      :set-options (set-options! message-id message)
-      :reset-state (reset-state! message-id message)
-      :fire-synthetic-chrome-event (fire-synthetic-chrome-event! context message-id message)
-      :automate-dirac-frontend (automate-dirac-frontend! message-id message)
-      :tear-down (tear-down! message-id message))))
+      :get-options (go-get-options! message-id message)
+      :reset-options (go-reset-options! message-id message)
+      :set-options (go-set-options! message-id message)
+      :reset-state (go-reset-state! message-id message)
+      :fire-synthetic-chrome-event (go-fire-synthetic-chrome-event! context message-id message)
+      :automate-dirac-frontend (go-automate-dirac-frontend! message-id message)
+      :tear-down (go-tear-down! message-id message))))
 
-(defn run-marion-message-loop! [context marion-port]
+(defn go-run-marion-message-loop! [context marion-port]
   (go
     (register-marion! marion-port)
     (loop []
       (when-some [data (<! marion-port)]
-        (<! (process-marion-message! context data))
+        (<! (go-process-marion-message! context data))
         (recur)))
     (unregister-marion!)))
 
 ; -- marion client connection handling --------------------------------------------------------------------------------------
 
-(defn handle-marion-client-connection! [context marion-port]
-  (run-marion-message-loop! context marion-port))
+(defn go-handle-marion-client-connection! [context marion-port]
+  (go-run-marion-message-loop! context marion-port))
 
 (defn post-feedback-event! [& args]
   (apply state/post-feedback! args))

@@ -96,7 +96,7 @@
                   (unserialize-options serialized-options))]
     (merge default-options options)))                                                                                         ; merge is important for upgrading options schema between versions
 
-(defn read-options []
+(defn go-read-options []
   (go
     (let [local-storage (storage/get-local)
           [[items] _error] (<! (get local-storage "options"))
@@ -112,38 +112,38 @@
 
 ; -- events -----------------------------------------------------------------------------------------------------------------
 
-(defn process-on-changed! [changes area-name]
+(defn go-handle-on-changed! [changes area-name]
   (go
     (when (= area-name "local")
       (reload-options! (oget changes "options.newValue")))))
 
-(defn process-chrome-event [event]
+(defn go-process-chrome-event [event]
   (log "got chrome event" event)
   (let [[event-id event-args] event]
     (case event-id
-      ::storage/on-changed (apply process-on-changed! event-args)
+      ::storage/on-changed (apply go-handle-on-changed! event-args)
       (go))))
 
-(defn run-chrome-event-loop! [chrome-event-channel]
+(defn go-run-chrome-event-loop! [chrome-event-channel]
   (storage/tap-on-changed-events chrome-event-channel)
   (go-loop []
     (when-let [event (<! chrome-event-channel)]
-      (<! (process-chrome-event event))
+      (<! (go-process-chrome-event event))
       (recur))
     (log "leaving event loop")))
 
 ; -- init/deinit ------------------------------------------------------------------------------------------------------------
 
-(defn init! []
+(defn go-init! []
   {:pre [(not *initialized*)]}
   (log "init!")
   (go
-    (let [options (<! (read-options))]
+    (let [options (<! (go-read-options))]
       (set! *initialized* true)
       (reset-cached-options-without-sync! options)
       (add-watch cached-options ::watch (fn [_ _ _ new-state]
                                           (on-cached-options-change! new-state)))
-      (run-chrome-event-loop! chrome-event-channel)
+      (go-run-chrome-event-loop! chrome-event-channel)
       true)))
 
 (defn deinit! []

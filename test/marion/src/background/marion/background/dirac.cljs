@@ -76,7 +76,7 @@
   (go
     (loop []
       (log "looking for dirac extension...")
-      (when-some [port (<! (helpers/connect-to-dirac-extension!))]
+      (when-some [port (<! (helpers/go-connect-to-dirac-extension!))]
         (<! (go-run-message-loop! port)))
       (<! (timeout (get-marion-reconnection-attempt-delay)))                                                                  ; do not starve this "thread"
       (recur))))
