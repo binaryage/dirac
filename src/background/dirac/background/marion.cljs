@@ -1,5 +1,4 @@
 (ns dirac.background.marion
-  (:require-macros [devtools.toolbox :refer [envelope]])
   (:require [dirac.background.logging :refer [log info warn error]]
             [cljs.core.async :refer [<! chan put! go go-loop]]
             [oops.core :refer [oget ocall oapply]]
@@ -51,7 +50,7 @@
   (go
     (let [{:keys [action]} message
           devtools-id (utils/parse-int (:devtools-id message))]
-      (log "automate-dirac-frontend!" (str "#" devtools-id) action (envelope message))
+      (log "automate-dirac-frontend!" (str "#" devtools-id) action message)
       (if (state/get-devtools-descriptor devtools-id)
         (let [reply (<! (helpers/go-automate-devtools! devtools-id action))]
           (state/post-raw-reply! message-id reply))
@@ -88,7 +87,7 @@
         payload (oget data "payload")
         message (reader/read-string payload)
         command (:command message)]
-    (log "process-marion-message" message-id command (envelope message))
+    (log "process-marion-message" message-id command message)
     (case command
       :get-options (go-get-options! message-id message)
       :reset-options (go-reset-options! message-id message)

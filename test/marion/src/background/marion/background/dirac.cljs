@@ -1,10 +1,9 @@
 (ns marion.background.dirac
-  (:require-macros [dirac.settings :refer [get-marion-reconnection-attempt-delay]]
-                   [devtools.toolbox :refer [envelope]])
   (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message! get-sender]]
+            [dirac.settings :refer [get-marion-reconnection-attempt-delay]]
             [marion.background.logging :refer [log info warn error]]
             [marion.background.helpers :as helpers]
             [marion.background.feedback :as feedback]))
@@ -29,14 +28,14 @@
 
 (defn register-dirac-extension! [port]
   {:pre [(not @dirac-extension)]}
-  (log "dirac extension connected" (envelope port) port)
+  (log "dirac extension connected" port)
   (reset! dirac-extension port)
   (flush-pending-messages-to-dirac-extension! port))
 
 (defn unregister-dirac-extension! []
   (let [port @dirac-extension]
     (assert port)
-    (log "dirac extension disconnected" (envelope port) port)
+    (log "dirac extension disconnected" port)
     (reset! dirac-extension nil)))
 
 ; -- dirac extension event loop ---------------------------------------------------------------------------------------------
@@ -54,7 +53,7 @@
 (defn go-process-message! [message]
   (let [message-type (oget message "?type")
         message-id (oget message "?id")]
-    (log "dispatch dirac extension message" message-id message-type (envelope message))
+    (log "dispatch dirac extension message" message-id message-type message)
     (case message-type
       "feedback-from-extension" (feedback/go-broadcast-feedback! message)
       "feedback-from-devtools" (feedback/go-broadcast-feedback! message)

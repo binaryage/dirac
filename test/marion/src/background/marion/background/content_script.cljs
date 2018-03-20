@@ -1,5 +1,4 @@
 (ns marion.background.content-script
-  (:require-macros [devtools.toolbox :refer [envelope]])
   (:require [cljs.core.async :refer [<! chan timeout put! close! alts! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
@@ -80,7 +79,7 @@
    (let [message #js {:type "reply"
                       :id   message-id
                       :data (serialize-reply-data data)}]
-     (log "broadcasting reply" message-id (envelope message))
+     (log "broadcasting reply" message-id message)
      (feedback/go-broadcast-feedback! message))))
 
 (defn go-reply-to-message! [message & [data]]
@@ -199,7 +198,7 @@
 (defn go-process-message! [client message]
   (let [message-type (oget message "type")
         message-id (oget message "id")]
-    (log "dispatch content script message" message-id message-type (envelope message))
+    (log "dispatch content script message" message-id message-type message)
     (case message-type
       "marion-reset-state" (go-reset-state! message)
       "marion-subscribe-feedback" (go-subscribe-client-to-feedback! message client)

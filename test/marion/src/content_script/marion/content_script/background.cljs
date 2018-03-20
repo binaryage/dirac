@@ -1,5 +1,4 @@
 (ns marion.content-script.background
-  (:require-macros [devtools.toolbox :refer [envelope]])
   (:require [cljs.core.async :refer [<! chan go timeout alts! close!]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.protocols :refer [post-message! on-disconnect!]]

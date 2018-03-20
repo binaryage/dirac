@@ -1,5 +1,4 @@
 (ns marion.background.clients
-  (:require-macros      [devtools.toolbox :refer [envelope]])
   (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
@@ -19,8 +18,7 @@
 (defn add-client! [client]
   (let [sender (get-sender client)]
     (swap! clients conj client)
-    (log (str "a client connected: " (helpers/get-client-url client) " total clients " (count @clients))
-         (envelope sender))))
+    (log (str "a client connected: " (helpers/get-client-url client) " total clients " (count @clients)) sender)))
 
 (defn remove-client! [client]
   (let [sender (get-sender client)]
@@ -28,5 +26,4 @@
     (notifications/unsubscribe-client-if-subscribed! client)
     (let [remove-item (fn [coll item] (remove #(identical? item %) coll))]
       (swap! clients remove-item client))
-    (log (str "a client disconnected: " (helpers/get-client-url client) " total clients " (count @clients))
-         (envelope sender))))
+    (log (str "a client disconnected: " (helpers/get-client-url client) " total clients " (count @clients)) sender)))

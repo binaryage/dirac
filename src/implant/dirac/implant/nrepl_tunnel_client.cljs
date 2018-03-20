@@ -1,6 +1,5 @@
 (ns dirac.implant.nrepl-tunnel-client
-  (:require-macros [dirac.implant.nrepl-tunnel-client :refer [log warn info error]]
-                   [devtools.toolbox :refer [envelope]])
+  (:require-macros [dirac.implant.nrepl-tunnel-client :refer [log warn info error]])
   (:require [cljs.core.async :refer [<! chan put! timeout close! go go-loop]]
             [cljs-uuid-utils.core :as uuid]
             [dirac.implant.eval :as eval]
@@ -94,7 +93,7 @@
       (some? err) nil                                                                                                         ; (eval/present-output id "stderr" err)
       (some? ns) nil
       (some? status) nil
-      :else (warn "received an unrecognized message from nREPL server" (envelope message))))
+      :else (warn "received an unrecognized message from nREPL server" message)))
   nil)
 
 (defmethod process-message :print-output [_client message]
@@ -109,7 +108,7 @@
 
 ; TODO: is this really needed?
 (defmethod process-message :error [_client message]
-  (error "Received an error message from nREPL server" (envelope message))
+  (error "Received an error message from nREPL server" message)
   (go
     {:op      :error
      :message (:type message)}))

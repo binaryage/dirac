@@ -1,5 +1,4 @@
 (ns dirac.background.state
-  (:require-macros [devtools.toolbox :refer [envelope]])
   (:require [dirac.background.logging :refer [log info warn error]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
@@ -69,7 +68,7 @@
 (defn post-to-marion! [message]
   (if-some [marion-port (get-marion-port)]
     (post-message! marion-port message)
-    (warn "marion not yet connected when called post-to-marion! with message:" (envelope message))))
+    (warn "marion not yet connected when called post-to-marion! with message:" message)))
 
 (defn post-feedback! [text]
   (post-to-marion! #js {:type "feedback-from-extension" :transcript text}))
