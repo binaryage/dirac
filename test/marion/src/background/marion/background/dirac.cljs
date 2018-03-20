@@ -41,7 +41,7 @@
 
 ; -- dirac extension event loop ---------------------------------------------------------------------------------------------
 
-(defn post-message-to-dirac-extension! [command]
+(defn go-post-message-to-dirac-extension! [command]
   (go
     (if-some [port @dirac-extension]
       (post-message! port command)
@@ -51,31 +51,32 @@
 
 ; -- message dispatch -------------------------------------------------------------------------------------------------------
 
-(defn process-message! [message]
+(defn go-process-message! [message]
   (let [message-type (oget message "?type")
         message-id (oget message "?id")]
     (log "dispatch dirac extension message" message-id message-type (envelope message))
     (case message-type
-      "feedback-from-extension" (feedback/broadcast-feedback! message)
-      "feedback-from-devtools" (feedback/broadcast-feedback! message)
-      "reply" (feedback/broadcast-feedback! message)
+      "feedback-from-extension" (feedback/go-broadcast-feedback! message)
+      "feedback-from-devtools" (feedback/go-broadcast-feedback! message)
+      "reply" (feedback/go-broadcast-feedback! message)
       (warn "received unknown dirac extension message type:" message-type message))))
 
 ; -- message loop -----------------------------------------------------------------------------------------------------------
 
-(defn run-message-loop! [dirac-extension]
+(defn go-run-message-loop! [dirac-extension]
   (go
     (register-dirac-extension! dirac-extension)
     (loop []
       (when-some [message (<! dirac-extension)]
-        (process-message! message)
+        (<! (go-process-message! message))
         (recur)))
     (unregister-dirac-extension!)))
 
-(defn maintain-robust-connection-with-dirac-extension! []
-  (go-loop []
-    (log "looking for dirac extension...")
-    (when-some [port (<! (helpers/connect-to-dirac-extension!))]
-      (<! (run-message-loop! port)))
-    (<! (timeout (get-marion-reconnection-attempt-delay)))                                                                    ; do not starve this "thread"
-    (recur)))
+(defn go-maintain-robust-connection-with-dirac-extension! []
+  (go
+    (loop []
+      (log "looking for dirac extension...")
+      (when-some [port (<! (helpers/connect-to-dirac-extension!))]
+        (<! (go-run-message-loop! port)))
+      (<! (timeout (get-marion-reconnection-attempt-delay)))                                                                  ; do not starve this "thread"
+      (recur))))

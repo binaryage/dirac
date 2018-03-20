@@ -10,4 +10,4 @@
 (defn init! []
   (log "init!")
   (chrome/start-event-loop!)
-  (dirac/maintain-robust-connection-with-dirac-extension!))
+  (dirac/go-maintain-robust-connection-with-dirac-extension!))

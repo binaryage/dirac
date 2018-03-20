@@ -12,15 +12,16 @@
   (log "dispatch chrome event" event)
   (let [[event-id event-args] event]
     (case event-id
-      ::runtime/on-connect (apply content-script/handle-new-connection! event-args)                                           ; a connection from content script
+      ::runtime/on-connect (apply content-script/go-handle-new-connection! event-args)                                           ; a connection from content script
       nil)))
 
 (defn run-event-loop! [chrome-event-channel]
-  (log "starting chrome event loop...")
-  (go-loop []
-    (when-let [event (<! chrome-event-channel)]
-      (process-event! event)
-      (recur))
+  (go
+    (log "starting chrome event loop...")
+    (loop []
+      (when-let [event (<! chrome-event-channel)]
+        (process-event! event)
+        (recur)))
     (log "leaving chrome event loop")))
 
 ; -- entrance ---------------------------------------------------------------------------------------------------------------

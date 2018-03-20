@@ -36,7 +36,7 @@
 
 ; -- broadcasting -----------------------------------------------------------------------------------------------------------
 
-(defn broadcast-feedback! [message]
+(defn go-broadcast-feedback! [message]
   (go
     (let [subscribers (get-subscribers)]
       (if-not (pos? (count subscribers))

@@ -74,47 +74,47 @@
       (catch :default e
         (serialize-error e)))))
 
-(defn post-reply!
-  ([message-id] (post-reply! message-id nil))
+(defn go-post-reply!
+  ([message-id] (go-post-reply! message-id nil))
   ([message-id data]
    (let [message #js {:type "reply"
                       :id   message-id
                       :data (serialize-reply-data data)}]
      (log "broadcasting reply" message-id (envelope message))
-     (feedback/broadcast-feedback! message))))
+     (feedback/go-broadcast-feedback! message))))
 
-(defn reply-to-message! [message & [data]]
-  (post-reply! (oget message "id") data))
+(defn go-reply-to-message! [message & [data]]
+  (go-post-reply! (oget message "id") data))
 
 ; -- message handlers -------------------------------------------------------------------------------------------------------
 
-(defn reset-state! [message]
+(defn go-reset-state! [message]
   (go
     (reset-scenario-id!)
     (clear-scenario-ids!)
-    (<! (reply-to-message! message))))
+    (<! (go-reply-to-message! message))))
 
-(defn subscribe-client-to-feedback! [message client]
+(defn go-subscribe-client-to-feedback! [message client]
   (go
     (feedback/subscribe-client! client)
-    (<! (reply-to-message! message))))
+    (<! (go-reply-to-message! message))))
 
-(defn unsubscribe-client-from-feedback! [message client]
+(defn go-unsubscribe-client-from-feedback! [message client]
   (go
     (feedback/unsubscribe-client! client)
-    (<! (reply-to-message! message))))
+    (<! (go-reply-to-message! message))))
 
-(defn subscribe-client-to-notifications! [message client]
+(defn go-subscribe-client-to-notifications! [message client]
   (go
     (notifications/subscribe-client! client)
-    (<! (reply-to-message! message))))
+    (<! (go-reply-to-message! message))))
 
-(defn unsubscribe-client-from-notifications! [message client]
+(defn go-unsubscribe-client-from-notifications! [message client]
   (go
     (notifications/unsubscribe-client! client)
-    (<! (reply-to-message! message))))
+    (<! (go-reply-to-message! message))))
 
-(defn open-scenario! [message]
+(defn go-open-scenario! [message]
   (go
     (let [scenario-url (oget message "url")                                                                                   ; something like http://localhost:9080/scenarios/normal.html
           scenario-id (get-next-scenario-id!)
@@ -126,29 +126,29 @@
       (let [[_ channel] (alts! [ready-channel timeout-channel])]
         (condp identical? channel
           ready-channel (do (add-scenario-id! scenario-id tab-id)
-                            (<! (reply-to-message! message scenario-id)))
+                            (<! (go-reply-to-message! message scenario-id)))
           timeout-channel (let [error-msg (str "Scenario " scenario-id " didn't get ready in time (" timeout-str "s), "
                                                "this is probably due to javascript errors during initialization.\n"
                                                "Inspect page '" scenario-url "'")]
                             (warn error-msg)
-                            (<! (reply-to-message! message (str "error: " error-msg)))))))))
+                            (<! (go-reply-to-message! message (str "error: " error-msg)))))))))
 
-(defn close-scenario! [message]
+(defn go-close-scenario! [message]
   (go
     (let [scenario-id (oget message "scenario-id")
           tab-id (get-scenario-tab-id scenario-id)]
       (<! (helpers/close-tab-with-id! tab-id))
       (remove-scenario-id! scenario-id)
-      (<! (reply-to-message! message)))))
+      (<! (go-reply-to-message! message)))))
 
-(defn activate-scenario! [message]
+(defn go-activate-scenario! [message]
   (go
     (let [scenario-id (oget message "scenario-id")
           tab-id (get-scenario-tab-id scenario-id)]
       (<! (helpers/activate-tab! tab-id))
-      (<! (reply-to-message! message)))))
+      (<! (go-reply-to-message! message)))))
 
-(defn scenario-ready! [message client]
+(defn go-scenario-ready! [message client]
   (go
     (let [sender (get-sender client)
           scenario-url (oget sender "url")]
@@ -156,82 +156,83 @@
       (if-let [callback (get @pending-scenarios scenario-url)]
         (callback message)
         (warn "expected " scenario-url " to be present in pending-scenarios")))
-    (<! (reply-to-message! message))))
+    (<! (go-reply-to-message! message))))
 
-(defn switch-to-task-runner! [message]
+(defn go-switch-to-task-runner! [message]
   (go
     (when-let [tab-id (<! (helpers/find-runner-tab-id!))]
       (<! (helpers/activate-tab! tab-id))
-      (<! (reply-to-message! message)))))
+      (<! (go-reply-to-message! message)))))
 
-(defn focus-runner-window! [message]
+(defn go-focus-runner-window! [message]
   (go
     (when-let [tab-id (<! (helpers/find-runner-tab-id!))]
       (<! (helpers/focus-window-with-tab-id! tab-id))
-      (<! (reply-to-message! message)))))
+      (<! (go-reply-to-message! message)))))
 
-(defn reposition-runner-window! [message]
+(defn go-reposition-runner-window! [message]
   (go
     (<! (helpers/reposition-runner-window!))
-    (<! (reply-to-message! message))))
+    (<! (go-reply-to-message! message))))
 
-(defn close-all-tabs! [message]
+(defn go-close-all-tabs! [message]
   (go
     (<! (helpers/close-all-scenario-tabs!))
     (clear-scenario-ids!)
-    (<! (reply-to-message! message))))
+    (<! (go-reply-to-message! message))))
 
-(defn handle-extension-command! [message]
-  (dirac/post-message-to-dirac-extension! message))
+(defn go-handle-extension-command! [message]
+  (dirac/go-post-message-to-dirac-extension! message))
 
-(defn broadcast-feedback-from-scenario! [message]
+(defn go-broadcast-feedback-from-scenario! [message]
   (go
-    (<! (feedback/broadcast-feedback! (oget message "payload")))
-    (<! (reply-to-message! message))))
+    (<! (feedback/go-broadcast-feedback! (oget message "payload")))
+    (<! (go-reply-to-message! message))))
 
-(defn broadcast-notification! [message]
+(defn go-broadcast-notification! [message]
   (go
     (<! (notifications/broadcast-notification! (oget message "payload")))
-    (<! (reply-to-message! message))))
+    (<! (go-reply-to-message! message))))
 
 ; -- message dispatch -------------------------------------------------------------------------------------------------------
 
-(defn process-message! [client message]
+(defn go-process-message! [client message]
   (let [message-type (oget message "type")
         message-id (oget message "id")]
     (log "dispatch content script message" message-id message-type (envelope message))
     (case message-type
-      "marion-reset-state" (reset-state! message)
-      "marion-subscribe-feedback" (subscribe-client-to-feedback! message client)
-      "marion-unsubscribe-feedback" (unsubscribe-client-from-feedback! message client)
-      "marion-feedback-from-scenario" (broadcast-feedback-from-scenario! message)
-      "marion-subscribe-notifications" (subscribe-client-to-notifications! message client)
-      "marion-unsubscribe-notifications" (unsubscribe-client-from-notifications! message client)
-      "marion-broadcast-notification" (broadcast-notification! message)
-      "marion-open-scenario" (open-scenario! message)
-      "marion-close-scenario" (close-scenario! message)
-      "marion-activate-scenario" (activate-scenario! message)
-      "marion-scenario-ready" (scenario-ready! message client)
-      "marion-switch-to-runner-tab" (switch-to-task-runner! message)
-      "marion-reposition-runner-window" (reposition-runner-window! message)
-      "marion-focus-runner-window" (focus-runner-window! message)
-      "marion-close-all-tabs" (close-all-tabs! message)
-      "marion-extension-command" (handle-extension-command! message))))
+      "marion-reset-state" (go-reset-state! message)
+      "marion-subscribe-feedback" (go-subscribe-client-to-feedback! message client)
+      "marion-unsubscribe-feedback" (go-unsubscribe-client-from-feedback! message client)
+      "marion-feedback-from-scenario" (go-broadcast-feedback-from-scenario! message)
+      "marion-subscribe-notifications" (go-subscribe-client-to-notifications! message client)
+      "marion-unsubscribe-notifications" (go-unsubscribe-client-from-notifications! message client)
+      "marion-broadcast-notification" (go-broadcast-notification! message)
+      "marion-open-scenario" (go-open-scenario! message)
+      "marion-close-scenario" (go-close-scenario! message)
+      "marion-activate-scenario" (go-activate-scenario! message)
+      "marion-scenario-ready" (go-scenario-ready! message client)
+      "marion-switch-to-runner-tab" (go-switch-to-task-runner! message)
+      "marion-reposition-runner-window" (go-reposition-runner-window! message)
+      "marion-focus-runner-window" (go-focus-runner-window! message)
+      "marion-close-all-tabs" (go-close-all-tabs! message)
+      "marion-extension-command" (go-handle-extension-command! message))))
 
 ; -- content script message loop --------------------------------------------------------------------------------------------
 
-(defn run-message-loop! [client]
-  (log "entering run-message-loop! of" (helpers/get-client-url client))
-  (go-loop []
-    (when-some [message (<! client)]
-      (<! (process-message! client message))
-      (recur))
+(defn go-run-content-script-message-loop! [client]
+  (go
+    (log "entering run-message-loop! of" (helpers/get-client-url client))
+    (loop []
+      (when-some [message (<! client)]
+        (<! (go-process-message! client message))
+        (recur)))
     (log "leaving run-message-loop! of" (helpers/get-client-url client))))
 
 ; -- event handlers ---------------------------------------------------------------------------------------------------------
 
-(defn handle-new-connection! [client]
+(defn go-handle-new-connection! [client]
   (go
     (clients/add-client! client)
-    (<! (run-message-loop! client))
+    (<! (go-run-content-script-message-loop! client))
     (clients/remove-client! client)))
