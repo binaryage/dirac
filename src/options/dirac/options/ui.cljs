@@ -2,6 +2,7 @@
   (:require [dirac.options.logging :refer [log info warn error]]
             [rum.core :as rum :refer-macros [defc]]
             [dirac.options.model :as model]
+            [oops.core :refer [gcall]]
             [reforms.rum :include-macros true :as fr]
             [reforms.core :as f]))
 
@@ -140,7 +141,7 @@
     (rum/mount root-view el)))
 
 (defn start-ui! []
-  (let [root-el (.getElementById js/document "options-form")]
+  (let [root-el (gcall "document.getElementById" "options-form")]
     (assert root-el)
     (load-state!)
     (watch-options!)
