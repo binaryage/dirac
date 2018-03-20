@@ -20,8 +20,10 @@
 (defn compute-prefix [opts]
   (if-some [env (get opts :env)]
     (let [ns-name (name (:name (:ns env)))
-          prefix (massage-ns-name ns-name)]
-      prefix)
+          prefix (massage-ns-name ns-name)
+          line (get env :line)
+          line-postfix (if (some? line) (str ":" line) "")]
+      (str prefix line-postfix))
     "?"))
 
 (defn get-or-compute-prefix [opts]
