@@ -1,23 +1,20 @@
 (ns marion.background.logging
   (:require [dirac.logging.toolkit :refer [gen-console-log]]
-            [dirac.shared.utils :refer [dirac-test-mode?]]
-            [clojure.string :as string]))
+            [dirac.shared.utils :refer [dirac-test-mode?]]))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; logging - these need to be macros to preserve source location for devtools
 
-(defonce enabled? true)
-(defonce color "IndianRed")
+(def enabled? true)
+(def color "IndianRed")
 
 (defn gen-log [method env args]
   (if enabled?
-    (let [ns-name (name (:name (:ns env)))
-          prefix (string/replace-first ns-name #"^dirac\." "")]
-      (gen-console-log method args {; we don't compile marion with advanced optimizations for testing, instead we check env
-                                    ; to detect if we are compiled for automated tests or not
-                                    :raw      (dirac-test-mode?)
-                                    :prefix   prefix
-                                    :bg-color color}))))
+    (gen-console-log method args {; we don't compile marion with advanced optimizations for testing, instead we check env
+                                  ; to detect if we are compiled for automated tests or not
+                                  :raw      (dirac-test-mode?)
+                                  :env      env
+                                  :bg-color color})))
 
 ; -- public api -------------------------------------------------------------------------------------------------------------
 

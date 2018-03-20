@@ -1,19 +1,16 @@
 (ns dirac.implant.logging
-  (:require [dirac.logging.toolkit :refer [gen-console-log]]
-            [clojure.string :as string]))
+  (:require [dirac.logging.toolkit :refer [gen-console-log]]))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; logging - these need to be macros to preserve source location for devtools
 
-(defonce enabled? true)
-(defonce color "blue")
+(def enabled? true)
+(def color "blue")
 
 (defn gen-log [method env args]
   (if enabled?
-    (let [ns-name (name (:name (:ns env)))
-          prefix (string/replace-first ns-name #"^dirac\." "")]
-      (gen-console-log method args {:prefix   prefix
-                                    :bg-color color}))))
+    (gen-console-log method args {:env      env
+                                  :bg-color color})))
 
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
