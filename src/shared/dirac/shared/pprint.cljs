@@ -31,7 +31,7 @@
   (visit-map [_this x] (v/visit-map fallback-printer x))
   (visit-set [_this x] (v/visit-set fallback-printer x))
   (visit-tagged [_this x] (v/visit-tagged fallback-printer x))
-  (visit-meta [_this _meta x] (v/visit-meta fallback-printer meta x))
+  (visit-meta [_this x-meta x] (v/visit-meta fallback-printer x-meta x))
   (visit-var [_this x] (v/visit-var fallback-printer x))
   (visit-pattern [_this x] (v/visit-pattern fallback-printer x))
   (visit-record [_this x] (v/visit-record fallback-printer x)))
