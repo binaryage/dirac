@@ -3,9 +3,9 @@
             [fipp.visit :as v]
             [fipp.edn :as edn]))
 
-(defn abbreviate-long-string [string marker prefix-limit postfix-limit]
-  (let [prefix (.slice string 0 prefix-limit)
-        postfix (.slice string (- (.-length string) postfix-limit))]
+(defn abbreviate-long-string [s marker prefix-limit postfix-limit]
+  (let [prefix (.slice s 0 prefix-limit)
+        postfix (.slice s (- (.-length s) postfix-limit))]
     (str prefix marker postfix)))
 
 (defn massage-string [s opts]
@@ -37,8 +37,8 @@
   (visit-record [_this x] (v/visit-record fallback-printer x)))
 
 (defn pprint
-  ([x] (pprint x {}))
-  ([x options]
+  ([val] (pprint val {}))
+  ([val options]
    (let [defaults {:symbols              {}
                    :print-length         *print-length*
                    :print-level          *print-level*
@@ -49,4 +49,4 @@
          pprint-document (:pprint-document opts)
          fallback-printer (edn/map->EdnPrinter opts)
          printer (DiracPrinter. fallback-printer opts)]
-     (pprint-document (v/visit printer x) opts))))
+     (pprint-document (v/visit printer val) opts))))
