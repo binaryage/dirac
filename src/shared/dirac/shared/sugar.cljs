@@ -78,7 +78,7 @@
 (defn go-check-tab-exists? [tab-id]
   (go
     (with-muted-error-reporting
-      (if-let [[tab] (<! (tabs/get tab-id))]
+      (if-let [[_tab] (<! (tabs/get tab-id))]
         true
         false))))
 
@@ -91,8 +91,3 @@
   (go
     (if-let [tab (<! (go-fetch-tab tab-id))]
       (get-tab-window-id tab))))
-
-(defn go-fetch-tab-window [tab-id]
-  (go
-    (if-let [tab (<! (go-fetch-tab tab-id))]
-      (fetch-window (get-tab-window-id tab)))))

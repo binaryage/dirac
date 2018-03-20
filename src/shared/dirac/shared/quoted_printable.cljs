@@ -1,5 +1,5 @@
 (ns dirac.shared.quoted-printable
-  (:require [oops.core :refer [oget oset! ocall oapply gget]]))
+  (:require [oops.core :refer [oget oset! ocall oapply gget gcall]]))
 
 ; taken from
 ; https://github.com/mathiasbynens/quoted-printable/blob/326f631c9dd0cd051d12ab1b39682a97126b1894/src/quoted-printable.js
@@ -11,7 +11,7 @@
 (def from-char-code (gget "String.fromCharCode"))
 
 (defn decode-escape-sequence [hex-code-point-str]
-  (let [code-point (js/parseInt hex-code-point-str 16)]
+  (let [code-point (gcall "parseInt" hex-code-point-str 16)]
     (from-char-code code-point)))
 
 (defn decode-quoted-printable [source]

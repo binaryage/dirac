@@ -1,6 +1,6 @@
 (ns dirac.shared.dom
   (:require [clojure.string :as string]
-            [oops.core :refer [oget oset! ocall oapply]]
+            [oops.core :refer [oget oset! ocall gcall oapply]]
             [dirac.shared.logging :refer [log warn error info]]
             [dirac.shared.dom.shim]))
 
@@ -10,8 +10,8 @@
   (instance? js/HTMLElement v))
 
 (defn query-selector
-  ([selector] (.querySelectorAll js/document selector))
-  ([element selector] (.querySelectorAll element selector)))
+  ([selector] (gcall "document.querySelectorAll" selector))
+  ([element selector] (ocall element "querySelectorAll" selector)))
 
 (defn get-tag-name [el]
   (if-let [tag-name (oget el "?tagName")]

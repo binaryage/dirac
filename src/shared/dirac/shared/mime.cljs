@@ -46,7 +46,7 @@
   (let [splits (.split source "\n\n")
         headers (first splits)
         body-parts (.slice splits 1)
-        body (.join body-parts "\n\n")]
+        body (ocall body-parts "join" "\n\n")]
     [headers body]))
 
 (defn strip-leading-new-line [s]
