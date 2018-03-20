@@ -40,7 +40,7 @@
 (defn gen-raw-console-log [method args opts]
   (let [api (str "console." method)
         prefix (get-or-compute-prefix opts)
-        printed-args (map (fn [arg] `(dirac.shared.utils/pprint-str ~arg)) args)
+        printed-args (map (fn [arg] `(dirac.shared.utils/pprint-str ~arg 3 10 200)) args)
         msg `(str "[" ~prefix "] " ~@printed-args "---")]
     `(oops.core/gcall!+ ~api ~msg)))
 

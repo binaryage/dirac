@@ -3,7 +3,7 @@
   (:require [cljs.core.async :refer [put! <! chan close! go go-loop]]
             [cljs.core.async.impl.protocols :as async-protocols]
             [cuerdas.core :as cuerdas]
-            [cljs.pprint]
+            [dirac.shared.pprint]
             [oops.core :refer [oget oset! ocall oapply gget gcall]]))
 
 (def Promise (gget "Promise"))
@@ -49,10 +49,10 @@
 
 (defn turn-channel-into-callback [channel callback]
   (go-loop []
-    (if-let [val (<! channel)]
-      (do
-        (callback val)
-        (recur)))))
+           (if-let [val (<! channel)]
+             (do
+               (callback val)
+               (recur)))))
 
 (defn turn-promise-into-callback [promise callback]
   (ocall promise "then" callback))
@@ -150,8 +150,9 @@
     (ocall reader "readAsText" blob)
     channel))
 
-(defn pprint-str [v & [level length]]
+(defn pprint-str [v & [level length max-str-len]]
   (with-out-str
-    (binding [*print-level* (or level 3)
-              *print-length* (or length 200)]
-      (cljs.pprint/pprint v))))
+    (let [opts {:print-level       (or level 3)
+                :print-length      (or length 200)
+                :max-string-length (or max-str-len 500)}]
+      (dirac.shared.pprint/pprint v opts))))
