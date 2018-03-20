@@ -3,17 +3,17 @@
             [fipp.visit :as v]
             [fipp.edn :as edn]))
 
-(defn abbreviate-long-string [s marker prefix-limit postfix-limit]
-  (let [prefix (.slice s 0 prefix-limit)
-        postfix (.slice s (- (.-length s) postfix-limit))]
+(defn abbreviate-string [s marker prefix-length postfix-length]
+  (let [prefix (.slice s 0 prefix-length)
+        postfix (.slice s (- (.-length s) postfix-length))]
     (str prefix marker postfix)))
 
 (defn massage-string [s opts]
   (or
-    (if-some [max-string-length (get opts :max-string-length)]
-      (if (> (count s) max-string-length)
+    (when-some [max-string-length (get opts :max-string-length)]
+      (when (> (count s) max-string-length)
         (let [half-length (/ max-string-length 2)]
-          (abbreviate-long-string s "..." half-length half-length))))
+          (abbreviate-string s "..." half-length half-length))))
     s))
 
 (defrecord DiracPrinter [fallback-printer opts]
@@ -37,7 +37,7 @@
   (visit-record [_this x] (v/visit-record fallback-printer x)))
 
 (defn pprint
-  ([val] (pprint val {}))
+  ([val] (pprint val nil))
   ([val options]
    (let [defaults {:symbols              {}
                    :print-length         *print-length*
@@ -45,8 +45,9 @@
                    :print-meta           *print-meta*
                    :print-namespace-maps *print-namespace-maps*
                    :pprint-document      engine/pprint-document}
-         opts (merge defaults options)
-         pprint-document (:pprint-document opts)
-         fallback-printer (edn/map->EdnPrinter opts)
-         printer (DiracPrinter. fallback-printer opts)]
-     (pprint-document (v/visit printer val) opts))))
+         effective-options (merge defaults options)
+         pprint-document (:pprint-document effective-options)
+         fallback-printer (edn/map->EdnPrinter effective-options)
+         dirac-printer (DiracPrinter. fallback-printer effective-options)
+         document (v/visit dirac-printer val)]
+     (pprint-document document effective-options))))
