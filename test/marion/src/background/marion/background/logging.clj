@@ -1,6 +1,6 @@
 (ns marion.background.logging
   (:require [dirac.logging.toolkit :refer [gen-console-log]]
-            [environ.core :as environ]
+            [dirac.shared.utils :refer [dirac-test-mode?]]
             [clojure.string :as string]))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
@@ -15,7 +15,7 @@
           prefix (string/replace-first ns-name #"^dirac\." "")]
       (gen-console-log method args {; we don't compile marion with advanced optimizations for testing, instead we check env
                                     ; to detect if we are compiled for automated tests or not
-                                    :raw      (some? (:dirac-test-browser environ/env))
+                                    :raw      (dirac-test-mode?)
                                     :prefix   prefix
                                     :bg-color color}))))
 
