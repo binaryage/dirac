@@ -31,8 +31,8 @@ stdout           displayed 42 items:
                   * marion$content-script$background$process-message! / marion$content-script$background$process-message!
                   * λ
                   * λ
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto--
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto--
                   * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
                   * λ
@@ -94,8 +94,8 @@ stdout           displayed 42 items:
                   * marion$content_script$background$process_message_BANG_
                   * (anonymous)
                   * (anonymous)
-                  * marion$content_script$background$run_message_loop_BANG__$_state_machine__*gen-num*__auto____*gen-num*
-                  * marion$content_script$background$run_message_loop_BANG__$_state_machine__*gen-num*__auto__
+                  * marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto____*gen-num*
+                  * marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto__
                   * cljs$core$async$impl$ioc_helpers$run_state_machine
                   * cljs$core$async$impl$ioc_helpers$run_state_machine_wrapped
                   * (anonymous)
@@ -183,8 +183,8 @@ stdout           displayed 44 items:
                   * marion$content-script$background$process-message!
                   * λ
                   * λ
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto--
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto--
                   * run-state-machine
                   * run-state-machine-wrapped
                   * λ
@@ -260,8 +260,8 @@ stdout           displayed 77 items:
                   * marion$content-script$background$process-message! / marion$content-script$background$process-message!
                   * λ
                   * λ
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto--
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto--
                   * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
                   * λ
