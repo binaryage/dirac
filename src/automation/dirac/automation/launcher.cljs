@@ -3,8 +3,8 @@
             [goog.string :as string]
             [oops.core :refer [oget oset! oset!+ ocall ocall+ oapply gset! gcall!]]
             [dirac.automation.logging :refer [log warn error info]]
-            [dirac.settings :refer-macros [get-launch-task-key get-launch-task-message
-                                           get-kill-task-key get-kill-task-message]]))
+            [dirac.settings :refer [get-launch-task-key get-launch-task-message
+                                    get-kill-task-key get-kill-task-message]]))
 
 (defn register-task! [task-fn kill-fn]
   (log "registering task...")

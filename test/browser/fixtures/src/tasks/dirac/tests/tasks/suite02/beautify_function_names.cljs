@@ -2,7 +2,7 @@
   (:require [cljs.core.async :refer [<! timeout]]
             [cljs.test :refer-macros [is]]
             [dirac.shared.utils :refer [line-count]]
-            [dirac.settings :refer-macros [seconds minutes]]
+            [dirac.settings :refer [seconds minutes]]
             [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options testing] :as a]))
 
 (go-task

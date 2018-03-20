@@ -5,9 +5,9 @@
             [chromex.ext.tabs :as tabs]
             [chromex.ext.extension :as extension]
             [chromex.ext.runtime :as runtime]
-            [dirac.settings :refer-macros [get-automation-entry-point-key
-                                           get-flush-pending-feedback-messages-key
-                                           get-dirac-intercom-key]]
+            [dirac.settings :refer [get-automation-entry-point-key
+                                    get-flush-pending-feedback-messages-key
+                                    get-dirac-intercom-key]]
             [dirac.background.action :as action]
             [dirac.background.state :as state]
             [dirac.shared.utils :as utils]

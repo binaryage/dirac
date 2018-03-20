@@ -6,8 +6,8 @@
             [marion.content-script.logging :refer [log info warn error]]
             [marion.content-script.page :as page]
             [marion.content-script.state :as state]
-            [dirac.settings :refer-macros [get-marion-stable-connection-timeout
-                                           get-marion-reconnection-attempt-delay]]))
+            [dirac.settings :refer [get-marion-stable-connection-timeout
+                                    get-marion-reconnection-attempt-delay]]))
 
 ; -- message handlers -------------------------------------------------------------------------------------------------------
 

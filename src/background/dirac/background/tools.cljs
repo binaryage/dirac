@@ -4,13 +4,13 @@
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.ext.windows :as windows]
             [chromex.ext.tabs :as tabs]
-            [dirac.settings :refer-macros [get-dirac-devtools-window-top
-                                           get-dirac-devtools-window-left
-                                           get-dirac-devtools-window-width
-                                           get-dirac-devtools-window-height
-                                           get-frontend-handshake-timeout
-                                           get-frontend-loading-timeout
-                                           get-intercom-init-timeout]]
+            [dirac.settings :refer [get-dirac-devtools-window-top
+                                    get-dirac-devtools-window-left
+                                    get-dirac-devtools-window-width
+                                    get-dirac-devtools-window-height
+                                    get-frontend-handshake-timeout
+                                    get-frontend-loading-timeout
+                                    get-intercom-init-timeout]]
             [dirac.shared.i18n :as i18n]
             [dirac.shared.sugar :as sugar]
             [dirac.background.helpers :as helpers :refer [go-report-error-in-tab!
@@ -182,8 +182,8 @@
                     (if (keyword-identical? backend-info :not-attachable)
                       (<! (go-report-warning-in-tab! backend-tab-id (i18n/cannot-attach-dirac debugger-url tab-url)))
                       (<! (go-create-dirac-devtools! backend-tab-id (assoc options
-                                                                   :backend-url (:url backend-info)
-                                                                   :node? (= (:type backend-info) :node))))))))))))
+                                                                      :backend-url (:url backend-info)
+                                                                      :node? (= (:type backend-info) :node))))))))))))
 
 (defn go-activate-dirac-devtools! [tab-id]
   (go
@@ -201,7 +201,7 @@
       (go-activate-dirac-devtools! tab-id)
       (let [options {:open-as (get-dirac-open-as-setting)
                      :flags   (get-dirac-flags)}]
-        (go-open-dirac-devtools! tab (merge options options-overrides))))))                                                      ; options come from dirac extension settings, but we can override them
+        (go-open-dirac-devtools! tab (merge options options-overrides))))))                                                   ; options come from dirac extension settings, but we can override them
 
 (defn go-open-dirac-devtools-in-active-tab! [& [options-overrides]]
   (go
@@ -246,8 +246,8 @@
       (if-let [tab (first tabs)]
         (let [active-tab-id (oget tab "id")]
           (if-let [active-devtools-descriptor (devtools/find-devtools-descriptor-for-frontend-tab active-tab-id)]
-            (<! (go-focus-console-prompt-for-backend-tab! (:backend-tab-id active-devtools-descriptor)))                         ; in case devtools is already active => focus its console
+            (<! (go-focus-console-prompt-for-backend-tab! (:backend-tab-id active-devtools-descriptor)))                      ; in case devtools is already active => focus its console
             (if (devtools/backend-connected? active-tab-id)
-              (<! (go-focus-console-prompt-for-backend-tab! active-tab-id))                                                      ; the case for active backend tab
-              (<! (go-focus-console-prompt-in-first-devtools!)))))                                                               ; otherwise fallback to first devtools activation
-        (<! (go-focus-console-prompt-in-first-devtools!))))))                                                                    ; this is the pathological case where there is no last active tab information
+              (<! (go-focus-console-prompt-for-backend-tab! active-tab-id))                                                   ; the case for active backend tab
+              (<! (go-focus-console-prompt-in-first-devtools!)))))                                                            ; otherwise fallback to first devtools activation
+        (<! (go-focus-console-prompt-in-first-devtools!))))))                                                                 ; this is the pathological case where there is no last active tab information

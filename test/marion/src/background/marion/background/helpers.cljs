@@ -6,11 +6,11 @@
             [chromex.ext.management :as management]
             [chromex.ext.windows :as windows]
             [chromex.protocols :refer [on-disconnect! get-sender]]
-            [dirac.settings :refer-macros [get-dirac-scenario-window-top get-dirac-scenario-window-left
-                                           get-dirac-scenario-window-width get-dirac-scenario-window-height
-                                           get-dirac-runner-window-top get-dirac-runner-window-left
-                                           get-dirac-runner-window-width get-dirac-runner-window-height
-                                           get-marion-stable-connection-timeout]]
+            [dirac.settings :refer [get-dirac-scenario-window-top get-dirac-scenario-window-left
+                                    get-dirac-scenario-window-width get-dirac-scenario-window-height
+                                    get-dirac-runner-window-top get-dirac-runner-window-left
+                                    get-dirac-runner-window-width get-dirac-runner-window-height
+                                    get-marion-stable-connection-timeout]]
             [dirac.shared.sugar :as sugar]
             [marion.background.logging :refer [log info warn error]]))
 
@@ -23,7 +23,7 @@
 
 (defn go-find-extension-by-name [name]
   (go-find-extension (fn [extension-info]
-                    (= (oget extension-info "name") name))))
+                       (= (oget extension-info "name") name))))
 
 (defn go-create-tab-with-url! [url]
   (go

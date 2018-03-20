@@ -2,13 +2,13 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply gset!]]
             [dirac.automation.logging :refer [log warn error info]]
-            [dirac.settings :refer-macros [get-signal-server-url
-                                           get-transcript-streamer-server-url
-                                           get-chrome-remote-debugging-port
-                                           get-chrome-remote-debugging-host
-                                           get-pending-replies-wait-timeout
-                                           get-signal-client-task-result-delay
-                                           get-signal-client-close-delay]]
+            [dirac.settings :refer [get-signal-server-url
+                                    get-transcript-streamer-server-url
+                                    get-chrome-remote-debugging-port
+                                    get-chrome-remote-debugging-host
+                                    get-pending-replies-wait-timeout
+                                    get-signal-client-task-result-delay
+                                    get-signal-client-close-delay]]
             [dirac.lib.ws-client :as ws-client]
             [dirac.options.model :as options-model]
             [dirac.automation.transcript-host :as transcript-host]
