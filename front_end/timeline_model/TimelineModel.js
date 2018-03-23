@@ -147,13 +147,6 @@ TimelineModel.TimelineModel = class {
   }
 
   /**
-   * @return {?string}
-   */
-  sessionId() {
-    return this._sessionId;
-  }
-
-  /**
    * @param {!SDK.TracingModel.Event} event
    * @return {?SDK.Target}
    */
@@ -190,8 +183,16 @@ TimelineModel.TimelineModel = class {
         const endTime = i + 1 < length ? metadataEvents.page[i + 1].startTime : Infinity;
         this._legacyCurrentPage = metaEvent.args['data'] && metaEvent.args['data']['page'];
         for (const thread of process.sortedThreads()) {
-          if (thread.name() === TimelineModel.TimelineModel.WorkerThreadName) {
-            const workerMetaEvent = metadataEvents.workers.find(e => e.args['data']['workerThreadId'] === thread.id());
+          if (thread.name() === TimelineModel.TimelineModel.WorkerThreadName ||
+              thread.name() === TimelineModel.TimelineModel.WorkerThreadNameLegacy) {
+            const workerMetaEvent = metadataEvents.workers.find(e => {
+              if (e.args['data']['workerThreadId'] !== thread.id())
+                return false;
+              // This is to support old traces.
+              if (e.args['data']['sessionId'] === this._sessionId)
+                return true;
+              return !!this._pageFrames.get(TimelineModel.TimelineModel.eventFrameId(e));
+            });
             if (!workerMetaEvent)
               continue;
             const workerId = workerMetaEvent.args['data']['workerId'];
@@ -269,7 +270,7 @@ TimelineModel.TimelineModel = class {
     }
     const result = {
       page: pageDevToolsMetadataEvents.filter(checkSessionId).sort(SDK.TracingModel.Event.compareStartTime),
-      workers: workersDevToolsMetadataEvents.filter(checkSessionId).sort(SDK.TracingModel.Event.compareStartTime)
+      workers: workersDevToolsMetadataEvents.sort(SDK.TracingModel.Event.compareStartTime)
     };
     if (mismatchingIds.size) {
       Common.console.error(
@@ -699,7 +700,18 @@ TimelineModel.TimelineModel = class {
         break;
 
       case recordTypes.SetLayerTreeId:
-        this._inspectedTargetLayerTreeId = event.args['layerTreeId'] || event.args['data']['layerTreeId'];
+        // This is to support old traces.
+        if (this._sessionId && eventData['sessionId'] && this._sessionId === eventData['sessionId']) {
+          this._mainFrameLayerTreeId = eventData['layerTreeId'];
+          break;
+        }
+
+        // We currently only show layer tree for the main frame.
+        const frameId = TimelineModel.TimelineModel.eventFrameId(event);
+        const pageFrame = this._pageFrames.get(frameId);
+        if (!pageFrame || pageFrame.parent)
+          return false;
+        this._mainFrameLayerTreeId = eventData['layerTreeId'];
         break;
 
       case recordTypes.Paint: {
@@ -716,7 +728,7 @@ TimelineModel.TimelineModel = class {
       case recordTypes.DisplayItemListSnapshot:
       case recordTypes.PictureSnapshot: {
         const layerUpdateEvent = this._findAncestorEvent(recordTypes.UpdateLayer);
-        if (!layerUpdateEvent || layerUpdateEvent.args['layerTreeId'] !== this._inspectedTargetLayerTreeId)
+        if (!layerUpdateEvent || layerUpdateEvent.args['layerTreeId'] !== this._mainFrameLayerTreeId)
           break;
         const paintEvent = this._lastPaintForLayer[layerUpdateEvent.args['layerId']];
         if (paintEvent) {
@@ -1233,7 +1245,8 @@ TimelineModel.TimelineModel.WarningType = {
 };
 
 TimelineModel.TimelineModel.MainThreadName = 'main';
-TimelineModel.TimelineModel.WorkerThreadName = 'DedicatedWorker Thread';
+TimelineModel.TimelineModel.WorkerThreadName = 'DedicatedWorker thread';
+TimelineModel.TimelineModel.WorkerThreadNameLegacy = 'DedicatedWorker Thread';
 TimelineModel.TimelineModel.RendererMainThreadName = 'CrRendererMain';
 
 /**
@@ -1279,7 +1292,8 @@ TimelineModel.TimelineModel.VirtualThread = class {
    * @return {boolean}
    */
   isWorker() {
-    return this.name === TimelineModel.TimelineModel.WorkerThreadName;
+    return this.name === TimelineModel.TimelineModel.WorkerThreadName ||
+        this.name === TimelineModel.TimelineModel.WorkerThreadNameLegacy;
   }
 };
 

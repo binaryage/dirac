@@ -92,9 +92,9 @@
 }
 
 .CodeMirror-gutters {
-    border-right: 1px solid rgb(187, 187, 187);
-    background-color: #eee;
+    border-right: 1px solid var(--divider-color);
     white-space: nowrap;
+    background-color: white;
 }
 
 .CodeMirror-linenumber {
