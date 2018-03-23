@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='67.0.3376.1';
-Protocol.BakedInspectorBackendAPIChromeRev='d260e9cf660f062b203692601cf9b6ccb27f3d1e';
+Protocol.BakedInspectorBackendAPIChromeTag='67.0.3379.0';
+Protocol.BakedInspectorBackendAPIChromeRev='292706dad68802d7eb6402799586e036d97739d1';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -534,6 +534,8 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Runtime.discardConsoleEntries", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Runtime.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Runtime.evaluate", [{"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "silent", "type": "boolean", "optional": true}, {"name": "contextId", "type": "number", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}, {"name": "awaitPromise", "type": "boolean", "optional": true}, {"name": "throwOnSideEffect", "type": "boolean", "optional": true}], ["result", "exceptionDetails"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Runtime.getIsolateId", [], ["id"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Runtime.getHeapUsage", [], ["usedSize", "totalSize"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Runtime.getProperties", [{"name": "objectId", "type": "string", "optional": false}, {"name": "ownProperties", "type": "boolean", "optional": true}, {"name": "accessorPropertiesOnly", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "internalProperties", "exceptionDetails"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Runtime.globalLexicalScopeNames", [{"name": "executionContextId", "type": "number", "optional": true}], ["names"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Runtime.queryObjects", [{"name": "prototypeObjectId", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}], ["objects"], false);\n'
