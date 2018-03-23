@@ -28,12 +28,14 @@
  */
 
 .panel.timeline > .toolbar {
-    border-bottom: 1px solid #dadada;
+    background-color: var(--toolbar-bg-color);
+    border-bottom: var(--divider-border);
 }
 
 .timeline-settings-pane {
     flex: none;
-    border-bottom: 1px solid #dadada;
+    background-color: var(--toolbar-bg-color);
+    border-bottom: var(--divider-border);
 }
 
 #timeline-overview-panel {
@@ -500,7 +502,8 @@
 }
 
 .timeline-tree-view .toolbar {
-    border-bottom: 1px solid #dadada;
+    background-color: var(--toolbar-bg-color);
+    border-bottom: var(--divider-border);
 }
 
 .timeline-tree-view .data-grid {
@@ -635,7 +638,7 @@
     padding: 6px 10px;
     color: #5a5a5a;
     white-space: nowrap;
-    border-bottom: 1px solid #dadada;
+    border-bottom: var(--divider-border);
 }
 
 .timeline-landing-page {

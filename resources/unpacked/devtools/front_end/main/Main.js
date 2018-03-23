@@ -116,6 +116,7 @@ Main.Main = class {
     Runtime.experiments.register('colorContrastRatio', 'Color contrast ratio line in color picker', true);
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
+    Runtime.experiments.register('memoryLauncherViewV2', 'Memory profile launcher view V2');
     Runtime.experiments.register('nativeHeapProfiler', 'Native memory sampling heap profiler', true);
     Runtime.experiments.register('networkSearch', 'Network search');
     Runtime.experiments.register('oopifInlineDOM', 'OOPIF: inline DOM ', true);
@@ -136,7 +137,6 @@ Main.Main = class {
     Runtime.experiments.register('timelineShowAllProcesses', 'Timeline: show all processes', true);
     Runtime.experiments.register('timelineTracingJSProfile', 'Timeline: tracing based JS profiler', true);
     Runtime.experiments.register('timelineV8RuntimeCallStats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
-    Runtime.experiments.register('uiExplorations', 'UI explorations', true);
 
     Runtime.experiments.cleanUpStaleExperiments();
 
@@ -150,7 +150,7 @@ Main.Main = class {
     }
 
     Runtime.experiments.setDefaultExperiments(
-        ['colorContrastRatio', 'stepIntoAsync', 'timelineKeepHistory', 'oopifInlineDOM', 'uiExplorations']);
+        ['colorContrastRatio', 'stepIntoAsync', 'timelineKeepHistory', 'oopifInlineDOM']);
   }
 
   /**
