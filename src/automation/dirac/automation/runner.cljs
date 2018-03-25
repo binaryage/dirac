@@ -54,16 +54,17 @@
 (defn init! []
   (init-normalize-checkbox!)
   (devtools/install!)
-  (if-not (helpers/automated-testing?)
+  (when-not (helpers/automated-testing?)
     (gstyle/setElementShown (get-control-panel-el) true)))
 
-(defn reset-extensions! []
-  (messages/post-extension-command! {:command :tear-down} :no-timeout)
-  (messages/post-message! #js {:type "marion-close-all-tabs"} :no-timeout))
+(defn go-reset-extensions! []
+  (go
+    (<! (messages/go-post-extension-command! {:command :tear-down} :no-timeout))
+    (<! (messages/go-post-message! #js {:type "marion-close-all-tabs"} :no-timeout))))
 
 ; -- support for manual pausing/resuming execution --------------------------------------------------------------------------
 
-(defn wait-for-resume! []
+(defn go-wait-for-resume! []
   (go
     (disable-pause-button!)
     (enable-resume-button!)
@@ -75,22 +76,22 @@
       (status-host/set-status! "resumed again")
       res)))
 
-(defn wait-for-resume-if-paused! []
+(defn go-wait-for-resume-if-paused! []
   (go
     (when @paused?
-      (<! (wait-for-resume!))
+      (<! (go-wait-for-resume!))
       (vreset! paused? false))))
 
 ; -- api used by runner.html ------------------------------------------------------------------------------------------------
 
 (defn ^:export reset []
-  (reset-extensions!)
+  (go-reset-extensions!)
   (gset! "document.location" "/"))
 
 (defn ^:export reload []
-  (reset-extensions!)
+  (go-reset-extensions!)
   (go
-    (<! (timeout 200))
+    (<! (timeout 200))                                                                                                        ; TODO: this should not be hard-coded FLAKY!
     (gcall! "document.location.reload")))
 
 (defn ^:export resume []

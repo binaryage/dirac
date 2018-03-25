@@ -4,4 +4,4 @@
             [dirac.automation.scenario :as scenario]))
 
 (init-runtime!)
-(scenario/ready!)
+(scenario/go-ready!)

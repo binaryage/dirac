@@ -5,4 +5,4 @@
 
 (init-runtime!)
 (scenario/register-trigger! :pause-on-breakpoint #(core/breakpoint-demo-handler))
-(scenario/ready!)
+(scenario/go-ready!)

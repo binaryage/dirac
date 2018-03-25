@@ -1,32 +1,31 @@
 (ns dirac.automation.helpers
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
-            [oops.core :refer [oget oset! ocall oapply gcall! gget]]
-            [cuerdas.core :as cuerdas])
+  (:require [oops.core :refer [gget oget oset! gcall ocall oapply gcall! gget]])
   (:import goog.Uri))
 
 (defn get-body-el []
-  (-> js/document (.getElementsByTagName "body") (.item 0)))
+  (-> (gget "document")
+      (ocall "getElementsByTagName" "body")
+      (ocall "item" 0)))
 
 (defn get-el-by-id [id]
-  (-> js/document (.getElementById id)))
+  (gcall "document.getElementById" id))
 
 (defn make-uri-object [url]
   (Uri. url))
 
 (defn get-query-param [url param]
   (let [uri (make-uri-object url)]
-    (.getParameterValue uri param)))
+    (ocall uri "getParameterValue" param)))
 
 (defn get-matching-query-params [url re]
   (let [uri (make-uri-object url)
-        query (.getQueryData uri)
-        matching-params (filter #(re-find re %) (.getKeys query))]
+        query (ocall uri "getQueryData")
+        matching-params (filter #(re-find re %) (ocall query "getKeys"))]
     (into {} (map (fn [key] [key (.get query key)]) matching-params))))
 
 (defn get-encoded-query [url]
-  (let [uri (make-uri-object url)
-        encoded-query (.getEncodedQuery uri)]
-    encoded-query))
+  (let [uri (make-uri-object url)]
+    (ocall uri "getEncodedQuery")))
 
 (defn get-document-url []
   (str (.-location js/document)))
@@ -38,12 +37,6 @@
 (defn automated-testing? []
   (let [url (get-document-url)]
     (boolean (get-query-param url "test_runner"))))
-
-(defn prefix-text-block [prefix text]
-  (->> text
-       (cuerdas/lines)
-       (map-indexed (fn [i line] (if-not (zero? i) (str prefix line) line)))                                                  ; prepend prefix to all lines except the first
-       (cuerdas/unlines)))
 
 (defn get-base-url []
   (str (gget "location.protocol") "//" (gget "location.host")))

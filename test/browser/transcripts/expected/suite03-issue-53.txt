@@ -26,11 +26,11 @@ devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrappi
 devtools #1      setDiracPromptNS('cljs.user')
 devtools #1      setDiracPromptMode('edit')
 automate #1      enable-console-feedback!
-automate #1      console-enter! ["(require 'dirac.tests.scenarios.issue-53.core)"]
+automate #1      type-in-console! ["(require 'dirac.tests.scenarios.issue-53.core)"]
 devtools #1      DC.info> (require 'dirac.tests.scenarios.issue-53.core)
 devtools #1      send-eval-request: (require 'dirac.tests.scenarios.issue-53.core)
 devtools #1      repl eval job started
-automate #1      console-exec-and-match! ["(in-ns 'dirac.tests.scenarios.issue-53.core)" "setDiracPromptNS('dirac.tests.scenarios.issue-53.core')"]
+automate #1      exec-and-match-in-console! ["(in-ns 'dirac.tests.scenarios.issue-53.core)" "setDiracPromptNS('dirac.tests.scenarios.issue-53.core')"]
 devtools #1      repl eval job ended
 devtools #1      DC.info> (in-ns 'dirac.tests.scenarios.issue-53.core)
 devtools #1      send-eval-request: (in-ns 'dirac.tests.scenarios.issue-53.core)
@@ -38,7 +38,7 @@ devtools #1      repl eval job started
 devtools #1      setDiracPromptNS('dirac.tests.scenarios.issue-53.core')
 devtools #1      repl eval job ended
 testing          test case 1
-automate #1      console-enter! ["(breakpoint-fn1)"]
+automate #1      type-in-console! ["(breakpoint-fn1)"]
 devtools #1      DC.info> (breakpoint-fn1)
 devtools #1      send-eval-request: (breakpoint-fn1)
 devtools #1      repl eval job started
@@ -57,7 +57,7 @@ devtools #1      repl eval job ended
 testing          test case 2
 automate #1      switch-to-console-panel!
 devtools #1      setCurrentPanel: console
-automate #1      console-enter! ["(breakpoint-fn2 1)"]
+automate #1      type-in-console! ["(breakpoint-fn2 1)"]
 devtools #1      DC.info> (breakpoint-fn2 1)
 devtools #1      send-eval-request: (breakpoint-fn2 1)
 devtools #1      repl eval job started

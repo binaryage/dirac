@@ -4,4 +4,4 @@
 
 (scenario/capture-console-as-feedback!)
 (install-common-triggers!)
-(scenario/ready!)
+(scenario/go-ready!)

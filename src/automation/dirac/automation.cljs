@@ -8,7 +8,7 @@
 
   Other functions do not target a specific devtools instance and can be called independently.
   "
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go]]
             [oops.core :refer [oget oset! ocall oapply]]
             [dirac.automation.logging :refer [log error]]
             [dirac.automation.machinery :as machinery]
@@ -24,215 +24,218 @@
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
 
-(defn pause! []
-  (runner/wait-for-resume!))
+(defn go-pause! []
+  (runner/go-wait-for-resume!))
 
-(defn wait-for-resume! []
-  (runner/wait-for-resume!))
+(defn go-wait-for-resume! []
+  (runner/go-wait-for-resume!))
 
-(defn set-options! [options]
-  (messages/set-options! options))
+(defn go-set-options! [options]
+  (messages/go-set-options! options))
 
-(defn store-options! []
-  (options/store-options!))
+(defn go-store-options! []
+  (options/go-store-options!))
 
-(defn restore-options! []
-  (options/restore-options!))
+(defn go-restore-options! []
+  (options/go-restore-options!))
 
-(defn open-scenario! [name & [params]]
+(defn go-open-scenario! [name & [params]]
   (go
-    (let [scenario-id-or-error (<! (messages/post-message! #js {:type "marion-open-scenario"
-                                                                :url  (helpers/get-scenario-url name params)}))]
+    (let [scenario-id-or-error (<! (messages/go-post-message! #js {:type "marion-open-scenario"
+                                                                   :url  (helpers/get-scenario-url name params)}))]
       (if (string/starts-with? scenario-id-or-error "error")
         (let [error-msg (str "Unable to open scenario '" name "' due to " scenario-id-or-error)]
           (error error-msg)
           (throw error-msg {}))
         scenario-id-or-error))))
 
-(defn close-scenario! [scenario-id]
-  (messages/post-message! #js {:type        "marion-close-scenario"
-                               :scenario-id scenario-id}))
+(defn go-close-scenario! [scenario-id]
+  (messages/go-post-message! #js {:type        "marion-close-scenario"
+                                  :scenario-id scenario-id}))
 
-(defn activate-scenario! [scenario-id]
-  (messages/post-message! #js {:type        "marion-activate-scenario"
-                               :scenario-id scenario-id}))
+(defn go-activate-scenario! [scenario-id]
+  (messages/go-post-message! #js {:type        "marion-activate-scenario"
+                                  :scenario-id scenario-id}))
 
-(defn trigger! [trigger-name & args]
-  (notifications/broadcast-notification! {:trigger trigger-name
-                                          :args    args}))
+(defn go-trigger! [trigger-name & args]
+  (notifications/go-broadcast-notification! {:trigger trigger-name
+                                             :args    args}))
 
-(defn wait-for-match [what & args]
-  (apply verbs/wait-for-match what args))
+(defn go-wait-for-match [what & args]
+  (apply verbs/go-wait-for-match what args))
 
-(defn open-devtools! [& [extra-url-params]]
+(defn go-open-devtools! [& [extra-url-params]]
   (go
     ; some previous tests or user interaction in dev mode might steal focus from scenario tab => restore focus here
-    (if-let [current-scenario-id (machinery/get-current-scenario-id)]
-      (<! (activate-scenario! current-scenario-id)))
+    (when-some [current-scenario-id (machinery/get-current-scenario-id)]
+      (<! (go-activate-scenario! current-scenario-id)))
     ; note that open-dirac-devtools operates on the last active tab, hence the focus restoration above
-    (let [open-devtools-event [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings   1
-                                                                                        :extra-url-params extra-url-params}]]
-          devtools-id (<! (messages/fire-chrome-event! open-devtools-event))]
-      (<! (verbs/wait-for-devtools-boot devtools-id))
+    (let [synthetic-event ["open-dirac-devtools" {:reset-settings   1
+                                                  :extra-url-params extra-url-params}]
+          open-devtools-event [:chromex.ext.commands/on-command synthetic-event]
+          devtools-id (<! (messages/go-fire-chrome-event! open-devtools-event))]
+      (<! (verbs/go-wait-for-devtools-boot devtools-id))
       (machinery/push-devtools-id-to-stack! devtools-id)
-      (machinery/DevToolsID. devtools-id))))                                                                                  ; note: we wrap it so we can easily auto-fill devtools-id parameters in action! method
+      (machinery/make-devtools-id-wrapper devtools-id))))                                                                             ; note: we wrap it so we can easily auto-fill devtools-id parameters in action! method
 
-(defn wait-for-devtools-ui [& [delay]]
-  (timeout (or delay 1000)))                                                                                                  ; sometimes we have to give devtools UI some time to update
+(defn go-wait-for-devtools-ui [& [delay]]
+  ; sometimes we have to give devtools UI some time to update
+  (timeout (or delay 1000)))                                                                                                  ; TODO: should not be hard-coded FLAKY!
 
 ; -- devtools-instance targeting actions ------------------------------------------------------------------------------------
 
-(defn ^:devtools close-devtools! [devtools-id]
+(defn ^:devtools go-close-devtools! [devtools-id]
   (go
-    (<! (messages/fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
+    (<! (messages/go-fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
     (<! (verbs/wait-for-devtools-unregistration devtools-id))
     (machinery/remove-devtools-id-from-stack! devtools-id)))
 
-(defn ^:devtools wait-for-devtools-match [devtools-id what & args]
-  (apply verbs/wait-for-devtools-match devtools-id what args))
+(defn ^:devtools go-wait-for-devtools-match [devtools-id what & args]
+  (apply verbs/go-wait-for-devtools-match devtools-id what args))
 
-(defn ^:devtools wait-for-prompt-to-enter-edit-mode [devtools-id]
-  (wait-for-devtools-match devtools-id "setDiracPromptMode('edit')"))
+(defn ^:devtools go-wait-for-prompt-to-enter-edit-mode [devtools-id]
+  (go-wait-for-devtools-match devtools-id "setDiracPromptMode('edit')"))
 
-(defn ^:devtools wait-for-prompt-switch-to-dirac [devtools-id]
-  (wait-for-devtools-match devtools-id "switched console prompt to 'dirac'"))
+(defn ^:devtools go-wait-for-prompt-switch-to-dirac [devtools-id]
+  (go-wait-for-devtools-match devtools-id "switched console prompt to 'dirac'"))
 
-(defn ^:devtools wait-for-prompt-switch-to-js [devtools-id]
-  (wait-for-devtools-match devtools-id "switched console prompt to 'js'"))
+(defn ^:devtools go-wait-for-prompt-switch-to-js [devtools-id]
+  (go-wait-for-devtools-match devtools-id "switched console prompt to 'js'"))
 
-(defn ^:devtools switch-devtools-panel! [devtools-id panel]
+(defn ^:devtools go-switch-devtools-panel! [devtools-id panel]
   (go
-    (<! (verbs/automate-devtools! devtools-id {:action :switch-inspector-panel
-                                               :panel  panel}))
-    (<! (verbs/wait-for-panel-switch devtools-id (name panel)))))
+    (<! (verbs/go-automate-devtools! devtools-id {:action :switch-inspector-panel
+                                                  :panel  panel}))
+    (<! (verbs/go-wait-for-panel-switch devtools-id (name panel)))))
 
-(defn ^:devtools wait-for-panel-switch [devtools-id panel]
-  (verbs/wait-for-panel-switch devtools-id (name panel)))
+(defn ^:devtools go-wait-for-panel-switch [devtools-id panel]
+  (verbs/go-wait-for-panel-switch devtools-id (name panel)))
 
-(defn ^:devtools switch-prompt-to-dirac! [devtools-id]
-  (verbs/automate-devtools! devtools-id {:action :switch-to-dirac-prompt}))
+(defn ^:devtools go-switch-prompt-to-dirac! [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :switch-to-dirac-prompt}))
 
-(defn ^:devtools switch-prompt-to-javascript! [devtools-id]
-  (verbs/automate-devtools! devtools-id {:action :switch-to-js-prompt}))
+(defn ^:devtools go-switch-prompt-to-javascript! [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :switch-to-js-prompt}))
 
-(defn ^:devtools focus-console-prompt! [devtools-id]
-  (verbs/automate-devtools! devtools-id {:action :focus-console-prompt}))
+(defn ^:devtools go-focus-console-prompt! [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :focus-console-prompt}))
 
-(defn ^:devtools focus-best-console-prompt! [devtools-id]
-  (verbs/automate-devtools! devtools-id {:action :focus-best-console-prompt}))
+(defn ^:devtools go-focus-best-console-prompt! [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :focus-best-console-prompt}))
 
-(defn ^:devtools clear-console-prompt! [devtools-id]
-  (verbs/automate-devtools! devtools-id {:action :clear-console-prompt}))
+(defn ^:devtools go-clear-console-prompt! [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :clear-console-prompt}))
 
-(defn ^:devtools get-suggest-box-representation [devtools-id]
-  (verbs/automate-devtools! devtools-id {:action :get-suggest-box-representation}))
+(defn ^:devtools go-get-suggest-box-representation [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :get-suggest-box-representation}))
 
-(defn ^:devtools print-suggest-box! [devtools-id]
+(defn ^:devtools go-print-suggest-box! [devtools-id]
   (go
-    (let [text-representation (<! (get-suggest-box-representation devtools-id))]
+    (let [text-representation (<! (go-get-suggest-box-representation devtools-id))]
       (assert (string? text-representation))
       (println text-representation))))
 
-(defn ^:devtools get-suggest-box-item-count [devtools-id]
+(defn ^:devtools go-get-suggest-box-item-count [devtools-id]
   (go
-    (let [text-representation (<! (get-suggest-box-representation devtools-id))]
+    (let [text-representation (<! (go-get-suggest-box-representation devtools-id))]
       (assert (string? text-representation))
-      (if-let [m (re-find #"suggest box displays ([0-9]*?) items" text-representation)]
+      (when-some [m (re-find #"suggest box displays ([0-9]*?) items" text-representation)]
         (utils/parse-int (second m))))))
 
-(defn ^:devtools get-prompt-representation [devtools-id]
-  (verbs/automate-devtools! devtools-id {:action :get-prompt-representation}))
+(defn ^:devtools go-get-prompt-representation [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :get-prompt-representation}))
 
-(defn ^:devtools print-prompt! [devtools-id]
+(defn ^:devtools go-print-prompt! [devtools-id]
   (go
-    (let [content (<! (get-prompt-representation devtools-id))]
+    (let [content (<! (go-get-prompt-representation devtools-id))]
       (assert (string? content))
       (println content)
       content)))
 
-(defn ^:devtools trigger-internal-error! [devtools-id & [delay]]
-  (verbs/automate-devtools! devtools-id {:action :trigger-internal-error
-                                         :kind   :unhandled-exception
-                                         :delay  (or delay 100)}))
+(defn ^:devtools go-trigger-internal-error! [devtools-id & [delay]]
+  (verbs/go-automate-devtools! devtools-id {:action :trigger-internal-error
+                                            :kind   :unhandled-exception
+                                            :delay  (or delay 100)}))
 
-(defn ^:devtools trigger-internal-error-in-promise! [devtools-id & [delay]]
-  (verbs/automate-devtools! devtools-id {:action :trigger-internal-error
-                                         :kind   :unhandled-exception-in-promise
-                                         :delay  (or delay 100)}))
+(defn ^:devtools go-trigger-internal-error-in-promise! [devtools-id & [delay]]
+  (verbs/go-automate-devtools! devtools-id {:action :trigger-internal-error
+                                            :kind   :unhandled-exception-in-promise
+                                            :delay  (or delay 100)}))
 
-(defn ^:devtools trigger-internal-error-as-error-log! [devtools-id & [delay]]
-  (verbs/automate-devtools! devtools-id {:action :trigger-internal-error
-                                         :kind   :error-log
-                                         :delay  (or delay 100)}))
+(defn ^:devtools go-trigger-internal-error-as-error-log! [devtools-id & [delay]]
+  (verbs/go-automate-devtools! devtools-id {:action :trigger-internal-error
+                                            :kind   :error-log
+                                            :delay  (or delay 100)}))
 
-(defn ^:devtools get-frontend-url-params [devtools-id]
-  (verbs/automate-devtools! devtools-id {:action :get-frontend-url-params}))
+(defn ^:devtools go-get-frontend-url-params [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :get-frontend-url-params}))
 
-(defn ^:devtools scrape [devtools-id scraper-name & args]
+(defn ^:devtools go-scrape [devtools-id scraper-name & args]
   (go
-    (<! (timeout 500))
-    (<! (verbs/automate-devtools! devtools-id {:action  :scrape
-                                               :scraper scraper-name
-                                               :args    args}))))
+    (<! (timeout 500))                                                                                                        ; TODO: should not be hard-coded FLAKY!
+    (<! (verbs/go-automate-devtools! devtools-id {:action  :scrape
+                                                  :scraper scraper-name
+                                                  :args    args}))))
 
-(defn ^:devtools scrape! [devtools-id scraper-name & args]
+(defn ^:devtools go-scrape! [devtools-id scraper-name & args]
   (go
-    (let [content (<! (apply scrape devtools-id scraper-name args))]
+    (let [content (<! (apply go-scrape devtools-id scraper-name args))]
       (println (str content))
       content)))
 
-(defn ^:devtools simulate-console-input! [devtools-id input]
+(defn ^:devtools go-simulate-console-input! [devtools-id input]
   {:pre [(string? input)]}
-  (verbs/automate-devtools! devtools-id {:action :dispatch-console-prompt-input
-                                         :input  input}))
+  (verbs/go-automate-devtools! devtools-id {:action :dispatch-console-prompt-input
+                                            :input  input}))
 
-(defn ^:devtools simulate-console-action! [devtools-id action]
+(defn ^:devtools go-simulate-console-action! [devtools-id action]
   {:pre [(string? action)]}
-  (verbs/automate-devtools! devtools-id {:action :dispatch-console-prompt-action
-                                         :input  action}))
+  (verbs/go-automate-devtools! devtools-id {:action :dispatch-console-prompt-action
+                                            :input  action}))
 
-(defn ^:devtools simulate-global-action! [devtools-id action]
+(defn ^:devtools go-simulate-global-action! [devtools-id action]
   {:pre [(string? action)]}
-  (verbs/automate-devtools! devtools-id {:action :dispatch-global-action
-                                         :input  action}))
+  (verbs/go-automate-devtools! devtools-id {:action :dispatch-global-action
+                                            :input  action}))
 
-(defn ^:devtools console-enter! [devtools-id input]
+(defn ^:devtools go-type-in-console! [devtools-id input]
   (go
-    (<! (focus-console-prompt! devtools-id))
-    (<! (clear-console-prompt! devtools-id))
-    (<! (simulate-console-input! devtools-id input))
-    (<! (simulate-console-action! devtools-id "enter"))))
+    (<! (go-focus-console-prompt! devtools-id))
+    (<! (go-clear-console-prompt! devtools-id))
+    (<! (go-simulate-console-input! devtools-id input))
+    (<! (go-simulate-console-action! devtools-id "enter"))))
 
-(defn ^:devtools console-wait-for-repl-job-match! [devtools-id match-or-matches]
+(defn ^:devtools go-wait-for-repl-job-match-in-console! [devtools-id match-or-matches]
   (let [matches (if (coll? match-or-matches)
                   match-or-matches
                   [match-or-matches])]
     (go
       (doseq [match matches]
-        (<! (wait-for-devtools-match devtools-id match)))
-      (<! (wait-for-devtools-match devtools-id "repl eval job ended"))
+        (<! (go-wait-for-devtools-match devtools-id match)))
+      (<! (go-wait-for-devtools-match devtools-id "repl eval job ended"))
       (<! (timeout 100)))))                                                                                                   ; this timeout is a hack, for some reason feedback from following commands came before
 
-(defn ^:devtools console-exec-and-match! [devtools-id input match-or-matches]
+(defn ^:devtools go-exec-and-match-in-console! [devtools-id input match-or-matches]
   (go
-    (<! (console-enter! devtools-id input))
-    (<! (console-wait-for-repl-job-match! devtools-id match-or-matches))))
+    (<! (go-type-in-console! devtools-id input))
+    (<! (go-wait-for-repl-job-match-in-console! devtools-id match-or-matches))))
 
-(defn ^:devtools enable-console-feedback! [devtools-id]
-  (verbs/automate-devtools! devtools-id {:action :enable-console-feedback}))
+(defn ^:devtools go-enable-console-feedback! [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :enable-console-feedback}))
 
-(defn ^:devtools disable-console-feedback! [devtools-id]
-  (verbs/automate-devtools! devtools-id {:action :disable-console-feedback}))
+(defn ^:devtools go-disable-console-feedback! [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :disable-console-feedback}))
 
-(defn ^:devtools switch-to-console-panel! [devtools-id]
-  (switch-devtools-panel! devtools-id :console))
+(defn ^:devtools go-switch-to-console-panel! [devtools-id]
+  (go-switch-devtools-panel! devtools-id :console))
 
-(defn ^:devtools count-internal-dirac-errors [devtools-id]
+(defn ^:devtools go-count-internal-dirac-errors [devtools-id]
   (go
-    (count (<! (scrape devtools-id :find-logs "Internal Dirac Error")))))
+    (count (<! (go-scrape devtools-id :find-logs "Internal Dirac Error")))))
 
-(defn ^:devtools reload! []
+(defn ^:devtools go-reload! []
   (go
-    (<! (timeout 2000))                                                                                                       ; prevent "Cannot find context with specified id" V8 errors ?
-    (<! (trigger! :reload))
-    (<! (timeout 2000))))                                                                                                     ; prevent "Cannot find context with specified id" V8 errors ?
+    ; the timeouts are here to prevent "Cannot find context with specified id" V8 errors ?
+    (<! (timeout 2000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
+    (<! (go-trigger! :reload))
+    (<! (timeout 2000))))                                                                                                     ; TODO: should not be hard-coded FLAKY!

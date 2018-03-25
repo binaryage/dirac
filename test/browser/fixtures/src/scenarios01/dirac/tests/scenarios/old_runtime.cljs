@@ -13,4 +13,4 @@
 (init-runtime! {:old-runtime true})
 (scenario/capture-console-as-feedback!)
 (scenario/register-feedback-transformer! transformer)
-(scenario/ready!)
+(scenario/go-ready!)

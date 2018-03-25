@@ -4,4 +4,4 @@
 
 (init-runtime! {:do-not-enable-repl true})
 (scenario/capture-console-as-feedback!)
-(scenario/ready!)
+(scenario/go-ready!)

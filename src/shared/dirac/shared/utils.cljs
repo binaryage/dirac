@@ -156,3 +156,9 @@
                 :print-length      (or length 200)
                 :max-string-length (or max-str-len 500)}]
       (dirac.shared.pprint/pprint v opts))))
+
+(defn prefix-text-block [prefix text]
+  (->> text
+       (cuerdas/lines)
+       (map-indexed (fn [i line] (if-not (zero? i) (str prefix line) line)))                                                  ; prepend prefix to all lines except the first
+       (cuerdas/unlines)))

@@ -17,12 +17,12 @@
 
 ; -- storing/restoring options ----------------------------------------------------------------------------------------------
 
-(defn store-options! []
+(defn go-store-options! []
   (go
-    (let [options (<! (messages/get-options!))]
+    (let [options (<! (messages/go-get-options!))]
       (push-options-to-stack! options))))
 
-(defn restore-options! []
+(defn go-restore-options! []
   (go
     (let [saved-options (pop-options-from-stack!)]
-      (<! (messages/reset-options! saved-options)))))
+      (<! (messages/go-reset-options! saved-options)))))

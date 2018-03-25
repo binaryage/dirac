@@ -5,7 +5,7 @@
 
 (go-task
   (with-scenario "normal-via-preloads"
-    (<!* a/trigger! :check-runtime-installed)
-    (<!* a/wait-for-match "runtime installed? true")
-    (<!* a/trigger! :check-runtime-config)
-    (<!* a/wait-for-match ":external-config-setting is 'configured externally'")))
+    (<!* a/go-trigger! :check-runtime-installed)
+    (<!* a/go-wait-for-match "runtime installed? true")
+    (<!* a/go-trigger! :check-runtime-config)
+    (<!* a/go-wait-for-match ":external-config-setting is 'configured externally'")))

@@ -6,25 +6,25 @@
 (go-task
   (with-scenario "issue-53"
     (with-devtools
-      (<!* a/switch-to-console-panel!)
-      (<!* a/switch-prompt-to-dirac!)
-      (<!* a/wait-for-prompt-to-enter-edit-mode)
+      (<!* a/go-switch-to-console-panel!)
+      (<!* a/go-switch-prompt-to-dirac!)
+      (<!* a/go-wait-for-prompt-to-enter-edit-mode)
       (with-console-feedback
-        (<!* a/console-enter! "(require 'dirac.tests.scenarios.issue-53.core)")
-        (<!* a/console-exec-and-match!
+        (<!* a/go-type-in-console! "(require 'dirac.tests.scenarios.issue-53.core)")
+        (<!* a/go-exec-and-match-in-console!
              "(in-ns 'dirac.tests.scenarios.issue-53.core)"
              "setDiracPromptNS('dirac.tests.scenarios.issue-53.core')")
 
         (testing "test case 1"
-          (<!* a/console-enter! "(breakpoint-fn1)")
-          (<!* a/wait-for-panel-switch "sources")
-          (<!* a/scrape! :scope-content)
-          (<!* a/simulate-global-action! "F8"))                                                                               ; resume paused debugger
+          (<!* a/go-type-in-console! "(breakpoint-fn1)")
+          (<!* a/go-wait-for-panel-switch "sources")
+          (<!* a/go-scrape! :scope-content)
+          (<!* a/go-simulate-global-action! "F8"))                                                                            ; resume paused debugger
 
         (testing "test case 2"
-          (<!* a/switch-to-console-panel!)
-          (<!* a/console-enter! "(breakpoint-fn2 1)")
-          (<!* a/wait-for-panel-switch "sources")
-          (<!* a/scrape! :scope-content)
-          (<!* a/simulate-global-action! "F8"))                                                                               ; resume paused debugger
+          (<!* a/go-switch-to-console-panel!)
+          (<!* a/go-type-in-console! "(breakpoint-fn2 1)")
+          (<!* a/go-wait-for-panel-switch "sources")
+          (<!* a/go-scrape! :scope-content)
+          (<!* a/go-simulate-global-action! "F8"))                                                                            ; resume paused debugger
         ))))

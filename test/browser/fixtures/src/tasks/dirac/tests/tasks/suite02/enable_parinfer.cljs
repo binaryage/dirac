@@ -8,10 +8,10 @@
   (with-scenario "normal"
     (testing "parinfer should be present by default"
       (with-devtools
-        (<!* a/switch-to-console-panel!)
-        (<!* a/wait-for-devtools-match "use-parinfer? true")))
+        (<!* a/go-switch-to-console-panel!)
+        (<!* a/go-wait-for-devtools-match "use-parinfer? true")))
     (testing "parinfer should not be present when disabled in options"
       (with-options {:enable-parinfer false}
         (with-devtools
-          (<!* a/switch-to-console-panel!)
-          (<!* a/wait-for-devtools-match "use-parinfer? false"))))))
+          (<!* a/go-switch-to-console-panel!)
+          (<!* a/go-wait-for-devtools-match "use-parinfer? false"))))))

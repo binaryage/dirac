@@ -1,7 +1,5 @@
 (ns dirac.automation.status-host
-  (:require [oops.core :refer [oget oset! ocall oapply]]
-            [dirac.automation.logging :refer [log warn error info]]
-            [dirac.automation.helpers :as helpers]
+  (:require [dirac.automation.helpers :as helpers]
             [dirac.automation.status :as status]))
 
 (defonce current-status (atom nil))

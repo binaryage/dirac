@@ -7,9 +7,9 @@
   (with-scenario "issue-55"
     (with-devtools
       (testing "there should be no internal errors due to reader conditionals in cljc files (issue 55)"
-        (<!* a/switch-to-console-panel!)
-        (<!* a/switch-prompt-to-dirac!)
-        (<!* a/wait-for-prompt-to-enter-edit-mode)
-        (<!* a/reload!)
-        (<!* a/wait-for-prompt-to-enter-edit-mode)
-        (is (zero? (<!* a/count-internal-dirac-errors)))))))
+        (<!* a/go-switch-to-console-panel!)
+        (<!* a/go-switch-prompt-to-dirac!)
+        (<!* a/go-wait-for-prompt-to-enter-edit-mode)
+        (<!* a/go-reload!)
+        (<!* a/go-wait-for-prompt-to-enter-edit-mode)
+        (is (zero? (<!* a/go-count-internal-dirac-errors)))))))

@@ -5,6 +5,6 @@
 
 (go-task
   (with-scenario "barebone"
-    (<!* a/wait-for-match "immediate feedback")
-    (<!* a/trigger! :test-trigger)
-    (<!* a/wait-for-match "feedback from trigger")))
+    (<!* a/go-wait-for-match "immediate feedback")
+    (<!* a/go-trigger! :test-trigger)
+    (<!* a/go-wait-for-match "feedback from trigger")))

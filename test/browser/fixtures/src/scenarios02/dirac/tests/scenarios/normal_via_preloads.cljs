@@ -15,4 +15,4 @@
 (scenario/capture-console-as-feedback!)
 (scenario/register-trigger! :check-runtime-installed check-runtime-installed)
 (scenario/register-trigger! :check-runtime-config check-runtime-config)
-(scenario/ready!)
+(scenario/go-ready!)

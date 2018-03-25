@@ -1,11 +1,14 @@
 (ns dirac.automation.scenario
-  (:require [oops.core :refer [oget oset! ocall oapply gget gset!]]
+  (:require-macros [dirac.automation.scenario])
+  (:require [cljs.core.async :refer [<! go]]
+            [oops.core :refer [oget oset! ocall oapply gget gset! gcall!]]
             [dirac.automation.logging :refer [log info warn error]]
-            [cljs.pprint :refer [pprint]]
-            [dirac.shared.utils]
+            [dirac.shared.utils]                                                                                              ; used in macros
+            [dirac.shared.pprint]                                                                                             ; used in macros
             [dirac.automation.messages :as messages]
             [dirac.automation.notifications :as notifications]
-            [dirac.shared.utils :as utils]))
+            [dirac.shared.utils :as utils]
+            [dirac.automation.feedback :as feedback]))
 
 (defonce triggers (atom {}))                                                                                                  ; trigger-name -> callback
 (defonce original-console-api (atom nil))
@@ -23,8 +26,8 @@
   (let [xform (fn [acc val] (val acc))]
     (reduce xform input @feedback-transformers)))
 
-(defn feedback! [transcript & [label]]
-  (messages/post-scenario-feedback! (transform-feedback transcript) label))
+(defn go-post-feedback! [transcript & [label]]
+  (messages/go-post-scenario-feedback! (transform-feedback transcript) label))
 
 ; -- triggers ---------------------------------------------------------------------------------------------------------------
 
@@ -41,16 +44,16 @@
 
 ; -- handling exceptions ----------------------------------------------------------------------------------------------------
 
-(defn scenario-exception-handler! [_message _source _lineno _colno e]
-  (feedback! (str "uncaught exception: " (utils/extract-first-line (utils/format-error e))))
+(defn handle-scenario-exception! [_message _source _lineno _colno e]
+  (go-post-feedback! (str "uncaught exception: " (utils/extract-first-line (utils/format-error e))))
   false)
 
 (defn register-global-exception-handler! []
-  (gset! "onerror" scenario-exception-handler!))
+  (gset! "onerror" handle-scenario-exception!))
 
 ; -- notification handler ---------------------------------------------------------------------------------------------------
 
-(defn notification-handler! [notification]
+(defn handle-notification! [notification]
   (let [trigger-name (:trigger notification)
         args (:args notification)]
     (assert trigger-name)
@@ -58,19 +61,21 @@
 
 ; -- facades ----------------------------------------------------------------------------------------------------------------
 
-(defn ready! []
-  (messages/init! "scenario")
-  (notifications/init!)
-  (register-global-exception-handler!)
-  (notifications/subscribe-notifications! notification-handler!)
-  (messages/send-scenario-ready!))
+(defn go-ready! []
+  (go
+    (messages/init! "scenario")
+    (feedback/subscribe-to-feedback!)                                                                                         ; this is needed for reply messages
+    (notifications/init!)
+    (register-global-exception-handler!)
+    (notifications/subscribe-notifications! handle-notification!)
+    (<! (messages/go-send-scenario-ready!))))
 
 ; -- capturing console output -----------------------------------------------------------------------------------------------
 
-(defn console-handler [orig kind & args]
+(defn go-handle-console-call [orig kind & args]
   (let [transcript (str kind args)]
-    (feedback! transcript (str "scenario out"))
-    (.apply orig js/console (to-array args))))
+    (.apply orig js/console (to-array args))
+    (go-post-feedback! transcript (str "scenario out"))))
 
 (defn store-console-api []
   {"log"   (gget "console.log")
@@ -79,10 +84,10 @@
    "error" (gget "console.error")})
 
 (defn captured-console-api [original-api]
-  {"log"   (partial console-handler (get original-api "log") "LOG: ")
-   "warn"  (partial console-handler (get original-api "warn") "WARN: ")
-   "info"  (partial console-handler (get original-api "info") "INFO: ")
-   "error" (partial console-handler (get original-api "error") "ERROR: ")})
+  {"log"   (partial go-handle-console-call (get original-api "log") "LOG: ")
+   "warn"  (partial go-handle-console-call (get original-api "warn") "WARN: ")
+   "info"  (partial go-handle-console-call (get original-api "info") "INFO: ")
+   "error" (partial go-handle-console-call (get original-api "error") "ERROR: ")})
 
 (defn set-console-api! [api]
   (gset! "console.log" (get api "log"))

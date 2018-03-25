@@ -7,4 +7,4 @@
 
 (init-runtime!)
 (install-common-triggers!)
-(scenario/ready!)
+(scenario/go-ready!)

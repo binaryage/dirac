@@ -8,10 +8,10 @@
   (with-scenario "normal"
     (testing "welcome message should be present by default"
       (with-devtools
-        (<!* a/switch-to-console-panel!)
-        (<!* a/wait-for-devtools-match "displayWelcomeMessage")))
+        (<!* a/go-switch-to-console-panel!)
+        (<!* a/go-wait-for-devtools-match "displayWelcomeMessage")))
     (testing "welcome message should not be present when disabled in options"
       (with-options {:welcome-message false}
         (with-devtools
-          (<!* a/switch-to-console-panel!)
-          (<!* a/wait-for-devtools-match "!dirac.hasWelcomeMessage"))))))
+          (<!* a/go-switch-to-console-panel!)
+          (<!* a/go-wait-for-devtools-match "!dirac.hasWelcomeMessage"))))))

@@ -14,15 +14,15 @@
 ; -- message sending --------------------------------------------------------------------------------------------------------
 
 (defn send! [msg]
-  (if-let [client @current-client]
+  (if-some [client @current-client]
     (ws-client/send! client msg)
     (throw (ex-info "No client!" msg))))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
-(defmulti process-message :op)
+(defmulti go-process-message :op)
 
-(defmethod process-message :error [message]
+(defmethod go-process-message :error [message]
   (throw (ex-info "Received error message" message))
   (go
     {:op      :error
@@ -30,27 +30,28 @@
 
 ; -- connection -------------------------------------------------------------------------------------------------------------
 
-(defn run-streaming-loop! []
-  (log "transcript-streamer: entering streaming loop...")
-  (go-loop []
-    (when-let [msg (<! transcript-stream)]
-      (send! msg)
-      (recur))
+(defn go-run-streaming-loop! []
+  (go
+    (log "transcript-streamer: entering streaming loop...")
+    (loop []
+      (when-let [msg (<! transcript-stream)]
+        (send! msg)
+        (recur)))
     (log "transcript-streamer: leaving streaming loop...")))
 
-(defn on-message-handler [_client message]
+(defn go-handle-message! [_client message]
   (go
-    (if-let [result (<! (process-message message))]
+    (when-some [result (<! (go-process-message message))]
       (send! result))))
 
-(defn on-open-handler [client]
-  (run-streaming-loop!))
+(defn go-handle-open! [_client]
+  (go-run-streaming-loop!))
 
 (defn connect! [server-url opts]
   (log (str "transcript-streamer: connecting " server-url))
   (let [default-opts {:name       "Transcript Streamer (client)"
-                      :on-message on-message-handler
-                      :on-open    on-open-handler}
+                      :on-message go-handle-message!
+                      :on-open    go-handle-open!}
         effective-opts (merge default-opts opts)
         client (ws-client/connect! server-url effective-opts)]
     (reset! current-client client)))
@@ -61,5 +62,5 @@
     true))
 
 (defn init! [server-url & [opts]]
-  (if (some? server-url)
+  (when (some? server-url)
     (connect! server-url opts)))
