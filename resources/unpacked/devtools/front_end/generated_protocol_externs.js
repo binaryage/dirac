@@ -7256,6 +7256,32 @@ Protocol.RuntimeAgent.EvaluateResponse;
 Protocol.RuntimeAgent.prototype.invoke_evaluate = function(obj) {};
 
 /**
+ * @return {!Promise<?string>}
+ */
+Protocol.RuntimeAgent.prototype.getIsolateId = function() {};
+/** @typedef {Object|undefined} */
+Protocol.RuntimeAgent.GetIsolateIdRequest;
+/** @typedef {!{id: string}} */
+Protocol.RuntimeAgent.GetIsolateIdResponse;
+/**
+ * @param {!Protocol.RuntimeAgent.GetIsolateIdRequest} obj
+ * @return {!Promise<!Protocol.RuntimeAgent.GetIsolateIdResponse>} */
+Protocol.RuntimeAgent.prototype.invoke_getIsolateId = function(obj) {};
+
+/**
+ * @return {!Promise<?number>}
+ */
+Protocol.RuntimeAgent.prototype.getHeapUsage = function() {};
+/** @typedef {Object|undefined} */
+Protocol.RuntimeAgent.GetHeapUsageRequest;
+/** @typedef {!{totalSize: number, usedSize: number}} */
+Protocol.RuntimeAgent.GetHeapUsageResponse;
+/**
+ * @param {!Protocol.RuntimeAgent.GetHeapUsageRequest} obj
+ * @return {!Promise<!Protocol.RuntimeAgent.GetHeapUsageResponse>} */
+Protocol.RuntimeAgent.prototype.invoke_getHeapUsage = function(obj) {};
+
+/**
  * @param {Protocol.Runtime.RemoteObjectId} objectId
  * @param {boolean=} opt_ownProperties
  * @param {boolean=} opt_accessorPropertiesOnly
@@ -7288,10 +7314,11 @@ Protocol.RuntimeAgent.prototype.invoke_globalLexicalScopeNames = function(obj) {
 
 /**
  * @param {Protocol.Runtime.RemoteObjectId} prototypeObjectId
+ * @param {string=} opt_objectGroup
  * @return {!Promise<?Protocol.Runtime.RemoteObject>}
  */
-Protocol.RuntimeAgent.prototype.queryObjects = function(prototypeObjectId) {};
-/** @typedef {!{prototypeObjectId: Protocol.Runtime.RemoteObjectId}} */
+Protocol.RuntimeAgent.prototype.queryObjects = function(prototypeObjectId, opt_objectGroup) {};
+/** @typedef {!{prototypeObjectId: Protocol.Runtime.RemoteObjectId, objectGroup: (string|undefined)}} */
 Protocol.RuntimeAgent.QueryObjectsRequest;
 /** @typedef {!{objects: Protocol.Runtime.RemoteObject}} */
 Protocol.RuntimeAgent.QueryObjectsResponse;
@@ -7375,6 +7402,19 @@ Protocol.RuntimeAgent.SetCustomObjectFormatterEnabledResponse;
  * @param {!Protocol.RuntimeAgent.SetCustomObjectFormatterEnabledRequest} obj
  * @return {!Promise<!Protocol.RuntimeAgent.SetCustomObjectFormatterEnabledResponse>} */
 Protocol.RuntimeAgent.prototype.invoke_setCustomObjectFormatterEnabled = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.RuntimeAgent.prototype.terminateExecution = function() {};
+/** @typedef {Object|undefined} */
+Protocol.RuntimeAgent.TerminateExecutionRequest;
+/** @typedef {Object|undefined} */
+Protocol.RuntimeAgent.TerminateExecutionResponse;
+/**
+ * @param {!Protocol.RuntimeAgent.TerminateExecutionRequest} obj
+ * @return {!Promise<!Protocol.RuntimeAgent.TerminateExecutionResponse>} */
+Protocol.RuntimeAgent.prototype.invoke_terminateExecution = function(obj) {};
 
 /** @typedef {string} */
 Protocol.Runtime.ScriptId;

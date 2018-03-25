@@ -1,7 +1,7 @@
 (ns dirac.tests.tasks.suite01.version-checks
   (:require [cljs.core.async]
             [cljs.test :refer-macros [is]]
-            [dirac.settings :refer-macros [seconds minutes]]
+            [dirac.settings :refer [seconds minutes]]
             [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools testing] :as a]))
 
 (go-task

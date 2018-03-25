@@ -29,11 +29,11 @@
  */
 
 .filter-bar {
-    background-color: #f3f3f3;
+    background-color: var(--toolbar-bg-color);
     flex: none;
     flex-wrap: wrap;
     align-items: center;
-    border-bottom: 1px solid #dadada;
+    border-bottom: var(--divider-border);
 }
 
 .filter-text-filter {
@@ -134,16 +134,22 @@
 }
 
 .filter-input-field {
-    border: 1px solid rgb(163, 163, 163);
-    border-radius: 2px;
-    padding: 1px 3px 0;
-    margin: 0 0 0 3px;
+    margin: 0 3px;
+    padding-left: 3px;
     width: 163px;
-    height: 20px;
-    line-height: 17px;
+    height: 18px;
+    line-height: 20px;
     display: inline-block;
     background: #FFF;
     overflow: hidden;
     white-space: nowrap;
     cursor: auto;
+}
+
+.filter-input-field:hover {
+    box-shadow: var(--focus-ring-inactive-shadow);
+}
+
+.filter-input-field:focus {
+    box-shadow: var(--focus-ring-active-shadow);
 }

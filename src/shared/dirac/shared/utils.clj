@@ -1,5 +1,6 @@
-(ns dirac.utils
-  (:require [cljs.env]))
+(ns dirac.shared.utils
+  (:require [cljs.env]
+            [environ.core :as environ]))
 
 (defmacro runonce [& body]
   (let [code (cons 'do body)
@@ -23,4 +24,11 @@
 
 (defmacro when-not-advanced-mode [& body]
   (if-not (advanced-mode?)
+    `(do ~@body)))
+
+(defn dirac-test-mode? []
+  (some? (:dirac-test-browser environ/env)))
+
+(defmacro when-not-dirac-test-mode [& body]
+  (if-not (dirac-test-mode?)
     `(do ~@body)))

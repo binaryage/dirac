@@ -1,9 +1,9 @@
 (ns dirac.options.core
-  (:require [cljs.core.async :refer [<! chan go go-loop]]
+  (:require [cljs.core.async :refer [<! go]]
             [dirac.options.ui :as ui]
             [dirac.options.model :as model]))
 
 (defn init! []
   (go
-    (<! (model/init!))
+    (<! (model/go-init!))
     (ui/start-ui!)))

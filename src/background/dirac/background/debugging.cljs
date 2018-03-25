@@ -1,6 +1,6 @@
 (ns dirac.background.debugging
-  (:require-macros [dirac.background.logging :refer [log info warn error]])
-  (:require [cljs-http.client :as http]
+  (:require [dirac.background.logging :refer [log info warn error]]
+            [cljs-http.client :as http]
             [oops.core :refer [oget]]
             [cljs.core.async :refer [<! timeout go]]
             [dirac.settings :refer [get-backend-url-resolution-trials
@@ -47,7 +47,7 @@
 (defn get-context-list-api-endpoint [debugger-url]
   (str debugger-url "/json"))
 
-(defn fetch-context-list [debugger-url]
+(defn go-fetch-context-list [debugger-url]
   (let [api-endpoint (get-context-list-api-endpoint debugger-url)]
     (go
       (let [response (<! (http/get api-endpoint))]
@@ -79,9 +79,9 @@
     (second matches)
     (make-failure (make-failure-to-extract-ws-msg devtools-frontend-url))))
 
-(defn try-resolve-backend-info [debugger-url context-url]
+(defn go-try-resolve-backend-info [debugger-url context-url]
   (go
-    (let [context-list (<! (fetch-context-list debugger-url))]
+    (let [context-list (<! (go-fetch-context-list debugger-url))]
       (if (resolution-failure? context-list)
         context-list
         (let [context (select-matching-context-by-url context-list context-url)]
@@ -98,7 +98,7 @@
   (go
     (log (str "resolving backend-url for debugger-url=" debugger-url " context-url=" context-url))
     (loop [attempt 0]
-      (let [backend-url-or-failure (<! (try-resolve-backend-info debugger-url context-url))]
+      (let [backend-url-or-failure (<! (go-try-resolve-backend-info debugger-url context-url))]
         (if (or (not (resolution-failure? backend-url-or-failure))
                 (>= attempt (get-backend-url-resolution-trials)))
           backend-url-or-failure

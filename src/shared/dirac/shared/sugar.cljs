@@ -1,13 +1,12 @@
-(ns dirac.sugar
+(ns dirac.shared.sugar
   (:require [cljs.core.async :refer [<! chan put! close! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.config :refer-macros [with-muted-error-reporting]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.tabs :as tabs]
-            [chromex.ext.runtime :as runtime]
             [chromex.ext.windows :as windows]
-            [dirac.utils :as utils]))
+            [dirac.shared.logging :refer [log info warn error]]
+            [dirac.shared.utils :as utils]))
 
 ; this is a collection of helper utilities to wrap some common chromex code snippets (runtime, tabs and windows)
 ; for example many callbacks are designed to accept only one parameter as return value
@@ -54,7 +53,7 @@
     (let [[window] (<! (windows/get window-id))]
       window)))
 
-(defn create-window-and-wait-for-first-tab-completed! [window-params]
+(defn go-create-window-and-wait-for-first-tab-completed! [window-params]
   (let [chrome-event-channel (make-chrome-event-channel (chan))]
     (tabs/tap-on-updated-events chrome-event-channel)
     (go
@@ -76,24 +75,19 @@
 
 ; -- tab --------------------------------------------------------------------------------------------------------------------
 
-(defn tab-exists? [tab-id]
+(defn go-check-tab-exists? [tab-id]
   (go
     (with-muted-error-reporting
-      (if-let [[tab] (<! (tabs/get tab-id))]
+      (if-let [[_tab] (<! (tabs/get tab-id))]
         true
         false))))
 
-(defn fetch-tab [tab-id]
+(defn go-fetch-tab [tab-id]
   (go
     (let [[tab] (<! (tabs/get tab-id))]
       tab)))
 
-(defn fetch-tab-window-id [tab-id]
+(defn go-fetch-tab-window-id [tab-id]
   (go
-    (if-let [tab (<! (fetch-tab tab-id))]
+    (if-let [tab (<! (go-fetch-tab tab-id))]
       (get-tab-window-id tab))))
-
-(defn fetch-tab-window [tab-id]
-  (go
-    (if-let [tab (<! (fetch-tab tab-id))]
-      (fetch-window (get-tab-window-id tab)))))

@@ -75,12 +75,9 @@
     border-left: 1px solid rgb(205, 205, 205);
 }
 
-.network-log-grid.data-grid th {
-    background: white;
-}
-
 .network-waterfall-header, .network-log-grid.data-grid .header-container {
     height: 31px;
+    background-color: var(--toolbar-bg-color);
 }
 
 .network-log-grid.data-grid .data-container {
@@ -146,7 +143,7 @@
 .network-log-grid.data-grid:focus tr.selected,
 .network-log-grid.data-grid:focus tr.selected .network-cell-subtitle,
 .network-log-grid.data-grid:focus tr.selected .network-dim-cell {
-    color: white !important;
+    color: var(--selection-fg-color) !important;
 }
 
 .network-log-grid tr.highlighted-row {

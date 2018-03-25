@@ -1,8 +1,8 @@
 (ns dirac.implant.feedback
   (:require [oops.core :refer [oget oset! ocall oapply oset!+ oget+ gget gset!]]
-            [chromex.logging :refer-macros [log warn error group group-end]]
-            [dirac.settings :refer-macros [get-flush-pending-feedback-messages-key
-                                           get-dirac-intercom-key]]
+            [dirac.implant.logging :refer [log warn error]]
+            [dirac.settings :refer [get-flush-pending-feedback-messages-key
+                                    get-dirac-intercom-key]]
             [dirac.implant.options :as options]))
 
 (defonce pending-messages (atom []))

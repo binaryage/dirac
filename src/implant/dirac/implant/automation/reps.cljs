@@ -1,8 +1,8 @@
 (ns dirac.implant.automation.reps
   (:require [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log warn error info]]
+            [dirac.implant.logging :refer [log warn error info]]
             [com.rpl.specter :refer [must continue-then-stay multi-path ALL providepath declarepath select select-first]]
-            [dirac.dom :as dom]))
+            [dirac.shared.dom :as dom]))
 
 ; "reps" are simple data structures representing interesting bits of a DOM tree snapshot.
 ; As you can see in `build-rep` we record tag, class, title, content, child DOM nodes and shadow DOM relationships.

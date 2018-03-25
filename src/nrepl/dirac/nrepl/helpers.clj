@@ -2,8 +2,7 @@
   "Low-level helper methods NOT depending on mutable global state."
   (:require [dirac.nrepl.version :refer [version]]
             [clojure.tools.nrepl.transport :as nrepl-transport]
-            [clojure.tools.nrepl.misc :as nrepl-misc]
-            [dirac.nrepl.protocol :as protocol])
+            [clojure.tools.nrepl.misc :as nrepl-misc])
   (:import (java.util UUID)
            (java.io StringWriter PrintWriter)
            (clojure.lang IExceptionInfo)))
@@ -16,7 +15,7 @@
   (with-err-output
     (apply println args)))
 
-(defmacro with-coallesced-output [& body]
+(defmacro with-coalesced-output [& body]
   `(let [outs# (StringWriter.)
          errs# (StringWriter.)]
      (binding [*out* outs#

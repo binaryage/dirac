@@ -31,7 +31,7 @@
     position: absolute;
     top: 0;
     width: 100%;
-    background-color: #f3f3f3;
+    background-color: var(--toolbar-bg-color);
     border-bottom: 1px solid #ccc;
     overflow: hidden;
 }
@@ -66,4 +66,8 @@
 
 .cursor-auto {
     cursor: auto;
+}
+
+.navigator-tabbed-pane {
+    background-color: var(--toolbar-bg-color);
 }

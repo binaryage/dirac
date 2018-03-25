@@ -3,7 +3,7 @@
             [clojure.tools.logging :as log]
             [clojure.string :as string]
             [org.httpkit.server :refer [run-server]]
-            [dirac.travis :refer [with-travis-fold]])
+            [dirac.shared.travis :refer [with-travis-fold]])
   (:use ring.middleware.resource
         ring.middleware.content-type
         ring.middleware.not-modified

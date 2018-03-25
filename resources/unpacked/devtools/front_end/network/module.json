@@ -122,10 +122,11 @@
         },
         {
             "type": "@Search.SearchScope",
-            "experiment": "networkSearch",
             "id": "network.searchInNetwork",
+            "experiment": "networkSearch",
             "className": "Network.NetworkSearchScope",
-            "title": "Search network"
+            "title": "Network",
+            "description": "Search headers and response bodies"
         }
 
     ],

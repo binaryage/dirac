@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='67.0.3368.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='299e1847171b73d03c6b9f0f2d91945961b16675';
+Protocol.BakedSupportedCSSPropertiesChromeTag='67.0.3379.0';
+Protocol.BakedSupportedCSSPropertiesChromeRev='292706dad68802d7eb6402799586e036d97739d1';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -26,8 +26,6 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "-webkit-box-decoration-break"},\n'
 + ' {"name": "-webkit-box-direction", "inherited": true},\n'
 + ' {"name": "-webkit-box-flex"},\n'
-+ ' {"name": "-webkit-box-flex-group"},\n'
-+ ' {"name": "-webkit-box-lines"},\n'
 + ' {"name": "-webkit-box-ordinal-group"},\n'
 + ' {"name": "-webkit-box-orient"},\n'
 + ' {"name": "-webkit-box-pack"},\n'

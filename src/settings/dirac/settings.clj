@@ -34,9 +34,10 @@
 (def ^:const KILL_TASK_KEY "diracKillTask")
 (def ^:const KILL_TASK_MESSAGE "dirac-kill-task")
 
-(def ^:const MARION_INITIAL_WAIT_TIME (seconds 1))
+(def ^:const MARION_STABLE_CONNECTION_TIMEOUT (seconds 2))
 (def ^:const MARION_RECONNECTION_ATTEMPT_DELAY (seconds 2))
 (def ^:const MARION_MESSAGE_REPLY_TIMEOUT (minutes 1))
+(def ^:const MARION_OPEN_SCENARIO_TIMEOUT (minutes 1))                                                                        ; cold start could be quite slow in a docker container on cloud VPS
 
 (def ^:const DEFAULT_TASK_TIMEOUT (minutes 5))
 (def ^:const KILL_TASK_TIMEOUT (seconds 5))
@@ -64,6 +65,7 @@
 
 (def ^:const TRANSCRIPT_STREAMER_SERVER_HOST "localhost")
 (def ^:const TRANSCRIPT_STREAMER_SERVER_PORT 22556)
+(def ^:const TRANSCRIPT_MAX_CHROME_LOG_LINES 3000)
 
 (def ^:const AUTOMATION_ENTRY_POINT_KEY "diracAutomateDevTools")
 (def ^:const FLUSH_PENDING_FEEDBACK_MESSAGES_KEY "diracFlushPendingFeedbackMessages")
@@ -149,14 +151,17 @@
 (defmacro get-transcript-match-timeout []
   TRANSCRIPT_MATCH_TIMEOUT)
 
-(defmacro get-marion-initial-wait-time []
-  MARION_INITIAL_WAIT_TIME)
+(defmacro get-marion-stable-connection-timeout []
+  MARION_STABLE_CONNECTION_TIMEOUT)
 
 (defmacro get-marion-reconnection-attempt-delay []
   MARION_RECONNECTION_ATTEMPT_DELAY)
 
 (defmacro get-marion-message-reply-timeout []
   MARION_MESSAGE_REPLY_TIMEOUT)
+
+(defmacro get-marion-open-scenario-timeout []
+  MARION_OPEN_SCENARIO_TIMEOUT)
 
 (defmacro get-default-task-timeout []
   DEFAULT_TASK_TIMEOUT)
@@ -292,6 +297,9 @@
 
 (defmacro get-transcript-streamer-server-port []
   TRANSCRIPT_STREAMER_SERVER_PORT)
+
+(defmacro get-transcript-max-chrome-log-lines []
+  TRANSCRIPT_MAX_CHROME_LOG_LINES)
 
 (defmacro get-transcript-streamer-server-url []
   (let [port (get-transcript-streamer-server-port)]

@@ -1,9 +1,9 @@
 (ns marion.background.feedback
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [marion.background.logging :refer [log info warn error]])
-  (:require [cljs.core.async :refer [<! chan timeout]]
+  (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
             [chromex.protocols :refer [post-message! get-sender]]
-            [oops.core :refer [oget ocall oapply]]))
+            [oops.core :refer [oget ocall oapply]]
+            [marion.background.logging :refer [log info warn error]]
+            [marion.background.helpers :as helpers]))
 
 ; "feedback" are events logged via calling feedback() from dirac extension and dirac frontends
 ; feedback messages should be delivered to current task runner to be appended to current transcript
@@ -22,17 +22,13 @@
   (boolean (some #{client} (get-subscribers))))
 
 (defn subscribe-client! [client]
-  (let [sender (get-sender client)
-        sender-url (oget sender "url")]
-    (log "a client subscribed to feedback:" sender-url)
-    (swap! subscribers conj client)))
+  (swap! subscribers conj client)
+  (log "a client subscribed to feedback:" (helpers/get-client-url client)))
 
 (defn unsubscribe-client! [client]
-  (let [sender (get-sender client)
-        sender-url (oget sender "url")]
-    (log "a client unsubscribed from feedback:" sender-url)
-    (let [remove-item (fn [coll item] (remove #(identical? item %) coll))]
-      (swap! subscribers remove-item client))))
+  (let [remove-item (fn [coll item] (remove #(identical? item %) coll))]
+    (swap! subscribers remove-item client))
+  (log "a client unsubscribed from feedback:" (helpers/get-client-url client)))
 
 (defn unsubscribe-client-if-subscribed! [client]
   (if (is-client-subscribed? client)
@@ -40,9 +36,14 @@
 
 ; -- broadcasting -----------------------------------------------------------------------------------------------------------
 
-(defn broadcast-feedback! [message]
-  (let [subscribers (get-subscribers)]
-    (if-not (pos? (count subscribers))
-      (warn "feedback broadcast request while no subscribers registered" message)
-      (doseq [subscriber subscribers]
-        (post-message! subscriber message)))))
+(defn go-broadcast-feedback! [message]
+  (go
+    (let [subscribers (get-subscribers)]
+      (if-not (pos? (count subscribers))
+        (warn "feedback broadcast request while no subscribers registered" message)
+        (doseq [subscriber subscribers]
+          (try
+            (post-message! subscriber message)
+            (catch :default e
+              (warn "cannot post message to a client subscribed to feedback" (helpers/get-client-url subscriber) "\n" e)
+              nil)))))))

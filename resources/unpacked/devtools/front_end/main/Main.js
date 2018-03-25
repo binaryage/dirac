@@ -74,7 +74,6 @@ Main.Main = class {
       self.runtime.useTestBase();
     // for dirac testing
     if (Runtime.queryParam("reset_settings")) {
-      dirac.feedback("reset devtools settings");
       console.info("DIRAC TESTING: clear devtools settings because reset_settings is present in url params");
       window.localStorage.clear(); // also wipe-out local storage to prevent tests flakiness
       prefs = {};
@@ -117,8 +116,9 @@ Main.Main = class {
     Runtime.experiments.register('colorContrastRatio', 'Color contrast ratio line in color picker', true);
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
+    Runtime.experiments.register('memoryLauncherViewV2', 'Memory profile launcher view V2');
     Runtime.experiments.register('nativeHeapProfiler', 'Native memory sampling heap profiler', true);
-    Runtime.experiments.register('networkSearch', 'Network search', true);
+    Runtime.experiments.register('networkSearch', 'Network search');
     Runtime.experiments.register('oopifInlineDOM', 'OOPIF: inline DOM ', true);
     Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
     Runtime.experiments.register('sourceDiff', 'Source diff');

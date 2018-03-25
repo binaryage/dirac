@@ -1,14 +1,14 @@
 (ns dirac.automation.task
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply gset!]]
-            [chromex.logging :refer-macros [log warn error info]]
-            [dirac.settings :refer-macros [get-signal-server-url
-                                           get-transcript-streamer-server-url
-                                           get-chrome-remote-debugging-port
-                                           get-chrome-remote-debugging-host
-                                           get-pending-replies-wait-timeout
-                                           get-signal-client-task-result-delay
-                                           get-signal-client-close-delay]]
+            [dirac.automation.logging :refer [log warn error info]]
+            [dirac.settings :refer [get-signal-server-url
+                                    get-transcript-streamer-server-url
+                                    get-chrome-remote-debugging-port
+                                    get-chrome-remote-debugging-host
+                                    get-pending-replies-wait-timeout
+                                    get-signal-client-task-result-delay
+                                    get-signal-client-close-delay]]
             [dirac.lib.ws-client :as ws-client]
             [dirac.options.model :as options-model]
             [dirac.automation.transcript-host :as transcript-host]
@@ -17,7 +17,7 @@
             [dirac.automation.messages :as messages]
             [dirac.automation.launcher :as launcher]
             [dirac.automation.helpers :as helpers]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [dirac.automation.runner :as runner]))
 
 (declare register-global-exception-handler!)

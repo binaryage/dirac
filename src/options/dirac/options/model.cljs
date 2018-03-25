@@ -1,9 +1,9 @@
 (ns dirac.options.model
-  (:require-macros [dirac.options.logging :refer [log warn error info]])
-  (:require [cljs.core.async :refer [<! chan close! go go-loop]]
-            [oops.core :refer [oget ocall oapply]]
+  (:require [dirac.options.logging :refer [log warn error info]]
+            [cljs.core.async :refer [<! chan close! go go-loop]]
+            [oops.core :refer [oget ocall oapply gcall]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
-            [chromex.protocols :refer [get set]]
+            [chromex.protocols :as chromex-protocols]
             [chromex.ext.storage :as storage]))
 
 ; we keep cached-options atom synced with values in storage
@@ -26,7 +26,6 @@
    :user-frontend-url-params  nil})
 
 (defonce cached-options (atom nil))
-(defonce chrome-event-channel (make-chrome-event-channel (chan)))
 
 (defonce ^:dynamic *initialized* false)
 (defonce ^:dynamic *auto-sync* true)
@@ -48,12 +47,12 @@
 
 (defn set-options! [options]
   {:pre [*initialized*]}
-  (log "set-options!" (pr-str options))
+  (log "set-options!" options)
   (swap! cached-options merge options))                                                                                       ; will trigger on-cached-options-change!
 
 (defn reset-options! [options]
   {:pre [*initialized*]}
-  (log "reset-options!" (pr-str options))
+  (log "reset-options!" options)
   (reset! cached-options options))                                                                                            ; will trigger on-cached-options-change!
 
 (defn reset-to-defaults! []
@@ -63,13 +62,13 @@
 
 (defn serialize-options [options]
   (let [json (clj->js options)]
-    (.stringify js/JSON json)))
+    (gcall "JSON.stringify" json)))
 
 (defn unserialize-options [serialized-options]
   (assert (or (string? serialized-options) (object? serialized-options))
           (str "unexpected serialized-options of type " (type serialized-options) ": " (pr-str serialized-options)))
   (let [json (if (string? serialized-options)
-               (.parse js/JSON serialized-options)
+               (gcall "JSON.parse" serialized-options)
                serialized-options)]
     (js->clj json :keywordize-keys true)))
 
@@ -80,7 +79,7 @@
   (info "write options:" options)
   (let [serialized-options (serialize-options options)
         local-storage (storage/get-local)]
-    (set local-storage #js {"options" serialized-options})))                                                                  ; will trigger on-changed event and a call to reload-options!, which is fine
+    (chromex-protocols/set local-storage #js {"options" serialized-options})))                                                ; will trigger on-changed event and a call to reload-options!, which is fine
 
 (defn on-cached-options-change! [new-options]
   (if *auto-sync*
@@ -96,10 +95,10 @@
                   (unserialize-options serialized-options))]
     (merge default-options options)))                                                                                         ; merge is important for upgrading options schema between versions
 
-(defn read-options []
+(defn go-read-options []
   (go
     (let [local-storage (storage/get-local)
-          [[items] _error] (<! (get local-storage "options"))
+          [[items] _error] (<! (chromex-protocols/get local-storage "options"))
           options (parse-options (oget items "?options"))]
       (info "read options:" options)
       options)))
@@ -112,41 +111,44 @@
 
 ; -- events -----------------------------------------------------------------------------------------------------------------
 
-(defn process-on-changed! [changes area-name]
+(defn go-handle-on-changed! [changes area-name]
   (go
     (when (= area-name "local")
       (reload-options! (oget changes "options.newValue")))))
 
-(defn process-chrome-event [event]
+(defn go-process-chrome-event [event]
   (log "got chrome event" event)
   (let [[event-id event-args] event]
     (case event-id
-      ::storage/on-changed (apply process-on-changed! event-args)
+      ::storage/on-changed (apply go-handle-on-changed! event-args)
       (go))))
 
-(defn run-chrome-event-loop! [chrome-event-channel]
-  (storage/tap-on-changed-events chrome-event-channel)
-  (go-loop []
-    (when-let [event (<! chrome-event-channel)]
-      (<! (process-chrome-event event))
-      (recur))
+(defn go-run-chrome-event-loop! [chrome-event-channel]
+  (go
+    (log "entering event loop")
+    (loop []
+      (when-let [event (<! chrome-event-channel)]
+        (<! (go-process-chrome-event event))
+        (recur)))
     (log "leaving event loop")))
 
 ; -- init/deinit ------------------------------------------------------------------------------------------------------------
 
-(defn init! []
+(defn go-init! []
   {:pre [(not *initialized*)]}
   (log "init!")
   (go
-    (let [options (<! (read-options))]
+    (let [options (<! (go-read-options))
+          chrome-event-channel (make-chrome-event-channel (chan))]
       (set! *initialized* true)
       (reset-cached-options-without-sync! options)
       (add-watch cached-options ::watch (fn [_ _ _ new-state]
                                           (on-cached-options-change! new-state)))
-      (run-chrome-event-loop! chrome-event-channel)
-      true)))
+      (storage/tap-on-changed-events chrome-event-channel)
+      (go-run-chrome-event-loop! chrome-event-channel)
+      chrome-event-channel)))
 
-(defn deinit! []
+(defn deinit! [chrome-event-channel]
   {:pre [*initialized*]}
   (log "deinit!")
   (remove-watch cached-options ::watch)

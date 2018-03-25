@@ -1,7 +1,7 @@
 (ns dirac.automation.test
   (:require-macros [dirac.automation.test :refer [with-captured-output]])
   (:require [cljs.test :refer [report]]
-            [dirac.utils]
+            [dirac.shared.utils]
             [dirac.automation.transcript-host :as transcript-host]))
 
 ; this namespace exists to override standard cljs.test behaviour

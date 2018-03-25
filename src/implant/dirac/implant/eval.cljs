@@ -2,10 +2,10 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [cljs.core.async.impl.protocols :as core-async]
             [oops.core :refer [oget oget+ ocall oapply gget]]
-            [chromex.logging :refer-macros [log warn error]]
+            [dirac.implant.logging :refer [log warn error]]
             [dirac.implant.feedback :as feedback]
             [clojure.string :as string]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [cljs.tools.reader.edn :as edn]))
 
 (def installation-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md")

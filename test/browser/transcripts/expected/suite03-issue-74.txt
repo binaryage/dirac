@@ -7,7 +7,6 @@ automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
 devtools #1      implant initialized
-devtools #1      reset devtools settings
 devtools #1      setCurrentPanel: elements
 devtools #1      devtools ready
 devtools #1      namespacesCache is cool now

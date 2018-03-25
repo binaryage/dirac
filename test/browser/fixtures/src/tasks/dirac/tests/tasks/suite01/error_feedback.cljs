@@ -1,9 +1,8 @@
 (ns dirac.tests.tasks.suite01.error-feedback
   (:require [cljs.core.async]
             [cljs.test :refer-macros [is]]
-            [dirac.settings :refer-macros [seconds minutes]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options testing] :as a]
-            [dirac.utils :as utils]))
+            [dirac.settings :refer [seconds minutes]]
+            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options testing] :as a]))
 
 (go-task
   (with-scenario "normal"

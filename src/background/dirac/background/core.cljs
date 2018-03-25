@@ -1,6 +1,6 @@
 (ns dirac.background.core
-  (:require-macros [dirac.background.logging :refer [log info warn error]])
-  (:require [cljs.core.async :refer [<! chan put! go go-loop]]
+  (:require [dirac.background.logging :refer [log info warn error]]
+            [cljs.core.async :refer [<! chan put! go go-loop]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
@@ -10,12 +10,12 @@
             [dirac.options.model :as options]
             [dirac.background.action :as action]))
 
-(defn extract-apis! []
+(defn go-extract-apis! []
   (go
     (let [extract-api? (options/get-option :use-backend-supported-api)
           extract-css? (options/get-option :use-backend-supported-css)]
       (if (or extract-api? extract-css?)
-        (let [[backend-api backend-css] (<! (thief/scrape-bundled-devtools!))]
+        (let [[backend-api backend-css] (<! (thief/go-scrape-bundled-devtools!))]
           (if (and extract-api? (some? backend-api))
             (state/set-backend-api! backend-api))
           (if (and extract-css? (some? backend-css))
@@ -23,10 +23,11 @@
 
 ; -- main entry point -------------------------------------------------------------------------------------------------------
 
+
 (defn init! []
   (log "init")
   (go
-    (<! (options/init!))
-    (<! (extract-apis!))
-    (<! (action/set-active-icons!))                                                                                           ; by default we start with grayed-out icons, see manifest.json
-    (<! (chrome/start-chrome-event-loop!))))
+    (<! (options/go-init!))
+    (<! (go-extract-apis!))
+    (<! (action/go-set-active-icons!))                                                                                        ; by default we start with grayed-out icons, see manifest.json
+    (<! (chrome/go-init-and-run-chrome-event-loop!))))

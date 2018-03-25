@@ -1,8 +1,7 @@
 (ns dirac.tests.tasks.suite03.issue-55
   (:require [cljs.core.async :refer [<! timeout]]
             [cljs.test :refer-macros [is are]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools chunkify testing] :as a]
-            [clojure.string :as string]))
+            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools chunkify testing] :as a]))
 
 (go-task
   (with-scenario "issue-55"

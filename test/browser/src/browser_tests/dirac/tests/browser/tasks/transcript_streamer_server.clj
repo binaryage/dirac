@@ -1,7 +1,7 @@
 (ns dirac.tests.browser.tasks.transcript-streamer-server
   (:require [clojure.tools.logging :as log]
             [dirac.settings :refer [get-transcript-streamer-server-host get-transcript-streamer-server-port]]
-            [dirac.travis :refer [with-travis-fold]]
+            [dirac.shared.travis :refer [with-travis-fold]]
             [dirac.lib.ws-server :as ws-server]
             [dirac.tests.browser.tasks.output :as output]))
 

@@ -27,9 +27,49 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-html {
+:root {
     height: 100%;
     overflow: hidden;
+}
+
+:root {
+    --accent-color: #03a9f4;
+    --accent-color-b: #2196f3;
+    --accent-color-c: #3e82f7;
+    --toolbar-bg-color: #f3f3f3;
+    --toolbar-hover-bg-color: #eaeaea;
+    --selection-fg-color: white;
+    --selection-inactive-bg-color: #dadada;
+    --tab-selected-fg-color: #333;
+    --tab-selected-bg-color: var(--toolbar-bg-color);
+    --drop-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05),
+                   0 2px 4px rgba(0, 0, 0, 0.2),
+                   0 2px 6px rgba(0, 0, 0, 0.1);
+    --divider-color: #d0d0d0;
+    --focus-ring-inactive-shadow: 0 0 0 1px #e0e0e0;
+}
+
+.-theme-with-dark-background {
+    --accent-color: #32699f;
+    --accent-color-b: #264f78;
+    --accent-color-c: #1f4061;
+    --toolbar-bg-color: #333333;
+    --toolbar-hover-bg-color: #202020;
+    --selection-fg-color: #cdcdcd;
+    --selection-inactive-bg-color: #333333;
+    --tab-selected-fg-color: #eaeaea;
+    --tab-selected-bg-color: black;
+    --drop-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2),
+                   0 2px 4px 2px rgba(0, 0, 0, 0.2),
+                   0 2px 6px 2px rgba(0, 0, 0, 0.1);
+    --divider-color: #525252;
+    --focus-ring-inactive-shadow: 0 0 0 1px #5a5a5a;
+}
+
+:root {
+    --focus-ring-active-shadow: 0 0 0 1px var(--accent-color);
+    --selection-bg-color: var(--accent-color-b);
+    --divider-border: 1px solid var(--divider-color);
 }
 
 body {
@@ -74,7 +114,7 @@ body {
 
 .panel-sidebar {
     overflow-x: hidden;
-    background-color: #f3f3f3;
+    background-color: var(--toolbar-bg-color);
 }
 
 iframe.extension {

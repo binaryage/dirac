@@ -1,7 +1,6 @@
 (ns dirac.nrepl.utils
   "High-level helper methods possibly depending on mutable global state."
-  (:require [cljs.analyzer :as analyzer]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
             [dirac.nrepl.compilers :as compilers]
             [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.helpers :as helpers]

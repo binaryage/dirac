@@ -1,11 +1,10 @@
-(ns dirac.utils
-  (:require-macros [dirac.utils])
+(ns dirac.shared.utils
+  (:require-macros [dirac.shared.utils])
   (:require [cljs.core.async :refer [put! <! chan close! go go-loop]]
             [cljs.core.async.impl.protocols :as async-protocols]
             [cuerdas.core :as cuerdas]
-            [cljs.pprint]
-            [oops.core :refer [oget oset! ocall oapply gget]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]))
+            [dirac.shared.pprint]
+            [oops.core :refer [oget oset! ocall oapply gget gcall]]))
 
 (def Promise (gget "Promise"))
 
@@ -18,20 +17,20 @@
 (defonce ^:const EXPONENTIAL_BACKOFF_CEILING (* 60 1000))
 
 (defn exponential-backoff-ceiling [attempt]
-  (let [time (* (js/Math.pow 2 attempt) 1000)]
-    (js/Math.min time EXPONENTIAL_BACKOFF_CEILING)))
+  (let [time (* (gcall "Math.pow" 2 attempt) 1000)]
+    (gcall "Math.min" time EXPONENTIAL_BACKOFF_CEILING)))
 
 ; this implementation differs from core.async timeout that it is simple and creates a new channel for every invocation
 ; it is safe to call close! on returned channel to cancel timeout early
 (defn timeout [msec]
   (let [channel (chan)]
-    (.setTimeout js/window #(close! channel) msec)
+    (gcall "setTimeout" #(close! channel) msec)
     channel))
 
 (defn parse-int [v]
   (if (integer? v)
     v
-    (js/parseInt (str v) 10)))
+    (gcall "parseInt" (str v) 10)))
 
 (defn compact [coll]
   (cond
@@ -79,7 +78,7 @@
   nil)
 
 (defn round [n k]
-  (/ (js/Math.round (* k n)) k))
+  (/ (gcall "Math.round" (* k n)) k))
 
 (defn timeout-display [time-ms]
   {:pre [(number? time-ms)]}
@@ -141,15 +140,19 @@
       (cuerdas/lines)
       (nth n nil)))
 
-(defn convert-blob-to-string [blob]
+(defn make-file-reader []
+  (js/FileReader.))
+
+(defn go-convert-blob-to-string [blob]
   (let [channel (chan)
-        reader (js/FileReader.)]
+        reader (make-file-reader)]
     (oset! reader "onloadend" #(put! channel (oget reader "result")))
     (ocall reader "readAsText" blob)
     channel))
 
-(defn pprint-str [v & [level length]]
+(defn pprint-str [v & [level length max-str-len]]
   (with-out-str
-    (binding [*print-level* (or level 3)
-              *print-length* (or length 200)]
-      (cljs.pprint/pprint v))))
+    (let [opts {:print-level       (or level 3)
+                :print-length      (or length 200)
+                :max-string-length (or max-str-len 500)}]
+      (dirac.shared.pprint/pprint v opts))))

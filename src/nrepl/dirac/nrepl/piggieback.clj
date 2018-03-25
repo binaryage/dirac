@@ -7,13 +7,11 @@
 ;
 (ns dirac.nrepl.piggieback
   (:require [clojure.tools.logging :as log]
-            [dirac.nrepl.config :as config]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.version :refer [version]]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.debug :as debug]
-            [dirac.nrepl.messages :as messages]
             [dirac.nrepl.special :as special]
             [dirac.nrepl.joining :as joining]
             [dirac.nrepl.protocol :as protocol]

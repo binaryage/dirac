@@ -1,8 +1,6 @@
 (ns dirac.implant.info
   (:require [oops.core :refer [oget oset! ocall oapply gget]]
-            [chromex.logging :refer-macros [log warn error group group-end]]
-            [goog.labs.userAgent.browser :as ua-browser]
-            [goog.labs.userAgent.platform :as ua-platform]
+            [dirac.implant.logging :refer [log warn error]]
             [dirac.implant.version :refer [get-version]]
             [dirac.runtime.util :refer [get-browser-version-info get-browser-platform-info]]                                  ; TODO: we should not depend on runtime here
             [clojure.string :as string]))

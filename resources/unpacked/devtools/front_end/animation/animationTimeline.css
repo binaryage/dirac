@@ -95,7 +95,8 @@ circle.animation-keyframe-point {
 
 .animation-timeline-toolbar-container {
     display: flex;
-    border-bottom: 1px solid #ccc;
+    background-color: var(--toolbar-bg-color);
+    border-bottom: var(--divider-border);
     flex: 0 0;
 }
 
@@ -304,7 +305,7 @@ text.animation-timeline-grid-label {
 .animation-buffer-preview {
     height: 40px;
     margin: 4px 2px;
-    background-color: #F3F3F3;
+    background-color: var(--toolbar-bg-color);
     border-radius: 2px;
     flex: 1 1;
     padding: 4px;
@@ -331,7 +332,7 @@ text.animation-timeline-grid-label {
 }
 
 .animation-buffer-preview.selected {
-    background-color: hsl(217, 89%, 61%);
+    background-color: var(--selection-bg-color);
 }
 
 .animation-paused {
@@ -404,17 +405,17 @@ text.animation-timeline-grid-label {
 
 .animation-playback-rate-button.selected {
     color: hsl(0, 100%, 100%);
-    background-color: hsl(217, 89%, 61%);
-    border-color: hsl(217, 89%, 61%);
+    background-color: var(--selection-bg-color);
+    border-color: var(--selection-bg-color);
     z-index: 1;
 }
 
 .animation-playback-rate-button.selected:first-child {
-    color: hsl(217, 89%, 61%);
+    color: var(--selection-bg-color);
     background-color: hsl(217, 89%, 100%);
 }
 
-.animation-remove-button {
+.animation-remove-button, -theme-preserve {
     position: absolute;
     top: -3px;
     right: -3px;

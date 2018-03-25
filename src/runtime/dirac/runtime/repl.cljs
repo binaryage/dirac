@@ -1,4 +1,5 @@
 (ns dirac.runtime.repl
+  (:refer-clojure :exclude [eval])
   (:require [dirac.runtime.prefs :refer [get-prefs pref]]
             [dirac.runtime.bootstrap :refer [bootstrap!]]
             [dirac.runtime.output :as output]
@@ -163,7 +164,7 @@
   *bootstrapped?*)
 
 (defn ^:export capture-output
-  "A printing wrapper responsible for capturing printed output and presenting it via `present-output`."
+  "This printing wrapper is responsible for capturing printed output and presenting it via `present-output`."
   [job-id f]
   ; we want to redirect all side-effect printing, so it can be presented in the Dirac REPL console
   (binding [cljs.core/*print-newline* false
@@ -173,12 +174,12 @@
 
 (defn ^:export present
   "A presentation wrapper which takes care of presenting REPL evaluation to Dirac user.
-  We short-circuit nREPL feedback mechanism and display REPL results immediatelly to the user as native data.
-  This especially important for cljs-devtools.
+  We short-circuit nREPL feedback mechanism and display REPL results immediately to the user as native data.
+  This is especially important for cljs-devtools.
 
   Please note that for traditional nREPL clients we still serialize the result, send it over the wire to nREPL server and
-  in turn that result is sent back to a client and presented. The Dirac client has just special logic and ignores this echoed
-  output because it was already presented directly.
+  in turn that result is sent back to clients and presented. The Dirac client has just some special logic and ignores this
+  echoed output because it was already presented directly.
 
   See https://github.com/binaryage/dirac/blob/master/docs/about-repls.md for conceptual overview."
   [job-id job-fn]
@@ -225,10 +226,10 @@
   We limit printing level and length via with-safe-printing."
   [value]
   #js {:status "success"
-       :value  (with-safe-printing (fn [] (str value)))})
+       :value  (with-safe-printing #(str value))})
 
 (defn ^:export postprocess-unsuccessful-eval [ex]
-  "Same as postprocess-successful-eval but prepares response of evaluation attempt with an exception."
+  "Same as postprocess-successful-eval but prepares response of an evaluation attempt with exception."
   #js {:status     "exception"
        :value      (safe-pr-str ex)
        :stacktrace (if (.hasOwnProperty ex "stack")
@@ -242,7 +243,7 @@
     job-id    - a numeric id of the REPL job
     eval-mode - 'captured' or 'special'
     wrap-mode - 'short-circuit-presentation' or nil
-    job-fn    - code to be executed in the form of function
+    job-fn    - code to be executed in the form of a function
 
   Note that normally we want to support capturing REPL specials *1 *2 *3 and *e. Only when we are executing their retrieval
   we don't want to capture them and we want to use the 'special' path.

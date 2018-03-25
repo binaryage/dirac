@@ -147,13 +147,6 @@ TimelineModel.TimelineModel = class {
   }
 
   /**
-   * @return {?string}
-   */
-  sessionId() {
-    return this._sessionId;
-  }
-
-  /**
    * @param {!SDK.TracingModel.Event} event
    * @return {?SDK.Target}
    */
@@ -188,10 +181,18 @@ TimelineModel.TimelineModel = class {
         const metaEvent = metadataEvents.page[i];
         const process = metaEvent.thread.process();
         const endTime = i + 1 < length ? metadataEvents.page[i + 1].startTime : Infinity;
-        this._currentPage = metaEvent.args['data'] && metaEvent.args['data']['page'];
+        this._legacyCurrentPage = metaEvent.args['data'] && metaEvent.args['data']['page'];
         for (const thread of process.sortedThreads()) {
-          if (thread.name() === TimelineModel.TimelineModel.WorkerThreadName) {
-            const workerMetaEvent = metadataEvents.workers.find(e => e.args['data']['workerThreadId'] === thread.id());
+          if (thread.name() === TimelineModel.TimelineModel.WorkerThreadName ||
+              thread.name() === TimelineModel.TimelineModel.WorkerThreadNameLegacy) {
+            const workerMetaEvent = metadataEvents.workers.find(e => {
+              if (e.args['data']['workerThreadId'] !== thread.id())
+                return false;
+              // This is to support old traces.
+              if (e.args['data']['sessionId'] === this._sessionId)
+                return true;
+              return !!this._pageFrames.get(TimelineModel.TimelineModel.eventFrameId(e));
+            });
             if (!workerMetaEvent)
               continue;
             const workerId = workerMetaEvent.args['data']['workerId'];
@@ -224,6 +225,8 @@ TimelineModel.TimelineModel = class {
     for (const event of metadataEvents) {
       if (event.name === TimelineModel.TimelineModel.DevToolsMetadataEvent.TracingStartedInPage) {
         pageDevToolsMetadataEvents.push(event);
+        if (event.args['data'] && event.args['data']['persistentIds'])
+          this._persistentIds = true;
         const frames = ((event.args['data'] && event.args['data']['frames']) || []);
         frames.forEach(payload => this._addPageFrame(event, payload));
         const rootFrame = this.rootFrames()[0];
@@ -267,7 +270,7 @@ TimelineModel.TimelineModel = class {
     }
     const result = {
       page: pageDevToolsMetadataEvents.filter(checkSessionId).sort(SDK.TracingModel.Event.compareStartTime),
-      workers: workersDevToolsMetadataEvents.filter(checkSessionId).sort(SDK.TracingModel.Event.compareStartTime)
+      workers: workersDevToolsMetadataEvents.sort(SDK.TracingModel.Event.compareStartTime)
     };
     if (mismatchingIds.size) {
       Common.console.error(
@@ -283,11 +286,12 @@ TimelineModel.TimelineModel = class {
    */
   _makeMockPageMetadataEvent(tracingModel) {
     const rendererMainThreadName = TimelineModel.TimelineModel.RendererMainThreadName;
-    // FIXME: pick up the first renderer process for now.
-    const process = tracingModel.sortedProcesses().filter(function(p) {
-      return p.threadByName(rendererMainThreadName);
-    })[0];
-    const thread = process && process.threadByName(rendererMainThreadName);
+    // TODO(alph): Support selection of process and thread.
+    const processes = tracingModel.sortedProcesses();
+    const process = processes.find(p => !!p.threadByName(rendererMainThreadName)) || processes[0];
+    if (!process)
+      return null;
+    const thread = process.threadByName(rendererMainThreadName) || process.sortedThreads()[0];
     if (!thread)
       return null;
     const pageMetaEvent = new SDK.TracingModel.Event(
@@ -362,7 +366,8 @@ TimelineModel.TimelineModel = class {
     this._firstCompositeLayers = null;
     /** @type {!Set<string>} */
     this._knownInputEvents = new Set();
-    this._currentPage = null;
+    this._persistentIds = false;
+    this._legacyCurrentPage = null;
   }
 
   /**
@@ -695,7 +700,18 @@ TimelineModel.TimelineModel = class {
         break;
 
       case recordTypes.SetLayerTreeId:
-        this._inspectedTargetLayerTreeId = event.args['layerTreeId'] || event.args['data']['layerTreeId'];
+        // This is to support old traces.
+        if (this._sessionId && eventData['sessionId'] && this._sessionId === eventData['sessionId']) {
+          this._mainFrameLayerTreeId = eventData['layerTreeId'];
+          break;
+        }
+
+        // We currently only show layer tree for the main frame.
+        const frameId = TimelineModel.TimelineModel.eventFrameId(event);
+        const pageFrame = this._pageFrames.get(frameId);
+        if (!pageFrame || pageFrame.parent)
+          return false;
+        this._mainFrameLayerTreeId = eventData['layerTreeId'];
         break;
 
       case recordTypes.Paint: {
@@ -712,7 +728,7 @@ TimelineModel.TimelineModel = class {
       case recordTypes.DisplayItemListSnapshot:
       case recordTypes.PictureSnapshot: {
         const layerUpdateEvent = this._findAncestorEvent(recordTypes.UpdateLayer);
-        if (!layerUpdateEvent || layerUpdateEvent.args['layerTreeId'] !== this._inspectedTargetLayerTreeId)
+        if (!layerUpdateEvent || layerUpdateEvent.args['layerTreeId'] !== this._mainFrameLayerTreeId)
           break;
         const paintEvent = this._lastPaintForLayer[layerUpdateEvent.args['layerId']];
         if (paintEvent) {
@@ -760,28 +776,36 @@ TimelineModel.TimelineModel = class {
 
       case recordTypes.MarkDOMContent:
       case recordTypes.MarkLoad: {
-        const page = eventData['page'];
-        if (page && page !== this._currentPage)
+        const frameId = TimelineModel.TimelineModel.eventFrameId(event);
+        if (!this._pageFrames.get(frameId))
           return false;
         break;
       }
 
       case recordTypes.CommitLoad: {
         const frameId = TimelineModel.TimelineModel.eventFrameId(event);
+        const isMainFrame = !!eventData['isMainFrame'];
         const pageFrame = this._pageFrames.get(frameId);
-        if (pageFrame)
+        if (pageFrame) {
           pageFrame.update(eventData.name || '', eventData.url || '');
-        else
-          this._addPageFrame(event, eventData);
-        const page = eventData['page'];
-        if (page && page !== this._currentPage)
-          return false;
-        if (!eventData['isMainFrame'])
-          break;
-        if (eventData.url)
-          this._pageURL = eventData.url;
-        this._hadCommitLoad = true;
-        this._firstCompositeLayers = null;
+        } else {
+          // We should only have one main frame which has persistent id,
+          // unless it's an old trace without 'persistentIds' flag.
+          if (!this._persistentIds) {
+            if (eventData['page'] && eventData['page'] !== this._legacyCurrentPage)
+              return false;
+          } else if (isMainFrame) {
+            return false;
+          } else if (!this._addPageFrame(event, eventData)) {
+            return false;
+          }
+        }
+        if (isMainFrame) {
+          if (eventData.url)
+            this._pageURL = eventData.url;
+          this._hadCommitLoad = true;
+          this._firstCompositeLayers = null;
+        }
         break;
       }
 
@@ -875,14 +899,18 @@ TimelineModel.TimelineModel = class {
   /**
    * @param {!SDK.TracingModel.Event} event
    * @param {!Object} payload
+   * @return {boolean}
    */
   _addPageFrame(event, payload) {
     const processId = event.thread.process().id();
+    const parent = payload['parent'] && this._pageFrames.get(`${processId}.${payload['parent']}`);
+    if (payload['parent'] && !parent)
+      return false;
     const pageFrame = new TimelineModel.TimelineModel.PageFrame(this.targetByEvent(event), processId, payload);
     this._pageFrames.set(pageFrame.id, pageFrame);
-    const parent = payload['parent'] && this._pageFrames.get(`${processId}.${payload['parent']}`);
     if (parent)
       parent.addChild(pageFrame);
+    return true;
   }
 
   _reset() {
@@ -1138,6 +1166,7 @@ TimelineModel.TimelineModel.RecordType = {
   JitCodeAdded: 'JitCodeAdded',
   JitCodeMoved: 'JitCodeMoved',
   ParseScriptOnBackground: 'v8.parseOnBackground',
+  V8Execute: 'V8.Execute',
 
   UpdateCounters: 'UpdateCounters',
 
@@ -1216,7 +1245,8 @@ TimelineModel.TimelineModel.WarningType = {
 };
 
 TimelineModel.TimelineModel.MainThreadName = 'main';
-TimelineModel.TimelineModel.WorkerThreadName = 'DedicatedWorker Thread';
+TimelineModel.TimelineModel.WorkerThreadName = 'DedicatedWorker thread';
+TimelineModel.TimelineModel.WorkerThreadNameLegacy = 'DedicatedWorker Thread';
 TimelineModel.TimelineModel.RendererMainThreadName = 'CrRendererMain';
 
 /**
@@ -1262,7 +1292,8 @@ TimelineModel.TimelineModel.VirtualThread = class {
    * @return {boolean}
    */
   isWorker() {
-    return this.name === TimelineModel.TimelineModel.WorkerThreadName;
+    return this.name === TimelineModel.TimelineModel.WorkerThreadName ||
+        this.name === TimelineModel.TimelineModel.WorkerThreadNameLegacy;
   }
 };
 

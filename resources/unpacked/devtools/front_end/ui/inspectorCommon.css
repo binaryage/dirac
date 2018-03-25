@@ -174,16 +174,20 @@ input {
 .harmony-input[type=number],
 .harmony-input[type=text] {
     padding: 3px 6px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 2px;
     height: 24px;
+    border: none;
+}
+
+.harmony-input:not([type]):not(.error-input):not(:invalid):hover,
+.harmony-input[type=number]:not(.error-input):not(:invalid):hover,
+.harmony-input[type=text]:not(.error-input):not(:invalid):hover {
+    box-shadow: var(--focus-ring-inactive-shadow);
 }
 
 .harmony-input:not([type]):not(.error-input):not(:invalid):focus,
 .harmony-input[type=number]:not(.error-input):not(:invalid):focus,
 .harmony-input[type=text]:not(.error-input):not(:invalid):focus {
-    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.4);
-    border-color: transparent;
+    box-shadow: var(--focus-ring-active-shadow);
 }
 
 .highlighted-search-result.current-search-result {
@@ -198,9 +202,7 @@ input {
 }
 
 .editing {
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2),
-                0 2px 4px rgba(0, 0, 0, 0.2),
-                0 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--drop-shadow);
     background-color: white;
     text-overflow: clip !important;
     padding-left: 2px;
@@ -386,20 +388,20 @@ label[is=dt-icon-label] {
     background-image: url(Images/popoverArrows.png);
 }
 
-.force-white-icons [is=ui-icon].spritesheet-smallicons, [is=ui-icon].force-white-icons.spritesheet-smallicons {
+.force-white-icons [is=ui-icon].spritesheet-smallicons, [is=ui-icon].force-white-icons.spritesheet-smallicons, -theme-preserve {
     -webkit-mask-image: -webkit-image-set(url(Images/smallIcons.png) 1x, url(Images/smallIcons_2x.png) 2x);
     -webkit-mask-position: var(--spritesheet-position);
-    background: white !important;
+    background: #fafafa !important;
 }
 
-.force-white-icons [is=ui-icon].spritesheet-largeicons, [is=ui-icon].force-white-icons.spritesheet-largeicons {
+.force-white-icons [is=ui-icon].spritesheet-largeicons, [is=ui-icon].force-white-icons.spritesheet-largeicons, -theme-preserve {
     -webkit-mask-image: -webkit-image-set(url(Images/largeIcons.png) 1x, url(Images/largeIcons_2x.png) 2x);
     -webkit-mask-position: var(--spritesheet-position);
-    background: white !important;
+    background: #fafafa !important;
 }
 
-.force-white-icons [is=ui-icon].spritesheet-mediumicons, [is=ui-icon].force-white-icons.spritesheet-mediumicons {
+.force-white-icons [is=ui-icon].spritesheet-mediumicons, [is=ui-icon].force-white-icons.spritesheet-mediumicons, -theme-preserve {
     -webkit-mask-image: -webkit-image-set(url(Images/mediumIcons.png) 1x, url(Images/mediumIcons_2x.png) 2x);
     -webkit-mask-position: var(--spritesheet-position);
-    background: white !important;
+    background: #fafafa !important;
 }

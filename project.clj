@@ -2,7 +2,7 @@
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.15")
 (def selected-clojure-version "1.9.0")
-(def selected-clojurescript-version "1.9.946")
+(def selected-clojurescript-version "1.10.217")
 (def selenium-version "3.11.0")
 
 (def provided-deps
@@ -36,6 +36,7 @@
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
    ['org.clojure/tools.reader "1.2.2" :scope "test"]
+   ['fipp "0.6.12" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
@@ -57,7 +58,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.31"
+(defproject binaryage/dirac "1.2.32"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -82,7 +83,6 @@
                  "src/figwheel"
                  "src/implant"
                  "src/lib"
-                 "src/logging"
                  "src/nrepl"
                  "src/options"
                  "src/project"
@@ -90,6 +90,7 @@
                  "src/runtime"
                  "src/settings"
                  "src/shared"
+                 "src/logging"
 
                  "test/src/test_lib"
                  "test/src/webdriver"
@@ -183,11 +184,11 @@
              {:source-paths ^:replace ["src/project"
                                        "src/settings"
                                        "src/backport"
-                                       "src/logging"
                                        "src/lib"
                                        "src/agent"
                                        "src/nrepl"
                                        "src/shared"
+                                       "src/logging"
                                        "test/src/test_lib"
                                        "test/src/webdriver"
                                        "test/browser/src/browser_tests"
@@ -206,6 +207,7 @@
                                              "src/automation"
                                              "src/runtime"
                                              "src/shared"
+                                             "src/logging"
                                              "test/browser/fixtures/src/tasks"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/tasks/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/tasks"
@@ -224,6 +226,7 @@
                                              "src/automation"
                                              "src/runtime"
                                              "src/shared"
+                                             "src/logging"
                                              "test/browser/fixtures/src/scenarios01"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios01/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/scenarios01"
@@ -237,6 +240,7 @@
                                              "src/automation"
                                              "src/runtime"
                                              "src/shared"
+                                             "src/logging"
                                              "test/browser/fixtures/src/scenarios02"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios02/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/scenarios02"
@@ -255,6 +259,7 @@
                                              "src/automation"
                                              "src/runtime"
                                              "src/shared"
+                                             "src/logging"
                                              "test/browser/fixtures/src/scenarios03"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios03/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/scenarios03"
@@ -276,6 +281,7 @@
                             :source-paths   ["src/settings"
                                              "src/devtools"
                                              "src/shared"
+                                             "src/logging"
                                              "test/marion/src/background"]
                             :compiler       {:output-to       "test/marion/resources/unpacked/.compiled/background/background.js"
                                              :output-dir      "test/marion/resources/unpacked/.compiled/background"
@@ -287,6 +293,7 @@
                            {:notify-command ["scripts/cljsbuild-notify.sh" "marion-content-script"]
                             :source-paths   ["src/settings"
                                              "src/shared"
+                                             "src/logging"
                                              "test/marion/src/content_script"]
                             :compiler       {:output-to              "test/marion/resources/unpacked/.compiled/content_script/content_script.js"
                                              :output-dir             "test/marion/resources/unpacked/.compiled/content_script"
@@ -310,8 +317,10 @@
                             :source-paths   ["src/settings"
                                              "src/lib"
                                              "src/shared"
+                                             "src/logging"
                                              "src/project"
                                              "src/devtools"
+                                             "src/options"
                                              "src/implant"]
                             :compiler       {:output-to       "resources/unpacked/devtools/front_end/dirac/.compiled/implant/implant.js"
                                              :output-dir      "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
@@ -325,8 +334,10 @@
                                              "src/lib"
                                              "src/figwheel"
                                              "src/shared"
+                                             "src/logging"
                                              "src/project"
                                              "src/devtools"
+                                             "src/options"
                                              "src/background"]
                             :compiler       {:output-to       "resources/unpacked/.compiled/background/dirac.js"
                                              :output-dir      "resources/unpacked/.compiled/background"
@@ -339,6 +350,7 @@
                                              "src/lib"
                                              "src/figwheel"
                                              "src/shared"
+                                             "src/logging"
                                              "src/project"
                                              "src/devtools"
                                              "src/options"]
@@ -356,6 +368,7 @@
                            {:source-paths ["src/settings"
                                            "src/lib"
                                            "src/shared"
+                                           "src/logging"
                                            "src/project"
                                            "src/implant"]
                             :compiler     {:output-to     "target/resources/release/devtools/front_end/dirac/.compiled/implant/implant.js"
@@ -367,6 +380,7 @@
                            {:source-paths ["src/settings"
                                            "src/lib"
                                            "src/shared"
+                                           "src/logging"
                                            "src/project"
                                            "src/background"]
                             :compiler     {:output-to     "target/resources/release/.compiled/background.js"
@@ -378,6 +392,7 @@
                            {:source-paths ["src/settings"
                                            "src/lib"
                                            "src/shared"
+                                           "src/logging"
                                            "src/project"
                                            "src/options"]
                             :compiler     {:output-to     "target/resources/release/.compiled/options.js"

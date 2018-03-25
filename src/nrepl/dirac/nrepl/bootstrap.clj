@@ -2,8 +2,6 @@
   (:require [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
             [clojure.tools.logging :as log]
             [dirac.lib.weasel-server :as weasel-server]
-            [dirac.nrepl.piggieback :as piggieback]
-            [dirac.nrepl.config :as config]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.state :as state]

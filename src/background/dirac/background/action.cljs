@@ -1,7 +1,7 @@
 (ns dirac.background.action
   (:require [cljs.core.async :refer [<! chan put! go]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
-            [dirac.sugar :refer [tab-exists?]]
+            [dirac.shared.sugar :refer [go-check-tab-exists?]]
             [chromex.ext.browser-action :as browser-action]))
 
 (defonce state-table
@@ -23,10 +23,10 @@
     (string? color) color
     :else (assert false (str "invalid color type:" (type color)))))
 
-(defn update-action-button! [backend-tab-id state & [title]]
+(defn go-update-action-button! [backend-tab-id state & [title]]
   (let [{:keys [text color]} (state state-table)]
     (go
-      (when (<! (tab-exists? backend-tab-id))                                                                                 ; backend tab might not exist anymore at this point
+      (when (<! (go-check-tab-exists? backend-tab-id))                                                                        ; backend tab might not exist anymore at this point
         (browser-action/set-badge-text #js {"text"  (or text "")
                                             "tabId" backend-tab-id})
         (if color
@@ -43,5 +43,5 @@
 (defn enable! [tab-id]
   (browser-action/enable tab-id))
 
-(defn set-active-icons! []
+(defn go-set-active-icons! []
   (browser-action/set-icon #js {:path active-icons}))

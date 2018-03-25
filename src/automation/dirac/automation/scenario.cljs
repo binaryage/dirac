@@ -1,11 +1,11 @@
 (ns dirac.automation.scenario
   (:require [oops.core :refer [oget oset! ocall oapply gget gset!]]
-            [chromex.logging :refer-macros [log info warn error]]
+            [dirac.automation.logging :refer [log info warn error]]
             [cljs.pprint :refer [pprint]]
-            [dirac.utils]
+            [dirac.shared.utils]
             [dirac.automation.messages :as messages]
             [dirac.automation.notifications :as notifications]
-            [dirac.utils :as utils]))
+            [dirac.shared.utils :as utils]))
 
 (defonce triggers (atom {}))                                                                                                  ; trigger-name -> callback
 (defonce original-console-api (atom nil))

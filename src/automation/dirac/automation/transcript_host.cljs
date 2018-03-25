@@ -7,10 +7,10 @@
             [dirac.automation.transcript :as transcript]
             [dirac.automation.transcript-streamer :as streamer]
             [oops.core :refer [oget oset! ocall oapply gcall!]]
-            [chromex.logging :refer-macros [log warn error info]]
+            [dirac.automation.logging :refer [log warn error info]]
             [cuerdas.core :as cuerdas]
             [dirac.automation.helpers :as helpers]
-            [dirac.utils :as utils]
+            [dirac.shared.utils :as utils]
             [clojure.string :as string]))
 
 (defonce current-transcript (atom nil))

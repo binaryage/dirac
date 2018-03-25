@@ -1,6 +1,6 @@
 (ns dirac.implant.console
   (:require [oops.core :refer [oget ocall oapply]]
-            [chromex.logging :refer-macros [log warn error group group-end]]
+            [dirac.implant.logging :refer [log warn error]]
             [dirac.implant.helpers :refer [get-console-view]]))
 
 (defonce ^:dynamic *last-prompt-ns* nil)
@@ -26,7 +26,7 @@
 
 (defn announce-job-start! [job-id info]
   (add-pending-job! job-id)                                                                                                   ; TODO: implement timeouts
-  (group (str "nREPL JOB #" job-id) info)
+  (log (str "nREPL JOB #" job-id) info)
   (if-let [console-view (get-console-view)]
     (ocall console-view "onJobStarted" job-id)))
 
@@ -34,7 +34,7 @@
   ; only announce ending jobs which were started by us
   ; we have also some internal :eval request which don't trigger announce-job-start! but trigger announce-job-end!
   (when (remove-pending-job! job-id)
-    (group-end)
+    (log (str "nREPL JOB #" job-id " ∎"))
     (if-let [console-view (get-console-view)]
       (ocall console-view "onJobEnded" job-id))))
 

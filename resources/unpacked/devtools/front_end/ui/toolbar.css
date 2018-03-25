@@ -119,7 +119,7 @@ select.toolbar-item:disabled + .toolbar-dropdown-arrow {
 }
 
 .toolbar-toggled-gray:not(.toolbar-render-as-links) .toolbar-button:not(.toolbar-has-glyph):not(.toolbar-has-dropdown):not(.largeicon-menu):hover {
-    background-color: #f3f3f3;
+    background-color: var(--toolbar-bg-color);
 }
 
 .toolbar-glyph {
@@ -148,12 +148,12 @@ select.toolbar-item:disabled + .toolbar-dropdown-arrow {
 .toolbar-button.toolbar-state-on .toolbar-glyph,
 .toolbar-blue-on-hover .toolbar-button:not(.toolbar-state-on):enabled:hover:not(:active),
 .-theme-selection-color {
-    background-color: hsl(218, 81%, 59%);
+    background-color: var(--accent-color-b);
 }
 
 .toolbar-button.toolbar-state-on .toolbar-text,
 .-theme-selection-color {
-    color: hsl(218, 81%, 59%);
+    color: var(--accent-color-b);
 }
 
 .toolbar-blue-on-hover .toolbar-button:not(.toolbar-state-on):enabled:hover .toolbar-glyph {
@@ -167,16 +167,16 @@ select.toolbar-item:disabled + .toolbar-dropdown-arrow {
 .toolbar-button.toolbar-state-on:enabled:hover:not(:active) .toolbar-glyph,
 .toolbar-blue-on-hover .toolbar-button:not(.toolbar-state-on):enabled:active:hover,
 .-theme-selection-color {
-    background-color: hsl(218, 96%, 54%);
+    background-color: var(--accent-color-b);
 }
 
 .toolbar-button.toolbar-state-on:enabled:hover:not(:active) .toolbar-text,
 .-theme-selection-color {
-    color: hsl(218, 96%, 54%);
+    color: var(--accent-color-b);
 }
 
 .toolbar-toggled-gray .toolbar-button.toolbar-state-on {
-    background-color: #f3f3f3 !important;
+    background-color: var(--toolbar-bg-color) !important;
 }
 
 .toolbar-button.toolbar-state-on.toolbar-toggle-with-red-color .toolbar-glyph,
@@ -238,14 +238,16 @@ select.toolbar-item[data-keyboard-focus="true"]:focus > * {
     padding: 4px 3px 3px 3px;
     margin: 1px 3px;
     background-color: white;
-    border: solid 1px #d8d8d8;
-    border-radius: 2px;
+    border: 1px solid transparent ;
     min-width: 35px;
 }
 
-.toolbar-input.focused,
 .toolbar-input:hover {
-    border: solid 1px rgb(202, 202, 202);
+    box-shadow: var(--focus-ring-inactive-shadow);
+}
+
+.toolbar-input.focused {
+    box-shadow: var(--focus-ring-active-shadow);
 }
 
 .toolbar-input > input {

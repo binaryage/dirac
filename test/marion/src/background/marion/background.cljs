@@ -1,6 +1,6 @@
 (ns marion.background
   (:require [marion.background.core :as core]
-            [dirac.utils :refer-macros [runonce]]))
+            [dirac.shared.utils :refer [runonce]]))
 
 (runonce
   (core/init!))

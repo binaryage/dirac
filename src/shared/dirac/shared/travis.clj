@@ -1,4 +1,4 @@
-(ns dirac.travis
+(ns dirac.shared.travis
   (:require [cuerdas.core :as cuerdas])
   (:import (java.util.concurrent ThreadLocalRandom)))
 

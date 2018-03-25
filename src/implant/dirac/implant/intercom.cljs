@@ -10,8 +10,8 @@
             [dirac.implant.weasel-client :as weasel-client]
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
             [dirac.implant.version :as implant-version]
-            [dirac.utils :as utils]
-            [chromex.logging :refer-macros [log info warn error]]
+            [dirac.shared.utils :as utils]
+            [dirac.implant.logging :refer [log info warn error]]
             [dirac.implant.eval :as eval]
             [dirac.implant.feedback :as feedback]
             [dirac.lib.ws-client :as ws-client]
@@ -38,9 +38,9 @@
        "Please <a href=\"" dirac-upgrading-help-url "\">upgrade Dirac Runtime</a> in your app."))
 
 (defn ^:dynamic failed-to-retrieve-client-config-msg [where]
-  (str "Failed to retrive Dirac Runtime config (" where "). This is an unexpected error."))
+  (str "Failed to retrieve Dirac Runtime config (" where "). This is an unexpected error."))
 
-(defn ^:dynamice unable-to-bootstrap-due-to-timeout-msg []
+(defn ^:dynamic unable-to-bootstrap-due-to-timeout-msg []
   (str "Unable to bootstrap ClojureScript REPL due to a timeout.\n"
        "Usually this happens when server-side process raised an exception or crashed.\n"
        "Please check error output in Dirac Agent."))
@@ -317,7 +317,7 @@
 
 ; -- :bootstrap -------------------------------------------------------------------------------------------------------------
 
-; When we connect to a freshly open nREPL session, CLJS REPL is not boostrapped yet.
+; When we connect to a freshly open nREPL session, CLJS REPL is not bootstrapped yet.
 ; Normally user enters something like "(cemerick.piggieback/cljs-repl ...)" into his nREPL Clojure session to enter CLJS REPL.
 ; Because we have control over nREPL process thanks to our middleware, we can automate this process.
 ; We send a bootstrap message with request to enter CLJS REPL on user's behalf (google "nREPL piggieback" for more details).

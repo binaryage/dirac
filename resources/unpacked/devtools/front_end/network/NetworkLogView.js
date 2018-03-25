@@ -157,7 +157,29 @@ Network.NetworkLogView = class extends UI.VBox {
 
     this._updateGroupByFrame();
     Common.moduleSetting('network.group-by-frame').addChangeListener(() => this._updateGroupByFrame());
+
+    this._filterBar = filterBar;
+    this._searchHint = new UI.HBox();
+    this._searchHint.element.classList.add('open-search-view');
+    this._filterStringSearchReminder = this._createSearchPrompt();
+    this._updateSearchPrompt();
   }
+
+  _createSearchPrompt() {
+    if (!Runtime.experiments.isEnabled('networkSearch'))
+      return null;
+    const text = this._searchHint.contentElement.createChild('div', 'search-button');
+    text.createChild('span').textContent = ls`Search headers and response bodies for `;
+    const filterString = text.createChild('strong');
+    const button = UI.createTextButton('Find All', () => this._openSearchView());
+    this._searchHint.contentElement.appendChild(button);
+    this._filterBar.element.addEventListener('keydown', event => {
+      if (event.key === 'ArrowDown')
+        button.focus();
+    });
+    return filterString;
+  }
+
 
   _updateGroupByFrame() {
     const value = Common.moduleSetting('network.group-by-frame').get();
@@ -589,6 +611,7 @@ Network.NetworkLogView = class extends UI.VBox {
     this.removeAllNodeHighlights();
     this._parseFilterQuery(this._textFilterUI.value());
     this._filterRequests();
+    this._updateSearchPrompt();
   }
 
   _showRecordingHint() {
@@ -1163,16 +1186,20 @@ Network.NetworkLogView = class extends UI.VBox {
       if (Host.isWin()) {
         footerSection.appendItem(
             Common.UIString('Copy as PowerShell'), this._copyPowerShellCommand.bind(this, request));
+        footerSection.appendItem(Common.UIString('Copy as fetch'), this._copyFetchCall.bind(this, request));
         footerSection.appendItem(
             Common.UIString('Copy as cURL (cmd)'), this._copyCurlCommand.bind(this, request, 'win'));
         footerSection.appendItem(
             Common.UIString('Copy as cURL (bash)'), this._copyCurlCommand.bind(this, request, 'unix'));
         footerSection.appendItem(Common.UIString('Copy all as PowerShell'), this._copyAllPowerShellCommand.bind(this));
+        footerSection.appendItem(Common.UIString('Copy all as fetch'), this._copyAllFetchCall.bind(this));
         footerSection.appendItem(Common.UIString('Copy all as cURL (cmd)'), this._copyAllCurlCommand.bind(this, 'win'));
         footerSection.appendItem(
             Common.UIString('Copy all as cURL (bash)'), this._copyAllCurlCommand.bind(this, 'unix'));
       } else {
+        footerSection.appendItem(Common.UIString('Copy as fetch'), this._copyFetchCall.bind(this, request));
         footerSection.appendItem(Common.UIString('Copy as cURL'), this._copyCurlCommand.bind(this, request, 'unix'));
+        footerSection.appendItem(Common.UIString('Copy all as fetch'), this._copyAllFetchCall.bind(this));
         footerSection.appendItem(Common.UIString('Copy all as cURL'), this._copyAllCurlCommand.bind(this, 'unix'));
       }
     } else {
@@ -1266,6 +1293,21 @@ Network.NetworkLogView = class extends UI.VBox {
       InspectorFrontendHost.copyText(commands.join(' &\r\n'));
     else
       InspectorFrontendHost.copyText(commands.join(' ;\n'));
+  }
+
+  /**
+   * @param {!SDK.NetworkRequest} request
+   * @param {string} platform
+   */
+  async _copyFetchCall(request, platform) {
+    const command = await this._generateFetchCall(request);
+    InspectorFrontendHost.copyText(command);
+  }
+
+  async _copyAllFetchCall() {
+    const requests = BrowserSDK.networkLog.requests();
+    const commands = await Promise.all(requests.map(request => this._generateFetchCall(request)));
+    InspectorFrontendHost.copyText(commands.join(' ;\n'));
   }
 
   /**
@@ -1643,6 +1685,89 @@ Network.NetworkLogView = class extends UI.VBox {
 
   /**
    * @param {!SDK.NetworkRequest} request
+   * @return {!Promise<string>}
+   */
+  async _generateFetchCall(request) {
+    const ignoredHeaders = {
+      // Internal headers
+      'method': 1,
+      'path': 1,
+      'scheme': 1,
+      'version': 1,
+
+      // Unsafe headers
+      // Keep this list synchronized with src/net/http/http_util.cc
+      'accept-charset': 1,
+      'accept-encoding': 1,
+      'access-control-request-headers': 1,
+      'access-control-request-method': 1,
+      'connection': 1,
+      'content-length': 1,
+      'cookie': 1,
+      'cookie2': 1,
+      'date': 1,
+      'dnt': 1,
+      'expect': 1,
+      'host': 1,
+      'keep-alive': 1,
+      'origin': 1,
+      'referer': 1,
+      'te': 1,
+      'trailer': 1,
+      'transfer-encoding': 1,
+      'upgrade': 1,
+      'via': 1,
+      // TODO(phistuck) - remove this once crbug.com/571722 is fixed.
+      'user-agent': 1
+    };
+
+    const credentialHeaders = {'cookie': 1, 'authorization': 1};
+
+    const url = JSON.stringify(request.url());
+
+    const requestHeaders = request.requestHeaders();
+    const headerData = requestHeaders.reduce((result, header) => {
+      const name = header.name;
+
+      if (!ignoredHeaders[name.toLowerCase()] && !name.includes(':'))
+        result.append(name, header.value);
+
+      return result;
+    }, new Headers());
+
+    const headers = {};
+    for (const headerArray of headerData)
+      headers[headerArray[0]] = headers[headerArray[1]];
+
+
+    const credentials =
+        request.requestCookies || requestHeaders.some(({name}) => credentialHeaders[name.toLowerCase()]) ? 'include' :
+                                                                                                           'omit';
+
+    const referrerHeader = requestHeaders.find(({name}) => name.toLowerCase() === 'referer');
+
+    const referrer = referrerHeader ? referrerHeader.value : void 0;
+
+    const referrerPolicy = request.referrerPolicy() || void 0;
+
+    const requestBody = await request.requestFormData();
+
+    const fetchOptions = {
+      credentials,
+      headers,
+      referrer,
+      referrerPolicy,
+      body: requestBody,
+      method: request.requestMethod,
+      mode: 'cors'
+    };
+
+    const options = JSON.stringify(fetchOptions);
+    return `fetch(${url}, ${options});`;
+  }
+
+  /**
+   * @param {!SDK.NetworkRequest} request
    * @param {string} platform
    * @return {!Promise<string>}
    */
@@ -1773,7 +1898,8 @@ Network.NetworkLogView = class extends UI.VBox {
    */
   async _generatePowerShellCommand(request) {
     const command = ['Invoke-WebRequest'];
-    const ignoredHeaders = new Set(['host', 'connection', 'proxy-connection', 'content-length', 'expect', 'range']);
+    const ignoredHeaders =
+        new Set(['host', 'connection', 'proxy-connection', 'content-length', 'expect', 'range', 'content-type']);
 
     /**
      * @param {string} str
@@ -1804,6 +1930,13 @@ Network.NetworkLogView = class extends UI.VBox {
       command.push('-Headers');
       command.push('@{' + headerNameValuePairs.join('; ') + '}');
     }
+
+    const contentTypeHeader = requestHeaders.find(({name}) => name.toLowerCase() === 'content-type');
+    if (contentTypeHeader) {
+      command.push('-ContentType');
+      command.push(escapeString(contentTypeHeader.value));
+    }
+
     const formData = await request.requestFormData();
     if (formData) {
       command.push('-Body');
@@ -1815,6 +1948,25 @@ Network.NetworkLogView = class extends UI.VBox {
     }
 
     return command.join(' ');
+  }
+
+  _updateSearchPrompt() {
+    if (!Runtime.experiments.isEnabled('networkSearch'))
+      return;
+    const filterString = this._filterBar.visible() ? this._textFilterUI.value() : '';
+    if (filterString.length) {
+      const filterBarElement = this._filterBar.element;
+      this._searchHint.show(/** @type {!Element} */ (filterBarElement.parentElement), filterBarElement.nextSibling);
+      this._filterStringSearchReminder.textContent = filterString;
+    } else {
+      this._searchHint.hideWidget();
+    }
+  }
+
+  _openSearchView() {
+    const filterString = this._textFilterUI.value();
+    this._textFilterUI.setValue('');
+    Search.SearchView.openSearch('network.searchInNetwork', filterString, true);
   }
 };
 

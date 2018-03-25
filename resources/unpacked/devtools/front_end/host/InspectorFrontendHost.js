@@ -326,8 +326,9 @@ Host.InspectorFrontendHostStub = class {
    * @override
    * @param {number} requestId
    * @param {string} fileSystemPath
+   * @param {string} excludedFolders
    */
-  indexPath(requestId, fileSystemPath) {
+  indexPath(requestId, fileSystemPath, excludedFolders) {
   }
 
   /**

@@ -1,6 +1,5 @@
 (ns dirac.nrepl.controls
-  (:require [clojure.string :as string]
-            [dirac.nrepl.helpers :as helpers :refer [with-coallesced-output]]
+  (:require [dirac.nrepl.helpers :as helpers :refer [with-coalesced-output]]
             [dirac.nrepl.usage :as usage]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.compilers :as compilers]
@@ -37,7 +36,7 @@
 ; -- (dirac! :help) ---------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :help [_ & [action]]
-  (with-coallesced-output
+  (with-coalesced-output
     (if (nil? action)
       (println (get usage/docs nil))
       (if-let [doc (get usage/docs (keyword action))]
@@ -48,7 +47,7 @@
 ; -- (dirac! :version) ------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :version [_ & _]
-  (with-coallesced-output
+  (with-coalesced-output
     (let [nrepl-info (helpers/get-nrepl-info)]
       (println (messages/make-version-msg nrepl-info))))
   ::no-result)
@@ -81,7 +80,7 @@
     (str "normal session (Clojure)")))
 
 (defmethod dirac! :status [_ & _]
-  (with-coallesced-output
+  (with-coalesced-output
     (let [session (sessions/get-current-session)]
       (println (messages/make-status-msg (prepare-session-description session)))))
   (state/send-response! (utils/prepare-current-env-info-response))
@@ -90,7 +89,7 @@
 ; -- (dirac! :ls) -----------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :ls [_ & _]
-  (with-coallesced-output
+  (with-coalesced-output
     (let [target-session (sessions/get-current-retargeted-session)
           tags (sessions/get-dirac-session-tags target-session)
           current-tag (sessions/get-current-session-tag target-session)
@@ -111,7 +110,7 @@
   (println (messages/make-cljs-quit-msg)))                                                                                    ; triggers Cursive switching to CLJS REPL mode
 
 (defmethod dirac! :join [_ & [input]]
-  (with-coallesced-output
+  (with-coalesced-output
     (let [session (sessions/get-current-session)
           matcher-description (sessions/make-matcher-description-pair input)]
       (cond
@@ -123,7 +122,7 @@
 ; -- (dirac! :match) --------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :match [_ & [input]]
-  (with-coallesced-output
+  (with-coalesced-output
     (let [session (sessions/get-current-session)
           matcher-description (sessions/make-matcher-description-pair input)]
       (cond
@@ -138,7 +137,7 @@
 ; -- (dirac! :disjoin) ------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :disjoin [_ & _]
-  (with-coallesced-output
+  (with-coalesced-output
     (let [session (sessions/get-current-session)]
       (cond
         (sessions/dirac-session? session) (error-println (messages/make-cannot-disjoin-dirac-session-msg))
@@ -157,7 +156,7 @@
     :else ::invalid-input))
 
 (defmethod dirac! :switch [_ & [user-input]]
-  (with-coallesced-output
+  (with-coalesced-output
     (let [selected-compiler (validate-selected-compiler user-input)]
       (if (= ::invalid-input selected-compiler)
         (error-println (messages/make-invalid-compiler-error-msg user-input))
@@ -173,7 +172,7 @@
 ; -- (dirac! :spawn) --------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :spawn [_ & [options]]
-  (with-coallesced-output
+  (with-coalesced-output
     (let [session (sessions/get-current-retargeted-session)]
       (warn-about-retargeting-if-needed session)
       (cond
@@ -184,7 +183,7 @@
 ; -- (dirac! ::kill) --------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :kill [_ & [user-input]]
-  (with-coallesced-output
+  (with-coalesced-output
     (let [selected-compiler (validate-selected-compiler user-input)]
       (if (= ::invalid-input selected-compiler)
         (error-println (messages/make-invalid-compiler-error-msg user-input))
@@ -205,7 +204,7 @@
 ; -- (dirac! :fig) ----------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :fig [_ & [fn-name & args]]
-  ; must not use with-coallesced-output, because builds can take longer time and user would not have feedback
+  ; must not use with-coalesced-output, because builds can take longer time and user would not have feedback
   (let [effective-fn-name (symbol (name (or fn-name :fig-status)))
         result (apply figwheel/call-repl-api! effective-fn-name args)
         api-name (str figwheel/figwheel-api-ns-sym "/" effective-fn-name)]
@@ -219,7 +218,7 @@
 ; -- default handler --------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :default [action & _]
-  (with-coallesced-output
+  (with-coalesced-output
     (if (some? action)
       (error-println (messages/make-default-error-msg action))
       (dirac! :help)))

@@ -5,6 +5,8 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$ROOT"
 
+export CHROME_LOG_FILE="$ROOT/target/chrome_debug.log"
+
 echo "Running browser tests..."
 lein with-profile +test-runner trampoline run -m "$@" 2>&1
 

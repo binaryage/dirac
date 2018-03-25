@@ -1,5 +1,5 @@
 (ns dirac.devtools
-  (:require [dirac.utils :refer [runonce when-not-advanced-mode]]
+  (:require [dirac.shared.utils :refer [runonce when-not-advanced-mode]]
             [devtools.core :as devtools]))
 
 (defn install-devtools-if-needed! []

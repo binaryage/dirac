@@ -17,7 +17,8 @@
     margin-left: -2px;
     word-wrap: break-word;
     position: relative;
-    min-height: 14px;
+    min-height: 15px;
+    line-height: 15px;
 }
 
 .elements-disclosure li.parent {
@@ -35,6 +36,11 @@
 
 .elements-disclosure li.selected .selected-hint:before {
     opacity: 0.6;
+    color: var(--selection-inactive-fg-color);
+}
+
+.elements-disclosure li.selected:focus .selected-hint:before {
+    color: var(--selection-fg-color);
 }
 
 .elements-disclosure li.parent::before {
@@ -63,7 +69,7 @@
 
 .elements-disclosure li.parent::before {
     -webkit-mask-position: 0 0;
-    background-color: rgb(110, 110, 110);
+    background-color: #727272;
 }
 
 .elements-disclosure li .selection {
@@ -85,7 +91,7 @@
 
 .elements-disclosure li.selected .selection {
     display: block;
-    background-color: #dadada;
+    background-color: var(--selection-inactive-bg-color);
 }
 
 .elements-disclosure ol {
@@ -117,11 +123,11 @@
 }
 
 .elements-disclosure ol li.selected:focus {
-    color: white;
+    color: var(--selection-fg-color);
 }
 
 .elements-disclosure ol li.parent.selected:focus::before {
-    background-color: white;
+    background-color: var(--selection-fg-color);
 }
 
 .elements-disclosure ol li.selected:focus * {
@@ -129,7 +135,7 @@
 }
 
 .elements-disclosure ol li.selected:focus .selection {
-    background-color: rgb(56, 121, 217);
+    background-color: var(--selection-bg-color);
 }
 
 .elements-tree-outline ol.shadow-root-depth-4 {
@@ -153,16 +159,14 @@
 }
 
 .elements-tree-editor {
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2),
-                0 2px 4px rgba(0, 0, 0, 0.2),
-                0 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--drop-shadow);
     margin-right: 4px;
 }
 
 .elements-disclosure li.elements-drag-over .selection {
     display: block;
     margin-top: -2px;
-    border-top: 2px solid rgb(56, 121, 217);
+    border-top: 2px solid var(--selection-bg-color);
 }
 
 .elements-disclosure li.in-clipboard .highlight {
@@ -188,9 +192,7 @@ button, input, select {
 }
 
 .editing {
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2),
-                0 2px 4px rgba(0, 0, 0, 0.2),
-                0 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--drop-shadow);
     background-color: white;
     text-overflow: clip !important;
     padding-left: 2px;
@@ -297,19 +299,11 @@ ol:hover > li > .elements-tree-shortcut-link {
     display: none;
 }
 
-ol li.selected:focus .webkit-html-tag {
-    color: #a5a5a5;
-}
-
 ol li.selected:focus .webkit-html-tag-name,
 ol li.selected:focus .webkit-html-close-tag-name,
 ol li.selected:focus .webkit-html-attribute-value,
 ol li.selected:focus .devtools-link {
-    color: white;
-}
-
-ol li.selected:focus .webkit-html-attribute-name {
-    color: #ccc;
+    color: var(--selection-fg-color);
 }
 
 .elements-disclosure .gutter-container {

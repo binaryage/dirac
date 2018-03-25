@@ -1,8 +1,7 @@
 (ns dirac.logging.utils
   (:require [clojure.set :refer [rename-keys]]
             [dirac.lib.utils :as lib-utils])
-  (:import (org.apache.log4j Level Layout)
-           (org.apache.log4j.spi LoggingEvent)))
+  (:import (org.apache.log4j Level)))
 
 (defn remove-keys-with-nil-val [m]
   (into {} (remove (comp nil? second) m)))

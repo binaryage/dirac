@@ -8,7 +8,6 @@ automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
 devtools #1      implant initialized
-devtools #1      reset devtools settings
 devtools #1      setCurrentPanel: elements
 devtools #1      devtools ready
 devtools #1      namespacesCache is cool now
@@ -32,8 +31,8 @@ stdout           displayed 42 items:
                   * marion$content-script$background$process-message! / marion$content-script$background$process-message!
                   * λ
                   * λ
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto--
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto--
                   * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
                   * λ
@@ -72,7 +71,6 @@ automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #2
 devtools #2      implant initialized
-devtools #2      reset devtools settings
 devtools #2      setCurrentPanel: elements
 devtools #2      devtools ready
 devtools #2      namespacesCache is cool now
@@ -96,8 +94,8 @@ stdout           displayed 42 items:
                   * marion$content_script$background$process_message_BANG_
                   * (anonymous)
                   * (anonymous)
-                  * marion$content_script$background$run_message_loop_BANG__$_state_machine__*gen-num*__auto____*gen-num*
-                  * marion$content_script$background$run_message_loop_BANG__$_state_machine__*gen-num*__auto__
+                  * marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto____*gen-num*
+                  * marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto__
                   * cljs$core$async$impl$ioc_helpers$run_state_machine
                   * cljs$core$async$impl$ioc_helpers$run_state_machine_wrapped
                   * (anonymous)
@@ -135,7 +133,6 @@ automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #3
 devtools #3      implant initialized
-devtools #3      reset devtools settings
 devtools #3      setCurrentPanel: elements
 devtools #3      devtools ready
 devtools #3      namespacesCache is cool now
@@ -186,8 +183,8 @@ stdout           displayed 44 items:
                   * marion$content-script$background$process-message!
                   * λ
                   * λ
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto--
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto--
                   * run-state-machine
                   * run-state-machine-wrapped
                   * λ
@@ -205,7 +202,6 @@ automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #4
 devtools #4      implant initialized
-devtools #4      reset devtools settings
 devtools #4      setCurrentPanel: elements
 devtools #4      devtools ready
 devtools #4      namespacesCache is cool now
@@ -264,8 +260,8 @@ stdout           displayed 77 items:
                   * marion$content-script$background$process-message! / marion$content-script$background$process-message!
                   * λ
                   * λ
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
-                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto--
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
+                  * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto--
                   * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
                   * λ

@@ -1,6 +1,5 @@
 (ns dirac.tests.browser.tasks.tests
   (:require [clojure.test :refer :all]
-            [clojure.tools.logging :as log]
             [clj-webdriver.taxi :as taxi]
             [dirac.settings :refer [get-fixtures-server-url]]
             [dirac.tests.browser.tasks.macros :refer [with-transcript-suite]]
@@ -38,5 +37,6 @@
     (execute-transcript-test! "clean-urls")
     (execute-transcript-test! "beautify-function-names"))
   (with-transcript-suite "suite03"
+    (execute-transcript-test! "issue-53")
     (execute-transcript-test! "issue-55")
     (execute-transcript-test! "issue-74")))

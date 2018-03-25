@@ -1,10 +1,10 @@
 (ns dirac.tests.tasks.suite01.options
   (:require [cljs.core.async]
             [cljs.test :refer-macros [is]]
-            [dirac.settings :refer-macros [seconds minutes]]
+            [dirac.settings :refer [seconds minutes]]
             [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options testing] :as a]
             [clojure.string :as string]
-            [dirac.utils :as utils]))
+            [dirac.shared.utils :as utils]))
 
 (defn get-definitions [info-line]
   (if-let [m (re-find #"Backend API/[^/]+/(\d+)" info-line)]

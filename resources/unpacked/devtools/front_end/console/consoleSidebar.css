@@ -6,6 +6,7 @@
 
 :host {
     overflow: auto;
+    background-color: var(--toolbar-bg-color);
 }
 
 .tree-outline-disclosure {
@@ -45,4 +46,9 @@ li .largeicon-navigator-folder {
     flex-grow: 1;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.tree-outline li:hover:not(.selected) .selection {
+    display: block;
+    background-color: rgba(56, 121, 217, 0.1);
 }

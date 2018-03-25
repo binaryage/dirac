@@ -1,7 +1,7 @@
 (ns dirac.test-lib.taxi
   (:require [dirac.settings :refer [get-taxi-page-load-timeout get-taxi-script-timeout get-taxi-implicit-wait]]
             [dirac.test-lib.chrome-driver :refer [get-current-chrome-driver]]
-            [dirac.travis :refer [with-travis-fold]]
+            [dirac.shared.travis :refer [with-travis-fold]]
             [clojure.tools.logging :as log])
   (:import (java.util.concurrent TimeUnit)))
 

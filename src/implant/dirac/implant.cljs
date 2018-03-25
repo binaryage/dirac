@@ -1,9 +1,9 @@
 (ns dirac.implant
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [oops.core :refer [oget oset! oset!+ ocall oapply gget gcall!]]
-            [chromex.logging :refer-macros [log warn error info]]
-            [dirac.utils :refer [runonce]]
-            [dirac.console :refer [log-to-console!]]
+            [dirac.implant.logging :refer [log warn error info]]
+            [dirac.shared.utils :refer [runonce]]
+            [dirac.shared.console :refer [log-to-console!]]
             [dirac.implant.editor :as editor]
             [dirac.implant.intercom :as intercom]
             [dirac.implant.automation :as automation]
@@ -100,7 +100,7 @@
 (defn trigger-internal-error-as-error-log! []
   ; timeout is needed for testing from console
   ; see http://stackoverflow.com/a/27257742/84283
-  (gcall! "setTimeout" #(error "a fake error log" 1 2 3) 0))
+  (gcall! "setTimeout" #(js/console.error "a fake error log" 1 2 3) 0))
 
 (defn namespaces-cache-changed! []
   (when-not *namespace-cache-cool*
@@ -167,6 +167,6 @@
     (feedback/post! "implant initialized")
     (info (str "Dirac implant " (get-version) " initialized"))))
 
-; -- intialization ----------------------------------------------------------------------------------------------------------
+; -- initialization ---------------------------------------------------------------------------------------------------------
 
 (runonce (init-implant!))

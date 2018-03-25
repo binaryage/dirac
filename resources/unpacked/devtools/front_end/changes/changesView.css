@@ -16,7 +16,7 @@
 }
 
 :focus.selected {
-    background-color: rgb(56, 121, 217);
+    background-color: var(--selection-bg-color);
     color: #FFF;
 }
 
@@ -60,6 +60,6 @@
 }
 
 .changes-toolbar {
-    background-color: #f3f3f3;
-    border-top: 1px solid #dadada;
+    background-color: var(--toolbar-bg-color);
+    border-top: var(--divider-border);
 }

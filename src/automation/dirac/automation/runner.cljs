@@ -2,11 +2,11 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [devtools.core :as devtools]
             [oops.core :refer [oget oset! ocall oapply gcall! gset!]]
-            [chromex.logging :refer-macros [log warn error info]]
+            [dirac.automation.logging :refer [log warn error info]]
             [goog.style :as gstyle]
-            [dirac.utils :refer-macros [runonce]]
+            [dirac.shared.utils :refer [runonce]]
             [dirac.automation.helpers :as helpers]
-            [dirac.cookies :as cookies]
+            [dirac.shared.cookies :as cookies]
             [dirac.automation.status-host :as status-host]
             [dirac.automation.messages :as messages]))
 

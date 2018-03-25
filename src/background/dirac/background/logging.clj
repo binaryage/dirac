@@ -1,27 +1,27 @@
-(ns dirac.background.logging)
+(ns dirac.background.logging
+  (:require [dirac.logging.toolkit :refer [gen-console-log]]))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; logging - these need to be macros to preserve source location for devtools
 
-(defonce enabled? true)
+(def enabled? true)
+(def color "green")
 
-(defn prefix []
-  ["%cdirac%cbackground"
-   "background-color:green;color:white;font-weight:bold;padding:0px 3px;border-radius:2px 0px 0px 2px;"
-   "background-color:blue;color:white;font-weight:bold;padding:0px 3px;border-radius:0px 2px 2px 0px;"])
+(defn gen-log [method env args]
+  (if enabled?
+    (gen-console-log method args {:env      env
+                                  :bg-color color})))
+
+; -- public api -------------------------------------------------------------------------------------------------------------
 
 (defmacro log [& args]
-  (if enabled?
-    `(do (.log js/console ~@(prefix) ~@args) nil)))
+  (gen-log "log" &env args))
 
 (defmacro info [& args]
-  (if enabled?
-    `(do (.info js/console ~@(prefix) ~@args) nil)))
+  (gen-log "info" &env args))
 
 (defmacro error [& args]
-  (if enabled?
-    `(do (.error js/console ~@(prefix) ~@args) nil)))
+  (gen-log "error" &env args))
 
 (defmacro warn [& args]
-  (if enabled?
-    `(do (.warn js/console ~@(prefix) ~@args) nil)))
+  (gen-log "warn" &env args))

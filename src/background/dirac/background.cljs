@@ -1,6 +1,6 @@
 (ns dirac.background
   (:require [dirac.background.core :as core]
-            [dirac.utils :refer-macros [runonce]]))
+            [dirac.shared.utils :refer [runonce]]))
 
 (runonce
   (core/init!))

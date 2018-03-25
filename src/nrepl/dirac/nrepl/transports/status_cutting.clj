@@ -1,8 +1,6 @@
 (ns dirac.nrepl.transports.status-cutting
   (:require [clojure.tools.nrepl.transport :as nrepl-transport]
             [clojure.tools.logging :as log]
-            [dirac.nrepl.jobs :as jobs]
-            [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.debug :as debug]
             [dirac.lib.utils :as utils])

@@ -1,6 +1,6 @@
-(ns dirac.mime
+(ns dirac.shared.mime
   (:require [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
+            [dirac.shared.logging :refer [log info warn error]]
             [clojure.string :as string]))
 
 ; poor man's multipart MIME parser
@@ -46,7 +46,7 @@
   (let [splits (.split source "\n\n")
         headers (first splits)
         body-parts (.slice splits 1)
-        body (.join body-parts "\n\n")]
+        body (ocall body-parts "join" "\n\n")]
     [headers body]))
 
 (defn strip-leading-new-line [s]

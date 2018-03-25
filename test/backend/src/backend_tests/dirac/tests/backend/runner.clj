@@ -3,7 +3,7 @@
             [clojure.tools.logging :as log]
             [environ.core :refer [env]]
             [dirac.tests.backend.agent.tests]
-            [dirac.travis :as travis]
+            [dirac.shared.travis :as travis]
             [dirac.logging :as logging]
             [cuerdas.core :as cuerdas]
             [clansi :refer [style]])

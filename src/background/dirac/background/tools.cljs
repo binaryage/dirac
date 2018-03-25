@@ -1,25 +1,27 @@
 (ns dirac.background.tools
-  (:require [cljs.core.async :refer [<! chan timeout close! put! go go-loop]]
+  (:require [dirac.background.logging :refer [log info warn error]]
+            [cljs.core.async :refer [<! chan timeout close! put! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.windows :as windows]
-            [chromex.error :as chromex-error]
             [chromex.ext.tabs :as tabs]
-            [dirac.settings :refer-macros [get-dirac-devtools-window-top get-dirac-devtools-window-left
-                                           get-dirac-devtools-window-width get-dirac-devtools-window-height
-                                           get-frontend-handshake-timeout get-frontend-loading-timeout
-                                           get-intercom-init-timeout]]
-            [dirac.i18n :as i18n]
-            [dirac.sugar :as sugar]
-            [dirac.background.helpers :as helpers :refer [report-error-in-tab! report-warning-in-tab!
-                                                          show-connecting-debugger-backend-status!]]
+            [dirac.settings :refer [get-dirac-devtools-window-top
+                                    get-dirac-devtools-window-left
+                                    get-dirac-devtools-window-width
+                                    get-dirac-devtools-window-height
+                                    get-frontend-handshake-timeout
+                                    get-frontend-loading-timeout
+                                    get-intercom-init-timeout]]
+            [dirac.shared.i18n :as i18n]
+            [dirac.shared.sugar :as sugar]
+            [dirac.background.helpers :as helpers :refer [go-report-error-in-tab!
+                                                          go-report-warning-in-tab!
+                                                          go-show-connecting-debugger-backend-status!]]
             [dirac.background.devtools :as devtools]
             [dirac.background.debugging :refer [resolve-backend-info resolution-failure? get-resolution-failure-reason]]
             [dirac.background.state :as state]
             [dirac.background.helpers :as helpers]
             [dirac.options.model :as options]
-            [dirac.utils :as utils]
-            [dirac.background.action :as action]))
+            [dirac.shared.utils :as utils]))
 
 ; WARNING: keep this in sync with dirac.js/knownFeatureFlags
 (def flag-keys [:enable-repl
@@ -45,7 +47,7 @@
         flags (map #(get options %) flag-keys)]
     (apply str (map #(if % "1" "0") flags))))
 
-(defn create-dirac-window! [panel?]
+(defn go-create-dirac-window! [panel?]
   (let [window-params #js {:url  (helpers/make-blank-page-url)                                                                ; a blank page url is actually important here, url-less popups don't get assigned a tab-id
                            :type (if panel? "popup" "normal")}]
     ; during development we may want to override standard "cascading" of new windows and position the window explicitely
@@ -58,22 +60,22 @@
               first-tab (aget tabs 0)]
           (sugar/get-tab-id first-tab))))))
 
-(defn create-bundled-devtools-window! [url]
+(defn go-create-bundled-devtools-window! [url]
   (let [window-params #js {:url   url
                            :type  "normal"
                            :state "minimized"}]
-    (sugar/create-window-and-wait-for-first-tab-completed! window-params)))
+    (sugar/go-create-window-and-wait-for-first-tab-completed! window-params)))
 
-(defn create-bundled-devtools-inspector-window! []
-  (create-bundled-devtools-window! "chrome-devtools://devtools/bundled/inspector.js"))
+(defn go-create-bundled-devtools-inspector-window! []
+  (go-create-bundled-devtools-window! "chrome-devtools://devtools/bundled/inspector.js"))
 
-(defn create-bundled-devtools-shell-window! []
-  (create-bundled-devtools-window! "chrome-devtools://devtools/bundled/shell.js"))
+(defn go-create-bundled-devtools-shell-window! []
+  (go-create-bundled-devtools-window! "chrome-devtools://devtools/bundled/shell.js"))
 
-(defn remove-window! [window-id]
+(defn go-remove-window! [window-id]
   (windows/remove window-id))
 
-(defn create-dirac-tab! []
+(defn go-create-dirac-tab! []
   (go
     (if-let [[tab] (<! (tabs/create #js {:url (helpers/make-blank-page-url)}))]
       (sugar/get-tab-id tab))))
@@ -85,11 +87,11 @@
       "tab" :tab
       :panel)))
 
-(defn open-dirac-frontend! [open-as]
+(defn go-open-dirac-frontend! [open-as]
   (case open-as
-    :tab (create-dirac-tab!)
-    :panel (create-dirac-window! true)
-    :window (create-dirac-window! false)))
+    :tab (go-create-dirac-tab!)
+    :panel (go-create-dirac-window! true)
+    :window (go-create-dirac-window! false)))
 
 (defn intercom-handler [message]
   (case (oget message "type")
@@ -127,125 +129,125 @@
       (provide-backend-css-if-available)
       (provide-user-url-params)))
 
-(defn wait-for-handshake-completion! [frontend-tab-id timeout-ms]
-  (helpers/wait-for-document-title! frontend-tab-id "#" timeout-ms))
+(defn go-wait-for-handshake-completion! [frontend-tab-id timeout-ms]
+  (helpers/go-wait-for-document-title! frontend-tab-id "#" timeout-ms))
 
-(defn wait-for-loading-completion! [frontend-tab-id timeout-ms]
-  (helpers/wait-for-document-title! frontend-tab-id "#" timeout-ms))
+(defn go-wait-for-loading-completion! [frontend-tab-id timeout-ms]
+  (helpers/go-wait-for-document-title! frontend-tab-id "#" timeout-ms))
 
-(defn connect-and-navigate-dirac-devtools! [frontend-tab-id backend-tab-id options]
+(defn go-connect-and-navigate-dirac-devtools! [frontend-tab-id backend-tab-id options]
   (let [devtools-id (devtools/register! frontend-tab-id backend-tab-id)
         full-options (prepare-options options)
         dirac-handshake-url (helpers/make-dirac-handshake-url full-options)
         dirac-frontend-url (helpers/make-dirac-frontend-url devtools-id full-options)]
     (go
       (<! (tabs/update frontend-tab-id #js {:url dirac-handshake-url}))
-      (let [handshake-result (<! (wait-for-handshake-completion! frontend-tab-id (get-frontend-handshake-timeout)))]
+      (let [handshake-result (<! (go-wait-for-handshake-completion! frontend-tab-id (get-frontend-handshake-timeout)))]
         (if-not (true? handshake-result)
           (let [error-msg (i18n/unable-to-complete-frontend-handshake frontend-tab-id handshake-result)]
-            (<! (report-error-in-tab! backend-tab-id error-msg)))))
+            (<! (go-report-error-in-tab! backend-tab-id error-msg)))))
       (<! (tabs/update frontend-tab-id #js {:url dirac-frontend-url}))
-      (let [loading-result (<! (wait-for-loading-completion! frontend-tab-id (get-frontend-loading-timeout)))]
+      (let [loading-result (<! (go-wait-for-loading-completion! frontend-tab-id (get-frontend-loading-timeout)))]
         (if-not (true? loading-result)
           (let [error-msg (i18n/unable-to-complete-frontend-loading frontend-tab-id loading-result)]
-            (<! (report-error-in-tab! backend-tab-id error-msg)))))
-      (let [intercom-result (<! (helpers/try-install-intercom! devtools-id intercom-handler (get-intercom-init-timeout)))]
+            (<! (go-report-error-in-tab! backend-tab-id error-msg)))))
+      (let [intercom-result (<! (helpers/go-try-install-intercom! devtools-id intercom-handler (get-intercom-init-timeout)))]
         (if-not (true? intercom-result)
           (let [error-msg (i18n/unable-to-complete-intercom-initialization frontend-tab-id intercom-result)]
-            (<! (report-error-in-tab! backend-tab-id error-msg)))))
+            (<! (go-report-error-in-tab! backend-tab-id error-msg)))))
       devtools-id)))
 
-(defn create-dirac-devtools! [backend-tab-id options]
+(defn go-create-dirac-devtools! [backend-tab-id options]
   (go
-    (if-let [frontend-tab-id (<! (open-dirac-frontend! (:open-as options)))]
-      (<! (connect-and-navigate-dirac-devtools! frontend-tab-id backend-tab-id options))
-      (<! (report-error-in-tab! backend-tab-id (i18n/unable-to-create-dirac-tab))))))
+    (if-let [frontend-tab-id (<! (go-open-dirac-frontend! (:open-as options)))]
+      (<! (go-connect-and-navigate-dirac-devtools! frontend-tab-id backend-tab-id options))
+      (<! (go-report-error-in-tab! backend-tab-id (i18n/unable-to-create-dirac-tab))))))
 
-(defn open-dirac-devtools! [tab options]
+(defn go-open-dirac-devtools! [tab options]
   (go
     (let [backend-tab-id (sugar/get-tab-id tab)
           tab-url (oget tab "url")
           debugger-url (options/get-option :target-url)]
       (assert backend-tab-id)
       (cond
-        (not tab-url) (<! (report-error-in-tab! backend-tab-id (i18n/tab-cannot-be-debugged tab)))
-        (not debugger-url) (<! (report-error-in-tab! backend-tab-id (i18n/debugger-url-not-specified)))
+        (not tab-url) (<! (go-report-error-in-tab! backend-tab-id (i18n/tab-cannot-be-debugged tab)))
+        (not debugger-url) (<! (go-report-error-in-tab! backend-tab-id (i18n/debugger-url-not-specified)))
         :else (do
-                (show-connecting-debugger-backend-status! backend-tab-id)
+                (go-show-connecting-debugger-backend-status! backend-tab-id)
                 (let [backend-info (<! (resolve-backend-info debugger-url tab-url))]
                   (if (resolution-failure? backend-info)
                     (let [reason (get-resolution-failure-reason backend-info)]
-                      (<! (report-error-in-tab! backend-tab-id
-                                                (i18n/unable-to-resolve-backend-url debugger-url tab-url reason))))
+                      (<! (go-report-error-in-tab! backend-tab-id
+                                                   (i18n/unable-to-resolve-backend-url debugger-url tab-url reason))))
                     (if (keyword-identical? backend-info :not-attachable)
-                      (<! (report-warning-in-tab! backend-tab-id (i18n/cannot-attach-dirac debugger-url tab-url)))
-                      (<! (create-dirac-devtools! backend-tab-id (assoc options
-                                                                   :backend-url (:url backend-info)
-                                                                   :node? (= (:type backend-info) :node))))))))))))
+                      (<! (go-report-warning-in-tab! backend-tab-id (i18n/cannot-attach-dirac debugger-url tab-url)))
+                      (<! (go-create-dirac-devtools! backend-tab-id (assoc options
+                                                                      :backend-url (:url backend-info)
+                                                                      :node? (= (:type backend-info) :node))))))))))))
 
-(defn activate-dirac-devtools! [tab-id]
+(defn go-activate-dirac-devtools! [tab-id]
   (go
     (if-let [{:keys [id frontend-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)]
       (do
-        (if-let [dirac-window-id (<! (sugar/fetch-tab-window-id frontend-tab-id))]
+        (if-let [dirac-window-id (<! (sugar/go-fetch-tab-window-id frontend-tab-id))]
           (windows/update dirac-window-id focus-window-params)
           (tabs/update frontend-tab-id activate-tab-params))
         id)
       (warn "activate-dirac-devtools! unable to lookup devtools descriptor for backend tab" tab-id))))
 
-(defn activate-or-open-dirac-devtools! [tab & [options-overrides]]
+(defn go-activate-or-open-dirac-devtools! [tab & [options-overrides]]
   (let [tab-id (oget tab "id")]
     (if (devtools/backend-connected? tab-id)
-      (activate-dirac-devtools! tab-id)
+      (go-activate-dirac-devtools! tab-id)
       (let [options {:open-as (get-dirac-open-as-setting)
                      :flags   (get-dirac-flags)}]
-        (open-dirac-devtools! tab (merge options options-overrides))))))                                                      ; options come from dirac extension settings, but we can override them
+        (go-open-dirac-devtools! tab (merge options options-overrides))))))                                                   ; options come from dirac extension settings, but we can override them
 
-(defn open-dirac-devtools-in-active-tab! [& [options-overrides]]
+(defn go-open-dirac-devtools-in-active-tab! [& [options-overrides]]
   (go
     (let [[tabs] (<! (tabs/query last-active-tab-query))]
       (if-let [tab (first tabs)]
-        (<! (activate-or-open-dirac-devtools! tab options-overrides))
+        (<! (go-activate-or-open-dirac-devtools! tab options-overrides))
         (warn "no active tab?")))))
 
-(defn close-tab-with-id! [tab-id-or-ids]
+(defn go-close-tab-with-id! [tab-id-or-ids]
   (let [ids (if (coll? tab-id-or-ids)
               (into-array tab-id-or-ids)
               (utils/parse-int tab-id-or-ids))]
     (tabs/remove ids)))
 
-(defn close-dirac-devtools! [devtools-id]
+(defn go-close-dirac-devtools! [devtools-id]
   (go
     (if-let [descriptor (state/get-devtools-descriptor devtools-id)]
       (do
-        (<! (close-tab-with-id! (:frontend-tab-id descriptor)))
+        (<! (go-close-tab-with-id! (:frontend-tab-id descriptor)))
         true)
       (warn "requested closing unknown devtools" devtools-id))))
 
-(defn focus-console-prompt-for-backend-tab! [backend-tab-id]
+(defn go-focus-console-prompt-for-backend-tab! [backend-tab-id]
   {:pre [backend-tab-id]}
   (go
-    (<! (activate-dirac-devtools! backend-tab-id))
+    (<! (go-activate-dirac-devtools! backend-tab-id))
     (if-let [{:keys [id]} (devtools/find-devtools-descriptor-for-backend-tab backend-tab-id)]
-      (helpers/automate-devtools! id {:action :focus-best-console-prompt})
+      (helpers/go-automate-devtools! id {:action :focus-best-console-prompt})
       (warn "id gone?" backend-tab-id))))
 
-(defn focus-console-prompt-in-first-devtools! []
+(defn go-focus-console-prompt-in-first-devtools! []
   (log "focus-console-prompt-in-first-devtools!")
   (go
     (let [first-devtools-descriptor (second (first (state/get-devtools-descriptors)))]
       (if-let [backend-tab-id (:backend-tab-id first-devtools-descriptor)]
-        (<! (focus-console-prompt-for-backend-tab! backend-tab-id))
+        (<! (go-focus-console-prompt-for-backend-tab! backend-tab-id))
         (warn "cannot focus console prompt, no Dirac devtools available")))))
 
-(defn focus-best-console-prompt! []
+(defn go-focus-best-console-prompt! []
   (go
     (let [[tabs] (<! (tabs/query last-active-tab-query))]
       (if-let [tab (first tabs)]
         (let [active-tab-id (oget tab "id")]
           (if-let [active-devtools-descriptor (devtools/find-devtools-descriptor-for-frontend-tab active-tab-id)]
-            (<! (focus-console-prompt-for-backend-tab! (:backend-tab-id active-devtools-descriptor)))                         ; in case devtools is already active => focus its console
+            (<! (go-focus-console-prompt-for-backend-tab! (:backend-tab-id active-devtools-descriptor)))                      ; in case devtools is already active => focus its console
             (if (devtools/backend-connected? active-tab-id)
-              (<! (focus-console-prompt-for-backend-tab! active-tab-id))                                                      ; the case for active backend tab
-              (<! (focus-console-prompt-in-first-devtools!)))))                                                               ; otherwise fallback to first devtools activation
-        (<! (focus-console-prompt-in-first-devtools!))))))                                                                    ; this is the pathological case where there is no last active tab information
+              (<! (go-focus-console-prompt-for-backend-tab! active-tab-id))                                                   ; the case for active backend tab
+              (<! (go-focus-console-prompt-in-first-devtools!)))))                                                            ; otherwise fallback to first devtools activation
+        (<! (go-focus-console-prompt-in-first-devtools!))))))                                                                 ; this is the pathological case where there is no last active tab information

@@ -10,7 +10,7 @@
 ; We work around those by encoding broken values as strings with unicode marker (U+1F4A9) "pile of poo" prepended.
 ; On the nREPL client side, we detect poo markers and decode strings back to clojure values.
 
-; Anyone observing dirac-related nREPL messages should immediatelly spot that something smelly is going on...
+; Anyone observing dirac-related nREPL messages should immediately spot that something smelly is going on...
 
 ; Warning! don't get your hands dirty when working with this code!
 

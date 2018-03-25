@@ -58,6 +58,7 @@ UI.TabbedPane = class extends UI.VBox {
 
     this._dropDownButton = this._createDropDownButton();
     UI.zoomManager.addEventListener(UI.ZoomManager.Events.ZoomChanged, this._zoomChanged, this);
+    this.makeTabSlider();
   }
 
   /**
@@ -133,11 +134,9 @@ UI.TabbedPane = class extends UI.VBox {
     this._shrinkableTabs = shrinkableTabs;
   }
 
-  /**
-   * @param {boolean} verticalTabLayout
-   */
-  setVerticalTabLayout(verticalTabLayout) {
-    this._verticalTabLayout = verticalTabLayout;
+  makeVerticalTabLayout() {
+    this._verticalTabLayout = true;
+    this._setTabSlider(false);
     this.contentElement.classList.add('vertical-tab-layout');
     this.invalidateConstraints();
   }
@@ -468,13 +467,18 @@ UI.TabbedPane = class extends UI.VBox {
       this.selectTab(effectiveTab.id);
   }
 
+  makeTabSlider() {
+    if (this._verticalTabLayout)
+      return;
+    this._setTabSlider(true);
+  }
+
   /**
    * @param {boolean} enable
    */
-  setTabSlider(enable) {
+  _setTabSlider(enable) {
     this._sliderEnabled = enable;
     this._tabSlider.classList.toggle('enabled', enable);
-    this._headerElement.classList.add('tabbed-pane-no-tab-borders');
   }
 
   /**
@@ -780,8 +784,12 @@ UI.TabbedPane = class extends UI.VBox {
   }
 
   _updateTabSlider() {
-    if (!this._currentTab || !this._sliderEnabled)
+    if (!this._sliderEnabled)
       return;
+    if (!this._currentTab) {
+      this._tabSlider.style.width = 0;
+      return;
+    }
     let left = 0;
     for (let i = 0; i < this._tabs.length && this._currentTab !== this._tabs[i]; i++) {
       if (this._tabs[i]._shown)
@@ -848,10 +856,6 @@ UI.TabbedPane = class extends UI.VBox {
       this._headerElement.appendChild(this._rightToolbar.element);
     }
     return this._rightToolbar;
-  }
-
-  renderWithNoHeaderBackground() {
-    this._headerElement.classList.add('tabbed-pane-no-header-background');
   }
 
   /**
@@ -1092,8 +1096,10 @@ UI.TabbedPaneTab = class {
     if (!measuring)
       this._titleElement = titleElement;
 
-    if (this._closeable)
+    if (this._closeable) {
       tabElement.createChild('div', 'tabbed-pane-close-button', 'dt-close-button').gray = true;
+      tabElement.classList.add('closeable');
+    }
 
     if (measuring) {
       tabElement.classList.add('measuring');

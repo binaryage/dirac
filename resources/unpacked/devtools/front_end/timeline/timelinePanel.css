@@ -28,12 +28,14 @@
  */
 
 .panel.timeline > .toolbar {
-    border-bottom: 1px solid #dadada;
+    background-color: var(--toolbar-bg-color);
+    border-bottom: var(--divider-border);
 }
 
 .timeline-settings-pane {
     flex: none;
-    border-bottom: 1px solid #dadada;
+    background-color: var(--toolbar-bg-color);
+    border-bottom: var(--divider-border);
 }
 
 #timeline-overview-panel {
@@ -327,7 +329,7 @@
     flex: auto;
     overflow: auto;
     position: relative;
-    background-color: #f3f3f3;
+    background-color: var(--toolbar-bg-color);
     -webkit-user-select: text;
 }
 
@@ -439,7 +441,7 @@
 
 .timeline-flamechart-resizer {
     flex: 8px 0 0;
-    background-color: #f3f3f3;
+    background-color: var(--toolbar-bg-color);
     border: 1px #a3a3a3;
     border-style: solid none;
     display: flex;
@@ -500,7 +502,8 @@
 }
 
 .timeline-tree-view .toolbar {
-    border-bottom: 1px solid #dadada;
+    background-color: var(--toolbar-bg-color);
+    border-bottom: var(--divider-border);
 }
 
 .timeline-tree-view .data-grid {
@@ -635,7 +638,7 @@
     padding: 6px 10px;
     color: #5a5a5a;
     white-space: nowrap;
-    border-bottom: 1px solid #dadada;
+    border-bottom: var(--divider-border);
 }
 
 .timeline-landing-page {
@@ -663,6 +666,10 @@
     padding: 16px 20px;
     margin-top: 40px;
     box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+.-theme-with-dark-background .timeline-landing-warning {
+    background: black;
 }
 
 .timeline-landing-warning-close {

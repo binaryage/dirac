@@ -1,5 +1,5 @@
 (ns dirac.automation
-  "High-level automamation API to be used from browser tests.
+  "High-level automation API to be used from browser tests.
 
   All functions here should be called within `go-task` body.
   To open a new devtools instance use `open-devtools!` or a convenience macro `with-devtools`.
@@ -10,7 +10,7 @@
   "
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log error]]
+            [dirac.automation.logging :refer [log error]]
             [dirac.automation.machinery :as machinery]
             [dirac.automation.helpers :as helpers]
             [dirac.automation.messages :as messages]
@@ -18,8 +18,9 @@
             [dirac.automation.notifications :as notifications]
             [dirac.automation.options :as options]
             [dirac.automation.verbs :as verbs]
-            [dirac.automation.task :as task]
-            [dirac.utils :as utils]))
+            [dirac.automation.task]                                                                                           ; required for macros!
+            [dirac.shared.utils :as utils]
+            [clojure.string :as string]))
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
 
@@ -39,8 +40,14 @@
   (options/restore-options!))
 
 (defn open-scenario! [name & [params]]
-  (messages/post-message! #js {:type "marion-open-scenario"
-                               :url  (helpers/get-scenario-url name params)}))
+  (go
+    (let [scenario-id-or-error (<! (messages/post-message! #js {:type "marion-open-scenario"
+                                                                :url  (helpers/get-scenario-url name params)}))]
+      (if (string/starts-with? scenario-id-or-error "error")
+        (let [error-msg (str "Unable to open scenario '" name "' due to " scenario-id-or-error)]
+          (error error-msg)
+          (throw error-msg {}))
+        scenario-id-or-error))))
 
 (defn close-scenario! [scenario-id]
   (messages/post-message! #js {:type        "marion-close-scenario"
@@ -98,6 +105,9 @@
     (<! (verbs/automate-devtools! devtools-id {:action :switch-inspector-panel
                                                :panel  panel}))
     (<! (verbs/wait-for-panel-switch devtools-id (name panel)))))
+
+(defn ^:devtools wait-for-panel-switch [devtools-id panel]
+  (verbs/wait-for-panel-switch devtools-id (name panel)))
 
 (defn ^:devtools switch-prompt-to-dirac! [devtools-id]
   (verbs/automate-devtools! devtools-id {:action :switch-to-dirac-prompt}))

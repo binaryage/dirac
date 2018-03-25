@@ -1,8 +1,7 @@
 (ns dirac.logging
   (:require [dirac.logging.utils :refer [merge-options convert-config-to-logging-options]]
             [dirac.logging.format :refer [standard-layout]]
-            [clj-logging-config.log4j :as config]
-            [clojure.pprint :as clojure-pprint])
+            [clj-logging-config.log4j :as config])
   (:import (org.apache.log4j Level)))
 
 (def initialized? (volatile! false))

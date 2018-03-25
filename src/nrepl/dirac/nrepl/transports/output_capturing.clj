@@ -1,6 +1,5 @@
 (ns dirac.nrepl.transports.output-capturing
   (:require [clojure.tools.nrepl.transport :as nrepl-transport]
-            [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.protocol :as protocol])
   (:import (clojure.tools.nrepl.transport Transport)))
 

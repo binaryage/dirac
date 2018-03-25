@@ -1,14 +1,13 @@
 (ns dirac.implant.automation.scrapers
   (:require-macros [dirac.implant.automation.scrapers :refer [safe->>]])
   (:require [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.logging :refer-macros [log warn error info]]
+            [dirac.implant.logging :refer [log warn error info]]
             [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [cljs.pprint :refer [pprint]]
-            [com.rpl.specter :refer [ALL select-first]]
             [dirac.implant.automation.reps :refer [select-subrep select-subreps build-rep]]
             [clojure.walk :refer [prewalk postwalk]]
-            [dirac.dom :as dom]
-            [dirac.utils]
+            [dirac.shared.dom :as dom]
+            [dirac.shared.utils]                                                                                                     ; required by macros
             [clojure.string :as string]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
@@ -46,6 +45,26 @@
 (defn print-callstack-location [rep]
   (let [{:keys [title content]} rep]
     (str content (if title (str " / " title)))))
+
+; -- scope UI ----------------------------------------------------------------------------------------------------------
+
+(defn find-scope-section-elements []
+  (dom/query-selector "html /deep/ .scope-chain-sidebar-pane-section /deep/ .object-properties-section"))
+
+(defn interesting-scope-tree-item-rep? [rep]
+  (let [class (str (:class rep))]
+    (or (re-find #"name" class)
+        (re-find #"value" class)
+        (re-find #"object-properties-section-custom-section" class))))
+
+(defn extract-scope-info [[rep-name rep-value]]
+  (let [name (str (:content rep-name))
+        value (str (:content rep-value))
+        class (str (:class rep-value))
+        display-value (if (re-find #"object-properties-section-custom-section" class)
+                        "<custom>"
+                        value)]
+    (str name ": " display-value)))
 
 ; -- suggest box UI (code completions) --------------------------------------------------------------------------------------
 
@@ -195,6 +214,16 @@
            (map build-rep)
            (map print-callstack-location)
            (print-list)))
+
+(defmethod scrape :scope-content [_ & _]
+  (safe->> (find-scope-section-elements)
+           (first)
+           (build-rep)
+           (select-subreps interesting-scope-tree-item-rep?)
+           (partition-all 2)
+           (map extract-scope-info)
+           (print-list)
+           ))
 
 (defmethod scrape :suggest-box [_ & _]
   (if-let [suggest-box-el (find-suggest-box-element)]

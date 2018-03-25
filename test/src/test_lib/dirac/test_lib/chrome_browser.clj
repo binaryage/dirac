@@ -1,7 +1,7 @@
 (ns dirac.test-lib.chrome-browser
   (:require [clojure.tools.logging :as log]
             [clj-webdriver.taxi :as taxi]
-            [dirac.travis :refer [with-travis-fold]]
+            [dirac.shared.travis :refer [with-travis-fold]]
             [dirac.test-lib.chrome-driver :as chrome-driver]))
 
 ; -- chrome info ------------------------------------------------------------------------------------------------------------
