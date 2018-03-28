@@ -147,6 +147,7 @@
 
 (defn ^:devtools go-print-prompt! [devtools-id]
   (go
+    (<! (go-wait 500))                                                                                                        ; TODO: should not be hard-coded FLAKY!
     (let [content (<! (go-get-prompt-representation devtools-id))]
       (assert (string? content))
       (println content)
