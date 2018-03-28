@@ -48,13 +48,13 @@
   (str debugger-url "/json"))
 
 (defn go-fetch-context-list [debugger-url]
-  (let [api-endpoint (get-context-list-api-endpoint debugger-url)]
-    (go
-      (let [response (<! (http/get api-endpoint))]
-        (cond
-          (nil? response) (make-failure (make-nil-response-from-api-msg api-endpoint))
-          (empty? (:body response)) (make-failure (make-empty-body-response-msg api-endpoint))
-          :else (:body response))))))
+  (go
+    (let [api-endpoint (get-context-list-api-endpoint debugger-url)
+          response (<! (http/get api-endpoint))]
+      (cond
+        (nil? response) (make-failure (make-nil-response-from-api-msg api-endpoint))
+        (empty? (:body response)) (make-failure (make-empty-body-response-msg api-endpoint))
+        :else (:body response)))))
 
 (defn node-context? [context]
   (= (:type context) "node"))
@@ -94,7 +94,7 @@
 
 ; -- main API ---------------------------------------------------------------------------------------------------------------
 
-(defn resolve-backend-info [debugger-url context-url]
+(defn go-resolve-backend-info [debugger-url context-url]
   (go
     (log (str "resolving backend-url for debugger-url=" debugger-url " context-url=" context-url))
     (loop [attempt 0]

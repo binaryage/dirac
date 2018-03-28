@@ -17,7 +17,7 @@
                                                           go-report-warning-in-tab!
                                                           go-show-connecting-debugger-backend-status!]]
             [dirac.background.devtools :as devtools]
-            [dirac.background.debugging :refer [resolve-backend-info resolution-failure? get-resolution-failure-reason]]
+            [dirac.background.debugging :refer [go-resolve-backend-info resolution-failure? get-resolution-failure-reason]]
             [dirac.background.state :as state]
             [dirac.background.helpers :as helpers]
             [dirac.options.model :as options]
@@ -48,13 +48,13 @@
     (apply str (map #(if % "1" "0") flags))))
 
 (defn go-create-dirac-window! [panel?]
-  (let [window-params #js {:url  (helpers/make-blank-page-url)                                                                ; a blank page url is actually important here, url-less popups don't get assigned a tab-id
-                           :type (if panel? "popup" "normal")}]
-    ; during development we may want to override standard "cascading" of new windows and position the window explicitely
-    (sugar/set-window-params-dimensions! window-params
-                                         (get-dirac-devtools-window-left) (get-dirac-devtools-window-top)
-                                         (get-dirac-devtools-window-width) (get-dirac-devtools-window-height))
-    (go
+  (go
+    (let [window-params #js {:url  (helpers/make-blank-page-url)                                                              ; a blank page url is actually important here, url-less popups don't get assigned a tab-id
+                             :type (if panel? "popup" "normal")}]
+      ; during development we may want to override standard "cascading" of new windows and position the window explicitly
+      (sugar/set-window-params-dimensions! window-params
+                                           (get-dirac-devtools-window-left) (get-dirac-devtools-window-top)
+                                           (get-dirac-devtools-window-width) (get-dirac-devtools-window-height))
       (if-let [[window] (<! (windows/create window-params))]
         (let [tabs (oget window "tabs")
               first-tab (aget tabs 0)]
@@ -104,21 +104,21 @@
 
 (defn provide-backend-api-if-available [options]
   (or
-    (if (options/get-option :use-backend-supported-api)
-      (if-let [backend-api (state/get-backend-api)]
+    (when (options/get-option :use-backend-supported-api)
+      (if-some [backend-api (state/get-backend-api)]
         (assoc options :backend-api backend-api)))
     options))
 
 (defn provide-backend-css-if-available [options]
   (or
-    (if (options/get-option :use-backend-supported-css)
-      (if-let [backend-css (state/get-backend-css)]
+    (when (options/get-option :use-backend-supported-css)
+      (if-some [backend-css (state/get-backend-css)]
         (assoc options :backend-css backend-css)))
     options))
 
 (defn provide-user-url-params [options]
   (or
-    (if-let [user-url-params (options/get-option :user-frontend-url-params)]
+    (if-some [user-url-params (options/get-option :user-frontend-url-params)]
       (assoc options :user-url-params user-url-params))
     options))
 
@@ -174,7 +174,7 @@
         (not debugger-url) (<! (go-report-error-in-tab! backend-tab-id (i18n/debugger-url-not-specified)))
         :else (do
                 (go-show-connecting-debugger-backend-status! backend-tab-id)
-                (let [backend-info (<! (resolve-backend-info debugger-url tab-url))]
+                (let [backend-info (<! (go-resolve-backend-info debugger-url tab-url))]
                   (if (resolution-failure? backend-info)
                     (let [reason (get-resolution-failure-reason backend-info)]
                       (<! (go-report-error-in-tab! backend-tab-id
@@ -187,26 +187,27 @@
 
 (defn go-activate-dirac-devtools! [tab-id]
   (go
-    (if-let [{:keys [id frontend-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)]
+    (if-some [{:keys [id frontend-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)]
       (do
-        (if-let [dirac-window-id (<! (sugar/go-fetch-tab-window-id frontend-tab-id))]
+        (if-some [dirac-window-id (<! (sugar/go-fetch-tab-window-id frontend-tab-id))]
           (windows/update dirac-window-id focus-window-params)
           (tabs/update frontend-tab-id activate-tab-params))
         id)
       (warn "activate-dirac-devtools! unable to lookup devtools descriptor for backend tab" tab-id))))
 
 (defn go-activate-or-open-dirac-devtools! [tab & [options-overrides]]
-  (let [tab-id (oget tab "id")]
-    (if (devtools/backend-connected? tab-id)
-      (go-activate-dirac-devtools! tab-id)
-      (let [options {:open-as (get-dirac-open-as-setting)
-                     :flags   (get-dirac-flags)}]
-        (go-open-dirac-devtools! tab (merge options options-overrides))))))                                                   ; options come from dirac extension settings, but we can override them
+  (go
+    (let [tab-id (oget tab "id")]
+      (if (devtools/backend-connected? tab-id)
+        (<! (go-activate-dirac-devtools! tab-id))
+        (let [options {:open-as (get-dirac-open-as-setting)
+                       :flags   (get-dirac-flags)}]
+          (<! (go-open-dirac-devtools! tab (merge options options-overrides))))))))                                           ; options come from dirac extension settings, but we can override them
 
 (defn go-open-dirac-devtools-in-active-tab! [& [options-overrides]]
   (go
     (let [[tabs] (<! (tabs/query last-active-tab-query))]
-      (if-let [tab (first tabs)]
+      (if-some [tab (first tabs)]
         (<! (go-activate-or-open-dirac-devtools! tab options-overrides))
         (warn "no active tab?")))))
 
@@ -218,7 +219,7 @@
 
 (defn go-close-dirac-devtools! [devtools-id]
   (go
-    (if-let [descriptor (state/get-devtools-descriptor devtools-id)]
+    (if-some [descriptor (state/get-devtools-descriptor devtools-id)]
       (do
         (<! (go-close-tab-with-id! (:frontend-tab-id descriptor)))
         true)
@@ -228,7 +229,7 @@
   {:pre [backend-tab-id]}
   (go
     (<! (go-activate-dirac-devtools! backend-tab-id))
-    (if-let [{:keys [id]} (devtools/find-devtools-descriptor-for-backend-tab backend-tab-id)]
+    (if-some [{:keys [id]} (devtools/find-devtools-descriptor-for-backend-tab backend-tab-id)]
       (helpers/go-automate-devtools! id {:action :focus-best-console-prompt})
       (warn "id gone?" backend-tab-id))))
 
@@ -236,16 +237,16 @@
   (log "focus-console-prompt-in-first-devtools!")
   (go
     (let [first-devtools-descriptor (second (first (state/get-devtools-descriptors)))]
-      (if-let [backend-tab-id (:backend-tab-id first-devtools-descriptor)]
+      (if-some [backend-tab-id (:backend-tab-id first-devtools-descriptor)]
         (<! (go-focus-console-prompt-for-backend-tab! backend-tab-id))
         (warn "cannot focus console prompt, no Dirac devtools available")))))
 
 (defn go-focus-best-console-prompt! []
   (go
     (let [[tabs] (<! (tabs/query last-active-tab-query))]
-      (if-let [tab (first tabs)]
+      (if-some [tab (first tabs)]
         (let [active-tab-id (oget tab "id")]
-          (if-let [active-devtools-descriptor (devtools/find-devtools-descriptor-for-frontend-tab active-tab-id)]
+          (if-some [active-devtools-descriptor (devtools/find-devtools-descriptor-for-frontend-tab active-tab-id)]
             (<! (go-focus-console-prompt-for-backend-tab! (:backend-tab-id active-devtools-descriptor)))                      ; in case devtools is already active => focus its console
             (if (devtools/backend-connected? active-tab-id)
               (<! (go-focus-console-prompt-for-backend-tab! active-tab-id))                                                   ; the case for active backend tab

@@ -30,7 +30,7 @@
 
 (defn go-handle-on-tab-removed! [tab-id _remove-info]
   (go
-    (if (devtools/frontend-connected? tab-id)
+    (when (devtools/frontend-connected? tab-id)
       (devtools/unregister! tab-id))))
 
 (defn go-handle-on-tab-updated! [tab-id _change-info _tab]
