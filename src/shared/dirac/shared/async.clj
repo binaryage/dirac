@@ -49,4 +49,3 @@
                  "It does not play well with Cursive. "
                  "Please use nested (go (loop ...)) instead.")]
     (throw (ex-info msg {}))))
-a/go-print-prompt
