@@ -1,5 +1,5 @@
 (ns marion.background.dirac
-  (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
+  (:require [dirac.shared.async :refer [<! go-channel go-wait go]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message! get-sender]]
@@ -77,5 +77,5 @@
       (log "looking for dirac extension...")
       (when-some [port (<! (helpers/go-connect-to-dirac-extension!))]
         (<! (go-run-message-loop! port)))
-      (<! (timeout (get-marion-reconnection-attempt-delay)))                                                                  ; do not starve this "thread"
+      (<! (go-wait (get-marion-reconnection-attempt-delay)))                                                                  ; do not starve this "thread"
       (recur))))

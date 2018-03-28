@@ -1,5 +1,5 @@
 (ns marion.background.chrome
-  (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
+  (:require [dirac.shared.async :refer [<! go-channel go-wait go]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.runtime :as runtime]
@@ -27,6 +27,6 @@
 ; -- entrance ---------------------------------------------------------------------------------------------------------------
 
 (defn start-event-loop! []
-  (let [chrome-event-channel (make-chrome-event-channel (chan))]
+  (let [chrome-event-channel (make-chrome-event-channel (go-channel))]
     (runtime/tap-all-events chrome-event-channel)
     (run-event-loop! chrome-event-channel)))

@@ -1,5 +1,5 @@
 (ns dirac.implant.link-handlers
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [oops.core :refer [gset! oget oset! oset!+ ocall! ocall oapply gget gcall!]]
             [dirac.implant.logging :refer [log warn error info]]
             [dirac.implant.intercom :as intercom]))

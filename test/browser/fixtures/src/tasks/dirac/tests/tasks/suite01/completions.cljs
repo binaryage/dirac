@@ -1,5 +1,5 @@
 (ns dirac.tests.tasks.suite01.completions
-  (:require [cljs.core.async :refer [<! timeout]]
+  (:require [dirac.shared.async :refer [<! go-wait]]
             [cljs.test :refer-macros [is are]]
             [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools chunkify testing] :as a]
             [clojure.string :as string]))

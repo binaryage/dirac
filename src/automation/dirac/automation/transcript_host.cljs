@@ -1,5 +1,5 @@
 (ns dirac.automation.transcript-host
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [oops.core :refer [oget oset! ocall oapply gcall!]]
             [cuerdas.core :as cuerdas]
             [clojure.string :as string]
@@ -15,7 +15,7 @@
 (defonce current-transcript (atom nil))
 (defonce transcript-enabled (volatile! 0))
 (defonce normalized-transcript (volatile! true))
-(defonce output-recorder (chan 1024))
+(defonce output-recorder (go-channel 1024))
 (defonce output-observers (atom #{}))
 (defonce output-segment (atom []))
 (defonce rewriting-machine (atom {:state   :default
@@ -273,9 +273,9 @@
   (append-to-transcript! label text style true))
 
 (defn go-wait-for-match [match-fn matching-info & [time-limit silent?]]
-  (let [result-channel (chan)
+  (let [result-channel (go-channel)
         max-waiting-time (or time-limit (get-transcript-match-timeout))
-        timeout-channel (timeout max-waiting-time)]
+        timeout-channel (go-wait max-waiting-time)]
     (register-observer! match-fn result-channel)
     ; return a channel yielding results or throwing timeout exception (may yield :timeout if silent?)
     (go

@@ -1,5 +1,5 @@
 (ns dirac.automation.launcher
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [goog.string :as string]
             [oops.core :refer [oget oset! oset!+ ocall ocall+ oapply gset! gcall!]]
             [dirac.automation.logging :refer [log warn error info]]
@@ -23,7 +23,7 @@
   (log "scheduled task launch after " delay-ms "ms...")
   (go
     (when (pos? delay-ms)
-      (<! (timeout delay-ms)))
+      (<! (go-wait delay-ms)))
     (launch-task!)))
 
 (defn go-process-event! [event]

@@ -1,6 +1,6 @@
 (ns dirac.background.core
   (:require [dirac.background.logging :refer [log info warn error]]
-            [cljs.core.async :refer [<! chan put! go go-loop]]
+            [dirac.shared.async :refer [<! go-channel put! go]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message! get-sender get-name]]

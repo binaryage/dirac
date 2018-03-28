@@ -1,6 +1,6 @@
 (ns dirac.background.tools
   (:require [dirac.background.logging :refer [log info warn error]]
-            [cljs.core.async :refer [<! chan timeout close! put! go go-loop]]
+            [dirac.shared.async :refer [<! go-channel go-wait close! put! go]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.ext.windows :as windows]
             [chromex.ext.tabs :as tabs]

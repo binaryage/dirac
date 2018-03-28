@@ -2,7 +2,7 @@
   (:require-macros [dirac.implant.automation.scrapers :refer [safe->>]])
   (:require [oops.core :refer [oget oset! ocall oapply]]
             [dirac.implant.logging :refer [log warn error info]]
-            [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+            [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [cljs.pprint :refer [pprint]]
             [dirac.implant.automation.reps :refer [select-subrep select-subreps build-rep]]
             [clojure.walk :refer [prewalk postwalk]]
@@ -164,7 +164,7 @@
                           console-message-wrapper-el)
                         (error "no .expand-group-icon under" console-message-wrapper-el)))
             expanded-group-els (keep expand! els)]
-        (<! (timeout 500))                                                                                                    ; give it some time to re-render/invalidate
+        (<! (go-wait 500))                                                                                                    ; give it some time to re-render/invalidate
         expanded-group-els))))
 
 (defn find-group-elements [group-elements-chan]

@@ -1,5 +1,5 @@
 (ns dirac.automation.machinery
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [oops.core :refer [oget oset! ocall oapply]]
             [dirac.automation.logging :refer [log error]]
             [dirac.automation.runner :as runner]
@@ -114,7 +114,7 @@
     (<! (runner/go-wait-for-resume-if-paused!))
     ; this timeout is important for run-output-matching-loop! and other async operations
     ; without this we could starve those loops and their reaction could be delayed
-    (<! (timeout 0))
+    (<! (go-wait 0))
     (<! (apply do-action! args))))
 
 (defn start-testing! [title]

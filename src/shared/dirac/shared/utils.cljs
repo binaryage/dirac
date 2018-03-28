@@ -1,7 +1,7 @@
 (ns dirac.shared.utils
   (:require-macros [dirac.shared.utils])
-  (:require [cljs.core.async :refer [put! <! chan close! go go-loop]]
-            [cljs.core.async.impl.protocols :as async-protocols]
+  (:require [dirac.shared.async :refer [put! <! close! go go-channel]]
+            [cljs.core.async.impl.protocols :as async-protocols]                                                              ; TODO: move this to dirac.shared.async
             [cuerdas.core :as cuerdas]
             [dirac.shared.pprint]
             [oops.core :refer [oget oset! ocall oapply gget gcall]]))
@@ -23,7 +23,7 @@
 ; this implementation differs from core.async timeout that it is simple and creates a new channel for every invocation
 ; it is safe to call close! on returned channel to cancel timeout early
 (defn timeout [msec]
-  (let [channel (chan)]
+  (let [channel (go-channel)]
     (gcall "setTimeout" #(close! channel) msec)
     channel))
 
@@ -43,16 +43,17 @@
     (close! channel)))
 
 (defn turn-promise-into-channel [promise]
-  (let [channel (chan)]
+  (let [channel (go-channel)]
     (ocall promise "then" (partial handle-promised-result! channel))
     channel))
 
 (defn turn-channel-into-callback [channel callback]
-  (go-loop []
-    (if-let [val (<! channel)]
-      (do
-        (callback val)
-        (recur)))))
+  (go
+    (loop []
+      (if-let [val (<! channel)]
+        (do
+          (callback val)
+          (recur))))))
 
 (defn turn-promise-into-callback [promise callback]
   (ocall promise "then" callback))
@@ -144,7 +145,7 @@
   (js/FileReader.))
 
 (defn go-convert-blob-to-string [blob]
-  (let [channel (chan)
+  (let [channel (go-channel)
         reader (make-file-reader)]
     (oset! reader "onloadend" #(put! channel (oget reader "result")))
     (ocall reader "readAsText" blob)

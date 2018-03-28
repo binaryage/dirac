@@ -1,5 +1,5 @@
 (ns dirac.implant.automation
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [dirac.implant.logging :refer [log warn error]]
             [oops.core :refer [oget oset! ocall oapply oset!+ ocall+ oget+ oapply+ gcall+ gset!]]
             [cljs.reader :as reader]
@@ -114,7 +114,7 @@
   (if (some? delay)
     (go
       (let [result (f)]
-        (<! (timeout delay))
+        (<! (go-wait delay))
         (if (nil? result)
           (throw "triggered function must not return nil" {:fn    f
                                                            :delay delay})

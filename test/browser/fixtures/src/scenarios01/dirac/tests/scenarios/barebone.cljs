@@ -1,5 +1,5 @@
 (ns dirac.tests.scenarios.barebone
-  (:require [cljs.core.async :refer [go <!]]
+  (:require [dirac.shared.async :refer [go <!]]
             [chromex.logging :refer-macros [log]]
             [dirac.automation.runtime :refer [init-runtime!]]
             [dirac.automation.scenario :as scenario]))

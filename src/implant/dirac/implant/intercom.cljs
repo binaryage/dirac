@@ -1,6 +1,6 @@
 (ns dirac.implant.intercom
   (:require-macros [dirac.implant.intercom :refer [error-response]])
-  (:require [cljs.core.async :refer [<! chan put! timeout close! go go-loop]]
+  (:require [dirac.shared.async :refer [<! go-channel put! go-wait close! go]]
             [cljs.tools.reader.edn :as reader-edn]
             [cljs.tools.reader.reader-types :as reader-types]
             [clojure.walk :as walk]
@@ -157,7 +157,7 @@
 (defn wait-for-client-disconnection []
   (if (nil? @nrepl-tunnel-client/current-client)
     (go)
-    (let [channel (chan)
+    (let [channel (go-channel)
           watcher (fn [_key _ref _old new]
                     (when (nil? new)
                       (remove-watch nrepl-tunnel-client/current-client ::disconnection-observer)
@@ -202,12 +202,13 @@
         time (utils/exponential-backoff-ceiling attempt)
         prev-time (utils/exponential-backoff-ceiling (dec attempt))
         time-in-seconds (int (/ prev-time step))]
-    (go-loop [remaining-time time-in-seconds]
-      (when (pos? remaining-time)
-        (console/set-prompt-status-banner! (will-reconnect-banner-msg remaining-time))
-        (<! (timeout step))
-        (if (= id *last-connect-fn-id*)
-          (recur (dec remaining-time)))))
+    (go
+      (loop [remaining-time time-in-seconds]
+        (when (pos? remaining-time)
+          (console/set-prompt-status-banner! (will-reconnect-banner-msg remaining-time))
+          (<! (go-wait step))
+          (if (= id *last-connect-fn-id*)
+            (recur (dec remaining-time))))))
     time))
 
 (defn connect-to-nrepl-tunnel-server! [url verbose? auto-reconnect? response-timeout]

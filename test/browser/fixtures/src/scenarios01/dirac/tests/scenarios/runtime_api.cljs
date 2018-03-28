@@ -1,6 +1,6 @@
 (ns dirac.tests.scenarios.runtime-api
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+  (:require-macros [dirac.shared.async :refer [go]])
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close!]]
             [chromex.logging :refer-macros [log]]
             [dirac.automation.runtime :refer [init-runtime!]]
             [dirac.automation.scenario :as scenario :refer-macros [with-feedback]]

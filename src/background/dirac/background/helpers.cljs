@@ -1,6 +1,6 @@
 (ns dirac.background.helpers
   (:require [dirac.background.logging :refer [log info warn error]]
-            [cljs.core.async :refer [<! chan put! close! timeout alts! go go-loop]]
+            [dirac.shared.async :refer [<! go-channel put! close! go-wait alts! go]]
             [oops.core :refer [oget oget+ oset! oset!+ ocall oapply]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.extension :as extension]
@@ -141,7 +141,7 @@
       (utils/make-error-struct e))))
 
 (defn go-automate-action! [automate-fn action]
-  (let [channel (chan)]
+  (let [channel (go-channel)]
     (let [serialized-action (safe-serialize action)]
       (if-not (instance? js/Error serialized-action)
         (let [reply-callback (fn [serialized-reply]
@@ -185,7 +185,7 @@
           (.close view)
           (catch :default e
             (error "close-all-extension-tabs:" e)))))
-    (<! (timeout 500))                                                                                                        ; give it some time...
+    (<! (go-wait 500))                                                                                                        ; give it some time...
     (perform-sanity-check-that-all-tabs-got-closed)))
 
 (defn install-intercom! [devtools-id handler]
@@ -202,13 +202,13 @@
 
 (defn go-try-install-intercom! [devtools-id handler & [timeout-ms]]
   (let [timeout-chan (if (some? timeout-ms)
-                       (timeout timeout-ms))]
+                       (go-wait timeout-ms))]
     (go
       (loop [iteration 1]
         (let [result (install-intercom! devtools-id handler)]
           (if (true? result)
             true
-            (let [wait-chan (timeout 100)
+            (let [wait-chan (go-wait 100)
                   [_ ch] (alts! (filterv some? [wait-chan timeout-chan]))]
               (if (= ch timeout-chan)
                 (str "timeouted after " iteration " trials (" timeout-ms "ms), " result)
@@ -219,7 +219,7 @@
 
 (defn go-wait-for-document-title! [tab-id wanted-title & [timeout-ms]]
   (let [timeout-chan (if (some? timeout-ms)
-                       (timeout timeout-ms))]
+                       (go-wait timeout-ms))]
     (go
       (loop [iteration 1]
         (let [tab-info-chan (tabs/get tab-id)
@@ -232,5 +232,5 @@
                 (if (= title wanted-title)
                   true
                   (do
-                    (<! (timeout 100))
+                    (<! (go-wait 100))
                     (recur (inc iteration))))))))))))

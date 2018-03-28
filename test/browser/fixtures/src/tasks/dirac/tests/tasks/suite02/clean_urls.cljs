@@ -1,5 +1,5 @@
 (ns dirac.tests.tasks.suite02.clean-urls
-  (:require [cljs.core.async]
+  (:require [dirac.shared.async]
             [cljs.test :refer-macros [is]]
             [dirac.shared.utils :refer [line-count]]
             [dirac.settings :refer [seconds minutes]]

@@ -1,5 +1,5 @@
 (ns dirac.automation.runner
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [devtools.core :as devtools]
             [oops.core :refer [oget oset! ocall oapply gcall! gset!]]
             [dirac.automation.logging :refer [log warn error info]]
@@ -12,7 +12,7 @@
 
 ; -- state ------------------------------------------------------------------------------------------------------------------
 
-(def resume-events (chan))
+(def resume-events (go-channel))
 (def paused? (volatile! false))
 (def normalized (volatile! true))
 
@@ -91,7 +91,7 @@
 (defn ^:export reload []
   (go-reset-extensions!)
   (go
-    (<! (timeout 200))                                                                                                        ; TODO: this should not be hard-coded FLAKY!
+    (<! (go-wait 200))                                                                                                        ; TODO: this should not be hard-coded FLAKY!
     (gcall! "document.location.reload")))
 
 (defn ^:export resume []

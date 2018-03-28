@@ -1,5 +1,5 @@
 (ns marion.background.helpers
-  (:require [cljs.core.async :refer [<! chan timeout alts! go go-loop close!]]
+  (:require [dirac.shared.async :refer [<! go-channel go-wait alts! go  close!]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.runtime :as runtime]
@@ -85,8 +85,8 @@
 ; when dirac extension is busy parsing css/api we might get connect/disconnect events because there is not event loop running
 ; to respond to ::runtime/on-connect-external, we detect this case here and pretend connection is not available at this stage
 (defn go-accept-stable-connection-only [extension-id port]
-  (let [timeout-channel (timeout (get-marion-stable-connection-timeout))
-        disconnect-channel (chan)]
+  (let [timeout-channel (go-wait (get-marion-stable-connection-timeout))
+        disconnect-channel (go-channel)]
     (on-disconnect! port #(close! disconnect-channel))
     (go
       (let [[_ channel] (alts! [timeout-channel disconnect-channel])]

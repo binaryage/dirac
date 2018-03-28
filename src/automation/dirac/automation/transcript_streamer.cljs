@@ -1,10 +1,10 @@
 (ns dirac.automation.transcript-streamer
-  (:require [cljs.core.async :refer [<! chan sliding-buffer put! timeout go go-loop]]
+  (:require [dirac.shared.async :refer [<! go-channel sliding-buffer put! go]]
             [dirac.automation.logging :refer [log warn error info]]
             [dirac.lib.ws-client :as ws-client]))
 
 (defonce current-client (atom nil))
-(defonce transcript-stream (chan (sliding-buffer 1024)))
+(defonce transcript-stream (go-channel (sliding-buffer 1024)))
 
 (defn publish! [text style]
   (put! transcript-stream {:op    :publish

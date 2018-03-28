@@ -1,8 +1,7 @@
 (ns dirac.tests.scenarios.core-async
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [dirac.automation.runtime :refer [init-runtime!]]
             [dirac.automation.scenario :as scenario]
-            [cljs.core.async :refer [put! <! chan timeout alts! close!]]))
+            [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]))
 
 (defn break-here! []
   (js-debugger))

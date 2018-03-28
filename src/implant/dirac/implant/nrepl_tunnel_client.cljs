@@ -1,6 +1,6 @@
 (ns dirac.implant.nrepl-tunnel-client
   (:require-macros [dirac.implant.nrepl-tunnel-client :refer [log warn info error]])
-  (:require [cljs.core.async :refer [<! chan put! timeout close! go go-loop]]
+  (:require [dirac.shared.async :refer [<! go-channel put! go-wait close! go]]
             [cljs-uuid-utils.core :as uuid]
             [dirac.implant.eval :as eval]
             [dirac.lib.ws-client :as ws-client]
@@ -54,7 +54,7 @@
 (defn tunnel-message-with-responses! [msg]
   (let [id (uuid/uuid-string (uuid/make-random-uuid))
         msg-with-id (assoc msg :id id)
-        response-channel (chan)
+        response-channel (go-channel)
         handler (fn [response-message]
                   (put! response-channel response-message)
                   (when (some? (:status response-message))
@@ -63,7 +63,7 @@
     (register-pending-message-handler! id handler)
     (tunnel-message! msg-with-id)
     (go
-      (<! (timeout (:response-timeout (get-current-options))))
+      (<! (go-wait (:response-timeout (get-current-options))))
       (close! response-channel))
     response-channel))
 

@@ -1,5 +1,5 @@
 (ns marion.content-script.background
-  (:require [cljs.core.async :refer [<! chan go timeout alts! close!]]
+  (:require [dirac.shared.async :refer [<! go-channel go go-wait alts! close!]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.protocols :refer [post-message! on-disconnect!]]
             [chromex.ext.runtime :as runtime]
@@ -55,8 +55,8 @@
 ; when marion background page is busy we might get connect/disconnect events because there is no event loop running
 ; to respond to ::runtime/on-connect-external, we detect this case here and pretend connection is not available at this stage
 (defn go-accept-stable-connection-only! [port]
-  (let [timeout-channel (timeout (get-marion-stable-connection-timeout))
-        disconnect-channel (chan)]
+  (let [timeout-channel (go-wait (get-marion-stable-connection-timeout))
+        disconnect-channel (go-channel)]
     (on-disconnect! port #(close! disconnect-channel))
     (go
       (let [[_ channel] (alts! [timeout-channel disconnect-channel])]
@@ -70,7 +70,7 @@
       (log "looking for marion background page...")
       (when-some [background-port (<! (go-accept-stable-connection-only! (runtime/connect)))]                                 ; connects to marion's background page
         (<! (go-run-marion-content-script-message-loop! background-port)))
-      (<! (timeout (get-marion-reconnection-attempt-delay)))                                                                  ; do not starve this "thread"
+      (<! (go-wait (get-marion-reconnection-attempt-delay)))                                                                  ; do not starve this "thread"
       (recur))))
 
 (defn go-connect! []

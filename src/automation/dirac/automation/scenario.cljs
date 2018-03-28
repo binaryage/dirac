@@ -1,6 +1,6 @@
 (ns dirac.automation.scenario
   (:require-macros [dirac.automation.scenario])
-  (:require [cljs.core.async :refer [<! go]]
+  (:require [dirac.shared.async :refer [<! go]]
             [oops.core :refer [oget oset! ocall oapply gget gset! gcall!]]
             [dirac.automation.logging :refer [log info warn error]]
             [dirac.shared.utils]                                                                                              ; used in macros

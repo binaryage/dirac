@@ -1,5 +1,5 @@
 (ns dirac.implant.eval
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [cljs.core.async.impl.protocols :as core-async]
             [oops.core :refer [oget oget+ ocall oapply gget]]
             [dirac.implant.logging :refer [log warn error]]
@@ -84,16 +84,17 @@
 
 (defn check-and-call-when-avail-or-timeout [check-fn call-fn timeout-fn trial-delay total-time-limit]
   (let [start-time (get-current-time)]
-    (go-loop []
-      (let [current-time (get-current-time)
-            elapsed-time (- current-time start-time)]
-        (if (< elapsed-time total-time-limit)
-          (if (check-fn)
-            (call-fn)
-            (do
-              (<! (timeout trial-delay))
-              (recur)))
-          (timeout-fn))))))
+    (go
+      (loop []
+        (let [current-time (get-current-time)
+              elapsed-time (- current-time start-time)]
+          (if (< elapsed-time total-time-limit)
+            (if (check-fn)
+              (call-fn)
+              (do
+                (<! (go-wait trial-delay))
+                (recur)))
+            (timeout-fn)))))))
 
 (defn eval-with-callback!
   "Attempts to evaluate given code string in specified context.
@@ -238,7 +239,7 @@
   (set! *managed-resumable-timers* (disj *managed-resumable-timers* resumable-timer)))
 
 (defn make-debugger-aware-timeout! [msec]
-  (let [wait-chan (chan)
+  (let [wait-chan (go-channel)
         resumable-timer (make-resumable-timer #(close! wait-chan) msec)]
     (go
       (start-managing-timer-on-debugger-pauses! resumable-timer)
@@ -259,7 +260,7 @@
      "
   [context code time-limit silent?]
   {:pre [(context supported-contexts)]}
-  (let [result-chan (chan)
+  (let [result-chan (go-channel)
         timeout-chan (make-debugger-aware-timeout! time-limit)
         callback (fn [result]
                    (put! result-chan result))]
@@ -279,24 +280,25 @@
 ; either [::ok value]
 ; or     [::failure reason]
 (defn wait-for-dirac-installed! []
-  (let [timeout-chan (timeout (pref :install-check-total-time-limit))
+  (let [timeout-chan (go-wait (pref :install-check-total-time-limit))
         trial-delay (pref :install-check-next-trial-waiting-time)
         installation-test-eval-time-limit (pref :install-check-eval-time-limit)
         installation-test-code (installation-test-template)
         last-reason (volatile! [::install-check-timeout])
         return (fn [& [val]] (or val [::failure @last-reason]))]
-    (go-loop []
-      (if (core-async/closed? timeout-chan)
-        (return)
-        (let [result-chan (call-eval-with-timeout! :default installation-test-code installation-test-eval-time-limit true)
-              [result] (alts! [result-chan timeout-chan])]
-          (case (first result)
-            ::ok (return result)
-            (do
-              (if-let [reason (second result)]
-                (vreset! last-reason reason))
-              (<! (timeout trial-delay))                                                                                      ; don't DoS the VM, wait between installation tests
-              (recur))))))))
+    (go
+      (loop []
+        (if (core-async/closed? timeout-chan)
+          (return)
+          (let [result-chan (call-eval-with-timeout! :default installation-test-code installation-test-eval-time-limit true)
+                [result] (alts! [result-chan timeout-chan])]
+            (case (first result)
+              ::ok (return result)
+              (do
+                (if-let [reason (second result)]
+                  (vreset! last-reason reason))
+                (<! (go-wait trial-delay))                                                                                    ; don't DoS the VM, wait between installation tests
+                (recur)))))))))
 
 ; -- simple evaluation for page-context console logging ---------------------------------------------------------------------
 
@@ -326,36 +328,37 @@
 ; Originally I implemented this as a fully serialized queue, but that had to be relaxed because of
 ; https://github.com/binaryage/dirac/issues/74
 
-(defonce eval-requests (chan))
+(defonce eval-requests (go-channel))
 
 (defn start-eval-request-queue-processing-loop! []
-  (go-loop []
-    (if-let [[context code silent? handler] (<! eval-requests)]
-      (let [call-handler! (fn [_result-code value error]
-                            (if (some? error)
-                              (display-user-error! error))
-                            (if handler
-                              (apply handler [value error])))
-            install-result (<! (wait-for-dirac-installed!))
-            eval-time-limit (pref :eval-time-limit)]
-        (case (first install-result)
-          ::failure (let [reason (second install-result)]
-                      (call-handler! ::install-failure reason (missing-runtime-msg reason)))
-          ::ok (go
-                 (let [eval-result (<! (call-eval-with-timeout! context code eval-time-limit silent?))]
-                   (case (first eval-result)
-                     ::ok (call-handler! ::ok (second eval-result))
-                     ::internal-error (call-handler! ::internal-error
+  (go
+    (loop []
+      (if-let [[context code silent? handler] (<! eval-requests)]
+        (let [call-handler! (fn [_result-code value error]
+                              (if (some? error)
+                                (display-user-error! error))
+                              (if handler
+                                (apply handler [value error])))
+              install-result (<! (wait-for-dirac-installed!))
+              eval-time-limit (pref :eval-time-limit)]
+          (case (first install-result)
+            ::failure (let [reason (second install-result)]
+                        (call-handler! ::install-failure reason (missing-runtime-msg reason)))
+            ::ok (go
+                   (let [eval-result (<! (call-eval-with-timeout! context code eval-time-limit silent?))]
+                     (case (first eval-result)
+                       ::ok (call-handler! ::ok (second eval-result))
+                       ::internal-error (call-handler! ::internal-error
+                                                       (second eval-result)
+                                                       (internal-eval-error-msg code (second eval-result)))
+                       ::eval-timeout (call-handler! ::eval-timeout
                                                      (second eval-result)
-                                                     (internal-eval-error-msg code (second eval-result)))
-                     ::eval-timeout (call-handler! ::eval-timeout
-                                                   (second eval-result)
-                                                   (eval-timeout-msg code))
-                     (call-handler! ::unknown-problem
-                                    (second eval-result)
-                                    (eval-problem-msg code (first eval-result) (second eval-result)))))))
-        (recur))
-      (log "Leaving start-eval-request-queue-processing-loop!"))))
+                                                     (eval-timeout-msg code))
+                       (call-handler! ::unknown-problem
+                                      (second eval-result)
+                                      (eval-problem-msg code (first eval-result) (second eval-result)))))))
+          (recur))
+        (log "Leaving start-eval-request-queue-processing-loop!")))))
 
 ; -- queued evaluation in context -------------------------------------------------------------------------------------------
 
@@ -363,7 +366,7 @@
   (put! eval-requests [context code silent? handler]))
 
 (defn eval-in-context! [context code silent?]
-  (let [result-chan (chan)
+  (let [result-chan (go-channel)
         handler (fn [& args]
                   (put! result-chan args))]
     (queue-eval-request! context code silent? handler)

@@ -1,5 +1,5 @@
 (ns dirac.automation.task
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [oops.core :refer [oget oset! ocall oapply gset! gcall! gapply!+]]
             [dirac.automation.logging :refer [log warn error info]]
             [dirac.lib.ws-client :as ws-client]
@@ -71,10 +71,10 @@
   (let [client-config {:name    "Signaller"
                        :on-open (fn [client]
                                   (go
-                                    (<! (timeout (get-signal-client-task-result-delay)))
+                                    (<! (go-wait (get-signal-client-task-result-delay)))
                                     (ws-client/send! client {:op      :task-result
                                                              :success success?})
-                                    (<! (timeout (get-signal-client-close-delay)))
+                                    (<! (go-wait (get-signal-client-close-delay)))
                                     (ws-client/close! client)))}]
     (ws-client/connect! (get-signal-server-url) client-config)))
 

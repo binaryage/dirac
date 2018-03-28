@@ -1,10 +1,10 @@
 (ns dirac.shared.sugar
-  (:require [cljs.core.async :refer [<! chan put! close! go go-loop]]
-            [oops.core :refer [oget oset! ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.config :refer-macros [with-muted-error-reporting]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.windows :as windows]
+            [dirac.shared.async :refer [<! go-channel put! close! go]]
             [dirac.shared.logging :refer [log info warn error]]
             [dirac.shared.utils :as utils]))
 
@@ -54,7 +54,7 @@
       window)))
 
 (defn go-create-window-and-wait-for-first-tab-completed! [window-params]
-  (let [chrome-event-channel (make-chrome-event-channel (chan))]
+  (let [chrome-event-channel (make-chrome-event-channel (go-channel))]
     (tabs/tap-on-updated-events chrome-event-channel)
     (go
       (let [[window] (<! (windows/create window-params))

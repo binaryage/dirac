@@ -1,5 +1,5 @@
 (ns dirac.automation.messages
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [cljs.reader :as reader]
             [clojure.string :as str]
             [oops.core :refer [oget oset! ocall oapply gcall!]]
@@ -57,10 +57,10 @@
          (or (nil? reply-timeout) (number? reply-timeout))]}
   (assert (is-processing-messages?) (str "wait-for-reply! called before messages/init! call? " message-id ": " (pr-str info)))
   (assert (not @should-tear-down?) (str "wait-for-reply! called after messages/done! call? " message-id ": " (pr-str info)))
-  (let [reply-channel (chan)
+  (let [reply-channel (go-channel)
         timeout-channel (if (some? reply-timeout)
-                          (timeout reply-timeout)
-                          (chan))
+                          (go-wait reply-timeout)
+                          (go-channel))
         observer (fn [reply-message]
                    {:pre [(some? reply-message)]}
                    (put! reply-channel reply-message))]
@@ -73,7 +73,7 @@
   (assert (not @waiting-for-pending-replies?))
   (if-not (empty? @reply-subscribers)
     (let [watching-key ::wait-for-all-pending-replies!
-          channel (chan)
+          channel (go-channel)
           watcher (fn [_ _ _ new-state]
                     (when (empty? new-state)
                       (remove-watch reply-subscribers watching-key)
@@ -85,7 +85,7 @@
 
 (defn go-wait-for-all-pending-replies-or-timeout! [timeout-ms]
   (if-let [wait-channel (go-wait-for-all-pending-replies!)]
-    (let [timeout-channel (timeout timeout-ms)]
+    (let [timeout-channel (go-wait timeout-ms)]
       (go
         (let [[_ channel] (alts! [wait-channel timeout-channel])]
           (if (= channel wait-channel)

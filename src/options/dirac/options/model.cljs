@@ -1,6 +1,6 @@
 (ns dirac.options.model
   (:require [dirac.options.logging :refer [log warn error info]]
-            [cljs.core.async :refer [<! chan close! go go-loop]]
+            [dirac.shared.async :refer [<! go-channel close! go]]
             [oops.core :refer [oget ocall oapply gcall]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :as chromex-protocols]
@@ -139,7 +139,7 @@
   (log "init!")
   (go
     (let [options (<! (go-read-options))
-          chrome-event-channel (make-chrome-event-channel (chan))]
+          chrome-event-channel (make-chrome-event-channel (go-channel))]
       (set! *initialized* true)
       (reset-cached-options-without-sync! options)
       (add-watch cached-options ::watch (fn [_ _ _ new-state]

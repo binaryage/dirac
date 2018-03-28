@@ -15,7 +15,7 @@
 ;
 (ns dirac.implant.weasel-client
   (:require [dirac.implant.logging :refer [log warn info error]]
-            [cljs.core.async :refer [<! chan put! timeout go go-loop]]
+            [dirac.shared.async :refer [<! go-channel put! go-wait go]]
             [dirac.implant.eval :as eval]
             [dirac.lib.ws-client :as ws-client]
             [clojure.string :as string]))
@@ -65,7 +65,7 @@
     (go
       ; there might be some output printing messages in flight in the tunnel, so we give the tunnel some time to process them
       (if (some? pre-eval-delay)
-        (<! (timeout pre-eval-delay)))
+        (<! (go-wait pre-eval-delay)))
       (let [[result error] (<! (eval/eval-in-current-context! code))
             result-data (cond
                           (some? error) (js-obj "status" "error" "value" error)

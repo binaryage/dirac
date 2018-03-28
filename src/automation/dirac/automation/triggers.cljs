@@ -1,5 +1,5 @@
 (ns dirac.automation.triggers
-  (:require [cljs.core.async :refer [timeout go <!]]
+  (:require [dirac.shared.async :refer [go-wait go <!]]
             [oops.core :refer [oget oset! ocall oapply gcall! ocall! gcall gset!]]
             [dirac.automation.scenario :as scenario]))
 
@@ -8,7 +8,7 @@
 (defn go-reload-safely! []
   (go
     ; this delay is here to prevent "Cannot find context with specified id" V8 errors ?
-    (<! (timeout 1000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 1000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
     (gcall! "location.reload")))
 
 ; -- triggers installers ----------------------------------------------------------------------------------------------------

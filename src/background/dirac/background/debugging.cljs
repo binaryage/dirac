@@ -2,7 +2,7 @@
   (:require [dirac.background.logging :refer [log info warn error]]
             [cljs-http.client :as http]
             [oops.core :refer [oget]]
-            [cljs.core.async :refer [<! timeout go]]
+            [dirac.shared.async :refer [<! go-wait go]]
             [dirac.settings :refer [get-backend-url-resolution-trials
                                     get-failed-backend-url-resolution-delay]]))
 
@@ -103,5 +103,5 @@
                 (>= attempt (get-backend-url-resolution-trials)))
           backend-url-or-failure
           (do
-            (<! (timeout (get-failed-backend-url-resolution-delay)))
+            (<! (go-wait (get-failed-backend-url-resolution-delay)))
             (recur (inc attempt))))))))

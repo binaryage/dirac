@@ -1,5 +1,5 @@
 (ns dirac.tests.tasks.suite01.preloads
-  (:require [cljs.core.async]
+  (:require [dirac.shared.async]
             [cljs.test :refer-macros [is]]
             [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools testing] :as a]))
 

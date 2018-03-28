@@ -1,6 +1,6 @@
 (ns dirac.automation.verbs
   "Low-level automation API"
-  (:require [cljs.core.async :refer [put! <! chan go]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go]]
             [oops.core :refer [oget oset! ocall oapply]]
             [dirac.automation.logging :refer [log error]]
             [dirac.automation.transcript-host :as transcript]

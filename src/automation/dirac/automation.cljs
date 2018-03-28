@@ -8,7 +8,7 @@
 
   Other functions do not target a specific devtools instance and can be called independently.
   "
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [oops.core :refer [oget oset! ocall oapply]]
             [dirac.automation.logging :refer [log error]]
             [dirac.automation.machinery :as machinery]
@@ -80,7 +80,7 @@
 
 (defn go-wait-for-devtools-ui [& [delay]]
   ; sometimes we have to give devtools UI some time to update
-  (timeout (or delay 1000)))                                                                                                  ; TODO: should not be hard-coded FLAKY!
+  (go-wait (or delay 1000)))                                                                                                  ; TODO: should not be hard-coded FLAKY!
 
 ; -- devtools-instance targeting actions ------------------------------------------------------------------------------------
 
@@ -172,7 +172,7 @@
 
 (defn ^:devtools go-scrape [devtools-id scraper-name & args]
   (go
-    (<! (timeout 500))                                                                                                        ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 500))                                                                                                        ; TODO: should not be hard-coded FLAKY!
     (<! (verbs/go-automate-devtools! devtools-id {:action  :scrape
                                                   :scraper scraper-name
                                                   :args    args}))))
@@ -213,7 +213,7 @@
       (doseq [match matches]
         (<! (go-wait-for-devtools-match devtools-id match)))
       (<! (go-wait-for-devtools-match devtools-id "repl eval job ended"))
-      (<! (timeout 100)))))                                                                                                   ; this timeout is a hack, for some reason feedback from following commands came before
+      (<! (go-wait 100)))))                                                                                                   ; this timeout is a hack, for some reason feedback from following commands came before
 
 (defn ^:devtools go-exec-and-match-in-console! [devtools-id input match-or-matches]
   (go
@@ -236,6 +236,6 @@
 (defn ^:devtools go-reload! []
   (go
     ; the timeouts are here to prevent "Cannot find context with specified id" V8 errors ?
-    (<! (timeout 2000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 2000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
     (<! (go-trigger! :reload))
-    (<! (timeout 2000))))                                                                                                     ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 2000))))                                                                                                     ; TODO: should not be hard-coded FLAKY!

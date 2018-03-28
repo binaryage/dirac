@@ -1,5 +1,5 @@
 (ns dirac.implant
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [oops.core :refer [oget oset! oset!+ ocall oapply gget gcall!]]
             [dirac.implant.logging :refer [log warn error info]]
             [dirac.shared.utils :refer [runonce]]
