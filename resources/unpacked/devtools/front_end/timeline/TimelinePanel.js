@@ -160,6 +160,16 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   /**
+   * @param {!Array.<!SDK.TracingManager.EventPayload>} events
+   */
+  loadFromEvents(events) {
+    if (this._state !== Timeline.TimelinePanel.State.Idle)
+      return;
+    this._prepareToLoadTimeline();
+    this._loader = Timeline.TimelineLoader.loadFromEvents(events, this);
+  }
+
+  /**
    * @param {!Common.Event} event
    */
   _onWindowChanged(event) {
@@ -651,9 +661,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
     const learnMoreNode = UI.XLink.create(
         'https://developers.google.com/web/tools/chrome-devtools/evaluate-performance/',
         Common.UIString('Learn\xa0more'));
-    const learnMoreMigrationNode = UI.XLink.create(
-        'https://developers.google.com/web/updates/2016/12/devtools-javascript-cpu-profile-migration',
-        Common.UIString('Learn\xa0more'));
 
     const recordKey =
         encloseWithTag('b', UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.toggle-recording')[0].name);
@@ -677,22 +684,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
         'After recording, select an area of interest in the overview by dragging.\n' +
         'Then, zoom and pan the timeline with the mousewheel or %s keys.\n%s',
         [navigateNode, learnMoreNode]));
-
-    const cpuProfilerHintSetting = Common.settings.createSetting('timelineShowProfilerHint', true);
-    if (cpuProfilerHintSetting.get()) {
-      const warning = centered.createChild('p', 'timeline-landing-warning');
-      const closeButton = warning.createChild('div', 'timeline-landing-warning-close', 'dt-close-button');
-      closeButton.addEventListener('click', () => {
-        warning.style.visibility = 'hidden';
-        cpuProfilerHintSetting.set(false);
-      }, false);
-      const performanceSpan = encloseWithTag('b', Common.UIString('Performance'));
-      warning.createChild('div').appendChild(UI.formatLocalized(
-          `The %s panel provides the combined functionality of Timeline and JavaScript CPU profiler. %s%s` +
-          `The JavaScript CPU profiler will be removed shortly. Meanwhile, it's available under ` +
-          `%s \u2192 More Tools \u2192 JavaScript Profiler.`,
-          [performanceSpan, learnMoreMigrationNode, createElement('p'), UI.Icon.create('largeicon-menu')]));
-    }
 
     this._landingPage.show(this._statusPaneContainer);
   }
@@ -865,10 +856,12 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
   /**
    * @override
+   * @param {?Array<!SDK.TracingModel.Event>} events
    * @param {number} time
    */
-  selectEntryAtTime(time) {
-    const events = this._performanceModel ? this._performanceModel.timelineModel().mainThreadEvents() : [];
+  selectEntryAtTime(events, time) {
+    if (!events)
+      return;
     // Find best match, then backtrack to the first visible entry.
     for (let index = events.upperBound(time, (time, event) => time - event.startTime) - 1; index >= 0; --index) {
       const event = events[index];
@@ -1132,8 +1125,9 @@ Timeline.TimelineModeView.prototype = {
 
   /**
    * @param {?Timeline.PerformanceModel} model
+   * @param {?Array<!SDK.TracingModel.Event>} eventsTrack
    */
-  setModel(model) {},
+  setModel(model, eventsTrack) {},
 
   /**
    * @param {number} startTime
@@ -1170,14 +1164,15 @@ Timeline.TimelineModeViewDelegate.prototype = {
   select(selection) {},
 
   /**
+   * @param {?Array<!SDK.TracingModel.Event>} events
    * @param {number} time
    */
-  selectEntryAtTime(time) {},
+  selectEntryAtTime(events, time) {},
 
   /**
    * @param {?SDK.TracingModel.Event} event
    */
-  highlightEvent(event) {}
+  highlightEvent(event) {},
 };
 
 /**

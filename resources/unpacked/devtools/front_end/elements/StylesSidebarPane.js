@@ -428,15 +428,13 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
     this._sectionBlocks =
         await this._rebuildSectionsForMatchedStyleRules(/** @type {!SDK.CSSMatchedStyles} */ (matchedStyles));
     let pseudoTypes = [];
-    const keys = new Set(matchedStyles.pseudoStyles().keys());
+    const keys = matchedStyles.pseudoTypes();
     if (keys.delete(Protocol.DOM.PseudoType.Before))
       pseudoTypes.push(Protocol.DOM.PseudoType.Before);
     pseudoTypes = pseudoTypes.concat(keys.valuesArray().sort());
     for (const pseudoType of pseudoTypes) {
       const block = Elements.SectionBlock.createPseudoTypeBlock(pseudoType);
-      const styles =
-          /** @type {!Array<!SDK.CSSStyleDeclaration>} */ (matchedStyles.pseudoStyles().get(pseudoType));
-      for (const style of styles) {
+      for (const style of matchedStyles.pseudoStyles(pseudoType)) {
         const section = new Elements.StylePropertiesSection(this, matchedStyles, style);
         block.sections.push(section);
       }
@@ -2234,6 +2232,8 @@ Elements.StylesSidebarPropertyRenderer = class {
     this._bezierHandler = null;
     /** @type {?function(string, string):!Node} */
     this._shadowHandler = null;
+    /** @type {?function(string):!Node} */
+    this._varHandler = createTextNode;
   }
 
   /**
@@ -2255,6 +2255,13 @@ Elements.StylesSidebarPropertyRenderer = class {
    */
   setShadowHandler(handler) {
     this._shadowHandler = handler;
+  }
+
+  /**
+   * @param {function(string):!Node} handler
+   */
+  setVarHandler(handler) {
+    this._varHandler = handler;
   }
 
   /**
@@ -2286,7 +2293,7 @@ Elements.StylesSidebarPropertyRenderer = class {
     }
 
     const regexes = [SDK.CSSMetadata.VariableRegex, SDK.CSSMetadata.URLRegex];
-    const processors = [createTextNode, this._processURL.bind(this)];
+    const processors = [this._varHandler, this._processURL.bind(this)];
     if (this._bezierHandler && SDK.cssMetadata().isBezierAwareProperty(this._propertyName)) {
       regexes.push(UI.Geometry.CubicBezier.Regex);
       processors.push(this._bezierHandler);

@@ -11,6 +11,8 @@ Timeline.TimelineTreeView = class extends UI.VBox {
     super();
     /** @type {?Timeline.PerformanceModel} */
     this._model = null;
+    /** @type {?Array<!SDK.TracingModel.Event>} */
+    this._eventsTrack = null;
     /** @type {?TimelineModel.TimelineProfileTree.Node} */
     this._tree = null;
     this.element.classList.add('timeline-tree-view');
@@ -37,10 +39,11 @@ Timeline.TimelineTreeView = class extends UI.VBox {
 
   /**
    * @param {?Timeline.PerformanceModel} model
+   * @param {?Array<!SDK.TracingModel.Event>} eventsTrack
    */
-  setModel(model) {
+  setModel(model, eventsTrack) {
     this._model = model;
-    this._populateThreadSelector();
+    this._eventsTrack = eventsTrack;
     this.refreshTree();
   }
 
@@ -61,6 +64,9 @@ Timeline.TimelineTreeView = class extends UI.VBox {
 
     this._textFilter = new Timeline.TimelineFilters.RegExp();
     this._filters = [...filters, this._textFilter];
+
+    this._currentThreadSetting = Common.settings.createSetting('timelineTreeCurrentThread', 0);
+    this._currentThreadSetting.addChangeListener(this.refreshTree, this);
 
     const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([]);
     this.populateColumns(columns);
@@ -127,10 +133,6 @@ Timeline.TimelineTreeView = class extends UI.VBox {
    * @param {!UI.Toolbar} toolbar
    */
   populateToolbar(toolbar) {
-    this._threadSelector = new UI.ToolbarComboBox(targetChanged.bind(this));
-    this._threadSelector.setMaxWidth(230);
-    this._currentThreadSetting = Common.settings.createSetting('timelineTreeCurrentThread', 0);
-    toolbar.appendToolbarItem(this._threadSelector);
     this._textFilterUI = new UI.ToolbarInput(Common.UIString('Filter'));
     this._textFilterUI.addEventListener(UI.ToolbarInput.Event.TextChanged, textFilterChanged, this);
     toolbar.appendToolbarItem(this._textFilterUI);
@@ -143,47 +145,13 @@ Timeline.TimelineTreeView = class extends UI.VBox {
       this._textFilter.setRegExp(searchQuery ? createPlainTextSearchRegex(searchQuery, 'i') : null);
       this.refreshTree();
     }
-
-    /**
-     * @this {Timeline.TimelineTreeView}
-     */
-    function targetChanged() {
-      this._currentThreadSetting.set(this._threadSelector.selectedIndex());
-      this.refreshTree();
-    }
   }
 
   /**
    * @return {!Array<!SDK.TracingModel.Event>}
    */
   _modelEvents() {
-    if (!this._model || this._threadSelector.size() === 0)
-      return [];
-    return this._threadEvents[Number(this._threadSelector.selectedOption().value)];
-  }
-
-  _populateThreadSelector() {
-    this._threadSelector.removeOptions();
-    this._threadEvents = [];
-    if (!this._model) {
-      this._threadSelector.setVisible(false);
-      this._currentThreadSetting.set(0);
-      return;
-    }
-    let option = this._threadSelector.createOption(Common.UIString('Main'), '', '0');
-    this._threadEvents.push(this._model.timelineModel().mainThreadEvents());
-    this._threadSelector.addOption(option);
-    for (const thread of this._model.timelineModel().virtualThreads()) {
-      if (!thread.name)
-        continue;
-      if (!thread.events.some(e => e.name === TimelineModel.TimelineModel.RecordType.JSFrame))
-        continue;
-      option = this._threadSelector.createOption(thread.name, '', String(this._threadEvents.length));
-      this._threadSelector.addOption(option);
-      this._threadEvents.push(thread.events);
-    }
-    this._threadSelector.setSelectedIndex(this._currentThreadSetting.get());
-    this._threadSelector.setVisible(this._threadEvents.length > 1);
+    return this._eventsTrack || [];
   }
 
   /**
@@ -661,10 +629,11 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
   /**
    * @override
    * @param {?Timeline.PerformanceModel} model
+   * @param {?Array<!SDK.TracingModel.Event>} eventsTrack
    */
-  setModel(model) {
+  setModel(model, eventsTrack) {
     this._badgePool.reset();
-    super.setModel(model);
+    super.setModel(model, eventsTrack);
   }
 
   /**
