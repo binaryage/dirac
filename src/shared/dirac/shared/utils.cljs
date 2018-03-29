@@ -50,10 +50,9 @@
 (defn turn-channel-into-callback [channel callback]
   (go
     (loop []
-      (if-let [val (<! channel)]
-        (do
-          (callback val)
-          (recur))))))
+      (when-some [val (<! channel)]
+        (callback val)
+        (recur)))))
 
 (defn turn-promise-into-callback [promise callback]
   (ocall promise "then" callback))
