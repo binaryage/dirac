@@ -81,7 +81,7 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
     this._diffWidget = this._diffDataGrid.asWidget();
     this._diffWidget.setMinimumSize(50, 25);
 
-    if (isHeapTimeline && Common.moduleSetting('recordAllocationStacks').get()) {
+    if (isHeapTimeline) {
       this._allocationDataGrid = new Profiler.AllocationDataGrid(profile._heapProfilerModel, this);
       this._allocationDataGrid.addEventListener(
           DataGrid.DataGrid.Events.SelectedNode, this._onSelectAllocationNode, this);
@@ -166,6 +166,8 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
 
     this._populate();
     this._searchThrottler = new Common.Throttler(0);
+
+    this.element.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), true);
 
     for (const existingProfile of this._profiles())
       existingProfile.addEventListener(Profiler.ProfileHeader.Events.ProfileTitleChanged, this._updateControls, this);
@@ -298,6 +300,16 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
   }
 
   /**
+   * @param {!Event} event
+   */
+  _handleContextMenuEvent(event) {
+    const contextMenu = new UI.ContextMenu(event);
+    if (this._dataGrid)
+      this._dataGrid.populateContextMenu(contextMenu, event);
+    contextMenu.show();
+  }
+
+  /**
    * @override
    * @param {!UI.SearchableView.SearchConfig} searchConfig
    * @param {boolean} shouldJump
@@ -342,7 +354,7 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
     this._searchableView.updateSearchMatchesCount(this._searchResults.length);
     if (this._searchResults.length)
       this._currentSearchResultIndex = nextQuery.jumpBackwards ? this._searchResults.length - 1 : 0;
-    return this._jumpToSearchResult(this._currentSearchResultIndex);
+    await this._jumpToSearchResult(this._currentSearchResultIndex);
   }
 
   /**
@@ -372,6 +384,8 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
    */
   async _jumpToSearchResult(searchResultIndex) {
     this._searchableView.updateCurrentMatchIndex(searchResultIndex);
+    if (searchResultIndex === -1)
+      return;
     const node = await this._dataGrid.revealObjectByHeapSnapshotId(String(this._searchResults[searchResultIndex]));
     this._selectRevealedNode(node);
   }
@@ -423,15 +437,6 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
    */
   _profiles() {
     return this._profile.profileType().getProfiles();
-  }
-
-  /**
-   * @param {!UI.ContextMenu} contextMenu
-   * @param {!Event} event
-   */
-  populateContextMenu(contextMenu, event) {
-    if (this._dataGrid)
-      this._dataGrid.populateContextMenu(contextMenu, event);
   }
 
   /**
@@ -1097,6 +1102,7 @@ Profiler.HeapSnapshotProfileType.SnapshotReceived = 'SnapshotReceived';
 Profiler.TrackingHeapSnapshotProfileType = class extends Profiler.HeapSnapshotProfileType {
   constructor() {
     super(Profiler.TrackingHeapSnapshotProfileType.TypeId, ls`Allocation instrumentation on timeline`);
+    this._recordAllocationStacksSetting = Common.settings.createSetting('recordAllocationStacks', false);
   }
 
   /**
@@ -1191,8 +1197,16 @@ Profiler.TrackingHeapSnapshotProfileType = class extends Profiler.HeapSnapshotPr
     const heapProfilerModel = this._addNewProfile();
     if (!heapProfilerModel)
       return;
-    const recordAllocationStacks = Common.moduleSetting('recordAllocationStacks').get();
-    heapProfilerModel.startTrackingHeapObjects(recordAllocationStacks);
+    heapProfilerModel.startTrackingHeapObjects(this._recordAllocationStacksSetting.get());
+  }
+
+  /**
+   * @override
+   * @return {?Element}
+   */
+  customContent() {
+    return UI.SettingsUI.createSettingCheckbox(
+        ls`Record allocation stacks (extra performance overhead)`, this._recordAllocationStacksSetting, true);
   }
 
   /**

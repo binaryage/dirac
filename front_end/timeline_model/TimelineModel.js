@@ -457,7 +457,6 @@ TimelineModel.TimelineModel = class {
   _processThreadEvents(tracingModel, startTime, endTime, thread, isMainThread) {
     const events = this._injectJSFrameEvents(tracingModel, thread);
     const asyncEvents = thread.asyncEvents();
-    const groupByFrame = isMainThread && Runtime.experiments.isEnabled('timelinePerFrameTrack');
 
     let threadEvents;
     let threadAsyncEventsByGroup;
@@ -500,19 +499,6 @@ TimelineModel.TimelineModel = class {
       if (isMainThread && TimelineModel.TimelineModel.isMarkerEvent(event))
         this._eventDividers.push(event);
 
-      if (groupByFrame) {
-        let frameId = TimelineModel.TimelineData.forEvent(event).frameId;
-        const pageFrame = frameId && this._pageFrames.get(frameId);
-        const isMainFrame = !frameId || !pageFrame || !pageFrame.parent;
-        if (isMainFrame)
-          frameId = TimelineModel.TimelineModel.PageFrame.mainFrameId;
-        let frameEvents = this._eventsByFrame.get(frameId);
-        if (!frameEvents) {
-          frameEvents = [];
-          this._eventsByFrame.set(frameId, frameEvents);
-        }
-        frameEvents.push(event);
-      }
       threadEvents.push(event);
       this._inspectedTargetEvents.push(event);
     }
@@ -937,8 +923,6 @@ TimelineModel.TimelineModel = class {
     this._workerIdByThread = new WeakMap();
     /** @type {!Map<string, !TimelineModel.TimelineModel.PageFrame>} */
     this._pageFrames = new Map();
-    /** @type {!Map<string, !Array<!SDK.TracingModel.Event>>} */
-    this._eventsByFrame = new Map();
     this._pageURL = '';
 
     this._minimumRecordTime = 0;
@@ -1038,14 +1022,6 @@ TimelineModel.TimelineModel = class {
   }
 
   /**
-   * @param {string} frameId
-   * @return {!Array<!SDK.TracingModel.Event>}
-   */
-  eventsForFrame(frameId) {
-    return this._eventsByFrame.get(frameId) || [];
-  }
-
-  /**
    * @return {!Array<!TimelineModel.TimelineModel.NetworkRequest>}
    */
   networkRequests() {
@@ -1077,6 +1053,30 @@ TimelineModel.TimelineModel = class {
       }
     }
     return zeroStartRequestsList.concat(requestsList);
+  }
+
+  /**
+   * @param {!Array<!SDK.TracingModel.Event>} asyncEvents
+   * @return {!Array<!SDK.TracingModel.Event>}
+   */
+  static buildNestableSyncEventsFromAsync(asyncEvents) {
+    const stack = [];
+    const events = [];
+    for (const event of asyncEvents) {
+      const startTime = event.startTime;
+      const endTime = event.endTime;
+      while (stack.length && startTime >= stack.peekLast().endTime)
+        stack.pop();
+      if (stack.length && endTime > stack.peekLast().endTime)
+        return [];  // Events are not properly nested. Bail out.
+      const syncEvent = new SDK.TracingModel.Event(
+          event.categoriesString, event.name, SDK.TracingModel.Phase.Complete, startTime, event.thread);
+      syncEvent.setEndTime(endTime);
+      syncEvent.addArgs(event.args);
+      events.push(syncEvent);
+      stack.push(syncEvent);
+    }
+    return events;
   }
 };
 

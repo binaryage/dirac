@@ -340,10 +340,10 @@
 .timeline-details-view-block {
     flex: none;
     display: flex;
-    background-color: white;
+    background-color: var(--toolbar-bg-color);
     flex-direction: column;
     padding-bottom: 5px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: var(--divider-border);
 }
 
 .timeline-details-view-row {
@@ -634,7 +634,7 @@
 
 .timeline-stack-view-header {
     height: 27px;
-    background-color: white;
+    background-color: var(--toolbar-bg-color);
     padding: 6px 10px;
     color: #5a5a5a;
     white-space: nowrap;
@@ -659,25 +659,4 @@
 .timeline-landing-page > div > p {
     flex: none;
     white-space: pre-line;
-}
-
-.timeline-landing-warning {
-    background-color: #fffde7;
-    padding: 16px 20px;
-    margin-top: 40px;
-    box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-}
-
-.-theme-with-dark-background .timeline-landing-warning {
-    background: black;
-}
-
-.timeline-landing-warning-close {
-    float: right;
-    margin-top: -10px;
-    margin-right: -13px;
-}
-
-.timeline-landing-warning span[is=ui-icon] {
-    margin: -8px;
 }
