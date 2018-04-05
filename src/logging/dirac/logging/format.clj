@@ -23,7 +23,7 @@
          (cuerdas/unlines))))
 
 (defn preprocess-logger-name [logger-name]
-  (if-let [m (re-matches #"^dirac\.(.*)" logger-name)]
+  (if-some [m (re-matches #"^dirac\.(.*)" logger-name)]
     (str "⊙." (second m))
     logger-name))
 
