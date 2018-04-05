@@ -30,8 +30,8 @@
         (dedupe))))
 
 (defn parse-ns-from-source [source]
-  (if (re-find #"\(ns\s" source)
-    (if-let [ns-form (parse-ns-form source)]
+  (when (re-find #"\(ns\s" source)
+    (when-some [ns-form (parse-ns-form source)]
       (let [ast (analyze-ns ns-form {})]
         #js {"name"                    (str (:name ast))
              "namespaceAliases"        (clj->js (get-aliases (:requires ast)))

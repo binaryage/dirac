@@ -12,7 +12,9 @@
 
 (defn format-error-header [title body]
   (let [title-line (or title (string/trim (first (cuerdas/lines body))))]
-    (if (empty? title-line) "(no details)" title-line)))
+    (if (empty? title-line)
+      "(no details)"
+      title-line)))
 
 (defn report-internal-error! [kind body & [title]]
   {:pre [(string? kind)

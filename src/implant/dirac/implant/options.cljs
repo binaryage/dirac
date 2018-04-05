@@ -1,11 +1,9 @@
 (ns dirac.implant.options
-  (:require [oops.core :refer [oget ocall oapply gget]]
+  (:require [oops.core :refer [oget gcall oapply gget]]
             [dirac.implant.logging :refer [log warn error]]))
 
 (defn get-query-param [name]
-  (if-let [runtime (gget "Runtime")]
-    (ocall runtime "queryParam" name)
-    (throw (ex-info "Unable to obtain window.Runtime from DevTools" nil))))
+  (gcall "Runtime.queryParam" name))
 
 ; -- url param access -------------------------------------------------------------------------------------------------------
 

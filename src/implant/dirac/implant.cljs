@@ -40,7 +40,7 @@
 (defn init-repl! []
   (assert *implant-initialized*)
   (assert *console-initialized*)
-  (intercom/init-repl!))
+  (intercom/go-init-repl!))
 
 (defn adopt-prompt! [text-area-element use-parinfer?]
   (feedback/post! (str "adopt-prompt-element" " use-parinfer? " use-parinfer?))
@@ -53,10 +53,13 @@
 (defn get-version []
   version)
 
-(defn get-runtime-tag [callback]
+(defn go-get-runtime-tag [callback]
   (go
-    (let [tag (<! (eval/get-runtime-tag))]
+    (let [tag (<! (eval/go-get-runtime-tag))]
       (callback tag))))
+
+(defn get-runtime-tag [callback]
+  (go-get-runtime-tag callback))
 
 (defn parse-ns-from-source [source]
   (try
@@ -112,7 +115,7 @@
   (helpers/update-callstack-pane!))
 
 (defn get-namespaces-cache-debouncer []
-  (if-not *namespaces-cache-debouncer*
+  (when-not *namespaces-cache-debouncer*
     (set! *namespaces-cache-debouncer* (Debouncer. namespaces-cache-changed! 1000)))
   *namespaces-cache-debouncer*)
 
@@ -163,10 +166,11 @@
     (reporter/install!)
     (automation/install!)
     (feedback/install!)
-    (eval/start-eval-request-queue-processing-loop!)
+    (eval/go-start-eval-request-queue-processing-loop!)
     (feedback/post! "implant initialized")
     (info (str "Dirac implant " (get-version) " initialized"))))
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
-(runonce (init-implant!))
+(runonce
+  (init-implant!))

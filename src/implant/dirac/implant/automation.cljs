@@ -15,7 +15,7 @@
   (let [panel-name (name panel)
         inspector-view (get-inspector-view)
         panel-promise (ocall inspector-view "showPanel" panel-name)]
-    (if panel-promise
+    (when (some? panel-promise)
       (ocall panel-promise "then" (fn [_panel] true)))))
 
 (defn get-inspector-current-panel-name []
@@ -32,7 +32,7 @@
 
 (defn show-inspector-drawer! []
   (let [inspector-view (get-inspector-view)]
-    (if-not (inspector-drawer-visible?)
+    (when-not (inspector-drawer-visible?)
       (ocall inspector-view "_showDrawer"))
     true))
 
@@ -109,26 +109,25 @@
   (let [console-view (get-console-view)]
     (ocall console-view "getPromptRepresentation")))
 
-(defn trigger-fn-and-wait! [f delay]
+(defn go-trigger-fn-and-wait! [f delay]
   {:pre [(or (nil? delay) (number? delay))]}
-  (if (some? delay)
-    (go
-      (let [result (f)]
-        (<! (go-wait delay))
-        (if (nil? result)
-          (throw "triggered function must not return nil" {:fn    f
-                                                           :delay delay})
-          result)))
-    (f)))
+  (go
+    (let [result (f)]
+      (when (some? delay)
+        (<! (go-wait delay)))
+      (if (nil? result)
+        (throw "triggered function must not return nil" {:fn    f
+                                                         :delay delay})
+        result))))
 
-(defn trigger-internal-error! [delay kind]
+(defn go-trigger-internal-error! [delay kind]
   {:pre [(or (nil? delay) (number? delay))]}
   (let [fn-name (case kind
                   :unhandled-exception "triggerInternalError"
                   :unhandled-exception-in-promise "triggerInternalErrorInPromise"
                   :error-log "triggerInternalErrorAsErrorLog")
         trigger-fn #(gcall+ ["dirac" fn-name])]
-    (trigger-fn-and-wait! trigger-fn delay)))
+    (go-trigger-fn-and-wait! trigger-fn delay)))
 
 (defn get-frontend-url-params []
   (get-url-params))
@@ -152,7 +151,7 @@
     :disable-console-feedback (disable-console-feedback!)
     :get-suggest-box-representation (get-suggest-box-representation)
     :get-prompt-representation (get-prompt-representation)
-    :trigger-internal-error (trigger-internal-error! (:delay command) (:kind command))
+    :trigger-internal-error (go-trigger-internal-error! (:delay command) (:kind command))
     :get-frontend-url-params (get-frontend-url-params)
     :scrape (apply scrape (:scraper command) (:args command))
     (warn "received unknown automation command:" (pr-str command))))

@@ -2,16 +2,16 @@
   "Glues Parinfer's formatter to a CodeMirror editor"
   (:require [oops.core :refer [oget ocall gcall oapply gget]]))
 
-(defonce basic-editor-opts
+(def basic-editor-opts
   {:mode          "clojure-parinfer"
    :theme         "dirac"
    :matchBrackets true
    :height        "auto"})
 
-(defonce parinfer-editor-opts
+(def parinfer-editor-opts
   basic-editor-opts)
 
-(defn create-editor! [element key parinfer?]
+(defn create-editor! [element _key parinfer?]
   (let [element-id (oget element "id")
         cm-class (gget "CodeMirror")
         effective-opts (clj->js (if parinfer? parinfer-editor-opts basic-editor-opts))

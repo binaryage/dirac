@@ -6,8 +6,8 @@
   (gget "location.search"))
 
 (defn get-console-view []
-  (if-let [console-view-class (gget "?Console.?ConsoleView")]
-    (if-let [console-view (ocall console-view-class "instance")]
+  (if-some [console-view-class (gget "?Console.?ConsoleView")]
+    (if-some [console-view (ocall console-view-class "instance")]
       console-view
       (throw (ex-info "Unable to obtain ConsoleView instance from DevTools" nil)))
     (throw (ex-info "Unable to obtain Console.ConsoleView from DevTools" nil))))
@@ -40,5 +40,5 @@
   (oget sources-panel "_callstackPane"))
 
 (defn update-callstack-pane! []
-  (if-let [sources-panel (get-sources-panel-instance-if-avail)]
+  (when-some [sources-panel (get-sources-panel-instance-if-avail)]
     (ocall (get-callstack-pane sources-panel) "_update")))
