@@ -4,7 +4,7 @@
             [dirac.lib.utils :as utils])
   (:import (java.io PrintWriter StringWriter)))
 
-(def ^:dynamic log-stack-traces false)
+(def ^:dynamic *log-stack-traces* false)
 
 (defn drop-first-n-lines [n s]
   (->> s
@@ -22,7 +22,7 @@
         (drop-first-n-lines 3 (str string-writer))))))
 
 (defmacro log-stack-trace! []
-  (if log-stack-traces
+  (when *log-stack-traces*
     `(log/debug (get-printed-stack-trace))))
 
 (defmacro log-stack-trace!! []

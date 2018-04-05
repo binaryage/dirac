@@ -17,7 +17,7 @@
   (recv [_this timeout]
     (nrepl-transport/recv transport timeout))
   (send [_this reply-message]
-    (if (should-output-trace? reply-message)
+    (when (should-output-trace? reply-message)
       (let [details (or (:details reply-message) (str "Exception: " (:ex reply-message) " (no details available)"))
             output-response (protocol/prepare-print-output-response :java-trace details)]
         (nrepl-transport/send transport (protocol/prepare-related-response reply-message output-response))))

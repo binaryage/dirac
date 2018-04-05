@@ -23,9 +23,9 @@
   (recv [_this timeout]
     (nrepl-transport/recv transport timeout))
   (send [_this reply-message]
-    (if-let [content (:out reply-message)]
+    (when-some [content (:out reply-message)]
       (nrepl-transport/send transport (prepare-complete-print-output-response reply-message :stdout content)))
-    (if-let [content (:err reply-message)]
+    (when-some [content (:err reply-message)]
       (nrepl-transport/send transport (prepare-complete-print-output-response reply-message :stderr content)))
     (nrepl-transport/send transport reply-message)))
 

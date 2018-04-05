@@ -22,12 +22,12 @@
   (cuerdas/trim (second (re-matches dirac-command-re code))))
 
 (defn dirac-special-command? [nrepl-message]
-  (if-let [code (:code nrepl-message)]
+  (when-some [code (:code nrepl-message)]
     (some? (extract-dirac-command (str code)))))                                                                              ; we don't want to use read-string here, regexp test should be safe and quick
 
 (defn canonical-dirac-command [code]
   ; this is just for convenience, we convert some forms to canonical `(dirac! ...)` form
-  (if-let [command (extract-dirac-command code)]
+  (when-some [command (extract-dirac-command code)]
     (str "(dirac! " (if (empty? command) ":help" command) ")")))
 
 ; -- handlers for middleware operations -------------------------------------------------------------------------------------
@@ -56,10 +56,10 @@
         result (with-bindings @(:session nrepl-message)
                  (driver/wrap-with-driver job-id eval-job-fn response-fn "rich-text"))                                        ; we want support for ANSI for Figwheel and highlighting code snippets in docs
         has-result? (not= ::controls/no-result result)
-        result-str (if has-result? (helpers/safe-pr-str result))
+        result-str (when has-result? (helpers/safe-pr-str result))
         response (cond-> (protocol/prepare-done-response)
                          has-result? (merge (protocol/prepare-printed-value-response result-str)))]
-    (if has-result?
+    (when has-result?
       (helpers/send-response! nrepl-message (protocol/prepare-present-result-response result-str)))
     (helpers/send-response! nrepl-message response)))
 

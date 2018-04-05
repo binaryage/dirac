@@ -72,11 +72,8 @@
   (let [compiler-id (compilers/get-selected-compiler-id (state/get-current-session))
         sanitized-compiler-id (or (sanitize-filename compiler-id) "unknown")
         numeric-job-id (sorting-friendly-numeric-job-id job-id)
-        sanitized-repl-job-name (if numeric-job-id
-                                  (str "repl-job-" numeric-job-id)
-                                  (sanitize-filename job-id))
-        iteration-str (if (> iteration 1)
-                        (str "-" iteration))]
+        sanitized-repl-job-name (if numeric-job-id (str "repl-job-" numeric-job-id) (sanitize-filename job-id))
+        iteration-str (if (> iteration 1) (str "-" iteration))]
     (assert compiler-id)
     (str "repl://dirac-repl/" sanitized-compiler-id "/" sanitized-repl-job-name iteration-str ".cljs")))
 
@@ -199,7 +196,7 @@
   ; https://github.com/cemerick/piggieback/blob/440b2d03f944f6418844c2fab1e0361387eed543/src/cemerick/piggieback.clj#L183
   ; also see https://github.com/binaryage/dirac/issues/47
   (vreset! final-ns-volatile analyzer/*cljs-ns*)
-  (if response-fn
+  (when (some? response-fn)
     (let [response (-> (protocol/prepare-printed-value-response result)
                        (merge (prepare-current-env-info-response)))]
       (response-fn response))))                                                                                               ; printed value enhanced with current env info
@@ -227,10 +224,10 @@
                               :eval         (partial repl-eval! job-id counter-volatile scope-info dirac-mode)
                               :compiler-env compiler-env}
         effective-repl-options (merge default-repl-options repl-options)
-        initial-ns (if ns
+        initial-ns (if (some? ns)
                      (symbol ns)
                      (state/get-session-cljs-ns))
-        start-repl-fn (fn [driver caught-fn flush-fn]
+        start-repl-fn (fn [_driver caught-fn flush-fn]
                         (let [final-repl-options (assoc effective-repl-options
                                                    :flush (fn []
                                                             (repl-flush!)
@@ -244,6 +241,6 @@
               *err* (state/get-session-binding-value #'*err*)
               analyzer/*cljs-ns* initial-ns]
       (driver/wrap-with-driver job-id start-repl-fn response-fn "plain-text")
-      (if-let [final-ns @final-ns-volatile]                                                                                   ; we want analyzer/*cljs-ns* to be sticky between evaluations
-        (if-not (= final-ns initial-ns)
+      (when-some [final-ns @final-ns-volatile]                                                                                   ; we want analyzer/*cljs-ns* to be sticky between evaluations
+        (when-not (= final-ns initial-ns)
           (state/set-session-cljs-ns! final-ns))))))

@@ -22,7 +22,7 @@
 ; -- transport wrappers -----------------------------------------------------------------------------------------------------
 
 (defn wrap-nrepl-message-if-observed-job [nrepl-message]
-  (if-let [observed-job (jobs/get-observed-job nrepl-message)]
+  (if-some [observed-job (jobs/get-observed-job nrepl-message)]
     (make-nrepl-message-with-job-observing observed-job nrepl-message)
     nrepl-message))
 

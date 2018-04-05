@@ -29,7 +29,7 @@
                                :session (sessions/get-session-id observing-session))]
       (log/debug "sending message to observing session" observing-session (utils/pp artificial-message))
       (nrepl-transport/send observing-transport artificial-message))
-    (if (protocol/status-message? reply-message)
+    (when (protocol/status-message? reply-message)
       (jobs/unregister-observed-job! (jobs/get-observed-job-id observed-job)))
     (nrepl-transport/send transport reply-message)))
 

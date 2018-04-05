@@ -53,7 +53,7 @@
     (log/debug "remove-dirac-session-descriptor!")
     (log/trace (debug/pprint-session session))
     (state/register-selected-compiler-for-dead-session! session-id (state/get-session-selected-compiler session))
-    (if-let [session-descriptor (find-dirac-session-descriptor session)]
+    (if-some [session-descriptor (find-dirac-session-descriptor session)]
       (swap! state/session-descriptors #(remove #{session-descriptor} %))
       (log/error "attempt to remove unknown session descriptor:\n" (debug/pprint-session session)))))
 
@@ -90,7 +90,7 @@
     (get-dirac-session-descriptors-tags ordered-descriptors)))
 
 (defn get-current-session-tag [session]
-  (if-let [current-session-descriptor (find-dirac-session-descriptor session)]
+  (when-some [current-session-descriptor (find-dirac-session-descriptor session)]
     (prepare-dirac-session-descriptor-tag current-session-descriptor)))
 
 (defn for-each-session [f & args]
@@ -125,7 +125,7 @@
   (alter-meta! session dissoc ::joined-session-descriptor))
 
 (defn find-target-dirac-session-descriptor [session]
-  (if-let [matcher-fn (get-joined-session-matcher session)]
+  (if-some [matcher-fn (get-joined-session-matcher session)]
     (find-matching-dirac-session-descriptor matcher-fn)
     (log/error "find-joined-session-descriptor called on a session without matcher-fn: " (debug/pprint-session session))))
 
@@ -173,11 +173,10 @@
     (instance? Pattern matcher) [(make-regex-matcher matcher) (make-regex-matcher-description matcher)]))
 
 (defn get-target-session [session]
-  (if-let [target-session-descriptor (find-target-dirac-session-descriptor session)]
+  (when-some [target-session-descriptor (find-target-dirac-session-descriptor session)]
     (get-dirac-session-descriptor-session target-session-descriptor)))
 
 (defn get-current-retargeted-session []
   (let [session (state/get-current-session)
-        target-session (if (joined-session? session)
-                         (get-target-session session))]
+        target-session (when (joined-session? session) (get-target-session session))]
     (or target-session session)))

@@ -27,12 +27,12 @@
   (map get-compiler-descriptor-id descriptors))
 
 (defn filter-compiler-descriptors-by-first-match [descriptors]
-  (if-let [descriptor (first descriptors)]
+  (if-some [descriptor (first descriptors)]
     (list descriptor)
     (list)))
 
 (defn filter-compiler-descriptors-by-position [n descriptors]
-  (if-let [descriptor (nth descriptors (dec n) nil)]                                                                          ; user input is 1-based
+  (if-some [descriptor (nth descriptors (dec n) nil)]                                                                         ; user input is 1-based
     (list descriptor)
     (list)))
 
@@ -101,18 +101,18 @@
   (first (filter-available-matching-compiler-descriptors session match)))
 
 (defn get-selected-compiler-descriptor [session]
-  (if (some? session)
-    (if (state/dirac-session? session)
+  (when (some? session)
+    (when (state/dirac-session? session)
       (find-available-matching-compiler-descriptor session (state/get-session-selected-compiler session)))))
 
 (defn get-selected-compiler-id [session]
-  (if (some? session)
-    (if (state/dirac-session? session)
+  (when (some? session)
+    (when (state/dirac-session? session)
       (get-compiler-descriptor-id (get-selected-compiler-descriptor session)))))
 
 (defn get-selected-compiler-env [session]
-  (if (some? session)
-    (if (state/dirac-session? session)
+  (when (some? session)
+    (when (state/dirac-session? session)
       (get-compiler-descriptor-compiler-env (get-selected-compiler-descriptor session)))))
 
 (defn get-default-compiler-descriptor [session]
