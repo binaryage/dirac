@@ -14,7 +14,7 @@
 (defmacro minutes [v]
   (* MINUTE v))
 
-(defmacro milisec [v]
+(defmacro ms [v]
   v)
 
 ; ---------------------------------------------------------------------------------------------------------------------------
@@ -42,10 +42,10 @@
 (def ^:const DEFAULT_TASK_TIMEOUT (minutes 5))
 (def ^:const KILL_TASK_TIMEOUT (seconds 5))
 (def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (seconds 30))
-(def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (milisec 500))
+(def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (ms 500))
 (def ^:const PENDING_REPLIES_WAIT_TIMEOUT (seconds 2))
-(def ^:const SIGNAL_CLIENT_TASK_RESULT_DELAY (milisec 0))
-(def ^:const SIGNAL_CLIENT_CLOSE_DELAY (milisec 0))
+(def ^:const SIGNAL_CLIENT_TASK_RESULT_DELAY (ms 0))
+(def ^:const SIGNAL_CLIENT_CLOSE_DELAY (ms 0))
 (def ^:const SIGNAL_SERVER_MAX_CONNECTION_TIME (seconds 5))
 (def ^:const TASK_DISCONNECTED_WAIT_TIMEOUT (seconds 2))
 
