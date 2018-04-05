@@ -1,8 +1,8 @@
 ; initial version taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
 (ns dirac.lib.ws-client
-  (:require-macros [dirac.lib.ws-client :refer [log warn info error]])
   (:require [cljs.reader :refer [read-string]]
-            [goog.net.WebSocket :as gws]))
+            [goog.net.WebSocket :as goog-ws]
+            [dirac.lib.logging :refer [log warn info error]]))
 
 (def defaults {:name              "WebSocket Client"
                :verbose?          false
@@ -59,7 +59,7 @@
 
 (defn really-send! [client msg]
   (let [{:keys [verbose?]} (get-options client)]
-    (if verbose?
+    (when verbose?
       (log client "Sending websocket message" msg))
     (let [serialized-msg (serialize-message msg)]
       (.send (get-connection client) serialized-msg))))
@@ -72,38 +72,38 @@
 
 ; -- connection -------------------------------------------------------------------------------------------------------------
 
-(defn on-open-handler [client]
+(defn handle-open! [client]
   (let [{:keys [verbose? on-open]} (get-options client)]
     (mark-as-ready! client)
-    (if (and verbose? (ready? client))
+    (when (and verbose? (ready? client))
       (info client "Opened websocket connection"))
     (send! client (merge {:op :ready} (:ready-msg (get-options client))))
-    (if on-open
+    (when (some? on-open)
       (on-open client))))
 
-(defn on-message-handler [client event]
+(defn handle-message! [client event]
   (let [{:keys [on-message verbose?]} (get-options client)
         serialized-msg (.-message event)
         message (unserialize-message serialized-msg)]
-    (if verbose?
+    (when verbose?
       (log client "Received websocket message" message))
-    (if on-message
+    (when (some? on-message)
       (on-message client message))))
 
-(defn on-closed-handler [client]
+(defn handle-close! [client]
   (let [{:keys [on-close verbose?]} (get-options client)]
-    (if (and verbose? (ready? client))
+    (when (and verbose? (ready? client))
       (info client "Closed websocket connection"))
-    (if on-close
+    (when (some? on-close)
       (on-close client))
     (mark-as-not-ready! client)))
 
-(defn on-error-handler [client event]
+(defn handle-error! [client event]
   (let [{:keys [on-error verbose?]} (get-options client)]
     (when (ready? client)
-      (if verbose?
+      (when verbose?
         (error client "Encountered websocket error" event)))
-    (if on-error
+    (when (some? on-error)
       (on-error client event))))
 
 (defn sanitize-opts [opts]
@@ -113,7 +113,7 @@
   (if-not (connected? client)
     (let [server-url (get-server-url client)
           options (get-options client)]
-      (if (:verbose? options)
+      (when (:verbose? options)
         (info client "Connecting to server:" server-url "with options:" options))
       (.open (get-connection client) server-url))
     true))
@@ -129,10 +129,10 @@
         {:keys [auto-reconnect? next-reconnect-fn init-delay]} sanitized-opts
         web-socket (goog.net.WebSocket. auto-reconnect? next-reconnect-fn)
         client (make-client web-socket server-url sanitized-opts)]
-    (.listen web-socket gws/EventType.OPENED (make-delayed-fn (partial on-open-handler client) init-delay))
-    (.listen web-socket gws/EventType.MESSAGE (partial on-message-handler client))
-    (.listen web-socket gws/EventType.CLOSED (partial on-closed-handler client))
-    (.listen web-socket gws/EventType.ERROR (partial on-error-handler client))
+    (.listen web-socket goog-ws/EventType.OPENED (make-delayed-fn (partial handle-open! client) init-delay))
+    (.listen web-socket goog-ws/EventType.MESSAGE (partial handle-message! client))
+    (.listen web-socket goog-ws/EventType.CLOSED (partial handle-close! client))
+    (.listen web-socket goog-ws/EventType.ERROR (partial handle-error! client))
     (try-connect! client)
     client))
 

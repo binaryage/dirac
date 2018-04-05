@@ -39,7 +39,7 @@
 
 (defn decoder [v]
   (if (string? v)
-    (if-let [m (re-matches re-marker v)]
+    (if-some [m (re-matches re-marker v)]
       (decode-value (second m))
       v)
     v))

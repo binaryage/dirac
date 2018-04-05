@@ -47,7 +47,7 @@
 
 (defn wait-for-all-responses! [responses-channel]
   (loop []
-    (if (<!! responses-channel)
+    (when (<!! responses-channel)
       (recur))))
 
 (defn exit-with-error! [msg & [exit-code]]

@@ -36,7 +36,7 @@
     (let [tunnel (:tunnel (meta this))]
       (str "[NREPLTunnelServer#" (:id this) " of " (str tunnel) "]"))))
 
-(def last-id (volatile! 0))
+(defonce last-id (volatile! 0))
 
 (defn next-id! []
   (vswap! last-id inc))
@@ -103,8 +103,8 @@
 
 (defn dispatch-message! [server message]
   {:pre [(instance? NREPLTunnelServer server)]}
-  (if-let [session (:session message)]                                                                                        ; ignore messages without session
-    (if-let [client (get-client-for-session server session)]                                                                  ; client may be already disconnected
+  (if-some [session (:session message)]                                                                                       ; ignore messages without session
+    (when-some [client (get-client-for-session server session)]                                                               ; client may be already disconnected
       (send! client message))
     (log/trace (str server) (str "Message " (utils/sid message) " cannot be dispatched because it does not have a session"))))
 
@@ -134,9 +134,9 @@
   (let [{:keys [id err out]} source-message]
     (into {:op     "finish-dirac-job"
            :status status}
-          [(if id [:id id])
-           (if err [:err err])
-           (if out [:err out])])))
+          [(when (some? id) [:id id])
+           (when (some? err) [:err err])
+           (when (some? out) [:err out])])))
 
 (defmethod process-message :error [server client message]
   (log/error (str server) "Received an error from client" (str client) ":\n" (utils/pp message))
@@ -153,7 +153,7 @@
 
 (defmethod process-message :nrepl-message [server client message]
   (log/debug (str server) "process :nrepl-message from" (str client) (utils/pp message))
-  (if-let [envelope (:envelope message)]
+  (when-some [envelope (:envelope message)]
     (send-message-to-server! server client envelope)))
 
 ; -- utilities --------------------------------------------------------------------------------------------------------------
