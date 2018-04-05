@@ -3,4 +3,4 @@
             [dirac.shared.utils :refer [runonce]]))
 
 (runonce
-  (core/init!))
+  (core/go-init!))
