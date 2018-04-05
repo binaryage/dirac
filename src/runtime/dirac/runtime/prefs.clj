@@ -8,8 +8,8 @@
   ; if we don't succeed it is not that big deal, runtime tags are only "nice to have" feature
   ; they are relevant to auto-joining dirac REPL sessions
   (try
-    (if-let [project (slurp "project.clj")]
-      (if-let [match (re-find #"defproject (.*?) " project)]
+    (if-some [project (slurp "project.clj")]
+      (if-some [match (re-find #"defproject (.*?) " project)]
         (str (second match))))
     (catch Throwable _e
       nil)))
@@ -17,7 +17,7 @@
 (defn attempt-to-read-runtime-tag-from-project-folder []
   (try
     (let [folder-name (.getName (.getCanonicalFile (File. ".")))]
-      (if-not (string/blank? folder-name)
+      (when-not (string/blank? folder-name)
         folder-name))
     (catch Throwable _e
       nil)))

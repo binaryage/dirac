@@ -30,5 +30,5 @@
 (defmacro safe-call [f exceptional-result & args]
   `(try
      (~f ~@args)
-     (catch :default e#
+     (catch :default _e#
        ~exceptional-result)))

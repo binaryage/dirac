@@ -22,7 +22,7 @@
 
 (defn parse-int [v]
   (let [res (js/parseInt v 10)]
-    (if-not (js/isNaN res)
+    (when-not (js/isNaN res)
       res)))
 
 (defn command-to-style [command]
