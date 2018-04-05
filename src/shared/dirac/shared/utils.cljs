@@ -14,7 +14,7 @@
 (defn remove-nil-values [m]
   (into {} (remove (comp nil? second) m)))
 
-(defonce ^:const EXPONENTIAL_BACKOFF_CEILING (* 60 1000))
+(def ^:const EXPONENTIAL_BACKOFF_CEILING (* 60 1000))
 
 (defn exponential-backoff-ceiling [attempt]
   (let [time (* (gcall "Math.pow" 2 attempt) 1000)]
@@ -47,7 +47,7 @@
     (ocall promise "then" (partial handle-promised-result! channel))
     channel))
 
-(defn turn-channel-into-callback [channel callback]
+(defn go-turn-channel-into-callback [channel callback]
   (go
     (loop []
       (when-some [val (<! channel)]
@@ -71,7 +71,7 @@
   {:pre [(or (fn? callback) (nil? callback))]}
   (if (some? callback)
     (cond
-      (satisfies? async-protocols/Channel o) (turn-channel-into-callback o callback)
+      (satisfies? async-protocols/Channel o) (go-turn-channel-into-callback o callback)
       (instance? Promise o) (turn-promise-into-callback o callback)
       (fn? o) o                                                                                                               ; assume already a callback
       :else (callback o)))
@@ -120,7 +120,7 @@
   ; note that error may be a string message already
   (if (string? e)
     e
-    (if-let [stack (oget e "stack")]
+    (if-some [stack (oget e "stack")]
       (str stack)
       (str e))))
 

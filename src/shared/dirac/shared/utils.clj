@@ -15,20 +15,20 @@
   (format "%.1fs" (/ time-ms 1000.)))
 
 (defn advanced-mode? []
-  (if cljs.env/*compiler*
+  (when (some? cljs.env/*compiler*)
     (= (get-in @cljs.env/*compiler* [:options :optimizations]) :advanced)))
 
 (defmacro when-advanced-mode [& body]
-  (if (advanced-mode?)
+  (when (advanced-mode?)
     `(do ~@body)))
 
 (defmacro when-not-advanced-mode [& body]
-  (if-not (advanced-mode?)
+  (when-not (advanced-mode?)
     `(do ~@body)))
 
 (defn dirac-test-mode? []
   (some? (:dirac-test-browser environ/env)))
 
 (defmacro when-not-dirac-test-mode [& body]
-  (if-not (dirac-test-mode?)
+  (when-not (dirac-test-mode?)
     `(do ~@body)))

@@ -15,7 +15,7 @@
 
 (defn unable-to-resolve-backend-url [debugger-url tab-url reason]
   (str "Unable to resolve backend-url for given tab-url (via debugger-url).\n"
-       (if (some? reason) (str "reason: " reason "\n"))
+       (when (some? reason) (str "reason: " reason "\n"))
        "tab-url=" tab-url ", debugger-url=" debugger-url))
 
 (defn debugger-url-not-specified []
@@ -26,15 +26,15 @@
 
 (defn unable-to-complete-frontend-handshake [frontend-tab-id reason]
   (str "Unable to complete initial frontend handshake"
-       (if (some? reason) (str ", reason: " reason))
+       (when (some? reason) (str ", reason: " reason))
        ". (frontend-tab-id=" frontend-tab-id ")"))
 
 (defn unable-to-complete-frontend-loading [frontend-tab-id reason]
   (str "Unable to complete initial frontend loading"
-       (if (some? reason) (str ", reason: " reason))
+       (when (some? reason) (str ", reason: " reason))
        ". (frontend-tab-id=" frontend-tab-id ")"))
 
 (defn unable-to-complete-intercom-initialization [frontend-tab-id reason]
   (str "Unable to complete intercom initialization"
-       (if (some? reason) (str ", reason: " reason))
+       (when (some? reason) (str ", reason: " reason))
        ". (frontend-tab-id=" frontend-tab-id ")"))

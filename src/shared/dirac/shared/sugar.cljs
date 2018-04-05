@@ -35,13 +35,13 @@
 ; -- window -----------------------------------------------------------------------------------------------------------------
 
 (defn set-window-params-dimensions! [window-params left top width height]
-  (if (some? left)
+  (when (some? left)
     (oset! window-params "!left" (utils/parse-int left)))
-  (if (some? top)
+  (when (some? top)
     (oset! window-params "!top" (utils/parse-int top)))
-  (if (some? width)
+  (when (some? width)
     (oset! window-params "!width" (utils/parse-int width)))
-  (if (some? height)
+  (when (some? height)
     (oset! window-params "!height" (utils/parse-int height)))
   window-params)
 
@@ -78,7 +78,7 @@
 (defn go-check-tab-exists? [tab-id]
   (go
     (with-muted-error-reporting
-      (if-let [[_tab] (<! (tabs/get tab-id))]
+      (if-some [[_tab] (<! (tabs/get tab-id))]
         true
         false))))
 
@@ -89,5 +89,5 @@
 
 (defn go-fetch-tab-window-id [tab-id]
   (go
-    (if-let [tab (<! (go-fetch-tab tab-id))]
+    (if-some [tab (<! (go-fetch-tab tab-id))]
       (get-tab-window-id tab))))

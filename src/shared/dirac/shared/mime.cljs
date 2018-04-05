@@ -12,12 +12,12 @@
   (vec (concat (butlast v) [(f (last v))])))
 
 (defn parse-header-line [state line]
-  (if-let [continuation-match (re-matches #"^\s+(.*)$" line)]
+  (if-some [continuation-match (re-matches #"^\s+(.*)$" line)]
     (update-in state [:headers] update-last #(str % (second continuation-match)))
     (update-in state [:headers] conj line)))
 
 (defn parse-header-item [item]
-  (if-let [m (re-matches #"^(.*?):(.*)$" item)]
+  (if-some [m (re-matches #"^(.*?):(.*)$" item)]
     [(nth m 1) (string/trim (nth m 2))]
     (throw (ex-info (str "unable to parse header item: '" item "'") {}))))
 
@@ -29,8 +29,8 @@
       (parse-header-items)))
 
 (defn retrieve-boundary [state]
-  (if-let [content-type (get-in state [:headers "Content-Type"])]
-    (if-let [boundary-match (re-find #"boundary=\"(.*?)\"" content-type)]
+  (when-some [content-type (get-in state [:headers "Content-Type"])]
+    (when-some [boundary-match (re-find #"boundary=\"(.*?)\"" content-type)]
       (second boundary-match))))
 
 (defn parse-header-lines [lines]
@@ -58,7 +58,7 @@
   (let [splits (.split source boundary)
         * (fn [part]
             (let [sanitized-part (strip-leading-new-line part)]
-              (if-not (re-matches #"(-|\n)+" sanitized-part)
+              (when-not (re-matches #"(-|\n)+" sanitized-part)
                 sanitized-part)))]
     (keep * splits)))
 
@@ -70,6 +70,6 @@
 (defn parse-multipart-mime [source]
   (let [mime (parse-mime source)]
     {:headers (:headers mime)
-     :parts   (if-let [boundary (retrieve-boundary mime)]
+     :parts   (if-some [boundary (retrieve-boundary mime)]
                 (break-body-by-boundary (:body mime) boundary)
                 (list (:body mime)))}))

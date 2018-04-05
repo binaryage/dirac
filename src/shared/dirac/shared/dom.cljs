@@ -14,7 +14,7 @@
   ([element selector] (ocall element "querySelectorAll" selector)))
 
 (defn get-tag-name [el]
-  (if-let [tag-name (oget el "?tagName")]
+  (when-some [tag-name (oget el "?tagName")]
     (string/lower-case tag-name)))
 
 (defn get-class-name [el]
@@ -27,7 +27,7 @@
   (oget el "?shadowRoot"))
 
 (defn get-own-text-content [el]
-  (if (empty? (get-children el))
+  (when (empty? (get-children el))
     (oget el "?textContent")))
 
 (defn get-title [el]
