@@ -303,6 +303,14 @@ Sources.FileBasedSearchResult = class {
    * @return {string}
    */
   label() {
+    return this._uiSourceCode.displayName();
+  }
+
+  /**
+   * @override
+   * @return {string}
+   */
+  description() {
     return this._uiSourceCode.fullDisplayName();
   }
 

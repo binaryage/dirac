@@ -1061,6 +1061,8 @@ Timeline.TimelineUIUtils = class {
    * @return {!Object<string, number>}
    */
   static statsForTimeRange(events, startTime, endTime) {
+    if (!events.length)
+      return {'idle': endTime - startTime};
     const symbol = Timeline.TimelineUIUtils._categoryBreakdownCacheSymbol;
     Timeline.TimelineUIUtils._buildRangeStatsCacheIfNeeded(events);
 
@@ -1563,21 +1565,6 @@ Timeline.TimelineUIUtils = class {
       idle: new Timeline.TimelineCategory('idle', Common.UIString('Idle'), false, 'hsl(0, 0%, 98%)', 'hsl(0, 0%, 98%)')
     };
     return Timeline.TimelineUIUtils._categories;
-  }
-
-  /**
-   * @param {!TimelineModel.TimelineModel.AsyncEventGroup} group
-   * @return {string}
-   */
-  static titleForAsyncEventGroup(group) {
-    if (!Timeline.TimelineUIUtils._titleForAsyncEventGroupMap) {
-      const groups = TimelineModel.TimelineModel.AsyncEventGroup;
-      Timeline.TimelineUIUtils._titleForAsyncEventGroupMap = new Map([
-        [groups.animation, Common.UIString('Animation')], [groups.console, Common.UIString('Console')],
-        [groups.userTiming, Common.UIString('User Timing')], [groups.input, Common.UIString('Input')]
-      ]);
-    }
-    return Timeline.TimelineUIUtils._titleForAsyncEventGroupMap.get(group) || '';
   }
 
   /**

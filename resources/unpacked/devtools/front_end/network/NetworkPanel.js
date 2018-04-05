@@ -29,7 +29,7 @@
  */
 /**
  * @implements {UI.ContextMenu.Provider}
- * @implements {UI.Searchable}
+ * @implements {UI.ViewLocationResolver}
  */
 Network.NetworkPanel = class extends UI.Panel {
   constructor() {
@@ -50,12 +50,13 @@ Network.NetworkPanel = class extends UI.Panel {
     /** @type {?Network.NetworkPanel.FilmStripRecorder} */
     this._filmStripRecorder = null;
 
-    this._panelToolbar = new UI.Toolbar('', this.element);
-    this._filterBar = new UI.FilterBar('networkPanel', true);
-    this._filterBar.show(this.element);
-    this.setDefaultFocusedChild(this._filterBar);
+    const panel = new UI.VBox();
 
-    this._filmStripPlaceholderElement = this.element.createChild('div', 'network-film-strip-placeholder');
+    this._panelToolbar = new UI.Toolbar('', panel.contentElement);
+    this._filterBar = new UI.FilterBar('networkPanel', true);
+    this._filterBar.show(panel.contentElement);
+
+    this._filmStripPlaceholderElement = panel.contentElement.createChild('div', 'network-film-strip-placeholder');
 
     // Create top overview component.
     this._overviewPane = new PerfUI.TimelineOverviewPane('network');
@@ -64,26 +65,49 @@ Network.NetworkPanel = class extends UI.Panel {
     this._overviewPane.element.id = 'network-overview-panel';
     this._networkOverview = new Network.NetworkOverview();
     this._overviewPane.setOverviewControls([this._networkOverview]);
-    this._overviewPlaceholderElement = this.element.createChild('div');
+    this._overviewPlaceholderElement = panel.contentElement.createChild('div');
 
     this._calculator = new Network.NetworkTransferTimeCalculator();
 
     this._splitWidget = new UI.SplitWidget(true, false, 'networkPanelSplitViewState');
     this._splitWidget.hideMain();
+    this._splitWidget.show(panel.contentElement);
 
-    this._splitWidget.show(this.element);
+    panel.setDefaultFocusedChild(this._filterBar);
+
+    const initialSidebarWidth = 225;
+    const splitWidget = new UI.SplitWidget(true, false, 'networkPanelSidebarState', initialSidebarWidth);
+    splitWidget.hideSidebar();
+    splitWidget.enableShowModeSaving();
+    splitWidget.element.tabIndex = 0;
+    splitWidget.show(this.element);
+    this._sidebarLocation = UI.viewManager.createTabbedLocation(async () => {
+      UI.viewManager.showView('network');
+      splitWidget.showBoth();
+    }, 'network-sidebar', true);
+    const tabbedPane = this._sidebarLocation.tabbedPane();
+    tabbedPane.setMinimumSize(100, 25);
+    tabbedPane.element.classList.add('network-tabbed-pane');
+    tabbedPane.element.addEventListener('keydown', event => {
+      if (event.key !== 'Escape')
+        return;
+      splitWidget.hideSidebar();
+      event.consume();
+    });
+    const closeSidebar = new UI.ToolbarButton(Common.UIString('Close'), 'largeicon-delete');
+    closeSidebar.addEventListener(UI.ToolbarButton.Events.Click, () => splitWidget.hideSidebar());
+    tabbedPane.rightToolbar().appendToolbarItem(closeSidebar);
+    splitWidget.setSidebarWidget(tabbedPane);
+    splitWidget.setMainWidget(panel);
+    splitWidget.setDefaultFocusedChild(panel);
+    this.setDefaultFocusedChild(splitWidget);
 
     this._progressBarContainer = createElement('div');
-
-    this._searchableView = new UI.SearchableView(this);
-    this._searchableView.setPlaceholder(Common.UIString('Find by filename or path'));
 
     /** @type {!Network.NetworkLogView} */
     this._networkLogView =
         new Network.NetworkLogView(this._filterBar, this._progressBarContainer, this._networkLogLargeRowsSetting);
-    this._networkLogView.show(this._searchableView.element);
-
-    this._splitWidget.setSidebarWidget(this._searchableView);
+    this._splitWidget.setSidebarWidget(this._networkLogView);
 
     this._detailsWidget = new UI.VBox();
     this._detailsWidget.element.classList.add('network-details-view');
@@ -101,7 +125,7 @@ Network.NetworkPanel = class extends UI.Panel {
 
     this._offlineCheckbox = MobileThrottling.throttlingManager().createOfflineToolbarCheckbox();
     this._throttlingSelect = this._createThrottlingConditionsSelect();
-    this._setupToolbarButtons();
+    this._setupToolbarButtons(splitWidget);
 
     this._toggleRecord(true);
     this._toggleShowOverview();
@@ -113,10 +137,6 @@ Network.NetworkPanel = class extends UI.Panel {
         SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.WillReloadPage, this._willReloadPage, this);
     SDK.targetManager.addModelListener(SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._load, this);
     this._networkLogView.addEventListener(Network.NetworkLogView.Events.RequestSelected, this._onRequestSelected, this);
-    this._networkLogView.addEventListener(
-        Network.NetworkLogView.Events.SearchCountUpdated, this._onSearchCountUpdated, this);
-    this._networkLogView.addEventListener(
-        Network.NetworkLogView.Events.SearchIndexUpdated, this._onSearchIndexUpdated, this);
     BrowserSDK.networkLog.addEventListener(BrowserSDK.NetworkLog.Events.RequestAdded, this._onUpdateRequest, this);
     BrowserSDK.networkLog.addEventListener(BrowserSDK.NetworkLog.Events.RequestUpdated, this._onUpdateRequest, this);
     BrowserSDK.networkLog.addEventListener(BrowserSDK.NetworkLog.Events.Reset, this._onNetworkLogReset, this);
@@ -164,9 +184,12 @@ Network.NetworkPanel = class extends UI.Panel {
     this._networkLogView.setWindow(startTime, endTime);
   }
 
-  _setupToolbarButtons() {
+  _setupToolbarButtons(splitWidget) {
+    const searchToggle = new UI.ToolbarToggle('Search', 'largeicon-search');
+    function updateSidebarToggle() {
+      searchToggle.setToggled(splitWidget.showMode() !== UI.SplitWidget.ShowMode.OnlyMain);
+    }
     this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._toggleRecordAction));
-
     const clearButton = new UI.ToolbarButton(Common.UIString('Clear'), 'largeicon-clear');
     clearButton.addEventListener(UI.ToolbarButton.Events.Click, () => BrowserSDK.networkLog.reset(), this);
     this._panelToolbar.appendToolbarItem(clearButton);
@@ -176,6 +199,15 @@ Network.NetworkPanel = class extends UI.Panel {
     this._panelToolbar.appendToolbarItem(recordFilmStripButton);
 
     this._panelToolbar.appendToolbarItem(this._filterBar.filterButton());
+    updateSidebarToggle();
+    splitWidget.addEventListener(UI.SplitWidget.Events.ShowModeChanged, updateSidebarToggle);
+    searchToggle.addEventListener(UI.ToolbarButton.Events.Click, () => {
+      if (splitWidget.showMode() === UI.SplitWidget.ShowMode.OnlyMain)
+        splitWidget.showBoth();
+      else
+        splitWidget.hideSidebar();
+    });
+    this._panelToolbar.appendToolbarItem(searchToggle);
     this._panelToolbar.appendSeparator();
 
     this._panelToolbar.appendText(Common.UIString('View:'));
@@ -351,14 +383,6 @@ Network.NetworkPanel = class extends UI.Panel {
 
   /**
    * @override
-   * @return {!UI.SearchableView}
-   */
-  searchableView() {
-    return this._searchableView;
-  }
-
-  /**
-   * @override
    * @param {!KeyboardEvent} event
    */
   handleShortcut(event) {
@@ -414,22 +438,6 @@ Network.NetworkPanel = class extends UI.Panel {
   /**
    * @param {!Common.Event} event
    */
-  _onSearchCountUpdated(event) {
-    const count = /** @type {number} */ (event.data);
-    this._searchableView.updateSearchMatchesCount(count);
-  }
-
-  /**
-   * @param {!Common.Event} event
-   */
-  _onSearchIndexUpdated(event) {
-    const index = /** @type {number} */ (event.data);
-    this._searchableView.updateCurrentMatchIndex(index);
-  }
-
-  /**
-   * @param {!Common.Event} event
-   */
   _onRequestSelected(event) {
     const request = /** @type {?SDK.NetworkRequest} */ (event.data);
     this._showRequest(request);
@@ -460,53 +468,6 @@ Network.NetworkPanel = class extends UI.Panel {
     this._detailsWidget.element.classList.toggle(
         'network-details-view-tall-header', this._networkLogLargeRowsSetting.get());
     this._networkLogView.switchViewMode(!this._splitWidget.isResizable());
-  }
-
-  /**
-   * @override
-   * @param {!UI.SearchableView.SearchConfig} searchConfig
-   * @param {boolean} shouldJump
-   * @param {boolean=} jumpBackwards
-   */
-  performSearch(searchConfig, shouldJump, jumpBackwards) {
-    this._networkLogView.performSearch(searchConfig, shouldJump, jumpBackwards);
-  }
-
-  /**
-   * @override
-   */
-  jumpToPreviousSearchResult() {
-    this._networkLogView.jumpToPreviousSearchResult();
-  }
-
-  /**
-   * @override
-   * @return {boolean}
-   */
-  supportsCaseSensitiveSearch() {
-    return false;
-  }
-
-  /**
-   * @override
-   * @return {boolean}
-   */
-  supportsRegexSearch() {
-    return false;
-  }
-
-  /**
-   * @override
-   */
-  jumpToNextSearchResult() {
-    this._networkLogView.jumpToNextSearchResult();
-  }
-
-  /**
-   * @override
-   */
-  searchCanceled() {
-    this._networkLogView.searchCanceled();
   }
 
   /**
@@ -592,6 +553,17 @@ Network.NetworkPanel = class extends UI.Panel {
     this._overviewPane.setBounds(this._calculator.minimumBoundary() * 1000, this._calculator.maximumBoundary() * 1000);
     this._networkOverview.updateRequest(request);
     this._overviewPane.scheduleUpdate();
+  }
+
+  /**
+   * @override
+   * @param {string} locationName
+   * @return {?UI.ViewLocation}
+   */
+  resolveLocation(locationName) {
+    if (locationName === 'network-sidebar')
+      return this._sidebarLocation;
+    return null;
   }
 };
 
@@ -765,5 +737,59 @@ Network.NetworkPanel.RequestLocationRevealer = class {
       view.revealRequestHeader(location.requestHeader.name);
     if (location.responseHeader)
       view.revealResponseHeader(location.responseHeader.name);
+  }
+};
+
+Network.SearchNetworkView = class extends Search.SearchView {
+  constructor() {
+    super('network');
+  }
+
+  /**
+   * @param {string} query
+   * @param {boolean=} searchImmediately
+   * @return {!Promise<!Search.SearchView>}
+   */
+  static async openSearch(query, searchImmediately) {
+    await UI.viewManager.showView('network.search-network-tab');
+    const searchView =
+        /** @type {!Network.SearchNetworkView} */ (self.runtime.sharedInstance(Network.SearchNetworkView));
+    searchView.toggle(query, !!searchImmediately);
+    return searchView;
+  }
+
+  /**
+   * @override
+   * @return {!Search.SearchScope}
+   */
+  createScope() {
+    return new Network.NetworkSearchScope();
+  }
+};
+
+/**
+ * @implements {UI.ActionDelegate}
+ */
+Network.NetworkPanel.SearchActionDelegate = class {
+  /**
+   * @override
+   * @param {!UI.Context} context
+   * @param {string} actionId
+   * @return {boolean}
+   */
+  handleAction(context, actionId) {
+    this._showSearch();
+    return true;
+  }
+
+  /**
+   * @return {!Promise}
+   */
+  _showSearch() {
+    const selection = UI.inspectorView.element.window().getSelection();
+    let queryCandidate = '';
+    if (selection.rangeCount)
+      queryCandidate = selection.toString().replace(/\r?\n.*/, '');
+    return Network.SearchNetworkView.openSearch(queryCandidate);
   }
 };
