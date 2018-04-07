@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//third_party/WebKit/public/public_features.gni")
-import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/blink/public/public_features.gni")
+import("//third_party/blink/renderer/core/core.gni")
 
 all_devtools_files = [
   "front_end/accessibility/AccessibilityModel.js",
@@ -1070,7 +1070,7 @@ devtools_applications = [
 
 #-------------------------------------------------------------------------------
 
-visibility = [ "//third_party/WebKit/*" ]
+visibility = [ "//third_party/blink/*" ]
 
 group("devtools_all_files") {
   data = all_devtools_files
@@ -1279,7 +1279,7 @@ group("devtools_closure_compile") {
     "//testing/scripts/common.py",
     "//testing/scripts/run_devtools_check.py",
     "//testing/xvfb.py",
-    "//third_party/WebKit/Source/core/inspector/browser_protocol.json",
+    "//third_party/blink/renderer/core/inspector/browser_protocol.json",
     "//v8/src/inspector/js_protocol.json",
   ]
 }
