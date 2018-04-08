@@ -24,7 +24,7 @@
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-   ['binaryage/oops "0.5.8" :scope "test"]
+   ['binaryage/oops "0.6.0" :scope "test"]
    ['binaryage/chromex "0.6.0" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
