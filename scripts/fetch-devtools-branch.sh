@@ -58,12 +58,18 @@ git branch -f tracker2 "$LATEST_SHA"
 git filter-branch -f --state-branch refs/heads/tracker2-state --prune-empty --subdirectory-filter third_party/blink/renderer/devtools tracker2
 
 # this will effectively replay all commits from tracker2 on top of last commit in tracker1 and puts the result into devtools branch
-# please note that FIRST_SHA from tracker2 is excluded from replay,
-# this way we skip the move commit SPLIT_SHA, which wasn't accounted for in tracker1 because we stopped at PRE_SPLIT_SHA
-git checkout -f -B devtools tracker2
-FIRST_SHA=`git rev-list --reverse HEAD | head -n 1`
-git log -1 "$FIRST_SHA"
-git rebase --onto tracker1 "$FIRST_SHA"
+# note that my first attempt was to use git rebase, but that would rewrite committer metadata
+
+git branch -f tracker3 tracker2
+git filter-branch -f --state-branch refs/heads/tracker3-state --parent-filter '
+    read parents
+    if [ "$parents" = "" ]; then
+        echo "-p tracker1"
+    else
+        echo "$parents"
+    fi' tracker3
+
+git branch -f devtools tracker3
 
 git push dirac devtools
 
