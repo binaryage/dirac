@@ -6,7 +6,7 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 WORK_DIR="$TMP_DIR/peon/generate-supported-css-properties"
 mkdir -p "$WORK_DIR"
 
-pushd "$CHROMIUM_MIRROR_DEVTOOLS_DIR"
+pushd "$CHROMIUM_DEVTOOLS_DIR"
 
 REV=`git rev-parse HEAD`
 TAG=`git tag -l "[0-9]*" | tail -1`

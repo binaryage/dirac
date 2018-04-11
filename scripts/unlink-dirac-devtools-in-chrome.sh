@@ -5,7 +5,7 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$CHROMIUM_MIRROR_DIR"
 
-rm -rf "$CHROMIUM_MIRROR_DEVTOOLS_DIR"
-git checkout "$DEVTOOLS_CHROMIUM_PREFIX"
+rm -rf "$CHROMIUM_DEVTOOLS_DIR"
+git checkout "$CHROMIUM_DEVTOOLS_PREFIX"
 
 popd
