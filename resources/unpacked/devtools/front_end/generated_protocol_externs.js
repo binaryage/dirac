@@ -7,12 +7,14 @@ Protocol.Accessibility = {};
 Protocol.AccessibilityAgent = function(){};
 
 /**
- * @param {Protocol.DOM.NodeId} nodeId
+ * @param {Protocol.DOM.NodeId=} opt_nodeId
+ * @param {Protocol.DOM.BackendNodeId=} opt_backendNodeId
+ * @param {Protocol.Runtime.RemoteObjectId=} opt_objectId
  * @param {boolean=} opt_fetchRelatives
  * @return {!Promise<?Array<Protocol.Accessibility.AXNode>>}
  */
-Protocol.AccessibilityAgent.prototype.getPartialAXTree = function(nodeId, opt_fetchRelatives) {};
-/** @typedef {!{nodeId: Protocol.DOM.NodeId, fetchRelatives: (boolean|undefined)}} */
+Protocol.AccessibilityAgent.prototype.getPartialAXTree = function(opt_nodeId, opt_backendNodeId, opt_objectId, opt_fetchRelatives) {};
+/** @typedef {!{objectId: (Protocol.Runtime.RemoteObjectId|undefined), nodeId: (Protocol.DOM.NodeId|undefined), backendNodeId: (Protocol.DOM.BackendNodeId|undefined), fetchRelatives: (boolean|undefined)}} */
 Protocol.AccessibilityAgent.GetPartialAXTreeRequest;
 /** @typedef {!{nodes: !Array<Protocol.Accessibility.AXNode>}} */
 Protocol.AccessibilityAgent.GetPartialAXTreeResponse;
@@ -3953,8 +3955,15 @@ Protocol.Network.Request;
 /** @typedef {!{status:(string), origin:(string), logDescription:(string), logId:(string), timestamp:(Protocol.Network.TimeSinceEpoch), hashAlgorithm:(string), signatureAlgorithm:(string), signatureData:(string)}} */
 Protocol.Network.SignedCertificateTimestamp;
 
-/** @typedef {!{protocol:(string), keyExchange:(string), keyExchangeGroup:(string|undefined), cipher:(string), mac:(string|undefined), certificateId:(Protocol.Security.CertificateId), subjectName:(string), sanList:(!Array<string>), issuer:(string), validFrom:(Protocol.Network.TimeSinceEpoch), validTo:(Protocol.Network.TimeSinceEpoch), signedCertificateTimestampList:(!Array<Protocol.Network.SignedCertificateTimestamp>)}} */
+/** @typedef {!{protocol:(string), keyExchange:(string), keyExchangeGroup:(string|undefined), cipher:(string), mac:(string|undefined), certificateId:(Protocol.Security.CertificateId), subjectName:(string), sanList:(!Array<string>), issuer:(string), validFrom:(Protocol.Network.TimeSinceEpoch), validTo:(Protocol.Network.TimeSinceEpoch), signedCertificateTimestampList:(!Array<Protocol.Network.SignedCertificateTimestamp>), certificateTransparencyCompliance:(Protocol.Network.CertificateTransparencyCompliance)}} */
 Protocol.Network.SecurityDetails;
+
+/** @enum {string} */
+Protocol.Network.CertificateTransparencyCompliance = {
+    Unknown: "unknown",
+    NotCompliant: "not-compliant",
+    Compliant: "compliant"
+};
 
 /** @enum {string} */
 Protocol.Network.BlockedReason = {
@@ -4843,6 +4852,20 @@ Protocol.PageAgent.SetAdBlockingEnabledResponse;
 Protocol.PageAgent.prototype.invoke_setAdBlockingEnabled = function(obj) {};
 
 /**
+ * @param {boolean} enabled
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.setBypassCSP = function(enabled) {};
+/** @typedef {!{enabled: boolean}} */
+Protocol.PageAgent.SetBypassCSPRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.SetBypassCSPResponse;
+/**
+ * @param {!Protocol.PageAgent.SetBypassCSPRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.SetBypassCSPResponse>} */
+Protocol.PageAgent.prototype.invoke_setBypassCSP = function(obj) {};
+
+/**
  * @param {number} width
  * @param {number} height
  * @param {number} deviceScaleFactor
@@ -5157,6 +5180,11 @@ Protocol.PageDispatcher.prototype.lifecycleEvent = function(frameId, loaderId, n
  * @param {Protocol.Network.MonotonicTime} timestamp
  */
 Protocol.PageDispatcher.prototype.loadEventFired = function(timestamp) {};
+/**
+ * @param {Protocol.Page.FrameId} frameId
+ * @param {string} url
+ */
+Protocol.PageDispatcher.prototype.navigatedWithinDocument = function(frameId, url) {};
 /**
  * @param {string} data
  * @param {Protocol.Page.ScreencastFrameMetadata} metadata
