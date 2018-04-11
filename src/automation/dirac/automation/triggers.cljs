@@ -8,7 +8,7 @@
 (defn go-reload-safely! []
   (go
     ; this delay is here to prevent "Cannot find context with specified id" V8 errors ?
-    (<! (go-wait 1000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 3000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
     (gcall! "location.reload")))
 
 ; -- triggers installers ----------------------------------------------------------------------------------------------------

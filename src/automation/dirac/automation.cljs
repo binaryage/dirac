@@ -76,7 +76,7 @@
           devtools-id (<! (messages/go-fire-chrome-event! open-devtools-event))]
       (<! (verbs/go-wait-for-devtools-boot devtools-id))
       (machinery/push-devtools-id-to-stack! devtools-id)
-      (machinery/make-devtools-id-wrapper devtools-id))))                                                                             ; note: we wrap it so we can easily auto-fill devtools-id parameters in action! method
+      (machinery/make-devtools-id-wrapper devtools-id))))                                                                     ; note: we wrap it so we can easily auto-fill devtools-id parameters in action! method
 
 (defn go-wait-for-devtools-ui [& [delay]]
   ; sometimes we have to give devtools UI some time to update
@@ -237,6 +237,6 @@
 (defn ^:devtools go-reload! []
   (go
     ; the timeouts are here to prevent "Cannot find context with specified id" V8 errors ?
-    (<! (go-wait 2000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 3000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
     (<! (go-trigger! :reload))
-    (<! (go-wait 2000))))                                                                                                     ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 3000))))                                                                                                     ; TODO: should not be hard-coded FLAKY!
