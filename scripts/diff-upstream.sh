@@ -87,7 +87,9 @@ git reset --hard "$LAST_MERGED_DEVTOOLS_SHA"
 git rm -rf *
 cp -R "$OURS/$DEVTOOLS_DIRAC_PREFIX"/* .
 git add -A
-git commit --author="BinaryAge Bot <bot@binaryage.com>" -m "devtools -> dirac as of $FULL_SHA"
+git config user.email "bot@binaryage.com"
+git config user.name "BinaryAge Bot"
+git commit -m "devtools -> dirac as of $FULL_SHA"
 
 if [[ ! -z "$FORCE_PUSH" ]] || confirm "Do you want to force push new $DIFF_BRANCH of github's Dirac repo? [y/N]" ; then
   git push -f git@github.com:binaryage/dirac.git "$DIFF_BRANCH"
