@@ -33,6 +33,9 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     return this._codeMirror.hasFocus();
   }
 
+  /**
+   * @override
+   */
   focus() {
     this._codeMirror.focus();
     // HACK: this is needed to properly display cursor in empty codemirror:
