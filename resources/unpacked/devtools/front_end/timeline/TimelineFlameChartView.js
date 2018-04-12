@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * @implements {Timeline.TimelineModeView}
  * @implements {PerfUI.FlameChartDelegate}
  * @implements {UI.Searchable}
  * @unrestricted
@@ -22,6 +21,8 @@ Timeline.TimelineFlameChartView = class extends UI.VBox {
     /** @type {!Array<number>|undefined} */
     this._searchResults;
     this._filters = filters;
+    /** @type {!Array<!Common.EventTarget.EventDescriptor>} */
+    this._eventListeners = [];
 
     this._showMemoryGraphSetting = Common.settings.createSetting('timelineShowMemory', false);
 
@@ -42,6 +43,7 @@ Timeline.TimelineFlameChartView = class extends UI.VBox {
     this._networkFlameChart = new PerfUI.FlameChart(
         this._networkDataProvider, this, this._networkFlameChartGroupExpansionSetting);
     this._networkFlameChart.alwaysShowVerticalScroll();
+    this._networkFlameChart.disableRangeSelection();
 
     this._networkPane = new UI.VBox();
     this._networkPane.setMinimumSize(23, 23);
@@ -79,6 +81,7 @@ Timeline.TimelineFlameChartView = class extends UI.VBox {
     this._nextExtensionIndex = 0;
 
     this._boundRefresh = this._refresh.bind(this);
+    this._selectedTrack = null;
 
     this._mainDataProvider.setEventColorMapping(Timeline.TimelineUIUtils.eventColor);
     this._groupBySetting =
@@ -109,20 +112,25 @@ Timeline.TimelineFlameChartView = class extends UI.VBox {
   }
 
   /**
-   * @override
-   * @return {?Element}
+   * @param {!Common.Event} event
    */
-  resizerElement() {
-    return null;
+  _onWindowChanged(event) {
+    const window = /** @type {!Timeline.PerformanceModel.Window} */ (event.data.window);
+    const animate = !!event.data.animate;
+    this._mainFlameChart.setWindowTimes(window.left, window.right, animate);
+    this._networkFlameChart.setWindowTimes(window.left, window.right, animate);
+    this._networkDataProvider.setWindowTimes(window.left, window.right);
+    this._updateSearchResults(false, false);
   }
 
   /**
    * @override
    * @param {number} windowStartTime
    * @param {number} windowEndTime
+   * @param {boolean} animate
    */
-  requestWindowTimes(windowStartTime, windowEndTime) {
-    this._delegate.requestWindowTimes(windowStartTime, windowEndTime);
+  windowChanged(windowStartTime, windowEndTime, animate) {
+    this._model.setWindow({left: windowStartTime, right: windowEndTime}, animate);
   }
 
   /**
@@ -136,25 +144,50 @@ Timeline.TimelineFlameChartView = class extends UI.VBox {
 
   /**
    * @override
+   * @param {!PerfUI.FlameChart} flameChart
+   * @param {?PerfUI.FlameChart.Group} group
+   */
+  updateSelectedGroup(flameChart, group) {
+    if (flameChart !== this._mainFlameChart)
+      return;
+    const track = group ? this._mainDataProvider.groupTrack(group) : null;
+    this._selectedTrack = track;
+    this._updateTrack();
+  }
+
+  /**
    * @param {?Timeline.PerformanceModel} model
    */
   setModel(model) {
-    const extensionDataAdded = Timeline.PerformanceModel.Events.ExtensionDataAdded;
-    if (this._model)
-      this._model.removeEventListener(extensionDataAdded, this._appendExtensionData, this);
+    if (model === this._model)
+      return;
+    Common.EventTarget.removeEventListeners(this._eventListeners);
     this._model = model;
-    if (this._model)
-      this._model.addEventListener(extensionDataAdded, this._appendExtensionData, this);
+    this._selectedTrack = null;
+    if (this._model) {
+      this._eventListeners = [
+        this._model.addEventListener(Timeline.PerformanceModel.Events.WindowChanged, this._onWindowChanged, this),
+        this._model.addEventListener(
+            Timeline.PerformanceModel.Events.ExtensionDataAdded, this._appendExtensionData, this)
+      ];
+      const window = model.window();
+      this._mainFlameChart.setWindowTimes(window.left, window.right);
+      this._networkFlameChart.setWindowTimes(window.left, window.right);
+      this._networkDataProvider.setWindowTimes(window.left, window.right);
+      this._updateSearchResults(false, false);
+    }
     this._mainDataProvider.setModel(this._model);
     this._networkDataProvider.setModel(this._model);
-    this._countersView.setModel(this._model);
-    this._detailsView.setModel(this._model);
     this._updateColorMapper();
-
+    this._updateTrack();
     this._nextExtensionIndex = 0;
     this._appendExtensionData();
-
     this._refresh();
+  }
+
+  _updateTrack() {
+    this._countersView.setModel(this._model, this._selectedTrack);
+    this._detailsView.setModel(this._model, this._selectedTrack);
   }
 
   _refresh() {
@@ -200,7 +233,6 @@ Timeline.TimelineFlameChartView = class extends UI.VBox {
   }
 
   /**
-   * @override
    * @param {?SDK.TracingModel.Event} event
    */
   highlightEvent(event) {
@@ -242,31 +274,7 @@ Timeline.TimelineFlameChartView = class extends UI.VBox {
   }
 
   /**
-   * @override
-   * @return {!UI.Widget}
-   */
-  view() {
-    return this;
-  }
-
-  /**
-   * @override
-   * @param {number} startTime
-   * @param {number} endTime
-   */
-  setWindowTimes(startTime, endTime) {
-    this._mainFlameChart.setWindowTimes(startTime, endTime);
-    this._networkFlameChart.setWindowTimes(startTime, endTime);
-    this._networkDataProvider.setWindowTimes(startTime, endTime);
-    this._countersView.setWindowTimes(startTime, endTime);
-    this._windowStartTime = startTime;
-    this._windowEndTime = endTime;
-    this._updateSearchResults(false, false);
-  }
-
-  /**
-   * @override
-   * @param {!Timeline.TimelineSelection} selection
+   * @param {?Timeline.TimelineSelection} selection
    */
   setSelection(selection) {
     let index = this._mainDataProvider.entryIndexForSelection(selection);
@@ -368,11 +376,11 @@ Timeline.TimelineFlameChartView = class extends UI.VBox {
     const oldSelectedSearchResult = this._selectedSearchResult;
     delete this._selectedSearchResult;
     this._searchResults = [];
-    if (!this._searchRegex)
+    if (!this._searchRegex || !this._model)
       return;
-
     const regExpFilter = new Timeline.TimelineFilters.RegExp(this._searchRegex);
-    this._searchResults = this._mainDataProvider.search(this._windowStartTime, this._windowEndTime, regExpFilter);
+    const window = this._model.window();
+    this._searchResults = this._mainDataProvider.search(window.left, window.right, regExpFilter);
     this._searchableView.updateSearchMatchesCount(this._searchResults.length);
     if (!shouldJump || !this._searchResults.length)
       return;

@@ -89,7 +89,7 @@ PerformanceTestRunner.invokeWithTracing = function(functionName, callback, addit
     categories += ',' + additionalCategories;
 
   const timelinePanel = UI.panels.timeline;
-  const timelineController = PerformanceTestRunner.timelineController();
+  const timelineController = PerformanceTestRunner.createTimelineController();
   timelinePanel._timelineController = timelineController;
   timelineController._startRecordingWithCategories(categories, enableJSSampling).then(tracingStarted);
 
@@ -122,13 +122,14 @@ PerformanceTestRunner.createPerformanceModelWithEvents = function(events) {
   tracingModel.tracingComplete();
   const performanceModel = new Timeline.PerformanceModel();
   performanceModel.setTracingModel(tracingModel);
+  UI.panels.timeline._performanceModel = performanceModel;
   return performanceModel;
 };
 
-PerformanceTestRunner.timelineController = function() {
-  const performanceModel = new Timeline.PerformanceModel();
-  UI.panels.timeline._pendingPerformanceModel = performanceModel;
-  return new Timeline.TimelineController(TestRunner.tracingManager, performanceModel, UI.panels.timeline);
+PerformanceTestRunner.createTimelineController = function() {
+  const controller = new Timeline.TimelineController(SDK.targetManager.mainTarget(), UI.panels.timeline);
+  controller._tracingManager = TestRunner.tracingManager;
+  return controller;
 };
 
 PerformanceTestRunner.runWhenTimelineIsReady = function(callback) {
@@ -185,11 +186,11 @@ PerformanceTestRunner.printTimelineRecordsWithDetails = function(name) {
 };
 
 PerformanceTestRunner.walkTimelineEventTree = function(callback) {
-  const performanceModel = PerformanceTestRunner.performanceModel();
   const view = new Timeline.EventsTimelineTreeView(UI.panels.timeline._filters, null);
-  view.setModel(performanceModel);
+  view.setModel(PerformanceTestRunner.performanceModel(), PerformanceTestRunner.mainTrack());
   const selection = Timeline.TimelineSelection.fromRange(
-      performanceModel.timelineModel().minimumRecordTime(), performanceModel.timelineModel().maximumRecordTime());
+      PerformanceTestRunner.timelineModel().minimumRecordTime(),
+      PerformanceTestRunner.timelineModel().maximumRecordTime());
   view.updateContents(selection);
   PerformanceTestRunner.walkTimelineEventTreeUnderNode(callback, view._currentTree, 0);
 };
@@ -259,8 +260,21 @@ PerformanceTestRunner.printTraceEventPropertiesWithDetails = function(event) {
     TestRunner.addResult(`${event.name} has a warning`);
 };
 
+PerformanceTestRunner.mainTrack = function() {
+  let mainTrack;
+  for (const track of PerformanceTestRunner.timelineModel().tracks()) {
+    if (track.type === TimelineModel.TimelineModel.TrackType.MainThread && track.forMainFrame)
+      mainTrack = track;
+  }
+  return mainTrack;
+};
+
+PerformanceTestRunner.mainTrackEvents = function() {
+  return PerformanceTestRunner.mainTrack().events;
+};
+
 PerformanceTestRunner.findTimelineEvent = function(name, index) {
-  return PerformanceTestRunner.timelineModel().mainThreadEvents().filter(e => e.name === name)[index || 0];
+  return PerformanceTestRunner.mainTrackEvents().filter(e => e.name === name)[index || 0];
 };
 
 PerformanceTestRunner.findChildEvent = function(events, parentIndex, name) {
@@ -327,7 +341,7 @@ PerformanceTestRunner.dumpFlameChartProvider = function(provider, includeGroups)
       continue;
 
     const maxLevel =
-        (groupIndex + 1 < timelineData.groups.length ? timelineData.groups[groupIndex + 1].firstLevel : stackDepth);
+        (groupIndex + 1 < timelineData.groups.length ? timelineData.groups[groupIndex + 1].startLevel : stackDepth);
     TestRunner.addResult(`Group: ${group.name}`);
 
     for (let level = group.startLevel; level < maxLevel; ++level) {

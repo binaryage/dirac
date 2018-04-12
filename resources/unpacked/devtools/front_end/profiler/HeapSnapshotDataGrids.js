@@ -125,16 +125,9 @@ Profiler.HeapSnapshotSortableDataGrid = class extends DataGrid.DataGrid {
     if (!td)
       return;
     const node = td.heapSnapshotNode;
-
-    /**
-     * @this {Profiler.HeapSnapshotSortableDataGrid}
-     */
-    function revealInSummaryView() {
-      this._dataDisplayDelegate.showObject(node.snapshotNodeId, 'Summary');
-    }
-
-    if (node instanceof Profiler.HeapSnapshotRetainingObjectNode)
-      contextMenu.revealSection().appendItem(Common.UIString('Reveal in Summary view'), revealInSummaryView.bind(this));
+    contextMenu.revealSection().appendItem(ls`Reveal in Summary view`, () => {
+      this._dataDisplayDelegate.showObject(node.snapshotNodeId, ls`Summary`);
+    });
   }
 
   resetSortingCache() {
@@ -440,6 +433,13 @@ Profiler.HeapSnapshotViewportDataGrid = class extends Profiler.HeapSnapshotSorta
     return new Promise(resolve => {
       console.assert(!this._scrollToResolveCallback);
       this._scrollToResolveCallback = resolve.bind(null, node);
+      // Still resolve the promise if it does not scroll for some reason.
+      this.scrollContainer.window().requestAnimationFrame(() => {
+        if (!this._scrollToResolveCallback)
+          return;
+        this._scrollToResolveCallback();
+        this._scrollToResolveCallback = null;
+      });
     });
   }
 

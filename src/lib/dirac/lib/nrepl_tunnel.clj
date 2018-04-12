@@ -120,7 +120,7 @@
   (toString [this]
     (str "[NREPLTunnel#" (:id this) "]")))
 
-(def last-id (volatile! 0))
+(defonce last-id (volatile! 0))
 
 (defn next-id! []
   (vswap! last-id inc))
@@ -209,7 +209,7 @@
 ;
 
 (defn deliver-server-message! [tunnel message]
-  (if-let [channel (get-server-messages-channel tunnel)]                                                                      ; we silently ignore messages when channel is not yet set (during initialization)
+  (when-some [channel (get-server-messages-channel tunnel)]                                                                   ; we silently ignore messages when channel is not yet set (during initialization)
     (let [receipt (promise)]
       (if (core-async/closed? channel)
         (log/warn (str tunnel) (str "An attempt to enqueue a message for nREPL server, but channel was already closed! => ignored\n")
@@ -223,7 +223,7 @@
   (log/debug (str tunnel) "Starting server-messages-channel-processing-loop")
   (go-loop []
     (let [messages-chan (get-server-messages-channel tunnel)]
-      (if-let [[message receipt] (<! messages-chan)]
+      (if-some [[message receipt] (<! messages-chan)]
         (let [client (get-nrepl-client tunnel)]
           (deliver receipt (nrepl-client/send! client message))
           (log/trace (str tunnel) (str "Sent message " (utils/sid message) " to nREPL server"))
@@ -233,7 +233,7 @@
           (deliver (get-server-messages-done-promise tunnel) true))))))
 
 (defn deliver-client-message! [tunnel message]
-  (if-let [channel (get-client-messages-channel tunnel)]                                                                      ; we silently ignore messages when channel is not yet set (during initialization)
+  (when-some [channel (get-client-messages-channel tunnel)]                                                                   ; we silently ignore messages when channel is not yet set (during initialization)
     (let [receipt (promise)]
       (if (core-async/closed? channel)
         (log/warn (str tunnel) (str "An attempt to enqueue a message for DevTools client, but channel was already closed! => ignored\n")
@@ -247,7 +247,7 @@
   (log/debug (str tunnel) "Starting client-messages-channel-processing-loop")
   (go-loop []
     (let [messages-chan (get-client-messages-channel tunnel)]
-      (if-let [[message receipt] (<! messages-chan)]
+      (if-some [[message receipt] (<! messages-chan)]
         (let [server (get-nrepl-tunnel-server tunnel)]
           (deliver receipt (nrepl-tunnel-server/dispatch-message! server message))
           (log/trace (str tunnel) (str "Dispatched message " (utils/sid message) " to tunnel"))
@@ -263,7 +263,7 @@
   (let [response (<!! (nrepl-client/send! nrepl-client {:op "identify-dirac-nrepl-middleware"}))
         {:keys [version]} response]
     (log/debug "identify-dirac-nrepl-middleware response:" response)
-    (if version
+    (if (some? version)
       (case (version-compare lib/version version)
         -1 [::unknown (unknown-nrepl-middleware-msg lib/version version)]
         1 [::old (old-nrepl-middleware-msg lib/version version)]
@@ -307,9 +307,9 @@
         server-messages (chan)
         client-messages (chan)]
     (let [nrepl-client (nrepl-client/create! tunnel (:nrepl-server options))]
-      (if-not (:skip-paranoid-middleware-setup-check options)
+      (when-not (:skip-paranoid-middleware-setup-check options)
         (paranoid-middleware-setup-check! nrepl-client expected-nrepl-middleware-ops))
-      (if-not (:skip-dirac-nrepl-middleware-check options)
+      (when-not (:skip-dirac-nrepl-middleware-check options)
         (dirac-nrepl-middleware-check! nrepl-client))
       (let [nrepl-tunnel-server (nrepl-tunnel-server/create! tunnel (:nrepl-tunnel options))]
         (set-nrepl-client! tunnel nrepl-client)

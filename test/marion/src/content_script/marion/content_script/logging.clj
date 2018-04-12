@@ -6,7 +6,7 @@
 ; logging - these need to be macros to preserve source location for devtools
 
 (def enabled? true)
-(def color "DarkRed")
+(def color "purple")
 
 (defn gen-log [method env args]
   (if enabled?

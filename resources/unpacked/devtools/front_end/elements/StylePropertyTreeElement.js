@@ -34,6 +34,7 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
     this._originalPropertyText = '';
     this._prompt = null;
     this._propertyHasBeenEditedIncrementally = false;
+    this._lastComputedValue = null;
   }
 
   /**
@@ -137,6 +138,37 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
       cssModel.backgroundColorsPromise(this.node().id).then(computedCallback);
     }
 
+    return swatch;
+  }
+
+  /**
+   * @param {string} text
+   * @return {!Node}
+   */
+  _processVar(text) {
+    const computedValue = this._matchedStyles.computeValue(this._style, text);
+    if (!computedValue)
+      return createTextNode(text);
+    const color = Common.Color.parse(computedValue);
+    if (!color) {
+      const node = createElement('span');
+      node.textContent = text;
+      node.title = computedValue;
+      return node;
+    }
+    if (!this._editable()) {
+      const swatch = InlineEditor.ColorSwatch.create();
+      swatch.setText(text, computedValue);
+      swatch.setColor(color);
+      return swatch;
+    }
+
+    const swatchPopoverHelper = this._parentPane.swatchPopoverHelper();
+    const swatch = InlineEditor.ColorSwatch.create();
+    swatch.setColor(color);
+    swatch.setFormat(Common.Color.detectColorFormat(swatch.color()));
+    swatch.setText(text, computedValue);
+    new Elements.ColorSwatchPopoverIcon(this, swatchPopoverHelper, swatch);
     return swatch;
   }
 
@@ -249,7 +281,7 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
   _updatePane() {
     const section = this.section();
     if (section)
-      section.refreshUpdate();
+      section.refreshUpdate(this);
   }
 
   /**
@@ -347,7 +379,20 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
       this._expandElement.setIconType('smallicon-triangle-right');
   }
 
+  updateTitleIfComputedValueChanged() {
+    const computedValue = this._matchedStyles.computeValue(this.property.ownerStyle, this.property.value);
+    if (computedValue === this._lastComputedValue)
+      return;
+    this._lastComputedValue = computedValue;
+    this._innerUpdateTitle();
+  }
+
   updateTitle() {
+    this._lastComputedValue = this._matchedStyles.computeValue(this.property.ownerStyle, this.property.value);
+    this._innerUpdateTitle();
+  }
+
+  _innerUpdateTitle() {
     this._updateState();
     if (this.isExpandable())
       this._expandElement = UI.Icon.create('smallicon-triangle-right', 'expand-icon');
@@ -357,6 +402,7 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
     const propertyRenderer =
         new Elements.StylesSidebarPropertyRenderer(this._style.parentRule, this.node(), this.name, this.value);
     if (this.property.parsedOk) {
+      propertyRenderer.setVarHandler(this._processVar.bind(this));
       propertyRenderer.setColorHandler(this._processColor.bind(this));
       propertyRenderer.setBezierHandler(this._processBezier.bind(this));
       propertyRenderer.setShadowHandler(this._processShadow.bind(this));
@@ -364,6 +410,8 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
 
     this.listItemElement.removeChildren();
     this.nameElement = propertyRenderer.renderName();
+    if (this.property.name.startsWith('--'))
+      this.nameElement.title = this._matchedStyles.computeCSSVariable(this._style, this.property.name) || '';
     this.valueElement = propertyRenderer.renderValue();
     if (!this.treeOutline)
       return;
@@ -562,7 +610,9 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
     } else {
       cssCompletions = SDK.cssMetadata().propertyValues(this.nameElement.textContent);
     }
-    const cssVariables = this._matchedStyles.cssVariables().sort(String.naturalOrderComparator);
+
+    const cssVariables = this._matchedStyles.availableCSSVariables(this.property.ownerStyle);
+    cssVariables.sort(String.naturalOrderComparator);
 
     this._prompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(cssCompletions, cssVariables, this, isEditingName);
     this._prompt.setAutocompletionTimeout(0);

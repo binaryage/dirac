@@ -11,8 +11,9 @@ PerfUI.ChartViewportDelegate.prototype = {
   /**
    * @param {number} startTime
    * @param {number} endTime
+   * @param {boolean} animate
    */
-  requestWindowTimes(startTime, endTime) {},
+  windowChanged(startTime, endTime, animate) {},
 
   /**
    * @param {number} startTime
@@ -57,6 +58,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
         this._endRangeSelection.bind(this), 'text', null);
 
     this._alwaysShowVerticalScroll = false;
+    this._rangeSelectionEnabled = true;
     this._vScrollElement = this.contentElement.createChild('div', 'chart-viewport-v-scroll');
     this._vScrollContent = this._vScrollElement.createChild('div');
     this._vScrollElement.addEventListener('scroll', this._onScroll.bind(this), false);
@@ -72,6 +74,13 @@ PerfUI.ChartViewport = class extends UI.VBox {
   alwaysShowVerticalScroll() {
     this._alwaysShowVerticalScroll = true;
     this._vScrollElement.classList.add('always-show-scrollbar');
+  }
+
+  disableRangeSelection() {
+    this._rangeSelectionEnabled = false;
+    this._rangeSelectionStart = null;
+    this._rangeSelectionEnd = null;
+    this._updateRangeSelectionOverlay();
   }
 
   /**
@@ -109,19 +118,19 @@ PerfUI.ChartViewport = class extends UI.VBox {
   reset() {
     this._vScrollElement.scrollTop = 0;
     this._scrollTop = 0;
-    this._rangeSelectionStart = 0;
-    this._rangeSelectionEnd = 0;
+    this._rangeSelectionStart = null;
+    this._rangeSelectionEnd = null;
     this._isDragging = false;
     this._dragStartPointX = 0;
     this._dragStartPointY = 0;
     this._dragStartScrollTop = 0;
-    this._timeWindowLeft = 0;
-    this._timeWindowRight = 0;
+    this._visibleLeftTime = 0;
+    this._visibleRightTime = 0;
     this._offsetWidth = 0;
     this._offsetHeight = 0;
     this._totalHeight = 0;
-    this._pendingAnimationTimeLeft = 0;
-    this._pendingAnimationTimeRight = 0;
+    this._targetLeftTime = 0;
+    this._targetRightTime = 0;
     this._updateContentElementSize();
   }
 
@@ -185,9 +194,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
     if (panVertically) {
       this._vScrollElement.scrollTop -= (e.wheelDeltaY || e.wheelDeltaX) / 120 * this._offsetHeight / 8;
     } else if (panHorizontally) {
-      this._muteAnimation = true;
-      this._handlePanGesture(-e.wheelDeltaX);
-      this._muteAnimation = false;
+      this._handlePanGesture(-e.wheelDeltaX, /* animate */ true);
     } else {  // Zoom.
       const mouseWheelZoomSpeed = 1 / 120;
       this._handleZoomGesture(Math.pow(1.2, -(e.wheelDeltaY || e.wheelDeltaX) * mouseWheelZoomSpeed) - 1);
@@ -218,9 +225,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
   _dragging(event) {
     const pixelShift = this._dragStartPointX - event.pageX;
     this._dragStartPointX = event.pageX;
-    this._muteAnimation = true;
     this._handlePanGesture(pixelShift);
-    this._muteAnimation = false;
     const pixelScroll = this._dragStartPointY - event.pageY;
     this._vScrollElement.scrollTop = this._dragStartScrollTop + pixelScroll;
   }
@@ -234,7 +239,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
    * @return {boolean}
    */
   _startRangeSelection(event) {
-    if (!event.shiftKey)
+    if (!event.shiftKey || !this._rangeSelectionEnabled)
       return false;
     this._isDragging = true;
     this._selectionOffsetShiftX = event.offsetX - event.pageX;
@@ -250,10 +255,36 @@ PerfUI.ChartViewport = class extends UI.VBox {
 
   _endRangeSelection() {
     this._isDragging = false;
+    this._selectionStartX = null;
   }
 
   hideRangeSelection() {
     this._selectionOverlay.classList.add('hidden');
+    this._rangeSelectionStart = null;
+    this._rangeSelectionEnd = null;
+  }
+
+  /**
+   * @param {number} startTime
+   * @param {number} endTime
+   */
+  setRangeSelection(startTime, endTime) {
+    if (!this._rangeSelectionEnabled)
+      return;
+    this._rangeSelectionStart = Math.min(startTime, endTime);
+    this._rangeSelectionEnd = Math.max(startTime, endTime);
+    this._updateRangeSelectionOverlay();
+    this._delegate.updateRangeSelection(this._rangeSelectionStart, this._rangeSelectionEnd);
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  onClick(event) {
+    const time = this.pixelToTime(event.offsetX);
+    if (this._rangeSelectionStart !== null && time >= this._rangeSelectionStart && time <= this._rangeSelectionEnd)
+      return;
+    this.hideRangeSelection();
   }
 
   /**
@@ -263,10 +294,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
     const x = Number.constrain(event.pageX + this._selectionOffsetShiftX, 0, this._offsetWidth);
     const start = this.pixelToTime(this._selectionStartX);
     const end = this.pixelToTime(x);
-    this._rangeSelectionStart = Math.min(start, end);
-    this._rangeSelectionEnd = Math.max(start, end);
-    this._updateRangeSelectionOverlay();
-    this._delegate.updateRangeSelection(this._rangeSelectionStart, this._rangeSelectionEnd);
+    this.setRangeSelection(start, end);
   }
 
   _updateRangeSelectionOverlay() {
@@ -304,7 +332,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
    * @return {number}
    */
   pixelToTime(x) {
-    return this.pixelToTimeOffset(x) + this._timeWindowLeft;
+    return this.pixelToTimeOffset(x) + this._visibleLeftTime;
   }
 
   /**
@@ -312,7 +340,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
    * @return {number}
    */
   pixelToTimeOffset(x) {
-    return x * (this._timeWindowRight - this._timeWindowLeft) / this._offsetWidth;
+    return x * (this._visibleRightTime - this._visibleLeftTime) / this._offsetWidth;
   }
 
   /**
@@ -321,14 +349,14 @@ PerfUI.ChartViewport = class extends UI.VBox {
    */
   timeToPosition(time) {
     return Math.floor(
-        (time - this._timeWindowLeft) / (this._timeWindowRight - this._timeWindowLeft) * this._offsetWidth);
+        (time - this._visibleLeftTime) / (this._visibleRightTime - this._visibleLeftTime) * this._offsetWidth);
   }
 
   /**
    * @return {number}
    */
   timeToPixel() {
-    return this._offsetWidth / (this._timeWindowRight - this._timeWindowLeft);
+    return this._offsetWidth / (this._visibleRightTime - this._visibleLeftTime);
   }
 
   /**
@@ -360,13 +388,13 @@ PerfUI.ChartViewport = class extends UI.VBox {
     if (!UI.KeyboardShortcut.hasNoModifiers(e))
       return;
     const zoomFactor = e.shiftKey ? 0.8 : 0.3;
-    const panOffset = e.shiftKey ? 320 : 80;
+    const panOffset = e.shiftKey ? 320 : 160;
     switch (e.code) {
       case 'KeyA':
-        this._handlePanGesture(-panOffset);
+        this._handlePanGesture(-panOffset, /* animate */ true);
         break;
       case 'KeyD':
-        this._handlePanGesture(panOffset);
+        this._handlePanGesture(panOffset, /* animate */ true);
         break;
       case 'KeyW':
         this._handleZoomGesture(-zoomFactor);
@@ -384,32 +412,32 @@ PerfUI.ChartViewport = class extends UI.VBox {
    * @param {number} zoom
    */
   _handleZoomGesture(zoom) {
-    this._cancelAnimation();
-    const bounds = {left: this._timeWindowLeft, right: this._timeWindowRight};
+    const bounds = {left: this._targetLeftTime, right: this._targetRightTime};
     const cursorTime = this.pixelToTime(this._lastMouseOffsetX);
     bounds.left += (bounds.left - cursorTime) * zoom;
     bounds.right += (bounds.right - cursorTime) * zoom;
-    this._requestWindowTimes(bounds);
+    this._requestWindowTimes(bounds, /* animate */ true);
   }
 
   /**
    * @param {number} offset
+   * @param {boolean=} animate
    */
-  _handlePanGesture(offset) {
-    this._cancelAnimation();
-    const bounds = {left: this._timeWindowLeft, right: this._timeWindowRight};
+  _handlePanGesture(offset, animate) {
+    const bounds = {left: this._targetLeftTime, right: this._targetRightTime};
     const timeOffset = Number.constrain(
         this.pixelToTimeOffset(offset), this._minimumBoundary - bounds.left,
         this._totalTime + this._minimumBoundary - bounds.right);
     bounds.left += timeOffset;
     bounds.right += timeOffset;
-    this._requestWindowTimes(bounds);
+    this._requestWindowTimes(bounds, !!animate);
   }
 
   /**
    * @param {!{left: number, right: number}} bounds
+   * @param {boolean} animate
    */
-  _requestWindowTimes(bounds) {
+  _requestWindowTimes(bounds, animate) {
     const maxBound = this._minimumBoundary + this._totalTime;
     if (bounds.left < this._minimumBoundary) {
       bounds.right = Math.min(bounds.right + this._minimumBoundary - bounds.left, maxBound);
@@ -420,16 +448,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
     }
     if (bounds.right - bounds.left < PerfUI.FlameChart.MinimalTimeWindowMs)
       return;
-    this._delegate.requestWindowTimes(bounds.left, bounds.right);
-  }
-
-  _cancelAnimation() {
-    if (!this._cancelWindowTimesAnimation)
-      return;
-    this._timeWindowLeft = this._pendingAnimationTimeLeft;
-    this._timeWindowRight = this._pendingAnimationTimeRight;
-    this._cancelWindowTimesAnimation();
-    delete this._cancelWindowTimesAnimation;
+    this._delegate.windowChanged(bounds.left, bounds.right, animate);
   }
 
   scheduleUpdate() {
@@ -442,30 +461,39 @@ PerfUI.ChartViewport = class extends UI.VBox {
   }
 
   _update() {
+    this._updateRangeSelectionOverlay();
     this._delegate.update();
   }
 
   /**
    * @param {number} startTime
    * @param {number} endTime
+   * @param {boolean=} animate
    */
-  setWindowTimes(startTime, endTime) {
-    this.hideRangeSelection();
-    if (this._muteAnimation || this._timeWindowLeft === 0 || this._timeWindowRight === Infinity ||
+  setWindowTimes(startTime, endTime, animate) {
+    if (startTime === this._targetLeftTime && endTime === this._targetRightTime)
+      return;
+    if (!animate || this._visibleLeftTime === 0 || this._visibleRightTime === Infinity ||
         (startTime === 0 && endTime === Infinity) || (startTime === Infinity && endTime === Infinity)) {
-      // Initial setup.
-      this._timeWindowLeft = startTime;
-      this._timeWindowRight = endTime;
+      // Skip animation, move instantly.
+      this._targetLeftTime = startTime;
+      this._targetRightTime = endTime;
+      this._visibleLeftTime = startTime;
+      this._visibleRightTime = endTime;
       this.scheduleUpdate();
       return;
     }
-    this._cancelAnimation();
+    if (this._cancelWindowTimesAnimation) {
+      this._cancelWindowTimesAnimation();
+      this._visibleLeftTime = this._targetLeftTime;
+      this._visibleRightTime = this._targetRightTime;
+    }
+    this._targetLeftTime = startTime;
+    this._targetRightTime = endTime;
     this._cancelWindowTimesAnimation = UI.animateFunction(
         this.element.window(), animateWindowTimes.bind(this),
-        [{from: this._timeWindowLeft, to: startTime}, {from: this._timeWindowRight, to: endTime}], 5,
-        () => delete this._cancelWindowTimesAnimation);
-    this._pendingAnimationTimeLeft = startTime;
-    this._pendingAnimationTimeRight = endTime;
+        [{from: this._visibleLeftTime, to: startTime}, {from: this._visibleRightTime, to: endTime}], 100,
+        () => this._cancelWindowTimesAnimation = null);
 
     /**
      * @param {number} startTime
@@ -473,9 +501,23 @@ PerfUI.ChartViewport = class extends UI.VBox {
      * @this {PerfUI.ChartViewport}
      */
     function animateWindowTimes(startTime, endTime) {
-      this._timeWindowLeft = startTime;
-      this._timeWindowRight = endTime;
+      this._visibleLeftTime = startTime;
+      this._visibleRightTime = endTime;
       this._update();
     }
+  }
+
+  /**
+   * @return {number}
+   */
+  windowLeftTime() {
+    return this._visibleLeftTime;
+  }
+
+  /**
+   * @return {number}
+   */
+  windowRightTime() {
+    return this._visibleRightTime;
   }
 };

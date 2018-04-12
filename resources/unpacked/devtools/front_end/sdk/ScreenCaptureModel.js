@@ -114,6 +114,14 @@ SDK.ScreenCaptureModel = class extends SDK.SDKModel {
   /**
    * @override
    * @param {!Protocol.Page.FrameId} frameId
+   * @param {string} url
+   */
+  navigatedWithinDocument(frameId, url) {
+  }
+
+  /**
+   * @override
+   * @param {!Protocol.Page.FrameId} frameId
    * @param {!Protocol.Page.FrameId} parentFrameId
    */
   frameAttached(frameId, parentFrameId) {
@@ -173,9 +181,10 @@ SDK.ScreenCaptureModel = class extends SDK.SDKModel {
    * @param {string} url
    * @param {string} message
    * @param {string} dialogType
+   * @param {boolean} hasBrowserHandler
    * @param {string=} prompt
    */
-  javascriptDialogOpening(url, message, dialogType, prompt) {
+  javascriptDialogOpening(url, message, dialogType, hasBrowserHandler, prompt) {
   }
 
   /**

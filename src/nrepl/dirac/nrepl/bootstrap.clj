@@ -32,7 +32,7 @@
     (send-bootstrap-info! nrepl-message weasel-url)))
 
 (defn preferred-compiler-selection [sticky? dirac-nrepl-config]
-  (if sticky?
+  (when sticky?
     (state/get-selected-compiler-of-dead-session (:parent-session dirac-nrepl-config))))                                      ; attempt to stick to previous compiler selection
 
 (defn start-cljs-repl! [nrepl-message dirac-nrepl-config repl-env repl-options]
@@ -72,7 +72,7 @@
         (throw e)))))
 
 (defn bootstrap! [config]
-  (if-let [nrepl-message (state/get-last-seen-nrepl-message)]
+  (if-some [nrepl-message (state/get-last-seen-nrepl-message)]
     (try
       (let [weasel-repl-options (:weasel-repl config)
             runtime-tag (:runtime-tag config)
@@ -86,7 +86,7 @@
         (state/ensure-session (:session nrepl-message)
           (start-cljs-repl! nrepl-message config repl-env cljs-repl-options)))
       (catch Throwable e
-        (log/error "Unable to boostrap Dirac ClojureScript REPL:\n" e)
+        (log/error "Unable to bootstrap Dirac ClojureScript REPL:\n" e)
         (helpers/send-response! nrepl-message (protocol/prepare-bootstrap-error-response (helpers/capture-exception-details e)))
         (throw e)))
     (do

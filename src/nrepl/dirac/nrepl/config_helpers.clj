@@ -25,7 +25,7 @@
 
 (defn ^:dynamic default-reveal-url-request-handler! [config url line column]
   (with-printing-errors-to-terminal
-    (if-let [script-path (:reveal-url-script-path config)]                                                                    ; nil :reveal-url-script-path should cause a silent failure
+    (if-some [script-path (:reveal-url-script-path config)]                                                                    ; nil :reveal-url-script-path should cause a silent failure
       (try
         (let [script ^File (io/as-file script-path)]
           (if-not (.exists script)

@@ -121,8 +121,8 @@
       (vary-meta '(::error) assoc :exception e))))                                                                            ; keywords cannot carry metadata
 
 (defn submit-response-to-table! [response response-table]
-  (if-let [id (:id response)]
-    (if-let [channel (get @response-table id)]
+  (if-some [id (:id response)]
+    (if-some [channel (get @response-table id)]
       (do
         (put! channel response)
         (when (:status response)

@@ -6,7 +6,7 @@
 ; logging - these need to be macros to preserve source location for devtools
 
 (def enabled? true)
-(def color "brown")
+(def color "DarkGreen")
 
 (defn gen-log [method env args]
   (if enabled?
@@ -15,6 +15,8 @@
                                   :raw      (dirac-test-mode?)
                                   :env      env
                                   :bg-color color})))
+
+(def debug? false)
 
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
@@ -29,3 +31,7 @@
 
 (defmacro warn [& args]
   (gen-log "warn" &env args))
+
+(defmacro debug-log [& args]
+  (if debug?
+    `(~'log ~@args)))

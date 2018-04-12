@@ -51,15 +51,22 @@ Timeline.TimelineDetailsView = class extends UI.VBox {
 
   /**
    * @param {?Timeline.PerformanceModel} model
+   * @param {?TimelineModel.TimelineModel.Track} track
    */
-  setModel(model) {
+  setModel(model, track) {
+    if (this._model)
+      this._model.removeEventListener(Timeline.PerformanceModel.Events.WindowChanged, this._onWindowChanged, this);
     this._model = model;
+    if (this._model)
+      this._model.addEventListener(Timeline.PerformanceModel.Events.WindowChanged, this._onWindowChanged, this);
+    this._track = track;
     this._tabbedPane.closeTabs(
         [Timeline.TimelineDetailsView.Tab.PaintProfiler, Timeline.TimelineDetailsView.Tab.LayerViewer], false);
     for (const view of this._rangeDetailViews.values())
-      view.setModel(model);
+      view.setModel(model, track);
     this._lazyPaintProfilerView = null;
     this._lazyLayersView = null;
+    this.setSelection(null);
   }
 
   /**
@@ -77,8 +84,10 @@ Timeline.TimelineDetailsView = class extends UI.VBox {
 
   _updateContents() {
     const view = this._rangeDetailViews.get(this._tabbedPane.selectedTabId || '');
-    if (view)
-      view.updateContents(this._selection);
+    if (view) {
+      const window = this._model.window();
+      view.updateContents(this._selection || Timeline.TimelineSelection.fromRange(window.left, window.right));
+    }
   }
 
   /**
@@ -108,12 +117,32 @@ Timeline.TimelineDetailsView = class extends UI.VBox {
   }
 
   /**
-   * @param {!Timeline.TimelineSelection} selection
+   * @param {!Common.Event} event
+   */
+  _onWindowChanged(event) {
+    if (!this._selection)
+      this._updateContentsFromWindow();
+  }
+
+  _updateContentsFromWindow() {
+    if (!this._model)
+      return;
+    const window = this._model.window();
+    this._updateSelectedRangeStats(window.left, window.right);
+    this._updateContents();
+  }
+
+  /**
+   * @param {?Timeline.TimelineSelection} selection
    */
   setSelection(selection) {
     this._detailsLinkifier.reset();
     this._badgePool.reset();
     this._selection = selection;
+    if (!this._selection) {
+      this._updateContentsFromWindow();
+      return;
+    }
     switch (this._selection.type()) {
       case Timeline.TimelineSelection.Type.TraceEvent:
         const event = /** @type {!SDK.TracingModel.Event} */ (this._selection.object());
@@ -223,8 +252,18 @@ Timeline.TimelineDetailsView = class extends UI.VBox {
    * @param {number} endTime
    */
   _updateSelectedRangeStats(startTime, endTime) {
-    if (this._model)
-      this._setContent(Timeline.TimelineUIUtils.buildRangeStats(this._model.timelineModel(), startTime, endTime));
+    if (!this._model || !this._track)
+      return;
+    const aggregatedStats = Timeline.TimelineUIUtils.statsForTimeRange(this._track.syncEvents(), startTime, endTime);
+    const startOffset = startTime - this._model.timelineModel().minimumRecordTime();
+    const endOffset = endTime - this._model.timelineModel().minimumRecordTime();
+
+    const contentHelper = new Timeline.TimelineDetailsContentHelper(null, null);
+    contentHelper.addSection(
+        ls`Range:  ${Number.millisToString(startOffset)} \u2013 ${Number.millisToString(endOffset)}`);
+    const pieChart = Timeline.TimelineUIUtils.generatePieChart(aggregatedStats);
+    contentHelper.appendElementRow('', pieChart);
+    this._setContent(contentHelper.fragment);
   }
 };
 

@@ -264,7 +264,7 @@ Workspace.UISourceCode = class extends Common.Object {
           this._content = content;
           this._contentEncoded = encoded;
         }
-        fulfill(content);
+        fulfill(this._content);
       });
     }
     return this._requestContentPromise;
@@ -329,7 +329,7 @@ Workspace.UISourceCode = class extends Common.Object {
    */
   _commitContent(content) {
     if (this._project.canSetFileContent())
-      this._project.setFileContent(this, content, false, function() {});
+      this._project.setFileContent(this, content, false);
     this._contentCommitted(content, true);
   }
 
@@ -408,7 +408,7 @@ Workspace.UISourceCode = class extends Common.Object {
    */
   setContent(content, isBase64) {
     if (this._project.canSetFileContent())
-      this._project.setFileContent(this, content, isBase64, function() {});
+      this._project.setFileContent(this, content, isBase64);
     this._contentCommitted(content, true);
   }
 

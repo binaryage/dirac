@@ -1,6 +1,6 @@
 (ns dirac.background.chrome
   (:require [dirac.background.logging :refer [log info warn error]]
-            [cljs.core.async :refer [<! chan put! go]]
+            [dirac.shared.async :refer [<! go-channel put! go]]
             [oops.core :refer [oget ocall oapply oset!]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
@@ -30,7 +30,7 @@
 
 (defn go-handle-on-tab-removed! [tab-id _remove-info]
   (go
-    (if (devtools/frontend-connected? tab-id)
+    (when (devtools/frontend-connected? tab-id)
       (devtools/unregister! tab-id))))
 
 (defn go-handle-on-tab-updated! [tab-id _change-info _tab]
@@ -67,7 +67,7 @@
     (log "leaving main event loop")))
 
 (defn go-init-and-run-chrome-event-loop! []
-  (let [channel (make-chrome-event-channel (chan))]
+  (let [channel (make-chrome-event-channel (go-channel))]
     (state/set-chrome-event-channel! channel)
     (tabs/tap-all-events channel)
     (runtime/tap-all-events channel)

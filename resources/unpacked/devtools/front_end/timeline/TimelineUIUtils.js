@@ -1055,47 +1055,45 @@ Timeline.TimelineUIUtils = class {
   }
 
   /**
-   * @param {!TimelineModel.TimelineModel} model
-   * @param {number} startTime
-   * @param {number} endTime
-   * @return {!DocumentFragment}
-   */
-  static buildRangeStats(model, startTime, endTime) {
-    const aggregatedStats = Timeline.TimelineUIUtils.statsForTimeRange(model, startTime, endTime);
-    const startOffset = startTime - model.minimumRecordTime();
-    const endOffset = endTime - model.minimumRecordTime();
-
-    const contentHelper = new Timeline.TimelineDetailsContentHelper(null, null);
-    contentHelper.addSection(
-        Common.UIString('Range:  %s \u2013 %s', Number.millisToString(startOffset), Number.millisToString(endOffset)));
-    const pieChart = Timeline.TimelineUIUtils.generatePieChart(aggregatedStats);
-    contentHelper.appendElementRow('', pieChart);
-    return contentHelper.fragment;
-  }
-
-  /**
-   * @param {!TimelineModel.TimelineModel} model
+   * @param {!Array<!SDK.TracingModel.Event>} events
    * @param {number} startTime
    * @param {number} endTime
    * @return {!Object<string, number>}
    */
-  static statsForTimeRange(model, startTime, endTime) {
-    Timeline.TimelineUIUtils._buildRangeStatsCacheIfNeeded(model);
-    const tasks = model.mainThreadTasks();
-    if (!tasks.length)
-      return {};
-    const statsBeforeIndex =
-        Math.min(tasks.lowerBound(startTime, (time, task) => time - task.endTime), tasks.length - 1);
-    const statsAfterIndex = Math.min(tasks.lowerBound(endTime, (time, task) => time - task.endTime), tasks.length - 1);
-    const events = model.mainThreadEvents();
+  static statsForTimeRange(events, startTime, endTime) {
+    if (!events.length)
+      return {'idle': endTime - startTime};
+    const symbol = Timeline.TimelineUIUtils._categoryBreakdownCacheSymbol;
+    Timeline.TimelineUIUtils._buildRangeStatsCacheIfNeeded(events);
 
-    const statsAfter = subtractStats(
-        tasks[statsAfterIndex][Timeline.TimelineUIUtils._categoryBreakdownCacheSymbol],
-        Timeline.TimelineUIUtils._slowStatsForTimeRange(events, endTime, tasks[statsAfterIndex].endTime));
-    const statsBefore = subtractStats(
-        tasks[statsBeforeIndex][Timeline.TimelineUIUtils._categoryBreakdownCacheSymbol],
-        Timeline.TimelineUIUtils._slowStatsForTimeRange(events, startTime, tasks[statsBeforeIndex].endTime));
+    const before = findCachedStatsAfterTime(startTime);
+    const statsBefore =
+        subtractStats(before.stats, Timeline.TimelineUIUtils._slowStatsForTimeRange(events, startTime, before.time));
+
+    const after = findCachedStatsAfterTime(endTime);
+    const statsAfter =
+        subtractStats(after.stats, Timeline.TimelineUIUtils._slowStatsForTimeRange(events, endTime, after.time));
+
     const aggregatedStats = subtractStats(statsAfter, statsBefore);
+    const aggregatedTotal = Object.values(aggregatedStats).reduce((a, b) => a + b, 0);
+    aggregatedStats['idle'] = Math.max(0, endTime - startTime - aggregatedTotal);
+    return aggregatedStats;
+
+    /**
+     * @param {number} atTime
+     * @return {!{time: number, stats: !Object<string, number>}}
+     */
+    function findCachedStatsAfterTime(atTime) {
+      let index = events.lowerBound(atTime, (time, event) => time - (event.endTime || event.startTime));
+      while (index < events.length && !events[index][symbol])
+        index++;
+      if (index === events.length) {
+        const lastEvent = events.peekLast();
+        return {time: lastEvent.endTime || lastEvent.startTime, stats: events[symbol]};
+      }
+      const event = events[index];
+      return {time: event.endTime || event.startTime, stats: event[symbol]};
+    }
 
     /**
       * @param {!Object<string, number>} a
@@ -1108,10 +1106,6 @@ Timeline.TimelineUIUtils = class {
         result[key] -= b[key];
       return result;
     }
-
-    const aggregatedTotal = Object.values(aggregatedStats).reduce((a, b) => a + b, 0);
-    aggregatedStats['idle'] = Math.max(0, endTime - startTime - aggregatedTotal);
-    return aggregatedStats;
   }
 
   /**
@@ -1154,19 +1148,18 @@ Timeline.TimelineUIUtils = class {
     const visibleEventsFilter = Timeline.TimelineUIUtils.visibleEventsFilter();
     return event => visibleEventsFilter.accept(event) || SDK.TracingModel.isTopLevelEvent(event);
   }
+
   /**
-   * @param {!TimelineModel.TimelineModel} model
+   * @param {!Array<!SDK.TracingModel.Event>} events
    */
-  static _buildRangeStatsCacheIfNeeded(model) {
-    const tasks = model.mainThreadTasks();
-    const filter = Timeline.TimelineUIUtils._filterForStats();
-    const firstTask = tasks.find(filter);
-    if (!firstTask || firstTask[Timeline.TimelineUIUtils._categoryBreakdownCacheSymbol])
+  static _buildRangeStatsCacheIfNeeded(events) {
+    if (events[Timeline.TimelineUIUtils._categoryBreakdownCacheSymbol])
       return;
+
     const aggregatedStats = {};
     const ownTimes = [];
     TimelineModel.TimelineModel.forEachEvent(
-        model.mainThreadEvents(), onStartEvent, onEndEvent, undefined, undefined, undefined, filter);
+        events, onStartEvent, onEndEvent, undefined, undefined, undefined, Timeline.TimelineUIUtils._filterForStats());
 
     /**
      * @param {!SDK.TracingModel.Event} e
@@ -1186,6 +1179,9 @@ Timeline.TimelineUIUtils = class {
       if (!ownTimes.length)
         e[Timeline.TimelineUIUtils._categoryBreakdownCacheSymbol] = Object.assign({}, aggregatedStats);
     }
+
+    const obj = /** @type {!Object} */ (events);
+    obj[Timeline.TimelineUIUtils._categoryBreakdownCacheSymbol] = Object.assign({}, aggregatedStats);
   }
 
   /**
@@ -1569,21 +1565,6 @@ Timeline.TimelineUIUtils = class {
       idle: new Timeline.TimelineCategory('idle', Common.UIString('Idle'), false, 'hsl(0, 0%, 98%)', 'hsl(0, 0%, 98%)')
     };
     return Timeline.TimelineUIUtils._categories;
-  }
-
-  /**
-   * @param {!TimelineModel.TimelineModel.AsyncEventGroup} group
-   * @return {string}
-   */
-  static titleForAsyncEventGroup(group) {
-    if (!Timeline.TimelineUIUtils._titleForAsyncEventGroupMap) {
-      const groups = TimelineModel.TimelineModel.AsyncEventGroup;
-      Timeline.TimelineUIUtils._titleForAsyncEventGroupMap = new Map([
-        [groups.animation, Common.UIString('Animation')], [groups.console, Common.UIString('Console')],
-        [groups.userTiming, Common.UIString('User Timing')], [groups.input, Common.UIString('Input')]
-      ]);
-    }
-    return Timeline.TimelineUIUtils._titleForAsyncEventGroupMap.get(group) || '';
   }
 
   /**

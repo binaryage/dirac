@@ -1,6 +1,6 @@
 (ns dirac.background.marion
   (:require [dirac.background.logging :refer [log info warn error]]
-            [cljs.core.async :refer [<! chan put! go go-loop]]
+            [dirac.shared.async :refer [<! go-channel put! go]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
             [dirac.background.state :as state]

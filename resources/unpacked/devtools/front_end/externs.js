@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// WebKit Web Facing API
+// Blink Web Facing API
 
 /**
  * @param {!Object} object
@@ -904,6 +904,13 @@ window.dispatchStandaloneTestRunnerMessages;
  * @return {Object}
  */
 Element.prototype.animate = function(keyframes, timing) {};
+
+/**
+ * @param {...!Node} nodes
+ * @return {undefined}
+ * @see https://dom.spec.whatwg.org/#dom-parentnode-prepend
+ */
+Element.prototype.prepend = function(nodes) {};
 
 /**
  * @override

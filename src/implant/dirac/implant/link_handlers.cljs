@@ -1,5 +1,5 @@
 (ns dirac.implant.link-handlers
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [oops.core :refer [gset! oget oset! oset!+ ocall! ocall oapply gget gcall!]]
             [dirac.implant.logging :refer [log warn error info]]
             [dirac.implant.intercom :as intercom]))
@@ -22,28 +22,28 @@
 (defn should-call-original-action? [event]
   (not (ocall event "getModifierState" "Alt")))
 
-(defn open-via-nrepl! [url line column]
-  (if (intercom/repl-ready?)
-    (go
+(defn go-open-via-nrepl! [url line column]
+  (go
+    (if (intercom/repl-ready?)
       (let [payload {:url url :line (inc line) :column column}                                                                ; devtools line numbers are 0-based
-            response (<! (intercom/send-devtools-request! :reveal-url payload))
+            response (<! (intercom/go-send-devtools-request! :reveal-url payload))
             result (:result response)]
-        (if (some? result)
-          (error (make-open-request-error-message result url)))))
-    (warn (make-repl-readiness-warning-message url))))
+        (when (some? result)
+          (error (make-open-request-error-message result url))))
+      (warn (make-repl-readiness-warning-message url)))))
 
-(defn open-via-nrepl-link-handler [all-actions url line column event]
+(defn handle-open-via-nrepl-link! [all-actions url line column event]
   ; note that event is nil when selecting exact item from link context menu (after right-click)
   ; otherwise the event represent click event of link left-click
   (let [next-action (second all-actions)]
-    (if (or (nil? event) (should-call-dirac-action? event))
-      (open-via-nrepl! url line column))
-    (if (and (some? next-action) (some? event) (should-call-original-action? event))
+    (when (or (nil? event) (should-call-dirac-action? event))
+      (go-open-via-nrepl! url line column))
+    (when (and (some? next-action) (some? event) (should-call-original-action? event))
       (ocall! next-action "handler"))))
 
 (defn register-open-via-nrepl-handler! []
   (gcall! "dirac.registerDiracLinkAction" #js {:title   "Reveal via nREPL"
-                                               :handler open-via-nrepl-link-handler}))
+                                               :handler handle-open-via-nrepl-link!}))
 
 ; -- installation -----------------------------------------------------------------------------------------------------------
 

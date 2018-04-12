@@ -2,10 +2,10 @@
 
 (defmacro go-job [& body]
   `(cljs.core.async/go
-     (cljs.core.async/<! (dirac.automation.task/task-started!))
+     (cljs.core.async/<! (dirac.automation.task/go-start-task!))
      ~@body
      (if (dirac.automation.task/running?)
-       (cljs.core.async/<! (dirac.automation.task/task-finished!)))))
+       (cljs.core.async/<! (dirac.automation.task/go-finish-task!)))))
 
 (defmacro go-task [& args]
   (let [first-arg (first args)
@@ -21,8 +21,8 @@
                                                    (cljs.test/run-tests
                                                      (cljs.test/empty-env :cljs.test/default)))
                                                  (fn []
-                                                   (dirac.automation.task/task-kill!)))
-       (dirac.automation.task/task-setup!))))
+                                                   (dirac.automation.task/go-kill-task!)))
+       (dirac.automation.task/go-setup-task!))))
 
 ; this macro exists solely to work around a bug in cljs compiler
 ; too many commands on single go-block level causes infinite compiler loop:
@@ -32,48 +32,46 @@
 (defmacro chunkify [& commands]
   (let [safe-number-of-commands 17                                                                                            ; this number was determined experimentally, 18 seems to be smallest size causing stack overflow
         command-chunks (partition-all safe-number-of-commands commands)
-        gen-chunk (fn [commands]
-                    `(cljs.core.async/<! (cljs.core.async/go
-                                           ~@commands)))]
+        gen-chunk (fn [commands] `(cljs.core.async/<! (cljs.core.async/go ~@commands)))]
     `(do
        ~@(map gen-chunk command-chunks))))
 
 (defmacro <!* [action & args]
   {:pre [(symbol? action)]}
-  `(cljs.core.async/<! (dirac.automation.machinery/action! ~action (meta #'~action) ~@args)))
+  `(cljs.core.async/<! (dirac.automation.machinery/go-action! ~action (meta #'~action) ~@args)))
 
 (defmacro with-scenario [name & body]
-  `(let [scenario-id# (dirac.automation/<!* dirac.automation/open-scenario! ~name)]
+  `(let [scenario-id# (dirac.automation/<!* dirac.automation/go-open-scenario! ~name)]
      (binding [dirac.automation.machinery/*current-scenario-id* scenario-id#]
        ~@body)
-     (dirac.automation/<!* dirac.automation/close-scenario! scenario-id#)
+     (dirac.automation/<!* dirac.automation/go-close-scenario! scenario-id#)
      scenario-id#))
 
 (defmacro with-devtools [& args]
   (let [params (if (map? (first args)) (first args))
         commands (if (some? params) (rest args) args)]
-    `(let [devtools-id# (dirac.automation/<!* dirac.automation/open-devtools! ~@(if (some? params) [params]))]
+    `(let [devtools-id# (dirac.automation/<!* dirac.automation/go-open-devtools! ~@(if (some? params) [params]))]
        ~@commands
-       (dirac.automation/<!* dirac.automation/close-devtools!)
+       (dirac.automation/<!* dirac.automation/go-close-devtools!)
        devtools-id#)))
 
 (defmacro with-options [options & body]
   {:pre [(map? options)]}
   `(do
-     (dirac.automation/<!* dirac.automation/store-options!)
-     (dirac.automation/<!* dirac.automation/set-options! ~options)
+     (dirac.automation/<!* dirac.automation/go-store-options!)
+     (dirac.automation/<!* dirac.automation/go-set-options! ~options)
      ~@body
-     (dirac.automation/<!* dirac.automation/restore-options!)))
+     (dirac.automation/<!* dirac.automation/go-restore-options!)))
 
 (defmacro testing [title & body]
   `(let [title# ~title]
-     (dirac.automation.machinery/testing-start title#)
+     (dirac.automation.machinery/start-testing! title#)
      (cljs.test/testing title# ~@body)
-     (dirac.automation.machinery/testing-end title#)))
+     (dirac.automation.machinery/end-testing! title#)))
 
 (defmacro with-console-feedback [& body]
   `(do
-     (dirac.automation/<!* dirac.automation/enable-console-feedback!)
+     (dirac.automation/<!* dirac.automation/go-enable-console-feedback!)
      ~@body
-     (dirac.automation/<!* dirac.automation/disable-console-feedback!)))
+     (dirac.automation/<!* dirac.automation/go-disable-console-feedback!)))
 

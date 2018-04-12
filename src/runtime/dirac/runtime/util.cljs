@@ -55,12 +55,12 @@
   (platform-str (:platform node-info) "?" (:version node-info) "?"))
 
 (defn ^:dynamic in-node-context? []
-  (some? (get-node-info js/goog.global)))
+  (some? (get-node-info goog/global)))
 
 ; -- javascript context utils -----------------------------------------------------------------------------------------------
 
 (defn ^:dynamic get-js-context-description []
-  (if-let [node-info (get-node-info js/goog.global)]
+  (if-some [node-info (get-node-info goog/global)]
     (str "node/" (get-node-description node-info))
     (let [user-agent (ua/getUserAgentString)]
       (if-not (empty? user-agent)
@@ -129,7 +129,7 @@
 ; -- installer --------------------------------------------------------------------------------------------------------------
 
 (defn install-feature! [feature features-to-install available-fn install-fn]
-  (if (some #{feature} features-to-install)
+  (when (some #{feature} features-to-install)
     (if (available-fn feature)
       (install-fn)
       (.warn js/console (feature-not-available-msg feature)))))

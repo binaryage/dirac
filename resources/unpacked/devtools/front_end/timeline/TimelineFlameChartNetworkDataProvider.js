@@ -23,6 +23,9 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
       shareHeaderLine: false
     };
     this._group = {startLevel: 0, name: Common.UIString('Network'), expanded: false, style: this._style};
+    this._minimumBoundary = 0;
+    this._maximumBoundary = 0;
+    this._timeSpan = 0;
   }
 
   /**
@@ -63,7 +66,7 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
     this._requests = [];
     this._timelineData = new PerfUI.FlameChart.TimelineData([], [], [], []);
     if (this._model)
-      this._appendTimelineData(this._model.mainThreadEvents());
+      this._appendTimelineData();
     return this._timelineData;
   }
 
@@ -333,10 +336,7 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
     return value ? `hsla(214, 80%, 50%, ${value / 5})` : null;
   }
 
-  /**
-   * @param {!Array.<!SDK.TracingModel.Event>} events
-   */
-  _appendTimelineData(events) {
+  _appendTimelineData() {
     this._minimumBoundary = this._model.minimumRecordTime();
     this._maximumBoundary = this._model.maximumRecordTime();
     this._timeSpan = this._model.isEmpty() ? 1000 : this._maximumBoundary - this._minimumBoundary;

@@ -1,6 +1,5 @@
 (ns dirac.automation.feedback
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
-            [oops.core :refer [oget oset! ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply gcall!]]
             [dirac.automation.logging :refer [log warn]]
             [dirac.automation.messages :as messages]
             [dirac.automation.transcript-host :as transcript-host]))
@@ -18,18 +17,18 @@
 
 ; -- handlers ---------------------------------------------------------------------------------------------------------------
 
-(defn format-label [label devtools-id]
+(defn prepare-format-label [label devtools-id]
   (if devtools-id
     (str label " #" devtools-id)
     label))
 
 (defn append-to-transcript! [label message & [devtools-id]]
-  (transcript-host/append-to-transcript! (format-label label devtools-id) message))
+  (transcript-host/append-to-transcript! (prepare-format-label label devtools-id) message))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
 (defn process-event! [event]
-  (if-let [data (oget event "?data")]
+  (when-some [data (oget event "?data")]
     (case (oget data "?type")
       "feedback-from-devtools" (append-to-transcript! "devtools" (oget data "transcript") (oget data "devtools"))
       "feedback-from-extension" (append-to-transcript! "extension" (oget data "transcript"))
@@ -40,14 +39,14 @@
   (if (is-processing-messages?)
     (warn "start-processing-messages! called while already started => ignoring this call")
     (do
-      (.addEventListener js/window "message" process-event!)
+      (gcall! "addEventListener" "message" process-event!)
       (vreset! processing-messages? true))))
 
 (defn stop-processing-messages! []
   (if-not (is-processing-messages?)
     (warn "stop-processing-messages! called while not yet started => ignoring this call")
     (do
-      (.removeEventListener js/window "message" process-event!)
+      (gcall! "removeEventListener" "message" process-event!)
       (vreset! processing-messages? false))))
 
 ; -- transcript subscription ------------------------------------------------------------------------------------------------
@@ -56,14 +55,14 @@
   (if (is-feedback-subscribed?)
     (warn "subscribe-to-feedback! called while already subscribed => ignoring this call")
     (do
-      (messages/post-message! #js {:type "marion-subscribe-feedback"} :no-timeout)
+      (messages/go-post-message! #js {:type "marion-subscribe-feedback"} :no-timeout)
       (vreset! feedback-subscribed? true))))
 
 (defn unsubscribe-from-feedback! []
   (if-not (is-feedback-subscribed?)
     (warn "unsubscribe-from-feedback! called while not yet subscribed => ignoring this call")
     (do
-      (messages/post-message! #js {:type "marion-unsubscribe-feedback"} :no-timeout)
+      (messages/go-post-message! #js {:type "marion-unsubscribe-feedback"} :no-timeout)
       (vreset! feedback-subscribed? false))))
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------

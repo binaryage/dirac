@@ -15,8 +15,8 @@
    max-age -- The max age in seconds (from now). Use -1 to set a session cookie. If not provided, the default is -1 (i.e. set a session cookie).
    "
   (let [key-name (make-key-name k)]
-    (if (ocall cookies "isValidName" key-name)
-      (if (ocall cookies "isValidValue" v)
+    (when (ocall cookies "isValidName" key-name)
+      (when (ocall cookies "isValidValue" v)
         (let [{:keys [max-age path domain secure?]} (apply hash-map opts)]
           (ocall! cookies "set" key-name v max-age path domain secure?))))))
 

@@ -46,6 +46,29 @@ Timeline.TimelineLoader = class {
   }
 
   /**
+   * @param {!Array.<!SDK.TracingManager.EventPayload>} events
+   * @param {!Timeline.TimelineLoader.Client} client
+   * @return {!Timeline.TimelineLoader}
+   */
+  static loadFromEvents(events, client) {
+    const loader = new Timeline.TimelineLoader(client);
+
+    setTimeout(async () => {
+      const eventsPerChunk = 5000;
+      client.loadingStarted();
+      for (let i = 0; i < events.length; i += eventsPerChunk) {
+        const chunk = events.slice(i, i + eventsPerChunk);
+        loader._tracingModel.addEvents(chunk);
+        client.loadingProgress((i + chunk.length) / events.length);
+        await new Promise(r => setTimeout(r));  // Yield event loop to paint.
+      }
+      loader.close();
+    });
+
+    return loader;
+  }
+
+  /**
    * @param {string} url
    * @param {!Timeline.TimelineLoader.Client} client
    * @return {!Timeline.TimelineLoader}

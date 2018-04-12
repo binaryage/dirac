@@ -63,8 +63,8 @@
 
 (defn really-forward-message-to-joined-session! [nrepl-message]
   (let [{:keys [id session transport]} nrepl-message]
-    (if-let [target-dirac-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
-      (if-let [forwardable-message (prepare-forwardable-message nrepl-message)]
+    (if-some [target-dirac-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
+      (if-some [forwardable-message (prepare-forwardable-message nrepl-message)]
         (let [job-id (helpers/generate-uuid)
               target-session (sessions/get-dirac-session-descriptor-session target-dirac-session-descriptor)
               target-transport (sessions/get-dirac-session-descriptor-transport target-dirac-session-descriptor)

@@ -1,5 +1,5 @@
 (ns marion.background.clients
-  (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
+  (:require [dirac.shared.async :refer [<! go-channel go-wait go]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
             [marion.background.logging :refer [log info warn error]]

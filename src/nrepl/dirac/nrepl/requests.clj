@@ -25,7 +25,7 @@
 
 (defmethod handle-request! :reveal-url [_ payload]
   (let [config (state/get-session-dirac-nrepl-config)]
-    (if-let [handler (:reveal-url-request-handler config)]
+    (when-some [handler (:reveal-url-request-handler config)]
       (let [{:keys [url line column]} payload]
         (try
           (let [handler-fn (turn-handler-into-callable handler)]

@@ -42,7 +42,7 @@
   (vreset! (:current-job driver) nil))
 
 (defn send! [driver msg]
-  (if-let [send-fn (get-send-response-fn driver)]
+  (when-some [send-fn (get-send-response-fn driver)]
     (send-fn (assoc msg :id (get-current-job driver)))))
 
 (defn report-output [driver output-kind content]
@@ -68,7 +68,7 @@
   ([driver sniffer-key output-kind]
    (let [sniffer (get-sniffer driver sniffer-key)
          content (sniffer/extract-content! sniffer)]
-     (if-not (nil? content)
+     (when-not (nil? content)
        (report-output driver output-kind content)))))
 
 (defn flush! [driver]
@@ -115,8 +115,8 @@
   In case of recording was suppressed, we throw away the content and just flip the flag back instead."
   [driver sniffer-key]
   (let [sniffer (get-sniffer driver sniffer-key)]
-    (if-let [content (sniffer/extract-all-lines-but-last! sniffer)]
-      (if (recording? driver)
+    (when-some [content (sniffer/extract-all-lines-but-last! sniffer)]
+      (when (recording? driver)
         (report-output driver sniffer-key content)))))
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------

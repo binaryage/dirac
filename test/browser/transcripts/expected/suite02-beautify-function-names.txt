@@ -22,7 +22,7 @@ stdout           displayed 42 items:
                   * IFn:-invoke² (apply) / cljs.core.IFn:-invoke² (cljs.core/apply)
                   * apply / cljs.core/apply
                   * call-trigger! / dirac.automation.scenario/call-trigger!
-                  * notification-handler! / dirac.automation.scenario/notification-handler!
+                  * handle-notification! / dirac.automation.scenario/handle-notification!
                   * process-notification! / dirac.automation.notifications/process-notification!
                   * process-event! / dirac.automation.notifications/process-event!
                   * postMessage (async)
@@ -85,7 +85,7 @@ stdout           displayed 42 items:
                   * cljs.core.apply.cljs$core$IFn$_invoke$arity$2
                   * cljs$core$apply
                   * dirac$automation$scenario$call_trigger_BANG_
-                  * dirac$automation$scenario$notification_handler_BANG_
+                  * dirac$automation$scenario$handle_notification_BANG_
                   * dirac$automation$notifications$process_notification_BANG_
                   * dirac$automation$notifications$process_event_BANG_
                   * postMessage (async)
@@ -175,7 +175,7 @@ stdout           displayed 44 items:
                   * IFn:-invoke² (apply)
                   * apply
                   * call-trigger!
-                  * notification-handler!
+                  * handle-notification!
                   * process-notification!
                   * process-event!
                   * marion$content-script$page$send-message!
@@ -251,7 +251,7 @@ stdout           displayed 77 items:
                   * IFn:-invoke² (apply) / cljs.core.IFn:-invoke² (cljs.core/apply)
                   * apply / cljs.core/apply
                   * call-trigger! / dirac.automation.scenario/call-trigger!
-                  * notification-handler! / dirac.automation.scenario/notification-handler!
+                  * handle-notification! / dirac.automation.scenario/handle-notification!
                   * process-notification! / dirac.automation.notifications/process-notification!
                   * process-event! / dirac.automation.notifications/process-event!
                   * postMessage (async)

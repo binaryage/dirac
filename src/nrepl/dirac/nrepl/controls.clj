@@ -16,7 +16,7 @@
   ::no-result)
 
 (defn ^:dynamic warn-about-retargeting-if-needed [session]
-  (if (not= session (state/get-current-session))
+  (when (not= session (state/get-current-session))
     (println (messages/make-retargeting-warning-msg))))
 
 ; == special REPL commands ==================================================================================================
@@ -39,7 +39,7 @@
   (with-coalesced-output
     (if (nil? action)
       (println (get usage/docs nil))
-      (if-let [doc (get usage/docs (keyword action))]
+      (if-some [doc (get usage/docs (keyword action))]
         (println doc)
         (error-println (messages/make-no-such-action-msg action)))))
   ::no-result)
@@ -123,8 +123,7 @@
 
 (defmethod dirac! :match [_ & [input]]
   (with-coalesced-output
-    (let [session (sessions/get-current-session)
-          matcher-description (sessions/make-matcher-description-pair input)]
+    (let [matcher-description (sessions/make-matcher-description-pair input)]
       (cond
         (nil? matcher-description) (error-println (messages/make-invalid-session-matching-msg input))
         :else (let [[matcher-fn description] matcher-description
@@ -164,7 +163,7 @@
           (warn-about-retargeting-if-needed session)
           (state/set-session-selected-compiler! session selected-compiler)
           (let [matched-compiler-descriptor (compilers/find-available-matching-compiler-descriptor session selected-compiler)]
-            (if (nil? matched-compiler-descriptor)
+            (when (nil? matched-compiler-descriptor)
               (error-println (messages/make-no-compilers-msg selected-compiler))))
           (state/send-response! (utils/prepare-current-env-info-response))))))
   ::no-result)
@@ -194,10 +193,10 @@
               (error-println (messages/make-no-killed-compilers-msg user-input))
               (do
                 (println (messages/make-report-killed-compilers-msg user-input killed-compiler-ids))
-                (if-not (compilers/get-selected-compiler-id session)                                                          ; switch to first available compiler the current one got killed
+                (when-not (compilers/get-selected-compiler-id session)                                                        ; switch to first available compiler the current one got killed
                   (state/set-session-selected-compiler! session nil))                                                         ; note that this still might not guarantee valid compiler selection, the compiler list might be empty
                 (state/send-response! (utils/prepare-current-env-info-response))))
-            (if-not (empty? invalid-compiler-ids)
+            (when-not (empty? invalid-compiler-ids)
               (error-println (messages/make-report-invalid-compilers-not-killed-msg user-input invalid-compiler-ids))))))))
   ::no-result)
 

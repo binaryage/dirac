@@ -1,5 +1,5 @@
 (ns dirac.automation.launcher
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [goog.string :as string]
             [oops.core :refer [oget oset! oset!+ ocall ocall+ oapply gset! gcall!]]
             [dirac.automation.logging :refer [log warn error info]]
@@ -19,19 +19,21 @@
   (log "launching task... via" (get-launch-task-key))
   (gcall! (get-launch-task-key)))                                                                                             ; see go-task
 
-(defn launch-task-after-delay! [delay-ms]
+(defn go-launch-task-after-delay! [delay-ms]
   (log "scheduled task launch after " delay-ms "ms...")
   (go
-    (if (pos? delay-ms)
-      (<! (timeout delay-ms)))
+    (when (pos? delay-ms)
+      (<! (go-wait delay-ms)))
     (launch-task!)))
 
-(defn process-event! [event]
-  (if-let [data (oget event "?data")]
-    (let [type (oget data "?type")]
+(defn go-process-event! [event]
+  (when-some [data (oget event "?data")]
+    (let [type (oget data "?type")
+          delay-str (oget data "?delay")
+          delay (if (some? delay-str) (string/parseInt delay-str))]
       (cond
-        (= type (get-launch-task-message)) (launch-task-after-delay! (string/parseInt (oget data "?delay")))
-        (= type (get-kill-task-message)) (kill-task!)))))
+        (= type (get-launch-task-message)) (go-launch-task-after-delay! delay)
+        (= type (get-kill-task-message)) (go (kill-task!))))))
 
 (defn init! []
-  (.addEventListener js/window "message" process-event!))
+  (gcall! "addEventListener" "message" go-process-event!))

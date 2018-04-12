@@ -30,11 +30,11 @@
                        :envelope #js {:type       "feedback-from-devtools"
                                       :devtools   (options/get-devtools-id)
                                       :transcript text}}]
-      (if debug?
+      (when debug?
         (log "posting feedback:" message))
-      (if-let [intercom (get-intercom)]
+      (if-some [intercom (get-intercom)]
         (intercom message)
         (do
-          (if debug?
+          (when debug?
             (log "intercom not yet ready, queuing feedback message" message))
           (swap! pending-messages conj message))))))

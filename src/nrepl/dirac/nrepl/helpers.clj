@@ -70,7 +70,7 @@
     (str message-info "\n\n" details)))
 
 (defn status-coll [message]
-  (if-let [status (:status message)]
+  (if-some [status (:status message)]
     (if (coll? status)
       status
       [status])

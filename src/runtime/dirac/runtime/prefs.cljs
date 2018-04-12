@@ -69,9 +69,9 @@
    :silence-use-of-undeclared-var-warnings       true
    :silence-no-such-namespace-warnings           true})
 
-(def static-prefs (gen-static-config))                                                                                        ; this config is comming from environment and system properties
+(def static-prefs (gen-static-config))                                                                                        ; this config is coming from environment and system properties
 
-(def current-prefs (atom (merge default-prefs static-prefs)))
+(defonce current-prefs (atom (merge default-prefs static-prefs)))
 
 ; -- PUBLIC API -------------------------------------------------------------------------------------------------------------
 

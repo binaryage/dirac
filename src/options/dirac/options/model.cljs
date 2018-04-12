@@ -1,6 +1,6 @@
 (ns dirac.options.model
   (:require [dirac.options.logging :refer [log warn error info]]
-            [cljs.core.async :refer [<! chan close! go go-loop]]
+            [dirac.shared.async :refer [<! go-channel close! go]]
             [oops.core :refer [oget ocall oapply gcall]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :as chromex-protocols]
@@ -9,7 +9,7 @@
 ; we keep cached-options atom synced with values in storage
 ; we persist all options in local storage under "options" key as JSON string
 
-(defonce default-options
+(def default-options
   {:target-url                "http://localhost:9222"
    :open-as                   "panel"
    :enable-repl               true
@@ -82,7 +82,7 @@
     (chromex-protocols/set local-storage #js {"options" serialized-options})))                                                ; will trigger on-changed event and a call to reload-options!, which is fine
 
 (defn on-cached-options-change! [new-options]
-  (if *auto-sync*
+  (when *auto-sync*
     (write-options! new-options)))
 
 (defn reset-cached-options-without-sync! [options]
@@ -139,7 +139,7 @@
   (log "init!")
   (go
     (let [options (<! (go-read-options))
-          chrome-event-channel (make-chrome-event-channel (chan))]
+          chrome-event-channel (make-chrome-event-channel (go-channel))]
       (set! *initialized* true)
       (reset-cached-options-without-sync! options)
       (add-watch cached-options ::watch (fn [_ _ _ new-state]

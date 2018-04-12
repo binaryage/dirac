@@ -1,5 +1,5 @@
 (ns dirac.tests.tasks.suite02.enable-parinfer
-  (:require [cljs.core.async]
+  (:require [dirac.shared.async]
             [cljs.test :refer-macros [is]]
             [dirac.settings :refer [seconds minutes]]
             [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options testing] :as a]))
@@ -8,10 +8,10 @@
   (with-scenario "normal"
     (testing "parinfer should be present by default"
       (with-devtools
-        (<!* a/switch-to-console-panel!)
-        (<!* a/wait-for-devtools-match "use-parinfer? true")))
+        (<!* a/go-switch-to-console-panel!)
+        (<!* a/go-wait-for-devtools-match "use-parinfer? true")))
     (testing "parinfer should not be present when disabled in options"
       (with-options {:enable-parinfer false}
         (with-devtools
-          (<!* a/switch-to-console-panel!)
-          (<!* a/wait-for-devtools-match "use-parinfer? false"))))))
+          (<!* a/go-switch-to-console-panel!)
+          (<!* a/go-wait-for-devtools-match "use-parinfer? false"))))))

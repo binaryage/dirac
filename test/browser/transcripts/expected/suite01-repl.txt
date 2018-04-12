@@ -27,13 +27,13 @@ devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrappi
 devtools #1      setDiracPromptNS('cljs.user')
 devtools #1      setDiracPromptMode('edit')
 automate #1      enable-console-feedback!
-automate #1      console-exec-and-match! ["(+ 1 2)" "info> 3"]
+automate #1      exec-and-match-in-console! ["(+ 1 2)" "info> 3"]
 devtools #1      DC.info> (+ 1 2)
 devtools #1      send-eval-request: (+ 1 2)
 devtools #1      repl eval job started
 devtools #1      DF.info> 3
 devtools #1      repl eval job ended
-automate #1      console-exec-and-match! ["4 5 6" ["info> 4" "info> 5" "info> 6"]]
+automate #1      exec-and-match-in-console! ["4 5 6" ["info> 4" "info> 5" "info> 6"]]
 devtools #1      DC.info> 4 5 6
 devtools #1      send-eval-request: 4 5 6
 devtools #1      repl eval job started
@@ -50,7 +50,6 @@ devtools #1      DC.info>
 devtools #1      send-eval-request:
                  7
 devtools #1      repl eval job started
-automate #1      console-wait-for-repl-job-match! ["info> 7"]
 devtools #1      DF.info> 7
 devtools #1      repl eval job ended
 automate #1      focus-console-prompt!
@@ -58,13 +57,13 @@ automate #1      simulate-console-input! ["(let [x 1"]
 automate #1      simulate-console-action! ["SHIFT+ENTER"]
 automate #1      simulate-console-input! ["y 2"]
 automate #1      get-prompt-representation
-automate #1      console-exec-and-match! ["(range 200)" "info> (0 1 2 3 4 …)"]
+automate #1      exec-and-match-in-console! ["(range 200)" "info> (0 1 2 3 4 …)"]
 devtools #1      DC.info> (range 200)
 devtools #1      send-eval-request: (range 200)
 devtools #1      repl eval job started
 devtools #1      DF.info> (0 1 2 3 4 …)
 devtools #1      repl eval job ended
-automate #1      console-exec-and-match! ["(doc filter)" "info> null"]
+automate #1      exec-and-match-in-console! ["(doc filter)" "info> null"]
 devtools #1      DC.info> (doc filter)
 devtools #1      send-eval-request: (doc filter)
 devtools #1      repl eval job started
@@ -77,13 +76,13 @@ devtools #1      DF.info>
                    Returns a transducer when no collection is provided.
 devtools #1      DF.info> null
 devtools #1      repl eval job ended
-automate #1      console-exec-and-match! ["js/window.NaN" "info> NaN"]
+automate #1      exec-and-match-in-console! ["js/window.NaN" "info> NaN"]
 devtools #1      DC.info> js/window.NaN
 devtools #1      send-eval-request: js/window.NaN
 devtools #1      repl eval job started
 devtools #1      DF.info> NaN
 devtools #1      repl eval job ended
-automate #1      console-exec-and-match! ["(in-ns)" "java-trace/plain-text > java.lang.IllegalArgumentException: Argument to in-ns must be a symbol."]
+automate #1      exec-and-match-in-console! ["(in-ns)" "java-trace/plain-text > java.lang.IllegalArgumentException: Argument to in-ns must be a symbol."]
 devtools #1      DC.info> (in-ns)
 devtools #1      send-eval-request: (in-ns)
 devtools #1      repl eval job started
@@ -93,7 +92,7 @@ devtools #1      repl eval job ended
 devtools #1      DF.info> java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.
 devtools #1      <elided stack trace>
 devtools #1      JS.info> console.groupEnd
-automate #1      console-exec-and-match! ["(in-ns 'my.ns)" "setDiracPromptNS('my.ns')"]
+automate #1      exec-and-match-in-console! ["(in-ns 'my.ns)" "setDiracPromptNS('my.ns')"]
 devtools #1      DC.info> (in-ns 'my.ns)
 devtools #1      send-eval-request: (in-ns 'my.ns)
 devtools #1      repl eval job started
@@ -166,7 +165,7 @@ devtools #3      setDiracPromptStatusContent('Dirac Agent connected. Bootstrappi
 devtools #3      setDiracPromptNS('cljs.user')
 devtools #3      setDiracPromptMode('edit')
 automate #3      enable-console-feedback!
-automate #3      console-exec-and-match! ["(+ 1 2)" "info> 3"]
+automate #3      exec-and-match-in-console! ["(+ 1 2)" "info> 3"]
 devtools #3      DC.info> (+ 1 2)
 devtools #3      send-eval-request: (+ 1 2)
 devtools #3      repl eval job started
@@ -181,7 +180,7 @@ devtools #3      setDiracPromptStatusContent('Checking for Dirac Runtime presenc
 devtools #3      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #3      setDiracPromptMode('edit')
 automate #3      enable-console-feedback!
-automate #3      console-exec-and-match! ["(+ 1 2)" "info> 3"]
+automate #3      exec-and-match-in-console! ["(+ 1 2)" "info> 3"]
 devtools #3      DC.info> (+ 1 2)
 devtools #3      send-eval-request: (+ 1 2)
 devtools #3      repl eval job started
@@ -196,7 +195,7 @@ devtools #3      setDiracPromptStatusContent('Checking for Dirac Runtime presenc
 devtools #3      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #3      setDiracPromptMode('edit')
 automate #3      enable-console-feedback!
-automate #3      console-exec-and-match! ["(+ 1 2)" "info> 3"]
+automate #3      exec-and-match-in-console! ["(+ 1 2)" "info> 3"]
 devtools #3      DC.info> (+ 1 2)
 devtools #3      send-eval-request: (+ 1 2)
 devtools #3      repl eval job started
@@ -231,7 +230,7 @@ devtools #4      setDiracPromptStatusContent('Dirac Agent connected. Bootstrappi
 devtools #4      setDiracPromptNS('cljs.user')
 devtools #4      setDiracPromptMode('edit')
 automate #4      enable-console-feedback!
-automate #4      console-exec-and-match! ["(+ 1 2)" "info> 3"]
+automate #4      exec-and-match-in-console! ["(+ 1 2)" "info> 3"]
 devtools #4      DC.info> (+ 1 2)
 devtools #4      send-eval-request: (+ 1 2)
 devtools #4      repl eval job started
@@ -254,7 +253,7 @@ devtools #4      setDiracPromptStatusContent('Checking for Dirac Runtime presenc
 devtools #4      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #4      setDiracPromptMode('edit')
 automate #4      enable-console-feedback!
-automate #4      console-exec-and-match! ["(+ 1 2)" "info> 3"]
+automate #4      exec-and-match-in-console! ["(+ 1 2)" "info> 3"]
 devtools #4      DC.info> (+ 1 2)
 devtools #4      send-eval-request: (+ 1 2)
 devtools #4      repl eval job started
@@ -300,7 +299,7 @@ devtools #5      setDiracPromptStatusContent('Checking for Dirac Runtime presenc
 devtools #5      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #5      setDiracPromptMode('edit')
 automate #5      enable-console-feedback!
-automate #5      console-exec-and-match! ["(+ 1 2)" "info> 3"]
+automate #5      exec-and-match-in-console! ["(+ 1 2)" "info> 3"]
 devtools #5      DC.info> (+ 1 2)
 devtools #5      send-eval-request: (+ 1 2)
 devtools #5      repl eval job started
@@ -356,11 +355,11 @@ devtools #7      setDiracPromptStatusContent('Dirac Agent connected. Bootstrappi
 devtools #7      setDiracPromptNS('cljs.user')
 devtools #7      setDiracPromptMode('edit')
 automate #7      enable-console-feedback!
-automate #7      console-enter! ["(require 'dirac.tests.scenarios.repl.workspace)"]
+automate #7      type-in-console! ["(require 'dirac.tests.scenarios.repl.workspace)"]
 devtools #7      DC.info> (require 'dirac.tests.scenarios.repl.workspace)
 devtools #7      send-eval-request: (require 'dirac.tests.scenarios.repl.workspace)
 devtools #7      repl eval job started
-automate #7      console-exec-and-match! ["(in-ns 'dirac.tests.scenarios.repl.workspace)" "setDiracPromptNS('dirac.tests.scenarios.repl.workspace')"]
+automate #7      exec-and-match-in-console! ["(in-ns 'dirac.tests.scenarios.repl.workspace)" "setDiracPromptNS('dirac.tests.scenarios.repl.workspace')"]
 devtools #7      repl eval job ended
 devtools #7      DC.info> (in-ns 'dirac.tests.scenarios.repl.workspace)
 devtools #7      send-eval-request: (in-ns 'dirac.tests.scenarios.repl.workspace)
@@ -368,7 +367,7 @@ devtools #7      repl eval job started
 devtools #7      setDiracPromptNS('dirac.tests.scenarios.repl.workspace')
 devtools #7      repl eval job ended
 automate #7      scrape [:dirac-prompt-placeholder]
-automate #7      console-exec-and-match! ["(hello! \"REPL\")" ["DF.info> Hello, REPL!" "DF.info> null"]]
+automate #7      exec-and-match-in-console! ["(hello! \"REPL\")" ["DF.info> Hello, REPL!" "DF.info> null"]]
 devtools #7      DC.info> (hello! "REPL")
 devtools #7      send-eval-request: (hello! "REPL")
 devtools #7      repl eval job started
@@ -376,14 +375,14 @@ devtools #7      DF.info> Hello, REPL!
 devtools #7      DF.info> null
 devtools #7      repl eval job ended
 automate #7      scrape [:dirac-prompt-placeholder]
-automate #7      console-exec-and-match! ["(hello! \"again\")" ["DF.info> Hello, again!" "DF.info> null"]]
+automate #7      exec-and-match-in-console! ["(hello! \"again\")" ["DF.info> Hello, again!" "DF.info> null"]]
 devtools #7      DC.info> (hello! "again")
 devtools #7      send-eval-request: (hello! "again")
 devtools #7      repl eval job started
 devtools #7      DF.info> Hello, again!
 devtools #7      DF.info> null
 devtools #7      repl eval job ended
-automate #7      console-exec-and-match! ["(in-ns 'cljs.user)" "setDiracPromptNS('cljs.user')"]
+automate #7      exec-and-match-in-console! ["(in-ns 'cljs.user)" "setDiracPromptNS('cljs.user')"]
 devtools #7      DC.info> (in-ns 'cljs.user)
 devtools #7      send-eval-request: (in-ns 'cljs.user)
 devtools #7      repl eval job started
@@ -396,5 +395,5 @@ extension        handling command: close-dirac-devtools
 extension        unregister devtools #7
 ∎
 automate         close-scenario! ["scenario-tab#1"]
-summary          Automated 89 actions with 19 check-points containing 4 assertions.
+summary          Automated 88 actions with 20 check-points containing 4 assertions.
                  0 failures, 0 errors.

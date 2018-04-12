@@ -1,6 +1,5 @@
 (ns dirac.automation.notifications
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
-            [oops.core :refer [oget oset! ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply gcall!]]
             [dirac.automation.logging :refer [log warn]]
             [dirac.automation.messages :as messages]
             [cljs.reader :as reader]))
@@ -36,8 +35,8 @@
 
 ; -- sending ----------------------------------------------------------------------------------------------------------------
 
-(defn broadcast-notification! [notification]
-  (messages/broadcast-notification! (serialize-notification notification)))
+(defn go-broadcast-notification! [notification]
+  (messages/go-broadcast-notification! (serialize-notification notification)))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
@@ -56,14 +55,14 @@
   (if (is-processing-messages?)
     (warn "start-processing-messages! called while already started => ignoring this call")
     (do
-      (.addEventListener js/window "message" process-event!)
+      (gcall! "addEventListener" "message" process-event!)
       (vreset! processing-messages? true))))
 
 (defn stop-processing-messages! []
   (if-not (is-processing-messages?)
     (warn "stop-processing-messages! called while not yet started => ignoring this call")
     (do
-      (.removeEventListener js/window "message" process-event!)
+      (gcall! "removeEventListener" "message" process-event!)
       (vreset! processing-messages? false))))
 
 ; -- notifications subscription ---------------------------------------------------------------------------------------------
@@ -72,14 +71,14 @@
   (if (is-notifications-subscribed?)
     (warn "subscribe-to-notifications! called while already subscribed => ignoring this call")
     (do
-      (messages/post-message! #js {:type "marion-subscribe-notifications"} :no-timeout)
+      (messages/go-post-message! #js {:type "marion-subscribe-notifications"} :no-timeout)
       (vreset! notifications-subscribed? true))))
 
 (defn unsubscribe-from-notifications! []
   (if-not (is-notifications-subscribed?)
     (warn "unsubscribe-from-notifications! called while not yet subscribed => ignoring this call")
     (do
-      (messages/post-message! #js {:type "marion-unsubscribe-notifications"} :no-timeout)
+      (messages/go-post-message! #js {:type "marion-unsubscribe-notifications"} :no-timeout)
       (vreset! notifications-subscribed? false))))
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------

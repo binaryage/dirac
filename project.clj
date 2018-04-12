@@ -2,7 +2,7 @@
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.15")
 (def selected-clojure-version "1.9.0")
-(def selected-clojurescript-version "1.10.217")
+(def selected-clojurescript-version "1.10.238")
 (def selenium-version "3.11.0")
 
 (def provided-deps
@@ -24,11 +24,11 @@
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-   ['binaryage/oops "0.5.8" :scope "test"]
-   ['binaryage/chromex "0.5.15" :scope "test"]
-   ['binaryage/devtools "0.9.9" :scope "test"]
+   ['binaryage/oops "0.6.1" :scope "test"]
+   ['binaryage/chromex "0.6.0" :scope "test"]
+   ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
-   ['cljs-http "0.1.44" :scope "test"]
+   ['cljs-http "0.1.45" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
    ['rum "0.11.2" :scope "test"]
@@ -41,11 +41,11 @@
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
 
-   ['http.async.client "1.2.0" :scope "test"]
+   ['http.async.client "1.3.0" :scope "test"]
 
    ['ring/ring-core "1.6.3" :scope "test"]
    ['ring/ring-devel "1.6.3" :scope "test"]
-   ['clj-time "0.14.2" :scope "test"]
+   ['clj-time "0.14.3" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
    ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
@@ -58,7 +58,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.32"
+(defproject binaryage/dirac "1.2.33"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

@@ -2,12 +2,12 @@
   (:require-macros [dirac.implant.automation.scrapers :refer [safe->>]])
   (:require [oops.core :refer [oget oset! ocall oapply]]
             [dirac.implant.logging :refer [log warn error info]]
-            [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+            [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [cljs.pprint :refer [pprint]]
             [dirac.implant.automation.reps :refer [select-subrep select-subreps build-rep]]
             [clojure.walk :refer [prewalk postwalk]]
             [dirac.shared.dom :as dom]
-            [dirac.shared.utils]                                                                                                     ; required by macros
+            [dirac.shared.utils]                                                                                              ; required by macros
             [clojure.string :as string]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
@@ -98,7 +98,7 @@
 ; -- console UI -------------------------------------------------------------------------------------------------------------
 
 (defn log-kind-to-class-name [kind]
-  (if kind
+  (when (some? kind)
     (str ".console-" kind "-level")))
 
 (defn find-all-console-log-elements []
@@ -120,11 +120,11 @@
   (count (find-console-log-elements kind)))
 
 (defn find-stack-preview-container-in-console-error-element [error-el]
-  (if (some? error-el)
+  (when (some? error-el)
     (first (dom/query-selector error-el "html /deep/ .stack-preview-container"))))
 
 (defn find-console-message-text-element [console-message-wrapper-element]
-  (if (some? console-message-wrapper-element)
+  (when (some? console-message-wrapper-element)
     (first (dom/query-selector console-message-wrapper-element "html /deep/ .console-message-text"))))
 
 (defn extract-log-content [console-message-wrapper-el]
@@ -153,7 +153,7 @@
 (defn get-filtered-contents [substr-or-re els]
   (map second (filter-elements* substr-or-re els)))
 
-(defn expand-groups-async [els]
+(defn go-expand-groups [els]
   (go
     (doall
       (let [expand! (fn [console-message-wrapper-el]
@@ -164,10 +164,11 @@
                           console-message-wrapper-el)
                         (error "no .expand-group-icon under" console-message-wrapper-el)))
             expanded-group-els (keep expand! els)]
-        (<! (timeout 500))                                                                                                    ; give it some time to re-render/invalidate
+        ; give it some time to re-render/invalidate
+        (<! (go-wait 500))                                                                                                    ; TODO: remove me, FLAKY!
         expanded-group-els))))
 
-(defn find-group-elements [group-elements-chan]
+(defn go-find-group-elements [group-elements-channel]
   (go
     (doall
       (let [* (fn [group-header-el]
@@ -179,13 +180,13 @@
                     (if closed?
                       next-res
                       (recur next-res next-el)))))]
-        (map * (<! group-elements-chan))))))
+        (map * (<! group-elements-channel))))))
 
-(defn extract-logs [data-chan]
+(defn go-extract-logs [data-channel]
   (go
     (doall
       (let [* (fn [els] (map extract-log-content els))]
-        (map * (<! data-chan))))))
+        (map * (<! data-channel))))))
 
 (defn debug-print [v & [label]]
   (log (or label "scraper debug:") (pr-str v))
@@ -235,7 +236,7 @@
     (print-list (list))))
 
 (defmethod scrape :dirac-prompt-placeholder [_ & _]
-  (if-let [placeholder-el (find-dirac-prompt-placeholder-element)]
+  (if-some [placeholder-el (find-dirac-prompt-placeholder-element)]
     (get-deep-text-content placeholder-el)
     "<no placeholder>"))
 
@@ -271,6 +272,6 @@
   ; => list of lists of strings
   (safe->> (find-all-console-log-elements)
            (filter-elements substr-or-re)
-           (expand-groups-async)                                                                                              ; ! async => channel
-           (find-group-elements)
-           (extract-logs)))
+           (go-expand-groups)                                                                                                 ; ! async => channel
+           (go-find-group-elements)
+           (go-extract-logs)))

@@ -4,4 +4,4 @@
 
 (init-runtime! {:future-repl-api true})
 (scenario/capture-console-as-feedback!)
-(scenario/ready!)
+(scenario/go-ready!)

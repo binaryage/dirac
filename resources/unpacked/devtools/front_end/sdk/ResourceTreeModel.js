@@ -867,6 +867,14 @@ SDK.PageDispatcher = class {
 
   /**
    * @override
+   * @param {!Protocol.Page.FrameId} frameId
+   * @param {string} url
+   */
+  navigatedWithinDocument(frameId, url) {
+  }
+
+  /**
+   * @override
    */
   frameResized() {
     this._resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameResized, null);
@@ -877,9 +885,12 @@ SDK.PageDispatcher = class {
    * @param {string} url
    * @param {string} message
    * @param {string} dialogType
+   * @param {boolean} hasBrowserHandler
    * @param {string=} prompt
    */
-  javascriptDialogOpening(url, message, dialogType, prompt) {
+  javascriptDialogOpening(url, message, dialogType, hasBrowserHandler, prompt) {
+    if (!hasBrowserHandler)
+      this._resourceTreeModel._agent.handleJavaScriptDialog(false);
   }
 
   /**

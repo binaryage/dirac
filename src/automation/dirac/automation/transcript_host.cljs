@@ -1,22 +1,21 @@
 (ns dirac.automation.transcript-host
-  (:require-macros [dirac.automation.transcript-host :refer [debug-log]]
-                   [dirac.settings :refer [get-transcript-match-timeout
-                                           get-transcript-label-padding-length
-                                           get-transcript-label-padding-type]])
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
+            [oops.core :refer [oget oset! ocall oapply gcall!]]
+            [cuerdas.core :as cuerdas]
+            [clojure.string :as string]
             [dirac.automation.transcript :as transcript]
             [dirac.automation.transcript-streamer :as streamer]
-            [oops.core :refer [oget oset! ocall oapply gcall!]]
-            [dirac.automation.logging :refer [log warn error info]]
-            [cuerdas.core :as cuerdas]
+            [dirac.automation.logging :refer [log warn error info debug-log]]
             [dirac.automation.helpers :as helpers]
             [dirac.shared.utils :as utils]
-            [clojure.string :as string]))
+            [dirac.settings :refer [get-transcript-match-timeout
+                                    get-transcript-label-padding-length
+                                    get-transcript-label-padding-type]]))
 
 (defonce current-transcript (atom nil))
 (defonce transcript-enabled (volatile! 0))
 (defonce normalized-transcript (volatile! true))
-(defonce output-recorder (chan 1024))
+(defonce output-recorder (go-channel 1024))
 (defonce output-observers (atom #{}))
 (defonce output-segment (atom []))
 (defonce rewriting-machine (atom {:state   :default
@@ -61,7 +60,7 @@
 
 (defn reset-output-segment! []
   (doseq [record @output-observers]
-    (if-let [channel (:channel record)]
+    (when-let [channel (:channel record)]
       (close! channel)))
   (reset! output-segment []))
 
@@ -77,7 +76,7 @@
 (defn match-observer-record! [observer-record value]
   (when-let [match ((:matching-fn observer-record) value)]
     (unregister-observer-record! observer-record)
-    (if-let [channel (:channel observer-record)]
+    (when-let [channel (:channel observer-record)]
       (put! channel match))))
 
 (defn get-output-segment-values []
@@ -97,7 +96,7 @@
 
 (defn transition-rewriting-machine! [new-state]
   {:pre [(keyword? new-state)]}
-  (debug-log (str "REWRITING MACHING STATE " (get-rewriting-machine-state) " -> " new-state))
+  (debug-log (str "REWRITING MATCHING STATE " (get-rewriting-machine-state) " -> " new-state))
   (swap! rewriting-machine assoc :state new-state))
 
 (defn get-rewriting-machine-context []
@@ -106,7 +105,7 @@
 (defn update-rewriting-machine-context! [f & args]
   (let [old-context (get-rewriting-machine-context)]
     (apply swap! rewriting-machine update :context f args)
-    (debug-log (str "REWRITING MACHING CONTEXT " old-context " -> " (get-rewriting-machine-context)))))
+    (debug-log (str "REWRITING MATCHING CONTEXT " old-context " -> " (get-rewriting-machine-context)))))
 
 ; -- formatting -------------------------------------------------------------------------------------------------------------
 
@@ -140,7 +139,7 @@
 
 (def possible-styles (cycle (map #(str "color:" %) possible-style-colors)))
 
-; we want to have two columns, label and then padded text (potentionally wrapped on multiple lines)
+; we want to have two columns, label and then padded text (potentially wrapped on multiple lines)
 (defn format-transcript [label text]
   {:pre [(string? text)
          (string? label)]}
@@ -148,7 +147,7 @@
         truncated-label (cuerdas/prune label padding-length "")
         padded-label (cuerdas/pad truncated-label {:length padding-length
                                                    :type   (get-transcript-label-padding-type)})
-        text-block (helpers/prefix-text-block (cuerdas/repeat " " padding-length) text)]
+        text-block (utils/prefix-text-block (cuerdas/repeat " " padding-length) text)]
     (str padded-label text-block "\n")))
 
 
@@ -257,8 +256,8 @@
          (string? text)]}
   (when (and (or force? (transcript-enabled?)) (some? text))
     (debug-log "TRANSCRIPT" [label text])
-    (when-let [[effective-label effective-text] (rewrite-transcript! label text)]
-      (if-not (and (= effective-label label) (= effective-text text))
+    (let [[effective-label effective-text] (rewrite-transcript! label text)]
+      (when-not (and (= effective-label label) (= effective-text text))
         (debug-log "TRANSCRIPT REWRITE" [effective-label effective-text]))
       (let [text (format-transcript effective-label effective-text)
             generated-style (determine-style effective-label effective-text)
@@ -273,10 +272,10 @@
 (defn forced-append-to-transcript! [label text & [style]]
   (append-to-transcript! label text style true))
 
-(defn wait-for-match [match-fn matching-info & [time-limit silent?]]
-  (let [result-channel (chan)
+(defn go-wait-for-match [match-fn matching-info & [time-limit silent?]]
+  (let [result-channel (go-channel)
         max-waiting-time (or time-limit (get-transcript-match-timeout))
-        timeout-channel (timeout max-waiting-time)]
+        timeout-channel (go-wait max-waiting-time)]
     (register-observer! match-fn result-channel)
     ; return a channel yielding results or throwing timeout exception (may yield :timeout if silent?)
     (go
@@ -288,18 +287,19 @@
 
 ; -- transcript init --------------------------------------------------------------------------------------------------------
 
-(defn run-output-matching-loop! []
-  (go-loop []
-    (when-let [value (<! output-recorder)]
-      (append-to-output-segment! value)
-      (doseq [observer-record @output-observers]
-        (match-observer-record! observer-record value))
-      (recur))))
+(defn go-run-output-matching-loop! []
+  (go
+    (loop []
+      (when-let [value (<! output-recorder)]
+        (append-to-output-segment! value)
+        (doseq [observer-record @output-observers]
+          (match-observer-record! observer-record value))
+        (recur)))))
 
 (defn init-transcript! [id normalized? streamer-server-url]
   (let [transcript-el (transcript/create-transcript! (helpers/get-el-by-id id))]
     (reset! current-transcript transcript-el)
     (vreset! normalized-transcript normalized?)
     (streamer/init! streamer-server-url)
-    (run-output-matching-loop!)))
+    (go-run-output-matching-loop!)))
 

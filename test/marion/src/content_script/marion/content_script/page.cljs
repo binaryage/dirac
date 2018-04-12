@@ -1,5 +1,5 @@
 (ns marion.content-script.page
-  (:require [cljs.core.async :refer [<! chan go-loop]]
+  (:require [dirac.shared.async :refer [<! go-channel]]
             [oops.core :refer [oget ocall oapply gcall!]]
             [marion.content-script.logging :refer [log info warn error]]
             [chromex.protocols :refer [post-message!]]

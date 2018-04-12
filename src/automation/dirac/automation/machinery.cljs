@@ -1,10 +1,11 @@
 (ns dirac.automation.machinery
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [oops.core :refer [oget oset! ocall oapply]]
             [dirac.automation.logging :refer [log error]]
             [dirac.automation.runner :as runner]
             [dirac.automation.transcript-host :as transcript]
-            [dirac.automation.test :as test]))
+            [dirac.automation.test :as test]
+            [clojure.string :as string]))
 
 ; -- current scenario tracker -----------------------------------------------------------------------------------------------
 
@@ -17,9 +18,15 @@
 
 (deftype DevToolsID [id])
 
+(defn is-devtools-id-wrapper? [v]
+  (instance? DevToolsID v))
+
 (defn get-id [devtools-id-wrapper]
-  {:pre (instance? DevToolsID devtools-id-wrapper)}
+  {:pre (is-devtools-id-wrapper? devtools-id-wrapper)}
   (.-id devtools-id-wrapper))
+
+(defn make-devtools-id-wrapper [id]
+  (DevToolsID. id))
 
 ; -- devtools id stack ------------------------------------------------------------------------------------------------------
 
@@ -61,12 +68,16 @@
 
 ; -- actions ----------------------------------------------------------------------------------------------------------------
 
+(defn name-from-metadata [metadata]
+  (when-some [action-name (:name metadata)]
+    (string/replace (str action-name) #"^go-" "")))                                                                           ; remove go- prefixes by convention
+
 (defn make-action-signature [metadata & [args]]
-  (str (:name metadata) (if-not (empty? args) (str " " (vec args)))))
+  (str (name-from-metadata metadata) (if-not (empty? args) (str " " (vec args)))))
 
 (defn do-action! [action-fn metadata & args]
   {:pre [(fn? action-fn)]}
-  (let [name (str (:name metadata))
+  (let [name (name-from-metadata metadata)
         automation-action? (nil? (re-find #"^wait-" name))]
     (log "action!" automation-action? name args)
     (if automation-action?
@@ -75,35 +86,40 @@
         (transcript/reset-output-segment!))
       (test/record-transcript-checkpoint!))
     (cond
-      (instance? DevToolsID (first args)) (let [devtools-id (get-id (first args))
-                                                action-signature (make-action-signature metadata (rest args))]
-                                            (if automation-action?
-                                              (append-to-transcript! action-signature devtools-id))
-                                            (apply action-fn devtools-id (rest args)))
-      (:devtools metadata) (let [action-signature (make-action-signature metadata args)
-                                 last-devtools-id (get-last-devtools-id)]
-                             (assert last-devtools-id (str "action " name " requires prior :open-dirac-devtools call"))
-                             (if automation-action?
-                               (append-to-transcript! action-signature last-devtools-id))
-                             (apply action-fn last-devtools-id args))
-      :else (let [action-signature (make-action-signature metadata args)]
-              (if automation-action?
-                (append-to-transcript! action-signature))
-              (apply action-fn args)))))
+      (is-devtools-id-wrapper? (first args))
+      (let [devtools-id (get-id (first args))
+            action-signature (make-action-signature metadata (rest args))]
+        (when automation-action?
+          (append-to-transcript! action-signature devtools-id))
+        (apply action-fn devtools-id (rest args)))
+
+      (:devtools metadata)
+      (let [action-signature (make-action-signature metadata args)
+            last-devtools-id (get-last-devtools-id)]
+        (assert last-devtools-id (str "action " name " requires prior :open-dirac-devtools call"))
+        (when automation-action?
+          (append-to-transcript! action-signature last-devtools-id))
+        (apply action-fn last-devtools-id args))
+
+      :else
+      (let [action-signature (make-action-signature metadata args)]
+        (when automation-action?
+          (append-to-transcript! action-signature))
+        (apply action-fn args)))))
 
 ; -- macros support ---------------------------------------------------------------------------------------------------------
 
-(defn action! [& args]
+(defn go-action! [& args]
   (go
-    (<! (runner/wait-for-resume-if-paused!))
+    (<! (runner/go-wait-for-resume-if-paused!))
     ; this timeout is important for run-output-matching-loop! and other async operations
     ; without this we could starve those loops and their reaction could be delayed
-    (<! (timeout 0))
+    (<! (go-wait 0))
     (<! (apply do-action! args))))
 
-(defn testing-start [title]
+(defn start-testing! [title]
   (transcript/append-to-transcript! "" "")
   (transcript/append-to-transcript! "testing" title))
 
-(defn testing-end [_title]
+(defn end-testing! [_title]
   (transcript/append-to-transcript! "∎" ""))

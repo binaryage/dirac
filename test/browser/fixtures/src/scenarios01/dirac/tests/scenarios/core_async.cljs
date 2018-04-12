@@ -1,8 +1,7 @@
 (ns dirac.tests.scenarios.core-async
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [dirac.automation.runtime :refer [init-runtime!]]
             [dirac.automation.scenario :as scenario]
-            [cljs.core.async :refer [put! <! chan timeout alts! close!]]))
+            [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]))
 
 (defn break-here! []
   (js-debugger))
@@ -28,7 +27,7 @@
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 
-(init-runtime! {:override-goog-async-next-tick true})                                                                         ; next-tick implemetation differs between Mac/Linux and that would break calls-stack tests
+(init-runtime! {:override-goog-async-next-tick true})                                                                         ; next-tick implementation differs between Mac/Linux and that would break calls-stack tests
 (scenario/register-trigger! :async #(break-async-handler))
 (scenario/register-trigger! :async-loop #(break-loop-async-handler))
-(scenario/ready!)
+(scenario/go-ready!)

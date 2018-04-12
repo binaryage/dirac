@@ -117,6 +117,8 @@ var ObjectUI = {};
 /** @const */
 var PerfUI = {};
 /** @const */
+var PerformanceMonitor = {};
+/** @const */
 var PerformanceTestRunner = {};
 /** @const */
 var Persistence = {};

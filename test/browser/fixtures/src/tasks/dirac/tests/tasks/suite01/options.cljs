@@ -1,5 +1,5 @@
 (ns dirac.tests.tasks.suite01.options
-  (:require [cljs.core.async]
+  (:require [dirac.shared.async]
             [cljs.test :refer-macros [is]]
             [dirac.settings :refer [seconds minutes]]
             [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options testing] :as a]
@@ -20,15 +20,15 @@
       (let [user-params "x=1&y=2"]
         (with-options {:user-frontend-url-params user-params}
           (with-devtools
-            (is (string/includes? (<!* a/get-frontend-url-params) user-params))))))
+            (is (string/includes? (<!* a/go-get-frontend-url-params) user-params))))))
     (testing "use backend-supported api and css"
       (with-options {:use-backend-supported-api true
                      :use-backend-supported-css true}
         (with-devtools
-          (<!* a/switch-to-console-panel!)
-          (<!* a/trigger-internal-error-as-error-log!)
-          (is (= (count (<!* a/scrape :find-logs "a fake error log")) 1))
-          (let [error-content (second (first (<!* a/scrape :find-logs-in-groups "a fake error log")))
+          (<!* a/go-switch-to-console-panel!)
+          (<!* a/go-trigger-internal-error-as-error-log!)
+          (is (= (count (<!* a/go-scrape :find-logs "a fake error log")) 1))
+          (let [error-content (second (first (<!* a/go-scrape :find-logs-in-groups "a fake error log")))
                 info-line (first (utils/lines error-content))]
             (is (string/includes? info-line "Backend API/external"))
             (is (string/includes? info-line "Backend CSS/external"))
@@ -38,10 +38,10 @@
       (with-options {:use-backend-supported-api false
                      :use-backend-supported-css false}
         (with-devtools
-          (<!* a/switch-to-console-panel!)
-          (<!* a/trigger-internal-error-as-error-log!)
-          (is (= (count (<!* a/scrape :find-logs "a fake error log")) 1))
-          (let [error-content (second (first (<!* a/scrape :find-logs-in-groups "a fake error log")))
+          (<!* a/go-switch-to-console-panel!)
+          (<!* a/go-trigger-internal-error-as-error-log!)
+          (is (= (count (<!* a/go-scrape :find-logs "a fake error log")) 1))
+          (let [error-content (second (first (<!* a/go-scrape :find-logs-in-groups "a fake error log")))
                 info-line (first (utils/lines error-content))]
             (is (string/includes? info-line "Backend API/internal"))
             (is (string/includes? info-line "Backend CSS/internal"))

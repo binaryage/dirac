@@ -1,5 +1,5 @@
 (ns dirac.automation.options
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [dirac.automation.messages :as messages]))
 
 (defonce options-stack (atom []))
@@ -17,12 +17,12 @@
 
 ; -- storing/restoring options ----------------------------------------------------------------------------------------------
 
-(defn store-options! []
+(defn go-store-options! []
   (go
-    (let [options (<! (messages/get-options!))]
+    (let [options (<! (messages/go-get-options!))]
       (push-options-to-stack! options))))
 
-(defn restore-options! []
+(defn go-restore-options! []
   (go
     (let [saved-options (pop-options-from-stack!)]
-      (<! (messages/reset-options! saved-options)))))
+      (<! (messages/go-reset-options! saved-options)))))

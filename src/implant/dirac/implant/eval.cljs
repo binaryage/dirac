@@ -1,5 +1,5 @@
 (ns dirac.implant.eval
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
             [cljs.core.async.impl.protocols :as core-async]
             [oops.core :refer [oget oget+ ocall oapply gget]]
             [dirac.implant.logging :refer [log warn error]]
@@ -19,7 +19,7 @@
 
 ; -- configuration ----------------------------------------------------------------------------------------------------------
 
-(defonce default-config
+(def default-config
   {:install-check-total-time-limit               3000
    :install-check-next-trial-waiting-time        500
    :install-check-eval-time-limit                300
@@ -42,7 +42,7 @@
 
 (defn get-dirac []
   {:post [(object? %)]}
-  (if-let [dirac (gget "?dirac")]
+  (if-some [dirac (gget "?dirac")]
     dirac
     (throw (ex-info (str "window.dirac not found") {}))))
 
@@ -59,7 +59,7 @@
 (def supported-contexts #{:default :current})
 
 (defn code-as-string [code]
-  (if-let [eval-fn (oget (get-dirac) "?codeAsString")]
+  (if-some [eval-fn (oget (get-dirac) "?codeAsString")]
     (eval-fn code)
     (error "window.dirac.codeAsString not found")))
 
@@ -69,31 +69,32 @@
 (defn unsubscribe-debugger-events! [f]
   (ocall (get-dirac) "unsubscribeDebuggerEvents" f))
 
-(defn get-has-context-fn-name [context]
+(defn get-dirac-has-context-fn [dirac context]
   (case context
-    :default "hasDefaultContext"
-    :current "hasCurrentContext"))
+    :default (oget dirac "hasDefaultContext")
+    :current (oget dirac "hasCurrentContext")))
 
-(defn get-eval-in-context-fn-name [context]
+(defn get-dirac-eval-in-context-fn [dirac context]
   (case context
-    :default "evalInDefaultContext"
-    :current "evalInCurrentContext"))
+    :default (oget dirac "evalInDefaultContext")
+    :current (oget dirac "evalInCurrentContext")))
 
 (defn get-current-time []
   (.getTime (js/Date.)))
 
 (defn check-and-call-when-avail-or-timeout [check-fn call-fn timeout-fn trial-delay total-time-limit]
   (let [start-time (get-current-time)]
-    (go-loop []
-      (let [current-time (get-current-time)
-            elapsed-time (- current-time start-time)]
-        (if (< elapsed-time total-time-limit)
-          (if (check-fn)
-            (call-fn)
-            (do
-              (<! (timeout trial-delay))
-              (recur)))
-          (timeout-fn))))))
+    (go
+      (loop []
+        (let [current-time (get-current-time)
+              elapsed-time (- current-time start-time)]
+          (if (< elapsed-time total-time-limit)
+            (if (check-fn)
+              (call-fn)
+              (do
+                (<! (go-wait trial-delay))
+                (recur)))
+            (timeout-fn)))))))
 
 (defn eval-with-callback!
   "Attempts to evaluate given code string in specified context.
@@ -103,40 +104,37 @@
     [::context-timeout]
   Throws on internal error."
   [context code & [callback silent]]
-  (let [dirac (get-dirac)
-        silent? (or (nil? silent) (true? silent))                                                                             ; by default we execute silently
-        has-context-fn-name (get-has-context-fn-name context)]
-    (if-let [has-context-fn (oget+ dirac "?" has-context-fn-name)]
-      (let [eval-fn-name (get-eval-in-context-fn-name context)]
-        (if-let [eval-fn (oget+ dirac "?" eval-fn-name)]
-          (let [callback-wrapper (fn [result-remote-object exception-details]
-                                   (if callback
-                                     (let [result (if (some? exception-details)
-                                                    [::eval-exception exception-details]
-                                                    [::ok (if result-remote-object (oget result-remote-object "value"))])]
-                                       (callback result))))
-                call-fn (fn [] (eval-fn code silent? callback-wrapper))
-                timeout-fn (fn []
-                             (error "Unable to resolve javascript context in time" context code)
-                             (if callback
-                               (callback [::context-timeout])))
-                trial-delay (pref :context-availability-next-trial-waiting-time)
-                time-limit (pref :context-availability-total-time-limit)]
-            (check-and-call-when-avail-or-timeout has-context-fn call-fn timeout-fn trial-delay time-limit))
-          (throw (ex-info (str "Function '" eval-fn-name "' not found in window.dirac object") dirac))))
-      (throw (ex-info (str "Function '" has-context-fn-name "' not found in window.dirac object") dirac)))))
+  (let [trial-delay (pref :context-availability-next-trial-waiting-time)
+        time-limit (pref :context-availability-total-time-limit)
+        silent? (or (nil? silent) (true? silent))                                                                             ; by default we execute silently]
+        dirac (get-dirac)
+        has-context-fn (get-dirac-has-context-fn dirac context)
+        eval-fn (get-dirac-eval-in-context-fn dirac context)
+        callback-wrapper (fn [result-remote-object exception-details]
+                           (when (some? callback)
+                             (let [result (if (some? exception-details)
+                                            [::eval-exception exception-details]
+                                            [::ok (if result-remote-object (oget result-remote-object "value"))])]
+                               (callback result))))
+        call-fn (fn []
+                  (eval-fn code silent? callback-wrapper))
+        timeout-fn (fn []
+                     (error "Unable to resolve javascript context in time" context code)
+                     (when (some? callback)
+                       (callback [::context-timeout])))]
+    (check-and-call-when-avail-or-timeout has-context-fn call-fn timeout-fn trial-delay time-limit)))
 
 (defn update-banner! [msg]
-  (if-let [banner-fn (pref :update-banner-fn)]
+  (if-some [banner-fn (pref :update-banner-fn)]
     (banner-fn msg)))
 
 (defn display-user-info! [msg]
-  (if-let [info-fn (pref :display-user-info-fn)]
+  (if-some [info-fn (pref :display-user-info-fn)]
     (info-fn msg)))
 
 (defn display-user-error! [msg & more]
   (warn msg more)
-  (if-let [error-fn (pref :display-user-error-fn)]
+  (if-some [error-fn (pref :display-user-error-fn)]
     (error-fn msg)))
 
 ; -- code templates ---------------------------------------------------------------------------------------------------------
@@ -219,7 +217,7 @@
   (doseq [resumable-timer *managed-resumable-timers*]
     (-resume resumable-timer)))
 
-(defn handle-debugger-event [kind & args]
+(defn handle-debugger-event [kind & _args]
   (case kind
     "DebuggerPaused" (pause-managed-timers)
     "DebuggerResumed" (resume-managed-timers)
@@ -237,8 +235,8 @@
 (defn stop-managing-timer-on-debugger-pauses! [resumable-timer]
   (set! *managed-resumable-timers* (disj *managed-resumable-timers* resumable-timer)))
 
-(defn make-debugger-aware-timeout! [msec]
-  (let [wait-chan (chan)
+(defn go-make-debugger-aware-timeout! [msec]
+  (let [wait-chan (go-channel)
         resumable-timer (make-resumable-timer #(close! wait-chan) msec)]
     (go
       (start-managing-timer-on-debugger-pauses! resumable-timer)
@@ -248,7 +246,7 @@
 
 ; -- convenient eval wrapper ------------------------------------------------------------------------------------------------
 
-(defn call-eval-with-timeout!
+(defn go-call-eval-with-timeout!
   "Attempts to evaluate given code string in specified context within specified time limit.
    This function should never throw, returns:
      [::internal-error ex] in case of internal problem
@@ -259,8 +257,8 @@
      "
   [context code time-limit silent?]
   {:pre [(context supported-contexts)]}
-  (let [result-chan (chan)
-        timeout-chan (make-debugger-aware-timeout! time-limit)
+  (let [result-chan (go-channel)
+        timeout-chan (go-make-debugger-aware-timeout! time-limit)
         callback (fn [result]
                    (put! result-chan result))]
     (go
@@ -278,25 +276,26 @@
 ; returns with
 ; either [::ok value]
 ; or     [::failure reason]
-(defn wait-for-dirac-installed! []
-  (let [timeout-chan (timeout (pref :install-check-total-time-limit))
+(defn go-wait-for-dirac-installed! []
+  (let [timeout-chan (go-wait (pref :install-check-total-time-limit))
         trial-delay (pref :install-check-next-trial-waiting-time)
         installation-test-eval-time-limit (pref :install-check-eval-time-limit)
         installation-test-code (installation-test-template)
         last-reason (volatile! [::install-check-timeout])
         return (fn [& [val]] (or val [::failure @last-reason]))]
-    (go-loop []
-      (if (core-async/closed? timeout-chan)
-        (return)
-        (let [result-chan (call-eval-with-timeout! :default installation-test-code installation-test-eval-time-limit true)
-              [result] (alts! [result-chan timeout-chan])]
-          (case (first result)
-            ::ok (return result)
-            (do
-              (if-let [reason (second result)]
-                (vreset! last-reason reason))
-              (<! (timeout trial-delay))                                                                                      ; don't DoS the VM, wait between installation tests
-              (recur))))))))
+    (go
+      (loop []
+        (if (core-async/closed? timeout-chan)
+          (return)
+          (let [result-chan (go-call-eval-with-timeout! :default installation-test-code installation-test-eval-time-limit true)
+                [result] (alts! [result-chan timeout-chan])]
+            (case (first result)
+              ::ok (return result)
+              (do
+                (if-some [reason (second result)]
+                  (vreset! last-reason reason))
+                (<! (go-wait trial-delay))                                                                                    ; don't DoS the VM, wait between installation tests
+                (recur)))))))))
 
 ; -- simple evaluation for page-context console logging ---------------------------------------------------------------------
 
@@ -326,107 +325,109 @@
 ; Originally I implemented this as a fully serialized queue, but that had to be relaxed because of
 ; https://github.com/binaryage/dirac/issues/74
 
-(defonce eval-requests (chan))
+(defonce eval-requests-channel (go-channel))
 
-(defn start-eval-request-queue-processing-loop! []
-  (go-loop []
-    (if-let [[context code silent? handler] (<! eval-requests)]
-      (let [call-handler! (fn [_result-code value error]
-                            (if (some? error)
-                              (display-user-error! error))
-                            (if handler
-                              (apply handler [value error])))
-            install-result (<! (wait-for-dirac-installed!))
-            eval-time-limit (pref :eval-time-limit)]
-        (case (first install-result)
-          ::failure (let [reason (second install-result)]
-                      (call-handler! ::install-failure reason (missing-runtime-msg reason)))
-          ::ok (go
-                 (let [eval-result (<! (call-eval-with-timeout! context code eval-time-limit silent?))]
-                   (case (first eval-result)
-                     ::ok (call-handler! ::ok (second eval-result))
-                     ::internal-error (call-handler! ::internal-error
+(defn go-start-eval-request-queue-processing-loop! []
+  (go
+    (log "Entering go-start-eval-request-queue-processing-loop!")
+    (loop []
+      (if-some [[context code silent? handler] (<! eval-requests-channel)]
+        (let [call-handler! (fn [_result-code value error]
+                              (when (some? error)
+                                (display-user-error! error))
+                              (when (some? handler)
+                                (apply handler [value error])))
+              installation-result (<! (go-wait-for-dirac-installed!))
+              eval-time-limit (pref :eval-time-limit)]
+          (case (first installation-result)
+            ::failure (let [reason (second installation-result)]
+                        (call-handler! ::install-failure reason (missing-runtime-msg reason)))
+            ::ok (go
+                   (let [eval-result (<! (go-call-eval-with-timeout! context code eval-time-limit silent?))]
+                     (case (first eval-result)
+                       ::ok (call-handler! ::ok (second eval-result))
+                       ::internal-error (call-handler! ::internal-error
+                                                       (second eval-result)
+                                                       (internal-eval-error-msg code (second eval-result)))
+                       ::eval-timeout (call-handler! ::eval-timeout
                                                      (second eval-result)
-                                                     (internal-eval-error-msg code (second eval-result)))
-                     ::eval-timeout (call-handler! ::eval-timeout
-                                                   (second eval-result)
-                                                   (eval-timeout-msg code))
-                     (call-handler! ::unknown-problem
-                                    (second eval-result)
-                                    (eval-problem-msg code (first eval-result) (second eval-result)))))))
-        (recur))
-      (log "Leaving start-eval-request-queue-processing-loop!"))))
+                                                     (eval-timeout-msg code))
+                       (call-handler! ::unknown-problem
+                                      (second eval-result)
+                                      (eval-problem-msg code (first eval-result) (second eval-result)))))))
+          (recur))))
+    (log "Leaving go-start-eval-request-queue-processing-loop!")))
 
 ; -- queued evaluation in context -------------------------------------------------------------------------------------------
 
 (defn queue-eval-request! [context code silent? handler]
-  (put! eval-requests [context code silent? handler]))
+  (put! eval-requests-channel [context code silent? handler]))
 
-(defn eval-in-context! [context code silent?]
-  (let [result-chan (chan)
+(defn go-eval-in-context! [context code silent?]
+  (let [result-channel (go-channel)
         handler (fn [& args]
-                  (put! result-chan args))]
+                  (put! result-channel args))]
     (queue-eval-request! context code silent? handler)
-    result-chan))
+    result-channel))
 
-(defn safely-eval-in-context! [context safe-value code & [silent?]]
+(defn go-safely-eval-in-context! [context safe-value code & [silent?]]
   {:pre [(context supported-contexts)
          (string? code)]}
   (go
-    (let [[value error] (<! (eval-in-context! context code silent?))]
-      (if (nil? error)
-        value
-        safe-value))))
+    (let [[value error] (<! (go-eval-in-context! context code silent?))]
+      (if (some? error)
+        safe-value
+        value))))
 
 ; -- probing of page context ------------------------------------------------------------------------------------------------
 
-(defn is-runtime-present? []
+(defn go-ask-is-runtime-present? []
   (go
-    (let [[value error] (<! (eval-in-context! :default "dirac.runtime" true))]
-      (if (nil? error)
-        true
-        (format-reason value)))))
+    (let [[value error] (<! (go-eval-in-context! :default "dirac.runtime" true))]
+      (if (some? error)
+        (format-reason value)
+        true))))
 
-(defn get-runtime-version []
-  (safely-eval-in-context! :default "0.0.0" "dirac.runtime.get_version()"))
+(defn go-get-runtime-version []
+  (go-safely-eval-in-context! :default "0.0.0" "dirac.runtime.get_version()"))
 
-(defn is-runtime-repl-enabled? []
-  (safely-eval-in-context! :default false "dirac.runtime.repl.installed_QMARK_()"))
+(defn go-ask-is-runtime-repl-enabled? []
+  (go-safely-eval-in-context! :default false "dirac.runtime.repl.installed_QMARK_()"))
 
-(defn get-runtime-repl-api-version []
+(defn go-get-runtime-repl-api-version []
   (go
-    (let [value (<! (safely-eval-in-context! :default "0" "dirac.runtime.repl.get_api_version()"))]
+    (let [value (<! (go-safely-eval-in-context! :default "0" "dirac.runtime.repl.get_api_version()"))]
       (utils/parse-int value))))
 
-(defn get-runtime-config []
+(defn go-get-runtime-config []
   (go
-    (let [serialized-config (<! (safely-eval-in-context! :default "{}" "dirac.runtime.repl.get_serialized_config()"))]
+    (let [serialized-config (<! (go-safely-eval-in-context! :default "{}" "dirac.runtime.repl.get_serialized_config()"))]
       (try
         (edn/read-string serialized-config)
         (catch :default e
           (throw (ex-info (make-config-reading-error-message e serialized-config) {})))))))
 
-(defn get-runtime-tag []
+(defn go-get-runtime-tag []
   (go
-    (let [value (<! (safely-eval-in-context! :default "?" "dirac.runtime.get_tag()"))]
+    (let [value (<! (go-safely-eval-in-context! :default "?" "dirac.runtime.get_tag()"))]
       (str value))))
 
 ; -- printing captured server-side output -----------------------------------------------------------------------------------
 
-(defn present-server-side-output! [job-id kind format text]
+(defn go-present-server-side-output! [job-id kind format text]
   (feedback/post! (str "present-server-side-output! " kind "/" format " > " text))
   (let [code (output-template (utils/parse-int job-id) kind format text)]
-    (safely-eval-in-context! :default nil code)))
+    (go-safely-eval-in-context! :default nil code)))
 
-(defn present-server-side-result! [job-id value]
+(defn go-present-server-side-result! [job-id value]
   (feedback/post! (str "present-server-side-result! " value))
   (let [code (result-template (utils/parse-int job-id) value)]
-    (safely-eval-in-context! :default nil code)))
+    (go-safely-eval-in-context! :default nil code)))
 
 ; -- fancy evaluation in currently selected context -------------------------------------------------------------------------
 
-(defn eval-in-current-context! [code]
+(defn go-eval-in-current-context! [code]
   ; this should be called from weasel for all compiled clojurescript snippets coming via REPL
   ; we want to eval it with silent=false so that "Pause on caught exceptions works" with commands entered into Dirac prompt
   ; see https://github.com/binaryage/dirac/issues/70
-  (eval-in-context! :current code false))
+  (go-eval-in-context! :current code false))

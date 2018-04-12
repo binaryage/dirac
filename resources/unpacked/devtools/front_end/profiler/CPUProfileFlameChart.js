@@ -233,7 +233,7 @@ Profiler.CPUProfileFlameChart = class extends UI.VBox {
   _onWindowChanged(event) {
     const windowLeft = event.data.windowTimeLeft;
     const windowRight = event.data.windowTimeRight;
-    this._mainPane.setWindowTimes(windowLeft, windowRight);
+    this._mainPane.setWindowTimes(windowLeft, windowRight, /* animate */ true);
   }
 
   /**
@@ -426,7 +426,7 @@ Profiler.CPUProfileFlameChart.OverviewPane = class extends UI.VBox {
    * @param {number} windowStartTime
    * @param {number} windowEndTime
    */
-  requestWindowTimes(windowStartTime, windowEndTime) {
+  windowChanged(windowStartTime, windowEndTime) {
     this._selectRange(windowStartTime, windowEndTime);
   }
 
@@ -436,6 +436,14 @@ Profiler.CPUProfileFlameChart.OverviewPane = class extends UI.VBox {
    * @param {number} endTime
    */
   updateRangeSelection(startTime, endTime) {
+  }
+
+  /**
+   * @override
+   * @param {!PerfUI.FlameChart} flameChart
+   * @param {?PerfUI.FlameChart.Group} group
+   */
+  updateSelectedGroup(flameChart, group) {
   }
 
   /**

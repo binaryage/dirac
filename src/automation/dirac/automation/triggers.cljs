@@ -1,25 +1,27 @@
 (ns dirac.automation.triggers
-  (:require [cljs.core.async :refer [timeout go]]
+  (:require [dirac.shared.async :refer [go-wait go <!]]
+            [oops.core :refer [oget oset! ocall oapply gcall! ocall! gcall gset!]]
             [dirac.automation.scenario :as scenario]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
-(defn safe-reload! []
+(defn go-reload-safely! []
   (go
-    (<! (timeout 1000))                                                                                                       ; prevent "Cannot find context with specified id" V8 errors ?
-    (js/window.location.reload)))
+    ; this delay is here to prevent "Cannot find context with specified id" V8 errors ?
+    (<! (go-wait 3000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
+    (gcall! "location.reload")))
 
 ; -- triggers installers ----------------------------------------------------------------------------------------------------
 
 (defn install-reload! []
-  (scenario/register-trigger! :reload safe-reload!))
+  (scenario/register-trigger! :reload go-reload-safely!))
 
 (defn install-navigate! []
-  (scenario/register-trigger! :navigate #(set! js/window.location.pathname %)))
+  (scenario/register-trigger! :navigate #(gset! "location.pathname" %)))
 
 (defn install-eval! []
-  (scenario/register-trigger! :eval-cljs #(js/dirac.runtime.repl.request-eval-cljs %))
-  (scenario/register-trigger! :eval-js #(js/dirac.runtime.repl.request-eval-js %)))
+  (scenario/register-trigger! :eval-cljs #(gcall! "dirac.runtime.repl.request_eval_cljs" %))
+  (scenario/register-trigger! :eval-js #(gcall! "dirac.runtime.repl.request_eval_js" %)))
 
 ; -- common trigger groups --------------------------------------------------------------------------------------------------
 
@@ -27,4 +29,3 @@
   (install-reload!)
   (install-navigate!)
   (install-eval!))
-

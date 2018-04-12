@@ -1,10 +1,10 @@
 (ns dirac.background.action
-  (:require [cljs.core.async :refer [<! chan put! go]]
+  (:require [dirac.shared.async :refer [<! go-channel put! go]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [dirac.shared.sugar :refer [go-check-tab-exists?]]
             [chromex.ext.browser-action :as browser-action]))
 
-(defonce state-table
+(def state-table
   {:waiting       {}
    :connected     {:text "~" :color [0 0 255 255]}
    :connecting    {:text "?" :color "#008888"}
@@ -12,7 +12,7 @@
    :error         {:text "!" :color "#ff0000"}
    :warning       {:text "!" :color "#ffff00"}})
 
-(defonce active-icons
+(def active-icons
   #js {"19" "images/icon19.png"
        "38" "images/icon38.png"})
 
@@ -37,10 +37,10 @@
                                          "tabId" backend-tab-id}))
         true))))
 
-(defn disable! [tab-id]
+(defn go-disable! [tab-id]
   (browser-action/disable tab-id))
 
-(defn enable! [tab-id]
+(defn go-enable! [tab-id]
   (browser-action/enable tab-id))
 
 (defn go-set-active-icons! []

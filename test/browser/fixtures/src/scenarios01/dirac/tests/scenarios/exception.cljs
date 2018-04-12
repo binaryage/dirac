@@ -6,4 +6,4 @@
 (init-runtime!)
 (scenario/register-trigger! :cause-exception #(core/exception-demo-handler))
 (scenario/register-trigger! :break #(core/breakpoint-demo-handler))
-(scenario/ready!)
+(scenario/go-ready!)

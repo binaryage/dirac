@@ -15,7 +15,7 @@
 ;
 (ns dirac.implant.weasel-client
   (:require [dirac.implant.logging :refer [log warn info error]]
-            [cljs.core.async :refer [<! chan put! timeout go go-loop]]
+            [dirac.shared.async :refer [<! go-channel put! go-wait go]]
             [dirac.implant.eval :as eval]
             [dirac.lib.ws-client :as ws-client]
             [clojure.string :as string]))
@@ -39,7 +39,7 @@
 ; -- message sending --------------------------------------------------------------------------------------------------------
 
 (defn send! [msg]
-  (if-let [client @current-client]
+  (if-some [client @current-client]
     (ws-client/send! client msg)
     (error "No client! => dropping msg" msg)))
 
@@ -48,15 +48,15 @@
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
-(defmulti process-message :op)
+(defmulti go-process-message :op)
 
-(defmethod process-message :error [message]
+(defmethod go-process-message :error [message]
   (error "Received error message" message)
   (go
     {:op      :error
      :message (:type message)}))
 
-(defmethod process-message :eval-js [message]
+(defmethod go-process-message :eval-js [message]
   (let [options (ws-client/get-options @current-client)
         pre-eval-delay (:pre-eval-delay options)
         eval-id (:eval-id message)
@@ -64,9 +64,9 @@
     (assert (some? eval-id) (str "expected some eval-id in " message))
     (go
       ; there might be some output printing messages in flight in the tunnel, so we give the tunnel some time to process them
-      (if (some? pre-eval-delay)
-        (<! (timeout pre-eval-delay)))
-      (let [[result error] (<! (eval/eval-in-current-context! code))
+      (when (some? pre-eval-delay)
+        (<! (go-wait pre-eval-delay)))
+      (let [[result error] (<! (eval/go-eval-in-current-context! code))
             result-data (cond
                           (some? error) (js-obj "status" "error" "value" error)
                           (foreign-code? code) (js-obj "status" "success" "value" result)                                     ; note that foreign code does not prepare result structure, so we do it here
@@ -75,19 +75,22 @@
 
 ; -- connection -------------------------------------------------------------------------------------------------------------
 
-(defn on-message-handler [_client message]
+(defn go-handle-message! [message]
   (go
-    (if-let [result (<! (process-message message))]
+    (if-some [result (<! (go-process-message message))]
       (send! result))))
+
+(defn handle-message! [_client message]
+  (go-handle-message! message))
 
 (defn connect! [server-url opts]
   (let [default-opts {:name       "Weasel Client"
-                      :on-message on-message-handler}
+                      :on-message handle-message!}
         effective-opts (merge default-opts opts)
         client (ws-client/connect! server-url effective-opts)]
     (reset! current-client client)))
 
 (defn disconnect! []
-  (when-let [client @current-client]
+  (when-some [client @current-client]
     (ws-client/close! client)
     true))

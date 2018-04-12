@@ -1,31 +1,31 @@
-(ns dirac.automation.status)
+(ns dirac.automation.status
+  (:require [oops.core :refer [oget gcall! ocall! oset! gcall]]))
 
 ; status is a <div> tag which shows status of fixtures page
 
 (defn set-style! [status-el & [style]]
   {:pre [status-el]}
-  (set! (.-className status-el) (if (some? style)
-                                  (str "status status-" style)
-                                  "status")))
+  (let [class-names (str "status" (if (some? style) (str " status-" style)))]
+    (oset! status-el "className" class-names)))
 
 (defn make-status []
-  (let [status-el (.createElement js/document "div")]
+  (let [status-el (gcall "document.createElement" "div")]
     (set-style! status-el)
     status-el))
 
 (defn create-status! [parent-el]
   {:pre [parent-el]}
   (let [status-el (make-status)]
-    (.appendChild parent-el status-el)
+    (ocall! parent-el "appendChild" status-el)
     status-el))
 
 (defn destroy-status! [status-el]
   {:pre [status-el]}
-  (.remove status-el))
+  (ocall! status-el "remove"))
 
 (defn set-status! [status-el text]
   {:pre [status-el]}
-  (set! (.-textContent status-el) text))
+  (oset! status-el "textContent" text))
 
 (defn clear-status! [status-el]
   {:pre [status-el]}

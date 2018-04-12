@@ -1,6 +1,6 @@
 (ns dirac.implant.nrepl-tunnel-client
-  (:require-macros [dirac.implant.nrepl-tunnel-client :refer [log warn info error]])
-  (:require [cljs.core.async :refer [<! chan put! timeout close! go go-loop]]
+  (:require [dirac.implant.logging :refer [log warn info error]]
+            [dirac.shared.async :refer [<! go-channel put! go-wait close! go]]
             [cljs-uuid-utils.core :as uuid]
             [dirac.implant.eval :as eval]
             [dirac.lib.ws-client :as ws-client]
@@ -34,13 +34,13 @@
 
 (defn deliver-response [message]
   (let [id (:id message)]
-    (if-let [handler (lookup-pending-message-handler id)]
+    (if-some [handler (lookup-pending-message-handler id)]
       (handler message))))
 
 ; -- message sending --------------------------------------------------------------------------------------------------------
 
 (defn send! [msg]
-  (if-let [client @current-client]
+  (if-some [client @current-client]
     (ws-client/send! client msg)
     (error "No client! => dropping msg" msg)))
 
@@ -51,10 +51,10 @@
 (defn tunnel-message! [msg]
   (send-to-nrepl-tunnel! :nrepl-message msg))
 
-(defn tunnel-message-with-responses! [msg]
+(defn go-tunnel-message-with-responses! [msg]
   (let [id (uuid/uuid-string (uuid/make-random-uuid))
         msg-with-id (assoc msg :id id)
-        response-channel (chan)
+        response-channel (go-channel)
         handler (fn [response-message]
                   (put! response-channel response-message)
                   (when (some? (:status response-message))
@@ -63,27 +63,27 @@
     (register-pending-message-handler! id handler)
     (tunnel-message! msg-with-id)
     (go
-      (<! (timeout (:response-timeout (get-current-options))))
+      (<! (go-wait (:response-timeout (get-current-options))))
       (close! response-channel))
     response-channel))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
-(defmulti process-message (fn [_client message] (:op message)))
+(defmulti go-process-message (fn [_client message] (:op message)))
 
-(defmethod process-message :default [client message]
+(defmethod go-process-message :default [client message]
   (let [{:keys [out err ns status id value]} message]
-    (if (some? value)
+    (when (some? value)
       (alter-meta! client assoc :last-value value))
-    (if (some? ns)
+    (when (some? ns)
       (console/set-prompt-ns! ns))
     (let [selected-compiler-id (get message :selected-compiler-id ::missing)
           default-compiler-id (get message :default-compiler-id)]
-      (if (not= selected-compiler-id ::missing)
+      (when (not= selected-compiler-id ::missing)
         (console/set-prompt-compiler! selected-compiler-id default-compiler-id)))
-    (when id
+    (when (some? id)
       (deliver-response message)                                                                                              ; *** (see pending-messages above)
-      (if (some? status)
+      (when (some? status)
         (console/announce-job-end! id)))
 
     (cond
@@ -94,20 +94,20 @@
       (some? ns) nil
       (some? status) nil
       :else (warn "received an unrecognized message from nREPL server" message)))
-  nil)
+  (go))
 
-(defmethod process-message :print-output [_client message]
+(defmethod go-process-message :print-output [_client message]
   (let [{:keys [id content kind format]} message]
-    (eval/present-server-side-output! id kind format content))
-  nil)
+    (eval/go-present-server-side-output! id kind format content))
+  (go))
 
-(defmethod process-message :present-result [_client message]
+(defmethod go-process-message :present-result [_client message]
   (let [{:keys [id value]} message]
-    (eval/present-server-side-result! id value))
-  nil)
+    (eval/go-present-server-side-result! id value))
+  (go))
 
 ; TODO: is this really needed?
-(defmethod process-message :error [_client message]
+(defmethod go-process-message :error [_client message]
   (error "Received an error message from nREPL server" message)
   (go
     {:op      :error
@@ -118,30 +118,32 @@
 (defn sanitize-message [message]
   (update message :op keyword))
 
-(defn on-message-handler [client message]
+(defn go-handle-message! [client message]
   (assert (= @current-client client))
   (go
     (let [sanitized-message (sanitize-message message)]
-      (if-let [message-chan (process-message client sanitized-message)]
-        (if-let [result (<! message-chan)]
-          (send! result))))))
+      (if-some [result (<! (go-process-message client sanitized-message))]
+        (send! result)))))
 
-(defn on-open-handler [client]
+(defn handle-message! [client message]
+  (go-handle-message! client message))
+
+(defn handle-open! [client]
   (reset! current-client client))
 
-(defn on-error-handler [client _event]
+(defn handle-error! [client _event]
   (assert (= @current-client client)))
 
-(defn on-close-handler [_client]
+(defn handle-close! [_client]
   (reset! current-client nil))
 
 (defn connect! [server-url opts]
   (assert (nil? @current-client))
   (let [default-opts {:name             "nREPL Tunnel Client"
-                      :on-message       on-message-handler
-                      :on-open          on-open-handler
-                      :on-close         on-close-handler
-                      :on-error         on-error-handler
+                      :on-message       handle-message!
+                      :on-open          handle-open!
+                      :on-close         handle-close!
+                      :on-error         handle-error!
                       :ready-msg        {:version implant-version/version}
                       :auto-reconnect?  true
                       :response-timeout 5000}

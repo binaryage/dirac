@@ -7,12 +7,14 @@ Protocol.Accessibility = {};
 Protocol.AccessibilityAgent = function(){};
 
 /**
- * @param {Protocol.DOM.NodeId} nodeId
+ * @param {Protocol.DOM.NodeId=} opt_nodeId
+ * @param {Protocol.DOM.BackendNodeId=} opt_backendNodeId
+ * @param {Protocol.Runtime.RemoteObjectId=} opt_objectId
  * @param {boolean=} opt_fetchRelatives
  * @return {!Promise<?Array<Protocol.Accessibility.AXNode>>}
  */
-Protocol.AccessibilityAgent.prototype.getPartialAXTree = function(nodeId, opt_fetchRelatives) {};
-/** @typedef {!{nodeId: Protocol.DOM.NodeId, fetchRelatives: (boolean|undefined)}} */
+Protocol.AccessibilityAgent.prototype.getPartialAXTree = function(opt_nodeId, opt_backendNodeId, opt_objectId, opt_fetchRelatives) {};
+/** @typedef {!{objectId: (Protocol.Runtime.RemoteObjectId|undefined), nodeId: (Protocol.DOM.NodeId|undefined), backendNodeId: (Protocol.DOM.BackendNodeId|undefined), fetchRelatives: (boolean|undefined)}} */
 Protocol.AccessibilityAgent.GetPartialAXTreeRequest;
 /** @typedef {!{nodes: !Array<Protocol.Accessibility.AXNode>}} */
 Protocol.AccessibilityAgent.GetPartialAXTreeResponse;
@@ -2442,7 +2444,7 @@ Protocol.EmulationAgent.prototype.invoke_setTouchEmulationEnabled = function(obj
 Protocol.EmulationAgent.prototype.setVirtualTimePolicy = function(policy, opt_budget, opt_maxVirtualTimeTaskStarvationCount, opt_waitForNavigation) {};
 /** @typedef {!{policy: Protocol.Emulation.VirtualTimePolicy, maxVirtualTimeTaskStarvationCount: (number|undefined), waitForNavigation: (boolean|undefined), budget: (number|undefined)}} */
 Protocol.EmulationAgent.SetVirtualTimePolicyRequest;
-/** @typedef {!{virtualTimeBase: Protocol.Runtime.Timestamp}} */
+/** @typedef {!{virtualTimeBase: Protocol.Runtime.Timestamp, virtualTimeTicksBase: number}} */
 Protocol.EmulationAgent.SetVirtualTimePolicyResponse;
 /**
  * @param {!Protocol.EmulationAgent.SetVirtualTimePolicyRequest} obj
@@ -2502,14 +2504,16 @@ Protocol.HeadlessExperimentalAgent = function(){};
 
 /**
  * @param {Protocol.Runtime.Timestamp=} opt_frameTime
+ * @param {number=} opt_frameTimeTicks
  * @param {Protocol.Runtime.Timestamp=} opt_deadline
+ * @param {number=} opt_deadlineTicks
  * @param {number=} opt_interval
  * @param {boolean=} opt_noDisplayUpdates
  * @param {Protocol.HeadlessExperimental.ScreenshotParams=} opt_screenshot
  * @return {!Promise<?boolean>}
  */
-Protocol.HeadlessExperimentalAgent.prototype.beginFrame = function(opt_frameTime, opt_deadline, opt_interval, opt_noDisplayUpdates, opt_screenshot) {};
-/** @typedef {!{interval: (number|undefined), deadline: (Protocol.Runtime.Timestamp|undefined), frameTime: (Protocol.Runtime.Timestamp|undefined), screenshot: (Protocol.HeadlessExperimental.ScreenshotParams|undefined), noDisplayUpdates: (boolean|undefined)}} */
+Protocol.HeadlessExperimentalAgent.prototype.beginFrame = function(opt_frameTime, opt_frameTimeTicks, opt_deadline, opt_deadlineTicks, opt_interval, opt_noDisplayUpdates, opt_screenshot) {};
+/** @typedef {!{screenshot: (Protocol.HeadlessExperimental.ScreenshotParams|undefined), interval: (number|undefined), frameTime: (Protocol.Runtime.Timestamp|undefined), deadline: (Protocol.Runtime.Timestamp|undefined), noDisplayUpdates: (boolean|undefined), deadlineTicks: (number|undefined), frameTimeTicks: (number|undefined)}} */
 Protocol.HeadlessExperimentalAgent.BeginFrameRequest;
 /** @typedef {!{hasDamage: boolean, screenshotData: string}} */
 Protocol.HeadlessExperimentalAgent.BeginFrameResponse;
@@ -3951,8 +3955,15 @@ Protocol.Network.Request;
 /** @typedef {!{status:(string), origin:(string), logDescription:(string), logId:(string), timestamp:(Protocol.Network.TimeSinceEpoch), hashAlgorithm:(string), signatureAlgorithm:(string), signatureData:(string)}} */
 Protocol.Network.SignedCertificateTimestamp;
 
-/** @typedef {!{protocol:(string), keyExchange:(string), keyExchangeGroup:(string|undefined), cipher:(string), mac:(string|undefined), certificateId:(Protocol.Security.CertificateId), subjectName:(string), sanList:(!Array<string>), issuer:(string), validFrom:(Protocol.Network.TimeSinceEpoch), validTo:(Protocol.Network.TimeSinceEpoch), signedCertificateTimestampList:(!Array<Protocol.Network.SignedCertificateTimestamp>)}} */
+/** @typedef {!{protocol:(string), keyExchange:(string), keyExchangeGroup:(string|undefined), cipher:(string), mac:(string|undefined), certificateId:(Protocol.Security.CertificateId), subjectName:(string), sanList:(!Array<string>), issuer:(string), validFrom:(Protocol.Network.TimeSinceEpoch), validTo:(Protocol.Network.TimeSinceEpoch), signedCertificateTimestampList:(!Array<Protocol.Network.SignedCertificateTimestamp>), certificateTransparencyCompliance:(Protocol.Network.CertificateTransparencyCompliance)}} */
 Protocol.Network.SecurityDetails;
+
+/** @enum {string} */
+Protocol.Network.CertificateTransparencyCompliance = {
+    Unknown: "unknown",
+    NotCompliant: "not-compliant",
+    Compliant: "compliant"
+};
 
 /** @enum {string} */
 Protocol.Network.BlockedReason = {
@@ -4841,6 +4852,20 @@ Protocol.PageAgent.SetAdBlockingEnabledResponse;
 Protocol.PageAgent.prototype.invoke_setAdBlockingEnabled = function(obj) {};
 
 /**
+ * @param {boolean} enabled
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.setBypassCSP = function(enabled) {};
+/** @typedef {!{enabled: boolean}} */
+Protocol.PageAgent.SetBypassCSPRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.SetBypassCSPResponse;
+/**
+ * @param {!Protocol.PageAgent.SetBypassCSPRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.SetBypassCSPResponse>} */
+Protocol.PageAgent.prototype.invoke_setBypassCSP = function(obj) {};
+
+/**
  * @param {number} width
  * @param {number} height
  * @param {number} deviceScaleFactor
@@ -5140,9 +5165,10 @@ Protocol.PageDispatcher.prototype.javascriptDialogClosed = function(result, user
  * @param {string} url
  * @param {string} message
  * @param {Protocol.Page.DialogType} type
+ * @param {boolean} hasBrowserHandler
  * @param {string=} opt_defaultPrompt
  */
-Protocol.PageDispatcher.prototype.javascriptDialogOpening = function(url, message, type, opt_defaultPrompt) {};
+Protocol.PageDispatcher.prototype.javascriptDialogOpening = function(url, message, type, hasBrowserHandler, opt_defaultPrompt) {};
 /**
  * @param {Protocol.Page.FrameId} frameId
  * @param {Protocol.Network.LoaderId} loaderId
@@ -5154,6 +5180,11 @@ Protocol.PageDispatcher.prototype.lifecycleEvent = function(frameId, loaderId, n
  * @param {Protocol.Network.MonotonicTime} timestamp
  */
 Protocol.PageDispatcher.prototype.loadEventFired = function(timestamp) {};
+/**
+ * @param {Protocol.Page.FrameId} frameId
+ * @param {string} url
+ */
+Protocol.PageDispatcher.prototype.navigatedWithinDocument = function(frameId, url) {};
 /**
  * @param {string} data
  * @param {Protocol.Page.ScreencastFrameMetadata} metadata

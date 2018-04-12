@@ -10,5 +10,5 @@
 
 (dirac/set-prefs! (merge (dirac/get-prefs) config))
 
-(if-not (dirac/get-pref :suppress-preload-install)
+(when-not (dirac/get-pref :suppress-preload-install)
   (dirac/install!))

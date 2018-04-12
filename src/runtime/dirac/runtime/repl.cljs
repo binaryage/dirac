@@ -68,11 +68,11 @@
 (defn detect-and-strip [prefix text]
   (let [prefix-len (count prefix)
         s (subs text 0 prefix-len)]
-    (if (= s prefix)
+    (when (= s prefix)
       (string/triml (subs text prefix-len)))))
 
 (defn get-whitespace-prefix-length [line]
-  (if-let [m (re-find #"^([ ]+)" line)]
+  (if-some [m (re-find #"^([ ]+)" line)]
     (count (second m))
     0))
 
@@ -154,9 +154,9 @@
 (defn ^:export present-output [request-id kind format text]
   (case kind
     "java-trace" (present-java-trace request-id text)
-    (if-let [warning-msg (detect-and-strip "WARNING:" text)]
+    (if-some [warning-msg (detect-and-strip "WARNING:" text)]
       (emit-warning! request-id warning-msg)
-      (if-let [error-msg (detect-and-strip "ERROR:" text)]
+      (if-some [error-msg (detect-and-strip "ERROR:" text)]
         (emit-error! request-id error-msg)
         (formatted-log request-id kind format text)))))
 

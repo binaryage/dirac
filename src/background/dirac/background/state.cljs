@@ -48,7 +48,7 @@
   (:last-devtools-id @state))
 
 (defn reset-devtools-id-counter! []
-  (if-not (zero? (count (get-devtools-descriptors)))
+  (when-not (zero? (count (get-devtools-descriptors)))
     (warn "request to reset devtools descriptor id counter while having connections present" (get-devtools-descriptors)))
   (swap! state assoc :last-devtools-id 0))
 

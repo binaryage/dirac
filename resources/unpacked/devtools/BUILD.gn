@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//third_party/WebKit/public/public_features.gni")
-import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/blink/public/public_features.gni")
+import("//third_party/blink/renderer/core/core.gni")
 
 all_devtools_files = [
   "front_end/accessibility/AccessibilityModel.js",
@@ -461,6 +461,9 @@ all_devtools_files = [
   "front_end/perf_ui/pieChart.css",
   "front_end/perf_ui/timelineGrid.css",
   "front_end/perf_ui/timelineOverviewInfo.css",
+  "front_end/performance_monitor/PerformanceMonitor.js",
+  "front_end/performance_monitor/performanceMonitor.css",
+  "front_end/performance_monitor/module.json",
   "front_end/performance_test_runner/module.json",
   "front_end/performance_test_runner/TimelineDataTestRunner.js",
   "front_end/performance_test_runner/TimelineTestRunner.js",
@@ -509,7 +512,6 @@ all_devtools_files = [
   "front_end/profiler/profilesSidebarTree.css",
   "front_end/profiler/ProfileTypeRegistry.js",
   "front_end/profiler/ProfileView.js",
-  "front_end/profiler/TargetsComboBoxController.js",
   "front_end/profiler/TopDownProfileDataGrid.js",
   "front_end/protocol/InspectorBackend.js",
   "front_end/protocol/module.json",
@@ -668,6 +670,7 @@ all_devtools_files = [
   "front_end/sources/scopeChainSidebarPane.css",
   "front_end/sources/ScopeChainSidebarPane.js",
   "front_end/sources/ScriptFormatterEditorAction.js",
+  "front_end/sources/SearchSourcesView.js",
   "front_end/sources/serviceWorkersSidebar.css",
   "front_end/sources/SimpleHistoryManager.js",
   "front_end/sources/SnippetsPlugin.js",
@@ -740,11 +743,8 @@ all_devtools_files = [
   "front_end/timeline/timelinePanel.css",
   "front_end/timeline/TimelinePanel.js",
   "front_end/timeline/timelineStatusDialog.css",
-  "front_end/timeline/TimelineTreeModeView.js",
   "front_end/timeline/TimelineTreeView.js",
   "front_end/timeline/TimelineUIUtils.js",
-  "front_end/timeline/PerformanceMonitor.js",
-  "front_end/timeline/performanceMonitor.css",
   "front_end/toolbox_bootstrap/module.json",
   "front_end/toolbox_bootstrap/Toolbox.js",
   "front_end/toolbox.js",
@@ -790,7 +790,6 @@ all_devtools_files = [
   "front_end/ui/ListWidget.js",
   "front_end/ui/module.json",
   "front_end/ui/Panel.js",
-  "front_end/ui/panelEnablerView.css",
   "front_end/ui/popover.css",
   "front_end/ui/Popover.js",
   "front_end/ui/progressIndicator.css",
@@ -1031,6 +1030,7 @@ generated_non_autostart_non_remote_modules = [
   "$resources_out_dir/node_debugger/node_debugger_module.js",
   "$resources_out_dir/object_ui/object_ui_module.js",
   "$resources_out_dir/perf_ui/perf_ui_module.js",
+  "$resources_out_dir/performance_monitor/performance_monitor_module.js",
   "$resources_out_dir/profiler/profiler_module.js",
   "$resources_out_dir/quick_open/quick_open_module.js",
   "$resources_out_dir/resources/resources_module.js",
@@ -1071,7 +1071,7 @@ devtools_applications = [
 
 #-------------------------------------------------------------------------------
 
-visibility = [ "//third_party/WebKit/*" ]
+visibility = [ "//third_party/blink/*" ]
 
 group("devtools_all_files") {
   data = all_devtools_files
@@ -1280,7 +1280,7 @@ group("devtools_closure_compile") {
     "//testing/scripts/common.py",
     "//testing/scripts/run_devtools_check.py",
     "//testing/xvfb.py",
-    "//third_party/WebKit/Source/core/inspector/browser_protocol.json",
+    "//third_party/blink/renderer/core/inspector/browser_protocol.json",
     "//v8/src/inspector/js_protocol.json",
   ]
 }

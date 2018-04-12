@@ -48,7 +48,7 @@
 
 (defn unregister! [frontend-tab-id]
   {:pre [(number? frontend-tab-id)]}
-  (if-let [descriptor (find-devtools-descriptor-for-frontend-tab frontend-tab-id)]
+  (if-some [descriptor (find-devtools-descriptor-for-frontend-tab frontend-tab-id)]
     (let [{:keys [id backend-tab-id]} descriptor]
       (remove! id)
       (marion/post-feedback-event! (str "unregister devtools #" id))

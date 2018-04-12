@@ -1,5 +1,5 @@
 (ns marion.background.content-script
-  (:require [cljs.core.async :refer [<! chan timeout put! close! alts! go go-loop]]
+  (:require [dirac.shared.async :refer [<! go-channel go-wait put! close! alts! go]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
             [dirac.settings :refer [get-marion-open-scenario-timeout]]
@@ -53,7 +53,7 @@
 (defonce pending-scenarios (atom {}))                                                                                         ; scenario-url -> callback
 
 (defn wait-for-scenario-ready! [scenario-url]
-  (let [channel (chan)
+  (let [channel (go-channel)
         handler (fn [message]
                   (swap! pending-scenarios dissoc scenario-url)
                   (put! channel message))]
@@ -119,7 +119,7 @@
           scenario-id (get-next-scenario-id!)
           timeout-ms (get-marion-open-scenario-timeout)
           timeout-str (gstring/format "%0.2f" (/ timeout-ms 1000.0))
-          timeout-channel (timeout timeout-ms)
+          timeout-channel (go-wait timeout-ms)
           ready-channel (wait-for-scenario-ready! scenario-url)
           tab-id (<! (helpers/go-create-scenario-with-url! scenario-url))]
       (let [[_ channel] (alts! [ready-channel timeout-channel])]

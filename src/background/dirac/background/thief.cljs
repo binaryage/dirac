@@ -1,6 +1,6 @@
 (ns dirac.background.thief
   (:require [dirac.background.logging :refer [log info warn error]]
-            [cljs.core.async :refer [<! chan timeout go go-loop]]
+            [dirac.shared.async :refer [<! go-channel go-wait go]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.ext.page-capture :as page-capture]
             [dirac.shared.mime :as mime]

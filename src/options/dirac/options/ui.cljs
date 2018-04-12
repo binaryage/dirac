@@ -6,7 +6,7 @@
             [reforms.rum :include-macros true :as fr]
             [reforms.core :as f]))
 
-(defonce default-state {:options model/default-options})
+(def default-state {:options model/default-options})
 
 (defonce state (atom {:options model/default-options}))
 

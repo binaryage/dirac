@@ -26,11 +26,11 @@ devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrappi
 devtools #1      setDiracPromptNS('cljs.user')
 devtools #1      setDiracPromptMode('edit')
 automate #1      enable-console-feedback!
-automate #1      console-enter! ["(require 'dirac.tests.scenarios.issue-74.core)"]
+automate #1      type-in-console! ["(require 'dirac.tests.scenarios.issue-74.core)"]
 devtools #1      DC.info> (require 'dirac.tests.scenarios.issue-74.core)
 devtools #1      send-eval-request: (require 'dirac.tests.scenarios.issue-74.core)
 devtools #1      repl eval job started
-automate #1      console-exec-and-match! ["(in-ns 'dirac.tests.scenarios.issue-74.core)" "setDiracPromptNS('dirac.tests.scenarios.issue-74.core')"]
+automate #1      exec-and-match-in-console! ["(in-ns 'dirac.tests.scenarios.issue-74.core)" "setDiracPromptNS('dirac.tests.scenarios.issue-74.core')"]
 devtools #1      repl eval job ended
 devtools #1      DC.info> (in-ns 'dirac.tests.scenarios.issue-74.core)
 devtools #1      send-eval-request: (in-ns 'dirac.tests.scenarios.issue-74.core)
@@ -38,14 +38,14 @@ devtools #1      repl eval job started
 devtools #1      setDiracPromptNS('dirac.tests.scenarios.issue-74.core')
 devtools #1      repl eval job ended
 testing          break on js-debugger, eval code in scope, resume
-automate #1      console-enter! ["(fn-with-breakpoint)"]
+automate #1      type-in-console! ["(fn-with-breakpoint)"]
 devtools #1      DC.info> (fn-with-breakpoint)
 devtools #1      send-eval-request: (fn-with-breakpoint)
 devtools #1      repl eval job started
 devtools #1      setCurrentPanel: sources
 automate #1      focus-best-console-prompt!
 devtools #1      showDrawer
-automate #1      console-exec-and-match! ["(inc a)" "info> 43"]
+automate #1      exec-and-match-in-console! ["(inc a)" "info> 43"]
 devtools #1      DC.info> (inc a)
 devtools #1      send-eval-request: (inc a)
 devtools #1      repl eval job started
@@ -56,12 +56,12 @@ devtools #1      DF.info> 84
 devtools #1      repl eval job ended
 ∎
 testing          break on js-debugger, change var in scope, resume
-automate #1      console-enter! ["(fn-with-breakpoint)"]
+automate #1      type-in-console! ["(fn-with-breakpoint)"]
 devtools #1      DC.info> (fn-with-breakpoint)
 devtools #1      send-eval-request: (fn-with-breakpoint)
 devtools #1      repl eval job started
 automate #1      focus-best-console-prompt!
-automate #1      console-exec-and-match! ["(set! js/a 30)" ["DF.warning> js/a is shadowed" "info> 30"]]
+automate #1      exec-and-match-in-console! ["(set! js/a 30)" ["DF.warning> js/a is shadowed" "info> 30"]]
 devtools #1      DC.info> (set! js/a 30)
 devtools #1      send-eval-request: (set! js/a 30)
 devtools #1      repl eval job started
@@ -74,7 +74,7 @@ devtools #1      DF.info> 60
 devtools #1      repl eval job ended
 ∎
 testing          break on js-debugger in async fn should not affect us
-automate #1      console-exec-and-match! ["(fn-with-async-breakpoint)" "info> 100"]
+automate #1      exec-and-match-in-console! ["(fn-with-async-breakpoint)" "info> 100"]
 devtools #1      DC.info> (fn-with-async-breakpoint)
 devtools #1      send-eval-request: (fn-with-async-breakpoint)
 devtools #1      repl eval job started

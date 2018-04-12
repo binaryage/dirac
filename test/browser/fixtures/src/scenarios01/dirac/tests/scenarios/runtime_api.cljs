@@ -1,6 +1,6 @@
 (ns dirac.tests.scenarios.runtime-api
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+  (:require-macros [dirac.shared.async :refer [go]])
+  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close!]]
             [chromex.logging :refer-macros [log]]
             [dirac.automation.runtime :refer [init-runtime!]]
             [dirac.automation.scenario :as scenario :refer-macros [with-feedback]]
@@ -47,7 +47,7 @@
     (runtime/installed? [:repl])
     (runtime/installed? :default)
     (runtime/installed? :all))
-  (scenario/feedback! "install/uninstall tests done"))
+  (scenario/go-post-feedback! "install/uninstall tests done"))
 
 (defn test-prefs! []
   (let [default-prefs (runtime/get-prefs)]
@@ -61,14 +61,14 @@
       (:some (runtime/get-prefs))
       (:agent-verbose (runtime/get-prefs)))
     (runtime/set-prefs! default-prefs))
-  (scenario/feedback! "prefs tests done"))
+  (scenario/go-post-feedback! "prefs tests done"))
 
 (defn test-runtime-tag! []
   (with-feedback
     (runtime/get-tag)
     (:runtime-tag (runtime/set-pref! :runtime-tag "my-runtime-tag"))
     (runtime/get-tag))
-  (scenario/feedback! "runtime tags tests done"))
+  (scenario/go-post-feedback! "runtime tags tests done"))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 
@@ -80,4 +80,4 @@
 (scenario/register-feedback-transformer! transformer)
 (scenario/register-trigger! :run-tests run-tests!)
 (scenario/capture-console-as-feedback!)
-(scenario/ready!)
+(scenario/go-ready!)

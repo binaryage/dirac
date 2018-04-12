@@ -13,7 +13,7 @@
 
 ; -- WebSocketServer construction -------------------------------------------------------------------------------------------
 
-(def last-id (volatile! 0))
+(defonce last-id (volatile! 0))
 
 (defn next-id! []
   (vswap! last-id inc))
@@ -93,7 +93,7 @@
 
 ; -- WebSocketServerClient construction -------------------------------------------------------------------------------------
 
-(def last-client-id (volatile! 0))
+(defonce last-client-id (volatile! 0))
 
 (defn next-client-id! []
   (vswap! last-client-id inc))
@@ -103,7 +103,7 @@
     (log/trace "Made" (str client))
     client))
 
-; -- WebSocketServerClient accees -------------------------------------------------------------------------------------------
+; -- WebSocketServerClient access -------------------------------------------------------------------------------------------
 
 (defn get-channel [client]
   {:pre [(instance? WebSocketServerClient client)]}
@@ -137,24 +137,24 @@
   (future                                                                                                                     ; don't block job-processing-loop
     (let [{:keys [on-client-disconnection on-leaving-client]} (get-options server)]
       @(get-done-promise client)                                                                                              ; wait for all pending jobs to get processed
-      (if on-client-disconnection
+      (when (some? on-client-disconnection)
         (on-client-disconnection server client status))
-      (if on-leaving-client
+      (when (some? on-leaving-client)
         (on-leaving-client server client))
       (remove-client! server client))))
 
 (defn on-receive [server client serialized-msg]
   (let [{:keys [on-receive on-message]} (get-options server)]
-    (if on-receive
+    (when (some? on-receive)
       (on-receive server client serialized-msg))
-    (if on-message
+    (when (some? on-message)
       (let [msg (unserialize-msg serialized-msg)]
         (on-message server client msg)))))
 
 (defn accept-client! [server client]
   (let [{:keys [on-incoming-client]} (get-options server)]
     (add-client! server client)
-    (if on-incoming-client
+    (when (some? on-incoming-client)
       (on-incoming-client server client))
     (deliver-first-client-promise! server client)))
 
@@ -162,7 +162,7 @@
   (let [jobs (get-jobs-channel client)]
     (log/debug (str client) "Entering job-processing-loop")
     (go-loop []
-      (if-let [[method & args] (<! jobs)]
+      (if-some [[method & args] (<! jobs)]
         (do
           (case method
             :receive (apply on-receive args)
@@ -231,9 +231,9 @@
             http-server (try
                           (http/run-server connection-handler effective-options)
                           (catch BindException e
-                            (if (= port last-port-to-try)
+                            (when (= port last-port-to-try)
                               (throw e))))]
-        (if-not http-server
+        (if-not (some? http-server)
           (recur (inc port))
           (do
             (set-http-server! server http-server)

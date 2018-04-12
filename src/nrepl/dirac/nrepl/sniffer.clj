@@ -81,7 +81,7 @@
 (defn extract-all-lines-but-last! [sniffer]
   {:pre [(instance? PrintWriter sniffer)]}
   (let [content (.toString (get-writer sniffer))]
-    (if-not (empty? content)
+    (when-not (empty? content)
       (let [lines (string/split content #"\n" -1)                                                                             ; http://stackoverflow.com/a/29614863/84283
             lines-ready (butlast lines)
             remainder (last lines)]

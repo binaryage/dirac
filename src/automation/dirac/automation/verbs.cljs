@@ -1,6 +1,6 @@
 (ns dirac.automation.verbs
   "Low-level automation API"
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
+  (:require [dirac.shared.async :refer [put! <! go-channel go]]
             [oops.core :refer [oget oset! ocall oapply]]
             [dirac.automation.logging :refer [log error]]
             [dirac.automation.transcript-host :as transcript]
@@ -9,31 +9,31 @@
 
 ; -- automation lower-level support -----------------------------------------------------------------------------------------
 
-(defn automate-devtools! [devtools-id data]
-  (messages/automate-dirac-frontend! devtools-id data))
+(defn go-automate-devtools! [devtools-id data]
+  (messages/go-automate-dirac-frontend! devtools-id data))
 
-(defn wait-for-match [what & args]
+(defn go-wait-for-match [what & args]
   (let [matcher (matchers/make-generic-matcher what)
         description (matchers/get-generic-matcher-description what)]
-    (apply transcript/wait-for-match matcher description args)))
+    (apply transcript/go-wait-for-match matcher description args)))
 
-(defn wait-for-devtools-match [devtools-id what & args]
+(defn go-wait-for-devtools-match [devtools-id what & args]
   (let [matcher (matchers/make-and-matcher (matchers/make-devtools-matcher devtools-id)
                                            (matchers/make-generic-matcher what))
         description (str "devtools #" devtools-id ", " (matchers/get-generic-matcher-description what))]
-    (apply transcript/wait-for-match matcher description args)))
+    (apply transcript/go-wait-for-match matcher description args)))
 
-(defn wait-for-devtools-ready [devtools-id]
-  (wait-for-devtools-match devtools-id "devtools ready"))
+(defn go-wait-for-devtools-ready [devtools-id]
+  (go-wait-for-devtools-match devtools-id "devtools ready"))
 
-(defn wait-for-panel-switch [devtools-id name]
-  (wait-for-devtools-match devtools-id (str "setCurrentPanel: " name)))
+(defn go-wait-for-panel-switch [devtools-id name]
+  (go-wait-for-devtools-match devtools-id (str "setCurrentPanel: " name)))
 
-(defn wait-for-devtools-boot [devtools-id]
+(defn go-wait-for-devtools-boot [devtools-id]
   (go
-    (<! (wait-for-devtools-ready devtools-id))
-    (<! (wait-for-panel-switch devtools-id "elements"))                                                                       ; because we have reset all devtools settings, the first landed panel will be "elements"
-    (<! (wait-for-devtools-match devtools-id "namespacesCache is cool now"))))                                                ; we need namespaces cache to be fully populated to prevent flaky tests
+    (<! (go-wait-for-devtools-ready devtools-id))
+    (<! (go-wait-for-panel-switch devtools-id "elements"))                                                                    ; because we have reset all devtools settings, the first landed panel will be "elements"
+    (<! (go-wait-for-devtools-match devtools-id "namespacesCache is cool now"))))                                             ; we need namespaces cache to be fully populated to prevent flaky tests
 
 (defn wait-for-devtools-unregistration [devtools-id]
-  (wait-for-match (str "unregister devtools #" devtools-id)))
+  (go-wait-for-match (str "unregister devtools #" devtools-id)))

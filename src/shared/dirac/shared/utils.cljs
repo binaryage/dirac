@@ -1,7 +1,7 @@
 (ns dirac.shared.utils
   (:require-macros [dirac.shared.utils])
-  (:require [cljs.core.async :refer [put! <! chan close! go go-loop]]
-            [cljs.core.async.impl.protocols :as async-protocols]
+  (:require [dirac.shared.async :refer [put! <! close! go go-channel]]
+            [cljs.core.async.impl.protocols :as async-protocols]                                                              ; TODO: move this to dirac.shared.async
             [cuerdas.core :as cuerdas]
             [dirac.shared.pprint]
             [oops.core :refer [oget oset! ocall oapply gget gcall]]))
@@ -14,7 +14,7 @@
 (defn remove-nil-values [m]
   (into {} (remove (comp nil? second) m)))
 
-(defonce ^:const EXPONENTIAL_BACKOFF_CEILING (* 60 1000))
+(def ^:const EXPONENTIAL_BACKOFF_CEILING (* 60 1000))
 
 (defn exponential-backoff-ceiling [attempt]
   (let [time (* (gcall "Math.pow" 2 attempt) 1000)]
@@ -23,7 +23,7 @@
 ; this implementation differs from core.async timeout that it is simple and creates a new channel for every invocation
 ; it is safe to call close! on returned channel to cancel timeout early
 (defn timeout [msec]
-  (let [channel (chan)]
+  (let [channel (go-channel)]
     (gcall "setTimeout" #(close! channel) msec)
     channel))
 
@@ -43,14 +43,14 @@
     (close! channel)))
 
 (defn turn-promise-into-channel [promise]
-  (let [channel (chan)]
+  (let [channel (go-channel)]
     (ocall promise "then" (partial handle-promised-result! channel))
     channel))
 
-(defn turn-channel-into-callback [channel callback]
-  (go-loop []
-    (if-let [val (<! channel)]
-      (do
+(defn go-turn-channel-into-callback [channel callback]
+  (go
+    (loop []
+      (when-some [val (<! channel)]
         (callback val)
         (recur)))))
 
@@ -71,7 +71,7 @@
   {:pre [(or (fn? callback) (nil? callback))]}
   (if (some? callback)
     (cond
-      (satisfies? async-protocols/Channel o) (turn-channel-into-callback o callback)
+      (satisfies? async-protocols/Channel o) (go-turn-channel-into-callback o callback)
       (instance? Promise o) (turn-promise-into-callback o callback)
       (fn? o) o                                                                                                               ; assume already a callback
       :else (callback o)))
@@ -120,7 +120,7 @@
   ; note that error may be a string message already
   (if (string? e)
     e
-    (if-let [stack (oget e "stack")]
+    (if-some [stack (oget e "stack")]
       (str stack)
       (str e))))
 
@@ -144,7 +144,7 @@
   (js/FileReader.))
 
 (defn go-convert-blob-to-string [blob]
-  (let [channel (chan)
+  (let [channel (go-channel)
         reader (make-file-reader)]
     (oset! reader "onloadend" #(put! channel (oget reader "result")))
     (ocall reader "readAsText" blob)
@@ -156,3 +156,9 @@
                 :print-length      (or length 200)
                 :max-string-length (or max-str-len 500)}]
       (dirac.shared.pprint/pprint v opts))))
+
+(defn prefix-text-block [prefix text]
+  (->> text
+       (cuerdas/lines)
+       (map-indexed (fn [i line] (if-not (zero? i) (str prefix line) line)))                                                  ; prepend prefix to all lines except the first
+       (cuerdas/unlines)))

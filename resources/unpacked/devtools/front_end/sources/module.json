@@ -316,6 +316,15 @@
             "className": "Sources.SnippetsNavigatorView"
         },
         {
+            "type": "view",
+            "location": "drawer-view",
+            "id": "sources.search-sources-tab",
+            "title": "Search",
+            "order": 7,
+            "persistence": "closeable",
+            "className": "Sources.SearchSourcesView"
+        },
+        {
             "type": "@Sources.NavigatorView",
             "viewId": "navigator-network",
             "className": "Sources.NetworkNavigatorView"
@@ -798,12 +807,28 @@
             ]
         },
         {
-            "type": "@Search.SearchScope",
-            "id": "sources.search-in-files",
-            "className": "Sources.SourcesSearchScope",
-            "title": "Sources",
-            "description": "Search workspace sources"
+            "type": "action",
+            "actionId": "sources.search",
+            "title": "Search",
+            "className": "Sources.SearchSourcesView.ActionDelegate",
+            "category": "DevTools",
+            "bindings": [
+                {
+                    "platform": "mac",
+                    "shortcut": "Meta+Alt+F"
+                },
+                {
+                    "platform": "windows,linux",
+                    "shortcut": "Ctrl+Shift+F"
+                }
+            ]
+        },
+        {
+            "type": "context-menu-item",
+            "location": "mainMenu/default",
+            "actionId": "sources.search"
         }
+
     ],
     "dependencies": [
         "components",
@@ -833,6 +858,7 @@
         "UISourceCodeFrame.js",
         "JavaScriptSourceFrame.js",
         "CSSPlugin.js",
+        "SearchSourcesView.js",
         "NavigatorView.js",
         "ScopeChainSidebarPane.js",
         "SourcesNavigator.js",
