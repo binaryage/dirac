@@ -71,7 +71,7 @@ def to_platform_path_exact(filepath):
 scripts_path = path.dirname(path.abspath(__file__))
 devtools_path = path.dirname(scripts_path)
 chromium_path = path.join(devtools_path,  os.pardir, os.pardir, os.pardir, os.pardir, 'chromium-mirror')
-webkit_path = path.join(chromium_path, 'third_party', 'WebKit', 'Source')
+webkit_path = path.join(chromium_path, 'third_party', 'blink', 'renderer')
 inspector_path = path.join(webkit_path, 'core', 'inspector')
 v8_inspector_path = path.normpath(path.join(chromium_path, 'v8', 'src', 'inspector'))
 devtools_frontend_path = path.join(devtools_path, 'front_end')
