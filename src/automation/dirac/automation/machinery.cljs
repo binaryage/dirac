@@ -1,11 +1,11 @@
 (ns dirac.automation.machinery
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [oops.core :refer [oget oset! ocall oapply]]
-            [dirac.automation.logging :refer [log error]]
+  (:require [clojure.string :as string]
+            [dirac.automation.logging :refer [error log]]
             [dirac.automation.runner :as runner]
-            [dirac.automation.transcript-host :as transcript]
             [dirac.automation.test :as test]
-            [clojure.string :as string]))
+            [dirac.automation.transcript-host :as transcript]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 ; -- current scenario tracker -----------------------------------------------------------------------------------------------
 

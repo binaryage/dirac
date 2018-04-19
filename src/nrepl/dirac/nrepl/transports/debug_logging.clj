@@ -1,8 +1,8 @@
 (ns dirac.nrepl.transports.debug-logging
-  (:require [clojure.tools.nrepl.transport :as nrepl-transport]
-            [clojure.tools.logging :as log]
-            [dirac.nrepl.debug :as debug]
-            [dirac.lib.utils :as utils])
+  (:require [clojure.tools.logging :as log]
+            [clojure.tools.nrepl.transport :as nrepl-transport]
+            [dirac.lib.utils :as utils]
+            [dirac.nrepl.debug :as debug])
   (:import (clojure.tools.nrepl.transport Transport)))
 
 ; -- transport wrapper ------------------------------------------------------------------------------------------------------

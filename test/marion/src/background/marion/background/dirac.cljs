@@ -1,12 +1,12 @@
 (ns marion.background.dirac
-  (:require [dirac.shared.async :refer [<! go-channel go-wait go]]
-            [oops.core :refer [oget ocall oapply]]
-            [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
-            [chromex.protocols :refer [post-message! get-sender]]
+  (:require [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
+            [chromex.protocols :refer [get-sender post-message!]]
             [dirac.settings :refer [get-marion-reconnection-attempt-delay]]
-            [marion.background.logging :refer [log info warn error]]
+            [dirac.shared.async :refer [<! go go-channel go-wait]]
+            [marion.background.feedback :as feedback]
             [marion.background.helpers :as helpers]
-            [marion.background.feedback :as feedback]))
+            [marion.background.logging :refer [error info log warn]]
+            [oops.core :refer [oapply ocall oget]]))
 
 (defonce dirac-extension (atom nil))
 (defonce pending-messages (atom []))

@@ -1,5 +1,5 @@
 (ns marion.content-script.state
-  (:require [marion.content-script.logging :refer [log info warn error]]))
+  (:require [marion.content-script.logging :refer [error info log warn]]))
 
 (defonce background-port-atom (atom nil))
 (defonce pending-messages-atom (atom []))

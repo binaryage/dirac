@@ -1,11 +1,11 @@
 (ns dirac.automation.messages
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [cljs.reader :as reader]
+  (:require [cljs.reader :as reader]
             [clojure.string :as str]
-            [oops.core :refer [oget oset! ocall oapply gcall!]]
-            [dirac.automation.logging :refer [log info warn error]]
+            [dirac.automation.logging :refer [error info log warn]]
             [dirac.settings :refer [get-marion-message-reply-timeout]]
-            [dirac.shared.utils :as utils]))
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
+            [dirac.shared.utils :as utils]
+            [oops.core :refer [gcall! oapply ocall oget oset!]]))
 
 (defonce last-message-id (volatile! 0))
 (defonce message-id-prefix (volatile! ""))

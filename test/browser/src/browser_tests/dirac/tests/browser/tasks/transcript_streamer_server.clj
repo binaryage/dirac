@@ -1,8 +1,8 @@
 (ns dirac.tests.browser.tasks.transcript-streamer-server
   (:require [clojure.tools.logging :as log]
+            [dirac.lib.ws-server :as ws-server]
             [dirac.settings :refer [get-transcript-streamer-server-host get-transcript-streamer-server-port]]
             [dirac.shared.travis :refer [with-travis-fold]]
-            [dirac.lib.ws-server :as ws-server]
             [dirac.tests.browser.tasks.output :as output]))
 
 (defonce current-server (volatile! nil))

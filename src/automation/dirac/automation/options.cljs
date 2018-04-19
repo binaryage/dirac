@@ -1,6 +1,6 @@
 (ns dirac.automation.options
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [dirac.automation.messages :as messages]))
+  (:require [dirac.automation.messages :as messages]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]))
 
 (defonce options-stack (atom []))
 

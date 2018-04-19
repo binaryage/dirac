@@ -1,11 +1,11 @@
 (ns dirac.test-lib.nrepl-server-helpers
   (:require [clojure.tools.nrepl.ack :as nrepl.ack]
             [clojure.tools.nrepl.server :as nrepl.server]
-            [environ.core :refer [env]]
-            [dirac.settings :refer [get-backend-tests-nrepl-server-timeout
-                                    get-backend-tests-nrepl-server-host
-                                    get-backend-tests-nrepl-server-port]]
-            [dirac.nrepl :as dirac-repl]))
+            [dirac.nrepl :as dirac-repl]
+            [dirac.settings :refer [get-backend-tests-nrepl-server-host
+                                    get-backend-tests-nrepl-server-port
+                                    get-backend-tests-nrepl-server-timeout]]
+            [environ.core :refer [env]]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 

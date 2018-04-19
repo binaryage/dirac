@@ -1,6 +1,6 @@
 (ns dirac.nrepl.config
-  (:require [dirac.lib.utils :refer [read-env-config deep-merge-ignoring-nils]]
-            [dirac.nrepl.config-helpers :refer [standard-repl-init-code default-reveal-url-request-handler!]]))
+  (:require [dirac.lib.utils :refer [deep-merge-ignoring-nils read-env-config]]
+            [dirac.nrepl.config-helpers :refer [default-reveal-url-request-handler! standard-repl-init-code]]))
 
 (def env-config-prefix "dirac-nrepl")
 

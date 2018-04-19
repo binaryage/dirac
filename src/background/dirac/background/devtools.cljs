@@ -1,9 +1,9 @@
 (ns dirac.background.devtools
-  (:require [oops.core :refer [oget ocall oapply]]
-            [dirac.background.logging :refer [log info warn error]]
-            [dirac.background.action :as action]
+  (:require [dirac.background.action :as action]
+            [dirac.background.logging :refer [error info log warn]]
             [dirac.background.marion :as marion]
-            [dirac.background.state :as state]))
+            [dirac.background.state :as state]
+            [oops.core :refer [oapply ocall oget]]))
 
 (defn add! [id frontend-tab-id backend-tab-id]
   {:pre [id]}

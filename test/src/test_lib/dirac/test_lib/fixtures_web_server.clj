@@ -1,13 +1,13 @@
 (ns dirac.test-lib.fixtures-web-server
-  (:require [dirac.settings :refer [get-fixtures-server-port get-fixtures-server-url]]
+  (:require [clojure.string :as string]
             [clojure.tools.logging :as log]
-            [clojure.string :as string]
-            [org.httpkit.server :refer [run-server]]
-            [dirac.shared.travis :refer [with-travis-fold]])
-  (:use ring.middleware.resource
-        ring.middleware.content-type
+            [dirac.settings :refer [get-fixtures-server-port get-fixtures-server-url]]
+            [dirac.shared.travis :refer [with-travis-fold]]
+            [org.httpkit.server :refer [run-server]])
+  (:use ring.middleware.content-type
         ring.middleware.not-modified
-        ring.middleware.reload)
+        ring.middleware.reload
+        ring.middleware.resource)
   (:import (java.io IOException)))
 
 (def default-options

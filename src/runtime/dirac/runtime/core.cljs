@@ -1,7 +1,7 @@
 (ns dirac.runtime.core
-  (:require [dirac.runtime.repl :as repl]
-            [dirac.runtime.util :refer [display-banner-if-needed! install-feature! resolve-features!]]
-            [dirac.runtime.prefs :as prefs :refer [feature-groups]]))
+  (:require [dirac.runtime.prefs :as prefs :refer [feature-groups]]
+            [dirac.runtime.repl :as repl]
+            [dirac.runtime.util :refer [display-banner-if-needed! install-feature! resolve-features!]]))
 
 ; -- CORE API ---------------------------------------------------------------------------------------------------------------
 

@@ -1,12 +1,12 @@
 (ns dirac.implant.reporter
   (:require [clojure.string :as string]
             [cuerdas.core :as cuerdas]
-            [dirac.implant.logging :refer [log warn error]]
-            [oops.core :refer [oget oset! ocall oapply gget gset!]]
             [dirac.implant.feedback :as feedback]
             [dirac.implant.info :as info]
+            [dirac.implant.logging :refer [error log warn]]
+            [dirac.implant.options :as options]
             [dirac.shared.utils :as utils]
-            [dirac.implant.options :as options]))
+            [oops.core :refer [gget gset! oapply ocall oget oset!]]))
 
 (def issues-url "https://github.com/binaryage/dirac/issues")
 

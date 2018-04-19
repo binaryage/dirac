@@ -1,8 +1,8 @@
 (ns dirac.implant.link-handlers
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [oops.core :refer [gset! oget oset! oset!+ ocall! ocall oapply gget gcall!]]
-            [dirac.implant.logging :refer [log warn error info]]
-            [dirac.implant.intercom :as intercom]))
+  (:require [dirac.implant.intercom :as intercom]
+            [dirac.implant.logging :refer [error info log warn]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
+            [oops.core :refer [gcall! gget gset! oapply ocall ocall! oget oset! oset!+]]))
 
 (defn ^:dynamic make-open-request-error-message [error url]
   (str "A request to reveal a link reported an error: " error "\n"

@@ -1,17 +1,17 @@
 (ns dirac.nrepl.special
-  (:require [clojure.main :refer [root-cause repl-caught]]
+  (:require [clojure.main :refer [repl-caught root-cause]]
             [clojure.tools.logging :as log]
-            [dirac.nrepl.controls :as controls]
-            [dirac.nrepl.sessions :as sessions]
-            [dirac.nrepl.helpers :as helpers]
-            [dirac.nrepl.transports.output-capturing :refer [make-nrepl-message-with-captured-output]]
-            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting]]
-            [dirac.nrepl.state :as state]
-            [dirac.nrepl.driver :as driver]
-            [dirac.nrepl.protocol :as protocol]
-            [dirac.nrepl.debug :as debug]
+            [cuerdas.core :as cuerdas]
             [dirac.nrepl.compilers :as compilers]
-            [cuerdas.core :as cuerdas])
+            [dirac.nrepl.controls :as controls]
+            [dirac.nrepl.debug :as debug]
+            [dirac.nrepl.driver :as driver]
+            [dirac.nrepl.helpers :as helpers]
+            [dirac.nrepl.protocol :as protocol]
+            [dirac.nrepl.sessions :as sessions]
+            [dirac.nrepl.state :as state]
+            [dirac.nrepl.transports.output-capturing :refer [make-nrepl-message-with-captured-output]]
+            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting]])
   (:import (clojure.lang Namespace)))
 
 (def ^:dynamic dirac-command-re #"^\s*\(?dirac!?(|\s+.*?\s*)\)?\s*$")                                                         ; allow both (dirac! ...) and (dirac ...) forms, parentheses are optional

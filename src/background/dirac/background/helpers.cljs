@@ -1,18 +1,18 @@
 (ns dirac.background.helpers
-  (:require [dirac.background.logging :refer [log info warn error]]
-            [dirac.shared.async :refer [<! go-channel put! close! go-wait alts! go]]
-            [oops.core :refer [oget oget+ oset! oset!+ ocall oapply]]
-            [chromex.ext.tabs :as tabs]
-            [chromex.ext.extension :as extension]
+  (:require [chromex.ext.extension :as extension]
             [chromex.ext.runtime :as runtime]
-            [dirac.settings :refer [get-automation-entry-point-key
-                                    get-flush-pending-feedback-messages-key
-                                    get-dirac-intercom-key]]
-            [dirac.background.action :as action]
-            [dirac.background.state :as state]
-            [dirac.shared.utils :as utils]
+            [chromex.ext.tabs :as tabs]
             [cljs.reader :as reader]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [dirac.background.action :as action]
+            [dirac.background.logging :refer [error info log warn]]
+            [dirac.background.state :as state]
+            [dirac.settings :refer [get-automation-entry-point-key
+                                    get-dirac-intercom-key
+                                    get-flush-pending-feedback-messages-key]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
+            [dirac.shared.utils :as utils]
+            [oops.core :refer [oapply ocall oget oget+ oset! oset!+]])
   (:import goog.Uri))
 
 (defn ^:dynamic warn-about-unexpected-number-views [devtools-id views]

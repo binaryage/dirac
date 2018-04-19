@@ -1,8 +1,8 @@
 (ns dirac.automation.notifications
-  (:require [oops.core :refer [oget oset! ocall oapply gcall!]]
+  (:require [cljs.reader :as reader]
             [dirac.automation.logging :refer [log warn]]
             [dirac.automation.messages :as messages]
-            [cljs.reader :as reader]))
+            [oops.core :refer [gcall! oapply ocall oget oset!]]))
 
 (defonce processing-messages? (volatile! false))
 (defonce notifications-subscribed? (volatile! false))

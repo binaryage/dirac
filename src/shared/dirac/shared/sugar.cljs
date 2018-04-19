@@ -1,12 +1,12 @@
 (ns dirac.shared.sugar
-  (:require [oops.core :refer [oget oset! ocall oapply]]
+  (:require [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.config :refer-macros [with-muted-error-reporting]]
-            [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.windows :as windows]
-            [dirac.shared.async :refer [<! go-channel put! close! go]]
-            [dirac.shared.logging :refer [log info warn error]]
-            [dirac.shared.utils :as utils]))
+            [dirac.shared.async :refer [<! close! go go-channel put!]]
+            [dirac.shared.logging :refer [error info log warn]]
+            [dirac.shared.utils :as utils]
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 ; this is a collection of helper utilities to wrap some common chromex code snippets (runtime, tabs and windows)
 ; for example many callbacks are designed to accept only one parameter as return value

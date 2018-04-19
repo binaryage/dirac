@@ -1,12 +1,12 @@
 ;; The faster way to use clj-webdriver: take a taxi
 (ns clj-webdriver.taxi
-  (:use [clj-webdriver.element :only [element-like?]]
-        [clj-webdriver.driver :only [driver?]])
+  (:use [clj-webdriver.driver :only [driver?]]
+        [clj-webdriver.element :only [element-like?]])
   (:require [clj-webdriver.core :as core]
-            [clj-webdriver.window :as win]
-            [clj-webdriver.util :as util]
             [clj-webdriver.options :as options]
-            [clj-webdriver.wait :as wait])
+            [clj-webdriver.util :as util]
+            [clj-webdriver.wait :as wait]
+            [clj-webdriver.window :as win])
   (:import clj_webdriver.element.Element))
 
 (declare css-finder)

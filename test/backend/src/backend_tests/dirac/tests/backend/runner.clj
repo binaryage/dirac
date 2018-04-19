@@ -1,12 +1,12 @@
 (ns dirac.tests.backend.runner
-  (:require [clojure.test :refer :all]
+  (:require [clansi :refer [style]]
+            [clojure.test :refer :all]
             [clojure.tools.logging :as log]
-            [environ.core :refer [env]]
-            [dirac.tests.backend.agent.tests]
-            [dirac.shared.travis :as travis]
-            [dirac.logging :as logging]
             [cuerdas.core :as cuerdas]
-            [clansi :refer [style]])
+            [dirac.logging :as logging]
+            [dirac.shared.travis :as travis]
+            [dirac.tests.backend.agent.tests]
+            [environ.core :refer [env]])
   (:import (java.util.concurrent ThreadLocalRandom)))
 
 ; this is the default dirac test runner

@@ -1,11 +1,11 @@
 (ns dirac.implant.nrepl-tunnel-client
-  (:require [dirac.implant.logging :refer [log warn info error]]
-            [dirac.shared.async :refer [<! go-channel put! go-wait close! go]]
-            [cljs-uuid-utils.core :as uuid]
+  (:require [cljs-uuid-utils.core :as uuid]
+            [dirac.implant.console :as console]
             [dirac.implant.eval :as eval]
-            [dirac.lib.ws-client :as ws-client]
+            [dirac.implant.logging :refer [error info log warn]]
             [dirac.implant.version :as implant-version]
-            [dirac.implant.console :as console]))
+            [dirac.lib.ws-client :as ws-client]
+            [dirac.shared.async :refer [<! close! go go-channel go-wait put!]]))
 
 (defonce wannabe-client (atom nil))
 (defonce current-client (atom nil))                                                                                           ; only one client can be connected as a time

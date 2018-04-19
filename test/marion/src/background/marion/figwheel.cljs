@@ -1,6 +1,6 @@
 (ns marion.figwheel
-  (:require [figwheel.client :as figwheel]
-            [dirac.shared.utils :refer [runonce when-not-advanced-mode when-not-dirac-test-mode]]))
+  (:require [dirac.shared.utils :refer [runonce when-not-advanced-mode when-not-dirac-test-mode]]
+            [figwheel.client :as figwheel]))
 
 ; -------------------------------------------------------------------------------------------------------------------
 ; has to be included before boot

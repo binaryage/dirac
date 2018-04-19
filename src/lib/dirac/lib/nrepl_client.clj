@@ -1,11 +1,11 @@
 (ns dirac.lib.nrepl-client
-  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+  (:require [clojure.core.async :refer [<! <!! >!! alts!! chan close! go go-loop put! timeout]]
+            [clojure.tools.logging :as log]
             [clojure.tools.nrepl :as nrepl]
             [clojure.tools.nrepl.transport :as nrepl.transport]
-            [clojure.tools.logging :as log]
+            [dirac.lib.bencode-hell :as bencode-hell]
             [dirac.lib.nrepl-protocols :as nrepl-protocols]
-            [dirac.lib.utils :as utils]
-            [dirac.lib.bencode-hell :as bencode-hell])
+            [dirac.lib.utils :as utils])
   (:use [clojure.tools.nrepl.misc :only (uuid)])
   (:import (java.net SocketException)))
 

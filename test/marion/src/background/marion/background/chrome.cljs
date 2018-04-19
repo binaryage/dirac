@@ -1,10 +1,10 @@
 (ns marion.background.chrome
-  (:require [dirac.shared.async :refer [<! go-channel go-wait go]]
-            [oops.core :refer [oget ocall oapply]]
-            [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
+  (:require [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.runtime :as runtime]
-            [marion.background.logging :refer [log info warn error]]
-            [marion.background.content-script :as content-script]))
+            [dirac.shared.async :refer [<! go go-channel go-wait]]
+            [marion.background.content-script :as content-script]
+            [marion.background.logging :refer [error info log warn]]
+            [oops.core :refer [oapply ocall oget]]))
 
 ; -- chrome event loop ------------------------------------------------------------------------------------------------------
 

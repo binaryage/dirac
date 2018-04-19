@@ -1,16 +1,16 @@
 (ns dirac.automation.transcript-host
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [oops.core :refer [oget oset! ocall oapply gcall!]]
+  (:require [clojure.string :as string]
             [cuerdas.core :as cuerdas]
-            [clojure.string :as string]
+            [dirac.automation.helpers :as helpers]
+            [dirac.automation.logging :refer [debug-log error info log warn]]
             [dirac.automation.transcript :as transcript]
             [dirac.automation.transcript-streamer :as streamer]
-            [dirac.automation.logging :refer [log warn error info debug-log]]
-            [dirac.automation.helpers :as helpers]
+            [dirac.settings :refer [get-transcript-label-padding-length
+                                    get-transcript-label-padding-type
+                                    get-transcript-match-timeout]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
             [dirac.shared.utils :as utils]
-            [dirac.settings :refer [get-transcript-match-timeout
-                                    get-transcript-label-padding-length
-                                    get-transcript-label-padding-type]]))
+            [oops.core :refer [gcall! oapply ocall oget oset!]]))
 
 (defonce current-transcript (atom nil))
 (defonce transcript-enabled (volatile! 0))

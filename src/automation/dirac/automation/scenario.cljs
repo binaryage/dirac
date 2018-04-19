@@ -1,14 +1,14 @@
 (ns dirac.automation.scenario
   (:require-macros [dirac.automation.scenario])
-  (:require [dirac.shared.async :refer [<! go]]
-            [oops.core :refer [oget oset! ocall oapply gget gset! gcall!]]
-            [dirac.automation.logging :refer [log info warn error]]
-            [dirac.shared.utils]                                                                                              ; used in macros
-            [dirac.shared.pprint]                                                                                             ; used in macros
+  (:require [dirac.automation.feedback :as feedback]
+            [dirac.automation.logging :refer [error info log warn]]
             [dirac.automation.messages :as messages]
-            [dirac.automation.notifications :as notifications]
+            [dirac.automation.notifications :as notifications]                                                                                              ; used in macros
+            [dirac.shared.async :refer [<! go]]                                                                                             ; used in macros
+            [dirac.shared.pprint]
+            [dirac.shared.utils]
             [dirac.shared.utils :as utils]
-            [dirac.automation.feedback :as feedback]))
+            [oops.core :refer [gcall! gget gset! oapply ocall oget oset!]]))
 
 (defonce triggers (atom {}))                                                                                                  ; trigger-name -> callback
 (defonce original-console-api (atom nil))

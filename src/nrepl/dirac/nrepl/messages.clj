@@ -1,6 +1,6 @@
 (ns dirac.nrepl.messages
-  (:require [dirac.nrepl.helpers :as helpers]
-            [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [dirac.nrepl.helpers :as helpers]))
 
 ; -- dirac! controls --------------------------------------------------------------------------------------------------------
 

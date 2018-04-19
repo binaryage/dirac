@@ -1,7 +1,7 @@
 (ns dirac.shared.mime
-  (:require [oops.core :refer [oget oset! ocall oapply]]
-            [dirac.shared.logging :refer [log info warn error]]
-            [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [dirac.shared.logging :refer [error info log warn]]
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 ; poor man's multipart MIME parser
 

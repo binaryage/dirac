@@ -1,8 +1,8 @@
 (ns dirac.background.action
-  (:require [dirac.shared.async :refer [<! go-channel put! go]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
-            [dirac.shared.sugar :refer [go-check-tab-exists?]]
-            [chromex.ext.browser-action :as browser-action]))
+  (:require [chromex.ext.browser-action :as browser-action]
+            [chromex.logging :refer-macros [error group group-end info log warn]]
+            [dirac.shared.async :refer [<! go go-channel put!]]
+            [dirac.shared.sugar :refer [go-check-tab-exists?]]))
 
 (def state-table
   {:waiting       {}

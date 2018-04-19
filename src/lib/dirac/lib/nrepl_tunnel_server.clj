@@ -1,11 +1,11 @@
 (ns dirac.lib.nrepl-tunnel-server
-  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+  (:require [clojure.core.async :refer [<! <!! >!! alts!! chan close! go go-loop put! timeout]]
             [clojure.tools.logging :as log]
-            [version-clj.core :refer [version-compare]]
             [dirac.lib.nrepl-protocols :refer :all]
-            [dirac.lib.ws-server :as ws-server]
+            [dirac.lib.utils :as utils]
             [dirac.lib.version :as lib-version]
-            [dirac.lib.utils :as utils])
+            [dirac.lib.ws-server :as ws-server]
+            [version-clj.core :refer [version-compare]])
   (:use [clojure.tools.nrepl.misc :only (uuid)]))
 
 (def upgrading-doc-url "https://github.com/binaryage/dirac/blob/master/docs/upgrading.md")

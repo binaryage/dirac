@@ -1,8 +1,8 @@
 (ns dirac.automation.feedback
-  (:require [oops.core :refer [oget oset! ocall oapply gcall!]]
-            [dirac.automation.logging :refer [log warn]]
+  (:require [dirac.automation.logging :refer [log warn]]
             [dirac.automation.messages :as messages]
-            [dirac.automation.transcript-host :as transcript-host]))
+            [dirac.automation.transcript-host :as transcript-host]
+            [oops.core :refer [gcall! oapply ocall oget oset!]]))
 
 (defonce processing-messages? (volatile! false))
 (defonce feedback-subscribed? (volatile! false))

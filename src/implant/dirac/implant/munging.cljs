@@ -1,7 +1,7 @@
 (ns dirac.implant.munging
   (:require [clojure.string :as string]
-            [oops.core :refer [oget oset! ocall oapply gcall]]
-            [devtools.munging :as munging]))
+            [devtools.munging :as munging]
+            [oops.core :refer [gcall oapply ocall oget oset!]]))
 
 (defn is-cljs-function-name? [munged-name]
   (or (empty? munged-name)

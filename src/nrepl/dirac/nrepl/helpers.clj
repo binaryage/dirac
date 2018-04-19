@@ -1,11 +1,11 @@
 (ns dirac.nrepl.helpers
   "Low-level helper methods NOT depending on mutable global state."
-  (:require [dirac.nrepl.version :refer [version]]
+  (:require [clojure.tools.nrepl.misc :as nrepl-misc]
             [clojure.tools.nrepl.transport :as nrepl-transport]
-            [clojure.tools.nrepl.misc :as nrepl-misc])
-  (:import (java.util UUID)
-           (java.io StringWriter PrintWriter)
-           (clojure.lang IExceptionInfo)))
+            [dirac.nrepl.version :refer [version]])
+  (:import (clojure.lang IExceptionInfo)
+           (java.io PrintWriter StringWriter)
+           (java.util UUID)))
 
 (defmacro with-err-output [& body]
   `(binding [*out* *err*]

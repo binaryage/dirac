@@ -1,19 +1,19 @@
 (ns clj-webdriver.remote.server
-  (:use [clojure.java.io :only [as-url]]
-        [clojure.tools.logging :as log]
+  (:use [clj-webdriver.core :only [get-url]]
         [clj-webdriver.driver :only [init-driver]]
-        [clj-webdriver.core :only [get-url]])
+        [clojure.java.io :only [as-url]]
+        [clojure.tools.logging :as log])
   (:require [clj-webdriver.util :as util])
-  (:import [org.mortbay.jetty Connector Server]
+  (:import javax.servlet.Servlet
+           [org.mortbay.jetty Connector Server]
            org.mortbay.jetty.nio.SelectChannelConnector
            org.mortbay.jetty.security.SslSocketConnector
            org.mortbay.jetty.webapp.WebAppContext
-           javax.servlet.Servlet
-           org.openqa.selenium.remote.RemoteWebDriver
-           org.openqa.selenium.remote.server.DriverServlet
            [org.openqa.selenium.remote
             DesiredCapabilities
-            HttpCommandExecutor]))
+            HttpCommandExecutor]
+           org.openqa.selenium.remote.RemoteWebDriver
+           org.openqa.selenium.remote.server.DriverServlet))
 
 (defprotocol IRemoteServer
   "Functions for managing a RemoteServer instance."

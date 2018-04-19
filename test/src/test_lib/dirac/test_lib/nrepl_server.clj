@@ -1,7 +1,7 @@
 (ns dirac.test-lib.nrepl-server
-  (:require [dirac.test-lib.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server!]]
-            [clojure.tools.logging :as log]
-            [dirac.shared.travis :refer [with-travis-fold]]))
+  (:require [clojure.tools.logging :as log]
+            [dirac.shared.travis :refer [with-travis-fold]]
+            [dirac.test-lib.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server!]]))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 

@@ -1,9 +1,9 @@
 (ns dirac.tests.tasks.suite01.repl
-  (:require [dirac.shared.async :refer [<! go-wait]]
-            [dirac.settings :refer [seconds minutes]]
-            [cljs.test :refer-macros [is]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools testing with-console-feedback
-                                             chunkify] :as a]))
+  (:require [cljs.test :refer-macros [is]]
+            [dirac.automation :refer-macros [<!* chunkify go-task testing with-console-feedback with-devtools
+                                             with-scenario] :as a]
+            [dirac.settings :refer [minutes seconds]]
+            [dirac.shared.async :refer [<! go-wait]]))
 
 (go-task
   (with-scenario "repl"

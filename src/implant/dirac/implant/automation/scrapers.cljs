@@ -1,14 +1,14 @@
 (ns dirac.implant.automation.scrapers
   (:require-macros [dirac.implant.automation.scrapers :refer [safe->>]])
-  (:require [oops.core :refer [oget oset! ocall oapply]]
-            [dirac.implant.logging :refer [log warn error info]]
-            [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [cljs.pprint :refer [pprint]]
-            [dirac.implant.automation.reps :refer [select-subrep select-subreps build-rep]]
-            [clojure.walk :refer [prewalk postwalk]]
+  (:require [cljs.pprint :refer [pprint]]
+            [clojure.string :as string]
+            [clojure.walk :refer [postwalk prewalk]]
+            [dirac.implant.automation.reps :refer [build-rep select-subrep select-subreps]]
+            [dirac.implant.logging :refer [error info log warn]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
             [dirac.shared.dom :as dom]
             [dirac.shared.utils]                                                                                              ; required by macros
-            [clojure.string :as string]))
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 

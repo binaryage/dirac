@@ -1,6 +1,6 @@
 (ns dirac.tests.browser.tasks.tests
-  (:require [clojure.test :refer :all]
-            [clj-webdriver.taxi :as taxi]
+  (:require [clj-webdriver.taxi :as taxi]
+            [clojure.test :refer :all]
             [dirac.settings :refer [get-fixtures-server-url]]
             [dirac.tests.browser.tasks.macros :refer [with-transcript-suite]]
             [dirac.tests.browser.tasks.transcript :refer [execute-transcript-test!]]))

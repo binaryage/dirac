@@ -1,10 +1,10 @@
 (ns dirac.background.debugging
-  (:require [dirac.background.logging :refer [log info warn error]]
-            [cljs-http.client :as http]
-            [oops.core :refer [oget]]
-            [dirac.shared.async :refer [<! go-wait go]]
+  (:require [cljs-http.client :as http]
+            [dirac.background.logging :refer [error info log warn]]
             [dirac.settings :refer [get-backend-url-resolution-trials
-                                    get-failed-backend-url-resolution-delay]]))
+                                    get-failed-backend-url-resolution-delay]]
+            [dirac.shared.async :refer [<! go go-wait]]
+            [oops.core :refer [oget]]))
 
 ; -- messages ---------------------------------------------------------------------------------------------------------------
 

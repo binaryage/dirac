@@ -1,6 +1,6 @@
 (ns dirac.shared.async
-  (:require [cljs.core.async :as core-async]
-            [cljs.core]))
+  (:require [cljs.core]
+            [cljs.core.async :as core-async]))
 
 ; this is our minimal core-async wrapper to promote some naming conventions and maybe prevent usage of some anti-patterns
 

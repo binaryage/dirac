@@ -1,10 +1,10 @@
 (ns dirac.options.model
-  (:require [dirac.options.logging :refer [log warn error info]]
-            [dirac.shared.async :refer [<! go-channel close! go]]
-            [oops.core :refer [oget ocall oapply gcall]]
-            [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
+  (:require [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
+            [chromex.ext.storage :as storage]
             [chromex.protocols :as chromex-protocols]
-            [chromex.ext.storage :as storage]))
+            [dirac.options.logging :refer [error info log warn]]
+            [dirac.shared.async :refer [<! close! go go-channel]]
+            [oops.core :refer [gcall oapply ocall oget]]))
 
 ; we keep cached-options atom synced with values in storage
 ; we persist all options in local storage under "options" key as JSON string

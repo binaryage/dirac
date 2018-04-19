@@ -1,10 +1,10 @@
 (ns clj-webdriver.wait
   (:use [clj-webdriver.driver :only [init-driver]])
   (:import clj_webdriver.driver.Driver
-           org.openqa.selenium.WebDriver
-           [org.openqa.selenium.support.ui WebDriverWait]
            [java.util.concurrent TimeUnit]
-           (java.util.function Function)))
+           (java.util.function Function)
+           [org.openqa.selenium.support.ui WebDriverWait]
+           org.openqa.selenium.WebDriver))
 
 ;; ## Wait Functionality ##
 (defprotocol IWait

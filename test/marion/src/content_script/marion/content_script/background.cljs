@@ -1,13 +1,13 @@
 (ns marion.content-script.background
-  (:require [dirac.shared.async :refer [<! go-channel go go-wait alts! close!]]
-            [oops.core :refer [oget ocall oapply]]
-            [chromex.protocols :refer [post-message! on-disconnect!]]
-            [chromex.ext.runtime :as runtime]
-            [marion.content-script.logging :refer [log info warn error]]
+  (:require [chromex.ext.runtime :as runtime]
+            [chromex.protocols :refer [on-disconnect! post-message!]]
+            [dirac.settings :refer [get-marion-reconnection-attempt-delay
+                                    get-marion-stable-connection-timeout]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait]]
+            [marion.content-script.logging :refer [error info log warn]]
             [marion.content-script.page :as page]
             [marion.content-script.state :as state]
-            [dirac.settings :refer [get-marion-stable-connection-timeout
-                                    get-marion-reconnection-attempt-delay]]))
+            [oops.core :refer [oapply ocall oget]]))
 
 ; -- message handlers -------------------------------------------------------------------------------------------------------
 

@@ -1,10 +1,10 @@
 (ns dirac.nrepl.compilers
-  (:require [clojure.tools.logging :as log]
-            [cljs.env :as cljs-env]
-            [dirac.nrepl.state :as state]
-            [dirac.nrepl.sessions :as sessions]
+  (:require [cljs.env :as cljs-env]
+            [clojure.tools.logging :as log]
+            [dirac.lib.utils :as utils]
             [dirac.nrepl.figwheel :as figwheel]
-            [dirac.lib.utils :as utils])
+            [dirac.nrepl.sessions :as sessions]
+            [dirac.nrepl.state :as state])
   (:import (java.util.regex Pattern)))
 
 (defn make-compiler-id [session-id number]

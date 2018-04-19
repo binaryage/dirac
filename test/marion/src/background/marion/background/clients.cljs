@@ -1,11 +1,11 @@
 (ns marion.background.clients
-  (:require [dirac.shared.async :refer [<! go-channel go-wait go]]
-            [oops.core :refer [oget ocall oapply]]
-            [chromex.protocols :refer [post-message! get-sender]]
-            [marion.background.logging :refer [log info warn error]]
+  (:require [chromex.protocols :refer [get-sender post-message!]]
+            [dirac.shared.async :refer [<! go go-channel go-wait]]
             [marion.background.feedback :as feedback]
+            [marion.background.helpers :as helpers]
+            [marion.background.logging :refer [error info log warn]]
             [marion.background.notifications :as notifications]
-            [marion.background.helpers :as helpers]))
+            [oops.core :refer [oapply ocall oget]]))
 
 ; clients are marion content scripts connected to this marion background page:
 ;   * some clients may be scenario pages

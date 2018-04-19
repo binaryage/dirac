@@ -1,8 +1,8 @@
 (ns dirac.automation.test
   (:require-macros [dirac.automation.test :refer [with-captured-output]])
   (:require [cljs.test :refer [report]]
-            [dirac.shared.utils]
-            [dirac.automation.transcript-host :as transcript-host]))
+            [dirac.automation.transcript-host :as transcript-host]
+            [dirac.shared.utils]))
 
 ; this namespace exists to override standard cljs.test behaviour
 ;   * we want to post-process cljs.test reporting output (styling and new lines)

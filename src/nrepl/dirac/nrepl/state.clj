@@ -1,6 +1,6 @@
 (ns dirac.nrepl.state
-  (:require [dirac.nrepl.helpers :as helpers]
-            [clojure.tools.logging :as log]))
+  (:require [clojure.tools.logging :as log]
+            [dirac.nrepl.helpers :as helpers]))
 
 ; -- global state -----------------------------------------------------------------------------------------------------------
 

@@ -1,17 +1,17 @@
 (ns dirac.tests.browser.runner
-  (:require [clojure.test :refer :all]
-            [environ.core :refer [env]]
-            [clansi :refer [style]]
+  (:require [clansi :refer [style]]
+            [clojure.test :refer :all]
             [dirac.logging :as logging]
             [dirac.test-lib.agent :as test-agent]
+            [dirac.test-lib.agent :refer [with-dirac-agent]]
             [dirac.test-lib.chrome-browser :refer [with-browser]]
             [dirac.test-lib.fixtures-web-server :refer [with-fixtures-web-server]]
             [dirac.test-lib.nrepl-server :refer [with-nrepl-server]]
-            [dirac.test-lib.agent :refer [with-dirac-agent]]
-            [dirac.test-lib.taxi :refer [with-taxi-setup]]
             [dirac.test-lib.nrepl-server :as test-nrepl-server]
-            [dirac.tests.browser.tasks.transcript-streamer-server :refer [with-transcript-streamer-server]])
-  (:import (java.util.logging Logger Level)))
+            [dirac.test-lib.taxi :refer [with-taxi-setup]]
+            [dirac.tests.browser.tasks.transcript-streamer-server :refer [with-transcript-streamer-server]]
+            [environ.core :refer [env]])
+  (:import (java.util.logging Level Logger)))
 
 ; this test runner runs tests against real chrome browser using chrome driver
 

@@ -4,7 +4,7 @@
 ;; faster and more intuitive for "common" use-cases.
 ;;
 (ns clj-webdriver.form-helpers
-  (:use [clj-webdriver.core :only [input-text find-elements]])
+  (:use [clj-webdriver.core :only [find-elements input-text]])
   (:require clj-webdriver.driver)
   (:import clj_webdriver.driver.Driver
            org.openqa.selenium.WebDriver))

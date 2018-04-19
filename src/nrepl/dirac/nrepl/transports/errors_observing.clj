@@ -1,9 +1,9 @@
 (ns dirac.nrepl.transports.errors-observing
-  (:require [clojure.tools.nrepl.transport :as nrepl-transport]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
+            [clojure.tools.nrepl.transport :as nrepl-transport]
             [dirac.nrepl.helpers :as helpers])
-  (:import (clojure.tools.nrepl.transport Transport)
-           (clojure.lang IDeref)))
+  (:import (clojure.lang IDeref)
+           (clojure.tools.nrepl.transport Transport)))
 
 ; This is a little trick due to unfortunate fact that clojure.tools.nrepl.middleware.interruptible-eval/evaluate does not
 ; offer configurable :caught option. The problem is that eval errors in Clojure REPL are not printed to stderr

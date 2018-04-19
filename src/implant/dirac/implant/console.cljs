@@ -1,7 +1,7 @@
 (ns dirac.implant.console
-  (:require [oops.core :refer [oget ocall oapply]]
-            [dirac.implant.logging :refer [log warn error]]
-            [dirac.implant.helpers :refer [get-console-view]]))
+  (:require [dirac.implant.helpers :refer [get-console-view]]
+            [dirac.implant.logging :refer [error log warn]]
+            [oops.core :refer [oapply ocall oget]]))
 
 (defonce ^:dynamic *last-prompt-ns* nil)
 (defonce ^:dynamic *last-prompt-compiler* nil)

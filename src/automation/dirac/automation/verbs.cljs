@@ -1,11 +1,11 @@
 (ns dirac.automation.verbs
   "Low-level automation API"
-  (:require [dirac.shared.async :refer [put! <! go-channel go]]
-            [oops.core :refer [oget oset! ocall oapply]]
-            [dirac.automation.logging :refer [log error]]
-            [dirac.automation.transcript-host :as transcript]
+  (:require [dirac.automation.logging :refer [error log]]
             [dirac.automation.matchers :as matchers]
-            [dirac.automation.messages :as messages]))
+            [dirac.automation.messages :as messages]
+            [dirac.automation.transcript-host :as transcript]
+            [dirac.shared.async :refer [<! go go-channel put!]]
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 ; -- automation lower-level support -----------------------------------------------------------------------------------------
 

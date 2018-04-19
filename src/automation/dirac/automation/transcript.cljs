@@ -1,5 +1,5 @@
 (ns dirac.automation.transcript
-  (:require [oops.core :refer [oget oset! ocall oapply gcall! ocall! gcall]]))
+  (:require [oops.core :refer [gcall gcall! oapply ocall ocall! oget oset!]]))
 
 ; transcript is a <pre> tag which collects textual messages about test execution:
 ; 1) issued automation commands

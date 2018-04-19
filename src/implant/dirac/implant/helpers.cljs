@@ -1,6 +1,6 @@
 (ns dirac.implant.helpers
-  (:require [oops.core :refer [oget ocall oapply gget gcall gcall!]]
-            [dirac.implant.logging :refer [log warn error]]))
+  (:require [dirac.implant.logging :refer [error log warn]]
+            [oops.core :refer [gcall gcall! gget oapply ocall oget]]))
 
 (defn get-url-params []
   (gget "location.search"))

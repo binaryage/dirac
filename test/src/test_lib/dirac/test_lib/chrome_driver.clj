@@ -1,20 +1,20 @@
 (ns dirac.test-lib.chrome-driver
-  (:require [environ.core :refer [env]]
-            [clj-webdriver.taxi :refer :all]
+  (:require [clj-time.local :as time-local]
             [clj-webdriver.driver :refer [init-driver]]
-            [clojure.string :as string]
-            [clojure.java.io :as io]
-            [clojure.core.async :refer [timeout <!!]]
+            [clj-webdriver.taxi :refer :all]
+            [clojure.core.async :refer [<!! timeout]]
             [clojure.core.async.impl.protocols :refer [closed?]]
-            [clj-time.local :as time-local]
+            [clojure.java.io :as io]
+            [clojure.string :as string]
+            [clojure.tools.logging :as log]
             [dirac.settings :refer [get-script-runner-launch-delay]]
-            [clojure.tools.logging :as log])
-  (:import (org.openqa.selenium.chrome ChromeDriver ChromeOptions ChromeDriverService$Builder)
-           (org.openqa.selenium.logging LoggingPreferences LogType)
-           (org.openqa.selenium.remote DesiredCapabilities CapabilityType)
-           (java.nio.file Paths)
+            [environ.core :refer [env]])
+  (:import (java.nio.file Paths)
+           (java.util Date)
            (java.util.logging Level)
-           (java.util Date)))
+           (org.openqa.selenium.chrome ChromeDriver ChromeDriverService$Builder ChromeOptions)
+           (org.openqa.selenium.logging LoggingPreferences LogType)
+           (org.openqa.selenium.remote CapabilityType DesiredCapabilities)))
 
 (def ^:const CHROME_VERSION_PAGE "chrome://version")
 

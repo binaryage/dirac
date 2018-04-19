@@ -14,11 +14,11 @@
 ; see dirac.implant.eval
 ;
 (ns dirac.implant.weasel-client
-  (:require [dirac.implant.logging :refer [log warn info error]]
-            [dirac.shared.async :refer [<! go-channel put! go-wait go]]
+  (:require [clojure.string :as string]
             [dirac.implant.eval :as eval]
+            [dirac.implant.logging :refer [error info log warn]]
             [dirac.lib.ws-client :as ws-client]
-            [clojure.string :as string]))
+            [dirac.shared.async :refer [<! go go-channel go-wait put!]]))
 
 (defonce current-client (atom nil))
 

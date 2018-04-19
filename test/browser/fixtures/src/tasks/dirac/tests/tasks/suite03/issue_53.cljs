@@ -1,7 +1,7 @@
 (ns dirac.tests.tasks.suite03.issue-53
-  (:require [dirac.shared.async :refer [<! go-wait]]
-            [cljs.test :refer-macros [is are]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-console-feedback testing] :as a]))
+  (:require [cljs.test :refer-macros [are is]]
+            [dirac.automation :refer-macros [<!* go-task testing with-console-feedback with-devtools with-scenario] :as a]
+            [dirac.shared.async :refer [<! go-wait]]))
 
 (go-task
   (with-scenario "issue-53"

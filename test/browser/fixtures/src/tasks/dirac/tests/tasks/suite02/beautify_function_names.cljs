@@ -1,9 +1,9 @@
 (ns dirac.tests.tasks.suite02.beautify-function-names
-  (:require [dirac.shared.async :refer [<! go-wait]]
-            [cljs.test :refer-macros [is]]
-            [dirac.shared.utils :refer [line-count]]
-            [dirac.settings :refer [seconds minutes]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options testing] :as a]))
+  (:require [cljs.test :refer-macros [is]]
+            [dirac.automation :refer-macros [<!* go-task testing with-devtools with-options with-scenario] :as a]
+            [dirac.settings :refer [minutes seconds]]
+            [dirac.shared.async :refer [<! go-wait]]
+            [dirac.shared.utils :refer [line-count]]))
 
 (go-task
   (with-scenario "breakpoint"

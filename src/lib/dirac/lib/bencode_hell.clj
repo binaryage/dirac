@@ -1,6 +1,6 @@
 (ns dirac.lib.bencode-hell
-  (:require [clojure.walk :refer [postwalk]]
-            [clojure.edn :as edn]))
+  (:require [clojure.edn :as edn]
+            [clojure.walk :refer [postwalk]]))
 
 ; bencode transport (default for nREPL) cannot be trusted (as of [org.clojure/tools.nrepl "0.2.12"])
 ; the list of quirks I've discovered so far:

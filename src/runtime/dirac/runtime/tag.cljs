@@ -1,9 +1,9 @@
 (ns dirac.runtime.tag
-  (:require [dirac.runtime.util :refer [in-node-context?
+  (:require [dirac.runtime.prefs :as prefs]
+            [dirac.runtime.util :refer [get-browser-platform-info
+                                        get-browser-version-info
                                         get-js-context-description
-                                        get-browser-platform-info
-                                        get-browser-version-info]]
-            [dirac.runtime.prefs :as prefs]))
+                                        in-node-context?]]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 

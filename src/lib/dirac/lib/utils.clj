@@ -1,5 +1,5 @@
 (ns dirac.lib.utils
-  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+  (:require [clojure.core.async :refer [<! <!! >!! alts!! chan close! go go-loop put! timeout]]
             [clojure.pprint :refer [pprint]]
             [clojure.string :as string]
             [env-config.core :as env-config]))
