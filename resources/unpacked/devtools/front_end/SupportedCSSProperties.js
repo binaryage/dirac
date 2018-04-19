@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='67.0.3394.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='ea9cbd5201912cdd2da9ebca711fc629f774972c';
+Protocol.BakedSupportedCSSPropertiesChromeTag='68.0.3400.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='5e239d3f067aa46512615434149b22d954061e92';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -265,7 +265,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "justify-self"},\n'
 + ' {"name": "left"},\n'
 + ' {"inherited": true, "name": "letter-spacing"},\n'
-+ ' {"svg": true, "name": "lighting-color"},\n'
++ ' {"name": "lighting-color", "svg": true},\n'
 + ' {"name": "line-break", "inherited": true},\n'
 + ' {"name": "line-height", "inherited": true},\n'
 + ' {"name": "line-height-step", "inherited": true},\n'
