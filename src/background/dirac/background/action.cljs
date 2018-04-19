@@ -1,6 +1,5 @@
 (ns dirac.background.action
   (:require [chromex.ext.browser-action :as browser-action]
-            [chromex.logging :refer-macros [error group group-end info log warn]]
             [dirac.shared.async :refer [<! go go-channel put!]]
             [dirac.shared.sugar :refer [go-check-tab-exists?]]))
 
