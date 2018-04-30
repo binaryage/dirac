@@ -225,7 +225,11 @@ UI.SuggestBox = class {
     titleElement.createChild('span', 'post-query').textContent = displayText.substring(index > -1 ? index + query.length : 0);
     element.createChild("span", "epilogue").textContent = (item.epilogue || "").trimEnd(50);
     titleElement.createChild('span', 'spacer');
-    if (item.subtitle) {
+    if (item.subtitleRenderer) {
+      const subtitleElement = item.subtitleRenderer.call(null);
+      subtitleElement.classList.add('suggestion-subtitle');
+      element.appendChild(subtitleElement);
+    } else if (item.subtitle) {
       const subtitleElement = element.createChild('span', 'suggestion-subtitle');
       subtitleElement.textContent = item.subtitle.trimEnd(maxTextLength - displayText.length);
     }
@@ -391,8 +395,17 @@ UI.SuggestBox = class {
 };
 
 /**
- * @typedef {!{text: string, subtitle: (string|undefined), iconType: (string|undefined), priority: (number|undefined), isSecondary: (boolean|undefined), title: (string|undefined),
- * prologue: (string|undefined), epilogue: (string|undefined)}}
+ * @typedef {{
+ *      text: string,
+ *      title: (string|undefined),
+ *      subtitle: (string|undefined),
+ *      iconType: (string|undefined),
+ *      priority: (number|undefined),
+ *      isSecondary: (boolean|undefined),
+ *      subtitleRenderer: (function():!Element|undefined),
+ *      prologue: (string|undefined),
+ *      epilogue: (string|undefined)
+ * }}
  */
 UI.SuggestBox.Suggestion;
 

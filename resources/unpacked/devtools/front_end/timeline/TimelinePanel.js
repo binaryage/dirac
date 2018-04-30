@@ -55,13 +55,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     this._historyManager = new Timeline.TimelineHistoryManager();
 
-    /** @type {!Array<!TimelineModel.TimelineModelFilter>} */
-    this._filters = [];
-    if (!Runtime.experiments.isEnabled('timelineShowAllEvents')) {
-      this._filters.push(Timeline.TimelineUIUtils.visibleEventsFilter());
-      this._filters.push(new TimelineModel.ExcludeTopLevelFilter());
-    }
-
     /** @type {?Timeline.PerformanceModel} */
     this._performanceModel = null;
 
@@ -105,7 +98,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     SDK.targetManager.addModelListener(
         SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._loadEventFired, this);
 
-    this._flameChart = new Timeline.TimelineFlameChartView(this, this._filters);
+    this._flameChart = new Timeline.TimelineFlameChartView(this);
     this._searchableView = new UI.SearchableView(this._flameChart);
     this._searchableView.setMinimumSize(0, 100);
     this._searchableView.element.classList.add('searchable-view');
@@ -416,7 +409,8 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._overviewControls.push(new Timeline.TimelineEventOverviewFrames());
     this._overviewControls.push(new Timeline.TimelineEventOverviewCPUActivity());
     this._overviewControls.push(new Timeline.TimelineEventOverviewNetwork());
-    if (this._showScreenshotsSetting.get())
+    if (this._showScreenshotsSetting.get() && this._performanceModel &&
+        this._performanceModel.frameModel().frames().length)
       this._overviewControls.push(new Timeline.TimelineFilmStripOverview());
     if (this._showMemorySetting.get())
       this._overviewControls.push(new Timeline.TimelineEventOverviewMemory());
@@ -558,6 +552,15 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   /**
+   * @param {!Timeline.PerformanceModel} model
+   */
+  _applyFilters(model) {
+    if (model.timelineModel().isGenericTrace() || Runtime.experiments.isEnabled('timelineShowAllEvents'))
+      return;
+    model.setFilters([Timeline.TimelineUIUtils.visibleEventsFilter(), new TimelineModel.ExcludeTopLevelFilter()]);
+  }
+
+  /**
    * @param {?Timeline.PerformanceModel} model
    */
   _setModel(model) {
@@ -566,8 +569,11 @@ Timeline.TimelinePanel = class extends UI.Panel {
           Timeline.PerformanceModel.Events.WindowChanged, this._onModelWindowChanged, this);
     }
     this._performanceModel = model;
+    if (model)
+      this._applyFilters(model);
     this._flameChart.setModel(model);
 
+    this._updateOverviewControls();
     this._overviewPane.reset();
     if (model) {
       this._performanceModel.addEventListener(
@@ -776,7 +782,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
       case Timeline.TimelineSelection.Type.Range:
         return null;
       case Timeline.TimelineSelection.Type.TraceEvent:
-        return this._performanceModel.frameModel().filteredFrames(selection._endTime, selection._endTime)[0];
+        return this._performanceModel.frameModel().frames(selection._endTime, selection._endTime)[0];
       default:
         console.assert(false, 'Should never be reached');
         return null;
@@ -823,7 +829,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
       const endTime = event.endTime || event.startTime;
       if (SDK.TracingModel.isTopLevelEvent(event) && endTime < time)
         break;
-      if (TimelineModel.TimelineModel.isVisible(this._filters, event) && endTime >= time) {
+      if (this._performanceModel.isVisible(event) && endTime >= time) {
         this.select(Timeline.TimelineSelection.fromTraceEvent(event));
         return;
       }
