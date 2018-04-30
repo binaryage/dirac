@@ -9,6 +9,8 @@ Timeline.PerformanceModel = class extends Common.Object {
     this._mainTarget = null;
     /** @type {?SDK.TracingModel} */
     this._tracingModel = null;
+    /** @type {!Array<!TimelineModel.TimelineModelFilter>} */
+    this._filters = [];
 
     this._timelineModel = new TimelineModel.TimelineModel();
     this._frameModel =
@@ -49,11 +51,33 @@ Timeline.PerformanceModel = class extends Common.Object {
   }
 
   /**
+   * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
+   */
+  setFilters(filters) {
+    this._filters = filters;
+  }
+
+  /**
+   * @return {!Array<!TimelineModel.TimelineModelFilter>}
+   */
+  filters() {
+    return this._filters;
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {boolean}
+   */
+  isVisible(event) {
+    return this._filters.every(f => f.accept(event));
+  }
+
+  /**
    * @param {!SDK.TracingModel} model
    */
   setTracingModel(model) {
     this._tracingModel = model;
-    this._timelineModel.setEvents(model, !this._mainTarget);
+    this._timelineModel.setEvents(model);
 
     let inputEvents = null;
     let animationEvents = null;
