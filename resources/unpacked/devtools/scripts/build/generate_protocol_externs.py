@@ -38,9 +38,8 @@ except ImportError:
 
 sys.path.append(
     path.normpath(
-        path.join(
-            path.dirname(path.abspath(__file__)),
-            os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'inspector_protocol')))
+        path.join(os.environ['DIRAC_CHROMIUM_MIRROR_DIR'], 'third_party', 'inspector_protocol')))
+
 import pdl  # pylint: disable=F0401
 
 type_traits = {
