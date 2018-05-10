@@ -114,7 +114,7 @@ Main.Main = class {
     Runtime.experiments.register('applyCustomStylesheet', 'Allow custom UI themes');
     Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
     Runtime.experiments.register('colorContrastRatio', 'Color contrast ratio line in color picker', true);
-    Runtime.experiments.register('consoleBelowPrompt', 'Console below-prompt UI', true);
+    Runtime.experiments.register('consoleBelowPrompt', 'Eager evaluation');
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Runtime.experiments.register('nativeHeapProfiler', 'Native memory sampling heap profiler', true);
@@ -149,7 +149,8 @@ Main.Main = class {
         Runtime.experiments.enableForTest('consoleBelowPrompt');
     }
 
-    Runtime.experiments.setDefaultExperiments(['colorContrastRatio', 'stepIntoAsync', 'oopifInlineDOM']);
+    Runtime.experiments.setDefaultExperiments(
+        ['colorContrastRatio', 'stepIntoAsync', 'oopifInlineDOM', 'consoleBelowPrompt']);
   }
 
   /**
@@ -392,7 +393,8 @@ Main.Main = class {
     if (event.handled)
       return;
 
-    if (!UI.Dialog.hasInstance() && UI.inspectorView.currentPanelDeprecated()) {
+    if (!UI.Dialog.hasInstance() && UI.inspectorView.currentPanelDeprecated() &&
+        UI.inspectorView.currentPanelDeprecated().hasFocus()) {
       UI.inspectorView.currentPanelDeprecated().handleShortcut(event);
       if (event.handled) {
         event.consume(true);

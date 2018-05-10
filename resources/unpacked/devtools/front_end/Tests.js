@@ -1110,12 +1110,30 @@
     this.releaseControl();
   };
 
+  TestSuite.prototype.testDisposeEmptyBrowserContext = async function(url) {
+    this.takeControl();
+    const targetAgent = SDK.targetManager.mainTarget().targetAgent();
+    const {browserContextId} = await targetAgent.invoke_createBrowserContext();
+    const response1 = await targetAgent.invoke_getBrowserContexts();
+    this.assertEquals(response1.browserContextIds.length, 1);
+    await targetAgent.invoke_disposeBrowserContext({browserContextId});
+    const response2 = await targetAgent.invoke_getBrowserContexts();
+    this.assertEquals(response2.browserContextIds.length, 0);
+    this.releaseControl();
+  };
+
   TestSuite.prototype.testCreateBrowserContext = async function(url) {
     this.takeControl();
     const browserContextIds = [];
+    const targetAgent = SDK.targetManager.mainTarget().targetAgent();
 
     const target1 = await createIsolatedTarget(url);
     const target2 = await createIsolatedTarget(url);
+
+    const response = await targetAgent.invoke_getBrowserContexts();
+    this.assertEquals(response.browserContextIds.length, 2);
+    this.assertTrue(response.browserContextIds.includes(browserContextIds[0]));
+    this.assertTrue(response.browserContextIds.includes(browserContextIds[1]));
 
     await evalCode(target1, 'localStorage.setItem("page1", "page1")');
     await evalCode(target2, 'localStorage.setItem("page2", "page2")');
@@ -1125,13 +1143,12 @@
     this.assertEquals(await evalCode(target2, 'localStorage.getItem("page1")'), null);
     this.assertEquals(await evalCode(target2, 'localStorage.getItem("page2")'), 'page2');
 
-    this.assertEquals(await disposeBrowserContext(browserContextIds[0]), false);
-    this.assertEquals(await disposeBrowserContext(browserContextIds[1]), false);
-
-    await closeTarget(target1);
-    await closeTarget(target2);
-    this.assertEquals(await disposeBrowserContext(browserContextIds[0]), true);
-    this.assertEquals(await disposeBrowserContext(browserContextIds[1]), true);
+    const removedTargets = [];
+    SDK.targetManager.observeTargets({targetAdded: () => {}, targetRemoved: target => removedTargets.push(target)});
+    await Promise.all([disposeBrowserContext(browserContextIds[0]), disposeBrowserContext(browserContextIds[1])]);
+    this.assertEquals(removedTargets.length, 2);
+    this.assertEquals(removedTargets.indexOf(target1) !== -1, true);
+    this.assertEquals(removedTargets.indexOf(target2) !== -1, true);
 
     this.releaseControl();
 
@@ -1140,7 +1157,6 @@
      * @return {!Promise<!SDK.Target>}
      */
     async function createIsolatedTarget(url) {
-      const targetAgent = SDK.targetManager.mainTarget().targetAgent();
       const {browserContextId} = await targetAgent.invoke_createBrowserContext();
       browserContextIds.push(browserContextId);
 
@@ -1154,15 +1170,9 @@
       return target;
     }
 
-    async function closeTarget(target) {
-      const targetAgent = SDK.targetManager.mainTarget().targetAgent();
-      await targetAgent.invoke_closeTarget({targetId: target.id()});
-    }
-
     async function disposeBrowserContext(browserContextId) {
       const targetAgent = SDK.targetManager.mainTarget().targetAgent();
-      const {success} = await targetAgent.invoke_disposeBrowserContext({browserContextId});
-      return success;
+      await targetAgent.invoke_disposeBrowserContext({browserContextId});
     }
 
     async function evalCode(target, code) {

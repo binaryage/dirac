@@ -703,6 +703,7 @@ all_devtools_files = [
   "front_end/terminal/xterm.js/build/xterm.js",
   "front_end/test_runner/module.json",
   "front_end/test_runner/TestRunner.js",
+  "front_end/text_editor/autocompleteTooltip.css",
   "front_end/text_editor/cmdevtools.css",
   "front_end/text_editor/CodeMirrorTextEditor.js",
   "front_end/text_editor/CodeMirrorUtils.js",
@@ -1128,7 +1129,7 @@ action("generate_devtools_grd") {
 
   # Bundle remote modules in ChromeOS.
   if (is_chromeos) {
-    grd_files += generated_remote_modules
+    grd_files += generated_remote_modules + devtools_emulated_devices_images
   }
 
   inputs = grd_files + devtools_image_files

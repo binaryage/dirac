@@ -28,6 +28,7 @@
         "CodeMirrorTextEditor.js"
     ],
     "resources": [
+        "autocompleteTooltip.css",
         "cmdevtools.css"
     ],
     "skip_compilation": [
