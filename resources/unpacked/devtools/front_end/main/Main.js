@@ -150,7 +150,7 @@ Main.Main = class {
     }
 
     Runtime.experiments.setDefaultExperiments(
-        ['colorContrastRatio', 'stepIntoAsync', 'oopifInlineDOM', 'consoleBelowPrompt']);
+        ['colorContrastRatio', 'stepIntoAsync', 'oopifInlineDOM' /* darwin:, 'consoleBelowPrompt' */]);
   }
 
   /**
