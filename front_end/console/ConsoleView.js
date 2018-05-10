@@ -140,7 +140,13 @@ Console.ConsoleView = class extends UI.VBox {
     const settingsToolbarRight = new UI.Toolbar('', settingsPane.element);
     settingsToolbarRight.makeVertical();
     settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(monitoringXHREnabledSetting));
-    settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(this._timestampsSetting));
+    if (this._isBelowPromptEnabled) {
+      const eagerEvalCheckbox = new UI.ToolbarSettingCheckbox(
+          Common.settings.moduleSetting('consoleEagerEval'), ls`Eagerly evaluate text in the prompt`);
+      settingsToolbarRight.appendToolbarItem(eagerEvalCheckbox);
+    } else {
+      settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(this._timestampsSetting));
+    }
     settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(this._consoleHistoryAutocompleteSetting));
     if (!this._showSettingsPaneSetting.get())
       settingsPane.element.classList.add('hidden');
@@ -833,9 +839,11 @@ Console.ConsoleView = class extends UI.VBox {
    * @param {!Event} event
    */
   _messagesClicked(event) {
+    const target = /** @type {?Node} */ (event.target);
     // Do not focus prompt if messages have selection.
     if (!this._messagesElement.hasSelection()) {
-      const clickedOutsideMessageList = event.target === this._messagesElement;
+      const clickedOutsideMessageList =
+          target === this._messagesElement || this._prompt.belowEditorElement().isSelfOrAncestor(target);
       if (clickedOutsideMessageList)
         this._prompt.moveCaretToEndOfPrompt();
       this.focus();
@@ -1168,7 +1176,7 @@ Console.ConsoleView = class extends UI.VBox {
     if (!this._isBelowPromptEnabled)
       return this._messagesElement.isScrolledToBottom();
     const distanceToPromptEditorBottom = this._messagesElement.scrollHeight - this._messagesElement.scrollTop -
-        this._messagesElement.clientHeight - this._prompt.heightBelowEditor();
+        this._messagesElement.clientHeight - this._prompt.belowEditorElement().offsetHeight;
     return distanceToPromptEditorBottom <= 2;
   }
 };

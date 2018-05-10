@@ -7,8 +7,9 @@ ObjectUI.JavaScriptAutocomplete = class {
     /** @type {!Map<string, {date: number, value: !Promise<?Object>}>} */
     this._expressionCache = new Map();
     SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.CommandEvaluated, this._clearCache, this);
+    UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._clearCache, this);
     SDK.targetManager.addModelListener(
-        SDK.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextChanged, this._clearCache, this);
+        SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._clearCache, this);
     SDK.targetManager.addModelListener(
         SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._clearCache, this);
   }
@@ -29,6 +30,43 @@ ObjectUI.JavaScriptAutocomplete = class {
     const [mapCompletions, expressionCompletions] = await Promise.all(
         [this._mapCompletions(trimmedText, query), this._completionsForExpression(trimmedText, query, force)]);
     return mapCompletions.concat(expressionCompletions);
+  }
+
+  /**
+   * @param {string} fullText
+   * @return {!Promise<?{args: !Array<string>, argumentIndex: number}>}
+   */
+  async argumentsHint(fullText) {
+    const functionCall = await Formatter.formatterWorkerPool().findLastFunctionCall(fullText);
+    if (!functionCall)
+      return null;
+    const executionContext = UI.context.flavor(SDK.ExecutionContext);
+    if (!executionContext)
+      return null;
+    const result = await executionContext.evaluate(
+        {
+          expression: functionCall.baseExpression,
+          objectGroup: 'argumentsHint',
+          includeCommandLineAPI: true,
+          silent: true,
+          returnByValue: false,
+          generatePreview: false,
+          throwOnSideEffect: functionCall.possibleSideEffects,
+          timeout: functionCall.possibleSideEffects ? 500 : undefined
+        },
+        /* userGesture */ false, /* awaitPromise */ false);
+    if (!result || result.exceptionDetails || !result.object || result.object.type !== 'function')
+      return null;
+    executionContext.runtimeModel.releaseObjectGroup('argumentsHint');
+
+    const description = result.object.description;
+    if (description.endsWith('{ [native code] }'))
+      return null;  // TODO(einbinder) support native function argument hints
+    const args = await Formatter.formatterWorkerPool().argumentsList(description);
+
+    if (!args.length)
+      return null;
+    return {args, argumentIndex: functionCall.argumentIndex};
   }
 
   /**

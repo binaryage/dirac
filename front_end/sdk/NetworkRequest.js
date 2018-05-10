@@ -72,6 +72,9 @@ SDK.NetworkRequest = class extends Common.Object {
     /** @type {?Protocol.Network.ResourcePriority} */
     this._currentPriority = null;
 
+    /** @type {?Protocol.Network.SignedExchangeInfo} */
+    this._signedExchangeInfo = null;
+
     /** @type {!Common.ResourceType} */
     this._resourceType = Common.resourceTypes.Other;
     /** @type {?Promise<!SDK.NetworkRequest.ContentData>} */
@@ -969,8 +972,14 @@ SDK.NetworkRequest = class extends Common.Object {
    * @param {boolean} isRegex
    * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
    */
-  searchInContent(query, caseSensitive, isRegex) {
-    return SDK.NetworkManager.searchInRequest(this, query, caseSensitive, isRegex);
+  async searchInContent(query, caseSensitive, isRegex) {
+    if (!this._contentDataProvider)
+      return SDK.NetworkManager.searchInRequest(this, query, caseSensitive, isRegex);
+
+    const content = await this.requestContent();
+    if (!content)
+      return [];
+    return Common.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
   }
 
   /**
@@ -1020,6 +1029,20 @@ SDK.NetworkRequest = class extends Common.Object {
    */
   priority() {
     return this._currentPriority || this._initialPriority || null;
+  }
+
+  /**
+   * @param {!Protocol.Network.SignedExchangeInfo} info
+   */
+  setSignedExchangeInfo(info) {
+    this._signedExchangeInfo = info;
+  }
+
+  /**
+   * @return {?Protocol.Network.SignedExchangeInfo}
+   */
+  signedExchangeInfo() {
+    return this._signedExchangeInfo;
   }
 
   /**
