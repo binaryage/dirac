@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='68.0.3415.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='fc8bb6dd95c3ac769660ee6bd32289affcaa321d';
+Protocol.BakedSupportedCSSPropertiesChromeTag='68.0.3426.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='d8f72fd2090cb340d5151f985955c73734353ba3';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -429,6 +429,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "user-zoom"},\n'
 + ' {"svg": true, "name": "vector-effect"},\n'
 + ' {"name": "vertical-align"},\n'
++ ' {"name": "viewport-fit"},\n'
 + ' {"name": "visibility", "inherited": true},\n'
 + ' {"name": "white-space", "inherited": true},\n'
 + ' {"name": "widows", "inherited": true},\n'

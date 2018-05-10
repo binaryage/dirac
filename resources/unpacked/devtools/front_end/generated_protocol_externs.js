@@ -95,7 +95,7 @@ Protocol.Accessibility.AXPropertyName = {
     Relevant: "relevant",
     Root: "root",
     Autocomplete: "autocomplete",
-    Haspopup: "haspopup",
+    HasPopup: "hasPopup",
     Level: "level",
     Multiselectable: "multiselectable",
     Orientation: "orientation",
@@ -2440,10 +2440,11 @@ Protocol.EmulationAgent.prototype.invoke_setTouchEmulationEnabled = function(obj
  * @param {number=} opt_budget
  * @param {number=} opt_maxVirtualTimeTaskStarvationCount
  * @param {boolean=} opt_waitForNavigation
+ * @param {Protocol.Network.TimeSinceEpoch=} opt_initialVirtualTime
  * @return {!Promise<?Protocol.Runtime.Timestamp>}
  */
-Protocol.EmulationAgent.prototype.setVirtualTimePolicy = function(policy, opt_budget, opt_maxVirtualTimeTaskStarvationCount, opt_waitForNavigation) {};
-/** @typedef {!{policy: Protocol.Emulation.VirtualTimePolicy, maxVirtualTimeTaskStarvationCount: (number|undefined), waitForNavigation: (boolean|undefined), budget: (number|undefined)}} */
+Protocol.EmulationAgent.prototype.setVirtualTimePolicy = function(policy, opt_budget, opt_maxVirtualTimeTaskStarvationCount, opt_waitForNavigation, opt_initialVirtualTime) {};
+/** @typedef {!{policy: Protocol.Emulation.VirtualTimePolicy, initialVirtualTime: (Protocol.Network.TimeSinceEpoch|undefined), maxVirtualTimeTaskStarvationCount: (number|undefined), waitForNavigation: (boolean|undefined), budget: (number|undefined)}} */
 Protocol.EmulationAgent.SetVirtualTimePolicyRequest;
 /** @typedef {!{virtualTimeBase: Protocol.Runtime.Timestamp, virtualTimeTicksBase: number}} */
 Protocol.EmulationAgent.SetVirtualTimePolicyResponse;
@@ -3987,6 +3988,7 @@ Protocol.Network.BlockedReason = {
     Origin: "origin",
     Inspector: "inspector",
     SubresourceFilter: "subresource-filter",
+    ContentType: "content-type",
     Other: "other"
 };
 
@@ -4049,6 +4051,9 @@ Protocol.Network.InterceptionStage = {
 
 /** @typedef {!{urlPattern:(string|undefined), resourceType:(Protocol.Page.ResourceType|undefined), interceptionStage:(Protocol.Network.InterceptionStage|undefined)}} */
 Protocol.Network.RequestPattern;
+
+/** @typedef {!{outerResponse:(Protocol.Network.Response)}} */
+Protocol.Network.SignedExchangeInfo;
 /** @interface */
 Protocol.NetworkDispatcher = function() {};
 /**
@@ -4120,6 +4125,11 @@ Protocol.NetworkDispatcher.prototype.requestWillBeSent = function(requestId, loa
  * @param {Protocol.Network.MonotonicTime} timestamp
  */
 Protocol.NetworkDispatcher.prototype.resourceChangedPriority = function(requestId, newPriority, timestamp) {};
+/**
+ * @param {Protocol.Network.RequestId} requestId
+ * @param {Protocol.Network.SignedExchangeInfo} info
+ */
+Protocol.NetworkDispatcher.prototype.signedExchangeReceived = function(requestId, info) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.LoaderId} loaderId
@@ -5055,6 +5065,20 @@ Protocol.PageAgent.CloseResponse;
 Protocol.PageAgent.prototype.invoke_close = function(obj) {};
 
 /**
+ * @param {string} state
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.setWebLifecycleState = function(state) {};
+/** @typedef {!{state: string}} */
+Protocol.PageAgent.SetWebLifecycleStateRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.SetWebLifecycleStateResponse;
+/**
+ * @param {!Protocol.PageAgent.SetWebLifecycleStateRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.SetWebLifecycleStateResponse>} */
+Protocol.PageAgent.prototype.invoke_setWebLifecycleState = function(obj) {};
+
+/**
  * @return {!Promise<undefined>}
  */
 Protocol.PageAgent.prototype.stopScreencast = function() {};
@@ -5081,6 +5105,7 @@ Protocol.Page.ResourceType = {
     EventSource: "EventSource",
     WebSocket: "WebSocket",
     Manifest: "Manifest",
+    SignedExchange: "SignedExchange",
     Other: "Other"
 };
 
@@ -5851,6 +5876,19 @@ Protocol.TargetAgent.CreateBrowserContextResponse;
 Protocol.TargetAgent.prototype.invoke_createBrowserContext = function(obj) {};
 
 /**
+ * @return {!Promise<?Array<Protocol.Target.BrowserContextID>>}
+ */
+Protocol.TargetAgent.prototype.getBrowserContexts = function() {};
+/** @typedef {Object|undefined} */
+Protocol.TargetAgent.GetBrowserContextsRequest;
+/** @typedef {!{browserContextIds: !Array<Protocol.Target.BrowserContextID>}} */
+Protocol.TargetAgent.GetBrowserContextsResponse;
+/**
+ * @param {!Protocol.TargetAgent.GetBrowserContextsRequest} obj
+ * @return {!Promise<!Protocol.TargetAgent.GetBrowserContextsResponse>} */
+Protocol.TargetAgent.prototype.invoke_getBrowserContexts = function(obj) {};
+
+/**
  * @param {string} url
  * @param {number=} opt_width
  * @param {number=} opt_height
@@ -5885,12 +5923,12 @@ Protocol.TargetAgent.prototype.invoke_detachFromTarget = function(obj) {};
 
 /**
  * @param {Protocol.Target.BrowserContextID} browserContextId
- * @return {!Promise<?boolean>}
+ * @return {!Promise<undefined>}
  */
 Protocol.TargetAgent.prototype.disposeBrowserContext = function(browserContextId) {};
 /** @typedef {!{browserContextId: Protocol.Target.BrowserContextID}} */
 Protocol.TargetAgent.DisposeBrowserContextRequest;
-/** @typedef {!{success: boolean}} */
+/** @typedef {Object|undefined} */
 Protocol.TargetAgent.DisposeBrowserContextResponse;
 /**
  * @param {!Protocol.TargetAgent.DisposeBrowserContextRequest} obj
