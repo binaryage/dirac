@@ -1,5 +1,5 @@
 (ns dirac.automation.helpers
-  (:require [oops.core :refer [gget oget oset! gcall ocall oapply gcall! gget]])
+  (:require [oops.core :refer [gcall gcall! gget gget oapply ocall oget oset!]])
   (:import goog.Uri))
 
 (defn get-body-el []

@@ -64,6 +64,15 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
   }
 
   /**
+   * @param {!UI.Infobar} infobar
+   */
+  attachInfobar(infobar) {
+    this.element.insertBefore(infobar.element, this.element.firstChild);
+    infobar.setParentView(this);
+    this.doResize();
+  }
+
+  /**
    * @param {!Array.<string>} lines
    * @return {string}
    */

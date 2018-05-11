@@ -1,23 +1,23 @@
 (ns dirac.nrepl.utils
   "High-level helper methods possibly depending on mutable global state."
   (:require [clojure.tools.logging :as log]
+            [dirac.lib.utils :as utils]
             [dirac.nrepl.compilers :as compilers]
-            [dirac.nrepl.protocol :as protocol]
-            [dirac.nrepl.helpers :as helpers]
-            [dirac.nrepl.eval :as eval]
             [dirac.nrepl.config :as config]
-            [dirac.nrepl.state :as state]
             [dirac.nrepl.debug :as debug]
-            [dirac.nrepl.messages :as messages]
-            [dirac.nrepl.sessions :as sessions]
-            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting]]
+            [dirac.nrepl.eval :as eval]
+            [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.jobs :as jobs]
+            [dirac.nrepl.messages :as messages]
+            [dirac.nrepl.protocol :as protocol]
+            [dirac.nrepl.sessions :as sessions]
+            [dirac.nrepl.state :as state]
             [dirac.nrepl.transports.bencode-workarounds :refer [make-nrepl-message-with-bencode-workarounds]]
             [dirac.nrepl.transports.debug-logging :refer [make-nrepl-message-with-debug-logging]]
             [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
-            [dirac.nrepl.transports.trace-printing :refer [make-nrepl-message-with-trace-printing]]
             [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing]]
-            [dirac.lib.utils :as utils]))
+            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting]]
+            [dirac.nrepl.transports.trace-printing :refer [make-nrepl-message-with-trace-printing]]))
 
 ; -- transport wrappers -----------------------------------------------------------------------------------------------------
 

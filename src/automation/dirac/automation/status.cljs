@@ -1,5 +1,5 @@
 (ns dirac.automation.status
-  (:require [oops.core :refer [oget gcall! ocall! oset! gcall]]))
+  (:require [oops.core :refer [gcall gcall! ocall! oget oset!]]))
 
 ; status is a <div> tag which shows status of fixtures page
 

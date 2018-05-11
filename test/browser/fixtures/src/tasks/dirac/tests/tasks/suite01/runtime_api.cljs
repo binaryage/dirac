@@ -1,7 +1,7 @@
 (ns dirac.tests.tasks.suite01.runtime-api
-  (:require [dirac.shared.async]
-            [cljs.test :refer-macros [is]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools testing] :as a]))
+  (:require [cljs.test :refer-macros [is]]
+            [dirac.automation :refer-macros [<!* go-task testing with-devtools with-scenario] :as a]
+            [dirac.shared.async]))
 
 (go-task
   (with-scenario "runtime-api"

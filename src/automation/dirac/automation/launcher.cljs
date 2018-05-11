@@ -1,10 +1,10 @@
 (ns dirac.automation.launcher
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
+  (:require [dirac.automation.logging :refer [error info log warn]]
+            [dirac.settings :refer [get-kill-task-key get-kill-task-message
+                                    get-launch-task-key get-launch-task-message]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
             [goog.string :as string]
-            [oops.core :refer [oget oset! oset!+ ocall ocall+ oapply gset! gcall!]]
-            [dirac.automation.logging :refer [log warn error info]]
-            [dirac.settings :refer [get-launch-task-key get-launch-task-message
-                                    get-kill-task-key get-kill-task-message]]))
+            [oops.core :refer [gcall! gset! oapply ocall ocall+ oget oset! oset!+]]))
 
 (defn register-task! [task-fn kill-fn]
   (log "registering task...")

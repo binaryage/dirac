@@ -7,8 +7,9 @@ ObjectUI.JavaScriptAutocomplete = class {
     /** @type {!Map<string, {date: number, value: !Promise<?Object>}>} */
     this._expressionCache = new Map();
     SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.CommandEvaluated, this._clearCache, this);
+    UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._clearCache, this);
     SDK.targetManager.addModelListener(
-        SDK.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextChanged, this._clearCache, this);
+        SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._clearCache, this);
     SDK.targetManager.addModelListener(
         SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._clearCache, this);
   }
@@ -18,52 +19,54 @@ ObjectUI.JavaScriptAutocomplete = class {
   }
 
   /**
-   * @param {string} text
+   * @param {string} fullText
    * @param {string} query
    * @param {boolean=} force
    * @return {!Promise<!UI.SuggestBox.Suggestions>}
    */
-  completionsForTextInCurrentContext(text, query, force) {
-    const clippedExpression = this._clipExpression(text, true);
-    const mapCompletionsPromise = this._mapCompletions(text, query);
-    return this._completionsForExpression(clippedExpression, query, force)
-        .then(completions => mapCompletionsPromise.then(mapCompletions => mapCompletions.concat(completions)));
+  async completionsForTextInCurrentContext(fullText, query, force) {
+    const trimmedText = fullText.trim();
+
+    const [mapCompletions, expressionCompletions] = await Promise.all(
+        [this._mapCompletions(trimmedText, query), this._completionsForExpression(trimmedText, query, force)]);
+    return mapCompletions.concat(expressionCompletions);
   }
 
   /**
-   * @param {string} text
-   * @param {boolean=} allowEndingBracket
-   * @return {string}
+   * @param {string} fullText
+   * @return {!Promise<?{args: !Array<string>, argumentIndex: number}>}
    */
-  _clipExpression(text, allowEndingBracket) {
-    let index;
-    const stopChars = new Set('=:({;,!+-*/&|^<>`'.split(''));
-    const whiteSpaceChars = new Set(' \r\n\t'.split(''));
-    const continueChars = new Set('[. \r\n\t'.split(''));
+  async argumentsHint(fullText) {
+    const functionCall = await Formatter.formatterWorkerPool().findLastFunctionCall(fullText);
+    if (!functionCall)
+      return null;
+    const executionContext = UI.context.flavor(SDK.ExecutionContext);
+    if (!executionContext)
+      return null;
+    const result = await executionContext.evaluate(
+        {
+          expression: functionCall.baseExpression,
+          objectGroup: 'argumentsHint',
+          includeCommandLineAPI: true,
+          silent: true,
+          returnByValue: false,
+          generatePreview: false,
+          throwOnSideEffect: functionCall.possibleSideEffects,
+          timeout: functionCall.possibleSideEffects ? 500 : undefined
+        },
+        /* userGesture */ false, /* awaitPromise */ false);
+    if (!result || result.exceptionDetails || !result.object || result.object.type !== 'function')
+      return null;
+    executionContext.runtimeModel.releaseObjectGroup('argumentsHint');
 
-    for (index = text.length - 1; index >= 0; index--) {
-      if (stopChars.has(text.charAt(index)))
-        break;
-      if (whiteSpaceChars.has(text.charAt(index)) && !continueChars.has(text.charAt(index - 1)))
-        break;
-    }
-    const clippedExpression = text.substring(index + 1).trim();
-    let bracketCount = 0;
+    const description = result.object.description;
+    if (description.endsWith('{ [native code] }'))
+      return null;  // TODO(einbinder) support native function argument hints
+    const args = await Formatter.formatterWorkerPool().argumentsList(description);
 
-    index = clippedExpression.length - 1;
-    while (index >= 0) {
-      const character = clippedExpression.charAt(index);
-      if (character === ']')
-        bracketCount++;
-      // Allow an open bracket at the end for property completion.
-      if (character === '[' && (index < clippedExpression.length - 1 || !allowEndingBracket)) {
-        bracketCount--;
-        if (bracketCount < 0)
-          break;
-      }
-      index--;
-    }
-    return clippedExpression.substring(index + 1).trim();
+    if (!args.length)
+      return null;
+    return {args, argumentIndex: functionCall.argumentIndex};
   }
 
   /**
@@ -77,15 +80,20 @@ ObjectUI.JavaScriptAutocomplete = class {
     if (!executionContext || !mapMatch)
       return [];
 
-    const clippedExpression = this._clipExpression(text.substring(0, mapMatch.index));
+    const expression = await Formatter.formatterWorkerPool().findLastExpression(text.substring(0, mapMatch.index));
+    if (!expression)
+      return [];
+
     const result = await executionContext.evaluate(
         {
-          expression: clippedExpression,
-          objectGroup: 'completion',
+          expression: expression.baseExpression,
+          objectGroup: 'mapCompletion',
           includeCommandLineAPI: true,
           silent: true,
           returnByValue: false,
-          generatePreview: false
+          generatePreview: false,
+          throwOnSideEffect: expression.possibleSideEffects,
+          timeout: expression.possibleSideEffects ? 500 : undefined
         },
         /* userGesture */ false, /* awaitPromise */ false);
     if (result.error || !!result.exceptionDetails || result.object.subtype !== 'map')
@@ -96,6 +104,7 @@ ObjectUI.JavaScriptAutocomplete = class {
     if (!entriesProperty)
       return [];
     const keysObj = await entriesProperty.value.callFunctionJSONPromise(getEntries);
+    executionContext.runtimeModel.releaseObjectGroup('mapCompletion');
     return gotKeys(Object.keys(keysObj));
 
     /**
@@ -158,25 +167,29 @@ ObjectUI.JavaScriptAutocomplete = class {
   }
 
   /**
-   * @param {string} expressionString
+   * @param {string} fullText
    * @param {string} query
    * @param {boolean=} force
    * @return {!Promise<!UI.SuggestBox.Suggestions>}
    */
-  async _completionsForExpression(expressionString, query, force) {
+  async _completionsForExpression(fullText, query, force) {
     const executionContext = UI.context.flavor(SDK.ExecutionContext);
     if (!executionContext)
       return [];
+    let expression;
+    if (fullText.endsWith('.') || fullText.endsWith('['))
+      expression = await Formatter.formatterWorkerPool().findLastExpression(fullText.substring(0, fullText.length - 1));
+    if (!expression) {
+      if (fullText.endsWith('.'))
+        return [];
+      expression = {baseExpression: '', possibleSideEffects: false};
+    }
+    const needsNoSideEffects = expression.possibleSideEffects;
+    const expressionString = expression.baseExpression;
 
-    const lastIndex = expressionString.length - 1;
 
-    const dotNotation = (expressionString[lastIndex] === '.');
-    const bracketNotation = (expressionString.length > 1 && expressionString[lastIndex] === '[');
-
-    if (dotNotation || bracketNotation)
-      expressionString = expressionString.substr(0, lastIndex);
-    else
-      expressionString = '';
+    const dotNotation = fullText.endsWith('.');
+    const bracketNotation = !!expressionString && fullText.endsWith('[');
 
     // User is entering float value, do not suggest anything.
     if ((expressionString && !isNaN(expressionString)) || (!expressionString && query && !isNaN(query)))
@@ -203,7 +216,9 @@ ObjectUI.JavaScriptAutocomplete = class {
             includeCommandLineAPI: true,
             silent: true,
             returnByValue: false,
-            generatePreview: false
+            generatePreview: false,
+            throwOnSideEffect: needsNoSideEffects,
+            timeout: needsNoSideEffects ? 500 : undefined
           },
           /* userGesture */ false, /* awaitPromise */ false);
       cache = {date: Date.now(), value: resultPromise.then(result => completionsOnGlobal.call(this, result))};
@@ -404,6 +419,8 @@ ObjectUI.JavaScriptAutocomplete = class {
       propertyGroups.push({title: Common.UIString('keywords'), items: keywords});
     }
 
+    /** @type {!Set<string>} */
+    const allProperties = new Set();
     let result = [];
     let lastGroupTitle;
     const regex = /^[a-zA-Z_$\u008F-\uFFFF][a-zA-Z0-9_$\u008F-\uFFFF]*$/;
@@ -425,6 +442,8 @@ ObjectUI.JavaScriptAutocomplete = class {
             property = quoteUsed + property.escapeCharacters(quoteUsed + '\\') + quoteUsed;
           property += ']';
         }
+        if (allProperties.has(property))
+          continue;
 
         if (property.length < query.length)
           continue;
@@ -432,6 +451,7 @@ ObjectUI.JavaScriptAutocomplete = class {
         if (query.length && lowerCaseProperty.indexOf(lowerCaseQuery) === -1)
           continue;
 
+        allProperties.add(property);
         if (property.startsWith(query))
           caseSensitivePrefix.push({text: property, priority: 4});
         else if (lowerCaseProperty.startsWith(lowerCaseQuery))

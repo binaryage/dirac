@@ -95,7 +95,7 @@ Protocol.Accessibility.AXPropertyName = {
     Relevant: "relevant",
     Root: "root",
     Autocomplete: "autocomplete",
-    Haspopup: "haspopup",
+    HasPopup: "hasPopup",
     Level: "level",
     Multiselectable: "multiselectable",
     Orientation: "orientation",
@@ -1954,10 +1954,11 @@ Protocol.DOMSnapshotAgent = function(){};
  * @param {!Array<string>} computedStyleWhitelist
  * @param {boolean=} opt_includeEventListeners
  * @param {boolean=} opt_includePaintOrder
+ * @param {boolean=} opt_includeUserAgentShadowTree
  * @return {!Promise<?Array<Protocol.DOMSnapshot.DOMNode>>}
  */
-Protocol.DOMSnapshotAgent.prototype.getSnapshot = function(computedStyleWhitelist, opt_includeEventListeners, opt_includePaintOrder) {};
-/** @typedef {!{includePaintOrder: (boolean|undefined), includeEventListeners: (boolean|undefined), computedStyleWhitelist: !Array<string>}} */
+Protocol.DOMSnapshotAgent.prototype.getSnapshot = function(computedStyleWhitelist, opt_includeEventListeners, opt_includePaintOrder, opt_includeUserAgentShadowTree) {};
+/** @typedef {!{includePaintOrder: (boolean|undefined), includeEventListeners: (boolean|undefined), computedStyleWhitelist: !Array<string>, includeUserAgentShadowTree: (boolean|undefined)}} */
 Protocol.DOMSnapshotAgent.GetSnapshotRequest;
 /** @typedef {!{layoutTreeNodes: !Array<Protocol.DOMSnapshot.LayoutTreeNode>, domNodes: !Array<Protocol.DOMSnapshot.DOMNode>, computedStyles: !Array<Protocol.DOMSnapshot.ComputedStyle>}} */
 Protocol.DOMSnapshotAgent.GetSnapshotResponse;
@@ -2439,10 +2440,11 @@ Protocol.EmulationAgent.prototype.invoke_setTouchEmulationEnabled = function(obj
  * @param {number=} opt_budget
  * @param {number=} opt_maxVirtualTimeTaskStarvationCount
  * @param {boolean=} opt_waitForNavigation
+ * @param {Protocol.Network.TimeSinceEpoch=} opt_initialVirtualTime
  * @return {!Promise<?Protocol.Runtime.Timestamp>}
  */
-Protocol.EmulationAgent.prototype.setVirtualTimePolicy = function(policy, opt_budget, opt_maxVirtualTimeTaskStarvationCount, opt_waitForNavigation) {};
-/** @typedef {!{policy: Protocol.Emulation.VirtualTimePolicy, maxVirtualTimeTaskStarvationCount: (number|undefined), waitForNavigation: (boolean|undefined), budget: (number|undefined)}} */
+Protocol.EmulationAgent.prototype.setVirtualTimePolicy = function(policy, opt_budget, opt_maxVirtualTimeTaskStarvationCount, opt_waitForNavigation, opt_initialVirtualTime) {};
+/** @typedef {!{policy: Protocol.Emulation.VirtualTimePolicy, initialVirtualTime: (Protocol.Network.TimeSinceEpoch|undefined), maxVirtualTimeTaskStarvationCount: (number|undefined), waitForNavigation: (boolean|undefined), budget: (number|undefined)}} */
 Protocol.EmulationAgent.SetVirtualTimePolicyRequest;
 /** @typedef {!{virtualTimeBase: Protocol.Runtime.Timestamp, virtualTimeTicksBase: number}} */
 Protocol.EmulationAgent.SetVirtualTimePolicyResponse;
@@ -3707,6 +3709,20 @@ Protocol.NetworkAgent.GetResponseBodyForInterceptionResponse;
 Protocol.NetworkAgent.prototype.invoke_getResponseBodyForInterception = function(obj) {};
 
 /**
+ * @param {Protocol.Network.InterceptionId} interceptionId
+ * @return {!Promise<?Protocol.IO.StreamHandle>}
+ */
+Protocol.NetworkAgent.prototype.takeResponseBodyForInterceptionAsStream = function(interceptionId) {};
+/** @typedef {!{interceptionId: Protocol.Network.InterceptionId}} */
+Protocol.NetworkAgent.TakeResponseBodyForInterceptionAsStreamRequest;
+/** @typedef {!{stream: Protocol.IO.StreamHandle}} */
+Protocol.NetworkAgent.TakeResponseBodyForInterceptionAsStreamResponse;
+/**
+ * @param {!Protocol.NetworkAgent.TakeResponseBodyForInterceptionAsStreamRequest} obj
+ * @return {!Promise<!Protocol.NetworkAgent.TakeResponseBodyForInterceptionAsStreamResponse>} */
+Protocol.NetworkAgent.prototype.invoke_takeResponseBodyForInterceptionAsStream = function(obj) {};
+
+/**
  * @param {Protocol.Network.RequestId} requestId
  * @return {!Promise<undefined>}
  */
@@ -3972,6 +3988,7 @@ Protocol.Network.BlockedReason = {
     Origin: "origin",
     Inspector: "inspector",
     SubresourceFilter: "subresource-filter",
+    ContentType: "content-type",
     Other: "other"
 };
 
@@ -4034,6 +4051,9 @@ Protocol.Network.InterceptionStage = {
 
 /** @typedef {!{urlPattern:(string|undefined), resourceType:(Protocol.Page.ResourceType|undefined), interceptionStage:(Protocol.Network.InterceptionStage|undefined)}} */
 Protocol.Network.RequestPattern;
+
+/** @typedef {!{outerResponse:(Protocol.Network.Response)}} */
+Protocol.Network.SignedExchangeInfo;
 /** @interface */
 Protocol.NetworkDispatcher = function() {};
 /**
@@ -4073,13 +4093,14 @@ Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, times
  * @param {Protocol.Page.FrameId} frameId
  * @param {Protocol.Page.ResourceType} resourceType
  * @param {boolean} isNavigationRequest
+ * @param {boolean=} opt_isDownload
  * @param {string=} opt_redirectUrl
  * @param {Protocol.Network.AuthChallenge=} opt_authChallenge
  * @param {Protocol.Network.ErrorReason=} opt_responseErrorReason
  * @param {number=} opt_responseStatusCode
  * @param {Protocol.Network.Headers=} opt_responseHeaders
  */
-Protocol.NetworkDispatcher.prototype.requestIntercepted = function(interceptionId, request, frameId, resourceType, isNavigationRequest, opt_redirectUrl, opt_authChallenge, opt_responseErrorReason, opt_responseStatusCode, opt_responseHeaders) {};
+Protocol.NetworkDispatcher.prototype.requestIntercepted = function(interceptionId, request, frameId, resourceType, isNavigationRequest, opt_isDownload, opt_redirectUrl, opt_authChallenge, opt_responseErrorReason, opt_responseStatusCode, opt_responseHeaders) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
  */
@@ -4104,6 +4125,11 @@ Protocol.NetworkDispatcher.prototype.requestWillBeSent = function(requestId, loa
  * @param {Protocol.Network.MonotonicTime} timestamp
  */
 Protocol.NetworkDispatcher.prototype.resourceChangedPriority = function(requestId, newPriority, timestamp) {};
+/**
+ * @param {Protocol.Network.RequestId} requestId
+ * @param {Protocol.Network.SignedExchangeInfo} info
+ */
+Protocol.NetworkDispatcher.prototype.signedExchangeReceived = function(requestId, info) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.LoaderId} loaderId
@@ -5028,6 +5054,33 @@ Protocol.PageAgent.prototype.invoke_crash = function(obj) {};
 /**
  * @return {!Promise<undefined>}
  */
+Protocol.PageAgent.prototype.close = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.CloseRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.CloseResponse;
+/**
+ * @param {!Protocol.PageAgent.CloseRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.CloseResponse>} */
+Protocol.PageAgent.prototype.invoke_close = function(obj) {};
+
+/**
+ * @param {string} state
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.setWebLifecycleState = function(state) {};
+/** @typedef {!{state: string}} */
+Protocol.PageAgent.SetWebLifecycleStateRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.SetWebLifecycleStateResponse;
+/**
+ * @param {!Protocol.PageAgent.SetWebLifecycleStateRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.SetWebLifecycleStateResponse>} */
+Protocol.PageAgent.prototype.invoke_setWebLifecycleState = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
 Protocol.PageAgent.prototype.stopScreencast = function() {};
 /** @typedef {Object|undefined} */
 Protocol.PageAgent.StopScreencastRequest;
@@ -5052,6 +5105,7 @@ Protocol.Page.ResourceType = {
     EventSource: "EventSource",
     WebSocket: "WebSocket",
     Manifest: "Manifest",
+    SignedExchange: "SignedExchange",
     Other: "Other"
 };
 
@@ -5822,6 +5876,19 @@ Protocol.TargetAgent.CreateBrowserContextResponse;
 Protocol.TargetAgent.prototype.invoke_createBrowserContext = function(obj) {};
 
 /**
+ * @return {!Promise<?Array<Protocol.Target.BrowserContextID>>}
+ */
+Protocol.TargetAgent.prototype.getBrowserContexts = function() {};
+/** @typedef {Object|undefined} */
+Protocol.TargetAgent.GetBrowserContextsRequest;
+/** @typedef {!{browserContextIds: !Array<Protocol.Target.BrowserContextID>}} */
+Protocol.TargetAgent.GetBrowserContextsResponse;
+/**
+ * @param {!Protocol.TargetAgent.GetBrowserContextsRequest} obj
+ * @return {!Promise<!Protocol.TargetAgent.GetBrowserContextsResponse>} */
+Protocol.TargetAgent.prototype.invoke_getBrowserContexts = function(obj) {};
+
+/**
  * @param {string} url
  * @param {number=} opt_width
  * @param {number=} opt_height
@@ -5856,12 +5923,12 @@ Protocol.TargetAgent.prototype.invoke_detachFromTarget = function(obj) {};
 
 /**
  * @param {Protocol.Target.BrowserContextID} browserContextId
- * @return {!Promise<?boolean>}
+ * @return {!Promise<undefined>}
  */
 Protocol.TargetAgent.prototype.disposeBrowserContext = function(browserContextId) {};
 /** @typedef {!{browserContextId: Protocol.Target.BrowserContextID}} */
 Protocol.TargetAgent.DisposeBrowserContextRequest;
-/** @typedef {!{success: boolean}} */
+/** @typedef {Object|undefined} */
 Protocol.TargetAgent.DisposeBrowserContextResponse;
 /**
  * @param {!Protocol.TargetAgent.DisposeBrowserContextRequest} obj
@@ -5963,7 +6030,7 @@ Protocol.Target.SessionID;
 /** @typedef {string} */
 Protocol.Target.BrowserContextID;
 
-/** @typedef {!{targetId:(Protocol.Target.TargetID), type:(string), title:(string), url:(string), attached:(boolean), openerId:(Protocol.Target.TargetID|undefined)}} */
+/** @typedef {!{targetId:(Protocol.Target.TargetID), type:(string), title:(string), url:(string), attached:(boolean), openerId:(Protocol.Target.TargetID|undefined), browserContextId:(Protocol.Target.BrowserContextID|undefined)}} */
 Protocol.Target.TargetInfo;
 
 /** @typedef {!{host:(string), port:(number)}} */
@@ -6294,10 +6361,11 @@ Protocol.DebuggerAgent.prototype.invoke_enable = function(obj) {};
  * @param {boolean=} opt_returnByValue
  * @param {boolean=} opt_generatePreview
  * @param {boolean=} opt_throwOnSideEffect
+ * @param {Protocol.Runtime.TimeDelta=} opt_timeout
  * @return {!Promise<?Protocol.Runtime.RemoteObject>}
  */
-Protocol.DebuggerAgent.prototype.evaluateOnCallFrame = function(callFrameId, expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_returnByValue, opt_generatePreview, opt_throwOnSideEffect) {};
-/** @typedef {!{objectGroup: (string|undefined), includeCommandLineAPI: (boolean|undefined), silent: (boolean|undefined), throwOnSideEffect: (boolean|undefined), generatePreview: (boolean|undefined), returnByValue: (boolean|undefined), callFrameId: Protocol.Debugger.CallFrameId, expression: string}} */
+Protocol.DebuggerAgent.prototype.evaluateOnCallFrame = function(callFrameId, expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_returnByValue, opt_generatePreview, opt_throwOnSideEffect, opt_timeout) {};
+/** @typedef {!{objectGroup: (string|undefined), includeCommandLineAPI: (boolean|undefined), silent: (boolean|undefined), throwOnSideEffect: (boolean|undefined), generatePreview: (boolean|undefined), returnByValue: (boolean|undefined), callFrameId: Protocol.Debugger.CallFrameId, timeout: (Protocol.Runtime.TimeDelta|undefined), expression: string}} */
 Protocol.DebuggerAgent.EvaluateOnCallFrameRequest;
 /** @typedef {!{exceptionDetails: Protocol.Runtime.ExceptionDetails, result: Protocol.Runtime.RemoteObject}} */
 Protocol.DebuggerAgent.EvaluateOnCallFrameResponse;
@@ -6524,6 +6592,21 @@ Protocol.DebuggerAgent.SetBreakpointByUrlResponse;
  * @param {!Protocol.DebuggerAgent.SetBreakpointByUrlRequest} obj
  * @return {!Promise<!Protocol.DebuggerAgent.SetBreakpointByUrlResponse>} */
 Protocol.DebuggerAgent.prototype.invoke_setBreakpointByUrl = function(obj) {};
+
+/**
+ * @param {Protocol.Runtime.RemoteObjectId} objectId
+ * @param {string=} opt_condition
+ * @return {!Promise<?Protocol.Debugger.BreakpointId>}
+ */
+Protocol.DebuggerAgent.prototype.setBreakpointOnFunctionCall = function(objectId, opt_condition) {};
+/** @typedef {!{condition: (string|undefined), objectId: Protocol.Runtime.RemoteObjectId}} */
+Protocol.DebuggerAgent.SetBreakpointOnFunctionCallRequest;
+/** @typedef {!{breakpointId: Protocol.Debugger.BreakpointId}} */
+Protocol.DebuggerAgent.SetBreakpointOnFunctionCallResponse;
+/**
+ * @param {!Protocol.DebuggerAgent.SetBreakpointOnFunctionCallRequest} obj
+ * @return {!Promise<!Protocol.DebuggerAgent.SetBreakpointOnFunctionCallResponse>} */
+Protocol.DebuggerAgent.prototype.invoke_setBreakpointOnFunctionCall = function(obj) {};
 
 /**
  * @param {boolean} active
@@ -7274,10 +7357,11 @@ Protocol.RuntimeAgent.prototype.invoke_enable = function(obj) {};
  * @param {boolean=} opt_userGesture
  * @param {boolean=} opt_awaitPromise
  * @param {boolean=} opt_throwOnSideEffect
+ * @param {Protocol.Runtime.TimeDelta=} opt_timeout
  * @return {!Promise<?Protocol.Runtime.RemoteObject>}
  */
-Protocol.RuntimeAgent.prototype.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_contextId, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise, opt_throwOnSideEffect) {};
-/** @typedef {!{objectGroup: (string|undefined), includeCommandLineAPI: (boolean|undefined), contextId: (Protocol.Runtime.ExecutionContextId|undefined), silent: (boolean|undefined), throwOnSideEffect: (boolean|undefined), generatePreview: (boolean|undefined), returnByValue: (boolean|undefined), expression: string, userGesture: (boolean|undefined), awaitPromise: (boolean|undefined)}} */
+Protocol.RuntimeAgent.prototype.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_contextId, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise, opt_throwOnSideEffect, opt_timeout) {};
+/** @typedef {!{objectGroup: (string|undefined), includeCommandLineAPI: (boolean|undefined), contextId: (Protocol.Runtime.ExecutionContextId|undefined), silent: (boolean|undefined), throwOnSideEffect: (boolean|undefined), generatePreview: (boolean|undefined), returnByValue: (boolean|undefined), timeout: (Protocol.Runtime.TimeDelta|undefined), expression: string, userGesture: (boolean|undefined), awaitPromise: (boolean|undefined)}} */
 Protocol.RuntimeAgent.EvaluateRequest;
 /** @typedef {!{exceptionDetails: Protocol.Runtime.ExceptionDetails, result: Protocol.Runtime.RemoteObject}} */
 Protocol.RuntimeAgent.EvaluateResponse;
@@ -7579,6 +7663,9 @@ Protocol.Runtime.ExceptionDetails;
 
 /** @typedef {number} */
 Protocol.Runtime.Timestamp;
+
+/** @typedef {number} */
+Protocol.Runtime.TimeDelta;
 
 /** @typedef {!{functionName:(string), scriptId:(Protocol.Runtime.ScriptId), url:(string), lineNumber:(number), columnNumber:(number)}} */
 Protocol.Runtime.CallFrame;

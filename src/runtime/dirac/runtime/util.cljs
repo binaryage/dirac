@@ -1,13 +1,13 @@
 (ns dirac.runtime.util
-  (:require-macros [dirac.runtime.util :refer [get-current-browser-name get-current-platform-name]]
-                   [dirac.runtime.oops :refer [oget]])
-  (:require [goog.userAgent :as ua]
-            [goog.object]
-            [goog.labs.userAgent.browser :as ua-browser]
-            [goog.labs.userAgent.platform :as ua-platform]
-            [clojure.string]                                                                                                  ; for dirac.runtime.util macros
+  (:require-macros [dirac.runtime.oops :refer [oget]]
+                   [dirac.runtime.util :refer [get-current-browser-name get-current-platform-name]])
+  (:require [clojure.string]
             [dirac.project :refer [get-current-version]]
-            [dirac.runtime.prefs :as prefs]))
+            [dirac.runtime.prefs :as prefs]
+            [goog.labs.userAgent.browser :as ua-browser]
+            [goog.labs.userAgent.platform :as ua-platform]                                                                                                  ; for dirac.runtime.util macros
+            [goog.object]
+            [goog.userAgent :as ua]))
 
 ; -- version helpers --------------------------------------------------------------------------------------------------------
 

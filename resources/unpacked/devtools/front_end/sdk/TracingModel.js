@@ -103,17 +103,18 @@ SDK.TracingModel = class {
     // Avoid warning for an empty model.
     if (!processes.length)
       return null;
+    const browserMainThreadName = 'CrBrowserMain';
     const browserProcesses = [];
-    const crRendererMainThreads = [];
+    const browserMainThreads = [];
     for (const process of processes) {
       if (process.name().toLowerCase().endsWith('browser'))
         browserProcesses.push(process);
-      crRendererMainThreads.push(...process.sortedThreads().filter(t => t.name() === 'CrBrowserMain'));
+      browserMainThreads.push(...process.sortedThreads().filter(t => t.name() === browserMainThreadName));
     }
-    if (crRendererMainThreads.length === 1)
-      return crRendererMainThreads[0];
+    if (browserMainThreads.length === 1)
+      return browserMainThreads[0];
     if (browserProcesses.length === 1)
-      return browserProcesses[0].threadByName('CrBrowserMain');
+      return browserProcesses[0].threadByName(browserMainThreadName);
     const tracingStartedInBrowser =
         tracingModel.devToolsMetadataEvents().filter(e => e.name === 'TracingStartedInBrowser');
     if (tracingStartedInBrowser.length === 1)
@@ -422,7 +423,7 @@ SDK.TracingModel = class {
   _parsedCategoriesForString(str) {
     let parsedCategories = this._parsedCategories.get(str);
     if (!parsedCategories) {
-      parsedCategories = new Set(str.split(','));
+      parsedCategories = new Set(str ? str.split(',') : []);
       this._parsedCategories.set(str, parsedCategories);
     }
     return parsedCategories;
@@ -496,7 +497,7 @@ SDK.BackingStorage.prototype = {
  */
 SDK.TracingModel.Event = class {
   /**
-   * @param {string} categories
+   * @param {string|undefined} categories
    * @param {string} name
    * @param {!SDK.TracingModel.Phase} phase
    * @param {number} startTime
@@ -504,9 +505,9 @@ SDK.TracingModel.Event = class {
    */
   constructor(categories, name, phase, startTime, thread) {
     /** @type {string} */
-    this.categoriesString = categories;
+    this.categoriesString = categories || '';
     /** @type {!Set<string>} */
-    this._parsedCategories = thread._model._parsedCategoriesForString(categories);
+    this._parsedCategories = thread._model._parsedCategoriesForString(this.categoriesString);
     /** @type {string} */
     this.name = name;
     /** @type {!SDK.TracingModel.Phase} */
@@ -532,8 +533,6 @@ SDK.TracingModel.Event = class {
         payload.cat, payload.name, /** @type {!SDK.TracingModel.Phase} */ (payload.ph), payload.ts / 1000, thread);
     if (payload.args)
       event.addArgs(payload.args);
-    else
-      console.error('Missing mandatory event argument \'args\' at ' + payload.ts / 1000);
     if (typeof payload.dur === 'number')
       event.setEndTime((payload.ts + payload.dur) / 1000);
     const id = SDK.TracingModel._extractId(payload);
@@ -628,7 +627,7 @@ SDK.TracingModel.Event = class {
 
 SDK.TracingModel.ObjectSnapshot = class extends SDK.TracingModel.Event {
   /**
-   * @param {string} category
+   * @param {string|undefined} category
    * @param {string} name
    * @param {number} startTime
    * @param {!SDK.TracingModel.Thread} thread

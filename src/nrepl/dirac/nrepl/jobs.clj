@@ -1,7 +1,7 @@
 (ns dirac.nrepl.jobs
   (:require [clojure.tools.logging :as log]
-            [dirac.nrepl.state :refer [observed-jobs]]
-            [dirac.lib.utils :as utils]))
+            [dirac.lib.utils :as utils]
+            [dirac.nrepl.state :refer [observed-jobs]]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 

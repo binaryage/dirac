@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='67.0.3394.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='ea9cbd5201912cdd2da9ebca711fc629f774972c';
+Protocol.BakedSupportedCSSPropertiesChromeTag='68.0.3426.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='d8f72fd2090cb340d5151f985955c73734353ba3';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -265,7 +265,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "justify-self"},\n'
 + ' {"name": "left"},\n'
 + ' {"inherited": true, "name": "letter-spacing"},\n'
-+ ' {"svg": true, "name": "lighting-color"},\n'
++ ' {"name": "lighting-color", "svg": true},\n'
 + ' {"name": "line-break", "inherited": true},\n'
 + ' {"name": "line-height", "inherited": true},\n'
 + ' {"name": "line-height-step", "inherited": true},\n'
@@ -429,6 +429,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "user-zoom"},\n'
 + ' {"svg": true, "name": "vector-effect"},\n'
 + ' {"name": "vertical-align"},\n'
++ ' {"name": "viewport-fit"},\n'
 + ' {"name": "visibility", "inherited": true},\n'
 + ' {"name": "white-space", "inherited": true},\n'
 + ' {"name": "widows", "inherited": true},\n'

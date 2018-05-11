@@ -1,8 +1,8 @@
 (ns dirac.tests.tasks.suite01.completions
-  (:require [dirac.shared.async :refer [<! go-wait]]
-            [cljs.test :refer-macros [is are]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools chunkify testing] :as a]
-            [clojure.string :as string]))
+  (:require [cljs.test :refer-macros [are is]]
+            [clojure.string :as string]
+            [dirac.automation :refer-macros [<!* chunkify go-task testing with-devtools with-scenario] :as a]
+            [dirac.shared.async :refer [<! go-wait]]))
 
 (go-task
   (with-scenario "completions"

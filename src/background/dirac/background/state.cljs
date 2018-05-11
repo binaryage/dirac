@@ -1,9 +1,9 @@
 (ns dirac.background.state
-  (:require [dirac.background.logging :refer [log info warn error]]
-            [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.protocols :refer [post-message! get-sender get-name]]
+  (:require [chromex.protocols :refer [get-name get-sender post-message!]]
+            [clojure.string :as string]
+            [dirac.background.logging :refer [error info log warn]]
             [dirac.shared.utils :as utils]
-            [clojure.string :as string]))
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 (defonce initial-state
   {:last-devtools-id     0

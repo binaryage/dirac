@@ -1,17 +1,17 @@
 (ns marion.background.content-script
-  (:require [dirac.shared.async :refer [<! go-channel go-wait put! close! alts! go]]
-            [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.protocols :refer [post-message! get-sender]]
+  (:require [chromex.protocols :refer [get-sender post-message!]]
             [dirac.settings :refer [get-marion-open-scenario-timeout]]
-            [marion.background.logging :refer [log info warn error]]
-            [marion.background.helpers :as helpers]
-            [marion.background.feedback :as feedback]
-            [marion.background.notifications :as notifications]
-            [marion.background.dirac :as dirac]
-            [marion.background.clients :as clients]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
+            [dirac.shared.utils :as utils]
             [goog.string :as gstring]
             [goog.string.format]
-            [dirac.shared.utils :as utils]))
+            [marion.background.clients :as clients]
+            [marion.background.dirac :as dirac]
+            [marion.background.feedback :as feedback]
+            [marion.background.helpers :as helpers]
+            [marion.background.logging :refer [error info log warn]]
+            [marion.background.notifications :as notifications]
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 ; -- scenario ids -----------------------------------------------------------------------------------------------------------
 ; we want to provide stable mapping between tab-ids and scenario tabs

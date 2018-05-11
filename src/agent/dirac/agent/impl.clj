@@ -1,12 +1,12 @@
 (ns dirac.agent.impl
-  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+  (:require [clojure.core.async :refer [<! <!! >!! alts!! chan close! go go-loop put! timeout]]
             [clojure.tools.logging :as log]
             [dirac.agent.config :as config]
             [dirac.agent.version :refer [version]]
             [dirac.lib.nrepl-tunnel :as nrepl-tunnel]
             [dirac.lib.utils :as utils])
-  (:import (java.net ConnectException)
-           (clojure.lang ExceptionInfo)))
+  (:import (clojure.lang ExceptionInfo)
+           (java.net ConnectException)))
 
 (defn ^:dynamic failed-to-start-dirac-agent-message [max-boot-trials trial-display nrepl-server-url]
   (str "Failed to start Dirac Agent. "

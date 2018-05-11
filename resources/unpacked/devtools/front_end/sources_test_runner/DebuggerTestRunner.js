@@ -219,6 +219,12 @@ SourcesTestRunner.stepInto = function() {
   });
 };
 
+SourcesTestRunner.stepIntoAsync = function() {
+  Promise.resolve().then(function() {
+    UI.panels.sources._stepIntoAsync();
+  });
+};
+
 SourcesTestRunner.stepOut = function() {
   Promise.resolve().then(function() {
     UI.panels.sources._stepOut();
@@ -399,7 +405,7 @@ SourcesTestRunner.showUISourceCode = function(uiSourceCode, callback) {
   if (sourceFrame.loaded)
     callback(sourceFrame);
   else
-    TestRunner.addSniffer(sourceFrame, 'onTextEditorContentSet', callback && callback.bind(null, sourceFrame));
+    TestRunner.addSniffer(sourceFrame, 'setContent', callback && callback.bind(null, sourceFrame));
 };
 
 SourcesTestRunner.showUISourceCodePromise = function(uiSourceCode) {
@@ -441,24 +447,28 @@ SourcesTestRunner.waitForScriptSource = function(scriptName, callback) {
 };
 
 SourcesTestRunner.setBreakpoint = function(sourceFrame, lineNumber, condition, enabled) {
-  if (!sourceFrame._muted)
-    sourceFrame._setBreakpoint(lineNumber, 0, condition, enabled);
+  const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
+  if (!debuggerPlugin._muted)
+    debuggerPlugin._setBreakpoint(lineNumber, 0, condition, enabled);
 };
 
 SourcesTestRunner.removeBreakpoint = function(sourceFrame, lineNumber) {
-  sourceFrame._breakpointManager.findBreakpoints(sourceFrame._uiSourceCode, lineNumber)[0].remove();
+  const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
+  debuggerPlugin._breakpointManager.findBreakpoints(sourceFrame._uiSourceCode, lineNumber)[0].remove();
 };
 
 SourcesTestRunner.createNewBreakpoint = function(sourceFrame, lineNumber, condition, enabled) {
+  const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
   const promise =
-      new Promise(resolve => TestRunner.addSniffer(sourceFrame.__proto__, '_breakpointWasSetForTest', resolve));
-  sourceFrame._createNewBreakpoint(lineNumber, condition, enabled);
+      new Promise(resolve => TestRunner.addSniffer(debuggerPlugin.__proto__, '_breakpointWasSetForTest', resolve));
+  debuggerPlugin._createNewBreakpoint(lineNumber, condition, enabled);
   return promise;
 };
 
 SourcesTestRunner.toggleBreakpoint = function(sourceFrame, lineNumber, disableOnly) {
-  if (!sourceFrame._muted)
-    sourceFrame._toggleBreakpoint(lineNumber, disableOnly);
+  const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
+  if (!debuggerPlugin._muted)
+    debuggerPlugin._toggleBreakpoint(lineNumber, disableOnly);
 };
 
 SourcesTestRunner.waitBreakpointSidebarPane = function(waitUntilResolved) {
@@ -675,12 +685,11 @@ SourcesTestRunner.evaluateOnCurrentCallFrame = function(code) {
   return TestRunner.debuggerModel.evaluateOnSelectedCallFrame({expression: code, objectGroup: 'console'});
 };
 
-SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints = function(sourceFrame) {
+SourcesTestRunner.waitDebuggerPluginBreakpoints = function(sourceFrame) {
   return waitUpdate().then(checkIfReady);
 
-  function waitUpdate() {
-    return new Promise(
-        resolve => TestRunner.addSniffer(sourceFrame.__proto__, '_breakpointDecorationsUpdatedForTest', resolve));
+  async function waitUpdate() {
+    await TestRunner.addSnifferPromise(Sources.DebuggerPlugin.prototype, '_breakpointDecorationsUpdatedForTest');
   }
 
   function checkIfReady() {
@@ -693,7 +702,7 @@ SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints = function(sourceFrame) {
   }
 };
 
-SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints = function(sourceFrame) {
+SourcesTestRunner.dumpDebuggerPluginBreakpoints = function(sourceFrame) {
   const textEditor = sourceFrame._textEditor;
 
   for (let lineNumber = 0; lineNumber < textEditor.linesCount; ++lineNumber) {
@@ -705,13 +714,13 @@ SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints = function(sourceFrame) {
     TestRunner.addResult(
         'breakpoint at ' + lineNumber + ((disabled ? ' disabled' : '')) + ((conditional ? ' conditional' : '')));
     const range = new TextUtils.TextRange(lineNumber, 0, lineNumber, textEditor.line(lineNumber).length);
-    let bookmarks = textEditor.bookmarks(range, Sources.JavaScriptSourceFrame.BreakpointDecoration._bookmarkSymbol);
+    let bookmarks = textEditor.bookmarks(range, Sources.DebuggerPlugin.BreakpointDecoration._bookmarkSymbol);
     bookmarks = bookmarks.filter(bookmark => !!bookmark.position());
     bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
 
     for (const bookmark of bookmarks) {
       const position = bookmark.position();
-      const element = bookmark[Sources.JavaScriptSourceFrame.BreakpointDecoration._elementSymbolForTest];
+      const element = bookmark[Sources.DebuggerPlugin.BreakpointDecoration._elementSymbolForTest];
       const disabled = element.classList.contains('cm-inline-disabled');
       const conditional = element.classList.contains('cm-inline-conditional');
 
@@ -722,20 +731,30 @@ SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints = function(sourceFrame) {
   }
 };
 
-SourcesTestRunner.clickJavaScriptSourceFrameBreakpoint = function(sourceFrame, lineNumber, index, next) {
+SourcesTestRunner.clickDebuggerPluginBreakpoint = function(sourceFrame, lineNumber, index, next) {
   const textEditor = sourceFrame._textEditor;
   const lineLength = textEditor.line(lineNumber).length;
   const lineRange = new TextUtils.TextRange(lineNumber, 0, lineNumber, lineLength);
-  const bookmarks = textEditor.bookmarks(lineRange, Sources.JavaScriptSourceFrame.BreakpointDecoration._bookmarkSymbol);
+  const bookmarks = textEditor.bookmarks(lineRange, Sources.DebuggerPlugin.BreakpointDecoration._bookmarkSymbol);
   bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
   const bookmark = bookmarks[index];
 
   if (bookmark) {
-    bookmark[Sources.JavaScriptSourceFrame.BreakpointDecoration._elementSymbolForTest].click();
+    bookmark[Sources.DebuggerPlugin.BreakpointDecoration._elementSymbolForTest].click();
   } else {
     TestRunner.addResult(`Could not click on Javascript breakpoint - lineNumber: ${lineNumber}, index: ${index}`);
     next();
   }
+};
+
+SourcesTestRunner.debuggerPlugin = function(sourceFrame) {
+  return sourceFrame._plugins.find(plugin => plugin instanceof Sources.DebuggerPlugin);
+};
+
+SourcesTestRunner.waitUntilDebuggerPluginLoaded = async function(sourceFrame) {
+  while (!SourcesTestRunner.debuggerPlugin(sourceFrame))
+    await TestRunner.addSnifferPromise(sourceFrame, '_ensurePluginsLoaded');
+  return SourcesTestRunner.debuggerPlugin(sourceFrame);
 };
 
 SourcesTestRunner.setEventListenerBreakpoint = function(id, enabled, targetName) {

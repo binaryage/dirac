@@ -1,15 +1,13 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/**
- * @implements {Sources.UISourceCodeFrame.Plugin}
- */
-Sources.JavaScriptCompilerPlugin = class {
+Sources.JavaScriptCompilerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
   /**
    * @param {!SourceFrame.SourcesTextEditor} textEditor
    * @param {!Workspace.UISourceCode} uiSourceCode
    */
   constructor(textEditor, uiSourceCode) {
+    super();
     this._textEditor = textEditor;
     this._uiSourceCode = uiSourceCode;
     this._compiling = false;
@@ -56,7 +54,6 @@ Sources.JavaScriptCompilerPlugin = class {
    * @return {?SDK.RuntimeModel}
    */
   _findRuntimeModel() {
-    // TODO(dgozman): grab correct runtime model from JavaScriptSourceFrame instead.
     const debuggerModels = SDK.targetManager.models(SDK.DebuggerModel);
     for (let i = 0; i < debuggerModels.length; ++i) {
       const scriptFile = Bindings.debuggerWorkspaceBinding.scriptFile(this._uiSourceCode, debuggerModels[i]);
@@ -100,22 +97,6 @@ Sources.JavaScriptCompilerPlugin = class {
   }
 
   _compilationFinishedForTest() {
-  }
-
-  /**
-   * @override
-   * @return {!Array<!UI.ToolbarItem>}
-   */
-  rightToolbarItems() {
-    return [];
-  }
-
-  /**
-   * @override
-   * @return {!Array<!UI.ToolbarItem>}
-   */
-  leftToolbarItems() {
-    return [];
   }
 
   /**

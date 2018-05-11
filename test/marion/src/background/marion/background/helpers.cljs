@@ -1,18 +1,18 @@
 (ns marion.background.helpers
-  (:require [dirac.shared.async :refer [<! go-channel go-wait alts! go  close!]]
-            [oops.core :refer [oget ocall oapply]]
-            [chromex.ext.tabs :as tabs]
+  (:require [chromex.ext.management :as management]
             [chromex.ext.runtime :as runtime]
-            [chromex.ext.management :as management]
+            [chromex.ext.tabs :as tabs]
             [chromex.ext.windows :as windows]
-            [chromex.protocols :refer [on-disconnect! get-sender]]
-            [dirac.settings :refer [get-dirac-scenario-window-top get-dirac-scenario-window-left
-                                    get-dirac-scenario-window-width get-dirac-scenario-window-height
-                                    get-dirac-runner-window-top get-dirac-runner-window-left
-                                    get-dirac-runner-window-width get-dirac-runner-window-height
+            [chromex.protocols :refer [get-sender on-disconnect!]]
+            [dirac.settings :refer [get-dirac-runner-window-height get-dirac-runner-window-left
+                                    get-dirac-runner-window-top get-dirac-runner-window-width
+                                    get-dirac-scenario-window-height get-dirac-scenario-window-left
+                                    get-dirac-scenario-window-top get-dirac-scenario-window-width
                                     get-marion-stable-connection-timeout]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel  go-wait]]
             [dirac.shared.sugar :as sugar]
-            [marion.background.logging :refer [log info warn error]]))
+            [marion.background.logging :refer [error info log warn]]
+            [oops.core :refer [oapply ocall oget]]))
 
 (defn go-find-extension [pred]
   (go

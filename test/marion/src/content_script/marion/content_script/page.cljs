@@ -1,10 +1,10 @@
 (ns marion.content-script.page
-  (:require [dirac.shared.async :refer [<! go-channel]]
-            [oops.core :refer [oget ocall oapply gcall!]]
-            [marion.content-script.logging :refer [log info warn error]]
+  (:require [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message!]]
-            [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
-            [marion.content-script.state :as state]))
+            [dirac.shared.async :refer [<! go-channel]]
+            [marion.content-script.logging :refer [error info log warn]]
+            [marion.content-script.state :as state]
+            [oops.core :refer [gcall! oapply ocall oget]]))
 
 ; this code is responsible for communication between content script and hosting page
 ; see https://developer.chrome.com/extensions/content_scripts#host-page-communication

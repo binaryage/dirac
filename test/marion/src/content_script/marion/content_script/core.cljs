@@ -1,9 +1,9 @@
 (ns marion.content-script.core
   (:require [dirac.shared.async :refer [<! go-channel]]
-            [oops.core :refer [oget ocall oapply]]
-            [marion.content-script.logging :refer [log info warn error]]
             [marion.content-script.background :as background]
-            [marion.content-script.page :as page]))
+            [marion.content-script.logging :refer [error info log warn]]
+            [marion.content-script.page :as page]
+            [oops.core :refer [oapply ocall oget]]))
 
 ; -- main entry point -------------------------------------------------------------------------------------------------------
 

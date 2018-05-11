@@ -1,7 +1,7 @@
 (ns dirac.logging.toolkit
   "Common code for logging into js console"
-  (:require [dirac.shared.utils :refer [advanced-mode?]]
-            [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [dirac.shared.utils :refer [advanced-mode?]]))
 
 (defn get-prefix-style [opts]
   (let [fg-color (get opts :fg-color "white")

@@ -1,10 +1,10 @@
 (ns dirac.options.ui
-  (:require [dirac.options.logging :refer [log info warn error]]
-            [rum.core :as rum :refer-macros [defc]]
+  (:require [dirac.options.logging :refer [error info log warn]]
             [dirac.options.model :as model]
             [oops.core :refer [gcall]]
+            [reforms.core :as f]
             [reforms.rum :include-macros true :as fr]
-            [reforms.core :as f]))
+            [rum.core :as rum :refer-macros [defc]]))
 
 (def default-state {:options model/default-options})
 

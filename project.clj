@@ -1,9 +1,9 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
-(def figwheel-version "0.5.15")
+(def figwheel-version "0.5.16")
 (def selected-clojure-version "1.9.0")
 (def selected-clojurescript-version "1.10.238")
-(def selenium-version "3.11.0")
+(def selenium-version "3.12.0")
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
@@ -11,15 +11,15 @@
 
 (def required-deps
   [['org.clojure/core.async "0.4.474"]
-   ['org.clojure/tools.logging "0.4.0"]
-   ['org.clojure/tools.cli "0.3.5"]
+   ['org.clojure/tools.logging "0.4.1"]
+   ['org.clojure/tools.cli "0.3.7"]
    ['org.clojure/tools.nrepl "0.2.13"]
    ['binaryage/env-config "0.2.2"]
-   ['http-kit "2.2.0"]
+   ['http-kit "2.3.0"]
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
    ['funcool/cuerdas "2.0.5"]
-   ['com.rpl/specter "1.1.0"]])
+   ['com.rpl/specter "1.1.1"]])
 
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
@@ -58,7 +58,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.33"
+(defproject binaryage/dirac "1.2.34"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

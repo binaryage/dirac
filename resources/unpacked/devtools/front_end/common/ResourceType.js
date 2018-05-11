@@ -232,6 +232,7 @@ Common.resourceTypes = {
   SourceMapStyleSheet:
       new Common.ResourceType('sm-stylesheet', 'Stylesheet', Common.resourceCategories.Stylesheet, true),
   Manifest: new Common.ResourceType('manifest', 'Manifest', Common.resourceCategories.Manifest, true),
+  SignedExchange: new Common.ResourceType('signed-exchange', 'SignedExchange', Common.resourceCategories.Other, false),
 };
 
 
@@ -274,7 +275,7 @@ Common.ResourceType._mimeTypeByExtension = new Map([
   ['dart', 'text/javascript'],
 
   // TypeScript
-  ['ts', 'text/typescript'], ['tsx', 'text/typescript'],
+  ['ts', 'text/typescript'], ['tsx', 'text/typescript-jsx'],
 
   // JSON
   ['json', 'application/json'], ['gyp', 'application/json'], ['gypi', 'application/json'],

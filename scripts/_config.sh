@@ -17,6 +17,7 @@ cd ..
 
 ROOT=`pwd`
 CHROMIUM_MIRROR_DIR=${CHROMIUM_MIRROR_DIR:-"$ROOT/../chromium-mirror"}
+export DIRAC_CHROMIUM_MIRROR_DIR=${CHROMIUM_MIRROR_DIR}
 DEVTOOLS_BRANCH="devtools"
 DIFF_BRANCH="devtools-diff"
 CHROMIUM_BLINK_RENDERER_PREFIX="third_party/blink/renderer"
@@ -60,8 +61,8 @@ PROTOCOL_JSON_FILE="$CHROMIUM_BLINK_RENDERER_BUILD_DIR/gen/third_party/blink/ren
 #PROTOCOL_EXTERNS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/protocol_externs.js" ! compile_frontend.py will delete this file
 PROTOCOL_EXTERNS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/generated_protocol_externs.js" # filename must differ from protocol_externs.js
 DEVTOOLS_NAMESPACES_EXTERNS_FILE="$DEVTOOLS_ROOT/front_end/generated_namespaces_externs.js"
-BROWSER_PROTOCOL_JSON_FILE="$CHROMIUM_BLINK_RENDERER_DIR/core/inspector/browser_protocol.json"
-V8_PROTOCOL_JSON_FILE="$CHROMIUM_MIRROR_DIR/v8/src/inspector/js_protocol.json"
+BROWSER_PROTOCOL_JSON_FILE="$CHROMIUM_BLINK_RENDERER_DIR/core/inspector/browser_protocol.pdl"
+V8_PROTOCOL_JSON_FILE="$CHROMIUM_MIRROR_DIR/v8/src/inspector/js_protocol.pdl"
 PEON_DIR="$SCRIPTS/peon"
 DIRAC_USE_CHROME=${DIRAC_USE_CHROME}
 DIRAC_USE_CHROMIUM=${DIRAC_USE_CHROMIUM}

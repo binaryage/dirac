@@ -1,7 +1,7 @@
 (ns dirac.shared.pprint
-  (:require [fipp.engine :as engine]
-            [fipp.visit :as v]
-            [fipp.edn :as edn]))
+  (:require [fipp.edn :as edn]
+            [fipp.engine :as engine]
+            [fipp.visit :as v]))
 
 (defn abbreviate-string [s marker prefix-length postfix-length]
   (let [prefix (.slice s 0 prefix-length)

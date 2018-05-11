@@ -1,26 +1,26 @@
 (ns dirac.tests.browser.tasks.transcript
-  (:require [clojure.test :refer :all]
+  (:require [clj-webdriver.taxi :as taxi]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
-            [clojure.string :as string]
-            [clojure.tools.logging :as log]
             [clojure.stacktrace :as stacktrace]
-            [environ.core :refer [env]]
-            [clj-webdriver.taxi :as taxi]
+            [clojure.string :as string]
+            [clojure.test :refer :all]
+            [clojure.tools.logging :as log]
             [dirac.settings :refer [get-default-test-html-load-timeout
                                     get-script-runner-launch-delay
                                     get-task-disconnected-wait-timeout
                                     get-transcript-max-chrome-log-lines]]
             [dirac.shared.travis :refer [with-travis-fold]]
             [dirac.test-lib.chrome-driver :refer [extract-javascript-logs]]
-            [dirac.tests.browser.tasks.task-state :refer [make-task-state]]
-            [dirac.tests.browser.tasks.signal-server :refer [create-signal-server! wait-for-signal!]]
-            [dirac.tests.browser.tasks.helpers :refer [make-test-runner-url navigation-timeout-message
+            [dirac.tests.browser.tasks.helpers :refer [get-actual-transcript-path get-browser-test-filter
+                                                       get-canonical-transcript get-expected-transcript-path
                                                        get-transcript-test-label get-transcript-test-label
-                                                       get-actual-transcript-path get-canonical-transcript
-                                                       get-expected-transcript-path produce-diff
-                                                       get-browser-test-filter launch-transcript-test-after-delay!]]
-            [dirac.tests.browser.tasks.macros :refer [with-transcript-test]]))
+                                                       launch-transcript-test-after-delay! make-test-runner-url
+                                                       navigation-timeout-message produce-diff]]
+            [dirac.tests.browser.tasks.macros :refer [with-transcript-test]]
+            [dirac.tests.browser.tasks.signal-server :refer [create-signal-server! wait-for-signal!]]
+            [dirac.tests.browser.tasks.task-state :refer [make-task-state]]
+            [environ.core :refer [env]]))
 
 (defonce ^:dynamic *current-transcript-test* nil)
 (defonce ^:dynamic *current-transcript-suite* nil)

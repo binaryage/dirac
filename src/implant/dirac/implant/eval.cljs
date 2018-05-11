@@ -1,12 +1,12 @@
 (ns dirac.implant.eval
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [cljs.core.async.impl.protocols :as core-async]
-            [oops.core :refer [oget oget+ ocall oapply gget]]
-            [dirac.implant.logging :refer [log warn error]]
-            [dirac.implant.feedback :as feedback]
+  (:require [cljs.core.async.impl.protocols :as core-async]
+            [cljs.tools.reader.edn :as edn]
             [clojure.string :as string]
+            [dirac.implant.feedback :as feedback]
+            [dirac.implant.logging :refer [error log warn]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
             [dirac.shared.utils :as utils]
-            [cljs.tools.reader.edn :as edn]))
+            [oops.core :refer [gget oapply ocall oget oget+]]))
 
 (def installation-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md")
 

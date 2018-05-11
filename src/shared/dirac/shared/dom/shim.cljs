@@ -1,5 +1,5 @@
 (ns dirac.shared.dom.shim
-  (:refer-clojure :exclude [parents remove next val empty]))
+  (:refer-clojure :exclude [empty next parents remove val]))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; taken from light-table

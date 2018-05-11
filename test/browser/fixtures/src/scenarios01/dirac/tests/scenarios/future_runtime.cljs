@@ -1,7 +1,7 @@
 (ns dirac.tests.scenarios.future-runtime
-  (:require [dirac.automation.runtime :refer [init-runtime!]]
-            [dirac.automation.scenario :as scenario]
-            [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [dirac.automation.runtime :refer [init-runtime!]]
+            [dirac.automation.scenario :as scenario]))
 
 (defn replace-versions [s]
   (string/replace s #"\(v.*?\)" "**VERSION**"))

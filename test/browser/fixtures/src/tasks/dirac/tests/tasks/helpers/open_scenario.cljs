@@ -1,5 +1,5 @@
 (ns dirac.tests.tasks.helpers.open-scenario
-  (:require [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools] :as a]
+  (:require [dirac.automation :refer-macros [<!* go-task with-devtools with-scenario] :as a]
             [dirac.automation.helpers :as helpers]))
 
 ; this is a helper task to open a scenario with proper dirac extension setup

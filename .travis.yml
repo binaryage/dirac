@@ -13,4 +13,7 @@ notifications:
 cache:
   directories:
   - "$HOME/.m2"
+addons:
+  apt:
+    update: true
 script: scripts/travis-entrypoint.sh

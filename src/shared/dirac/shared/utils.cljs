@@ -1,10 +1,10 @@
 (ns dirac.shared.utils
   (:require-macros [dirac.shared.utils])
-  (:require [dirac.shared.async :refer [put! <! close! go go-channel]]
-            [cljs.core.async.impl.protocols :as async-protocols]                                                              ; TODO: move this to dirac.shared.async
-            [cuerdas.core :as cuerdas]
+  (:require [cljs.core.async.impl.protocols :as async-protocols]
+            [cuerdas.core :as cuerdas]                                                              ; TODO: move this to dirac.shared.async
+            [dirac.shared.async :refer [<! close! go go-channel put!]]
             [dirac.shared.pprint]
-            [oops.core :refer [oget oset! ocall oapply gget gcall]]))
+            [oops.core :refer [gcall gget oapply ocall oget oset!]]))
 
 (def Promise (gget "Promise"))
 

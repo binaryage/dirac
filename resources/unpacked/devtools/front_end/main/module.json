@@ -34,12 +34,7 @@
             "actionId": "inspector_main.focus-debuggee",
             "className": "InspectorMain.FocusDebuggeeActionDelegate",
             "order": 100,
-            "title": "Focus debuggee",
-            "bindings": [
-                {
-                    "shortcut": "F12"
-                }
-            ]
+            "title": "Focus debuggee"
         },
         {
             "type": "action",
@@ -286,6 +281,12 @@
             "type": "@UI.ViewLocationResolver",
             "name": "drawer-view",
             "category": "Drawer",
+            "className": "UI.InspectorView"
+        },
+        {
+            "type": "@UI.ViewLocationResolver",
+            "name": "drawer-sidebar",
+            "category": "Drawer sidebar",
             "className": "UI.InspectorView"
         },
         {

@@ -1,14 +1,14 @@
 (ns dirac.automation.runner
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [devtools.core :as devtools]
-            [oops.core :refer [oget oset! ocall oapply gcall! gset!]]
-            [dirac.automation.logging :refer [log warn error info]]
-            [goog.style :as gstyle]
-            [dirac.shared.utils :refer [runonce]]
+  (:require [devtools.core :as devtools]
             [dirac.automation.helpers :as helpers]
-            [dirac.shared.cookies :as cookies]
+            [dirac.automation.logging :refer [error info log warn]]
+            [dirac.automation.messages :as messages]
             [dirac.automation.status-host :as status-host]
-            [dirac.automation.messages :as messages]))
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
+            [dirac.shared.cookies :as cookies]
+            [dirac.shared.utils :refer [runonce]]
+            [goog.style :as gstyle]
+            [oops.core :refer [gcall! gset! oapply ocall oget oset!]]))
 
 ; -- state ------------------------------------------------------------------------------------------------------------------
 

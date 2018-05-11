@@ -1,14 +1,14 @@
 ; original code taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
 (ns dirac.lib.weasel-server
   (:refer-clojure :exclude [loaded-libs])
-  (:require [cljs.repl]
-            [cljs.compiler :as cmp]
+  (:require [cljs.compiler :as cmp]
+            [cljs.repl]
             [clojure.tools.logging :as log]
-            [org.httpkit.server :as http]
+            [dirac.lib.utils :as utils]
             [dirac.lib.ws-server :as server]
-            [dirac.lib.utils :as utils])
+            [org.httpkit.server :as http])
   (:use [com.rpl.specter])
-  (:import (clojure.lang IDeref Atom)))
+  (:import (clojure.lang Atom IDeref)))
 
 (def default-opts {:host       "localhost"
                    :port       9001

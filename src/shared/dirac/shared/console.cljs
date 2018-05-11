@@ -1,8 +1,8 @@
 (ns dirac.shared.console
-  (:require [goog.log :as goog-log]
-            [goog.debug :as goog-debug]
+  (:require [goog.debug :as goog-debug]
             [goog.debug.Logger.Level :as level]
-            [oops.core :refer [oget oset! ocall ocall! gcall oapply]]))
+            [goog.log :as goog-log]
+            [oops.core :refer [gcall oapply ocall ocall! oget oset!]]))
 
 ; taken from https://gist.github.com/caskolkm/39d823f5bac7051d3062
 

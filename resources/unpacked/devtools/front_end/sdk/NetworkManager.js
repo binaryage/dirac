@@ -113,7 +113,6 @@ SDK.NetworkManager = class extends SDK.SDKModel {
     return {error: error, content: error ? null : response.body, encoded: response.base64Encoded};
   }
 
-
   /**
    * @param {!SDK.NetworkRequest} request
    * @return {!Promise<?string>}
@@ -403,6 +402,40 @@ SDK.NetworkDispatcher = class {
   /**
    * @override
    * @param {!Protocol.Network.RequestId} requestId
+   * @param {!Protocol.Network.SignedExchangeInfo} info
+   */
+  signedExchangeReceived(requestId, info) {
+    // While loading a signed exchange, a signedExchangeReceived event is sent
+    // between two requestWillBeSent events.
+    // 1. The first requestWillBeSent is sent while starting the navigation (or
+    //    prefetching).
+    // 2. This signedExchangeReceived event is sent when the browser detects the
+    //    signed exchange.
+    // 3. The second requestWillBeSent is sent with the generated redirect
+    //    response and a new redirected request which URL is the inner request
+    //    URL of the signed exchange.
+    let networkRequest = this._inflightRequestsById[requestId];
+    // |requestId| is available only for navigation requests. If the request was
+    // sent from a renderer process for prefetching, it is not available. In the
+    // case, need to fallback to look for the URL.
+    // TODO(crbug/841076): Sends the request ID of prefetching to the browser
+    // process and DevTools to find the matching request.
+    if (!networkRequest) {
+      networkRequest = this._inflightRequestsByURL[info.outerResponse.url];
+      if (!networkRequest)
+        return;
+    }
+    networkRequest.setSignedExchangeInfo(info);
+    networkRequest.setResourceType(Common.resourceTypes.SignedExchange);
+
+    this._updateNetworkRequestWithResponse(networkRequest, info.outerResponse);
+    this._updateNetworkRequest(networkRequest);
+    this._manager.dispatchEventToListeners(SDK.NetworkManager.Events.ResponseReceived, networkRequest);
+  }
+
+  /**
+   * @override
+   * @param {!Protocol.Network.RequestId} requestId
    * @param {!Protocol.Network.LoaderId} loaderId
    * @param {string} documentURL
    * @param {!Protocol.Network.Request} request
@@ -420,7 +453,12 @@ SDK.NetworkDispatcher = class {
       // FIXME: move this check to the backend.
       if (!redirectResponse)
         return;
-      this.responseReceived(requestId, loaderId, time, Protocol.Page.ResourceType.Other, redirectResponse, frameId);
+      // If signedExchangeReceived event has already been sent for the request,
+      // ignores the internally generated |redirectResponse|. The
+      // |outerResponse| of SignedExchangeInfo was set to |networkRequest| in
+      // signedExchangeReceived().
+      if (!networkRequest.signedExchangeInfo())
+        this.responseReceived(requestId, loaderId, time, Protocol.Page.ResourceType.Other, redirectResponse, frameId);
       networkRequest = this._appendRedirect(requestId, time, request.url);
       this._manager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestRedirected, networkRequest);
     } else {
@@ -484,6 +522,20 @@ SDK.NetworkDispatcher = class {
           response.url);
       this._manager.dispatchEventToListeners(
           SDK.NetworkManager.Events.MessageGenerated, {message: message, requestId: requestId, warning: true});
+    }
+
+    if ('public-key-pins' in lowercaseHeaders || 'public-key-pins-report-only' in lowercaseHeaders) {
+      if (!this._hpkpDomains)
+        this._hpkpDomains = new Set();
+      const parsed = new Common.ParsedURL(response.url);
+      if (parsed.isValid && !this._hpkpDomains.has(parsed.host)) {
+        this._hpkpDomains.add(parsed.host);
+        const message = Common.UIString(
+            'HTTP-Based Public Key Pinning is deprecated. Chrome 69 and later will ignore HPKP response headers. (Host: %s)',
+            parsed.host);
+        this._manager.dispatchEventToListeners(
+            SDK.NetworkManager.Events.MessageGenerated, {message: message, requestId: requestId, warning: true});
+      }
     }
 
     this._updateNetworkRequestWithResponse(networkRequest, response);
@@ -701,6 +753,7 @@ SDK.NetworkDispatcher = class {
    * @param {!Protocol.Page.FrameId} frameId
    * @param {!Protocol.Page.ResourceType} resourceType
    * @param {boolean} isNavigationRequest
+   * @param {boolean=} isDownload
    * @param {string=} redirectUrl
    * @param {!Protocol.Network.AuthChallenge=} authChallenge
    * @param {!Protocol.Network.ErrorReason=} responseErrorReason
@@ -708,11 +761,11 @@ SDK.NetworkDispatcher = class {
    * @param {!Protocol.Network.Headers=} responseHeaders
    */
   requestIntercepted(
-      interceptionId, request, frameId, resourceType, isNavigationRequest, redirectUrl, authChallenge,
+      interceptionId, request, frameId, resourceType, isNavigationRequest, isDownload, redirectUrl, authChallenge,
       responseErrorReason, responseStatusCode, responseHeaders) {
     SDK.multitargetNetworkManager._requestIntercepted(new SDK.MultitargetNetworkManager.InterceptedRequest(
         this._manager.target().networkAgent(), interceptionId, request, frameId, resourceType, isNavigationRequest,
-        redirectUrl, authChallenge, responseErrorReason, responseStatusCode, responseHeaders));
+        isDownload, redirectUrl, authChallenge, responseErrorReason, responseStatusCode, responseHeaders));
   }
 
   /**
@@ -761,8 +814,10 @@ SDK.NetworkDispatcher = class {
     this._inflightRequestsByURL[networkRequest.url()] = networkRequest;
     // The following relies on the fact that loaderIds and requestIds are
     // globally unique and that the main request has them equal.
-    if (networkRequest.loaderId === networkRequest.requestId())
+    if (networkRequest.loaderId === networkRequest.requestId()) {
       SDK.multitargetNetworkManager._inflightMainResourceRequests.set(networkRequest.requestId(), networkRequest);
+      delete this._hpkpDomains;
+    }
 
     this._manager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestStarted, networkRequest);
   }
@@ -1164,6 +1219,7 @@ SDK.MultitargetNetworkManager.InterceptedRequest = class {
    * @param {!Protocol.Page.FrameId} frameId
    * @param {!Protocol.Page.ResourceType} resourceType
    * @param {boolean} isNavigationRequest
+   * @param {boolean=} isDownload
    * @param {string=} redirectUrl
    * @param {!Protocol.Network.AuthChallenge=} authChallenge
    * @param {!Protocol.Network.ErrorReason=} responseErrorReason
@@ -1171,8 +1227,8 @@ SDK.MultitargetNetworkManager.InterceptedRequest = class {
    * @param {!Protocol.Network.Headers=} responseHeaders
    */
   constructor(
-      networkAgent, interceptionId, request, frameId, resourceType, isNavigationRequest, redirectUrl, authChallenge,
-      responseErrorReason, responseStatusCode, responseHeaders) {
+      networkAgent, interceptionId, request, frameId, resourceType, isNavigationRequest, isDownload, redirectUrl,
+      authChallenge, responseErrorReason, responseStatusCode, responseHeaders) {
     this._networkAgent = networkAgent;
     this._interceptionId = interceptionId;
     this._hasResponded = false;
@@ -1180,6 +1236,7 @@ SDK.MultitargetNetworkManager.InterceptedRequest = class {
     this.frameId = frameId;
     this.resourceType = resourceType;
     this.isNavigationRequest = isNavigationRequest;
+    this.isDownload = !!isDownload;
     this.redirectUrl = redirectUrl;
     this.authChallenge = authChallenge;
     this.responseErrorReason = responseErrorReason;

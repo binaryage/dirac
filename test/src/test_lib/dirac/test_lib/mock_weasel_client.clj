@@ -1,7 +1,7 @@
 (ns dirac.test-lib.mock-weasel-client
-  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
-            [http.async.client :as http]
-            [clojure.tools.logging :as log]))
+  (:require [clojure.core.async :refer [<! <!! >!! alts!! chan close! go go-loop put! timeout]]
+            [clojure.tools.logging :as log]
+            [http.async.client :as http]))
 
 (defrecord MockWeaselClient [id client ws channel]
   Object

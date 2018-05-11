@@ -1,12 +1,12 @@
 (ns dirac.nrepl.controls
-  (:require [dirac.nrepl.helpers :as helpers :refer [with-coalesced-output]]
-            [dirac.nrepl.usage :as usage]
-            [dirac.nrepl.sessions :as sessions]
-            [dirac.nrepl.compilers :as compilers]
-            [dirac.nrepl.state :as state]
-            [dirac.nrepl.utils :as utils]
+  (:require [dirac.nrepl.compilers :as compilers]
+            [dirac.nrepl.figwheel :as figwheel]
+            [dirac.nrepl.helpers :as helpers :refer [with-coalesced-output]]
             [dirac.nrepl.messages :as messages]
-            [dirac.nrepl.figwheel :as figwheel])
+            [dirac.nrepl.sessions :as sessions]
+            [dirac.nrepl.state :as state]
+            [dirac.nrepl.usage :as usage]
+            [dirac.nrepl.utils :as utils])
   (:import (java.util.regex Pattern)))
 
 ; note: this namespace defines the context where special dirac commands are eval'd

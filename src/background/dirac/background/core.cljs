@@ -1,14 +1,14 @@
 (ns dirac.background.core
-  (:require [dirac.background.logging :refer [log info warn error]]
-            [dirac.shared.async :refer [<! go-channel put! go]]
-            [oops.core :refer [oget ocall oapply]]
-            [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
-            [chromex.protocols :refer [post-message! get-sender get-name]]
+  (:require [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
+            [chromex.protocols :refer [get-name get-sender post-message!]]
+            [dirac.background.action :as action]
             [dirac.background.chrome :as chrome]
+            [dirac.background.logging :refer [error info log warn]]
             [dirac.background.state :as state]
             [dirac.background.thief :as thief]
             [dirac.options.model :as options]
-            [dirac.background.action :as action]))
+            [dirac.shared.async :refer [<! go go-channel put!]]
+            [oops.core :refer [oapply ocall oget]]))
 
 (defn go-extract-apis! []
   (go

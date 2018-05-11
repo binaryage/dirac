@@ -1,7 +1,7 @@
 (ns dirac.options.core
-  (:require [dirac.shared.async :refer [<! go]]
+  (:require [dirac.options.model :as model]
             [dirac.options.ui :as ui]
-            [dirac.options.model :as model]))
+            [dirac.shared.async :refer [<! go]]))
 
 (defn go-init! []
   (go

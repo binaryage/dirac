@@ -1,7 +1,7 @@
 (ns dirac.automation.triggers
-  (:require [dirac.shared.async :refer [go-wait go <!]]
-            [oops.core :refer [oget oset! ocall oapply gcall! ocall! gcall gset!]]
-            [dirac.automation.scenario :as scenario]))
+  (:require [dirac.automation.scenario :as scenario]
+            [dirac.shared.async :refer [<! go go-wait]]
+            [oops.core :refer [gcall gcall! gset! oapply ocall ocall! oget oset!]]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 

@@ -1,12 +1,12 @@
 (ns clj-webdriver.util
-  (:require [clojure.string :as str]
+  (:require [clj-webdriver.cache :as cache]
+            clj-webdriver.driver
             [clojure.java.io :as io]
-            [clojure.walk :as walk]
-            [clj-webdriver.cache :as cache]
-            clj-webdriver.driver)
+            [clojure.string :as str]
+            [clojure.walk :as walk])
   (:import clj_webdriver.driver.Driver
-           [org.openqa.selenium WebDriver WebElement NoSuchElementException]
-           [java.io PushbackReader Writer]))
+           [java.io PushbackReader Writer]
+           [org.openqa.selenium NoSuchElementException WebDriver WebElement]))
 
 (declare build-query)
 

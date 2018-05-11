@@ -1110,6 +1110,76 @@
     this.releaseControl();
   };
 
+  TestSuite.prototype.testDisposeEmptyBrowserContext = async function(url) {
+    this.takeControl();
+    const targetAgent = SDK.targetManager.mainTarget().targetAgent();
+    const {browserContextId} = await targetAgent.invoke_createBrowserContext();
+    const response1 = await targetAgent.invoke_getBrowserContexts();
+    this.assertEquals(response1.browserContextIds.length, 1);
+    await targetAgent.invoke_disposeBrowserContext({browserContextId});
+    const response2 = await targetAgent.invoke_getBrowserContexts();
+    this.assertEquals(response2.browserContextIds.length, 0);
+    this.releaseControl();
+  };
+
+  TestSuite.prototype.testCreateBrowserContext = async function(url) {
+    this.takeControl();
+    const browserContextIds = [];
+    const targetAgent = SDK.targetManager.mainTarget().targetAgent();
+
+    const target1 = await createIsolatedTarget(url);
+    const target2 = await createIsolatedTarget(url);
+
+    const response = await targetAgent.invoke_getBrowserContexts();
+    this.assertEquals(response.browserContextIds.length, 2);
+    this.assertTrue(response.browserContextIds.includes(browserContextIds[0]));
+    this.assertTrue(response.browserContextIds.includes(browserContextIds[1]));
+
+    await evalCode(target1, 'localStorage.setItem("page1", "page1")');
+    await evalCode(target2, 'localStorage.setItem("page2", "page2")');
+
+    this.assertEquals(await evalCode(target1, 'localStorage.getItem("page1")'), 'page1');
+    this.assertEquals(await evalCode(target1, 'localStorage.getItem("page2")'), null);
+    this.assertEquals(await evalCode(target2, 'localStorage.getItem("page1")'), null);
+    this.assertEquals(await evalCode(target2, 'localStorage.getItem("page2")'), 'page2');
+
+    const removedTargets = [];
+    SDK.targetManager.observeTargets({targetAdded: () => {}, targetRemoved: target => removedTargets.push(target)});
+    await Promise.all([disposeBrowserContext(browserContextIds[0]), disposeBrowserContext(browserContextIds[1])]);
+    this.assertEquals(removedTargets.length, 2);
+    this.assertEquals(removedTargets.indexOf(target1) !== -1, true);
+    this.assertEquals(removedTargets.indexOf(target2) !== -1, true);
+
+    this.releaseControl();
+
+    /**
+     * @param {string} url
+     * @return {!Promise<!SDK.Target>}
+     */
+    async function createIsolatedTarget(url) {
+      const {browserContextId} = await targetAgent.invoke_createBrowserContext();
+      browserContextIds.push(browserContextId);
+
+      const {targetId} = await targetAgent.invoke_createTarget({url: 'about:blank', browserContextId});
+      await targetAgent.invoke_attachToTarget({targetId});
+
+      const target = SDK.targetManager.targets().find(target => target.id() === targetId);
+      const pageAgent = target.pageAgent();
+      await pageAgent.invoke_enable();
+      await pageAgent.invoke_navigate({url});
+      return target;
+    }
+
+    async function disposeBrowserContext(browserContextId) {
+      const targetAgent = SDK.targetManager.mainTarget().targetAgent();
+      await targetAgent.invoke_disposeBrowserContext({browserContextId});
+    }
+
+    async function evalCode(target, code) {
+      return (await target.runtimeAgent().invoke_evaluate({expression: code})).result.value;
+    }
+  };
+
   TestSuite.prototype.testInputDispatchEventsToOOPIF = async function() {
     this.takeControl();
 

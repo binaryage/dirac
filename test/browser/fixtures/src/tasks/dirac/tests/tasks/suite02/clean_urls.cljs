@@ -1,9 +1,9 @@
 (ns dirac.tests.tasks.suite02.clean-urls
-  (:require [dirac.shared.async]
-            [cljs.test :refer-macros [is]]
-            [dirac.shared.utils :refer [line-count]]
-            [dirac.settings :refer [seconds minutes]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options testing] :as a]))
+  (:require [cljs.test :refer-macros [is]]
+            [dirac.automation :refer-macros [<!* go-task testing with-devtools with-options with-scenario] :as a]
+            [dirac.settings :refer [minutes seconds]]
+            [dirac.shared.async]
+            [dirac.shared.utils :refer [line-count]]))
 
 ; WARNING: these tests rely on figwheel's "side effect" of adding "rel=<timestamp>" into cljs url params
 

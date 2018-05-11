@@ -1,9 +1,9 @@
 (ns marion.background.notifications
-  (:require [dirac.shared.async :refer [<! go-channel go-wait go]]
-            [chromex.protocols :refer [post-message! get-sender]]
-            [oops.core :refer [oget ocall oapply]]
-            [marion.background.logging :refer [log info warn error]]
-            [marion.background.helpers :as helpers]))
+  (:require [chromex.protocols :refer [get-sender post-message!]]
+            [dirac.shared.async :refer [<! go go-channel go-wait]]
+            [marion.background.helpers :as helpers]
+            [marion.background.logging :refer [error info log warn]]
+            [oops.core :refer [oapply ocall oget]]))
 
 ; "notifications" are events sent from task runner to scenario page
 ;

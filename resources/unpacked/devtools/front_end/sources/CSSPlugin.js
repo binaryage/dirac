@@ -28,18 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @implements {Sources.UISourceCodeFrame.Plugin}
- * @unrestricted
- */
-Sources.CSSPlugin = class {
+Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
   /**
    * @param {!SourceFrame.SourcesTextEditor} textEditor
    */
   constructor(textEditor) {
+    super();
     this._textEditor = textEditor;
     this._swatchPopoverHelper = new InlineEditor.SwatchPopoverHelper();
     this._muteSwatchProcessing = false;
+    this._hadSwatchChange = false;
+    /** @type {?InlineEditor.BezierEditor} */
+    this._bezierEditor = null;
+    /** @type {?TextUtils.TextRange} */
+    this._editedSwatchTextRange = null;
+    /** @type {?ColorPicker.Spectrum} */
+    this._spectrum = null;
+    /** @type {?Element} */
+    this._currentSwatch = null;
     this._textEditor.configureAutocomplete(
         {suggestionsCallback: this._cssSuggestions.bind(this), isWordChar: this._isWordChar.bind(this)});
     this._textEditor.addEventListener(
@@ -298,7 +304,8 @@ Sources.CSSPlugin = class {
    */
   _changeSwatchText(text) {
     this._hadSwatchChange = true;
-    this._textEditor.editRange(this._editedSwatchTextRange, text, '*swatch-text-changed');
+    this._textEditor.editRange(
+        /** @type {!TextUtils.TextRange} */ (this._editedSwatchTextRange), text, '*swatch-text-changed');
     this._editedSwatchTextRange.endColumn = this._editedSwatchTextRange.startColumn + text.length;
   }
 
@@ -376,22 +383,6 @@ Sources.CSSPlugin = class {
       tokenPosition = token.startColumn - 1;
     }
     return null;
-  }
-
-  /**
-   * @override
-   * @return {!Array<!UI.ToolbarItem>}
-   */
-  rightToolbarItems() {
-    return [];
-  }
-
-  /**
-   * @override
-   * @return {!Array<!UI.ToolbarItem>}
-   */
-  leftToolbarItems() {
-    return [];
   }
 
   /**

@@ -1,6 +1,8 @@
 (ns dirac.tests.backend.agent.tests
   (:require [clojure.test :refer :all]
             [clojure.tools.logging :as log]
+            [dirac.agent :as agent]
+            [dirac.project :refer [version]]
             [dirac.settings :refer [get-backend-tests-nrepl-server-host
                                     get-backend-tests-nrepl-server-port
                                     get-backend-tests-nrepl-server-url
@@ -9,12 +11,10 @@
                                     get-backend-tests-nrepl-tunnel-url
                                     get-backend-tests-weasel-host
                                     get-backend-tests-weasel-port]]
-            [dirac.agent :as agent]
-            [dirac.project :refer [version]]
             [dirac.test-lib.mock-nrepl-tunnel-client :as tunnel-client]
             [dirac.test-lib.mock-weasel-client :as weasel-client]
             [dirac.tests.backend.agent.fixtures :as fixtures]
-            [dirac.tests.backend.agent.helpers :refer [expect-event! expect-op-msg! expect-ns-msg!
+            [dirac.tests.backend.agent.helpers :refer [expect-event! expect-ns-msg! expect-op-msg!
                                                        expect-status-msg! get-last-message]]
             [dirac.tests.backend.agent.state :refer [received-messages]]))
 

@@ -1,9 +1,9 @@
 (ns dirac.automation.devtools
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [oops.core :refer [oget oset! ocall oapply]]
-            [dirac.automation.logging :refer [log warn error info]]
-            [devtools.core :as devtools]
-            [devtools.prefs :as devtools-prefs]))
+  (:require [devtools.core :as devtools]
+            [devtools.prefs :as devtools-prefs]
+            [dirac.automation.logging :refer [error info log warn]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 (defn init-devtools! [& [config]]
   (devtools-prefs/set-pref! :dont-detect-custom-formatters true)

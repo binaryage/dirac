@@ -1,9 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/**
- * @unrestricted
- */
+
 Console.ConsolePrompt = class extends UI.Widget {
   constructor() {
     super();
@@ -11,9 +9,23 @@ Console.ConsolePrompt = class extends UI.Widget {
     this._history = new Console.ConsoleHistoryManager();
 
     this._initialText = '';
+    /** @type {?UI.TextEditor} */
     this._editor = null;
+    this._isBelowPromptEnabled = Runtime.experiments.isEnabled('consoleBelowPrompt');
+    this._eagerPreviewElement = createElementWithClass('div', 'console-eager-preview');
+    this._textChangeThrottler = new Common.Throttler(150);
+    this._formatter = new ObjectUI.RemoteObjectPreviewFormatter();
+    this._requestPreviewBound = this._requestPreview.bind(this);
+    this._innerPreviewElement = this._eagerPreviewElement.createChild('div', 'console-eager-inner-preview');
+    this._eagerPreviewElement.appendChild(UI.Icon.create('smallicon-command-result', 'preview-result-icon'));
+
+    this._eagerEvalSetting = Common.settings.moduleSetting('consoleEagerEval');
+    this._eagerEvalSetting.addChangeListener(this._eagerSettingChanged.bind(this));
+    this._eagerPreviewElement.classList.toggle('hidden', !this._eagerEvalSetting.get());
 
     this.element.tabIndex = 0;
+    /** @type {?Promise} */
+    this._previewRequestForTest = null;
 
     self.runtime.extension(UI.TextEditorFactory).instance().then(gotFactory.bind(this));
 
@@ -28,24 +40,89 @@ Console.ConsolePrompt = class extends UI.Widget {
       this._editor.configureAutocomplete({
         substituteRangeCallback: this._substituteRange.bind(this),
         suggestionsCallback: this._wordsWithQuery.bind(this),
-        captureEnter: true
+        tooltipCallback: (lineNumber, columnNumber) => this._tooltipCallback(lineNumber, columnNumber)
       });
       this._editor.widget().element.addEventListener('keydown', this._editorKeyDown.bind(this), true);
       this._editor.widget().show(this.element);
       this._editor.addEventListener(UI.TextEditor.Events.TextChanged, this._onTextChanged, this);
+      this._editor.addEventListener(UI.TextEditor.Events.SuggestionChanged, this._onTextChanged, this);
+      if (this._isBelowPromptEnabled)
+        this.element.appendChild(this._eagerPreviewElement);
 
       this.setText(this._initialText);
       delete this._initialText;
       if (this.hasFocus())
         this.focus();
-      this.element.tabIndex = -1;
+      this.element.removeAttribute('tabindex');
+      this._editor.widget().element.tabIndex = -1;
 
       this._editorSetForTest();
     }
   }
 
+  _eagerSettingChanged() {
+    const enabled = this._eagerEvalSetting.get();
+    this._eagerPreviewElement.classList.toggle('hidden', !enabled);
+    if (enabled)
+      this._requestPreview();
+  }
+
+  /**
+   * @return {!Element}
+   */
+  belowEditorElement() {
+    return this._eagerPreviewElement;
+  }
+
   _onTextChanged() {
+    // ConsoleView and prompt both use a throttler, so we clear the preview
+    // ASAP to avoid inconsistency between a fresh viewport and stale preview.
+    if (this._isBelowPromptEnabled && this._eagerEvalSetting.get()) {
+      const asSoonAsPossible = !this._editor.textWithCurrentSuggestion();
+      this._previewRequestForTest = this._textChangeThrottler.schedule(this._requestPreviewBound, asSoonAsPossible);
+    }
     this.dispatchEventToListeners(Console.ConsolePrompt.Events.TextChanged);
+  }
+
+  /**
+   * @return {!Promise}
+   */
+  async _requestPreview() {
+    const text = this._editor.textWithCurrentSuggestion().trim();
+    const executionContext = UI.context.flavor(SDK.ExecutionContext);
+    if (!executionContext || !text || text.length > Console.ConsolePrompt._MaxLengthForEvaluation) {
+      this._innerPreviewElement.removeChildren();
+      return;
+    }
+
+    const options = {
+      expression: SDK.RuntimeModel.wrapObjectLiteralExpressionIfNeeded(text),
+      includeCommandLineAPI: true,
+      generatePreview: true,
+      throwOnSideEffect: true,
+      timeout: 500
+    };
+    const result = await executionContext.evaluate(options, true /* userGesture */, false /* awaitPromise */);
+    this._innerPreviewElement.removeChildren();
+    if (result.error)
+      return;
+
+    if (result.exceptionDetails) {
+      const exception = result.exceptionDetails.exception.description;
+      if (exception.startsWith('TypeError: '))
+        this._innerPreviewElement.textContent = exception;
+      return;
+    }
+
+    const {preview, type, subtype, description} = result.object;
+    if (preview && type === 'object' && subtype !== 'node') {
+      this._formatter.appendObjectPreview(this._innerPreviewElement, preview, false /* isEntry */);
+    } else {
+      const nonObjectPreview = this._formatter.renderPropertyPreview(type, subtype, description.trimEnd(400));
+      this._innerPreviewElement.appendChild(nonObjectPreview);
+    }
+    if (this._innerPreviewElement.deepTextContent() === this._editor.textWithCurrentSuggestion().trim())
+      this._innerPreviewElement.removeChildren();
   }
 
   /**
@@ -223,10 +300,10 @@ Console.ConsolePrompt = class extends UI.Widget {
    * @return {!UI.SuggestBox.Suggestions}
    */
   _historyCompletions(prefix, force) {
-    if (!this._addCompletionsFromHistory || !this._isCaretAtEndOfPrompt() || (!prefix && !force))
+    const text = this.text();
+    if (!this._addCompletionsFromHistory || !this._isCaretAtEndOfPrompt() || (!text && !force))
       return [];
     const result = [];
-    const text = this.text();
     const set = new Set();
     const data = this._history.historyData();
     for (let i = data.length - 1; i >= 0 && result.length < 50; --i) {
@@ -296,9 +373,44 @@ Console.ConsolePrompt = class extends UI.Widget {
         .then(words => words.concat(historyWords));
   }
 
+  /**
+   * @param {number} lineNumber
+   * @param {number} columnNumber
+   * @return {!Promise<?Element>}
+   */
+  async _tooltipCallback(lineNumber, columnNumber) {
+    const before = this._editor.text(new TextUtils.TextRange(0, 0, lineNumber, columnNumber));
+    const result = await ObjectUI.javaScriptAutocomplete.argumentsHint(before);
+    if (!result)
+      return null;
+    const argumentsElement = createElement('span');
+    for (let i = 0; i < result.args.length; i++) {
+      if (i === result.argumentIndex || (i < result.argumentIndex && result.args[i].startsWith('...'))) {
+        const boldElement = createElement('b');
+        boldElement.textContent = result.args[i];
+        argumentsElement.appendChild(boldElement);
+      } else {
+        argumentsElement.createTextChild(result.args[i]);
+      }
+      if (i < result.args.length - 1)
+        argumentsElement.createTextChild(', ');
+    }
+    const tooltip = createElementWithClass('span', 'source-code');
+    tooltip.createTextChild('\u0192(');
+    tooltip.appendChild(argumentsElement);
+    tooltip.createTextChild(')');
+    return tooltip;
+  }
+
   _editorSetForTest() {
   }
 };
+
+/**
+ * @const
+ * @type {number}
+ */
+Console.ConsolePrompt._MaxLengthForEvaluation = 2000;
 
 /**
  * @unrestricted

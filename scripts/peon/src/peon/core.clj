@@ -1,7 +1,7 @@
 (ns peon.core
-  (:require [clojure.string :as string]
+  (:require [clojure.java.io :as io]
+            [clojure.string :as string]
             [clojure.tools.cli :as cli]
-            [clojure.java.io :as io]
             [cuerdas.core :as cuerdas])
   (:gen-class))
 

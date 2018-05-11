@@ -1,8 +1,8 @@
 (ns dirac.shared.dom
   (:require [clojure.string :as string]
-            [oops.core :refer [oget oset! ocall gcall oapply]]
-            [dirac.shared.logging :refer [log warn error info]]
-            [dirac.shared.dom.shim]))
+            [dirac.shared.dom.shim]
+            [dirac.shared.logging :refer [error info log warn]]
+            [oops.core :refer [gcall oapply ocall oget oset!]]))
 
 ; -- DOM access -------------------------------------------------------------------------------------------------------------
 

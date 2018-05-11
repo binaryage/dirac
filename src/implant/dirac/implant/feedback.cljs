@@ -1,9 +1,9 @@
 (ns dirac.implant.feedback
-  (:require [oops.core :refer [oget oset! ocall oapply oset!+ oget+ gget gset!]]
-            [dirac.implant.logging :refer [log warn error]]
-            [dirac.settings :refer [get-flush-pending-feedback-messages-key
-                                    get-dirac-intercom-key]]
-            [dirac.implant.options :as options]))
+  (:require [dirac.implant.logging :refer [error log warn]]
+            [dirac.implant.options :as options]
+            [dirac.settings :refer [get-dirac-intercom-key
+                                    get-flush-pending-feedback-messages-key]]
+            [oops.core :refer [gget gset! oapply ocall oget oget+ oset! oset!+]]))
 
 (defonce pending-messages (atom []))
 

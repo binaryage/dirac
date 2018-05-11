@@ -1,10 +1,10 @@
 (ns dirac.nrepl.driver
-  (:require [clojure.tools.logging :as log]
+  (:require [cljs.repl :as cljs-repl]
             [clojure.main :as clojure-main]
-            [cljs.repl :as cljs-repl]
-            [dirac.nrepl.sniffer :as sniffer]
+            [clojure.tools.logging :as log]
             [dirac.nrepl.helpers :as helpers]
-            [dirac.nrepl.protocol :as protocol]))
+            [dirac.nrepl.protocol :as protocol]
+            [dirac.nrepl.sniffer :as sniffer]))
 
 ; -- driver construction ----------------------------------------------------------------------------------------------------
 

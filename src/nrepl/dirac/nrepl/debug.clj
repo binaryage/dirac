@@ -1,6 +1,6 @@
 (ns dirac.nrepl.debug
-  (:require [cuerdas.core :as cuerdas]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
+            [cuerdas.core :as cuerdas]
             [dirac.lib.utils :as utils])
   (:import (java.io PrintWriter StringWriter)))
 

@@ -1,15 +1,15 @@
 (ns dirac.nrepl.bootstrap
-  (:require [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
+            [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
+            [dirac.lib.utils :as lib-utils]
             [dirac.lib.weasel-server :as weasel-server]
-            [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.debug :as debug]
-            [dirac.nrepl.state :as state]
-            [dirac.nrepl.messages :as messages]
             [dirac.nrepl.helpers :as helpers]
+            [dirac.nrepl.messages :as messages]
             [dirac.nrepl.protocol :as protocol]
-            [dirac.nrepl.utils :as utils]
-            [dirac.lib.utils :as lib-utils]))
+            [dirac.nrepl.sessions :as sessions]
+            [dirac.nrepl.state :as state]
+            [dirac.nrepl.utils :as utils]))
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
 

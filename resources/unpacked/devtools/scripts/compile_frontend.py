@@ -71,7 +71,7 @@ def to_platform_path_exact(filepath):
 scripts_path = path.dirname(path.abspath(__file__))
 devtools_path = path.dirname(scripts_path)
 chromium_path = path.join(devtools_path,  os.pardir, os.pardir, os.pardir, os.pardir, 'chromium-mirror')
-webkit_path = path.join(chromium_path, 'third_party', 'WebKit', 'Source')
+webkit_path = path.join(chromium_path, 'third_party', 'blink', 'renderer')
 inspector_path = path.join(webkit_path, 'core', 'inspector')
 v8_inspector_path = path.normpath(path.join(chromium_path, 'v8', 'src', 'inspector'))
 devtools_frontend_path = path.join(devtools_path, 'front_end')
@@ -346,8 +346,8 @@ def main():
         protocol_externs_file = args.protocol_externs_file
     else:
         generate_protocol_externs.generate_protocol_externs(protocol_externs_file,
-                                                            path.join(inspector_path, 'browser_protocol.json'),
-                                                            path.join(v8_inspector_path, 'js_protocol.json'))
+                                                            path.join(inspector_path, 'browser_protocol.pdl'),
+                                                            path.join(v8_inspector_path, 'js_protocol.pdl'))
     loader = modular_build.DescriptorLoader(devtools_frontend_path)
     descriptors = loader.load_applications(application_descriptors)
     modules_by_name = descriptors.modules

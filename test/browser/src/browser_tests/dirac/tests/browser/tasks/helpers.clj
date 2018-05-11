@@ -1,19 +1,19 @@
 (ns dirac.tests.browser.tasks.helpers
-  (:require [clojure.string :as string]
-            [clojure.java.shell :as shell]
-            [clojure.tools.logging :as log]
+  (:require [clansi]
             [clj-webdriver.taxi :as taxi]
-            [environ.core :refer [env]]
+            [clojure.java.shell :as shell]
+            [clojure.string :as string]
+            [clojure.tools.logging :as log]
             [cuerdas.core :as cuerdas]
-            [clansi]
-            [dirac.shared.utils :as utils]
-            [dirac.settings :refer [get-launch-task-message
-                                    get-kill-task-message
-                                    get-actual-transcripts-root-path
+            [dirac.settings :refer [get-actual-transcripts-root-path
                                     get-expected-transcripts-root-path
                                     get-fixtures-server-port
-                                    get-fixtures-server-url]]
-            [dirac.test-lib.chrome-driver :refer [get-debugging-port]]))
+                                    get-fixtures-server-url
+                                    get-kill-task-message
+                                    get-launch-task-message]]
+            [dirac.shared.utils :as utils]
+            [dirac.test-lib.chrome-driver :refer [get-debugging-port]]
+            [environ.core :refer [env]]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 

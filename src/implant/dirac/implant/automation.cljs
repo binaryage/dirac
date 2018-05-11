@@ -1,13 +1,13 @@
 (ns dirac.implant.automation
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [dirac.implant.logging :refer [log warn error]]
-            [oops.core :refer [oget oset! ocall oapply oset!+ ocall+ oget+ oapply+ gcall+ gset!]]
-            [cljs.reader :as reader]
-            [dirac.settings :refer [get-automation-entry-point-key]]
-            [dirac.shared.utils :as utils]
-            [dirac.implant.helpers :refer [get-console-view get-inspector-view get-url-params get-dirac-api]]
+  (:require [cljs.reader :as reader]
+            [dirac.implant.automation.scrapers :refer [scrape]]
+            [dirac.implant.helpers :refer [get-console-view get-dirac-api get-inspector-view get-url-params]]
+            [dirac.implant.logging :refer [error log warn]]
             [dirac.implant.options :as options]
-            [dirac.implant.automation.scrapers :refer [scrape]]))
+            [dirac.settings :refer [get-automation-entry-point-key]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
+            [dirac.shared.utils :as utils]
+            [oops.core :refer [gcall+ gset! oapply oapply+ ocall ocall+ oget oget+ oset! oset!+]]))
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 (ns dirac.implant.options
-  (:require [oops.core :refer [oget gcall oapply gget]]
-            [dirac.implant.logging :refer [log warn error]]))
+  (:require [dirac.implant.logging :refer [error log warn]]
+            [oops.core :refer [gcall gget oapply oget]]))
 
 (defn get-query-param [name]
   (gcall "Runtime.queryParam" name))

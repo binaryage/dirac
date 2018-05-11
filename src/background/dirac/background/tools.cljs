@@ -1,27 +1,27 @@
 (ns dirac.background.tools
-  (:require [dirac.background.logging :refer [log info warn error]]
-            [dirac.shared.async :refer [<! go-channel go-wait close! put! go]]
-            [oops.core :refer [oget oset! ocall oapply]]
+  (:require [chromex.ext.tabs :as tabs]
             [chromex.ext.windows :as windows]
-            [chromex.ext.tabs :as tabs]
-            [dirac.settings :refer [get-dirac-devtools-window-top
-                                    get-dirac-devtools-window-left
-                                    get-dirac-devtools-window-width
-                                    get-dirac-devtools-window-height
-                                    get-frontend-handshake-timeout
-                                    get-frontend-loading-timeout
-                                    get-intercom-init-timeout]]
-            [dirac.shared.i18n :as i18n]
-            [dirac.shared.sugar :as sugar]
+            [dirac.background.debugging :refer [get-resolution-failure-reason go-resolve-backend-info resolution-failure?]]
+            [dirac.background.devtools :as devtools]
             [dirac.background.helpers :as helpers :refer [go-report-error-in-tab!
                                                           go-report-warning-in-tab!
                                                           go-show-connecting-debugger-backend-status!]]
-            [dirac.background.devtools :as devtools]
-            [dirac.background.debugging :refer [go-resolve-backend-info resolution-failure? get-resolution-failure-reason]]
-            [dirac.background.state :as state]
             [dirac.background.helpers :as helpers]
+            [dirac.background.logging :refer [error info log warn]]
+            [dirac.background.state :as state]
             [dirac.options.model :as options]
-            [dirac.shared.utils :as utils]))
+            [dirac.settings :refer [get-dirac-devtools-window-height
+                                    get-dirac-devtools-window-left
+                                    get-dirac-devtools-window-top
+                                    get-dirac-devtools-window-width
+                                    get-frontend-handshake-timeout
+                                    get-frontend-loading-timeout
+                                    get-intercom-init-timeout]]
+            [dirac.shared.async :refer [<! close! go go-channel go-wait put!]]
+            [dirac.shared.i18n :as i18n]
+            [dirac.shared.sugar :as sugar]
+            [dirac.shared.utils :as utils]
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 ; WARNING: keep this in sync with dirac.js/knownFeatureFlags
 (def flag-keys [:enable-repl

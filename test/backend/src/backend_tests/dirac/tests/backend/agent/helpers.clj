@@ -1,8 +1,8 @@
 (ns dirac.tests.backend.agent.helpers
-  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+  (:require [clojure.core.async :refer [<! <!! >!! alts!! chan close! go go-loop put! timeout]]
+            [clojure.pprint :refer [pprint]]
             [clojure.test :refer :all]
             [clojure.tools.logging :as log]
-            [clojure.pprint :refer [pprint]]
             [dirac.tests.backend.agent.state :refer [received-messages]]))
 
 (def ^:dynamic default-message-timeout 10000)

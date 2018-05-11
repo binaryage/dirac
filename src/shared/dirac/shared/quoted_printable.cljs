@@ -1,5 +1,5 @@
 (ns dirac.shared.quoted-printable
-  (:require [oops.core :refer [oget oset! ocall oapply gget gcall]]))
+  (:require [oops.core :refer [gcall gget oapply ocall oget oset!]]))
 
 ; taken from
 ; https://github.com/mathiasbynens/quoted-printable/blob/326f631c9dd0cd051d12ab1b39682a97126b1894/src/quoted-printable.js

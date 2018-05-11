@@ -13,29 +13,29 @@
 ;; WebDriver API.
 ;;
 (ns clj-webdriver.core
-  (:use [clj-webdriver driver element util options cookie]
+  (:use [clj-webdriver cookie driver element options util]
         [clojure.walk :only [keywordize-keys]])
-  (:require [clj-webdriver.js.browserbot :as browserbot-js]
-            [clj-webdriver.cache :as cache]
-            [clj-webdriver.firefox :as ff]
-            [clj-webdriver.window :as win]
+  (:require [clj-webdriver.cache :as cache]
             clj-webdriver.driver
+            [clj-webdriver.firefox :as ff]
+            [clj-webdriver.js.browserbot :as browserbot-js]
+            [clj-webdriver.window :as win]
             [clojure.java.io :as io]
             [clojure.string :as string]
             [clojure.tools.logging :as log])
-  (:import java.lang.reflect.Constructor
-           [org.openqa.selenium By WebDriver WebElement
-                                OutputType NoSuchElementException Keys]
-           org.openqa.selenium.firefox.FirefoxDriver
-           org.openqa.selenium.ie.InternetExplorerDriver
-           org.openqa.selenium.chrome.ChromeDriver
-           org.openqa.selenium.htmlunit.HtmlUnitDriver
-           org.openqa.selenium.support.ui.Select
-           [org.openqa.selenium.interactions Actions CompositeAction]
-           org.openqa.selenium.Capabilities
-           org.openqa.selenium.remote.DesiredCapabilities
-           clj_webdriver.driver.Driver
+  (:import clj_webdriver.driver.Driver
            clj_webdriver.element.Element
+           java.lang.reflect.Constructor
+           [org.openqa.selenium By Keys NoSuchElementException
+                                OutputType WebDriver WebElement]
+           org.openqa.selenium.Capabilities
+           org.openqa.selenium.chrome.ChromeDriver
+           org.openqa.selenium.firefox.FirefoxDriver
+           org.openqa.selenium.htmlunit.HtmlUnitDriver
+           org.openqa.selenium.ie.InternetExplorerDriver
+           [org.openqa.selenium.interactions Actions CompositeAction]
+           org.openqa.selenium.remote.DesiredCapabilities
+           org.openqa.selenium.support.ui.Select
 ))
 
 ;; ## Protocols for clj-webdriver API ##

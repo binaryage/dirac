@@ -1,6 +1,6 @@
 (ns dirac.implant.editor
   "Glues Parinfer's formatter to a CodeMirror editor"
-  (:require [oops.core :refer [oget ocall gcall oapply gget]]))
+  (:require [oops.core :refer [gcall gget oapply ocall oget]]))
 
 (def basic-editor-opts
   {:mode          "clojure-parinfer"

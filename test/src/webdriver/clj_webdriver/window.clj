@@ -1,8 +1,8 @@
 (ns ^{:doc "Browser window and 'window handle' support"}
   clj-webdriver.window
   (:require [clj-webdriver.driver :as driver])
-  (:import [org.openqa.selenium Dimension Point]
-           [clj_webdriver.driver Driver]))
+  (:import [clj_webdriver.driver Driver]
+           [org.openqa.selenium Dimension Point]))
 
 (defrecord ^{:doc "A record that encapsulates all operations on windows, including what Selenium-WebDriver handles with the `WebDriver.Window` interface and the `getWindowHandle` methods."}
     Window [driver handle title url])

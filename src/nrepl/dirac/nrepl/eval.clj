@@ -1,20 +1,20 @@
 (ns dirac.nrepl.eval
-  (:require [clojure.tools.logging :as log]
-            [cljs.repl]
-            [clojure.tools.reader]
-            [cljs.analyzer :as analyzer]
+  (:require [cljs.analyzer :as analyzer]
             [cljs.compiler :as compiler]
-            [dirac.nrepl.state :as state]
-            [dirac.nrepl.driver :as driver]
-            [dirac.nrepl.version :refer [version]]
-            [dirac.nrepl.compilers :as compilers]
-            [dirac.nrepl.protocol :as protocol]
-            [dirac.lib.utils :as utils]
-            [clojure.tools.reader.reader-types :as readers]
+            [cljs.repl]
             [cljs.source-map :as sm]
+            [clojure.data.json :as json]
             [clojure.string :as string]
+            [clojure.tools.logging :as log]
+            [clojure.tools.reader]
+            [clojure.tools.reader.reader-types :as readers]
             [cuerdas.core :as cuerdas]
-            [clojure.data.json :as json])
+            [dirac.lib.utils :as utils]
+            [dirac.nrepl.compilers :as compilers]
+            [dirac.nrepl.driver :as driver]
+            [dirac.nrepl.protocol :as protocol]
+            [dirac.nrepl.state :as state]
+            [dirac.nrepl.version :refer [version]])
   (:import java.io.StringReader
            (javax.xml.bind DatatypeConverter)))
 

@@ -28,11 +28,19 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import os.path as path
 import re
+import sys
 try:
     import json
 except ImportError:
     import simplejson as json
+
+sys.path.append(
+    path.normpath(
+        path.join(os.environ['DIRAC_CHROMIUM_MIRROR_DIR'], 'third_party', 'inspector_protocol')))
+
+import pdl  # pylint: disable=F0401
 
 type_traits = {
     "any": "*",
@@ -97,8 +105,8 @@ def param_name(param):
 
 def load_schema(file, domains):
     input_file = open(file, "r")
-    json_string = input_file.read()
-    parsed_json = json.loads(json_string)
+    parsed_json = pdl.loads(input_file.read(), file)
+    input_file.close()
     domains.extend(parsed_json["domains"])
 
 

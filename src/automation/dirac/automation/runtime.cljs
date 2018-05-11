@@ -1,11 +1,11 @@
 (ns dirac.automation.runtime
-  (:require [dirac.automation.logging :refer [log warn error info]]
-            [oops.core :refer [oset! oget ocall oapply gset! gcall]]
+  (:require [dirac.automation.devtools :refer [init-devtools!]]
+            [dirac.automation.helpers :as helpers]
+            [dirac.automation.logging :refer [error info log warn]]
             [dirac.runtime :as runtime]
             [dirac.runtime.prefs :as runtime-prefs]
-            [dirac.automation.helpers :as helpers]
-            [dirac.automation.devtools :refer [init-devtools!]]
-            [goog.async.nextTick :as next-tick]))
+            [goog.async.nextTick :as next-tick]
+            [oops.core :refer [gcall gset! oapply ocall oget oset!]]))
 
 (defn configure-runtime-from-url-params! [url]
   (let [params (helpers/get-matching-query-params url #"^set-")

@@ -1,9 +1,9 @@
 (ns marion.background.core
-  (:require [dirac.shared.async :refer [<! go-channel go-wait go]]
-            [oops.core :refer [oget ocall oapply]]
-            [marion.background.logging :refer [log info warn error]]
+  (:require [dirac.shared.async :refer [<! go go-channel go-wait]]
             [marion.background.chrome :as chrome]
-            [marion.background.dirac :as dirac]))
+            [marion.background.dirac :as dirac]
+            [marion.background.logging :refer [error info log warn]]
+            [oops.core :refer [oapply ocall oget]]))
 
 ; -- main entry point -------------------------------------------------------------------------------------------------------
 

@@ -1,18 +1,18 @@
 (ns dirac.background.chrome
-  (:require [dirac.background.logging :refer [log info warn error]]
-            [dirac.shared.async :refer [<! go-channel put! go]]
-            [oops.core :refer [oget ocall oapply oset!]]
-            [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
-            [chromex.protocols :refer [post-message! get-sender get-name]]
-            [chromex.ext.runtime :as runtime]
-            [chromex.ext.windows :as windows]
-            [chromex.ext.tabs :as tabs]
+  (:require [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.browser-action :as browser-action]
             [chromex.ext.commands :as commands]
-            [dirac.background.state :as state]
+            [chromex.ext.runtime :as runtime]
+            [chromex.ext.tabs :as tabs]
+            [chromex.ext.windows :as windows]
+            [chromex.protocols :refer [get-name get-sender post-message!]]
             [dirac.background.devtools :as devtools]
+            [dirac.background.logging :refer [error info log warn]]
+            [dirac.background.marion :as marion]
+            [dirac.background.state :as state]
             [dirac.background.tools :as tools]
-            [dirac.background.marion :as marion]))
+            [dirac.shared.async :refer [<! go go-channel put!]]
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 (declare go-process-chrome-event!)
 

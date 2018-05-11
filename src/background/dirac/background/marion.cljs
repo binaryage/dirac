@@ -1,13 +1,13 @@
 (ns dirac.background.marion
-  (:require [dirac.background.logging :refer [log info warn error]]
-            [dirac.shared.async :refer [<! go-channel put! go]]
-            [oops.core :refer [oget ocall oapply]]
-            [chromex.protocols :refer [post-message! get-sender get-name]]
-            [dirac.background.state :as state]
+  (:require [chromex.protocols :refer [get-name get-sender post-message!]]
             [cljs.reader :as reader]
             [dirac.background.helpers :as helpers]
+            [dirac.background.logging :refer [error info log warn]]
+            [dirac.background.state :as state]
             [dirac.options.model :as options]
-            [dirac.shared.utils :as utils]))
+            [dirac.shared.async :refer [<! go go-channel put!]]
+            [dirac.shared.utils :as utils]
+            [oops.core :refer [oapply ocall oget]]))
 
 (declare post-feedback-event!)
 

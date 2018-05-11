@@ -8,19 +8,19 @@
 
   Other functions do not target a specific devtools instance and can be called independently.
   "
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [oops.core :refer [oget oset! ocall oapply]]
-            [dirac.automation.logging :refer [log error]]
-            [dirac.automation.machinery :as machinery]
+  (:require [clojure.string :as string]
             [dirac.automation.helpers :as helpers]
+            [dirac.automation.logging :refer [error log]]
+            [dirac.automation.machinery :as machinery]
             [dirac.automation.messages :as messages]
-            [dirac.automation.runner :as runner]
             [dirac.automation.notifications :as notifications]
             [dirac.automation.options :as options]
+            [dirac.automation.runner :as runner]
+            [dirac.automation.task]
             [dirac.automation.verbs :as verbs]
-            [dirac.automation.task]                                                                                           ; required for macros!
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]                                                                                           ; required for macros!
             [dirac.shared.utils :as utils]
-            [clojure.string :as string]))
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
 

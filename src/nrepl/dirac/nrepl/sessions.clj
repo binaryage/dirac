@@ -1,9 +1,9 @@
 (ns dirac.nrepl.sessions
-  (:require [clojure.tools.logging :as log]
-            [dirac.nrepl.state :as state]
-            [dirac.nrepl.debug :as debug]
+  (:require [clojure.string :as string]
+            [clojure.tools.logging :as log]
             [dirac.backport.string :as backport-string]
-            [clojure.string :as string])
+            [dirac.nrepl.debug :as debug]
+            [dirac.nrepl.state :as state])
   (:import (java.util.regex Pattern)))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------

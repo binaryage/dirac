@@ -1,21 +1,21 @@
 (ns dirac.implant
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [oops.core :refer [oget oset! oset!+ ocall oapply gget gcall!]]
-            [dirac.implant.logging :refer [log warn error info]]
-            [dirac.shared.utils :refer [runonce]]
-            [dirac.shared.console :refer [log-to-console!]]
-            [dirac.implant.editor :as editor]
-            [dirac.implant.intercom :as intercom]
+  (:require [dirac.implant.analyzer :as analyzer]
             [dirac.implant.automation :as automation]
-            [dirac.implant.version :refer [version]]
+            [dirac.implant.editor :as editor]
             [dirac.implant.eval :as eval]
             [dirac.implant.feedback :as feedback]
-            [dirac.implant.analyzer :as analyzer]
-            [dirac.implant.munging :as munging]
             [dirac.implant.helpers :as helpers]
-            [dirac.implant.reporter :as reporter]
+            [dirac.implant.intercom :as intercom]
+            [dirac.implant.link-handlers :as link-handlers]
+            [dirac.implant.logging :refer [error info log warn]]
+            [dirac.implant.munging :as munging]
             [dirac.implant.repl :as repl]
-            [dirac.implant.link-handlers :as link-handlers])
+            [dirac.implant.reporter :as reporter]
+            [dirac.implant.version :refer [version]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
+            [dirac.shared.console :refer [log-to-console!]]
+            [dirac.shared.utils :refer [runonce]]
+            [oops.core :refer [gcall! gget oapply ocall oget oset! oset!+]])
   (:import goog.async.Debouncer))
 
 (defonce ^:dynamic *console-initialized* false)

@@ -1,24 +1,24 @@
 (ns dirac.automation.task
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close! go]]
-            [oops.core :refer [oget oset! ocall oapply gset! gcall! gapply!+]]
-            [dirac.automation.logging :refer [log warn error info]]
+  (:require [dirac.automation.feedback :as feedback]
+            [dirac.automation.helpers :as helpers]
+            [dirac.automation.launcher :as launcher]
+            [dirac.automation.logging :refer [error info log warn]]
+            [dirac.automation.messages :as messages]
+            [dirac.automation.runner :as runner]
+            [dirac.automation.status-host :as status-host]
+            [dirac.automation.transcript-host :as transcript-host]
             [dirac.lib.ws-client :as ws-client]
             [dirac.options.model :as options-model]
-            [dirac.automation.transcript-host :as transcript-host]
-            [dirac.automation.status-host :as status-host]
-            [dirac.automation.feedback :as feedback]
-            [dirac.automation.messages :as messages]
-            [dirac.automation.launcher :as launcher]
-            [dirac.automation.helpers :as helpers]
-            [dirac.shared.utils :as utils]
-            [dirac.automation.runner :as runner]
-            [dirac.settings :refer [get-signal-server-url
-                                    get-transcript-streamer-server-url
+            [dirac.settings :refer [get-chrome-remote-debugging-host
                                     get-chrome-remote-debugging-port
-                                    get-chrome-remote-debugging-host
                                     get-pending-replies-wait-timeout
+                                    get-signal-client-close-delay
                                     get-signal-client-task-result-delay
-                                    get-signal-client-close-delay]]))
+                                    get-signal-server-url
+                                    get-transcript-streamer-server-url]]
+            [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
+            [dirac.shared.utils :as utils]
+            [oops.core :refer [gapply!+ gcall! gset! oapply ocall oget oset!]]))
 
 (declare register-global-error-handler!)
 

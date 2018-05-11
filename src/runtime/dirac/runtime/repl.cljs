@@ -1,13 +1,13 @@
 (ns dirac.runtime.repl
   (:refer-clojure :exclude [eval])
-  (:require [dirac.runtime.prefs :refer [get-prefs pref]]
+  (:require [clojure.string :as string]
             [dirac.runtime.bootstrap :refer [bootstrap!]]
-            [dirac.runtime.output :as output]
             [dirac.runtime.deps]
+            [dirac.runtime.output :as output]
+            [dirac.runtime.prefs :refer [get-prefs pref]]
             [dirac.runtime.util :refer [in-node-context?]]
-            [clojure.string :as string]
-            [goog.object :as gobject]
-            [goog.labs.userAgent.browser :as ua]))
+            [goog.labs.userAgent.browser :as ua]
+            [goog.object :as gobject]))
 
 ; We didn't want to introduce new protocol methods for websocket connection between DevTools front-end and back-end.
 ; So instead we tunnel our messages through console.log calls.

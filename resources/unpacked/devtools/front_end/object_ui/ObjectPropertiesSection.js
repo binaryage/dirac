@@ -907,11 +907,11 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
     const name = this.property.name;
     const parentPath = this.parent.nameElement ? this.parent.nameElement.title : '';
     if (useDotNotation.test(name))
-      this.nameElement.title = parentPath + '.' + name;
+      this.nameElement.title = parentPath ? `${parentPath}.${name}` : name;
     else if (isInteger.test(name))
       this.nameElement.title = parentPath + '[' + name + ']';
     else
-      this.nameElement.title = parentPath + '["' + name + '"]';
+      this.nameElement.title = parentPath + '["' + JSON.stringify(name) + '"]';
   }
 
   /**
@@ -919,6 +919,7 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
    */
   _contextMenuFired(event) {
     const contextMenu = new UI.ContextMenu(event);
+    contextMenu.appendApplicableItems(this);
     if (this.property.symbol)
       contextMenu.appendApplicableItems(this.property.symbol);
     if (this.property.value)
@@ -1067,6 +1068,13 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
     } else {
       this.setExpandable(false);
     }
+  }
+
+  /**
+   * @return {string}
+   */
+  path() {
+    return this.nameElement.title;
   }
 };
 

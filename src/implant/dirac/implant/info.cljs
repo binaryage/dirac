@@ -1,9 +1,9 @@
 (ns dirac.implant.info
-  (:require [oops.core :refer [oget oset! ocall oapply gget]]
-            [dirac.implant.logging :refer [log warn error]]
+  (:require [clojure.string :as string]
+            [dirac.implant.logging :refer [error log warn]]
             [dirac.implant.version :refer [get-version]]
-            [dirac.runtime.util :refer [get-browser-version-info get-browser-platform-info]]                                  ; TODO: we should not depend on runtime here
-            [clojure.string :as string]))
+            [dirac.runtime.util :refer [get-browser-platform-info get-browser-version-info]]                                  ; TODO: we should not depend on runtime here
+            [oops.core :refer [gget oapply ocall oget oset!]]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 

@@ -1,16 +1,16 @@
 (ns dirac.nrepl.joining
   "A functionality related to joined Dirac sessions."
-  (:require [clojure.tools.nrepl.transport :as transport]
+  (:require [clojure.string :as string]
             [clojure.tools.logging :as log]
-            [dirac.nrepl.version :refer [version]]
-            [dirac.nrepl.sessions :as sessions]
+            [clojure.tools.nrepl.transport :as transport]
+            [dirac.lib.utils :as utils]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.jobs :as jobs]
             [dirac.nrepl.messages :as messages]
-            [clojure.string :as string]
-            [dirac.nrepl.special :as special]
             [dirac.nrepl.protocol :as protocol]
-            [dirac.lib.utils :as utils]))
+            [dirac.nrepl.sessions :as sessions]
+            [dirac.nrepl.special :as special]
+            [dirac.nrepl.version :refer [version]]))
 
 ; -- handlers for middleware operations -------------------------------------------------------------------------------------
 

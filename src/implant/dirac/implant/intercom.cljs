@@ -1,21 +1,21 @@
 (ns dirac.implant.intercom
   (:require-macros [dirac.implant.intercom :refer [error-response]])
-  (:require [dirac.shared.async :refer [<! go-channel put! go-wait close! go]]
-            [cljs.tools.reader.edn :as reader-edn]
+  (:require [cljs.tools.reader.edn :as reader-edn]
             [cljs.tools.reader.reader-types :as reader-types]
             [clojure.walk :as walk]
             [cuerdas.core :as cuerdas]
-            [oops.core :refer [oget ocall oapply]]
             [dirac.implant.console :as console]
-            [dirac.implant.weasel-client :as weasel-client]
-            [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
-            [dirac.implant.version :as implant-version]
-            [dirac.shared.utils :as utils]
-            [dirac.implant.logging :refer [log info warn error]]
             [dirac.implant.eval :as eval]
             [dirac.implant.feedback :as feedback]
+            [dirac.implant.logging :refer [error info log warn]]
+            [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
+            [dirac.implant.version :as implant-version]
+            [dirac.implant.weasel-client :as weasel-client]
             [dirac.lib.ws-client :as ws-client]
-            [goog.functions :as gfns])
+            [dirac.shared.async :refer [<! close! go go-channel go-wait put!]]
+            [dirac.shared.utils :as utils]
+            [goog.functions :as gfns]
+            [oops.core :refer [oapply ocall oget]])
   (:import goog.net.WebSocket.ErrorEvent))
 
 (def required-repl-api-version 9)

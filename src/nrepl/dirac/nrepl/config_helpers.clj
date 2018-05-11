@@ -1,8 +1,8 @@
 (ns dirac.nrepl.config-helpers
-  (:require [dirac.lib.utils :refer [read-env-config deep-merge-ignoring-nils]]
+  (:require [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
-            [clojure.java.io :as io]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [dirac.lib.utils :refer [deep-merge-ignoring-nils read-env-config]])
   (:import (java.io File)))
 
 (def ^:dynamic standard-repl-init-code

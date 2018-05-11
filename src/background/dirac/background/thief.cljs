@@ -1,15 +1,15 @@
 (ns dirac.background.thief
-  (:require [dirac.background.logging :refer [log info warn error]]
-            [dirac.shared.async :refer [<! go-channel go-wait go]]
-            [oops.core :refer [oget oset! ocall oapply]]
-            [chromex.ext.page-capture :as page-capture]
+  (:require [chromex.ext.page-capture :as page-capture]
+            [clojure.string :as string]
+            [dirac.background.logging :refer [error info log warn]]
+            [dirac.background.tools :as tools]
+            [dirac.shared.async :refer [<! go go-channel go-wait]]
             [dirac.shared.mime :as mime]
             [dirac.shared.quoted-printable :as quoted-printable]
-            [goog.string :as gstring]
+            [dirac.shared.sugar :as sugar]
             [dirac.shared.utils :as utils]
-            [dirac.background.tools :as tools]
-            [clojure.string :as string]
-            [dirac.shared.sugar :as sugar]))
+            [goog.string :as gstring]
+            [oops.core :refer [oapply ocall oget oset!]]))
 
 ; -- inspector-js -----------------------------------------------------------------------------------------------------------
 

@@ -1,10 +1,10 @@
 (ns dirac.nrepl
-  (:require [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
-            [clojure.tools.logging :as log]
-            [dirac.nrepl.piggieback :as piggieback]
-            [dirac.nrepl.config :as config]
+  (:require [clojure.tools.logging :as log]
+            [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
+            [dirac.lib.utils :as utils]
             [dirac.nrepl.bootstrap :as bootstrap]
-            [dirac.lib.utils :as utils]))
+            [dirac.nrepl.config :as config]
+            [dirac.nrepl.piggieback :as piggieback]))
 
 ; -- public middleware definition -------------------------------------------------------------------------------------------
 

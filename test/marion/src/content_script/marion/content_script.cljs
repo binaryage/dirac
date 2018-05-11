@@ -1,6 +1,6 @@
 (ns marion.content-script
-  (:require [marion.content-script.core :as core]
-            [dirac.shared.utils :refer [runonce]]))
+  (:require [dirac.shared.utils :refer [runonce]]
+            [marion.content-script.core :as core]))
 
 (runonce
   (core/init!))

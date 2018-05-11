@@ -1,15 +1,15 @@
 (ns dirac.tests.browser.tasks.signal-server
   (:require [clojure.tools.logging :as log]
+            [dirac.lib.ws-server :as ws-server]
             [dirac.settings :refer [get-default-task-timeout
                                     get-kill-task-timeout
                                     get-signal-server-close-wait-timeout
                                     get-signal-server-host
-                                    get-signal-server-port
-                                    get-signal-server-max-connection-time]]
-            [dirac.lib.ws-server :as ws-server]
+                                    get-signal-server-max-connection-time
+                                    get-signal-server-port]]
+            [dirac.tests.browser.tasks.helpers :refer [format-friendly-timeout kill-task! pause-unless-ci]]
             [dirac.tests.browser.tasks.task-state :refer [get-task-client-disconnected-promise get-task-success
-                                                          set-task-success!]]
-            [dirac.tests.browser.tasks.helpers :refer [format-friendly-timeout pause-unless-ci kill-task!]]))
+                                                          set-task-success!]]))
 
 ; -- signal server ----------------------------------------------------------------------------------------------------------
 

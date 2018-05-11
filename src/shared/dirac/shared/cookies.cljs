@@ -1,7 +1,7 @@
 ; taken from https://github.com/Quantisan/cljs-cookies/blob/4963df43bd4b025f34a34be7b6b37b11fb69d278/src/cljs_cookies/core.cljs
 (ns dirac.shared.cookies
   (:refer-clojure :exclude [empty?])
-  (:require [oops.core :refer [oget oset! ocall ocall! gcall oapply]])
+  (:require [oops.core :refer [gcall oapply ocall ocall! oget oset!]])
   (:import goog.net.Cookies))
 
 (def cookies (Cookies. js/document))

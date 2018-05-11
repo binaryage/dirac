@@ -1,13 +1,13 @@
 (ns dirac.tests.scenarios.runtime-api
   (:require-macros [dirac.shared.async :refer [go]])
-  (:require [dirac.shared.async :refer [put! <! go-channel go-wait alts! close!]]
-            [chromex.logging :refer-macros [log]]
+  (:require [chromex.logging :refer-macros [log]]
+            [clojure.string :as string]
             [dirac.automation.runtime :refer [init-runtime!]]
             [dirac.automation.scenario :as scenario :refer-macros [with-feedback]]
-            [dirac.settings]
             [dirac.runtime :as runtime]
             [dirac.runtime.util :as runtime-util]
-            [clojure.string :as string]))
+            [dirac.settings]
+            [dirac.shared.async :refer [<! alts! close! go-channel go-wait put!]]))
 
 (defn replace-lib-info [s]
   (let [lib-info (runtime-util/get-lib-info)]
