@@ -1854,6 +1854,7 @@ Console.ConsoleViewFilter = class {
       text = Common.UIString('Default levels');
     else
       text = text || Common.UIString('Hide all');
+    this._levelMenuButton.element.classList.toggle('warning', !isAll && !isDefault);
     this._levelMenuButton.setText(text);
   }
 
