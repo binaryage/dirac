@@ -99,6 +99,8 @@ var InlineEditor = {};
 /** @const */
 var InspectorMain = {};
 /** @const */
+var JavaScriptMetadata = {};
+/** @const */
 var LayerViewer = {};
 /** @const */
 var Layers = {};
