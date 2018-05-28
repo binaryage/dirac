@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='68.0.3439.0';
-Protocol.BakedInspectorBackendAPIChromeRev='f60f78c388669fcd433f02a1282f0337e5a49012';
+Protocol.BakedInspectorBackendAPIChromeTag='69.0.3443.1';
+Protocol.BakedInspectorBackendAPIChromeRev='f829e9f194a471dd9a2b8f8def7d228b690026bd';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -177,6 +177,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setTouchEmulationEnabled", [{"name": "enabled", "type": "boolean", "optional": false}, {"name": "maxTouchPoints", "type": "number", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setVirtualTimePolicy", [{"name": "policy", "type": "string", "optional": false}, {"name": "budget", "type": "number", "optional": true}, {"name": "maxVirtualTimeTaskStarvationCount", "type": "number", "optional": true}, {"name": "waitForNavigation", "type": "boolean", "optional": true}, {"name": "initialVirtualTime", "type": "number", "optional": true}], ["virtualTimeTicksBase"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setVisibleSize", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Emulation.setUserAgentOverride", [{"name": "userAgent", "type": "string", "optional": false}, {"name": "acceptLanguage", "type": "string", "optional": true}, {"name": "platform", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("HeadlessExperimental.ScreenshotParamsFormat", {Jpeg: "jpeg", Png: "png"});\n'
 + 'Protocol.inspectorBackend.registerEvent("HeadlessExperimental.needsBeginFramesChanged", ["needsBeginFrames"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("HeadlessExperimental.beginFrame", [{"name": "frameTimeTicks", "type": "number", "optional": true}, {"name": "interval", "type": "number", "optional": true}, {"name": "noDisplayUpdates", "type": "boolean", "optional": true}, {"name": "screenshot", "type": "object", "optional": true}], ["hasDamage", "screenshotData"], false);\n'
@@ -295,7 +296,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Network.setDataSizeLimitsForTest", [{"name": "maxTotalSize", "type": "number", "optional": false}, {"name": "maxResourceSize", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.setExtraHTTPHeaders", [{"name": "headers", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.setRequestInterception", [{"name": "patterns", "type": "object", "optional": false}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Network.setUserAgentOverride", [{"name": "userAgent", "type": "string", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Network.setUserAgentOverride", [{"name": "userAgent", "type": "string", "optional": false}, {"name": "acceptLanguage", "type": "string", "optional": true}, {"name": "platform", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Overlay.InspectMode", {SearchForNode: "searchForNode", SearchForUAShadowDOM: "searchForUAShadowDOM", None: "none"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Overlay.inspectNodeRequested", ["backendNodeId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Overlay.nodeHighlightRequested", ["nodeId"]);\n'

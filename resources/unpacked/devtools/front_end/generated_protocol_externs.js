@@ -2494,6 +2494,22 @@ Protocol.EmulationAgent.SetVisibleSizeResponse;
  * @return {!Promise<!Protocol.EmulationAgent.SetVisibleSizeResponse>} */
 Protocol.EmulationAgent.prototype.invoke_setVisibleSize = function(obj) {};
 
+/**
+ * @param {string} userAgent
+ * @param {string=} opt_acceptLanguage
+ * @param {string=} opt_platform
+ * @return {!Promise<undefined>}
+ */
+Protocol.EmulationAgent.prototype.setUserAgentOverride = function(userAgent, opt_acceptLanguage, opt_platform) {};
+/** @typedef {!{acceptLanguage: (string|undefined), userAgent: string, platform: (string|undefined)}} */
+Protocol.EmulationAgent.SetUserAgentOverrideRequest;
+/** @typedef {Object|undefined} */
+Protocol.EmulationAgent.SetUserAgentOverrideResponse;
+/**
+ * @param {!Protocol.EmulationAgent.SetUserAgentOverrideRequest} obj
+ * @return {!Promise<!Protocol.EmulationAgent.SetUserAgentOverrideResponse>} */
+Protocol.EmulationAgent.prototype.invoke_setUserAgentOverride = function(obj) {};
+
 /** @enum {string} */
 Protocol.Emulation.ScreenOrientationType = {
     PortraitPrimary: "portraitPrimary",
@@ -3885,10 +3901,12 @@ Protocol.NetworkAgent.prototype.invoke_setRequestInterception = function(obj) {}
 
 /**
  * @param {string} userAgent
+ * @param {string=} opt_acceptLanguage
+ * @param {string=} opt_platform
  * @return {!Promise<undefined>}
  */
-Protocol.NetworkAgent.prototype.setUserAgentOverride = function(userAgent) {};
-/** @typedef {!{userAgent: string}} */
+Protocol.NetworkAgent.prototype.setUserAgentOverride = function(userAgent, opt_acceptLanguage, opt_platform) {};
+/** @typedef {!{acceptLanguage: (string|undefined), userAgent: string, platform: (string|undefined)}} */
 Protocol.NetworkAgent.SetUserAgentOverrideRequest;
 /** @typedef {Object|undefined} */
 Protocol.NetworkAgent.SetUserAgentOverrideResponse;
@@ -4064,7 +4082,7 @@ Protocol.Network.InterceptionStage = {
 /** @typedef {!{urlPattern:(string|undefined), resourceType:(Protocol.Page.ResourceType|undefined), interceptionStage:(Protocol.Network.InterceptionStage|undefined)}} */
 Protocol.Network.RequestPattern;
 
-/** @typedef {!{label:(string), integrity:(string), certUrl:(string), validityUrl:(string), date:(number), expires:(number)}} */
+/** @typedef {!{label:(string), signature:(string), integrity:(string), certUrl:(string|undefined), certSha256:(string|undefined), validityUrl:(string), date:(number), expires:(number), certificates:(!Array<string>|undefined)}} */
 Protocol.Network.SignedExchangeSignature;
 
 /** @typedef {!{requestUrl:(string), requestMethod:(string), responseCode:(number), responseHeaders:(Protocol.Network.Headers), signatures:(!Array<Protocol.Network.SignedExchangeSignature>)}} */
