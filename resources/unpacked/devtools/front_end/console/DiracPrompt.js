@@ -17,6 +17,15 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     this._codeMirror.on("blur", this._blur.bind(this));
     this._currentClojureScriptNamespace = null;
     this._lastAutocompleteRequest = 0;
+    this._eagerPreviewElement = createElementWithClass('div', 'console-eager-preview'); // just to mimic disabled eager preview functionality of ConsolePrompt
+  }
+
+  /**
+   * @return {!Element}
+   */
+  // just to mimic disabled eager preview functionality of ConsolePrompt, see https://github.com/binaryage/dirac/issues/78
+  belowEditorElement() {
+    return this._eagerPreviewElement;
   }
 
   /**
