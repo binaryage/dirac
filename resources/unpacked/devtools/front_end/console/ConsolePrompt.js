@@ -40,7 +40,9 @@ Console.ConsolePrompt = class extends UI.Widget {
       this._editor.configureAutocomplete({
         substituteRangeCallback: this._substituteRange.bind(this),
         suggestionsCallback: this._wordsWithQuery.bind(this),
-        tooltipCallback: (lineNumber, columnNumber) => this._tooltipCallback(lineNumber, columnNumber)
+        tooltipCallback: (lineNumber, columnNumber) => this._tooltipCallback(lineNumber, columnNumber),
+        anchorBehavior: this._isBelowPromptEnabled ? UI.GlassPane.AnchorBehavior.PreferTop :
+                                                     UI.GlassPane.AnchorBehavior.PreferBottom
       });
       this._editor.widget().element.addEventListener('keydown', this._editorKeyDown.bind(this), true);
       this._editor.widget().show(this.element);
@@ -354,7 +356,7 @@ Console.ConsolePrompt = class extends UI.Widget {
    * @param {boolean=} force
    * @return {!Promise<!UI.SuggestBox.Suggestions>}
    */
-  _wordsWithQuery(queryRange, substituteRange, force) {
+  async _wordsWithQuery(queryRange, substituteRange, force) {
     const query = this._editor.text(queryRange);
     const before = this._editor.text(new TextUtils.TextRange(0, 0, queryRange.startLine, queryRange.startColumn));
     const historyWords = this._historyCompletions(query, force);
@@ -367,10 +369,15 @@ Console.ConsolePrompt = class extends UI.Widget {
       if (!trimmedBefore.endsWith('.'))
         excludedTokens.add('js-property');
       if (excludedTokens.has(token.type))
-        return Promise.resolve(historyWords);
+        return historyWords;
     }
-    return ObjectUI.javaScriptAutocomplete.completionsForTextInCurrentContext(before, query, force)
-        .then(words => words.concat(historyWords));
+    const words = await ObjectUI.javaScriptAutocomplete.completionsForTextInCurrentContext(before, query, force);
+    if (!force && !this._isCaretAtEndOfPrompt()) {
+      const queryAndAfter = this._editor.line(queryRange.startLine).substring(queryRange.startColumn);
+      if (queryAndAfter && words.some(word => queryAndAfter.startsWith(word.text) && query.length !== word.text.length))
+        return [];
+    }
+    return words.concat(historyWords);
   }
 
   /**
@@ -383,22 +390,20 @@ Console.ConsolePrompt = class extends UI.Widget {
     const result = await ObjectUI.javaScriptAutocomplete.argumentsHint(before);
     if (!result)
       return null;
-    const argumentsElement = createElement('span');
-    for (let i = 0; i < result.args.length; i++) {
-      if (i === result.argumentIndex || (i < result.argumentIndex && result.args[i].startsWith('...'))) {
-        const boldElement = createElement('b');
-        boldElement.textContent = result.args[i];
-        argumentsElement.appendChild(boldElement);
-      } else {
-        argumentsElement.createTextChild(result.args[i]);
+    const {argumentIndex} = result;
+    const tooltip = createElement('div');
+    for (const args of result.args) {
+      const argumentsElement = createElement('span');
+      for (let i = 0; i < args.length; i++) {
+        if (i === argumentIndex || (i < argumentIndex && args[i].startsWith('...')))
+          argumentsElement.appendChild(UI.html`<b>${args[i]}</b>`);
+        else
+          argumentsElement.createTextChild(args[i]);
+        if (i < args.length - 1)
+          argumentsElement.createTextChild(', ');
       }
-      if (i < result.args.length - 1)
-        argumentsElement.createTextChild(', ');
+      tooltip.appendChild(UI.html`<div class='source-code'>\u0192(${argumentsElement})</div>`);
     }
-    const tooltip = createElementWithClass('span', 'source-code');
-    tooltip.createTextChild('\u0192(');
-    tooltip.appendChild(argumentsElement);
-    tooltip.createTextChild(')');
     return tooltip;
   }
 

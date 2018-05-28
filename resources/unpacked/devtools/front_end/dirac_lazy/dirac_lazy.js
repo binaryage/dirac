@@ -637,9 +637,12 @@ Object.assign(window.dirac, (function() {
     }
     const scriptFile = Bindings.debuggerWorkspaceBinding.scriptFile(uiSourceCode, debuggerModel);
     if (!scriptFile) {
-      throw new Error(
+      // do not treat missing script file as a fatal error, only log error into internal dirac console
+      // see https://github.com/binaryage/dirac/issues/79
+      console.error(
         `uiSourceCode expected to have scriptFile associated\n` +
         `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
+      return nil;
     }
     const script = scriptFile.getScript();
     if (!script) {

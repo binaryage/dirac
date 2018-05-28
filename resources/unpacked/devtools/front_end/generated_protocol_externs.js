@@ -1951,6 +1951,32 @@ Protocol.DOMSnapshot = {};
 Protocol.DOMSnapshotAgent = function(){};
 
 /**
+ * @return {!Promise<undefined>}
+ */
+Protocol.DOMSnapshotAgent.prototype.disable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.DOMSnapshotAgent.DisableRequest;
+/** @typedef {Object|undefined} */
+Protocol.DOMSnapshotAgent.DisableResponse;
+/**
+ * @param {!Protocol.DOMSnapshotAgent.DisableRequest} obj
+ * @return {!Promise<!Protocol.DOMSnapshotAgent.DisableResponse>} */
+Protocol.DOMSnapshotAgent.prototype.invoke_disable = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.DOMSnapshotAgent.prototype.enable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.DOMSnapshotAgent.EnableRequest;
+/** @typedef {Object|undefined} */
+Protocol.DOMSnapshotAgent.EnableResponse;
+/**
+ * @param {!Protocol.DOMSnapshotAgent.EnableRequest} obj
+ * @return {!Promise<!Protocol.DOMSnapshotAgent.EnableResponse>} */
+Protocol.DOMSnapshotAgent.prototype.invoke_enable = function(obj) {};
+
+/**
  * @param {!Array<string>} computedStyleWhitelist
  * @param {boolean=} opt_includeEventListeners
  * @param {boolean=} opt_includePaintOrder
@@ -1967,7 +1993,7 @@ Protocol.DOMSnapshotAgent.GetSnapshotResponse;
  * @return {!Promise<!Protocol.DOMSnapshotAgent.GetSnapshotResponse>} */
 Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
-/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined)}} */
+/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined), originURL:(string|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
 /** @typedef {!{boundingBox:(Protocol.DOM.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
@@ -2441,12 +2467,12 @@ Protocol.EmulationAgent.prototype.invoke_setTouchEmulationEnabled = function(obj
  * @param {number=} opt_maxVirtualTimeTaskStarvationCount
  * @param {boolean=} opt_waitForNavigation
  * @param {Protocol.Network.TimeSinceEpoch=} opt_initialVirtualTime
- * @return {!Promise<?Protocol.Runtime.Timestamp>}
+ * @return {!Promise<?number>}
  */
 Protocol.EmulationAgent.prototype.setVirtualTimePolicy = function(policy, opt_budget, opt_maxVirtualTimeTaskStarvationCount, opt_waitForNavigation, opt_initialVirtualTime) {};
 /** @typedef {!{policy: Protocol.Emulation.VirtualTimePolicy, initialVirtualTime: (Protocol.Network.TimeSinceEpoch|undefined), maxVirtualTimeTaskStarvationCount: (number|undefined), waitForNavigation: (boolean|undefined), budget: (number|undefined)}} */
 Protocol.EmulationAgent.SetVirtualTimePolicyRequest;
-/** @typedef {!{virtualTimeBase: Protocol.Runtime.Timestamp, virtualTimeTicksBase: number}} */
+/** @typedef {!{virtualTimeTicksBase: number}} */
 Protocol.EmulationAgent.SetVirtualTimePolicyResponse;
 /**
  * @param {!Protocol.EmulationAgent.SetVirtualTimePolicyRequest} obj
@@ -2467,6 +2493,22 @@ Protocol.EmulationAgent.SetVisibleSizeResponse;
  * @param {!Protocol.EmulationAgent.SetVisibleSizeRequest} obj
  * @return {!Promise<!Protocol.EmulationAgent.SetVisibleSizeResponse>} */
 Protocol.EmulationAgent.prototype.invoke_setVisibleSize = function(obj) {};
+
+/**
+ * @param {string} userAgent
+ * @param {string=} opt_acceptLanguage
+ * @param {string=} opt_platform
+ * @return {!Promise<undefined>}
+ */
+Protocol.EmulationAgent.prototype.setUserAgentOverride = function(userAgent, opt_acceptLanguage, opt_platform) {};
+/** @typedef {!{acceptLanguage: (string|undefined), userAgent: string, platform: (string|undefined)}} */
+Protocol.EmulationAgent.SetUserAgentOverrideRequest;
+/** @typedef {Object|undefined} */
+Protocol.EmulationAgent.SetUserAgentOverrideResponse;
+/**
+ * @param {!Protocol.EmulationAgent.SetUserAgentOverrideRequest} obj
+ * @return {!Promise<!Protocol.EmulationAgent.SetUserAgentOverrideResponse>} */
+Protocol.EmulationAgent.prototype.invoke_setUserAgentOverride = function(obj) {};
 
 /** @enum {string} */
 Protocol.Emulation.ScreenOrientationType = {
@@ -2505,17 +2547,14 @@ Protocol.HeadlessExperimental = {};
 Protocol.HeadlessExperimentalAgent = function(){};
 
 /**
- * @param {Protocol.Runtime.Timestamp=} opt_frameTime
  * @param {number=} opt_frameTimeTicks
- * @param {Protocol.Runtime.Timestamp=} opt_deadline
- * @param {number=} opt_deadlineTicks
  * @param {number=} opt_interval
  * @param {boolean=} opt_noDisplayUpdates
  * @param {Protocol.HeadlessExperimental.ScreenshotParams=} opt_screenshot
  * @return {!Promise<?boolean>}
  */
-Protocol.HeadlessExperimentalAgent.prototype.beginFrame = function(opt_frameTime, opt_frameTimeTicks, opt_deadline, opt_deadlineTicks, opt_interval, opt_noDisplayUpdates, opt_screenshot) {};
-/** @typedef {!{screenshot: (Protocol.HeadlessExperimental.ScreenshotParams|undefined), interval: (number|undefined), frameTime: (Protocol.Runtime.Timestamp|undefined), deadline: (Protocol.Runtime.Timestamp|undefined), noDisplayUpdates: (boolean|undefined), deadlineTicks: (number|undefined), frameTimeTicks: (number|undefined)}} */
+Protocol.HeadlessExperimentalAgent.prototype.beginFrame = function(opt_frameTimeTicks, opt_interval, opt_noDisplayUpdates, opt_screenshot) {};
+/** @typedef {!{interval: (number|undefined), frameTimeTicks: (number|undefined), noDisplayUpdates: (boolean|undefined), screenshot: (Protocol.HeadlessExperimental.ScreenshotParams|undefined)}} */
 Protocol.HeadlessExperimentalAgent.BeginFrameRequest;
 /** @typedef {!{hasDamage: boolean, screenshotData: string}} */
 Protocol.HeadlessExperimentalAgent.BeginFrameResponse;
@@ -2523,20 +2562,6 @@ Protocol.HeadlessExperimentalAgent.BeginFrameResponse;
  * @param {!Protocol.HeadlessExperimentalAgent.BeginFrameRequest} obj
  * @return {!Promise<!Protocol.HeadlessExperimentalAgent.BeginFrameResponse>} */
 Protocol.HeadlessExperimentalAgent.prototype.invoke_beginFrame = function(obj) {};
-
-/**
- * @param {number=} opt_initialDate
- * @return {!Promise<undefined>}
- */
-Protocol.HeadlessExperimentalAgent.prototype.enterDeterministicMode = function(opt_initialDate) {};
-/** @typedef {!{initialDate: (number|undefined)}} */
-Protocol.HeadlessExperimentalAgent.EnterDeterministicModeRequest;
-/** @typedef {Object|undefined} */
-Protocol.HeadlessExperimentalAgent.EnterDeterministicModeResponse;
-/**
- * @param {!Protocol.HeadlessExperimentalAgent.EnterDeterministicModeRequest} obj
- * @return {!Promise<!Protocol.HeadlessExperimentalAgent.EnterDeterministicModeResponse>} */
-Protocol.HeadlessExperimentalAgent.prototype.invoke_enterDeterministicMode = function(obj) {};
 
 /**
  * @return {!Promise<undefined>}
@@ -3876,10 +3901,12 @@ Protocol.NetworkAgent.prototype.invoke_setRequestInterception = function(obj) {}
 
 /**
  * @param {string} userAgent
+ * @param {string=} opt_acceptLanguage
+ * @param {string=} opt_platform
  * @return {!Promise<undefined>}
  */
-Protocol.NetworkAgent.prototype.setUserAgentOverride = function(userAgent) {};
-/** @typedef {!{userAgent: string}} */
+Protocol.NetworkAgent.prototype.setUserAgentOverride = function(userAgent, opt_acceptLanguage, opt_platform) {};
+/** @typedef {!{acceptLanguage: (string|undefined), userAgent: string, platform: (string|undefined)}} */
 Protocol.NetworkAgent.SetUserAgentOverrideRequest;
 /** @typedef {Object|undefined} */
 Protocol.NetworkAgent.SetUserAgentOverrideResponse;
@@ -3910,7 +3937,9 @@ Protocol.Network.ErrorReason = {
     ConnectionFailed: "ConnectionFailed",
     NameNotResolved: "NameNotResolved",
     InternetDisconnected: "InternetDisconnected",
-    AddressUnreachable: "AddressUnreachable"
+    AddressUnreachable: "AddressUnreachable",
+    BlockedByClient: "BlockedByClient",
+    BlockedByResponse: "BlockedByResponse"
 };
 
 /** @typedef {number} */
@@ -3983,13 +4012,13 @@ Protocol.Network.CertificateTransparencyCompliance = {
 
 /** @enum {string} */
 Protocol.Network.BlockedReason = {
+    Other: "other",
     Csp: "csp",
     MixedContent: "mixed-content",
     Origin: "origin",
     Inspector: "inspector",
     SubresourceFilter: "subresource-filter",
-    ContentType: "content-type",
-    Other: "other"
+    ContentType: "content-type"
 };
 
 /** @typedef {!{url:(string), status:(number), statusText:(string), headers:(Protocol.Network.Headers), headersText:(string|undefined), mimeType:(string), requestHeaders:(Protocol.Network.Headers|undefined), requestHeadersText:(string|undefined), connectionReused:(boolean), connectionId:(number), remoteIPAddress:(string|undefined), remotePort:(number|undefined), fromDiskCache:(boolean|undefined), fromServiceWorker:(boolean|undefined), encodedDataLength:(number), timing:(Protocol.Network.ResourceTiming|undefined), protocol:(string|undefined), securityState:(Protocol.Security.SecurityState), securityDetails:(Protocol.Network.SecurityDetails|undefined)}} */
@@ -4012,6 +4041,7 @@ Protocol.Network.InitiatorType = {
     Parser: "parser",
     Script: "script",
     Preload: "preload",
+    SignedExchange: "SignedExchange",
     Other: "other"
 };
 
@@ -4052,7 +4082,13 @@ Protocol.Network.InterceptionStage = {
 /** @typedef {!{urlPattern:(string|undefined), resourceType:(Protocol.Page.ResourceType|undefined), interceptionStage:(Protocol.Network.InterceptionStage|undefined)}} */
 Protocol.Network.RequestPattern;
 
-/** @typedef {!{outerResponse:(Protocol.Network.Response)}} */
+/** @typedef {!{label:(string), signature:(string), integrity:(string), certUrl:(string|undefined), certSha256:(string|undefined), validityUrl:(string), date:(number), expires:(number), certificates:(!Array<string>|undefined)}} */
+Protocol.Network.SignedExchangeSignature;
+
+/** @typedef {!{requestUrl:(string), requestMethod:(string), responseCode:(number), responseHeaders:(Protocol.Network.Headers), signatures:(!Array<Protocol.Network.SignedExchangeSignature>)}} */
+Protocol.Network.SignedExchangeHeader;
+
+/** @typedef {!{outerResponse:(Protocol.Network.Response), header:(Protocol.Network.SignedExchangeHeader|undefined), securityDetails:(Protocol.Network.SecurityDetails|undefined), errors:(!Array<string>|undefined)}} */
 Protocol.Network.SignedExchangeInfo;
 /** @interface */
 Protocol.NetworkDispatcher = function() {};

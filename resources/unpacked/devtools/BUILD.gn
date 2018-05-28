@@ -14,7 +14,6 @@ all_devtools_files = [
   "front_end/accessibility/AccessibilitySidebarView.js",
   "front_end/accessibility/AccessibilityStrings.js",
   "front_end/accessibility/ARIAAttributesView.js",
-  "front_end/accessibility/ARIAConfig.js",
   "front_end/accessibility/ARIAMetadata.js",
   "front_end/accessibility/axBreadcrumbs.css",
   "front_end/accessibility/AXBreadcrumbsPane.js",
@@ -42,11 +41,16 @@ all_devtools_files = [
   "front_end/audits2_worker/lighthouse/lighthouse-background.js",
   "front_end/audits2_worker/module.json",
   "front_end/audits2/Audits2Panel.js",
-  "front_end/audits2/Audits2Dialog.js",
+  "front_end/audits2/Audits2Controller.js",
+  "front_end/audits2/Audits2ReportSelector.js",
+  "front_end/audits2/Audits2ReportRenderer.js",
+  "front_end/audits2/Audits2StartView.js",
   "front_end/audits2/Audits2ProtocolService.js",
   "front_end/audits2/Audits2StatusView.js",
   "front_end/audits2/audits2Dialog.css",
+  "front_end/audits2/audits2StartView.css",
   "front_end/audits2/audits2Panel.css",
+  "front_end/audits2/RadioSetting.js",
   "front_end/audits2/lighthouse/renderer/dom.js",
   "front_end/audits2/lighthouse/renderer/details-renderer.js",
   "front_end/audits2/lighthouse/renderer/category-renderer.js",
@@ -354,6 +358,9 @@ all_devtools_files = [
   "front_end/inspector_main/RequestAppBannerActionDelegate.js",
   "front_end/integration_test_runner.js",
   "front_end/integration_test_runner.json",
+  "front_end/javascript_metadata/module.json",
+  "front_end/javascript_metadata/NativeFunctions.js",
+  "front_end/javascript_metadata/JavaScriptMetadata.js",
   "front_end/js_main/JsMain.js",
   "front_end/js_main/module.json",
   "front_end/js_profiler/module.json",
@@ -424,6 +431,9 @@ all_devtools_files = [
   "front_end/network/RequestResponseView.js",
   "front_end/network/RequestTimingView.js",
   "front_end/network/ResourceWebSocketFrameView.js",
+  "front_end/network/signedExchangeInfoTree.css",
+  "front_end/network/signedExchangeInfoView.css",
+  "front_end/network/SignedExchangeInfoView.js",
   "front_end/network/webSocketFrameView.css",
   "front_end/network_test_runner/module.json",
   "front_end/network_test_runner/NetworkTestRunner.js",
@@ -972,6 +982,9 @@ generated_scripts = [
   "$resources_out_dir/SupportedCSSProperties.js",
 ]
 
+generated_aria_properties =
+    [ "$resources_out_dir/accessibility/ARIAProperties.js" ]
+
 application_templates = [
   "front_end/devtools_app.html",
   "front_end/inspector.html",
@@ -1025,6 +1038,7 @@ generated_non_autostart_non_remote_modules = [
   "$resources_out_dir/heap_snapshot_model/heap_snapshot_model_module.js",
   "$resources_out_dir/help/help_module.js",
   "$resources_out_dir/inline_editor/inline_editor_module.js",
+  "$resources_out_dir/javascript_metadata/javascript_metadata_module.js",
   "$resources_out_dir/js_profiler/js_profiler_module.js",
   "$resources_out_dir/layer_viewer/layer_viewer_module.js",
   "$resources_out_dir/layers/layers_module.js",
@@ -1081,6 +1095,7 @@ group("devtools_all_files") {
 
 group("devtools_frontend_resources") {
   public_deps = [
+    ":aria_properties",
     ":build_release_devtools",
     ":copy_embedder_scripts",
     ":copy_emulated_devices_images",
@@ -1090,7 +1105,10 @@ group("devtools_frontend_resources") {
     ":supported_css_properties",
   ]
   if (debug_devtools) {
-    public_deps += [ ":build_debug_devtools" ]
+    public_deps += [
+      ":build_debug_devtools",
+      ":copy_aria_properties",
+    ]
   }
 }
 
@@ -1181,6 +1199,21 @@ action("supported_css_properties") {
       rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
 }
 
+action("aria_properties") {
+  script = "scripts/build/generate_aria.py"
+
+  inputs = [
+    "../core/html/aria_properties.json5",
+  ]
+
+  outputs = [
+    "$resources_out_dir/accessibility/ARIAProperties.js",
+  ]
+
+  args =
+      rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
+}
+
 action("frontend_protocol_sources") {
   script = "scripts/build/code_generator_frontend.py"
   deps = [
@@ -1203,6 +1236,7 @@ action("build_release_devtools") {
   script = "scripts/build/build_release_applications.py"
 
   deps = [
+    ":aria_properties",
     ":frontend_protocol_sources",
     ":supported_css_properties",
   ]
@@ -1213,7 +1247,7 @@ action("build_release_devtools") {
   ]
 
   inputs = helper_scripts + all_devtools_files + generated_scripts +
-           application_templates
+           generated_aria_properties + application_templates
   outputs =
       generated_applications + generated_non_autostart_non_remote_modules +
       generated_remote_modules
@@ -1264,6 +1298,19 @@ if (debug_devtools) {
     sources = generated_scripts
     outputs = [
       "$resources_out_debug_dir/{{source_file_part}}",
+    ]
+  }
+
+  copy("copy_aria_properties") {
+    deps = [
+      ":aria_properties",
+      ":build_debug_devtools",
+    ]
+
+    sources = generated_aria_properties
+
+    outputs = [
+      "$resources_out_debug_dir/accessibility/{{source_file_part}}",
     ]
   }
 }
