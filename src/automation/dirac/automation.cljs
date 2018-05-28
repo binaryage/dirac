@@ -173,7 +173,7 @@
 
 (defn ^:devtools go-scrape [devtools-id scraper-name & args]
   (go
-    (<! (go-wait 500))                                                                                                        ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 1000))                                                                                                        ; TODO: should not be hard-coded FLAKY!
     (<! (verbs/go-automate-devtools! devtools-id {:action  :scrape
                                                   :scraper scraper-name
                                                   :args    args}))))
