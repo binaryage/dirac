@@ -24,7 +24,7 @@
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-   ['binaryage/oops "0.6.1" :scope "test"]
+   ['binaryage/oops "0.6.2" :scope "test"]
    ['binaryage/chromex "0.6.0" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
@@ -45,7 +45,7 @@
 
    ['ring/ring-core "1.6.3" :scope "test"]
    ['ring/ring-devel "1.6.3" :scope "test"]
-   ['clj-time "0.14.3" :scope "test"]
+   ['clj-time "0.14.4" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
    ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
