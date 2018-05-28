@@ -11,5 +11,6 @@ pushd "$ROOT"
 ./scripts/generate-supported-css-properties.sh
 ./scripts/generate-protocol-externs.sh
 ./scripts/generate-namespaces-externs.sh
+./scripts/generate-aria-properties.sh
 
 popd
