@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='69.0.3443.1';
-Protocol.BakedInspectorBackendAPIChromeRev='f829e9f194a471dd9a2b8f8def7d228b690026bd';
+Protocol.BakedInspectorBackendAPIChromeTag='69.0.3446.1';
+Protocol.BakedInspectorBackendAPIChromeRev='83e01462f0a67a7fbd945599fe81c0143fe11465';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -168,6 +168,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setCPUThrottlingRate", [{"name": "rate", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setDefaultBackgroundColorOverride", [{"name": "color", "type": "object", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setDeviceMetricsOverride", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "deviceScaleFactor", "type": "number", "optional": false}, {"name": "mobile", "type": "boolean", "optional": false}, {"name": "scale", "type": "number", "optional": true}, {"name": "screenWidth", "type": "number", "optional": true}, {"name": "screenHeight", "type": "number", "optional": true}, {"name": "positionX", "type": "number", "optional": true}, {"name": "positionY", "type": "number", "optional": true}, {"name": "dontSetVisibleSize", "type": "boolean", "optional": true}, {"name": "screenOrientation", "type": "object", "optional": true}, {"name": "viewport", "type": "object", "optional": true}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Emulation.setScrollbarsHidden", [{"name": "hidden", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setEmitTouchEventsForMouse", [{"name": "enabled", "type": "boolean", "optional": false}, {"name": "configuration", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setEmulatedMedia", [{"name": "media", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setGeolocationOverride", [{"name": "latitude", "type": "number", "optional": true}, {"name": "longitude", "type": "number", "optional": true}, {"name": "accuracy", "type": "number", "optional": true}], [], false);\n'
@@ -252,6 +253,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Network.AuthChallengeSource", {Server: "Server", Proxy: "Proxy"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.AuthChallengeResponseResponse", {Default: "Default", CancelAuth: "CancelAuth", ProvideCredentials: "ProvideCredentials"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.InterceptionStage", {Request: "Request", HeadersReceived: "HeadersReceived"});\n'
++ 'Protocol.inspectorBackend.registerEnum("Network.SignedExchangeErrorField", {SignatureSig: "signatureSig", SignatureIntegrity: "signatureIntegrity", SignatureCertUrl: "signatureCertUrl", SignatureCertSha256: "signatureCertSha256", SignatureValidityUrl: "signatureValidityUrl", SignatureTimestamps: "signatureTimestamps"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.dataReceived", ["requestId", "timestamp", "dataLength", "encodedDataLength"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.eventSourceMessageReceived", ["requestId", "timestamp", "eventName", "eventId", "data"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.loadingFailed", ["requestId", "timestamp", "type", "errorText", "canceled", "blockedReason"]);\n'

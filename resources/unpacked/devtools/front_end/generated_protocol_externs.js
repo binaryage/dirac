@@ -2360,6 +2360,20 @@ Protocol.EmulationAgent.SetDeviceMetricsOverrideResponse;
 Protocol.EmulationAgent.prototype.invoke_setDeviceMetricsOverride = function(obj) {};
 
 /**
+ * @param {boolean} hidden
+ * @return {!Promise<undefined>}
+ */
+Protocol.EmulationAgent.prototype.setScrollbarsHidden = function(hidden) {};
+/** @typedef {!{hidden: boolean}} */
+Protocol.EmulationAgent.SetScrollbarsHiddenRequest;
+/** @typedef {Object|undefined} */
+Protocol.EmulationAgent.SetScrollbarsHiddenResponse;
+/**
+ * @param {!Protocol.EmulationAgent.SetScrollbarsHiddenRequest} obj
+ * @return {!Promise<!Protocol.EmulationAgent.SetScrollbarsHiddenResponse>} */
+Protocol.EmulationAgent.prototype.invoke_setScrollbarsHidden = function(obj) {};
+
+/**
  * @param {boolean} enabled
  * @param {string=} opt_configuration
  * @return {!Promise<undefined>}
@@ -4088,7 +4102,20 @@ Protocol.Network.SignedExchangeSignature;
 /** @typedef {!{requestUrl:(string), requestMethod:(string), responseCode:(number), responseHeaders:(Protocol.Network.Headers), signatures:(!Array<Protocol.Network.SignedExchangeSignature>)}} */
 Protocol.Network.SignedExchangeHeader;
 
-/** @typedef {!{outerResponse:(Protocol.Network.Response), header:(Protocol.Network.SignedExchangeHeader|undefined), securityDetails:(Protocol.Network.SecurityDetails|undefined), errors:(!Array<string>|undefined)}} */
+/** @enum {string} */
+Protocol.Network.SignedExchangeErrorField = {
+    SignatureSig: "signatureSig",
+    SignatureIntegrity: "signatureIntegrity",
+    SignatureCertUrl: "signatureCertUrl",
+    SignatureCertSha256: "signatureCertSha256",
+    SignatureValidityUrl: "signatureValidityUrl",
+    SignatureTimestamps: "signatureTimestamps"
+};
+
+/** @typedef {!{message:(string), signatureIndex:(number|undefined), errorField:(Protocol.Network.SignedExchangeErrorField|undefined)}} */
+Protocol.Network.SignedExchangeError;
+
+/** @typedef {!{outerResponse:(Protocol.Network.Response), header:(Protocol.Network.SignedExchangeHeader|undefined), securityDetails:(Protocol.Network.SecurityDetails|undefined), errors:(!Array<Protocol.Network.SignedExchangeError>|undefined)}} */
 Protocol.Network.SignedExchangeInfo;
 /** @interface */
 Protocol.NetworkDispatcher = function() {};
