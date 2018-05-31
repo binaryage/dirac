@@ -185,12 +185,10 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
    */
   static valueElementForFunctionDescription(description, includePreview, defaultName) {
     const valueElement = createElementWithClass('span', 'object-value-function');
-    let text = '';
-    if (description) {
-      text = description.replace(/^function [gs]et /, 'function ')
-                 .replace(/^function [gs]et\(/, 'function\(')
-                 .replace(/^[gs]et /, '');
-    }
+    description = description || '';
+    const text = description.replace(/^function [gs]et /, 'function ')
+                     .replace(/^function [gs]et\(/, 'function\(')
+                     .replace(/^[gs]et /, '');
     defaultName = defaultName || '';
 
     // This set of best-effort regular expressions captures common function descriptions.
@@ -234,7 +232,7 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
     } else {
       addElements('\u0192', text, nameAndArguments(text));
     }
-    valueElement.title = description || '';
+    valueElement.title = description.trimEnd(500);
     return valueElement;
 
     /**
