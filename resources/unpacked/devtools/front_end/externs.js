@@ -810,7 +810,7 @@ CodeMirror.prototype = {
 };
 /** @type {!{cursorDiv: Element, lineDiv: Element, lineSpace: Element}} */
 CodeMirror.prototype.display;
-/** @type {!{mode: string}} */
+/** @type {!{mode: string, lineWrapping: boolean}} */
 CodeMirror.prototype.options;
 /** @type {!Object} */
 CodeMirror.Pass;
@@ -824,6 +824,36 @@ CodeMirror.defineMode = function(modeName, modeConstructor) {};
 CodeMirror.startState = function(mode) {};
 CodeMirror.runMode = function(string, modespec, callback, options) {};
 CodeMirror.copyState = function(mode, state) {};
+CodeMirror.inputStyles = {};
+CodeMirror.inputStyles.textarea = class {
+  constructor() {
+    /** @type {!HTMLTextAreaElement} */
+    this.textarea;
+    this.prevInput = '';
+    this.composing = false;
+    this.contextMenuPending = false;
+    /** @type {!CodeMirror} */
+    this.cm;
+  }
+  /**
+   * @param {!Object} display
+   */
+  init(display) {
+  }
+
+  /**
+   * @param {boolean=} typing
+   */
+  reset(typing) {
+  }
+
+  /**
+   * @return {boolean}
+   */
+  poll() {
+    return false;
+  }
+};
 
 /** @typedef {{canceled: boolean, from: !CodeMirror.Pos, to: !CodeMirror.Pos, text: string, origin: string, cancel: function()}} */
 CodeMirror.BeforeChangeObject;
@@ -1264,3 +1294,17 @@ DetailsRenderer.NodeDetailsJSON;
  * }}
  */
 DetailsRenderer.OpportunitySummary;
+
+
+// Clipboard API
+
+/** @constructor */
+const Clipboard = function() {};
+/**
+ * @param {string} data
+ * @return {!Promise}
+ */
+Clipboard.prototype.writeText = function(data) {};
+
+/** @type {Clipboard} */
+Navigator.prototype.clipboard;
