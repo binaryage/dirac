@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='69.0.3446.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='83e01462f0a67a7fbd945599fe81c0143fe11465';
+Protocol.BakedSupportedCSSPropertiesChromeTag='69.0.3453.6';
+Protocol.BakedSupportedCSSPropertiesChromeRev='3678ed8e62512acb4ed1f3755c0591130e104ada';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -437,7 +437,6 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "will-change"},\n'
 + ' {"name": "word-break", "inherited": true},\n'
 + ' {"inherited": true, "name": "word-spacing"},\n'
-+ ' {"name": "word-wrap", "inherited": true},\n'
 + ' {"name": "writing-mode", "inherited": true},\n'
 + ' {"svg": true, "name": "x"},\n'
 + ' {"svg": true, "name": "y"},\n'
