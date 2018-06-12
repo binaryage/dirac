@@ -16,7 +16,9 @@
 
 (defn steal-debugging-port! []
   (if-some [debug-port (chrome-driver/retrieve-remote-debugging-port)]
-    (chrome-driver/set-debugging-port! debug-port)
+    (do
+      (log/info (str "detected chrome debugging port: " debug-port))
+      (chrome-driver/set-debugging-port! debug-port))
     (do
       (log/error "unable to retrieve-remote-debugging-port")
       (System/exit 1))))
@@ -31,8 +33,8 @@
 (defn start-browser! []
   (log/debug "start-browser!")
   (prepare-driver!)
-  (steal-debugging-port!)
-  (print-chrome-info!))
+  (print-chrome-info!)
+  (steal-debugging-port!))
 
 (defn stop-browser! []
   (log/debug "stop-browser!")
