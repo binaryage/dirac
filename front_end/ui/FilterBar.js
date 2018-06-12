@@ -328,7 +328,7 @@ UI.NamedBitSetFilterUI = class extends Common.Object {
       this._allowedTypes[UI.NamedBitSetFilterUI.ALL_TYPES] = true;
     }
     for (const typeName in this._typeFilterElements)
-      this._typeFilterElements[typeName].classList.toggle('selected', this._allowedTypes[typeName]);
+      this._typeFilterElements[typeName].classList.toggle('selected', !!this._allowedTypes[typeName]);
     this.dispatchEventToListeners(UI.FilterUI.Events.FilterChanged, null);
   }
 
@@ -338,7 +338,7 @@ UI.NamedBitSetFilterUI = class extends Common.Object {
    * @param {string=} title
    */
   _addBit(name, label, title) {
-    const typeFilterElement = this._filtersElement.createChild('li', name);
+    const typeFilterElement = this._filtersElement.createChild('span', name);
     typeFilterElement.typeName = name;
     typeFilterElement.createTextChild(label);
     if (title)

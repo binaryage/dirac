@@ -763,6 +763,8 @@ Console.ConsoleView = class extends UI.VBox {
   _addGroupableMessagesToEnd() {
     /** @type {!Set<!SDK.ConsoleMessage>} */
     const alreadyAdded = new Set();
+    /** @type {!Set<string>} */
+    const processedGroupKeys = new Set();
     for (let i = 0; i < this._consoleMessages.length; ++i) {
       const viewMessage = this._consoleMessages[i];
       const message = viewMessage.consoleMessage();
@@ -784,9 +786,13 @@ Console.ConsoleView = class extends UI.VBox {
         continue;
       }
 
+      if (processedGroupKeys.has(key))
+        continue;
+
       if (!viewMessagesInGroup.find(x => this._shouldMessageBeVisible(x))) {
         // Optimize for speed.
         alreadyAdded.addAll(viewMessagesInGroup);
+        processedGroupKeys.add(key);
         continue;
       }
 
@@ -1203,7 +1209,7 @@ Console.ConsoleViewFilter = class {
     this._levelLabels[SDK.ConsoleMessage.MessageLevel.Warning] = Common.UIString('Warnings');
     this._levelLabels[SDK.ConsoleMessage.MessageLevel.Error] = Common.UIString('Errors');
 
-    this._levelMenuButton = new UI.ToolbarButton('');
+    this._levelMenuButton = new UI.ToolbarButton(ls`Log levels`);
     this._levelMenuButton.turnIntoSelect();
     this._levelMenuButton.addEventListener(UI.ToolbarButton.Events.Click, this._showLevelContextMenu.bind(this));
 
