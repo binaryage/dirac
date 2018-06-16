@@ -116,8 +116,7 @@
       (when (some? delay)
         (<! (go-wait delay)))
       (if (nil? result)
-        (throw "triggered function must not return nil" {:fn    f
-                                                         :delay delay})
+        (throw (ex-info "triggered function must not return nil" {:fn f :delay delay}))
         result))))
 
 (defn go-trigger-internal-error! [delay kind]

@@ -46,7 +46,7 @@
       (if (string/starts-with? scenario-id-or-error "error")
         (let [error-msg (str "Unable to open scenario '" name "' due to " scenario-id-or-error)]
           (error error-msg)
-          (throw error-msg {}))
+          (throw (ex-info error-msg {})))
         scenario-id-or-error))))
 
 (defn go-close-scenario! [scenario-id]
