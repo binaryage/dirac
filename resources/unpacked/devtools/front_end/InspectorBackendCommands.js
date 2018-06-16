@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='69.0.3456.0';
-Protocol.BakedInspectorBackendAPIChromeRev='f32fa8c7b36a7aae48269544c84b988c0f713b20';
+Protocol.BakedInspectorBackendAPIChromeTag='69.0.3462.1';
+Protocol.BakedInspectorBackendAPIChromeRev='0496b4e506eb35f69d49007198fa1e666d5646df';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -440,6 +440,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Target.activateTarget", [{"name": "targetId", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Target.attachToTarget", [{"name": "targetId", "type": "string", "optional": false}], ["sessionId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Target.closeTarget", [{"name": "targetId", "type": "string", "optional": false}], ["success"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Target.exposeDevToolsProtocol", [{"name": "targetId", "type": "string", "optional": false}, {"name": "bindingName", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Target.createBrowserContext", [], ["browserContextId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Target.getBrowserContexts", [], ["browserContextIds"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Target.createTarget", [{"name": "url", "type": "string", "optional": false}, {"name": "width", "type": "number", "optional": true}, {"name": "height", "type": "number", "optional": true}, {"name": "browserContextId", "type": "string", "optional": true}, {"name": "enableBeginFrameControl", "type": "boolean", "optional": true}], ["targetId"], false);\n'
