@@ -941,6 +941,13 @@ Element.prototype.animate = function(keyframes, timing) {};
 /**
  * @param {...!Node} nodes
  * @return {undefined}
+ * @see https://dom.spec.whatwg.org/#dom-parentnode-append
+ */
+Element.prototype.append = function(nodes) {};
+
+/**
+ * @param {...!Node} nodes
+ * @return {undefined}
  * @see https://dom.spec.whatwg.org/#dom-parentnode-prepend
  */
 Element.prototype.prepend = function(nodes) {};
