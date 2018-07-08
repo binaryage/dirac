@@ -72,7 +72,7 @@ devtools #1      DF.info>
                  cljs.core/filter
                  ([pred] [pred coll])
                    Returns a lazy sequence of the items in coll for which
-                   (pred item) returns true. pred must be free of side-effects.
+                   (pred item) returns logical true. pred must be free of side-effects.
                    Returns a transducer when no collection is provided.
 devtools #1      DF.info> null
 devtools #1      repl eval job ended
