@@ -2,8 +2,8 @@
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.16")
 (def selected-clojure-version "1.9.0")
-(def selected-clojurescript-version "1.10.312")
-(def selenium-version "3.12.0")
+(def selected-clojurescript-version "1.10.339")
+(def selenium-version "3.13.0")
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
@@ -25,7 +25,7 @@
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.6.2" :scope "test"]
-   ['binaryage/chromex "0.6.1" :scope "test"]
+   ['binaryage/chromex "0.6.2" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.45" :scope "test"]
@@ -35,7 +35,7 @@
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
-   ['org.clojure/tools.reader "1.2.2" :scope "test"]
+   ['org.clojure/tools.reader "1.3.0" :scope "test"]
    ['fipp "0.6.12" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
