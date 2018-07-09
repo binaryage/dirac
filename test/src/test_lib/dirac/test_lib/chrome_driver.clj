@@ -36,7 +36,9 @@
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
 (defn get-debugging-port []
-  @current-chrome-remote-debugging-port)
+  (let [port @current-chrome-remote-debugging-port]
+    (assert (pos? port))
+    port))
 
 (defn set-debugging-port! [port]
   (reset! current-chrome-remote-debugging-port port))
@@ -203,13 +205,45 @@
          overrides {:attaching? attaching?}]
      (merge defaults env-settings overrides))))
 
+(defn extract-user-data-dir-from-command-line [command-line]
+  (or
+    ; TODO: following regex will likely fail when user-data-dir contains spaces in file path
+    ; chromedriver generates temp files without spaces, e.g. something like
+    ; --user-data-dir=/tmp/.org.chromium.Chromium.6or3DA
+    ; so we can be lazy here
+    (if-some [match (re-find #"--user-data-dir=(.+?)\s" command-line)]
+      (if-some [dir (second match)]
+        (if-not (empty? dir)
+          dir)))
+    (throw (ex-info (str "unable to extract --user-data-dir from " CHROME_VERSION_PAGE "\n") {:command-line command-line}))))
+
+(defn retrieve-remote-debugging-port-via-file [command-line]
+  ; see devtools_http_handler.cc
+  ; https://chromium.googlesource.com/chromium/src/+/master/content/browser/devtools/devtools_http_handler.cc
+  (let [data-dir (extract-user-data-dir-from-command-line command-line)
+        port-file-path (str data-dir "/" "DevToolsActivePort")]
+    (try
+      (let [port-file-content (slurp port-file-path)
+            lines (string/split-lines port-file-content)]
+        (assert (>= (count lines) 2))
+        (let [port (Integer/parseInt (first lines))]
+          (if-not (zero? port)
+            port
+            (throw (ex-info (str "unexpected zero port in '" port-file-path "'") nil)))))
+      (catch Throwable e
+        (throw (ex-info (str "unable to parse port from '" port-file-path "'\n" (.getMessage e) "\n")
+                        {:command-line command-line}))))))
+
 (defn retrieve-remote-debugging-port []
   (try
     (to CHROME_VERSION_PAGE)
     (wait-until #(exists? "#command_line") 3000)
     (let [command-line (text "#command_line")]
-      (if-let [m (re-find #"--remote-debugging-port=(\d+)" command-line)]
-        (Integer/parseInt (second m))
+      (if-let [match (re-find #"--remote-debugging-port=(\d+)" command-line)]
+        (let [port (Integer/parseInt (second match))]
+          (if-not (zero? port)                                                                                                ; see https://chromium.googlesource.com/chromium/src/+/fbc89a4a08a9929b8d1ee64e0cee1c5111d4e884
+            port
+            (retrieve-remote-debugging-port-via-file command-line)))
         (throw (ex-info (str "no --remote-debugging-port found in " CHROME_VERSION_PAGE "\n") {:command-line command-line}))))
     (catch Exception e
       (log/error (str "got an exception when trying to retrieve remote debugging port:\n" e))

@@ -54,7 +54,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._filter = new Console.ConsoleViewFilter(this._onFilterChanged.bind(this));
     this._isBelowPromptEnabled = Runtime.experiments.isEnabled('consoleBelowPrompt');
 
-    const toolbar = new UI.Toolbar('', this.element);
+    const consoleToolbarContainer = this.element.createChild('div', 'console-toolbar-container');
     this._splitWidget =
         new UI.SplitWidget(true /* isVertical */, false /* secondIsSidebar */, 'console.sidebar.width', 100);
     this._splitWidget.setMainWidget(this._searchableView);
@@ -65,7 +65,6 @@ Console.ConsoleView = class extends UI.VBox {
     this._isSidebarOpen = this._splitWidget.showMode() === UI.SplitWidget.ShowMode.Both;
     if (this._isSidebarOpen)
       this._filter._levelMenuButton.setEnabled(false);
-    toolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton('console sidebar'));
     this._splitWidget.addEventListener(UI.SplitWidget.Events.ShowModeChanged, event => {
       this._isSidebarOpen = event.data === UI.SplitWidget.ShowMode.Both;
       this._filter._levelMenuButton.setEnabled(!this._isSidebarOpen);
@@ -103,6 +102,9 @@ Console.ConsoleView = class extends UI.VBox {
     const groupSimilarToggle =
         new UI.ToolbarSettingCheckbox(this._groupSimilarSetting, Common.UIString('Group similar'));
 
+    const toolbar = new UI.Toolbar('console-main-toolbar', consoleToolbarContainer);
+    const rightToolbar = new UI.Toolbar('', consoleToolbarContainer);
+    toolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton('console sidebar'));
     toolbar.appendToolbarItem(UI.Toolbar.createActionButton(
         /** @type {!UI.Action }*/ (UI.actionRegistry.action('console.clear'))));
     toolbar.appendSeparator();
@@ -112,10 +114,9 @@ Console.ConsoleView = class extends UI.VBox {
     toolbar.appendToolbarItem(this._filter._levelMenuButton);
     toolbar.appendToolbarItem(groupSimilarToggle);
     toolbar.appendToolbarItem(this._progressToolbarItem);
-    toolbar.appendSpacer();
-    toolbar.appendToolbarItem(this._filterStatusText);
-    toolbar.appendSeparator();
-    toolbar.appendToolbarItem(this._showSettingsPaneButton);
+    rightToolbar.appendSeparator();
+    rightToolbar.appendToolbarItem(this._filterStatusText);
+    rightToolbar.appendToolbarItem(this._showSettingsPaneButton);
 
     this._preserveLogCheckbox = new UI.ToolbarSettingCheckbox(
         Common.moduleSetting('preserveConsoleLog'), Common.UIString('Do not clear log on page reload / navigation'),
@@ -275,10 +276,11 @@ Console.ConsoleView = class extends UI.VBox {
       dirac.feedback("!dirac.hasWelcomeMessage");
     }
 
-    this._messagesElement.addEventListener("mousedown", this._updateStickToBottomOnMouseDown.bind(this), false);
-    this._messagesElement.addEventListener("mouseup", this._updateStickToBottomOnMouseUp.bind(this), false);
-    this._messagesElement.addEventListener("mouseleave", this._updateStickToBottomOnMouseUp.bind(this), false);
-    this._messagesElement.addEventListener("wheel", this._updateStickToBottomOnWheel.bind(this), false);
+    this._messagesElement.addEventListener(
+      'mousedown', event => this._updateStickToBottomOnMouseDown(event.button === 2), false);
+    this._messagesElement.addEventListener('mouseup', this._updateStickToBottomOnMouseUp.bind(this), false);
+    this._messagesElement.addEventListener('mouseleave', this._updateStickToBottomOnMouseUp.bind(this), false);
+    this._messagesElement.addEventListener('wheel', this._updateStickToBottomOnWheel.bind(this), false);
 
     SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
     SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.DiracMessage, this._onConsoleDiracMessage, this);
@@ -1286,6 +1288,8 @@ Console.ConsoleView = class extends UI.VBox {
   _addGroupableMessagesToEnd() {
     /** @type {!Set<!SDK.ConsoleMessage>} */
     const alreadyAdded = new Set();
+    /** @type {!Set<string>} */
+    const processedGroupKeys = new Set();
     for (let i = 0; i < this._consoleMessages.length; ++i) {
       const viewMessage = this._consoleMessages[i];
       const message = viewMessage.consoleMessage();
@@ -1307,9 +1311,13 @@ Console.ConsoleView = class extends UI.VBox {
         continue;
       }
 
+      if (processedGroupKeys.has(key))
+        continue;
+
       if (!viewMessagesInGroup.find(x => this._shouldMessageBeVisible(x))) {
         // Optimize for speed.
         alreadyAdded.addAll(viewMessagesInGroup);
+        processedGroupKeys.add(key);
         continue;
       }
 
@@ -1649,8 +1657,11 @@ Console.ConsoleView = class extends UI.VBox {
     highlightNode.scrollIntoViewIfNeeded();
   }
 
-  _updateStickToBottomOnMouseDown() {
-    this._muteViewportUpdates = true;
+  /**
+   * @param {boolean=} isRightClick
+   */
+  _updateStickToBottomOnMouseDown(isRightClick) {
+    this._muteViewportUpdates = !isRightClick;
     this._viewport.setStickToBottom(false);
     if (this._waitForScrollTimeout) {
       clearTimeout(this._waitForScrollTimeout);
@@ -1753,7 +1764,7 @@ Console.ConsoleViewFilter = class {
     this._levelLabels[SDK.ConsoleMessage.MessageLevel.Warning] = Common.UIString('Warnings');
     this._levelLabels[SDK.ConsoleMessage.MessageLevel.Error] = Common.UIString('Errors');
 
-    this._levelMenuButton = new UI.ToolbarButton('');
+    this._levelMenuButton = new UI.ToolbarButton(ls`Log levels`);
     this._levelMenuButton.turnIntoSelect();
     this._levelMenuButton.addEventListener(UI.ToolbarButton.Events.Click, this._showLevelContextMenu.bind(this));
 

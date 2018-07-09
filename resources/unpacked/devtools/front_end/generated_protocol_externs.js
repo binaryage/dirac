@@ -462,10 +462,11 @@ Protocol.BrowserAgent.prototype.invoke_getBrowserCommandLine = function(obj) {};
 
 /**
  * @param {string=} opt_query
+ * @param {boolean=} opt_delta
  * @return {!Promise<?Array<Protocol.Browser.Histogram>>}
  */
-Protocol.BrowserAgent.prototype.getHistograms = function(opt_query) {};
-/** @typedef {!{query: (string|undefined)}} */
+Protocol.BrowserAgent.prototype.getHistograms = function(opt_query, opt_delta) {};
+/** @typedef {!{query: (string|undefined), delta: (boolean|undefined)}} */
 Protocol.BrowserAgent.GetHistogramsRequest;
 /** @typedef {!{histograms: !Array<Protocol.Browser.Histogram>}} */
 Protocol.BrowserAgent.GetHistogramsResponse;
@@ -476,10 +477,11 @@ Protocol.BrowserAgent.prototype.invoke_getHistograms = function(obj) {};
 
 /**
  * @param {string} name
+ * @param {boolean=} opt_delta
  * @return {!Promise<?Protocol.Browser.Histogram>}
  */
-Protocol.BrowserAgent.prototype.getHistogram = function(name) {};
-/** @typedef {!{name: string}} */
+Protocol.BrowserAgent.prototype.getHistogram = function(name, opt_delta) {};
+/** @typedef {!{name: string, delta: (boolean|undefined)}} */
 Protocol.BrowserAgent.GetHistogramRequest;
 /** @typedef {!{histogram: Protocol.Browser.Histogram}} */
 Protocol.BrowserAgent.GetHistogramResponse;
@@ -1213,6 +1215,22 @@ Protocol.DOMAgent.GetBoxModelResponse;
  * @param {!Protocol.DOMAgent.GetBoxModelRequest} obj
  * @return {!Promise<!Protocol.DOMAgent.GetBoxModelResponse>} */
 Protocol.DOMAgent.prototype.invoke_getBoxModel = function(obj) {};
+
+/**
+ * @param {Protocol.DOM.NodeId=} opt_nodeId
+ * @param {Protocol.DOM.BackendNodeId=} opt_backendNodeId
+ * @param {Protocol.Runtime.RemoteObjectId=} opt_objectId
+ * @return {!Promise<?Array<Protocol.DOM.Quad>>}
+ */
+Protocol.DOMAgent.prototype.getContentQuads = function(opt_nodeId, opt_backendNodeId, opt_objectId) {};
+/** @typedef {!{objectId: (Protocol.Runtime.RemoteObjectId|undefined), nodeId: (Protocol.DOM.NodeId|undefined), backendNodeId: (Protocol.DOM.BackendNodeId|undefined)}} */
+Protocol.DOMAgent.GetContentQuadsRequest;
+/** @typedef {!{quads: !Array<Protocol.DOM.Quad>}} */
+Protocol.DOMAgent.GetContentQuadsResponse;
+/**
+ * @param {!Protocol.DOMAgent.GetContentQuadsRequest} obj
+ * @return {!Promise<!Protocol.DOMAgent.GetContentQuadsResponse>} */
+Protocol.DOMAgent.prototype.invoke_getContentQuads = function(obj) {};
 
 /**
  * @param {number=} opt_depth
@@ -1993,6 +2011,20 @@ Protocol.DOMSnapshotAgent.GetSnapshotResponse;
  * @return {!Promise<!Protocol.DOMSnapshotAgent.GetSnapshotResponse>} */
 Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
+/**
+ * @param {!Array<string>} computedStyles
+ * @return {!Promise<?Protocol.DOMSnapshot.DOMTreeSnapshot>}
+ */
+Protocol.DOMSnapshotAgent.prototype.captureSnapshot = function(computedStyles) {};
+/** @typedef {!{computedStyles: !Array<string>}} */
+Protocol.DOMSnapshotAgent.CaptureSnapshotRequest;
+/** @typedef {!{nodes: Protocol.DOMSnapshot.DOMTreeSnapshot, layout: Protocol.DOMSnapshot.LayoutTreeSnapshot, strings: !Array<string>}} */
+Protocol.DOMSnapshotAgent.CaptureSnapshotResponse;
+/**
+ * @param {!Protocol.DOMSnapshotAgent.CaptureSnapshotRequest} obj
+ * @return {!Promise<!Protocol.DOMSnapshotAgent.CaptureSnapshotResponse>} */
+Protocol.DOMSnapshotAgent.prototype.invoke_captureSnapshot = function(obj) {};
+
 /** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined), originURL:(string|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
@@ -2007,6 +2039,36 @@ Protocol.DOMSnapshot.ComputedStyle;
 
 /** @typedef {!{name:(string), value:(string)}} */
 Protocol.DOMSnapshot.NameValue;
+
+/** @typedef {number} */
+Protocol.DOMSnapshot.StringIndex;
+
+/** @typedef {!Array<!Protocol.DOMSnapshot.StringIndex>} */
+Protocol.DOMSnapshot.ArrayOfStrings;
+
+/** @typedef {!{index:(!Array<number>), value:(!Array<Protocol.DOMSnapshot.StringIndex>)}} */
+Protocol.DOMSnapshot.RareStringData;
+
+/** @typedef {!{index:(!Array<number>)}} */
+Protocol.DOMSnapshot.RareBooleanData;
+
+/** @typedef {!{index:(!Array<number>), value:(!Array<number>)}} */
+Protocol.DOMSnapshot.RareIntegerData;
+
+/** @typedef {!Array<!number>} */
+Protocol.DOMSnapshot.Rectangle;
+
+/** @typedef {!{parentIndex:(!Array<number>|undefined), nodeType:(!Array<number>|undefined), nodeName:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), nodeValue:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), backendNodeId:(!Array<Protocol.DOM.BackendNodeId>|undefined), attributes:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>|undefined), layoutNodeIndex:(!Array<number>|undefined), textValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputChecked:(Protocol.DOMSnapshot.RareBooleanData|undefined), optionSelected:(Protocol.DOMSnapshot.RareBooleanData|undefined), documentURL:(Protocol.DOMSnapshot.RareStringData|undefined), baseURL:(Protocol.DOMSnapshot.RareStringData|undefined), contentLanguage:(Protocol.DOMSnapshot.RareStringData|undefined), documentEncoding:(Protocol.DOMSnapshot.RareStringData|undefined), publicId:(Protocol.DOMSnapshot.RareStringData|undefined), systemId:(Protocol.DOMSnapshot.RareStringData|undefined), frameId:(Protocol.DOMSnapshot.RareStringData|undefined), contentDocumentIndex:(Protocol.DOMSnapshot.RareIntegerData|undefined), importedDocumentIndex:(Protocol.DOMSnapshot.RareIntegerData|undefined), templateContentIndex:(Protocol.DOMSnapshot.RareIntegerData|undefined), pseudoType:(Protocol.DOMSnapshot.RareStringData|undefined), isClickable:(Protocol.DOMSnapshot.RareBooleanData|undefined), currentSourceURL:(Protocol.DOMSnapshot.RareStringData|undefined), originURL:(Protocol.DOMSnapshot.RareStringData|undefined)}} */
+Protocol.DOMSnapshot.DOMTreeSnapshot;
+
+/** @typedef {!{layoutIndex:(!Array<number>), bounds:(!Array<Protocol.DOMSnapshot.Rectangle>), start:(!Array<number>), length:(!Array<number>)}} */
+Protocol.DOMSnapshot.TextBoxSnapshot;
+
+/** @typedef {!{nodeIndex:(!Array<number>), styles:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>), bounds:(!Array<Protocol.DOMSnapshot.Rectangle>), text:(!Array<Protocol.DOMSnapshot.StringIndex>), textBoxes:(Protocol.DOMSnapshot.TextBoxSnapshot)}} */
+Protocol.DOMSnapshot.LayoutTreeSnapshot;
+
+/** @typedef {!{values:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>)}} */
+Protocol.DOMSnapshot.StylesSnapshot;
 /** @interface */
 Protocol.DOMSnapshotDispatcher = function() {};
 Protocol.DOMStorage = {};
@@ -2358,6 +2420,34 @@ Protocol.EmulationAgent.SetDeviceMetricsOverrideResponse;
  * @param {!Protocol.EmulationAgent.SetDeviceMetricsOverrideRequest} obj
  * @return {!Promise<!Protocol.EmulationAgent.SetDeviceMetricsOverrideResponse>} */
 Protocol.EmulationAgent.prototype.invoke_setDeviceMetricsOverride = function(obj) {};
+
+/**
+ * @param {boolean} hidden
+ * @return {!Promise<undefined>}
+ */
+Protocol.EmulationAgent.prototype.setScrollbarsHidden = function(hidden) {};
+/** @typedef {!{hidden: boolean}} */
+Protocol.EmulationAgent.SetScrollbarsHiddenRequest;
+/** @typedef {Object|undefined} */
+Protocol.EmulationAgent.SetScrollbarsHiddenResponse;
+/**
+ * @param {!Protocol.EmulationAgent.SetScrollbarsHiddenRequest} obj
+ * @return {!Promise<!Protocol.EmulationAgent.SetScrollbarsHiddenResponse>} */
+Protocol.EmulationAgent.prototype.invoke_setScrollbarsHidden = function(obj) {};
+
+/**
+ * @param {boolean} disabled
+ * @return {!Promise<undefined>}
+ */
+Protocol.EmulationAgent.prototype.setDocumentCookieDisabled = function(disabled) {};
+/** @typedef {!{disabled: boolean}} */
+Protocol.EmulationAgent.SetDocumentCookieDisabledRequest;
+/** @typedef {Object|undefined} */
+Protocol.EmulationAgent.SetDocumentCookieDisabledResponse;
+/**
+ * @param {!Protocol.EmulationAgent.SetDocumentCookieDisabledRequest} obj
+ * @return {!Promise<!Protocol.EmulationAgent.SetDocumentCookieDisabledResponse>} */
+Protocol.EmulationAgent.prototype.invoke_setDocumentCookieDisabled = function(obj) {};
 
 /**
  * @param {boolean} enabled
@@ -3994,7 +4084,7 @@ Protocol.Network.RequestReferrerPolicy = {
     StrictOriginWhenCrossOrigin: "strict-origin-when-cross-origin"
 };
 
-/** @typedef {!{url:(string), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), hasPostData:(boolean|undefined), mixedContentType:(Protocol.Security.MixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority), referrerPolicy:(Protocol.Network.RequestReferrerPolicy), isLinkPreload:(boolean|undefined)}} */
+/** @typedef {!{url:(string), urlFragment:(string|undefined), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), hasPostData:(boolean|undefined), mixedContentType:(Protocol.Security.MixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority), referrerPolicy:(Protocol.Network.RequestReferrerPolicy), isLinkPreload:(boolean|undefined)}} */
 Protocol.Network.Request;
 
 /** @typedef {!{status:(string), origin:(string), logDescription:(string), logId:(string), timestamp:(Protocol.Network.TimeSinceEpoch), hashAlgorithm:(string), signatureAlgorithm:(string), signatureData:(string)}} */
@@ -4018,7 +4108,8 @@ Protocol.Network.BlockedReason = {
     Origin: "origin",
     Inspector: "inspector",
     SubresourceFilter: "subresource-filter",
-    ContentType: "content-type"
+    ContentType: "content-type",
+    CollapsedByClient: "collapsed-by-client"
 };
 
 /** @typedef {!{url:(string), status:(number), statusText:(string), headers:(Protocol.Network.Headers), headersText:(string|undefined), mimeType:(string), requestHeaders:(Protocol.Network.Headers|undefined), requestHeadersText:(string|undefined), connectionReused:(boolean), connectionId:(number), remoteIPAddress:(string|undefined), remotePort:(number|undefined), fromDiskCache:(boolean|undefined), fromServiceWorker:(boolean|undefined), encodedDataLength:(number), timing:(Protocol.Network.ResourceTiming|undefined), protocol:(string|undefined), securityState:(Protocol.Security.SecurityState), securityDetails:(Protocol.Network.SecurityDetails|undefined)}} */
@@ -4088,7 +4179,20 @@ Protocol.Network.SignedExchangeSignature;
 /** @typedef {!{requestUrl:(string), requestMethod:(string), responseCode:(number), responseHeaders:(Protocol.Network.Headers), signatures:(!Array<Protocol.Network.SignedExchangeSignature>)}} */
 Protocol.Network.SignedExchangeHeader;
 
-/** @typedef {!{outerResponse:(Protocol.Network.Response), header:(Protocol.Network.SignedExchangeHeader|undefined), securityDetails:(Protocol.Network.SecurityDetails|undefined), errors:(!Array<string>|undefined)}} */
+/** @enum {string} */
+Protocol.Network.SignedExchangeErrorField = {
+    SignatureSig: "signatureSig",
+    SignatureIntegrity: "signatureIntegrity",
+    SignatureCertUrl: "signatureCertUrl",
+    SignatureCertSha256: "signatureCertSha256",
+    SignatureValidityUrl: "signatureValidityUrl",
+    SignatureTimestamps: "signatureTimestamps"
+};
+
+/** @typedef {!{message:(string), signatureIndex:(number|undefined), errorField:(Protocol.Network.SignedExchangeErrorField|undefined)}} */
+Protocol.Network.SignedExchangeError;
+
+/** @typedef {!{outerResponse:(Protocol.Network.Response), header:(Protocol.Network.SignedExchangeHeader|undefined), securityDetails:(Protocol.Network.SecurityDetails|undefined), errors:(!Array<Protocol.Network.SignedExchangeError>|undefined)}} */
 Protocol.Network.SignedExchangeInfo;
 /** @interface */
 Protocol.NetworkDispatcher = function() {};
@@ -4120,9 +4224,9 @@ Protocol.NetworkDispatcher.prototype.loadingFailed = function(requestId, timesta
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {number} encodedDataLength
- * @param {boolean=} opt_blockedCrossSiteDocument
+ * @param {boolean=} opt_shouldReportCorbBlocking
  */
-Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, timestamp, encodedDataLength, opt_blockedCrossSiteDocument) {};
+Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, timestamp, encodedDataLength, opt_shouldReportCorbBlocking) {};
 /**
  * @param {Protocol.Network.InterceptionId} interceptionId
  * @param {Protocol.Network.Request} request
@@ -4969,6 +5073,34 @@ Protocol.PageAgent.SetDeviceOrientationOverrideResponse;
 Protocol.PageAgent.prototype.invoke_setDeviceOrientationOverride = function(obj) {};
 
 /**
+ * @param {Protocol.Page.FontFamilies} fontFamilies
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.setFontFamilies = function(fontFamilies) {};
+/** @typedef {!{fontFamilies: Protocol.Page.FontFamilies}} */
+Protocol.PageAgent.SetFontFamiliesRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.SetFontFamiliesResponse;
+/**
+ * @param {!Protocol.PageAgent.SetFontFamiliesRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.SetFontFamiliesResponse>} */
+Protocol.PageAgent.prototype.invoke_setFontFamilies = function(obj) {};
+
+/**
+ * @param {Protocol.Page.FontSizes} fontSizes
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.setFontSizes = function(fontSizes) {};
+/** @typedef {!{fontSizes: Protocol.Page.FontSizes}} */
+Protocol.PageAgent.SetFontSizesRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.SetFontSizesResponse;
+/**
+ * @param {!Protocol.PageAgent.SetFontSizesRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.SetFontSizesResponse>} */
+Protocol.PageAgent.prototype.invoke_setFontSizes = function(obj) {};
+
+/**
  * @param {Protocol.Page.FrameId} frameId
  * @param {string} html
  * @return {!Promise<undefined>}
@@ -5142,6 +5274,8 @@ Protocol.Page.ResourceType = {
     WebSocket: "WebSocket",
     Manifest: "Manifest",
     SignedExchange: "SignedExchange",
+    Ping: "Ping",
+    CSPViolationReport: "CSPViolationReport",
     Other: "Other"
 };
 
@@ -5204,6 +5338,12 @@ Protocol.Page.VisualViewport;
 
 /** @typedef {!{x:(number), y:(number), width:(number), height:(number), scale:(number)}} */
 Protocol.Page.Viewport;
+
+/** @typedef {!{standard:(string|undefined), fixed:(string|undefined), serif:(string|undefined), sansSerif:(string|undefined), cursive:(string|undefined), fantasy:(string|undefined), pictograph:(string|undefined)}} */
+Protocol.Page.FontFamilies;
+
+/** @typedef {!{standard:(number|undefined), fixed:(number|undefined)}} */
+Protocol.Page.FontSizes;
 /** @interface */
 Protocol.PageDispatcher = function() {};
 /**
@@ -5872,10 +6012,11 @@ Protocol.TargetAgent.prototype.invoke_activateTarget = function(obj) {};
 
 /**
  * @param {Protocol.Target.TargetID} targetId
+ * @param {boolean=} opt_flatten
  * @return {!Promise<?Protocol.Target.SessionID>}
  */
-Protocol.TargetAgent.prototype.attachToTarget = function(targetId) {};
-/** @typedef {!{targetId: Protocol.Target.TargetID}} */
+Protocol.TargetAgent.prototype.attachToTarget = function(targetId, opt_flatten) {};
+/** @typedef {!{targetId: Protocol.Target.TargetID, flatten: (boolean|undefined)}} */
 Protocol.TargetAgent.AttachToTargetRequest;
 /** @typedef {!{sessionId: Protocol.Target.SessionID}} */
 Protocol.TargetAgent.AttachToTargetResponse;
@@ -5897,6 +6038,21 @@ Protocol.TargetAgent.CloseTargetResponse;
  * @param {!Protocol.TargetAgent.CloseTargetRequest} obj
  * @return {!Promise<!Protocol.TargetAgent.CloseTargetResponse>} */
 Protocol.TargetAgent.prototype.invoke_closeTarget = function(obj) {};
+
+/**
+ * @param {Protocol.Target.TargetID} targetId
+ * @param {string=} opt_bindingName
+ * @return {!Promise<undefined>}
+ */
+Protocol.TargetAgent.prototype.exposeDevToolsProtocol = function(targetId, opt_bindingName) {};
+/** @typedef {!{targetId: Protocol.Target.TargetID, bindingName: (string|undefined)}} */
+Protocol.TargetAgent.ExposeDevToolsProtocolRequest;
+/** @typedef {Object|undefined} */
+Protocol.TargetAgent.ExposeDevToolsProtocolResponse;
+/**
+ * @param {!Protocol.TargetAgent.ExposeDevToolsProtocolRequest} obj
+ * @return {!Promise<!Protocol.TargetAgent.ExposeDevToolsProtocolResponse>} */
+Protocol.TargetAgent.prototype.invoke_exposeDevToolsProtocol = function(obj) {};
 
 /**
  * @return {!Promise<?Protocol.Target.BrowserContextID>}
@@ -5972,11 +6128,11 @@ Protocol.TargetAgent.DisposeBrowserContextResponse;
 Protocol.TargetAgent.prototype.invoke_disposeBrowserContext = function(obj) {};
 
 /**
- * @param {Protocol.Target.TargetID} targetId
+ * @param {Protocol.Target.TargetID=} opt_targetId
  * @return {!Promise<?Protocol.Target.TargetInfo>}
  */
-Protocol.TargetAgent.prototype.getTargetInfo = function(targetId) {};
-/** @typedef {!{targetId: Protocol.Target.TargetID}} */
+Protocol.TargetAgent.prototype.getTargetInfo = function(opt_targetId) {};
+/** @typedef {!{targetId: (Protocol.Target.TargetID|undefined)}} */
 Protocol.TargetAgent.GetTargetInfoRequest;
 /** @typedef {!{targetInfo: Protocol.Target.TargetInfo}} */
 Protocol.TargetAgent.GetTargetInfoResponse;
@@ -6098,6 +6254,12 @@ Protocol.TargetDispatcher.prototype.targetCreated = function(targetInfo) {};
  * @param {Protocol.Target.TargetID} targetId
  */
 Protocol.TargetDispatcher.prototype.targetDestroyed = function(targetId) {};
+/**
+ * @param {Protocol.Target.TargetID} targetId
+ * @param {string} status
+ * @param {number} errorCode
+ */
+Protocol.TargetDispatcher.prototype.targetCrashed = function(targetId, status, errorCode) {};
 /**
  * @param {Protocol.Target.TargetInfo} targetInfo
  */
@@ -6816,7 +6978,7 @@ Protocol.Debugger.BreakLocationType = {
 
 /** @typedef {!{scriptId:(Protocol.Runtime.ScriptId), lineNumber:(number), columnNumber:(number|undefined), type:(Protocol.Debugger.BreakLocationType|undefined)}} */
 Protocol.Debugger.BreakLocation;
-/** @interface */
+/** @constructor */
 Protocol.DebuggerDispatcher = function() {};
 /**
  * @param {Protocol.Debugger.BreakpointId} breakpointId
@@ -7049,7 +7211,7 @@ Protocol.HeapProfiler.SamplingHeapProfileNode;
 
 /** @typedef {!{head:(Protocol.HeapProfiler.SamplingHeapProfileNode)}} */
 Protocol.HeapProfiler.SamplingHeapProfile;
-/** @interface */
+/** @constructor */
 Protocol.HeapProfilerDispatcher = function() {};
 /**
  * @param {string} chunk
@@ -7541,6 +7703,20 @@ Protocol.RuntimeAgent.RunScriptResponse;
 Protocol.RuntimeAgent.prototype.invoke_runScript = function(obj) {};
 
 /**
+ * @param {number} maxDepth
+ * @return {!Promise<undefined>}
+ */
+Protocol.RuntimeAgent.prototype.setAsyncCallStackDepth = function(maxDepth) {};
+/** @typedef {!{maxDepth: number}} */
+Protocol.RuntimeAgent.SetAsyncCallStackDepthRequest;
+/** @typedef {Object|undefined} */
+Protocol.RuntimeAgent.SetAsyncCallStackDepthResponse;
+/**
+ * @param {!Protocol.RuntimeAgent.SetAsyncCallStackDepthRequest} obj
+ * @return {!Promise<!Protocol.RuntimeAgent.SetAsyncCallStackDepthResponse>} */
+Protocol.RuntimeAgent.prototype.invoke_setAsyncCallStackDepth = function(obj) {};
+
+/**
  * @param {boolean} enabled
  * @return {!Promise<undefined>}
  */
@@ -7555,6 +7731,20 @@ Protocol.RuntimeAgent.SetCustomObjectFormatterEnabledResponse;
 Protocol.RuntimeAgent.prototype.invoke_setCustomObjectFormatterEnabled = function(obj) {};
 
 /**
+ * @param {number} size
+ * @return {!Promise<undefined>}
+ */
+Protocol.RuntimeAgent.prototype.setMaxCallStackSizeToCapture = function(size) {};
+/** @typedef {!{size: number}} */
+Protocol.RuntimeAgent.SetMaxCallStackSizeToCaptureRequest;
+/** @typedef {Object|undefined} */
+Protocol.RuntimeAgent.SetMaxCallStackSizeToCaptureResponse;
+/**
+ * @param {!Protocol.RuntimeAgent.SetMaxCallStackSizeToCaptureRequest} obj
+ * @return {!Promise<!Protocol.RuntimeAgent.SetMaxCallStackSizeToCaptureResponse>} */
+Protocol.RuntimeAgent.prototype.invoke_setMaxCallStackSizeToCapture = function(obj) {};
+
+/**
  * @return {!Promise<undefined>}
  */
 Protocol.RuntimeAgent.prototype.terminateExecution = function() {};
@@ -7566,6 +7756,35 @@ Protocol.RuntimeAgent.TerminateExecutionResponse;
  * @param {!Protocol.RuntimeAgent.TerminateExecutionRequest} obj
  * @return {!Promise<!Protocol.RuntimeAgent.TerminateExecutionResponse>} */
 Protocol.RuntimeAgent.prototype.invoke_terminateExecution = function(obj) {};
+
+/**
+ * @param {string} name
+ * @param {Protocol.Runtime.ExecutionContextId=} opt_executionContextId
+ * @return {!Promise<undefined>}
+ */
+Protocol.RuntimeAgent.prototype.addBinding = function(name, opt_executionContextId) {};
+/** @typedef {!{name: string, executionContextId: (Protocol.Runtime.ExecutionContextId|undefined)}} */
+Protocol.RuntimeAgent.AddBindingRequest;
+/** @typedef {Object|undefined} */
+Protocol.RuntimeAgent.AddBindingResponse;
+/**
+ * @param {!Protocol.RuntimeAgent.AddBindingRequest} obj
+ * @return {!Promise<!Protocol.RuntimeAgent.AddBindingResponse>} */
+Protocol.RuntimeAgent.prototype.invoke_addBinding = function(obj) {};
+
+/**
+ * @param {string} name
+ * @return {!Promise<undefined>}
+ */
+Protocol.RuntimeAgent.prototype.removeBinding = function(name) {};
+/** @typedef {!{name: string}} */
+Protocol.RuntimeAgent.RemoveBindingRequest;
+/** @typedef {Object|undefined} */
+Protocol.RuntimeAgent.RemoveBindingResponse;
+/**
+ * @param {!Protocol.RuntimeAgent.RemoveBindingRequest} obj
+ * @return {!Promise<!Protocol.RuntimeAgent.RemoveBindingResponse>} */
+Protocol.RuntimeAgent.prototype.invoke_removeBinding = function(obj) {};
 
 /** @typedef {string} */
 Protocol.Runtime.ScriptId;
@@ -7714,8 +7933,14 @@ Protocol.Runtime.UniqueDebuggerId;
 
 /** @typedef {!{id:(string), debuggerId:(Protocol.Runtime.UniqueDebuggerId|undefined)}} */
 Protocol.Runtime.StackTraceId;
-/** @interface */
+/** @constructor */
 Protocol.RuntimeDispatcher = function() {};
+/**
+ * @param {string} name
+ * @param {string} payload
+ * @param {Protocol.Runtime.ExecutionContextId} executionContextId
+ */
+Protocol.RuntimeDispatcher.prototype.bindingCalled = function(name, payload, executionContextId) {};
 /**
  * @param {string} type
  * @param {!Array<Protocol.Runtime.RemoteObject>} args

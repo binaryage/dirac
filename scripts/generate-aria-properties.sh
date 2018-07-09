@@ -13,4 +13,4 @@ ninja -C _build_devtools third_party/blink/renderer/devtools:aria_properties
 
 file "$GENERATED_ARIA_PROPERTIES_JS_FILE"
 
-cp "$GENERATED_ARIA_PROPERTIES_JS_FILE" "$ARIA_PROPERTIES_JS_FILE_DESTINATION"
+js-beautify -f "$GENERATED_ARIA_PROPERTIES_JS_FILE" -o "$ARIA_PROPERTIES_JS_FILE_DESTINATION"

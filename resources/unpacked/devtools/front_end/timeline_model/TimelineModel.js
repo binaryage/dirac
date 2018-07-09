@@ -429,7 +429,7 @@ TimelineModel.TimelineModel = class {
       cpuProfileEvent = events.find(e => e.name === TimelineModel.TimelineModel.RecordType.Profile);
       if (!cpuProfileEvent)
         return null;
-      const profileGroup = tracingModel.profileGroup(cpuProfileEvent.id);
+      const profileGroup = tracingModel.profileGroup(cpuProfileEvent);
       if (!profileGroup) {
         Common.console.error('Invalid CPU profile format.');
         return null;
@@ -850,7 +850,7 @@ TimelineModel.TimelineModel = class {
       }
 
       case recordTypes.FrameStartedLoading:
-        if (this._mainFrame.frameId !== event.args['frame'])
+        if (timelineData.frameId !== event.args['frame'])
           return false;
         break;
 

@@ -75,7 +75,7 @@ iframe.fill {
 .widget {
     position: relative;
     flex: auto;
-    contain: layout style;
+    contain: style;
 }
 
 .hbox {
@@ -278,6 +278,7 @@ input {
 :not(.platform-mac).-theme-with-dark-background ::-webkit-scrollbar,
 :host-context(:not(.platform-mac).-theme-with-dark-background) ::-webkit-scrollbar {
     width: 14px;
+    height: 14px;
 }
 
 :not(.platform-mac).-theme-with-dark-background ::-webkit-scrollbar-track,
@@ -394,4 +395,25 @@ label[is=dt-icon-label] {
     -webkit-mask-image: -webkit-image-set(url(Images/mediumIcons.png) 1x, url(Images/mediumIcons_2x.png) 2x);
     -webkit-mask-position: var(--spritesheet-position);
     background: #fafafa !important;
+}
+
+.expandable-inline-button {
+    background-color: #dedede;
+    padding: 2px 4px;
+    margin: 0 2px;
+    color: #333;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: sans-serif;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.expandable-inline-button::after {
+    content: attr(data-text);
+}
+
+.expandable-inline-button:hover {
+    background-color: #d5d5d5;
 }

@@ -92,12 +92,11 @@ SDK.CPUProfileDataModel = class extends SDK.ProfileTreeModel {
     if (!profile.timeDeltas)
       return null;
     let lastTimeUsec = profile.startTime;
-    const timestamps = new Array(profile.timeDeltas.length + 1);
+    const timestamps = new Array(profile.timeDeltas.length);
     for (let i = 0; i < profile.timeDeltas.length; ++i) {
-      timestamps[i] = lastTimeUsec;
       lastTimeUsec += profile.timeDeltas[i];
+      timestamps[i] = lastTimeUsec;
     }
-    timestamps[profile.timeDeltas.length] = lastTimeUsec;
     return timestamps;
   }
 
@@ -174,7 +173,7 @@ SDK.CPUProfileDataModel = class extends SDK.ProfileTreeModel {
       return;
     const samples = this.samples;
     const indices = timestamps.map((x, index) => index);
-    indices.sort((a, b) => timestamps[a] - timestamps[b]);
+    indices.stableSort((a, b) => timestamps[a] - timestamps[b]);
     for (let i = 0; i < timestamps.length; ++i) {
       let index = indices[i];
       if (index === i)

@@ -63,7 +63,7 @@ UI.Tooltip = class {
 
     for (const element of path) {
       // The offsetParent is null when the element or an ancestor has 'display: none'.
-      if (element === this._anchorElement || element.offsetParent === null) {
+      if (element === this._anchorElement || (element.nodeName !== 'CONTENT' && element.offsetParent === null)) {
         return;
       } else if (element[UI.Tooltip._symbol]) {
         this._show(element, mouseEvent);
@@ -135,7 +135,7 @@ UI.Tooltip = class {
     if (!anchorTooltipAtElement) {
       tooltipY = event.y + cursorOffset + tooltipHeight < containerBox.y + containerBox.height ?
           event.y + cursorOffset :
-          event.y - tooltipHeight;
+          event.y - tooltipHeight - 1;
     } else {
       const onBottom =
           anchorBox.y + anchorOffset + anchorBox.height + tooltipHeight < containerBox.y + containerBox.height;

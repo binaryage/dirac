@@ -14,6 +14,7 @@ Console.ConsoleContextSelector = class {
     this._dropDown.setRowHeight(36);
     this._toolbarItem = new UI.ToolbarItem(this._dropDown.element);
     this._toolbarItem.setEnabled(false);
+    this._toolbarItem.setTitle(ls`JavaScript contexts`);
     this._items.addEventListener(
         UI.ListModel.Events.ItemsReplaced, () => this._toolbarItem.setEnabled(!!this._items.length));
 
@@ -96,9 +97,12 @@ Console.ConsoleContextSelector = class {
     if (executionContext.frameId) {
       const resourceTreeModel = target.model(SDK.ResourceTreeModel);
       let frame = resourceTreeModel && resourceTreeModel.frameForId(executionContext.frameId);
-      while (frame && frame.parentFrame) {
-        depth++;
-        frame = frame.parentFrame;
+      while (frame) {
+        frame = frame.parentFrame || frame.crossTargetParentFrame();
+        if (frame) {
+          depth++;
+          target = frame.resourceTreeModel().target();
+        }
       }
     }
     let targetDepth = 0;

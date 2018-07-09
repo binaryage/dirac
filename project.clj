@@ -2,8 +2,8 @@
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.16")
 (def selected-clojure-version "1.9.0")
-(def selected-clojurescript-version "1.10.238")
-(def selenium-version "3.12.0")
+(def selected-clojurescript-version "1.10.339")
+(def selenium-version "3.13.0")
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
@@ -24,8 +24,8 @@
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-   ['binaryage/oops "0.6.1" :scope "test"]
-   ['binaryage/chromex "0.6.0" :scope "test"]
+   ['binaryage/oops "0.6.2" :scope "test"]
+   ['binaryage/chromex "0.6.2" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.45" :scope "test"]
@@ -35,7 +35,7 @@
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
-   ['org.clojure/tools.reader "1.2.2" :scope "test"]
+   ['org.clojure/tools.reader "1.3.0" :scope "test"]
    ['fipp "0.6.12" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
@@ -45,7 +45,7 @@
 
    ['ring/ring-core "1.6.3" :scope "test"]
    ['ring/ring-devel "1.6.3" :scope "test"]
-   ['clj-time "0.14.3" :scope "test"]
+   ['clj-time "0.14.4" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
    ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
@@ -58,7 +58,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.35"
+(defproject binaryage/dirac "1.2.36"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

@@ -151,7 +151,7 @@ Main.Main = class {
     }
 
     Runtime.experiments.setDefaultExperiments(
-        ['colorContrastRatio', 'stepIntoAsync', 'oopifInlineDOM', 'consoleBelowPrompt']);
+        ['colorContrastRatio', 'stepIntoAsync', 'oopifInlineDOM', 'consoleBelowPrompt', 'timelineTracingJSProfile']);
   }
 
   /**
@@ -391,19 +391,8 @@ Main.Main = class {
   }
 
   _postDocumentKeyDown(event) {
-    if (event.handled)
-      return;
-
-    if (!UI.Dialog.hasInstance() && UI.inspectorView.currentPanelDeprecated() &&
-        UI.inspectorView.currentPanelDeprecated().hasFocus()) {
-      UI.inspectorView.currentPanelDeprecated().handleShortcut(event);
-      if (event.handled) {
-        event.consume(true);
-        return;
-      }
-    }
-
-    UI.shortcutRegistry.handleShortcut(event);
+    if (!event.handled)
+      UI.shortcutRegistry.handleShortcut(event);
   }
 
   /**
