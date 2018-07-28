@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='69.0.3485.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='1fb6a8769713b989b9b8eec8442d7282d3b2ff03';
+Protocol.BakedSupportedCSSPropertiesChromeTag='70.0.3505.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='83a3440044a5789b4525799c9da72d0f51ab6fcc';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -253,6 +253,13 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "image-orientation", "inherited": true},\n'
 + ' {"name": "image-rendering", "inherited": true},\n'
 + ' {"name": "inline-size"},\n'
++ ' {"longhands": ["top", "right", "bottom", "left"], "name": "inset"},\n'
++ ' {"longhands": ["inset-block-start", "inset-block-end"], "name": "inset-block"},\n'
++ ' {"name": "inset-block-end"},\n'
++ ' {"name": "inset-block-start"},\n'
++ ' {"longhands": ["inset-inline-start", "inset-inline-end"], "name": "inset-inline"},\n'
++ ' {"name": "inset-inline-end"},\n'
++ ' {"name": "inset-inline-start"},\n'
 + ' {"name": "isolation"},\n'
 + ' {"name": "justify-content"},\n'
 + ' {"name": "justify-items"},\n'

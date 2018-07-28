@@ -2013,19 +2013,19 @@ Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
 /**
  * @param {!Array<string>} computedStyles
- * @return {!Promise<?Protocol.DOMSnapshot.DOMTreeSnapshot>}
+ * @return {!Promise<?Array<Protocol.DOMSnapshot.DocumentSnapshot>>}
  */
 Protocol.DOMSnapshotAgent.prototype.captureSnapshot = function(computedStyles) {};
 /** @typedef {!{computedStyles: !Array<string>}} */
 Protocol.DOMSnapshotAgent.CaptureSnapshotRequest;
-/** @typedef {!{nodes: Protocol.DOMSnapshot.DOMTreeSnapshot, layout: Protocol.DOMSnapshot.LayoutTreeSnapshot, strings: !Array<string>}} */
+/** @typedef {!{documents: !Array<Protocol.DOMSnapshot.DocumentSnapshot>, strings: !Array<string>}} */
 Protocol.DOMSnapshotAgent.CaptureSnapshotResponse;
 /**
  * @param {!Protocol.DOMSnapshotAgent.CaptureSnapshotRequest} obj
  * @return {!Promise<!Protocol.DOMSnapshotAgent.CaptureSnapshotResponse>} */
 Protocol.DOMSnapshotAgent.prototype.invoke_captureSnapshot = function(obj) {};
 
-/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined), originURL:(string|undefined)}} */
+/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined), originURL:(string|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
 /** @typedef {!{boundingBox:(Protocol.DOM.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
@@ -2058,17 +2058,17 @@ Protocol.DOMSnapshot.RareIntegerData;
 /** @typedef {!Array<!number>} */
 Protocol.DOMSnapshot.Rectangle;
 
-/** @typedef {!{parentIndex:(!Array<number>|undefined), nodeType:(!Array<number>|undefined), nodeName:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), nodeValue:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), backendNodeId:(!Array<Protocol.DOM.BackendNodeId>|undefined), attributes:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>|undefined), layoutNodeIndex:(!Array<number>|undefined), textValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputChecked:(Protocol.DOMSnapshot.RareBooleanData|undefined), optionSelected:(Protocol.DOMSnapshot.RareBooleanData|undefined), documentURL:(Protocol.DOMSnapshot.RareStringData|undefined), baseURL:(Protocol.DOMSnapshot.RareStringData|undefined), contentLanguage:(Protocol.DOMSnapshot.RareStringData|undefined), documentEncoding:(Protocol.DOMSnapshot.RareStringData|undefined), publicId:(Protocol.DOMSnapshot.RareStringData|undefined), systemId:(Protocol.DOMSnapshot.RareStringData|undefined), frameId:(Protocol.DOMSnapshot.RareStringData|undefined), contentDocumentIndex:(Protocol.DOMSnapshot.RareIntegerData|undefined), importedDocumentIndex:(Protocol.DOMSnapshot.RareIntegerData|undefined), templateContentIndex:(Protocol.DOMSnapshot.RareIntegerData|undefined), pseudoType:(Protocol.DOMSnapshot.RareStringData|undefined), isClickable:(Protocol.DOMSnapshot.RareBooleanData|undefined), currentSourceURL:(Protocol.DOMSnapshot.RareStringData|undefined), originURL:(Protocol.DOMSnapshot.RareStringData|undefined)}} */
-Protocol.DOMSnapshot.DOMTreeSnapshot;
+/** @typedef {!{documentURL:(Protocol.DOMSnapshot.StringIndex), baseURL:(Protocol.DOMSnapshot.StringIndex), contentLanguage:(Protocol.DOMSnapshot.StringIndex), encodingName:(Protocol.DOMSnapshot.StringIndex), publicId:(Protocol.DOMSnapshot.StringIndex), systemId:(Protocol.DOMSnapshot.StringIndex), frameId:(Protocol.DOMSnapshot.StringIndex), nodes:(Protocol.DOMSnapshot.NodeTreeSnapshot), layout:(Protocol.DOMSnapshot.LayoutTreeSnapshot), textBoxes:(Protocol.DOMSnapshot.TextBoxSnapshot)}} */
+Protocol.DOMSnapshot.DocumentSnapshot;
+
+/** @typedef {!{parentIndex:(!Array<number>|undefined), nodeType:(!Array<number>|undefined), nodeName:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), nodeValue:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), backendNodeId:(!Array<Protocol.DOM.BackendNodeId>|undefined), attributes:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>|undefined), textValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputChecked:(Protocol.DOMSnapshot.RareBooleanData|undefined), optionSelected:(Protocol.DOMSnapshot.RareBooleanData|undefined), contentDocumentIndex:(Protocol.DOMSnapshot.RareIntegerData|undefined), pseudoType:(Protocol.DOMSnapshot.RareStringData|undefined), isClickable:(Protocol.DOMSnapshot.RareBooleanData|undefined), currentSourceURL:(Protocol.DOMSnapshot.RareStringData|undefined), originURL:(Protocol.DOMSnapshot.RareStringData|undefined)}} */
+Protocol.DOMSnapshot.NodeTreeSnapshot;
+
+/** @typedef {!{nodeIndex:(!Array<number>), styles:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>), bounds:(!Array<Protocol.DOMSnapshot.Rectangle>), text:(!Array<Protocol.DOMSnapshot.StringIndex>)}} */
+Protocol.DOMSnapshot.LayoutTreeSnapshot;
 
 /** @typedef {!{layoutIndex:(!Array<number>), bounds:(!Array<Protocol.DOMSnapshot.Rectangle>), start:(!Array<number>), length:(!Array<number>)}} */
 Protocol.DOMSnapshot.TextBoxSnapshot;
-
-/** @typedef {!{nodeIndex:(!Array<number>), styles:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>), bounds:(!Array<Protocol.DOMSnapshot.Rectangle>), text:(!Array<Protocol.DOMSnapshot.StringIndex>), textBoxes:(Protocol.DOMSnapshot.TextBoxSnapshot)}} */
-Protocol.DOMSnapshot.LayoutTreeSnapshot;
-
-/** @typedef {!{values:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>)}} */
-Protocol.DOMSnapshot.StylesSnapshot;
 /** @interface */
 Protocol.DOMSnapshotDispatcher = function() {};
 Protocol.DOMStorage = {};
@@ -5259,6 +5259,48 @@ Protocol.PageAgent.StopScreencastResponse;
  * @return {!Promise<!Protocol.PageAgent.StopScreencastResponse>} */
 Protocol.PageAgent.prototype.invoke_stopScreencast = function(obj) {};
 
+/**
+ * @param {boolean} enabled
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.setProduceCompilationCache = function(enabled) {};
+/** @typedef {!{enabled: boolean}} */
+Protocol.PageAgent.SetProduceCompilationCacheRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.SetProduceCompilationCacheResponse;
+/**
+ * @param {!Protocol.PageAgent.SetProduceCompilationCacheRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.SetProduceCompilationCacheResponse>} */
+Protocol.PageAgent.prototype.invoke_setProduceCompilationCache = function(obj) {};
+
+/**
+ * @param {string} url
+ * @param {string} data
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.addCompilationCache = function(url, data) {};
+/** @typedef {!{url: string, data: string}} */
+Protocol.PageAgent.AddCompilationCacheRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.AddCompilationCacheResponse;
+/**
+ * @param {!Protocol.PageAgent.AddCompilationCacheRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.AddCompilationCacheResponse>} */
+Protocol.PageAgent.prototype.invoke_addCompilationCache = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.clearCompilationCache = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.ClearCompilationCacheRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.ClearCompilationCacheResponse;
+/**
+ * @param {!Protocol.PageAgent.ClearCompilationCacheRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.ClearCompilationCacheResponse>} */
+Protocol.PageAgent.prototype.invoke_clearCompilationCache = function(obj) {};
+
 /** @enum {string} */
 Protocol.Page.ResourceType = {
     Document: "Document",
@@ -5432,6 +5474,11 @@ Protocol.PageDispatcher.prototype.screencastVisibilityChanged = function(visible
  * @param {boolean} userGesture
  */
 Protocol.PageDispatcher.prototype.windowOpen = function(url, windowName, windowFeatures, userGesture) {};
+/**
+ * @param {string} url
+ * @param {string} data
+ */
+Protocol.PageDispatcher.prototype.compilationCacheProduced = function(url, data) {};
 Protocol.Performance = {};
 
 
@@ -6024,6 +6071,19 @@ Protocol.TargetAgent.AttachToTargetResponse;
  * @param {!Protocol.TargetAgent.AttachToTargetRequest} obj
  * @return {!Promise<!Protocol.TargetAgent.AttachToTargetResponse>} */
 Protocol.TargetAgent.prototype.invoke_attachToTarget = function(obj) {};
+
+/**
+ * @return {!Promise<?Protocol.Target.SessionID>}
+ */
+Protocol.TargetAgent.prototype.attachToBrowserTarget = function() {};
+/** @typedef {Object|undefined} */
+Protocol.TargetAgent.AttachToBrowserTargetRequest;
+/** @typedef {!{sessionId: Protocol.Target.SessionID}} */
+Protocol.TargetAgent.AttachToBrowserTargetResponse;
+/**
+ * @param {!Protocol.TargetAgent.AttachToBrowserTargetRequest} obj
+ * @return {!Promise<!Protocol.TargetAgent.AttachToBrowserTargetResponse>} */
+Protocol.TargetAgent.prototype.invoke_attachToBrowserTarget = function(obj) {};
 
 /**
  * @param {Protocol.Target.TargetID} targetId
