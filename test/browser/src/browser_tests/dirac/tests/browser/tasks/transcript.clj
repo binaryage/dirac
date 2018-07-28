@@ -75,8 +75,17 @@
       (println actual-transcript)
       false)))
 
+(def handshake-params-matching-re #"devtools/front_end/handshake.html\?.*?\"}")
+(def handshake-params-replacement "devtools/front_end/handshake.html?...\"}")
+
+; remove some noisy stuff from dumped logs
+(defn post-process-chrome-log-result [text]
+  (-> text
+      (string/replace handshake-params-matching-re handshake-params-replacement)))
+
 (defn present-chrome-log-file []
-  (let [debug-log-path (:chrome-log-file env)
+  (with-travis-fold "Chrome logs" "chrome-logs"
+    (let [debug-log-path (:chrome-log-file env)
         max-lines (get-transcript-max-chrome-log-lines)
         command ["tail" "-n" (str max-lines) debug-log-path]]
     (try
@@ -84,7 +93,7 @@
         (println)
         (println chrome-log-file-separator-start)
         (println "> " (apply str (interpose " " command)))
-        (println (:out result))
+        (println (post-process-chrome-log-result (:out result)))
         (println chrome-log-file-separator-end)
         (println))
       (catch Throwable e
@@ -93,7 +102,7 @@
         (println (str "Unable to read Chrome log file at '" debug-log-path "'"))
         (stacktrace/print-stack-trace e)
         (println chrome-log-file-separator-end)
-        (println)))))
+        (println))))))
 
 ; -- transcript comparison --------------------------------------------------------------------------------------------------
 

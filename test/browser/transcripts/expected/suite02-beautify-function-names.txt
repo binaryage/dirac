@@ -18,8 +18,8 @@ stdout           displayed 42 items:
                   * breakpoint-demo / dirac.tests.scenarios.breakpoint.core/breakpoint-demo
                   * breakpoint-demo-handler / dirac.tests.scenarios.breakpoint.core/breakpoint-demo-handler
                   * λ
-                  * IFn:-invoke² (apply-to-simple) / cljs.core.IFn:-invoke² (cljs.core/apply-to-simple)
-                  * IFn:-invoke² (apply) / cljs.core.IFn:-invoke² (cljs.core/apply)
+                  * λ
+                  * λ
                   * apply / cljs.core/apply
                   * call-trigger! / dirac.automation.scenario/call-trigger!
                   * handle-notification! / dirac.automation.scenario/handle-notification!
@@ -81,8 +81,8 @@ stdout           displayed 42 items:
                   * dirac$tests$scenarios$breakpoint$core$breakpoint_demo
                   * dirac$tests$scenarios$breakpoint$core$breakpoint_demo_handler
                   * (anonymous)
-                  * cljs.core.apply_to_simple.cljs$core$IFn$_invoke$arity$2
-                  * cljs.core.apply.cljs$core$IFn$_invoke$arity$2
+                  * (anonymous)
+                  * (anonymous)
                   * cljs$core$apply
                   * dirac$automation$scenario$call_trigger_BANG_
                   * dirac$automation$scenario$handle_notification_BANG_
@@ -148,31 +148,31 @@ scenario         uncaught exception: Error: :invalid is not ISeqable
 automate #3      scrape! [:function-names-in-last-console-exception]
 stdout           displayed 44 items:
                   * seq
-                  * IFn:-invoke³ (seq-reduce)
-                  * IFn:-invoke³ (reduce)
-                  * IFn:-invoke² (into)
+                  * λ
+                  * λ
+                  * λ
                   * into
                   * crash!
                   * crash-or-break!
-                  * ITestProtocol:-pmethod⁴ (TestType)
-                  * IFn:-invoke⁴ (-pmethod)
+                  * λ
+                  * λ
                   * -pmethod
-                  * ITestProtocol:-pmethod³ (TestType)
-                  * IFn:-invoke³ (-pmethod)
+                  * λ
+                  * λ
                   * -pmethod
                   * excercise-protocol!
-                  * IFn:-invokeⁿ (multi-arity-fn)
+                  * λ
                   * multi-arity-fn
-                  * IFn:-invoke² (multi-arity-fn)
+                  * λ
                   * multi-arity-fn
-                  * IFn:-invoke⁰ (multi-arity-fn)
+                  * λ
                   * multi-arity-fn
                   * fancy-$%$#%$#-function???-name
                   * exception-demo!
                   * exception-demo-handler
                   * λ
-                  * IFn:-invoke² (apply-to-simple)
-                  * IFn:-invoke² (apply)
+                  * λ
+                  * λ
                   * apply
                   * call-trigger!
                   * handle-notification!
@@ -224,7 +224,7 @@ stdout           displayed 77 items:
                   * goog.async.nextTick / goog.async.nextTick
                   * queue-dispatcher / cljs.core.async.impl.dispatch/queue-dispatcher
                   * run / cljs.core.async.impl.dispatch/run
-                  * Channel:close!¹ (ManyToManyChannel) / cljs.core.async.impl.protocols.Channel:close!¹ (cljs.core.async.impl.channels/ManyToManyChannel)
+                  * λ
                   * close! / cljs.core.async.impl.protocols/close!
                   * λ
                   * setTimeout (async)
@@ -247,8 +247,8 @@ stdout           displayed 77 items:
                   * break-async / dirac.tests.scenarios.core-async/break-async
                   * break-async-handler / dirac.tests.scenarios.core-async/break-async-handler
                   * λ
-                  * IFn:-invoke² (apply-to-simple) / cljs.core.IFn:-invoke² (cljs.core/apply-to-simple)
-                  * IFn:-invoke² (apply) / cljs.core.IFn:-invoke² (cljs.core/apply)
+                  * λ
+                  * λ
                   * apply / cljs.core/apply
                   * call-trigger! / dirac.automation.scenario/call-trigger!
                   * handle-notification! / dirac.automation.scenario/handle-notification!

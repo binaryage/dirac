@@ -54,27 +54,13 @@ SDK.RuntimeModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {string} code
-   * @return {string}
+   * @param {!SDK.RuntimeModel.EvaluationResult} response
    */
-  static wrapObjectLiteralExpressionIfNeeded(code) {
-    // Only parenthesize what appears to be an object literal.
-    if (!(/^\s*\{/.test(code) && /\}\s*$/.test(code)))
-      return code;
-
-    const parse = (async () => 0).constructor;
-    try {
-      // Check if the code can be interpreted as an expression.
-      parse('return ' + code + ';');
-
-      // No syntax error! Does it work parenthesized?
-      const wrappedCode = '(' + code + ')';
-      parse(wrappedCode);
-
-      return wrappedCode;
-    } catch (e) {
-      return code;
-    }
+  static isSideEffectFailure(response) {
+    const exceptionDetails = !response[Protocol.Error] && response.exceptionDetails;
+    return !!(
+        exceptionDetails && exceptionDetails.exception &&
+        exceptionDetails.exception.description.startsWith('EvalError: Possible side-effect in debug-evaluate'));
   }
 
   /**
@@ -493,12 +479,8 @@ SDK.RuntimeModel = class extends SDK.SDKModel {
     const response = await this._agent.invoke_evaluate(
         {expression: SDK.RuntimeModel._sideEffectTestExpression, contextId: testContext.id, throwOnSideEffect: true});
 
-    const exceptionDetails = !response[Protocol.Error] && response.exceptionDetails;
-    const supports =
-        !!(exceptionDetails && exceptionDetails.exception &&
-           exceptionDetails.exception.description.startsWith('EvalError: Possible side-effect in debug-evaluate'));
-    this._hasSideEffectSupport = supports;
-    return supports;
+    this._hasSideEffectSupport = SDK.RuntimeModel.isSideEffectFailure(response);
+    return this._hasSideEffectSupport;
   }
 
   /**

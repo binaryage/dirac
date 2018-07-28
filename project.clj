@@ -18,7 +18,7 @@
    ['http-kit "2.3.0"]
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
-   ['funcool/cuerdas "2.0.5"]
+   ['funcool/cuerdas "2.0.6"]
    ['com.rpl/specter "1.1.1"]])
 
 (def test-deps
@@ -58,7 +58,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.36"
+(defproject binaryage/dirac "1.2.37"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

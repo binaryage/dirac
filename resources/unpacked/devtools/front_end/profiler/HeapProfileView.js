@@ -17,6 +17,11 @@ Profiler.HeapProfileView = class extends Profiler.ProfileView {
     const views = [
       Profiler.ProfileView.ViewTypes.Flame, Profiler.ProfileView.ViewTypes.Heavy, Profiler.ProfileView.ViewTypes.Tree
     ];
+    const isNativeProfile = [
+      Profiler.SamplingNativeHeapProfileType.TypeId, Profiler.SamplingNativeHeapSnapshotType.TypeId
+    ].includes(profileHeader.profileType().id);
+    if (isNativeProfile)
+      views.push(Profiler.ProfileView.ViewTypes.Text);
     this.initialize(new Profiler.HeapProfileView.NodeFormatter(this), views);
   }
 
@@ -41,6 +46,37 @@ Profiler.HeapProfileView = class extends Profiler.ProfileView {
    */
   createFlameChartDataProvider() {
     return new Profiler.HeapFlameChartDataProvider(this.profile, this._profileHeader.heapProfilerModel());
+  }
+
+  /**
+   * @override
+   * @param {!UI.SimpleView} view
+   */
+  populateTextView(view) {
+    const guides = '+!:|';
+    let text = `Sampling memory profile.\n\nDate/Time:       ${new Date()}\n` +
+        `Report Version:  7\nNode weight:     1 KiB\n----\n\nCall graph:\n`;
+    const sortedChildren = this.profile.root.children.sort((a, b) => b.total - a.total);
+    for (const child of sortedChildren)
+      printTree('    ', child !== sortedChildren.peekLast(), child);
+    view.contentElement.createChild('pre', 'profile-text-view monospace').textContent = text;
+
+    /**
+     * @param {string} padding
+     * @param {boolean} drawGuide
+     * @param {!SDK.ProfileNode} node
+     */
+    function printTree(padding, drawGuide, node) {
+      const isAddress = node.functionName.startsWith('0x');
+      const functionName = isAddress ? '???' : node.functionName;
+      const address = isAddress ? node.functionName : '???';
+      text += `${padding}${Math.round(node.total / 1024)}  ${functionName}  [${address}]\n`;
+      const guideChar = drawGuide ? guides[padding.length / 2 % guides.length] : ' ';
+      const nextPadding = padding + guideChar + ' ';
+      const sortedChildren = node.children.sort((a, b) => b.total - a.total);
+      for (const child of sortedChildren)
+        printTree(nextPadding, child !== sortedChildren.peekLast(), child);
+    }
   }
 };
 
@@ -231,9 +267,11 @@ Profiler.SamplingNativeHeapProfileType.TypeId = 'SamplingNativeHeapRecording';
  * @unrestricted
  */
 Profiler.SamplingNativeHeapSnapshotType = class extends Profiler.SamplingHeapProfileTypeBase {
-  constructor() {
-    super(Profiler.SamplingNativeHeapSnapshotType.TypeId, ls`Native memory allocation snapshot`);
-    Profiler.SamplingNativeHeapSnapshotType.instance = this;
+  /**
+   * @param {string} processType
+   */
+  constructor(processType) {
+    super(Profiler.SamplingNativeHeapSnapshotType.TypeId, ls`Native memory allocation snapshot (${processType})`);
   }
 
   /**
@@ -273,13 +311,13 @@ Profiler.SamplingNativeHeapSnapshotType = class extends Profiler.SamplingHeapPro
     if (!heapProfilerModel)
       return;
 
-    const profile = new Profiler.SamplingHeapProfileHeader(
-        heapProfilerModel, this, Common.UIString('Snapshot %d', this.nextProfileUid()));
+    const profile =
+        new Profiler.SamplingHeapProfileHeader(heapProfilerModel, this, ls`Snapshot ${this.nextProfileUid()}`);
     this.setProfileBeingRecorded(profile);
     this.addProfile(profile);
-    profile.updateStatus(Common.UIString('Snapshotting\u2026'));
+    profile.updateStatus(ls`Snapshotting\u2026`);
 
-    const protocolProfile = await heapProfilerModel.takeNativeSnapshot();
+    const protocolProfile = await this._takeNativeSnapshot(/** @type {!SDK.HeapProfilerModel} */ (heapProfilerModel));
     const recordedProfile = this.profileBeingRecorded();
     if (recordedProfile) {
       console.assert(protocolProfile);
@@ -290,9 +328,49 @@ Profiler.SamplingNativeHeapSnapshotType = class extends Profiler.SamplingHeapPro
 
     this.dispatchEventToListeners(Profiler.ProfileType.Events.ProfileComplete, recordedProfile);
   }
+
+  /**
+   * @param {!SDK.HeapProfilerModel} heapProfilerModel
+   * @return {!Promise<!Protocol.HeapProfiler.SamplingHeapProfile>}
+   */
+  _takeNativeSnapshot(heapProfilerModel) {
+    throw 'Not implemented';
+  }
 };
 
 Profiler.SamplingNativeHeapSnapshotType.TypeId = 'SamplingNativeHeapSnapshot';
+
+Profiler.SamplingNativeHeapSnapshotBrowserType = class extends Profiler.SamplingNativeHeapSnapshotType {
+  constructor() {
+    super(ls`Browser`);
+    Profiler.SamplingNativeHeapSnapshotBrowserType.instance = this;
+  }
+
+  /**
+   * @override
+   * @param {!SDK.HeapProfilerModel} heapProfilerModel
+   * @return {!Promise<!Protocol.HeapProfiler.SamplingHeapProfile>}
+   */
+  _takeNativeSnapshot(heapProfilerModel) {
+    return heapProfilerModel.takeNativeBrowserSnapshot();
+  }
+};
+
+Profiler.SamplingNativeHeapSnapshotRendererType = class extends Profiler.SamplingNativeHeapSnapshotType {
+  constructor() {
+    super(ls`Renderer`);
+    Profiler.SamplingNativeHeapSnapshotRendererType.instance = this;
+  }
+
+  /**
+   * @override
+   * @param {!SDK.HeapProfilerModel} heapProfilerModel
+   * @return {!Promise<!Protocol.HeapProfiler.SamplingHeapProfile>}
+   */
+  async _takeNativeSnapshot(heapProfilerModel) {
+    return await heapProfilerModel.takeNativeSnapshot();
+  }
+};
 
 /**
  * @unrestricted
