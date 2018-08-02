@@ -2953,6 +2953,20 @@ Protocol.InputAgent.DispatchKeyEventResponse;
 Protocol.InputAgent.prototype.invoke_dispatchKeyEvent = function(obj) {};
 
 /**
+ * @param {string} text
+ * @return {!Promise<undefined>}
+ */
+Protocol.InputAgent.prototype.insertText = function(text) {};
+/** @typedef {!{text: string}} */
+Protocol.InputAgent.InsertTextRequest;
+/** @typedef {Object|undefined} */
+Protocol.InputAgent.InsertTextResponse;
+/**
+ * @param {!Protocol.InputAgent.InsertTextRequest} obj
+ * @return {!Promise<!Protocol.InputAgent.InsertTextResponse>} */
+Protocol.InputAgent.prototype.invoke_insertText = function(obj) {};
+
+/**
  * @param {string} type
  * @param {number} x
  * @param {number} y
@@ -6233,10 +6247,11 @@ Protocol.TargetAgent.prototype.invoke_sendMessageToTarget = function(obj) {};
 /**
  * @param {boolean} autoAttach
  * @param {boolean} waitForDebuggerOnStart
+ * @param {boolean=} opt_flatten
  * @return {!Promise<undefined>}
  */
-Protocol.TargetAgent.prototype.setAutoAttach = function(autoAttach, waitForDebuggerOnStart) {};
-/** @typedef {!{waitForDebuggerOnStart: boolean, autoAttach: boolean}} */
+Protocol.TargetAgent.prototype.setAutoAttach = function(autoAttach, waitForDebuggerOnStart, opt_flatten) {};
+/** @typedef {!{waitForDebuggerOnStart: boolean, autoAttach: boolean, flatten: (boolean|undefined)}} */
 Protocol.TargetAgent.SetAutoAttachRequest;
 /** @typedef {Object|undefined} */
 Protocol.TargetAgent.SetAutoAttachResponse;

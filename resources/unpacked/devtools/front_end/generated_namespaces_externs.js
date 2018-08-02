@@ -15,8 +15,6 @@ var Bindings = {};
 /** @const */
 var BindingsTestRunner = {};
 /** @const */
-var BrowserComponents = {};
-/** @const */
 var BrowserConsole = {};
 /** @const */
 var BrowserDebugger = {};
