@@ -183,17 +183,6 @@ Sources.CallStackSidebarPane = class extends UI.SimpleView {
   }
 
   /**
-   * @param {!Sources.CallStackSidebarPane.Item} item
-   * @return {string|undefined}
-   */
-  _getItemFunctionName(item) {
-    if (item.debuggerCallFrame)
-      return item.debuggerCallFrame.functionName;
-    if (item.runtimeCallFrame)
-      return item.runtimeCallFrame.functionName;
-  }
-
-  /**
    * @override
    * @param {!Sources.CallStackSidebarPane.Item} item
    * @return {!Element}
@@ -204,9 +193,8 @@ Sources.CallStackSidebarPane = class extends UI.SimpleView {
     const titleElement = title.createChild('div', 'call-frame-title-text');
     titleElement.textContent = item.title;
     if (dirac.hasBeautifyFunctionNames) {
-      const functionName = this._getItemFunctionName(item);
-      if (functionName) {
-        titleElement.title = dirac.getFullFunctionName(functionName);
+      if (item.functionName) {
+        titleElement.title = dirac.getFullFunctionName(item.functionName);
       }
     }
     if (item.isAsyncHeader) {
@@ -428,7 +416,7 @@ Sources.CallStackSidebarPane.Item = class {
    * @return {!Sources.CallStackSidebarPane.Item}
    */
   static createForDebuggerCallFrame(frame, locationPool, updateDelegate) {
-    const item = new Sources.CallStackSidebarPane.Item(UI.beautifyFunctionName(frame.functionName), updateDelegate);
+    const item = new Sources.CallStackSidebarPane.Item(UI.beautifyFunctionName(frame.functionName), updateDelegate, frame.functionName);
     Bindings.debuggerWorkspaceBinding.createCallFrameLiveLocation(
         frame.location(), item._update.bind(item), locationPool);
     return item;
@@ -449,7 +437,7 @@ Sources.CallStackSidebarPane.Item = class {
     asyncHeaderItem.isAsyncHeader = true;
 
     const asyncFrameItems = frames.map(frame => {
-      const item = new Sources.CallStackSidebarPane.Item(UI.beautifyFunctionName(frame.functionName), update);
+      const item = new Sources.CallStackSidebarPane.Item(UI.beautifyFunctionName(frame.functionName), update, frame.functionName);
       const rawLocation = debuggerModel ?
           debuggerModel.createRawLocationByScriptId(frame.scriptId, frame.lineNumber, frame.columnNumber) :
           null;
@@ -489,10 +477,12 @@ Sources.CallStackSidebarPane.Item = class {
   /**
    * @param {string} title
    * @param {function(!Sources.CallStackSidebarPane.Item)} updateDelegate
+   * @param {?string} functionName
    */
-  constructor(title, updateDelegate) {
+  constructor(title, updateDelegate, functionName = null) {
     this.isBlackboxed = false;
     this.title = title;
+    this.functionName = functionName;
     this.linkText = '';
     this.uiLocation = null;
     this.isAsyncHeader = false;
