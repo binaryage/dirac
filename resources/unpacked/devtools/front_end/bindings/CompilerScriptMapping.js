@@ -167,22 +167,22 @@ Bindings.CompilerScriptMapping = class {
    * @param {!Workspace.UISourceCode} uiSourceCode
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {?SDK.DebuggerModel.Location}
+   * @return {!Array<!SDK.DebuggerModel.Location>}
    */
-  uiLocationToRawLocation(uiSourceCode, lineNumber, columnNumber) {
+  uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber) {
     const sourceMap = uiSourceCode[Bindings.CompilerScriptMapping._sourceMapSymbol];
     if (!sourceMap)
-      return null;
+      return [];
     const scripts = this._sourceMapManager.clientsForSourceMap(sourceMap);
-    const script = scripts.length ? scripts[0] : null;
-    if (!script)
-      return null;
+    if (!scripts.length)
+      return [];
     const entry = sourceMap.sourceLineMapping(uiSourceCode.url(), lineNumber, columnNumber);
     if (!entry)
-      return null;
-    return this._debuggerModel.createRawLocation(
-        script, entry.lineNumber + script.lineOffset,
-        !entry.lineNumber ? entry.columnNumber + script.columnOffset : entry.columnNumber);
+      return [];
+    return scripts.map(
+        script => this._debuggerModel.createRawLocation(
+            script, entry.lineNumber + script.lineOffset,
+            !entry.lineNumber ? entry.columnNumber + script.columnOffset : entry.columnNumber));
   }
 
   /**
@@ -213,7 +213,6 @@ Bindings.CompilerScriptMapping = class {
 
     if (Bindings.blackboxManager.isBlackboxedURL(script.sourceURL, script.isContentScript()))
       return;
-    Bindings.blackboxManager.sourceMapLoaded(script, sourceMap);
 
     this._populateSourceMapSources(script, sourceMap);
     this._sourceMapAttachedForTest(sourceMap);
@@ -242,16 +241,6 @@ Bindings.CompilerScriptMapping = class {
    */
   sourceMapForScript(script) {
     return this._sourceMapManager.sourceMapForClient(script);
-  }
-
-  /**
-   * @param {!SDK.Script} script
-   */
-  maybeLoadSourceMap(script) {
-    const sourceMap = this._sourceMapManager.sourceMapForClient(script);
-    if (!sourceMap)
-      return;
-    this._populateSourceMapSources(script, sourceMap);
   }
 
   /**
