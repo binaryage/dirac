@@ -396,7 +396,8 @@ Object.assign(window.dirac, (function() {
       return Promise.resolve([]);
     }
 
-    Bindings.debuggerWorkspaceBinding.maybeLoadSourceMap(script);
+    // I assume calling maybeLoadSourceMap is no longer needed, source maps are loaded lazily when referenced
+    // Bindings.debuggerWorkspaceBinding.maybeLoadSourceMap(script);
     return ensureSourceMapLoadedAsync(script).then(/** @suppressGlobalPropertiesCheck */sourceMap => {
       const scriptUrl = script.contentURL();
       let promises = [];
