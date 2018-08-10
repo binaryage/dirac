@@ -51,11 +51,14 @@
 (defn find-scope-section-elements []
   (dom/query-selector "html /deep/ .scope-chain-sidebar-pane-section /deep/ .object-properties-section"))
 
+(defn interesting-scope-class? [class-name]
+  (or (= "name" class-name)
+      (= "value" class-name)
+      (= "object-properties-section-custom-section" class-name)))
+
 (defn interesting-scope-tree-item-rep? [rep]
-  (let [class (str (:class rep))]
-    (or (re-find #"name" class)
-        (re-find #"value" class)
-        (re-find #"object-properties-section-custom-section" class))))
+  (let [class-names (string/split (str (:class rep)) #" ")]
+    (some interesting-scope-class? class-names)))
 
 (defn extract-scope-info [[rep-name rep-value]]
   (let [name (str (:content rep-name))
