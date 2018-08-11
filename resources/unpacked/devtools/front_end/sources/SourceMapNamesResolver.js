@@ -329,7 +329,7 @@ Sources.SourceMapNamesResolver.resolveExpression = function(
    * @param {!Sources.SourceMapNamesResolver.Mapping} mapping
    * @return {!Promise<string>}
    */
-  function findCompiledName(mapping) {
+  function findCompiledName(debuggerModel, mapping) {
     const record = Sources.SourceMapNamesResolver.lookupMappingRecordForOriginalName(mapping,
       originalText, lineNumber, startColumnNumber);
     if (record) {
