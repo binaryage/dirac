@@ -643,7 +643,7 @@ Object.assign(window.dirac, (function() {
       console.error(
         `uiSourceCode expected to have scriptFile associated\n` +
         `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
-      return nil;
+      return null;
     }
     const script = scriptFile.getScript();
     if (!script) {
