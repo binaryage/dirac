@@ -4,6 +4,7 @@
 (def selected-clojure-version "1.9.0")
 (def selected-clojurescript-version "1.10.339")
 (def selenium-version "3.14.0")
+(def lein-cljsbuild-version "1.1.7")
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
@@ -174,7 +175,7 @@
              {:plugins [[lein-cooper "1.2.2"]]}
 
              :cljs
-             {:plugins [[lein-cljsbuild "1.1.6"]
+             {:plugins [[lein-cljsbuild ~lein-cljsbuild-version]
                         [lein-figwheel ~figwheel-version]]}
 
              :nuke-aliases
