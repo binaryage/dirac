@@ -880,7 +880,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
   setSelection(textRange) {
     this._lastSelection = textRange;
     const pos = TextEditor.CodeMirrorUtils.toPos(textRange);
-    this._codeMirror.setSelection(pos.start, pos.end);
+    this._codeMirror.setSelection(pos.start, pos.end, {});
   }
 
   /**
