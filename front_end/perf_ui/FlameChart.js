@@ -73,13 +73,18 @@ PerfUI.FlameChart = class extends UI.VBox {
     this._groupExpansionState = groupExpansionSetting && groupExpansionSetting.get() || {};
     this._flameChartDelegate = flameChartDelegate;
 
+    this._useWebGL = Runtime.experiments.isEnabled('timelineWebGL');
     this._chartViewport = new PerfUI.ChartViewport(this);
     this._chartViewport.show(this.contentElement);
 
     this._dataProvider = dataProvider;
 
     this._viewportElement = this._chartViewport.viewportElement;
-    this._canvas = /** @type {!HTMLCanvasElement} */ (this._viewportElement.createChild('canvas'));
+    if (this._useWebGL) {
+      this._canvasGL = /** @type {!HTMLCanvasElement} */ (this._viewportElement.createChild('canvas', 'fill'));
+      this._initWebGL();
+    }
+    this._canvas = /** @type {!HTMLCanvasElement} */ (this._viewportElement.createChild('canvas', 'fill'));
 
     this._canvas.tabIndex = 0;
     this.setDefaultFocusedElement(this._canvas);
@@ -204,6 +209,12 @@ PerfUI.FlameChart = class extends UI.VBox {
     this._canvas.height = height;
     this._canvas.style.width = `${width / ratio}px`;
     this._canvas.style.height = `${height / ratio}px`;
+    if (this._useWebGL) {
+      this._canvasGL.width = width;
+      this._canvasGL.height = height;
+      this._canvasGL.style.width = `${width / ratio}px`;
+      this._canvasGL.style.height = `${height / ratio}px`;
+    }
   }
 
   /**
@@ -683,6 +694,8 @@ PerfUI.FlameChart = class extends UI.VBox {
     const ratio = window.devicePixelRatio;
     const top = this._chartViewport.scrollOffset();
     context.scale(ratio, ratio);
+    context.fillStyle = 'rgba(0, 0, 0, 0)';
+    context.fillRect(0, 0, width, height);
     context.translate(0, -top);
     const defaultFont = '11px ' + Host.fontFamily();
     context.font = defaultFont;
@@ -696,16 +709,8 @@ PerfUI.FlameChart = class extends UI.VBox {
     const markerIndices = [];
     const textPadding = this._textPadding;
     const minTextWidth = 2 * textPadding + UI.measureTextWidth(context, '\u2026');
+    const minTextWidthDuration = this._chartViewport.pixelToTimeOffset(minTextWidth);
     const minVisibleBarLevel = Math.max(this._visibleLevelOffsets.upperBound(top) - 1, 0);
-
-    context.save();
-    this._forEachGroup((offset, index, group, isFirst, groupHeight) => {
-      if (index === this._selectedGroup) {
-        context.fillStyle = this._selectedGroupBackroundColor;
-        context.fillRect(0, offset, width, groupHeight - group.style.padding);
-      }
-    });
-    context.restore();
 
     /** @type {!Map<string, !Array<number>>} */
     const colorBuckets = new Map();
@@ -724,10 +729,19 @@ PerfUI.FlameChart = class extends UI.VBox {
       let lastDrawOffset = Infinity;
       for (let entryIndexOnLevel = rightIndexOnLevel; entryIndexOnLevel >= 0; --entryIndexOnLevel) {
         const entryIndex = levelIndexes[entryIndexOnLevel];
+        let duration = entryTotalTimes[entryIndex];
+        if (isNaN(duration))
+          markerIndices.push(entryIndex);
+        duration = duration || 0;
+        if (duration >= minTextWidthDuration || this._forceDecorationCache[entryIndex])
+          titleIndices.push(entryIndex);
+
         const entryStartTime = entryStartTimes[entryIndex];
-        const entryOffsetRight = entryStartTime + (entryTotalTimes[entryIndex] || 0);
+        const entryOffsetRight = entryStartTime + duration;
         if (entryOffsetRight <= this._chartViewport.windowLeftTime())
           break;
+        if (this._useWebGL)
+          continue;
 
         const barX = this._timeToPositionClipped(entryStartTime);
         // Check if the entry entirely fits into an already drawn pixel, we can just skip drawing it.
@@ -735,7 +749,7 @@ PerfUI.FlameChart = class extends UI.VBox {
           continue;
         lastDrawOffset = barX;
 
-        const color = this._dataProvider.entryColor(entryIndex);
+        const color = this._entryColorsCache[entryIndex];
         let bucket = colorBuckets.get(color);
         if (!bucket) {
           bucket = [];
@@ -745,37 +759,47 @@ PerfUI.FlameChart = class extends UI.VBox {
       }
     }
 
-    const colors = colorBuckets.keysArray();
-    // We don't use for-of here because it's slow.
-    for (let c = 0; c < colors.length; ++c) {
-      const color = colors[c];
-      const indexes = colorBuckets.get(color);
-      context.beginPath();
-      for (let i = 0; i < indexes.length; ++i) {
-        const entryIndex = indexes[i];
-        const entryStartTime = entryStartTimes[entryIndex];
-        const barX = this._timeToPositionClipped(entryStartTime);
-        const duration = entryTotalTimes[entryIndex];
-        const barLevel = entryLevels[entryIndex];
-        const barHeight = this._levelHeight(barLevel);
-        const barY = this._levelToOffset(barLevel);
-        if (isNaN(duration)) {
-          context.moveTo(barX + this._markerRadius, barY + barHeight / 2);
-          context.arc(barX, barY + barHeight / 2, this._markerRadius, 0, Math.PI * 2);
-          markerIndices.push(entryIndex);
-          continue;
+    if (this._useWebGL) {
+      this._drawGL();
+    } else {
+      context.save();
+      this._forEachGroupInViewport((offset, index, group, isFirst, groupHeight) => {
+        if (index === this._selectedGroup) {
+          context.fillStyle = this._selectedGroupBackroundColor;
+          context.fillRect(0, offset, width, groupHeight - group.style.padding);
         }
-        const barRight = this._timeToPositionClipped(entryStartTime + duration);
-        const barWidth = Math.max(barRight - barX, 1);
-        if (color)
-          context.rect(barX, barY, barWidth - 0.4, barHeight - 1);
-        if (barWidth > minTextWidth || this._dataProvider.forceDecoration(entryIndex))
-          titleIndices.push(entryIndex);
+      });
+      context.restore();
+
+      const colors = colorBuckets.keysArray();
+      // We don't use for-of here because it's slow.
+      for (let c = 0; c < colors.length; ++c) {
+        const color = colors[c];
+        const indexes = colorBuckets.get(color);
+        context.beginPath();
+        for (let i = 0; i < indexes.length; ++i) {
+          const entryIndex = indexes[i];
+          const entryStartTime = entryStartTimes[entryIndex];
+          const barX = this._timeToPositionClipped(entryStartTime);
+          const duration = entryTotalTimes[entryIndex];
+          const barLevel = entryLevels[entryIndex];
+          const barHeight = this._levelHeight(barLevel);
+          const barY = this._levelToOffset(barLevel);
+          if (isNaN(duration)) {
+            context.moveTo(barX + this._markerRadius, barY + barHeight / 2);
+            context.arc(barX, barY + barHeight / 2, this._markerRadius, 0, Math.PI * 2);
+            continue;
+          }
+          const barRight = this._timeToPositionClipped(entryStartTime + duration);
+          const barWidth = Math.max(barRight - barX, 1);
+          if (color)
+            context.rect(barX, barY, barWidth - 0.4, barHeight - 1);
+        }
+        if (!color)
+          continue;
+        context.fillStyle = color;
+        context.fill();
       }
-      if (!color)
-        continue;
-      context.fillStyle = color;
-      context.fill();
     }
 
     context.beginPath();
@@ -834,6 +858,218 @@ PerfUI.FlameChart = class extends UI.VBox {
     this._updateMarkerHighlight();
   }
 
+  _initWebGL() {
+    const gl = /** @type {?WebGLRenderingContext} */ (this._canvasGL.getContext('webgl'));
+    if (!gl) {
+      console.error('Failed to obtain WebGL context.');
+      this._useWebGL = false;  // Fallback to use canvas.
+      return;
+    }
+
+    const vertexShaderSource = `
+      attribute vec2 aVertexPosition;
+      attribute float aVertexColor;
+
+      uniform vec2 uScalingFactor;
+      uniform vec2 uShiftVector;
+
+      varying mediump vec2 vPalettePosition;
+
+      void main() {
+        vec2 shiftedPosition = aVertexPosition - uShiftVector;
+        gl_Position = vec4(shiftedPosition * uScalingFactor + vec2(-1.0, 1.0), 0.0, 1.0);
+        vPalettePosition = vec2(aVertexColor, 0.5);
+      }`;
+
+    const fragmentShaderSource = `
+      varying mediump vec2 vPalettePosition;
+      uniform sampler2D uSampler;
+
+      void main() {
+        gl_FragColor = texture2D(uSampler, vPalettePosition);
+      }`;
+
+    /**
+     * @param {!WebGLRenderingContext} gl
+     * @param {number} type
+     * @param {string} source
+     * @return {?WebGLShader}
+     */
+    function loadShader(gl, type, source) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (gl.getShaderParameter(shader, gl.COMPILE_STATUS))
+        return shader;
+      console.error('Shader compile error: ' + gl.getShaderInfoLog(shader));
+      gl.deleteShader(shader);
+      return null;
+    }
+
+    const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+    const shaderProgram = gl.createProgram();
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+    gl.linkProgram(shaderProgram);
+
+    if (gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+      this._shaderProgram = shaderProgram;
+      gl.useProgram(shaderProgram);
+    } else {
+      console.error('Unable to initialize the shader program: ' + gl.getProgramInfoLog(shaderProgram));
+      this._shaderProgram = null;
+    }
+
+    this._vertexBuffer = gl.createBuffer();
+    this._colorBuffer = gl.createBuffer();
+
+    this._uScalingFactor = gl.getUniformLocation(shaderProgram, 'uScalingFactor');
+    this._uShiftVector = gl.getUniformLocation(shaderProgram, 'uShiftVector');
+    const uSampler = gl.getUniformLocation(shaderProgram, 'uSampler');
+    gl.uniform1i(uSampler, 0);
+    this._aVertexPosition = gl.getAttribLocation(this._shaderProgram, 'aVertexPosition');
+    this._aVertexColor = gl.getAttribLocation(this._shaderProgram, 'aVertexColor');
+    gl.enableVertexAttribArray(this._aVertexPosition);
+    gl.enableVertexAttribArray(this._aVertexColor);
+  }
+
+  _setupGLGeometry() {
+    const gl = /** @type {?WebGLRenderingContext} */ (this._canvasGL.getContext('webgl'));
+    if (!gl)
+      return;
+
+    const timelineData = this._timelineData();
+    if (!timelineData)
+      return;
+
+    const entryTotalTimes = timelineData.entryTotalTimes;
+    const entryStartTimes = timelineData.entryStartTimes;
+    const entryLevels = timelineData.entryLevels;
+
+    const verticesPerBar = 6;
+    const vertexArray = new Float32Array(entryTotalTimes.length * verticesPerBar * 2);
+    let colorArray = new Uint8Array(entryTotalTimes.length * verticesPerBar);
+    let vertex = 0;
+    /** @type {!Map<string, number>} */
+    const parsedColorCache = new Map();
+    /** @type {!Array<number>} */
+    const colors = [];
+
+    const collapsedOverviewLevels = new Array(this._visibleLevels.length);
+    const groups = this._rawTimelineData.groups || [];
+    this._forEachGroup((offset, index, group) => {
+      if (group.style.useFirstLineForOverview || !this._isGroupCollapsible(index) || group.expanded)
+        return;
+      let nextGroup = index + 1;
+      while (nextGroup < groups.length && groups[nextGroup].style.nestingLevel > group.style.nestingLevel)
+        ++nextGroup;
+      const endLevel = nextGroup < groups.length ? groups[nextGroup].startLevel : this._dataProvider.maxStackDepth();
+      for (let i = group.startLevel; i < endLevel; ++i)
+        collapsedOverviewLevels[i] = offset;
+    });
+
+    for (let i = 0; i < entryTotalTimes.length; ++i) {
+      const level = entryLevels[i];
+      const collapsedGroupOffset = collapsedOverviewLevels[level];
+      if (!this._visibleLevels[level] && !collapsedGroupOffset)
+        continue;
+      const color = this._entryColorsCache[i];
+      if (!color)
+        continue;
+      let colorIndex = parsedColorCache.get(color);
+      if (colorIndex === undefined) {
+        const rgba = Common.Color.parse(color).canonicalRGBA();
+        rgba[3] = Math.round(rgba[3] * 255);
+        colorIndex = colors.length / 4;
+        colors.push(...rgba);
+        if (colorIndex === 256)
+          colorArray = new Uint16Array(colorArray);
+        parsedColorCache.set(color, colorIndex);
+      }
+      for (let j = 0; j < verticesPerBar; ++j)
+        colorArray[vertex + j] = colorIndex;
+
+      const vpos = vertex * 2;
+      const x0 = entryStartTimes[i] - this._minimumBoundary;
+      const x1 = x0 + entryTotalTimes[i];
+      const y0 = collapsedGroupOffset || this._levelToOffset(level);
+      const y1 = y0 + this._levelHeight(level) - 1;
+      vertexArray[vpos + 0] = x0;
+      vertexArray[vpos + 1] = y0;
+      vertexArray[vpos + 2] = x1;
+      vertexArray[vpos + 3] = y0;
+      vertexArray[vpos + 4] = x0;
+      vertexArray[vpos + 5] = y1;
+      vertexArray[vpos + 6] = x0;
+      vertexArray[vpos + 7] = y1;
+      vertexArray[vpos + 8] = x1;
+      vertexArray[vpos + 9] = y0;
+      vertexArray[vpos + 10] = x1;
+      vertexArray[vpos + 11] = y1;
+
+      vertex += verticesPerBar;
+    }
+    this._vertexCount = vertex;
+
+    const paletteTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, paletteTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.activeTexture(gl.TEXTURE0);
+
+    const numColors = colors.length / 4;
+    const useShortForColors = numColors >= 256;
+    const width = !useShortForColors ? 256 : Math.min(1 << 16, gl.getParameter(gl.MAX_TEXTURE_SIZE));
+    console.assert(numColors <= width, 'Too many colors');
+    const height = 1;
+    const colorIndexType = useShortForColors ? gl.UNSIGNED_SHORT : gl.UNSIGNED_BYTE;
+    if (useShortForColors) {
+      const factor = (1 << 16) / width;
+      for (let i = 0; i < vertex; ++i)
+        colorArray[i] *= factor;
+    }
+
+    const pixels = new Uint8Array(width * 4);
+    pixels.set(colors);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
+    gl.vertexAttribPointer(this._aVertexPosition, /* vertexComponents */ 2, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, colorArray, gl.STATIC_DRAW);
+    gl.vertexAttribPointer(this._aVertexColor, /* colorComponents */ 1, colorIndexType, true, 0, 0);
+  }
+
+  _drawGL() {
+    const gl = /** @type {?WebGLRenderingContext} */ (this._canvasGL.getContext('webgl'));
+    if (!gl)
+      return;
+    const timelineData = this._timelineData();
+    if (!timelineData)
+      return;
+
+    if (!this._prevTimelineData || timelineData.entryTotalTimes !== this._prevTimelineData.entryTotalTimes) {
+      this._prevTimelineData = timelineData;
+      this._setupGLGeometry();
+    }
+
+    gl.viewport(0, 0, this._canvasGL.width, this._canvasGL.height);
+
+    if (!this._vertexCount)
+      return;
+
+    const viewportScale = [2.0 / this.boundarySpan(), -2.0 * window.devicePixelRatio / this._canvasGL.height];
+    const viewportShift = [this.minimumBoundary() - this.zeroTime(), this._chartViewport.scrollOffset()];
+    gl.uniform2fv(this._uScalingFactor, viewportScale);
+    gl.uniform2fv(this._uShiftVector, viewportShift);
+
+    gl.drawArrays(gl.TRIANGLES, 0, this._vertexCount);
+  }
+
   /**
    * @param {number} width
    * @param {number} height
@@ -857,7 +1093,7 @@ PerfUI.FlameChart = class extends UI.VBox {
     context.font = defaultFont;
 
     context.fillStyle = UI.themeSupport.patchColorText('#fff', colorUsage.Background);
-    this._forEachGroup((offset, index, group) => {
+    this._forEachGroupInViewport((offset, index, group) => {
       const paddingHeight = group.style.padding;
       if (paddingHeight < 5)
         return;
@@ -868,7 +1104,7 @@ PerfUI.FlameChart = class extends UI.VBox {
 
     context.strokeStyle = UI.themeSupport.patchColorText('#eee', colorUsage.Background);
     context.beginPath();
-    this._forEachGroup((offset, index, group, isFirst) => {
+    this._forEachGroupInViewport((offset, index, group, isFirst) => {
       if (isFirst || group.style.padding < 4)
         return;
       hLine(offset - 2.5);
@@ -876,7 +1112,7 @@ PerfUI.FlameChart = class extends UI.VBox {
     hLine(lastGroupOffset + 1.5);
     context.stroke();
 
-    this._forEachGroup((offset, index, group) => {
+    this._forEachGroupInViewport((offset, index, group) => {
       if (group.style.useFirstLineForOverview)
         return;
       if (!this._isGroupCollapsible(index) || group.expanded) {
@@ -886,6 +1122,8 @@ PerfUI.FlameChart = class extends UI.VBox {
         }
         return;
       }
+      if (this._useWebGL)
+        return;
       let nextGroup = index + 1;
       while (nextGroup < groups.length && groups[nextGroup].style.nestingLevel > group.style.nestingLevel)
         nextGroup++;
@@ -894,7 +1132,7 @@ PerfUI.FlameChart = class extends UI.VBox {
     });
 
     context.save();
-    this._forEachGroup((offset, index, group) => {
+    this._forEachGroupInViewport((offset, index, group) => {
       context.font = group.style.font;
       if (this._isGroupCollapsible(index) && !group.expanded || group.style.shareHeaderLine) {
         const width = this._labelWidthForGroup(context, group) + 2;
@@ -916,7 +1154,7 @@ PerfUI.FlameChart = class extends UI.VBox {
 
     context.fillStyle = UI.themeSupport.patchColorText('#6e6e6e', colorUsage.Foreground);
     context.beginPath();
-    this._forEachGroup((offset, index, group) => {
+    this._forEachGroupInViewport((offset, index, group) => {
       if (this._isGroupCollapsible(index)) {
         drawExpansionArrow.call(
             this, this._expansionArrowIndent * (group.style.nestingLevel + 1),
@@ -929,7 +1167,7 @@ PerfUI.FlameChart = class extends UI.VBox {
     context.beginPath();
     context.stroke();
 
-    this._forEachGroup((offset, index, group, isFirst, groupHeight) => {
+    this._forEachGroupInViewport((offset, index, group, isFirst, groupHeight) => {
       if (index === this._selectedGroup) {
         const lineWidth = 2;
         const bracketLength = 10;
@@ -973,7 +1211,6 @@ PerfUI.FlameChart = class extends UI.VBox {
    * @param {function(number, number, !PerfUI.FlameChart.Group, boolean, number)} callback
    */
   _forEachGroup(callback) {
-    const top = this._chartViewport.scrollOffset();
     const groups = this._rawTimelineData.groups || [];
     if (!groups.length)
       return;
@@ -983,8 +1220,6 @@ PerfUI.FlameChart = class extends UI.VBox {
     for (let i = 0; i < groups.length; ++i) {
       const groupTop = groupOffsets[i];
       const group = groups[i];
-      if (groupTop - group.style.padding > top + this._offsetHeight)
-        break;
       let firstGroup = true;
       while (groupStack.peekLast().nestingLevel >= group.style.nestingLevel) {
         groupStack.pop();
@@ -994,10 +1229,24 @@ PerfUI.FlameChart = class extends UI.VBox {
       const thisGroupVisible = parentGroupVisible && (!this._isGroupCollapsible(i) || group.expanded);
       groupStack.push({nestingLevel: group.style.nestingLevel, visible: thisGroupVisible});
       const nextOffset = i === groups.length - 1 ? groupOffsets[i + 1] + group.style.padding : groupOffsets[i + 1];
-      if (!parentGroupVisible || nextOffset < top)
+      if (!parentGroupVisible)
         continue;
       callback(groupTop, i, group, firstGroup, nextOffset - groupTop);
     }
+  }
+
+  /**
+   * @param {function(number, number, !PerfUI.FlameChart.Group, boolean, number)} callback
+   */
+  _forEachGroupInViewport(callback) {
+    const top = this._chartViewport.scrollOffset();
+    this._forEachGroup((groupTop, index, group, firstGroup, height) => {
+      if (groupTop - group.style.padding > top + this._offsetHeight)
+        return;
+      if (groupTop + height < top)
+        return;
+      callback(groupTop, index, group, firstGroup, height);
+    });
   }
 
   /**
@@ -1041,7 +1290,7 @@ PerfUI.FlameChart = class extends UI.VBox {
         if (entryEndTime <= timeWindowLeft)
           break;
         lastDrawOffset = barX;
-        const color = this._dataProvider.entryColor(entryIndex);
+        const color = this._entryColorsCache[entryIndex];
         const endBarX = this._timeToPositionClipped(entryEndTime);
         if (group.style.useDecoratorsForOverview && this._dataProvider.forceDecoration(entryIndex)) {
           const unclippedBarX = this._chartViewport.timeToPosition(entryStartTime);
@@ -1197,6 +1446,8 @@ PerfUI.FlameChart = class extends UI.VBox {
       this._visibleLevels = null;
       this._groupOffsets = null;
       this._rawTimelineData = null;
+      this._forceDecorationCache = null;
+      this._entryColorsCache = null;
       this._rawTimelineDataLength = 0;
       this._selectedGroup = -1;
       this._flameChartDelegate.updateSelectedGroup(this, null);
@@ -1205,6 +1456,12 @@ PerfUI.FlameChart = class extends UI.VBox {
 
     this._rawTimelineData = timelineData;
     this._rawTimelineDataLength = timelineData.entryStartTimes.length;
+    this._forceDecorationCache = new Int8Array(this._rawTimelineDataLength);
+    this._entryColorsCache = new Array(this._rawTimelineDataLength);
+    for (let i = 0; i < this._rawTimelineDataLength; ++i) {
+      this._forceDecorationCache[i] = this._dataProvider.forceDecoration(i) ? 1 : 0;
+      this._entryColorsCache[i] = this._dataProvider.entryColor(i);
+    }
 
     const entryCounters = new Uint32Array(this._dataProvider.maxStackDepth() + 1);
     for (let i = 0; i < timelineData.entryLevels.length; ++i)
@@ -1293,6 +1550,8 @@ PerfUI.FlameChart = class extends UI.VBox {
     if (groupIndex >= 0)
       this._groupOffsets[groupIndex + 1] = currentOffset;
     this._visibleLevelOffsets[level] = currentOffset;
+    if (this._useWebGL)
+      this._setupGLGeometry();
   }
 
   /**
