@@ -422,6 +422,36 @@ Protocol.Browser = {};
 Protocol.BrowserAgent = function(){};
 
 /**
+ * @param {string} origin
+ * @param {!Array<Protocol.Browser.PermissionType>} permissions
+ * @param {Protocol.Target.BrowserContextID=} opt_browserContextId
+ * @return {!Promise<undefined>}
+ */
+Protocol.BrowserAgent.prototype.grantPermissions = function(origin, permissions, opt_browserContextId) {};
+/** @typedef {!{origin: string, browserContextId: (Protocol.Target.BrowserContextID|undefined), permissions: !Array<Protocol.Browser.PermissionType>}} */
+Protocol.BrowserAgent.GrantPermissionsRequest;
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.GrantPermissionsResponse;
+/**
+ * @param {!Protocol.BrowserAgent.GrantPermissionsRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.GrantPermissionsResponse>} */
+Protocol.BrowserAgent.prototype.invoke_grantPermissions = function(obj) {};
+
+/**
+ * @param {Protocol.Target.BrowserContextID=} opt_browserContextId
+ * @return {!Promise<undefined>}
+ */
+Protocol.BrowserAgent.prototype.resetPermissions = function(opt_browserContextId) {};
+/** @typedef {!{browserContextId: (Protocol.Target.BrowserContextID|undefined)}} */
+Protocol.BrowserAgent.ResetPermissionsRequest;
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.ResetPermissionsResponse;
+/**
+ * @param {!Protocol.BrowserAgent.ResetPermissionsRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.ResetPermissionsResponse>} */
+Protocol.BrowserAgent.prototype.invoke_resetPermissions = function(obj) {};
+
+/**
  * @return {!Promise<undefined>}
  */
 Protocol.BrowserAgent.prototype.close = function() {};
@@ -546,6 +576,25 @@ Protocol.Browser.WindowState = {
 
 /** @typedef {!{left:(number|undefined), top:(number|undefined), width:(number|undefined), height:(number|undefined), windowState:(Protocol.Browser.WindowState|undefined)}} */
 Protocol.Browser.Bounds;
+
+/** @enum {string} */
+Protocol.Browser.PermissionType = {
+    AccessibilityEvents: "accessibilityEvents",
+    AudioCapture: "audioCapture",
+    BackgroundSync: "backgroundSync",
+    ClipboardRead: "clipboardRead",
+    ClipboardWrite: "clipboardWrite",
+    DurableStorage: "durableStorage",
+    Flash: "flash",
+    Geolocation: "geolocation",
+    Midi: "midi",
+    MidiSysex: "midiSysex",
+    Notifications: "notifications",
+    PaymentHandler: "paymentHandler",
+    ProtectedMediaIdentifier: "protectedMediaIdentifier",
+    Sensors: "sensors",
+    VideoCapture: "videoCapture"
+};
 
 /** @typedef {!{low:(number), high:(number), count:(number)}} */
 Protocol.Browser.Bucket;
@@ -5318,6 +5367,21 @@ Protocol.PageAgent.ClearCompilationCacheResponse;
  * @return {!Promise<!Protocol.PageAgent.ClearCompilationCacheResponse>} */
 Protocol.PageAgent.prototype.invoke_clearCompilationCache = function(obj) {};
 
+/**
+ * @param {string} message
+ * @param {string=} opt_group
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.generateTestReport = function(message, opt_group) {};
+/** @typedef {!{message: string, group: (string|undefined)}} */
+Protocol.PageAgent.GenerateTestReportRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.GenerateTestReportResponse;
+/**
+ * @param {!Protocol.PageAgent.GenerateTestReportRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.GenerateTestReportResponse>} */
+Protocol.PageAgent.prototype.invoke_generateTestReport = function(obj) {};
+
 /** @enum {string} */
 Protocol.Page.ResourceType = {
     Document: "Document",
@@ -6500,6 +6564,30 @@ Protocol.TracingDispatcher.prototype.dataCollected = function(value) {};
  * @param {Protocol.Tracing.StreamCompression=} opt_streamCompression
  */
 Protocol.TracingDispatcher.prototype.tracingComplete = function(opt_stream, opt_streamCompression) {};
+Protocol.Testing = {};
+
+
+/**
+ * @constructor
+*/
+Protocol.TestingAgent = function(){};
+
+/**
+ * @param {string} message
+ * @param {string=} opt_group
+ * @return {!Promise<undefined>}
+ */
+Protocol.TestingAgent.prototype.generateTestReport = function(message, opt_group) {};
+/** @typedef {!{message: string, group: (string|undefined)}} */
+Protocol.TestingAgent.GenerateTestReportRequest;
+/** @typedef {Object|undefined} */
+Protocol.TestingAgent.GenerateTestReportResponse;
+/**
+ * @param {!Protocol.TestingAgent.GenerateTestReportRequest} obj
+ * @return {!Promise<!Protocol.TestingAgent.GenerateTestReportResponse>} */
+Protocol.TestingAgent.prototype.invoke_generateTestReport = function(obj) {};
+/** @interface */
+Protocol.TestingDispatcher = function() {};
 Protocol.Console = {};
 
 
@@ -8275,6 +8363,12 @@ Protocol.TargetBase.prototype.tracingAgent = function(){};
  * @param {!Protocol.TracingDispatcher} dispatcher
  */
 Protocol.TargetBase.prototype.registerTracingDispatcher = function(dispatcher) {}
+/** @return {!Protocol.TestingAgent}*/
+Protocol.TargetBase.prototype.testingAgent = function(){};
+/**
+ * @param {!Protocol.TestingDispatcher} dispatcher
+ */
+Protocol.TargetBase.prototype.registerTestingDispatcher = function(dispatcher) {}
 /** @return {!Protocol.ConsoleAgent}*/
 Protocol.TargetBase.prototype.consoleAgent = function(){};
 /**
