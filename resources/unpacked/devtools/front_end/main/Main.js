@@ -154,8 +154,10 @@ Main.Main = class {
         Runtime.experiments.enableForTest('pinnedExpressions');
     }
 
-    Runtime.experiments.setDefaultExperiments(
-        ['colorContrastRatio', 'stepIntoAsync', 'oopifInlineDOM', 'consoleBelowPrompt', 'timelineTracingJSProfile']);
+    Runtime.experiments.setDefaultExperiments([
+      'colorContrastRatio', 'stepIntoAsync', 'oopifInlineDOM', 'consoleBelowPrompt', 'timelineTracingJSProfile',
+      'pinnedExpressions'
+    ]);
   }
 
   /**

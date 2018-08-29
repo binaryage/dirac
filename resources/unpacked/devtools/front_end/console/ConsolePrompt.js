@@ -31,6 +31,8 @@ Console.ConsolePrompt = class extends UI.Widget {
     /** @type {?UI.AutocompleteConfig} */
     this._defaultAutocompleteConfig = null;
 
+    this._highlightingNode = false;
+
     self.runtime.extension(UI.TextEditorFactory).instance().then(gotFactory.bind(this));
 
     /**
@@ -51,15 +53,6 @@ Console.ConsolePrompt = class extends UI.Widget {
       this._editor.widget().show(this.element);
       this._editor.addEventListener(UI.TextEditor.Events.TextChanged, this._onTextChanged, this);
       this._editor.addEventListener(UI.TextEditor.Events.SuggestionChanged, this._onTextChanged, this);
-      if (Runtime.experiments.isEnabled('pinnedExpressions')) {
-        this.element.classList.add('console-pins-enabled');
-        const pinButton = this.element.createChild('span', 'command-pin-button');
-        pinButton.title = ls`Pin expression and continuously evaluate`;
-        pinButton.addEventListener('click', () => {
-          this.dispatchEventToListeners(Console.ConsolePrompt.Events.ExpressionPinned, this.text());
-          this.setText('');
-        });
-      }
       if (this._isBelowPromptEnabled)
         this.element.appendChild(this._eagerPreviewElement);
 
@@ -103,10 +96,28 @@ Console.ConsolePrompt = class extends UI.Widget {
    */
   async _requestPreview() {
     const text = this._editor.textWithCurrentSuggestion().trim();
-    const {preview} = await ObjectUI.JavaScriptREPL.evaluateAndBuildPreview(text, true /* throwOnSideEffect */, 500);
+    const {preview, result} =
+        await ObjectUI.JavaScriptREPL.evaluateAndBuildPreview(text, true /* throwOnSideEffect */, 500);
     this._innerPreviewElement.removeChildren();
     if (preview.deepTextContent() !== this._editor.textWithCurrentSuggestion().trim())
       this._innerPreviewElement.appendChild(preview);
+    if (result && result.object && result.object.subtype === 'node') {
+      this._highlightingNode = true;
+      SDK.OverlayModel.highlightObjectAsDOMNode(result.object);
+    } else if (this._highlightingNode) {
+      this._highlightingNode = false;
+      SDK.OverlayModel.hideDOMNodeHighlight();
+    }
+  }
+
+  /**
+   * @override
+   */
+  willHide() {
+    if (this._highlightingNode) {
+      this._highlightingNode = false;
+      SDK.OverlayModel.hideDOMNodeHighlight();
+    }
   }
 
   /**
@@ -408,6 +419,5 @@ Console.ConsoleHistoryManager = class {
 };
 
 Console.ConsolePrompt.Events = {
-  ExpressionPinned: Symbol('ExpressionPinned'),
   TextChanged: Symbol('TextChanged')
 };
