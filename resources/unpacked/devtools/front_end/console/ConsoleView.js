@@ -110,12 +110,13 @@ Console.ConsoleView = class extends UI.VBox {
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._consoleContextSelector.toolbarItem());
     toolbar.appendSeparator();
-    toolbar.appendToolbarItem(this._filter._textFilterUI);
-    toolbar.appendToolbarItem(this._filter._levelMenuButton);
     if (Runtime.experiments.isEnabled('pinnedExpressions')) {
       toolbar.appendToolbarItem(UI.Toolbar.createActionButton(
           /** @type {!UI.Action }*/ (UI.actionRegistry.action('console.create-pin'))));
     }
+    toolbar.appendSeparator();
+    toolbar.appendToolbarItem(this._filter._textFilterUI);
+    toolbar.appendToolbarItem(this._filter._levelMenuButton);
     toolbar.appendToolbarItem(this._progressToolbarItem);
     rightToolbar.appendSeparator();
     rightToolbar.appendToolbarItem(this._filterStatusText);
@@ -1151,6 +1152,7 @@ Console.ConsoleView = class extends UI.VBox {
   }
 
   _consoleCleared() {
+    const hadFocus = this._viewport.element.hasFocus();
     this._cancelBuildHiddenCache();
     this._currentMatchRangeIndex = -1;
     this._consoleMessages = [];
@@ -1163,6 +1165,8 @@ Console.ConsoleView = class extends UI.VBox {
     this._linkifier.reset();
     this._badgePool.reset();
     this._filter.clear();
+    if (hadFocus)
+      this._prompt.focus();
   }
 
   _handleContextMenuEvent(event) {
