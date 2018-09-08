@@ -131,7 +131,8 @@
   (if (some? (ns-resolve 'cljs.compiler '*source-map-data-gen-col*))
     `(binding [cljs.compiler/*source-map-data-gen-col* (AtomicLong.)]
        ~@body)
-    body))
+    `(do
+       ~@body)))
 
 (defmacro bind-compiler-source-map-data [& body]
   `(binding [cljs.compiler/*source-map-data* (atom {:source-map (sorted-map)
