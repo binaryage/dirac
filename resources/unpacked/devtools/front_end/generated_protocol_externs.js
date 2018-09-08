@@ -465,6 +465,19 @@ Protocol.BrowserAgent.CloseResponse;
 Protocol.BrowserAgent.prototype.invoke_close = function(obj) {};
 
 /**
+ * @return {!Promise<undefined>}
+ */
+Protocol.BrowserAgent.prototype.crash = function() {};
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.CrashRequest;
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.CrashResponse;
+/**
+ * @param {!Protocol.BrowserAgent.CrashRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.CrashResponse>} */
+Protocol.BrowserAgent.prototype.invoke_crash = function(obj) {};
+
+/**
  * @return {!Promise<?string>}
  */
 Protocol.BrowserAgent.prototype.getVersion = function() {};
@@ -2074,7 +2087,7 @@ Protocol.DOMSnapshotAgent.CaptureSnapshotResponse;
  * @return {!Promise<!Protocol.DOMSnapshotAgent.CaptureSnapshotResponse>} */
 Protocol.DOMSnapshotAgent.prototype.invoke_captureSnapshot = function(obj) {};
 
-/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined), originURL:(string|undefined)}} */
+/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), isClickable:(boolean|undefined), eventListeners:(!Array<Protocol.DOMDebugger.EventListener>|undefined), currentSourceURL:(string|undefined), originURL:(string|undefined), scrollOffsetX:(number|undefined), scrollOffsetY:(number|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
 /** @typedef {!{boundingBox:(Protocol.DOM.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
@@ -2107,7 +2120,7 @@ Protocol.DOMSnapshot.RareIntegerData;
 /** @typedef {!Array<!number>} */
 Protocol.DOMSnapshot.Rectangle;
 
-/** @typedef {!{documentURL:(Protocol.DOMSnapshot.StringIndex), baseURL:(Protocol.DOMSnapshot.StringIndex), contentLanguage:(Protocol.DOMSnapshot.StringIndex), encodingName:(Protocol.DOMSnapshot.StringIndex), publicId:(Protocol.DOMSnapshot.StringIndex), systemId:(Protocol.DOMSnapshot.StringIndex), frameId:(Protocol.DOMSnapshot.StringIndex), nodes:(Protocol.DOMSnapshot.NodeTreeSnapshot), layout:(Protocol.DOMSnapshot.LayoutTreeSnapshot), textBoxes:(Protocol.DOMSnapshot.TextBoxSnapshot)}} */
+/** @typedef {!{documentURL:(Protocol.DOMSnapshot.StringIndex), baseURL:(Protocol.DOMSnapshot.StringIndex), contentLanguage:(Protocol.DOMSnapshot.StringIndex), encodingName:(Protocol.DOMSnapshot.StringIndex), publicId:(Protocol.DOMSnapshot.StringIndex), systemId:(Protocol.DOMSnapshot.StringIndex), frameId:(Protocol.DOMSnapshot.StringIndex), nodes:(Protocol.DOMSnapshot.NodeTreeSnapshot), layout:(Protocol.DOMSnapshot.LayoutTreeSnapshot), textBoxes:(Protocol.DOMSnapshot.TextBoxSnapshot), scrollOffsetX:(number|undefined), scrollOffsetY:(number|undefined)}} */
 Protocol.DOMSnapshot.DocumentSnapshot;
 
 /** @typedef {!{parentIndex:(!Array<number>|undefined), nodeType:(!Array<number>|undefined), nodeName:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), nodeValue:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), backendNodeId:(!Array<Protocol.DOM.BackendNodeId>|undefined), attributes:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>|undefined), textValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputChecked:(Protocol.DOMSnapshot.RareBooleanData|undefined), optionSelected:(Protocol.DOMSnapshot.RareBooleanData|undefined), contentDocumentIndex:(Protocol.DOMSnapshot.RareIntegerData|undefined), pseudoType:(Protocol.DOMSnapshot.RareStringData|undefined), isClickable:(Protocol.DOMSnapshot.RareBooleanData|undefined), currentSourceURL:(Protocol.DOMSnapshot.RareStringData|undefined), originURL:(Protocol.DOMSnapshot.RareStringData|undefined)}} */
@@ -4071,6 +4084,26 @@ Protocol.NetworkAgent.SetUserAgentOverrideResponse;
  * @return {!Promise<!Protocol.NetworkAgent.SetUserAgentOverrideResponse>} */
 Protocol.NetworkAgent.prototype.invoke_setUserAgentOverride = function(obj) {};
 
+/** @enum {string} */
+Protocol.Network.ResourceType = {
+    Document: "Document",
+    Stylesheet: "Stylesheet",
+    Image: "Image",
+    Media: "Media",
+    Font: "Font",
+    Script: "Script",
+    TextTrack: "TextTrack",
+    XHR: "XHR",
+    Fetch: "Fetch",
+    EventSource: "EventSource",
+    WebSocket: "WebSocket",
+    Manifest: "Manifest",
+    SignedExchange: "SignedExchange",
+    Ping: "Ping",
+    CSPViolationReport: "CSPViolationReport",
+    Other: "Other"
+};
+
 /** @typedef {string} */
 Protocol.Network.LoaderId;
 
@@ -4190,7 +4223,7 @@ Protocol.Network.WebSocketResponse;
 /** @typedef {!{opcode:(number), mask:(boolean), payloadData:(string)}} */
 Protocol.Network.WebSocketFrame;
 
-/** @typedef {!{url:(string), type:(Protocol.Page.ResourceType), response:(Protocol.Network.Response|undefined), bodySize:(number)}} */
+/** @typedef {!{url:(string), type:(Protocol.Network.ResourceType), response:(Protocol.Network.Response|undefined), bodySize:(number)}} */
 Protocol.Network.CachedResource;
 
 /** @enum {string} */
@@ -4236,7 +4269,7 @@ Protocol.Network.InterceptionStage = {
     HeadersReceived: "HeadersReceived"
 };
 
-/** @typedef {!{urlPattern:(string|undefined), resourceType:(Protocol.Page.ResourceType|undefined), interceptionStage:(Protocol.Network.InterceptionStage|undefined)}} */
+/** @typedef {!{urlPattern:(string|undefined), resourceType:(Protocol.Network.ResourceType|undefined), interceptionStage:(Protocol.Network.InterceptionStage|undefined)}} */
 Protocol.Network.RequestPattern;
 
 /** @typedef {!{label:(string), signature:(string), integrity:(string), certUrl:(string|undefined), certSha256:(string|undefined), validityUrl:(string), date:(number), expires:(number), certificates:(!Array<string>|undefined)}} */
@@ -4280,7 +4313,7 @@ Protocol.NetworkDispatcher.prototype.eventSourceMessageReceived = function(reque
 /**
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.MonotonicTime} timestamp
- * @param {Protocol.Page.ResourceType} type
+ * @param {Protocol.Network.ResourceType} type
  * @param {string} errorText
  * @param {boolean=} opt_canceled
  * @param {Protocol.Network.BlockedReason=} opt_blockedReason
@@ -4297,7 +4330,7 @@ Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, times
  * @param {Protocol.Network.InterceptionId} interceptionId
  * @param {Protocol.Network.Request} request
  * @param {Protocol.Page.FrameId} frameId
- * @param {Protocol.Page.ResourceType} resourceType
+ * @param {Protocol.Network.ResourceType} resourceType
  * @param {boolean} isNavigationRequest
  * @param {boolean=} opt_isDownload
  * @param {string=} opt_redirectUrl
@@ -4320,7 +4353,7 @@ Protocol.NetworkDispatcher.prototype.requestServedFromCache = function(requestId
  * @param {Protocol.Network.TimeSinceEpoch} wallTime
  * @param {Protocol.Network.Initiator} initiator
  * @param {Protocol.Network.Response=} opt_redirectResponse
- * @param {Protocol.Page.ResourceType=} opt_type
+ * @param {Protocol.Network.ResourceType=} opt_type
  * @param {Protocol.Page.FrameId=} opt_frameId
  * @param {boolean=} opt_hasUserGesture
  */
@@ -4340,7 +4373,7 @@ Protocol.NetworkDispatcher.prototype.signedExchangeReceived = function(requestId
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.LoaderId} loaderId
  * @param {Protocol.Network.MonotonicTime} timestamp
- * @param {Protocol.Page.ResourceType} type
+ * @param {Protocol.Network.ResourceType} type
  * @param {Protocol.Network.Response} response
  * @param {Protocol.Page.FrameId=} opt_frameId
  */
@@ -5382,33 +5415,13 @@ Protocol.PageAgent.GenerateTestReportResponse;
  * @return {!Promise<!Protocol.PageAgent.GenerateTestReportResponse>} */
 Protocol.PageAgent.prototype.invoke_generateTestReport = function(obj) {};
 
-/** @enum {string} */
-Protocol.Page.ResourceType = {
-    Document: "Document",
-    Stylesheet: "Stylesheet",
-    Image: "Image",
-    Media: "Media",
-    Font: "Font",
-    Script: "Script",
-    TextTrack: "TextTrack",
-    XHR: "XHR",
-    Fetch: "Fetch",
-    EventSource: "EventSource",
-    WebSocket: "WebSocket",
-    Manifest: "Manifest",
-    SignedExchange: "SignedExchange",
-    Ping: "Ping",
-    CSPViolationReport: "CSPViolationReport",
-    Other: "Other"
-};
-
 /** @typedef {string} */
 Protocol.Page.FrameId;
 
 /** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string), mimeType:(string), unreachableUrl:(string|undefined)}} */
 Protocol.Page.Frame;
 
-/** @typedef {!{url:(string), type:(Protocol.Page.ResourceType), mimeType:(string), lastModified:(Protocol.Network.TimeSinceEpoch|undefined), contentSize:(number|undefined), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
+/** @typedef {!{url:(string), type:(Protocol.Network.ResourceType), mimeType:(string), lastModified:(Protocol.Network.TimeSinceEpoch|undefined), contentSize:(number|undefined), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
 Protocol.Page.FrameResource;
 
 /** @typedef {!{frame:(Protocol.Page.Frame), childFrames:(!Array<Protocol.Page.FrameResourceTree>|undefined), resources:(!Array<Protocol.Page.FrameResource>)}} */
@@ -5424,6 +5437,7 @@ Protocol.Page.ScriptIdentifier;
 Protocol.Page.TransitionType = {
     Link: "link",
     Typed: "typed",
+    Address_bar: "address_bar",
     Auto_bookmark: "auto_bookmark",
     Auto_subframe: "auto_subframe",
     Manual_subframe: "manual_subframe",
