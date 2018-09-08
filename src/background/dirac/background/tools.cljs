@@ -47,18 +47,21 @@
         flags (map #(get options %) flag-keys)]
     (apply str (map #(if % "1" "0") flags))))
 
+(defn prepare-dirac-window-params [panel?]
+  (let [window-params #js {:url  (helpers/make-blank-page-url)                                                                ; a blank page url is actually important here, url-less popups don't get assigned a tab-id
+                           :type (if panel? "popup" "normal")}]
+    ; during development we may want to override standard "cascading" of new windows and position the window explicitly
+    (sugar/set-window-params-dimensions! window-params
+                                         (get-dirac-devtools-window-left) (get-dirac-devtools-window-top)
+                                         (get-dirac-devtools-window-width) (get-dirac-devtools-window-height))
+    window-params))
+
 (defn go-create-dirac-window! [panel?]
   (go
-    (let [window-params #js {:url  (helpers/make-blank-page-url)                                                              ; a blank page url is actually important here, url-less popups don't get assigned a tab-id
-                             :type (if panel? "popup" "normal")}]
-      ; during development we may want to override standard "cascading" of new windows and position the window explicitly
-      (sugar/set-window-params-dimensions! window-params
-                                           (get-dirac-devtools-window-left) (get-dirac-devtools-window-top)
-                                           (get-dirac-devtools-window-width) (get-dirac-devtools-window-height))
-      (if-let [[window] (<! (windows/create window-params))]
-        (let [tabs (oget window "tabs")
-              first-tab (aget tabs 0)]
-          (sugar/get-tab-id first-tab))))))
+    (if-let [[window] (<! (windows/create (prepare-dirac-window-params panel?)))]
+      (let [tabs (oget window "tabs")
+            first-tab (aget tabs 0)]
+        (sugar/get-tab-id first-tab)))))
 
 (defn go-create-bundled-devtools-window! [url]
   (let [window-params #js {:url   url
