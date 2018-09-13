@@ -1,5 +1,5 @@
 Protocol.BakedInspectorBackendAPIChromeTag='70.0.3505.1';
-Protocol.BakedInspectorBackendAPIChromeRev='57870d506f4fa07081f2d4f6dc26cb9e485097b3';
+Protocol.BakedInspectorBackendAPIChromeRev='ed731e896460282772340ec53cb7f7361f151ad7';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -171,6 +171,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Emulation.clearDeviceMetricsOverride", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.clearGeolocationOverride", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.resetPageScaleFactor", [], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Emulation.setFocusEmulationEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setCPUThrottlingRate", [{"name": "rate", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setDefaultBackgroundColorOverride", [{"name": "color", "type": "object", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setDeviceMetricsOverride", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "deviceScaleFactor", "type": "number", "optional": false}, {"name": "mobile", "type": "boolean", "optional": false}, {"name": "scale", "type": "number", "optional": true}, {"name": "screenWidth", "type": "number", "optional": true}, {"name": "screenHeight", "type": "number", "optional": true}, {"name": "positionX", "type": "number", "optional": true}, {"name": "positionY", "type": "number", "optional": true}, {"name": "dontSetVisibleSize", "type": "boolean", "optional": true}, {"name": "screenOrientation", "type": "object", "optional": true}, {"name": "viewport", "type": "object", "optional": true}], [], false);\n'
