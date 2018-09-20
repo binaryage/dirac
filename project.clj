@@ -13,7 +13,7 @@
 (def required-deps
   [['org.clojure/core.async "0.4.474"]
    ['org.clojure/tools.logging "0.4.1"]
-   ['org.clojure/tools.cli "0.3.7"]
+   ['org.clojure/tools.cli "0.4.0"]
    ['org.clojure/tools.nrepl "0.2.13"]
    ['binaryage/env-config "0.2.2"]
    ['http-kit "2.3.0"]
@@ -44,8 +44,8 @@
 
    ['http.async.client "1.3.0" :scope "test"]
 
-   ['ring/ring-core "1.6.3" :scope "test"]
-   ['ring/ring-devel "1.6.3" :scope "test"]
+   ['ring/ring-core "1.7.0" :scope "test"]
+   ['ring/ring-devel "1.7.0" :scope "test"]
    ['clj-time "0.14.4" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
