@@ -1,9 +1,11 @@
 {
   "dependencies": [
     "common",
-    "dirac"
+    "dirac",
+    "host"
   ],
   "scripts": [
+    "NodeURL.js",
     "InspectorBackend.js",
     "../InspectorBackendCommands.js",
     "InspectorBackendExtensionMode.js"
