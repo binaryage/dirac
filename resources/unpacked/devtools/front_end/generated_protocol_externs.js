@@ -23,6 +23,19 @@ Protocol.AccessibilityAgent.GetPartialAXTreeResponse;
  * @return {!Promise<!Protocol.AccessibilityAgent.GetPartialAXTreeResponse>} */
 Protocol.AccessibilityAgent.prototype.invoke_getPartialAXTree = function(obj) {};
 
+/**
+ * @return {!Promise<?Array<Protocol.Accessibility.AXNode>>}
+ */
+Protocol.AccessibilityAgent.prototype.getFullAXTree = function() {};
+/** @typedef {Object|undefined} */
+Protocol.AccessibilityAgent.GetFullAXTreeRequest;
+/** @typedef {!{nodes: !Array<Protocol.Accessibility.AXNode>}} */
+Protocol.AccessibilityAgent.GetFullAXTreeResponse;
+/**
+ * @param {!Protocol.AccessibilityAgent.GetFullAXTreeRequest} obj
+ * @return {!Promise<!Protocol.AccessibilityAgent.GetFullAXTreeResponse>} */
+Protocol.AccessibilityAgent.prototype.invoke_getFullAXTree = function(obj) {};
+
 /** @typedef {string} */
 Protocol.Accessibility.AXNodeId;
 
@@ -4723,10 +4736,11 @@ Protocol.PageAgent.prototype.invoke_addScriptToEvaluateOnLoad = function(obj) {}
 
 /**
  * @param {string} source
+ * @param {string=} opt_worldName
  * @return {!Promise<?Protocol.Page.ScriptIdentifier>}
  */
-Protocol.PageAgent.prototype.addScriptToEvaluateOnNewDocument = function(source) {};
-/** @typedef {!{source: string}} */
+Protocol.PageAgent.prototype.addScriptToEvaluateOnNewDocument = function(source, opt_worldName) {};
+/** @typedef {!{source: string, worldName: (string|undefined)}} */
 Protocol.PageAgent.AddScriptToEvaluateOnNewDocumentRequest;
 /** @typedef {!{identifier: Protocol.Page.ScriptIdentifier}} */
 Protocol.PageAgent.AddScriptToEvaluateOnNewDocumentResponse;
@@ -5621,6 +5635,20 @@ Protocol.PerformanceAgent.EnableResponse;
  * @param {!Protocol.PerformanceAgent.EnableRequest} obj
  * @return {!Promise<!Protocol.PerformanceAgent.EnableResponse>} */
 Protocol.PerformanceAgent.prototype.invoke_enable = function(obj) {};
+
+/**
+ * @param {string} timeDomain
+ * @return {!Promise<undefined>}
+ */
+Protocol.PerformanceAgent.prototype.setTimeDomain = function(timeDomain) {};
+/** @typedef {!{timeDomain: string}} */
+Protocol.PerformanceAgent.SetTimeDomainRequest;
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.SetTimeDomainResponse;
+/**
+ * @param {!Protocol.PerformanceAgent.SetTimeDomainRequest} obj
+ * @return {!Promise<!Protocol.PerformanceAgent.SetTimeDomainResponse>} */
+Protocol.PerformanceAgent.prototype.invoke_setTimeDomain = function(obj) {};
 
 /**
  * @return {!Promise<?Array<Protocol.Performance.Metric>>}
