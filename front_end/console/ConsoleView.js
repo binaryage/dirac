@@ -163,8 +163,11 @@ Console.ConsoleView = class extends UI.VBox {
       this._pinPane.element.classList.add('console-view-pinpane');
       this._pinPane.show(this._contentsElement);
       this._pinPane.element.addEventListener('keydown', event => {
-        if (event.key === 'Enter' && event.ctrlKey)
+        if ((event.key === 'Enter' && UI.KeyboardShortcut.eventHasCtrlOrMeta(/** @type {!KeyboardEvent} */ (event))) ||
+            event.keyCode === UI.KeyboardShortcut.Keys.Esc.code) {
           this._prompt.focus();
+          event.consume();
+        }
       });
     }
 
@@ -175,8 +178,9 @@ Console.ConsoleView = class extends UI.VBox {
     this._messagesElement = this._viewport.element;
     this._messagesElement.id = 'console-messages';
     this._messagesElement.classList.add('monospace');
-    this._messagesElement.addEventListener('click', this._messagesClicked.bind(this), true);
+    this._messagesElement.addEventListener('click', this._messagesClicked.bind(this), false);
     this._messagesElement.addEventListener('paste', this._messagesPasted.bind(this), true);
+    this._messagesElement.addEventListener('clipboard-paste', this._messagesPasted.bind(this), true);
 
     this._viewportThrottler = new Common.Throttler(50);
 
@@ -209,6 +213,10 @@ Console.ConsoleView = class extends UI.VBox {
     this._prompt.show(this._promptElement);
     this._prompt.element.addEventListener('keydown', this._promptKeyDown.bind(this), true);
     this._prompt.addEventListener(Console.ConsolePrompt.Events.TextChanged, this._promptTextChanged, this);
+
+    this._keyboardNavigationEnabled = Runtime.experiments.isEnabled('consoleKeyboardNavigation');
+    if (this._keyboardNavigationEnabled)
+      this._messagesElement.addEventListener('keydown', this._messagesKeyDown.bind(this), false);
 
     this._consoleHistoryAutocompleteSetting.addChangeListener(this._consoleHistoryAutocompleteChanged, this);
 
@@ -621,7 +629,8 @@ Console.ConsoleView = class extends UI.VBox {
         return new Console.ConsoleCommandResult(message, this._linkifier, this._badgePool, nestingLevel);
       case SDK.ConsoleMessage.MessageType.StartGroupCollapsed:
       case SDK.ConsoleMessage.MessageType.StartGroup:
-        return new Console.ConsoleGroupViewMessage(message, this._linkifier, this._badgePool, nestingLevel);
+        return new Console.ConsoleGroupViewMessage(
+            message, this._linkifier, this._badgePool, nestingLevel, this._updateMessageList.bind(this));
       default:
         return new Console.ConsoleViewMessage(message, this._linkifier, this._badgePool, nestingLevel);
     }
@@ -850,17 +859,28 @@ Console.ConsoleView = class extends UI.VBox {
     if (!this._messagesElement.hasSelection()) {
       const clickedOutsideMessageList =
           target === this._messagesElement || this._prompt.belowEditorElement().isSelfOrAncestor(target);
-      if (clickedOutsideMessageList)
-        this._prompt.moveCaretToEndOfPrompt();
-      this.focus();
+      if (this._keyboardNavigationEnabled) {
+        if (clickedOutsideMessageList) {
+          this._prompt.moveCaretToEndOfPrompt();
+          this.focus();
+        }
+      } else {
+        if (clickedOutsideMessageList)
+          this._prompt.moveCaretToEndOfPrompt();
+        this.focus();
+      }
     }
-    // TODO: fix this.
-    const groupMessage = event.target.enclosingNodeOrSelfWithClass('console-group-title');
-    if (!groupMessage)
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  _messagesKeyDown(event) {
+    const hasActionModifier = event.ctrlKey || event.altKey || event.metaKey;
+    if (hasActionModifier || event.key.length !== 1 || UI.isEditing() || this._messagesElement.hasSelection())
       return;
-    const consoleGroupViewMessage = groupMessage.message;
-    consoleGroupViewMessage.setCollapsed(!consoleGroupViewMessage.collapsed());
-    this._updateMessageList();
+    this._prompt.moveCaretToEndOfPrompt();
+    this.focus();
   }
 
   /**
