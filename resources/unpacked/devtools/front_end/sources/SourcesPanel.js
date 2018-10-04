@@ -81,9 +81,10 @@ Sources.SourcesPanel = class extends UI.Panel {
     if (UI.viewManager.hasViewsForLocation('run-view-sidebar')) {
       const navigatorSplitWidget = new UI.SplitWidget(false, true, 'sourcePanelNavigatorSidebarSplitViewState');
       navigatorSplitWidget.setMainWidget(tabbedPane);
-      navigatorSplitWidget.setSidebarWidget(
-          UI.viewManager.createTabbedLocation(this._revealNavigatorSidebar.bind(this), 'run-view-sidebar')
-              .tabbedPane());
+      const runViewTabbedPane =
+          UI.viewManager.createTabbedLocation(this._revealNavigatorSidebar.bind(this), 'run-view-sidebar').tabbedPane();
+      navigatorSplitWidget.setSidebarWidget(runViewTabbedPane);
+      navigatorSplitWidget.installResizer(runViewTabbedPane.headerElement());
       this.editorView.setSidebarWidget(navigatorSplitWidget);
     } else {
       this.editorView.setSidebarWidget(tabbedPane);
@@ -529,23 +530,11 @@ Sources.SourcesPanel = class extends UI.Panel {
     Common.moduleSetting('pauseOnExceptionEnabled').set(!this._pauseOnExceptionButton.toggled());
   }
 
-  /**
-   * @return {boolean}
-   */
   _runSnippet() {
     const uiSourceCode = this._sourcesView.currentUISourceCode();
     if (!uiSourceCode)
-      return false;
-
-    const currentExecutionContext = UI.context.flavor(SDK.ExecutionContext);
-    if (!currentExecutionContext)
-      return false;
-
-    if (uiSourceCode.project().type() !== Workspace.projectTypes.Snippets)
-      return false;
-
-    Snippets.scriptSnippetModel.evaluateScriptSnippet(currentExecutionContext, uiSourceCode);
-    return true;
+      return;
+    Snippets.evaluateScriptSnippet(uiSourceCode);
   }
 
   /**
@@ -672,9 +661,10 @@ Sources.SourcesPanel = class extends UI.Panel {
     if (!executionContext)
       return;
     // Always use 0 column.
-    const rawLocation =
-        Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, 0);
-    if (!rawLocation || rawLocation.debuggerModel !== executionContext.debuggerModel)
+    const rawLocations =
+        Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiLocation.uiSourceCode, uiLocation.lineNumber, 0);
+    const rawLocation = rawLocations.find(location => location.debuggerModel === executionContext.debuggerModel);
+    if (!rawLocation)
       return;
     if (!this._prepareToResume())
       return;

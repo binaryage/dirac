@@ -396,7 +396,8 @@ Object.assign(window.dirac, (function() {
       return Promise.resolve([]);
     }
 
-    Bindings.debuggerWorkspaceBinding.maybeLoadSourceMap(script);
+    // I assume calling maybeLoadSourceMap is no longer needed, source maps are loaded lazily when referenced
+    // Bindings.debuggerWorkspaceBinding.maybeLoadSourceMap(script);
     return ensureSourceMapLoadedAsync(script).then(/** @suppressGlobalPropertiesCheck */sourceMap => {
       const scriptUrl = script.contentURL();
       let promises = [];
@@ -642,7 +643,7 @@ Object.assign(window.dirac, (function() {
       console.error(
         `uiSourceCode expected to have scriptFile associated\n` +
         `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
-      return nil;
+      return null;
     }
     const script = scriptFile.getScript();
     if (!script) {

@@ -53,8 +53,6 @@ Bindings.ResourceScriptMapping = class {
     this._eventListeners = [
       this._debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this),
       this._debuggerModel.addEventListener(
-          SDK.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this),
-      this._debuggerModel.addEventListener(
           SDK.DebuggerModel.Events.GlobalObjectCleared, this._globalObjectCleared, this),
       runtimeModel.addEventListener(
           SDK.RuntimeModel.Events.ExecutionContextDestroyed, this._executionContextDestroyed, this),
@@ -113,18 +111,18 @@ Bindings.ResourceScriptMapping = class {
    * @param {!Workspace.UISourceCode} uiSourceCode
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {?SDK.DebuggerModel.Location}
+   * @return {!Array<!SDK.DebuggerModel.Location>}
    */
-  uiLocationToRawLocation(uiSourceCode, lineNumber, columnNumber) {
+  uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber) {
     const scriptFile = this._uiSourceCodeToScriptFile.get(uiSourceCode);
     if (!scriptFile)
-      return null;
+      return [];
     const script = scriptFile._script;
     if (script.isInlineScriptWithSourceURL()) {
-      return this._debuggerModel.createRawLocation(
-          script, lineNumber + script.lineOffset, lineNumber ? columnNumber : columnNumber + script.columnOffset);
+      return [this._debuggerModel.createRawLocation(
+          script, lineNumber + script.lineOffset, lineNumber ? columnNumber : columnNumber + script.columnOffset)];
     }
-    return this._debuggerModel.createRawLocation(script, lineNumber, columnNumber);
+    return [this._debuggerModel.createRawLocation(script, lineNumber, columnNumber)];
   }
 
   /**
@@ -315,7 +313,8 @@ Bindings.ResourceScriptFile = class extends Common.Object {
     if (!this._script)
       return;
     const debuggerModel = this._resourceScriptMapping._debuggerModel;
-    const breakpoints = Bindings.breakpointManager.breakpointsForUISourceCode(this._uiSourceCode);
+    const breakpoints = Bindings.breakpointManager.breakpointLocationsForUISourceCode(this._uiSourceCode)
+                            .map(breakpointLocation => breakpointLocation.breakpoint);
     const source = this._uiSourceCode.workingCopy();
     debuggerModel.setScriptSource(this._script.scriptId, source, scriptSourceWasSet.bind(this));
 

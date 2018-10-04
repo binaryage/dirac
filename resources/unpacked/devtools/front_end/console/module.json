@@ -60,6 +60,14 @@
             "className": "Console.ConsoleView.ActionDelegate"
         },
         {
+            "type": "action",
+            "category": "Console",
+            "actionId": "console.create-pin",
+            "iconClass": "largeicon-visibility",
+            "className": "Console.ConsoleView.ActionDelegate",
+            "title": "Create live expression"
+        },
+        {
             "type": "setting",
             "category": "Console",
             "title": "Hide network messages",
@@ -206,6 +214,7 @@
     "resources": [
         "consoleContextSelector.css",
         "consolePinPane.css",
+        "consolePrompt.css",
         "consoleSidebar.css",
         "consoleView.css",
         "dirac-hacks.css",

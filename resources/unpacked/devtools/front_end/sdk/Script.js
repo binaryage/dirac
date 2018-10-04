@@ -43,10 +43,11 @@ SDK.Script = class {
    * @param {string|undefined} sourceMapURL
    * @param {boolean} hasSourceURL
    * @param {number} length
+   * @param {?Protocol.Runtime.StackTrace} originStackTrace
    */
   constructor(
       debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash,
-      isContentScript, isLiveEdit, sourceMapURL, hasSourceURL, length) {
+      isContentScript, isLiveEdit, sourceMapURL, hasSourceURL, length, originStackTrace) {
     this.debuggerModel = debuggerModel;
     this.scriptId = scriptId;
     this.sourceURL = sourceURL;
@@ -64,6 +65,7 @@ SDK.Script = class {
     this.contentLength = length;
     this._originalContentProvider = null;
     this._originalSource = null;
+    this.originStackTrace = originStackTrace;
   }
 
   /**
@@ -141,7 +143,10 @@ SDK.Script = class {
     if (!this.scriptId)
       return '';
     const source = await this.debuggerModel.target().debuggerAgent().getScriptSource(this.scriptId);
-    this._source = source ? SDK.Script._trimSourceURLComment(source) : '';
+    if (source && this.hasSourceURL)
+      this._source = SDK.Script._trimSourceURLComment(source);
+    else
+      this._source = source || '';
     if (this._originalSource === null)
       this._originalSource = this._source;
     return this._source;
@@ -254,10 +259,7 @@ SDK.Script = class {
   async setBlackboxedRanges(positions) {
     const response = await this.debuggerModel.target().debuggerAgent().invoke_setBlackboxedRanges(
         {scriptId: this.scriptId, positions});
-    const error = response[Protocol.Error];
-    if (error)
-      console.error(error);
-    return !error;
+    return !response[Protocol.Error];
   }
 };
 

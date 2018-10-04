@@ -51,10 +51,21 @@ Console.ConsoleViewport = class {
     this._topGapElement.textContent = '\uFEFF';
     this._bottomGapElement.textContent = '\uFEFF';
 
+    UI.ARIAUtils.markAsHidden(this._topGapElement);
+    UI.ARIAUtils.markAsHidden(this._bottomGapElement);
+
     this._provider = provider;
     this.element.addEventListener('scroll', this._onScroll.bind(this), false);
     this.element.addEventListener('copy', this._onCopy.bind(this), false);
     this.element.addEventListener('dragstart', this._onDragStart.bind(this), false);
+    this._keyboardNavigationEnabled = Runtime.experiments.isEnabled('consoleKeyboardNavigation');
+    if (this._keyboardNavigationEnabled) {
+      this.element.addEventListener('focusin', this._onFocusIn.bind(this), false);
+      this.element.addEventListener('focusout', this._onFocusOut.bind(this), false);
+      this.element.addEventListener('keydown', this._onKeyDown.bind(this), false);
+    }
+    this._virtualSelectedIndex = -1;
+    this.element.tabIndex = -1;
 
     this._firstActiveIndex = -1;
     this._lastActiveIndex = -1;
@@ -112,6 +123,35 @@ Console.ConsoleViewport = class {
   /**
    * @param {!Event} event
    */
+  _onFocusIn(event) {
+    // Make default selection when moving from external (e.g. prompt) to the container.
+    if (this._virtualSelectedIndex === -1 && this._isOutsideViewport(/** @type {?Element} */ (event.relatedTarget)) &&
+        event.target === this.element)
+      this._virtualSelectedIndex = this._itemCount - 1;
+    this._updateFocusedItem();
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  _onFocusOut(event) {
+    // Remove selection when focus moves to external location (e.g. prompt).
+    if (this._isOutsideViewport(/** @type {?Element} */ (event.relatedTarget)))
+      this._virtualSelectedIndex = -1;
+    this._updateFocusedItem();
+  }
+
+  /**
+   * @param {?Element} element
+   * @return {boolean}
+   */
+  _isOutsideViewport(element) {
+    return !!element && (element !== this.element && !element.isDescendant(this._contentElement));
+  }
+
+  /**
+   * @param {!Event} event
+   */
   _onDragStart(event) {
     const text = this._selectedText();
     if (!text)
@@ -120,6 +160,63 @@ Console.ConsoleViewport = class {
     event.dataTransfer.setData('text/plain', text);
     event.dataTransfer.effectAllowed = 'copy';
     return true;
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  _onKeyDown(event) {
+    if (UI.isEditing() || !this._itemCount || this.element.hasSelection())
+      return;
+    switch (event.key) {
+      case 'ArrowUp':
+        this._virtualSelectedIndex--;
+        if (this._virtualSelectedIndex < 0)
+          this._virtualSelectedIndex = this._itemCount - 1;
+        break;
+      case 'ArrowDown':
+        this._virtualSelectedIndex++;
+        if (this._virtualSelectedIndex >= this._itemCount)
+          this._virtualSelectedIndex = 0;
+        break;
+      case 'Home':
+        this._virtualSelectedIndex = 0;
+        break;
+      case 'End':
+        this._virtualSelectedIndex = this._itemCount - 1;
+        break;
+      default:
+        return;
+    }
+    event.consume(true);
+    this.scrollItemIntoView(this._virtualSelectedIndex);
+    this._updateFocusedItem();
+  }
+
+  _updateFocusedItem() {
+    const selectedElement = this.renderedElementAt(this._virtualSelectedIndex);
+    const changed = this._lastSelectedElement !== selectedElement;
+    const containerHasFocus = this.element === this.element.ownerDocument.deepActiveElement();
+    if (this._lastSelectedElement && changed)
+      this._lastSelectedElement.classList.remove('console-selected');
+    if (selectedElement && (changed || containerHasFocus)) {
+      selectedElement.classList.add('console-selected');
+      focusWithoutScroll(selectedElement);
+    }
+    if (this._itemCount && !this._contentElement.hasFocus())
+      this.element.tabIndex = 0;
+    else
+      this.element.tabIndex = -1;
+    this._lastSelectedElement = selectedElement;
+
+    /**
+     * @suppress {checkTypes}
+     * @param {!Element} element
+     */
+    function focusWithoutScroll(element) {
+      // TODO(luoe): Closure has an outdated typedef for Element.prototype.focus.
+      element.focus({preventScroll: true});
+    }
   }
 
   /**
@@ -132,6 +229,8 @@ Console.ConsoleViewport = class {
   invalidate() {
     delete this._cachedProviderElements;
     this._itemCount = this._provider.itemCount();
+    if (this._virtualSelectedIndex > this._itemCount - 1)
+      this._virtualSelectedIndex = this._itemCount - 1;
     this._rebuildCumulativeHeights();
     this.refresh();
   }
@@ -166,13 +265,22 @@ Console.ConsoleViewport = class {
   }
 
   _rebuildCumulativeHeightsIfNeeded() {
+    let totalCachedHeight = 0;
+    let totalMeasuredHeight = 0;
     // Check whether current items in DOM have changed heights. Tolerate 1-pixel
     // error due to double-to-integer rounding errors.
     for (let i = 0; i < this._renderedItems.length; ++i) {
       const cachedItemHeight = this._cachedItemHeight(this._firstActiveIndex + i);
-      if (Math.abs(cachedItemHeight - this._renderedItems[i].element().offsetHeight) > 1) {
+      const measuredHeight = this._renderedItems[i].element().offsetHeight;
+      if (Math.abs(cachedItemHeight - measuredHeight) > 1) {
         this._rebuildCumulativeHeights();
-        break;
+        return;
+      }
+      totalMeasuredHeight += measuredHeight;
+      totalCachedHeight += cachedItemHeight;
+      if (Math.abs(totalCachedHeight - totalMeasuredHeight) > 1) {
+        this._rebuildCumulativeHeights();
+        return;
       }
     }
   }
@@ -331,6 +439,8 @@ Console.ConsoleViewport = class {
       this._bottomGapElement.style.height = '0px';
       this._firstActiveIndex = -1;
       this._lastActiveIndex = -1;
+      if (this._keyboardNavigationEnabled)
+        this._updateFocusedItem();
       return;
     }
 
@@ -392,8 +502,12 @@ Console.ConsoleViewport = class {
     for (let i = 0; i < willBeHidden.length; ++i)
       willBeHidden[i].willHide();
     prepare();
-    for (let i = 0; i < willBeHidden.length; ++i)
+    let hadFocus = false;
+    for (let i = 0; i < willBeHidden.length; ++i) {
+      if (this._keyboardNavigationEnabled)
+        hadFocus = hadFocus || willBeHidden[i].element().hasFocus();
       willBeHidden[i].element().remove();
+    }
 
     const wasShown = [];
     let anchor = this._contentElement.firstChild;
@@ -411,6 +525,12 @@ Console.ConsoleViewport = class {
     for (let i = 0; i < wasShown.length; ++i)
       wasShown[i].wasShown();
     this._renderedItems = Array.from(itemsToRender);
+
+    if (this._keyboardNavigationEnabled) {
+      if (hadFocus)
+        this.element.focus();
+      this._updateFocusedItem();
+    }
   }
 
   /**
@@ -518,9 +638,7 @@ Console.ConsoleViewport = class {
    * @return {?Element}
    */
   renderedElementAt(index) {
-    if (index < this._firstActiveIndex)
-      return null;
-    if (index > this._lastActiveIndex)
+    if (index === -1 || index < this._firstActiveIndex || index > this._lastActiveIndex)
       return null;
     return this._renderedItems[index - this._firstActiveIndex].element();
   }
@@ -533,6 +651,9 @@ Console.ConsoleViewport = class {
     const firstVisibleIndex = this.firstVisibleIndex();
     const lastVisibleIndex = this.lastVisibleIndex();
     if (index > firstVisibleIndex && index < lastVisibleIndex)
+      return;
+    // If the prompt is visible, then the last item must be fully on screen.
+    if (index === lastVisibleIndex && this._cumulativeHeights[index] <= this.element.scrollTop + this._visibleHeight())
       return;
     if (makeLast)
       this.forceScrollItemToBeLast(index);
@@ -553,6 +674,8 @@ Console.ConsoleViewport = class {
     if (this.element.isScrolledToBottom())
       this.setStickToBottom(true);
     this.refresh();
+    // After refresh, the item is in DOM, but may not be visible (items above were larger than expected).
+    this.renderedElementAt(index).scrollIntoView(true /* alignTop */);
   }
 
   /**
@@ -566,6 +689,8 @@ Console.ConsoleViewport = class {
     if (this.element.isScrolledToBottom())
       this.setStickToBottom(true);
     this.refresh();
+    // After refresh, the item is in DOM, but may not be visible (items above were larger than expected).
+    this.renderedElementAt(index).scrollIntoView(false /* alignTop */);
   }
 
   /**

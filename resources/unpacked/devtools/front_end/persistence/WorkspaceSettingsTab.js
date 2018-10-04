@@ -15,21 +15,17 @@ Persistence.WorkspaceSettingsTab = class extends UI.VBox {
 
     Persistence.isolatedFileSystemManager.addEventListener(
         Persistence.IsolatedFileSystemManager.Events.FileSystemAdded,
-        event => this._fileSystemAdded(/** @type {!Persistence.IsolatedFileSystem} */ (event.data)), this);
+        event => this._fileSystemAdded(/** @type {!Persistence.PlatformFileSystem} */ (event.data)), this);
     Persistence.isolatedFileSystemManager.addEventListener(
         Persistence.IsolatedFileSystemManager.Events.FileSystemRemoved,
-        event => this._fileSystemRemoved(/** @type {!Persistence.IsolatedFileSystem} */ (event.data)), this);
+        event => this._fileSystemRemoved(/** @type {!Persistence.PlatformFileSystem} */ (event.data)), this);
 
     const folderExcludePatternInput = this._createFolderExcludePatternInput();
     folderExcludePatternInput.classList.add('folder-exclude-pattern');
     this.containerElement.appendChild(folderExcludePatternInput);
 
     const div = this.containerElement.createChild('div', 'settings-info-message');
-    div.createTextChild(Common.UIString('Mappings are inferred automatically. Please '));
-    div.appendChild(UI.XLink.create(
-        'https://bugs.chromium.org/p/chromium/issues/entry?template=Defect%20report%20from%20user&components=Platform%3EDevTools%3EAuthoring&comment=DevTools%20failed%20to%20link%20network%20resource%20to%20filesystem.%0A%0APlatform%3A%20%3CLinux%2FWin%2FMac%3E%0AChrome%20version%3A%20%3Cyour%20chrome%20version%3E%0A%0AWhat%20are%20the%20details%20of%20your%20project%3F%0A-%20Source%20code%20(if%20any)%3A%20http%3A%2F%2Fgithub.com%2Fexample%2Fexample%0A-%20Build%20System%3A%20gulp%2Fgrunt%2Fwebpack%2Frollup%2F...%0A-%20HTTP%20server%3A%20node%20HTTP%2Fnginx%2Fapache...%0A%0AAssets%20failed%20to%20link%20(or%20incorrectly%20linked)%3A%0A1.%0A2.%0A3.%0A%0AIf%20possible%2C%20please%20attach%20a%20screenshot%20of%20network%20sources%20navigator%20which%20should%0Ashow%20which%20resources%20failed%20to%20map',
-        Common.UIString('report')));
-    div.createTextChild(Common.UIString(' any bugs.'));
+    div.createTextChild(Common.UIString('Mappings are inferred automatically.'));
 
     this._fileSystemsListContainer = this.containerElement.createChild('div', '');
 
@@ -79,7 +75,7 @@ Persistence.WorkspaceSettingsTab = class extends UI.VBox {
   }
 
   /**
-   * @param {!Persistence.IsolatedFileSystem} fileSystem
+   * @param {!Persistence.PlatformFileSystem} fileSystem
    */
   _addItem(fileSystem) {
     const networkPersistenceProject = Persistence.networkPersistenceManager.project();
@@ -98,7 +94,7 @@ Persistence.WorkspaceSettingsTab = class extends UI.VBox {
   }
 
   /**
-   * @param {!Persistence.IsolatedFileSystem} fileSystem
+   * @param {!Persistence.PlatformFileSystem} fileSystem
    * @return {!Element}
    */
   _renderFileSystem(fileSystem) {
@@ -124,7 +120,7 @@ Persistence.WorkspaceSettingsTab = class extends UI.VBox {
   }
 
   /**
-   * @param {!Persistence.IsolatedFileSystem} fileSystem
+   * @param {!Persistence.PlatformFileSystem} fileSystem
    */
   _removeFileSystemClicked(fileSystem) {
     Persistence.isolatedFileSystemManager.removeFileSystem(fileSystem);
@@ -135,14 +131,14 @@ Persistence.WorkspaceSettingsTab = class extends UI.VBox {
   }
 
   /**
-   * @param {!Persistence.IsolatedFileSystem} fileSystem
+   * @param {!Persistence.PlatformFileSystem} fileSystem
    */
   _fileSystemAdded(fileSystem) {
     this._addItem(fileSystem);
   }
 
   /**
-   * @param {!Persistence.IsolatedFileSystem} fileSystem
+   * @param {!Persistence.PlatformFileSystem} fileSystem
    */
   _fileSystemRemoved(fileSystem) {
     const mappingView = this._mappingViewByPath.get(fileSystem.path());

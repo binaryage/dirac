@@ -584,11 +584,9 @@ Profiler.HeapSnapshotGenericObjectNode = class extends Profiler.HeapSnapshotGrid
    * @param {!Element} div
    */
   async _appendSourceLocation(div) {
-    if (this._type !== 'closure')
-      return;
     const linkContainer = UI.html`<span class="heap-object-source-link" />`;
     div.appendChild(linkContainer);
-    const link = await this._dataGrid.dataDisplayDelegate().linkifyObject(String(this.snapshotNodeId));
+    const link = await this._dataGrid.dataDisplayDelegate().linkifyObject(this.snapshotNodeIndex);
     if (link)
       linkContainer.appendChild(link);
     else

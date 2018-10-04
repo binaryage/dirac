@@ -180,8 +180,9 @@ TimelineModel.TimelineModel = class {
    * @param {!SDK.TracingModel} tracingModel
    */
   _processGenericTrace(tracingModel) {
-    const browserMainThread =
-        SDK.TracingModel.browserMainThread(tracingModel) || tracingModel.sortedProcesses()[0].sortedThreads()[0];
+    let browserMainThread = SDK.TracingModel.browserMainThread(tracingModel);
+    if (!browserMainThread && tracingModel.sortedProcesses().length)
+      browserMainThread = tracingModel.sortedProcesses()[0].sortedThreads()[0];
     for (const process of tracingModel.sortedProcesses()) {
       for (const thread of process.sortedThreads()) {
         this._processThreadEvents(
@@ -200,6 +201,8 @@ TimelineModel.TimelineModel = class {
       const metaEvent = metadataEvents.page[i];
       const process = metaEvent.thread.process();
       const endTime = i + 1 < length ? metadataEvents.page[i + 1].startTime : Infinity;
+      if (startTime === endTime)
+        continue;
       this._legacyCurrentPage = metaEvent.args['data'] && metaEvent.args['data']['page'];
       for (const thread of process.sortedThreads()) {
         let workerUrl = null;
@@ -1274,9 +1277,7 @@ TimelineModel.TimelineModel.RecordType = {
   InputLatencyMouseMove: 'InputLatency::MouseMove',
   InputLatencyMouseWheel: 'InputLatency::MouseWheel',
   ImplSideFling: 'InputHandlerProxy::HandleGestureFling::started',
-  GCIdleLazySweep: 'ThreadState::performIdleLazySweep',
-  GCCompleteSweep: 'ThreadState::completeSweep',
-  GCCollectGarbage: 'BlinkGCMarking',
+  GCCollectGarbage: 'BlinkGC.AtomicPhase',
 
   CryptoDoEncrypt: 'DoEncrypt',
   CryptoDoEncryptReply: 'DoEncryptReply',

@@ -5,6 +5,7 @@
 Console.ConsolePrompt = class extends UI.Widget {
   constructor() {
     super();
+    this.registerRequiredCSS('console/consolePrompt.css');
     this._addCompletionsFromHistory = true;
     this._history = new Console.ConsoleHistoryManager();
 
@@ -23,16 +24,14 @@ Console.ConsolePrompt = class extends UI.Widget {
     this._eagerEvalSetting.addChangeListener(this._eagerSettingChanged.bind(this));
     this._eagerPreviewElement.classList.toggle('hidden', !this._eagerEvalSetting.get());
 
-    // TODO(luoe): split out prompt styles into ConsolePrompt.css.
-    const pinsEnabled = Runtime.experiments.isEnabled('pinnedExpressions');
-    if (pinsEnabled)
-      this.element.style.marginRight = '20px';
     this.element.tabIndex = 0;
     /** @type {?Promise} */
     this._previewRequestForTest = null;
 
     /** @type {?UI.AutocompleteConfig} */
     this._defaultAutocompleteConfig = null;
+
+    this._highlightingNode = false;
 
     self.runtime.extension(UI.TextEditorFactory).instance().then(gotFactory.bind(this));
 
@@ -54,13 +53,6 @@ Console.ConsolePrompt = class extends UI.Widget {
       this._editor.widget().show(this.element);
       this._editor.addEventListener(UI.TextEditor.Events.TextChanged, this._onTextChanged, this);
       this._editor.addEventListener(UI.TextEditor.Events.SuggestionChanged, this._onTextChanged, this);
-      if (pinsEnabled) {
-        const pinButton = this.element.createChild('span', 'command-pin-button');
-        pinButton.title = ls`Pin expression and continuously evaluate`;
-        pinButton.addEventListener('click', () => {
-          this.dispatchEventToListeners(Console.ConsolePrompt.Events.ExpressionPinned, this.text());
-        });
-      }
       if (this._isBelowPromptEnabled)
         this.element.appendChild(this._eagerPreviewElement);
 
@@ -104,10 +96,28 @@ Console.ConsolePrompt = class extends UI.Widget {
    */
   async _requestPreview() {
     const text = this._editor.textWithCurrentSuggestion().trim();
-    const {preview} = await ObjectUI.JavaScriptREPL.evaluateAndBuildPreview(text, true /* throwOnSideEffect */, 500);
+    const {preview, result} =
+        await ObjectUI.JavaScriptREPL.evaluateAndBuildPreview(text, true /* throwOnSideEffect */, 500);
     this._innerPreviewElement.removeChildren();
     if (preview.deepTextContent() !== this._editor.textWithCurrentSuggestion().trim())
       this._innerPreviewElement.appendChild(preview);
+    if (result && result.object && result.object.subtype === 'node') {
+      this._highlightingNode = true;
+      SDK.OverlayModel.highlightObjectAsDOMNode(result.object);
+    } else if (this._highlightingNode) {
+      this._highlightingNode = false;
+      SDK.OverlayModel.hideDOMNodeHighlight();
+    }
+  }
+
+  /**
+   * @override
+   */
+  willHide() {
+    if (this._highlightingNode) {
+      this._highlightingNode = false;
+      SDK.OverlayModel.hideDOMNodeHighlight();
+    }
   }
 
   /**
@@ -409,6 +419,5 @@ Console.ConsoleHistoryManager = class {
 };
 
 Console.ConsolePrompt.Events = {
-  ExpressionPinned: Symbol('ExpressionPinned'),
   TextChanged: Symbol('TextChanged')
 };

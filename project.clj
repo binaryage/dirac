@@ -3,7 +3,8 @@
 (def figwheel-version "0.5.16")
 (def selected-clojure-version "1.9.0")
 (def selected-clojurescript-version "1.10.339")
-(def selenium-version "3.13.0")
+(def selenium-version "3.14.0")
+(def lein-cljsbuild-version "1.1.7")
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
@@ -25,7 +26,7 @@
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.6.2" :scope "test"]
-   ['binaryage/chromex "0.6.2" :scope "test"]
+   ['binaryage/chromex "0.6.3" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.45" :scope "test"]
@@ -58,7 +59,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.37"
+(defproject binaryage/dirac "1.2.39"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -174,7 +175,7 @@
              {:plugins [[lein-cooper "1.2.2"]]}
 
              :cljs
-             {:plugins [[lein-cljsbuild "1.1.6"]
+             {:plugins [[lein-cljsbuild ~lein-cljsbuild-version]
                         [lein-figwheel ~figwheel-version]]}
 
              :nuke-aliases

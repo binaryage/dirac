@@ -110,9 +110,13 @@ Console.ConsoleView = class extends UI.VBox {
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._consoleContextSelector.toolbarItem());
     toolbar.appendSeparator();
+    if (Runtime.experiments.isEnabled('pinnedExpressions')) {
+      toolbar.appendToolbarItem(UI.Toolbar.createActionButton(
+          /** @type {!UI.Action }*/ (UI.actionRegistry.action('console.create-pin'))));
+    }
+    toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._filter._textFilterUI);
     toolbar.appendToolbarItem(this._filter._levelMenuButton);
-    toolbar.appendToolbarItem(groupSimilarToggle);
     toolbar.appendToolbarItem(this._progressToolbarItem);
     rightToolbar.appendSeparator();
     rightToolbar.appendToolbarItem(this._filterStatusText);
@@ -141,6 +145,7 @@ Console.ConsoleView = class extends UI.VBox {
     settingsToolbarLeft.appendToolbarItem(this._hideNetworkMessagesCheckbox);
     settingsToolbarLeft.appendToolbarItem(this._preserveLogCheckbox);
     settingsToolbarLeft.appendToolbarItem(filterByExecutionContextCheckbox);
+    settingsToolbarLeft.appendToolbarItem(groupSimilarToggle);
 
     const settingsToolbarRight = new UI.Toolbar('', settingsPane.element);
     settingsToolbarRight.makeVertical();
@@ -162,6 +167,10 @@ Console.ConsoleView = class extends UI.VBox {
       this._pinPane = new Console.ConsolePinPane();
       this._pinPane.element.classList.add('console-view-pinpane');
       this._pinPane.show(this._contentsElement);
+      this._pinPane.element.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && event.ctrlKey)
+          this._prompt.focus();
+      });
     }
 
     this._viewport = new Console.ConsoleViewport(this);
@@ -210,7 +219,6 @@ Console.ConsoleView = class extends UI.VBox {
     this._prompt = new Console.ConsolePrompt();
     this._prompt.show(this._promptElement);
     this._prompt.element.addEventListener('keydown', this._promptKeyDown.bind(this), true);
-    this._prompt.addEventListener(Console.ConsolePrompt.Events.ExpressionPinned, this._promptExpressionPinned, this);
     this._prompt.addEventListener(Console.ConsolePrompt.Events.TextChanged, this._promptTextChanged, this);
 
     this._consoleHistoryAutocompleteSetting.addChangeListener(this._consoleHistoryAutocompleteChanged, this);
@@ -1104,7 +1112,7 @@ Console.ConsoleView = class extends UI.VBox {
     if (!this._currentGroup.messagesHidden()) {
       const originatingMessage = viewMessage.consoleMessage().originatingMessage();
       if (lastMessage && originatingMessage && lastMessage.consoleMessage() === originatingMessage)
-        lastMessage.toMessageElement().classList.add('console-adjacent-user-command-result');
+        viewMessage.toMessageElement().classList.add('console-adjacent-user-command-result');
 
       this._visibleViewMessages.push(viewMessage);
       this._searchMessage(this._visibleViewMessages.length - 1);
@@ -1144,6 +1152,7 @@ Console.ConsoleView = class extends UI.VBox {
   }
 
   _consoleCleared() {
+    const hadFocus = this._viewport.element.hasFocus();
     this._cancelBuildHiddenCache();
     this._currentMatchRangeIndex = -1;
     this._consoleMessages = [];
@@ -1156,6 +1165,8 @@ Console.ConsoleView = class extends UI.VBox {
     this._linkifier.reset();
     this._badgePool.reset();
     this._filter.clear();
+    if (hadFocus)
+      this._prompt.focus();
   }
 
   _handleContextMenuEvent(event) {
@@ -1230,6 +1241,8 @@ Console.ConsoleView = class extends UI.VBox {
   _tryToCollapseMessages(viewMessage, lastMessage) {
     const timestampsShown = this._timestampsSetting.get();
     if (!timestampsShown && lastMessage && !viewMessage.consoleMessage().isGroupMessage() &&
+        viewMessage.consoleMessage().type !== SDK.ConsoleMessage.MessageType.Command &&
+        viewMessage.consoleMessage().type !== SDK.ConsoleMessage.MessageType.Result &&
         viewMessage.consoleMessage().isEqual(lastMessage.consoleMessage())) {
       lastMessage.incrementRepeatCount();
       if (viewMessage.isLastInSimilarGroup())
@@ -1710,14 +1723,6 @@ Console.ConsoleView = class extends UI.VBox {
     this._updateStickToBottomOnMouseUp();
   }
 
-  /**
-   * @param {!Common.Event} event
-   */
-  _promptExpressionPinned(event) {
-    const text = /** @type {string} */ (event.data);
-    this._pinPane.addPin(text);
-  }
-
   _promptTextChanged() {
     this._viewport.setStickToBottom(this._isScrolledToBottom());
     this._promptTextChangedForTest();
@@ -2127,6 +2132,11 @@ Console.ConsoleView.ActionDelegate = class {
       case 'console.clear.history':
         Console.ConsoleView.instance()._clearHistory();
         return true;
+      case 'console.create-pin':
+        if (Runtime.experiments.isEnabled('pinnedExpressions')) {
+          Console.ConsoleView.instance()._pinPane.addPin('', true /* userGesture */);
+          return true;
+        }
     }
     return false;
   }

@@ -16,7 +16,8 @@
             [dirac.nrepl.state :as state]
             [dirac.nrepl.version :refer [version]])
   (:import java.io.StringReader
-           (javax.xml.bind DatatypeConverter)))
+           (javax.xml.bind DatatypeConverter)
+           (java.util.concurrent.atomic AtomicLong)))
 
 (defn prepare-current-env-info-response []
   (let [session (state/get-current-session)
@@ -126,17 +127,29 @@
                            ;; handle strings / primitives without metadata
                            (with-out-str (pr form)))]}))
 
+(defmacro bind-compiler-source-map-data-gen-col-optionally [& body]
+  (if (some? (ns-resolve 'cljs.compiler '*source-map-data-gen-col*))
+    `(binding [cljs.compiler/*source-map-data-gen-col* (AtomicLong.)]
+       ~@body)
+    `(do
+       ~@body)))
+
+(defmacro bind-compiler-source-map-data [& body]
+  `(binding [cljs.compiler/*source-map-data* (atom {:source-map (sorted-map)
+                                                    :gen-col    0
+                                                    :gen-line   0})]
+     ~@body))
+
 (defn generate-js-with-source-maps! [ast filename form]
-  (binding [compiler/*source-map-data* (atom {:source-map (sorted-map)
-                                              :gen-col    0
-                                              :gen-line   0})]
-    (let [js-filename (string/replace filename #"\.cljs$" ".js")
-          generated-js (compiler/emit-str ast)
-          source-map-json (json/write-str (gen-source-map filename js-filename form))]
-      (str generated-js
-           "\n//# sourceURL=" js-filename
-           "\n//# sourceMappingURL=data:application/json;base64,"
-           (DatatypeConverter/printBase64Binary (.getBytes source-map-json "UTF-8"))))))
+  (bind-compiler-source-map-data
+    (bind-compiler-source-map-data-gen-col-optionally                                                                         ; see https://github.com/binaryage/dirac/issues/81
+      (let [js-filename (string/replace filename #"\.cljs$" ".js")
+            generated-js (compiler/emit-str ast)
+            source-map-json (json/write-str (gen-source-map filename js-filename form))]
+        (str generated-js
+             "\n//# sourceURL=" js-filename
+             "\n//# sourceMappingURL=data:application/json;base64,"
+             (DatatypeConverter/printBase64Binary (.getBytes source-map-json "UTF-8")))))))
 
 (defn load-dependencies-if-needed! [ast form env repl-env opts]
   (when (#{:ns :ns*} (:op ast))
@@ -241,6 +254,6 @@
               *err* (state/get-session-binding-value #'*err*)
               analyzer/*cljs-ns* initial-ns]
       (driver/wrap-with-driver job-id start-repl-fn response-fn "plain-text")
-      (when-some [final-ns @final-ns-volatile]                                                                                   ; we want analyzer/*cljs-ns* to be sticky between evaluations
+      (when-some [final-ns @final-ns-volatile]                                                                                ; we want analyzer/*cljs-ns* to be sticky between evaluations
         (when-not (= final-ns initial-ns)
           (state/set-session-cljs-ns! final-ns))))))

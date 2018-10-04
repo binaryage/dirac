@@ -93,7 +93,7 @@ Console.ConsoleViewMessage = class {
    */
   willHide() {
     this._isVisible = false;
-    this._cachedHeight = this.contentElement().offsetHeight;
+    this._cachedHeight = this.element().offsetHeight;
   }
 
   /**
@@ -796,6 +796,8 @@ Console.ConsoleViewMessage = class {
     }
 
     function integerFormatter(obj) {
+      if (obj.type === 'bigint')
+        return obj.description;
       if (typeof obj.value !== 'number')
         return 'NaN';
       return Math.floor(obj.value);
@@ -1076,6 +1078,7 @@ Console.ConsoleViewMessage = class {
       return this._element;
 
     this._element = createElement('div');
+    this._element.tabIndex = -1;
     this.updateMessageElement();
     return this._element;
   }

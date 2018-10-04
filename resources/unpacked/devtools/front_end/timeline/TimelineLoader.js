@@ -221,7 +221,8 @@ Timeline.TimelineLoader = class {
     let traceEvents;
     try {
       const profile = JSON.parse(text);
-      traceEvents = TimelineModel.TimelineJSProfileProcessor.buildTraceProfileFromCpuProfile(profile);
+      traceEvents = TimelineModel.TimelineJSProfileProcessor.buildTraceProfileFromCpuProfile(
+          profile, /* tid */ 1, /* injectPageEvent */ true);
     } catch (e) {
       this._reportErrorAndCancelLoading(Common.UIString('Malformed CPU profile format'));
       return;
