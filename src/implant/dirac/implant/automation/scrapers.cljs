@@ -69,6 +69,12 @@
                         value)]
     (str name ": " display-value)))
 
+(defn internal-scope-item? [item]
+  (string/starts-with? item "[["))
+
+(defn remove-internal-scope-items [items]
+  (remove internal-scope-item? items))
+
 ; -- suggest box UI (code completions) --------------------------------------------------------------------------------------
 
 (defn find-suggest-box-element []
@@ -226,8 +232,8 @@
            (select-subreps interesting-scope-tree-item-rep?)
            (partition-all 2)
            (map extract-scope-info)
-           (print-list)
-           ))
+           (remove-internal-scope-items)
+           (print-list)))
 
 (defmethod scrape :suggest-box [_ & _]
   (if-let [suggest-box-el (find-suggest-box-element)]
