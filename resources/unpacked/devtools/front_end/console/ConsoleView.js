@@ -1069,6 +1069,7 @@ Console.ConsoleView = class extends UI.VBox {
     const viewMessage = message[this._viewMessageSymbol];
     if (viewMessage) {
       viewMessage.updateMessageElement();
+      this._computeShouldMessageBeVisible(viewMessage);
       this._updateMessageList();
     }
   }
