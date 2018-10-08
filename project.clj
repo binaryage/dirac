@@ -1,8 +1,8 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.16")
-(def selected-clojure-version "1.10.0-alpha9")
 (def selected-clojurescript-version "1.10.339")
+(def selected-clojure-version "1.10.0-beta1")
 (def selenium-version "3.14.0")
 (def lein-cljsbuild-version "1.1.7")
 
@@ -163,6 +163,9 @@
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
+             {:dependencies [[org.clojure/clojure "1.9.0" :scope "provided" :upgrade false]]}
+
+             :clojure110
              {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
 
              :cooper
@@ -507,6 +510,7 @@
 
             "run-backend-tests-18"       ["with-profile" "+test-runner,+clojure18" "run" "-m" "dirac.tests.backend.runner"]
             "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19" "run" "-m" "dirac.tests.backend.runner"]
+            "run-backend-tests-110"      ["with-profile" "+test-runner,+clojure110" "run" "-m" "dirac.tests.backend.runner"]
 
             "run-browser-tests"          ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner"]
             "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner/-dev-main"]
