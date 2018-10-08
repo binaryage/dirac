@@ -1,12 +1,13 @@
 (ns dirac.implant.analyzer
   (:require-macros [cljs.analyzer.macros :refer [no-warn]])
   (:require [cljs.analyzer :as ana]
+            [cljs.env :as env]
             [cljs.tools.reader.reader-types :as tools-reader-types]
             [clojure.tools.namespace.parse :as ns-parse]))
 
 (defn analyze-ns [ns-form opts]
-  (let [env (ana/empty-env)]
-    (no-warn (ana/analyze env ns-form nil opts))))
+  (binding [env/*compiler* (env/default-compiler-env)]
+    (no-warn (ana/analyze (ana/empty-env) ns-form nil opts))))
 
 (defn parse-ns-form [source]
   (let [reader (tools-reader-types/string-push-back-reader source)]
