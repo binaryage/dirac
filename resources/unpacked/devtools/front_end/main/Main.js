@@ -165,6 +165,8 @@ Main.Main = class {
    * @suppressGlobalPropertiesCheck
    */
   async _createAppUI() {
+    await dirac.getReadyPromise();
+
     Main.Main.time('Main._createAppUI');
 
     UI.viewManager = new UI.ViewManager();

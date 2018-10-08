@@ -126,6 +126,9 @@
   (let [debouncer (get-namespaces-cache-debouncer)]
     (.fire debouncer)))
 
+(defn mark-dirac-as-ready! []
+  (gcall! "dirac.markAsReady"))
+
 ; -- dirac object augmentation ----------------------------------------------------------------------------------------------
 
 ; !!! don't forget to update externs.js when touching this !!!
@@ -168,7 +171,8 @@
     (feedback/install!)
     (eval/go-start-eval-request-queue-processing-loop!)
     (feedback/post! "implant initialized")
-    (info (str "Dirac implant " (get-version) " initialized"))))
+    (info (str "Dirac implant " (get-version) " initialized"))
+    (mark-dirac-as-ready!)))
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 

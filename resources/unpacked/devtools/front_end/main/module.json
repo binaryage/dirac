@@ -331,6 +331,7 @@
         "host",
         "platform",
         "sdk",
+        "dirac",
         "persistence"
     ],
     "scripts": [
