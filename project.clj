@@ -79,7 +79,6 @@
                  "src/agent"
                  "src/automation"
                  "src/background"
-                 "src/backport"
                  "src/devtools"
                  "src/figwheel"
                  "src/implant"
@@ -126,7 +125,6 @@
               {:dependencies   ~(with-meta lib-deps {:replace true})
                :source-paths   ^:replace ["src/project"
                                           "src/settings"
-                                          "src/backport"
                                           "src/runtime"
                                           "src/lib"
                                           "src/agent"
@@ -161,10 +159,6 @@
              :suspended-debugger-5007
              {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5007"]}
 
-             :clojure17
-             {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided" :upgrade false]
-                             [org.clojure/clojurescript "1.7.228" :scope "provided" :upgrade false]]}
-
              :clojure18
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
@@ -184,7 +178,6 @@
              :test-runner
              {:source-paths ^:replace ["src/project"
                                        "src/settings"
-                                       "src/backport"
                                        "src/lib"
                                        "src/agent"
                                        "src/nrepl"
@@ -512,7 +505,6 @@
             "test-browser"               ["shell" "scripts/test-browser.sh"]                                                  ; this will run browser tests against fully optimized dirac extension (release build)
             "test-browser-dev"           ["shell" "scripts/test-browser-dev.sh"]                                              ; this will run browser tests against unpacked dirac extension
 
-            "run-backend-tests-17"       ["with-profile" "+test-runner,+clojure17" "run" "-m" "dirac.tests.backend.runner"]
             "run-backend-tests-18"       ["with-profile" "+test-runner,+clojure18" "run" "-m" "dirac.tests.backend.runner"]
             "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19" "run" "-m" "dirac.tests.backend.runner"]
 

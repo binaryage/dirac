@@ -1,7 +1,6 @@
 (ns dirac.nrepl.sessions
   (:require [clojure.string :as string]
             [clojure.tools.logging :as log]
-            [dirac.backport.string :as backport-string]
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.state :as state])
   (:import (java.util.regex Pattern)))
@@ -150,7 +149,7 @@
 (defn make-substr-matcher [substring]
   (fn [session-descriptor _ _]
     (let [tag (prepare-dirac-session-descriptor-tag session-descriptor)]
-      (backport-string/includes? tag substring))))
+      (string/includes? tag substring))))
 
 (defn make-most-recent-matcher []
   (fn [_ index cnt]

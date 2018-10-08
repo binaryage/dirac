@@ -6,7 +6,6 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 pushd "$ROOT"
 
 echo "Running backend tests..."
-lein run-backend-tests-17
 lein run-backend-tests-18
 lein run-backend-tests-19
 
