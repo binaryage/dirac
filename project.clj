@@ -2,7 +2,7 @@
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.16")
 (def selected-clojurescript-version "1.10.339")
-(def selected-clojure-version "1.10.0-beta1")
+(def selected-clojure-version "1.9.0")
 (def selenium-version "3.14.0")
 (def lein-cljsbuild-version "1.1.7")
 
@@ -163,10 +163,10 @@
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure "1.9.0" :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
 
              :clojure110
-             {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure "1.10.0-beta1" :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
