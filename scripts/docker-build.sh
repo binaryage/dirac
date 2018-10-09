@@ -5,6 +5,6 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$DOCKER_TESTS_DIR"
 
-docker build -t "dirac" .
+docker build -t "dirac" "$@" .
 
 popd

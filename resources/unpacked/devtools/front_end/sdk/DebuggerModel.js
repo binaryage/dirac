@@ -251,8 +251,11 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
    */
   async setBreakpointByURL(url, lineNumber, columnNumber, condition) {
     // Convert file url to node-js path.
-    if (this.target().isNodeJS())
-      url = Common.ParsedURL.urlToPlatformPath(url, Host.isWin());
+    let urlRegex;
+    if (this.target().isNodeJS()) {
+      const platformPath = Common.ParsedURL.urlToPlatformPath(url, Host.isWin());
+      urlRegex = `${platformPath.escapeForRegExp()}|${url.escapeForRegExp()}`;
+    }
     // Adjust column if needed.
     let minColumnNumber = 0;
     const scripts = this._scriptsBySourceURL.get(url) || [];
@@ -262,8 +265,13 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
         minColumnNumber = minColumnNumber ? Math.min(minColumnNumber, script.columnOffset) : script.columnOffset;
     }
     columnNumber = Math.max(columnNumber, minColumnNumber);
-    const response = await this._agent.invoke_setBreakpointByUrl(
-        {lineNumber: lineNumber, url: url, columnNumber: columnNumber, condition: condition});
+    const response = await this._agent.invoke_setBreakpointByUrl({
+      lineNumber: lineNumber,
+      url: urlRegex ? undefined : url,
+      urlRegex: urlRegex,
+      columnNumber: columnNumber,
+      condition: condition
+    });
     if (response[Protocol.Error])
       return {locations: [], breakpointId: null};
     let locations;
@@ -563,14 +571,7 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
     let isContentScript = false;
     if (executionContextAuxData && ('isDefault' in executionContextAuxData))
       isContentScript = !executionContextAuxData['isDefault'];
-    // Support file URL for node.js.
-    if (this.target().isNodeJS() && sourceURL && !hasSourceURLComment) {
-      const nodeJSPath = sourceURL;
-      sourceURL = Common.ParsedURL.platformPathToURL(nodeJSPath);
-      sourceURL = this._internString(sourceURL);
-    } else {
-      sourceURL = this._internString(sourceURL);
-    }
+    sourceURL = this._internString(sourceURL);
     const script = new SDK.Script(
         this, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId,
         this._internString(hash), isContentScript, isLiveEdit, sourceMapURL, hasSourceURLComment, length,
@@ -774,11 +775,11 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
    * @return {!Promise<?SDK.DebuggerModel.FunctionDetails>}
    */
   functionDetailsPromise(remoteObject) {
-    return remoteObject.getAllPropertiesPromise(false /* accessorPropertiesOnly */, false /* generatePreview */)
+    return remoteObject.getAllProperties(false /* accessorPropertiesOnly */, false /* generatePreview */)
         .then(buildDetails.bind(this));
 
     /**
-     * @param {!{properties: ?Array.<!SDK.RemoteObjectProperty>, internalProperties: ?Array.<!SDK.RemoteObjectProperty>}} response
+     * @param {!SDK.GetPropertiesResult} response
      * @return {?SDK.DebuggerModel.FunctionDetails}
      * @this {!SDK.DebuggerModel}
      */

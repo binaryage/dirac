@@ -509,11 +509,12 @@ all_devtools_files = [
   "front_end/profiler/CPUProfileView.js",
   "front_end/profiler/heapProfiler.css",
   "front_end/profiler/HeapProfileView.js",
+  "front_end/profiler/HeapProfilerPanel.js",
   "front_end/profiler/HeapSnapshotDataGrids.js",
   "front_end/profiler/HeapSnapshotGridNodes.js",
   "front_end/profiler/HeapSnapshotProxy.js",
   "front_end/profiler/HeapSnapshotView.js",
-  "front_end/profiler/HeapProfilerPanel.js",
+  "front_end/profiler/HeapTimelineOverview.js",
   "front_end/profiler/IsolateSelector.js",
   "front_end/profiler/module.json",
   "front_end/profiler/ProfileDataGrid.js",
@@ -527,6 +528,7 @@ all_devtools_files = [
   "front_end/profiler/ProfileTypeRegistry.js",
   "front_end/profiler/ProfileView.js",
   "front_end/profiler/TopDownProfileDataGrid.js",
+  "front_end/protocol/NodeURL.js",
   "front_end/protocol/InspectorBackend.js",
   "front_end/protocol/module.json",
   "front_end/quick_open/CommandMenu.js",
@@ -1105,6 +1107,7 @@ group("devtools_frontend_resources") {
     ":build_release_devtools",
     ":copy_embedder_scripts",
     ":copy_emulated_devices_images",
+    ":copy_htaccess",
     ":copy_inspector_images",
     ":devtools_extension_api",
     ":frontend_protocol_sources",
@@ -1122,6 +1125,15 @@ copy("copy_embedder_scripts") {
   sources = devtools_embedder_scripts
   outputs = [
     "$resources_out_dir/{{source_file_part}}",
+  ]
+}
+
+copy("copy_htaccess") {
+  sources = [
+    "htaccess",
+  ]
+  outputs = [
+    "$resources_out_dir/.htaccess",
   ]
 }
 
@@ -1194,7 +1206,7 @@ action("supported_css_properties") {
   script = "scripts/build/generate_supported_css.py"
 
   inputs = [
-    "../core/css/CSSProperties.json5",
+    "../core/css/css_properties.json5",
   ]
 
   outputs = [

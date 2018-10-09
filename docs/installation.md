@@ -31,7 +31,8 @@ Now install the [Dirac Chrome Extension](https://chrome.google.com/webstore/deta
 
 #### Install the Dirac Runtime
 
-There are two options for installing the Dirac dependency to your project. You can use a specific version of the dependency, or use `RELEASE` to always get the latest released version.
+There are two options for installing the Dirac dependency to your project. You can use a specific version of the dependency, or use `RELEASE` to always get the latest released version. 
+Please be aware of potential caching when using `RELEASE` as described in [this article by Alex Eberts](https://www.alexeberts.com/updating-release-dependencies-in-clojurescript). 
 
 Normally it would be best practice to specify the version so your dependencies don't change unexpectedly. 
 However as the Chrome Extension automatically updates itself, and Dirac won't run if the Chrome Extension version doesn't match the 

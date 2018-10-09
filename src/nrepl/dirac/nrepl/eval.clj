@@ -16,8 +16,8 @@
             [dirac.nrepl.state :as state]
             [dirac.nrepl.version :refer [version]])
   (:import java.io.StringReader
-           (javax.xml.bind DatatypeConverter)
-           (java.util.concurrent.atomic AtomicLong)))
+           (java.util.concurrent.atomic AtomicLong)
+           (java.util Base64)))
 
 (defn prepare-current-env-info-response []
   (let [session (state/get-current-session)
@@ -149,7 +149,7 @@
         (str generated-js
              "\n//# sourceURL=" js-filename
              "\n//# sourceMappingURL=data:application/json;base64,"
-             (DatatypeConverter/printBase64Binary (.getBytes source-map-json "UTF-8")))))))
+             (.encodeToString (Base64/getEncoder) (.getBytes source-map-json "UTF-8")))))))
 
 (defn load-dependencies-if-needed! [ast form env repl-env opts]
   (when (#{:ns :ns*} (:op ast))

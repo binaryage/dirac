@@ -35,8 +35,9 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
   /**
    * @param {boolean=} omitRootDOMNode
    * @param {boolean=} selectEnabled
+   * @param {boolean=} hideGutter
    */
-  constructor(omitRootDOMNode, selectEnabled) {
+  constructor(omitRootDOMNode, selectEnabled, hideGutter) {
     super();
 
     this._treeElementSymbol = Symbol('treeElement');
@@ -46,6 +47,8 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
 
     this._element = this.element;
     this._element.classList.add('elements-tree-outline', 'source-code');
+    if (hideGutter)
+      this._element.classList.add('elements-hide-gutter');
     UI.ARIAUtils.setAccessibleName(this._element, Common.UIString('Page DOM'));
     this._element.addEventListener('mousedown', this._onmousedown.bind(this), false);
     this._element.addEventListener('mousemove', this._onmousemove.bind(this), false);
@@ -528,7 +531,7 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
       show: async popover => {
         const listItem = link.enclosingNodeOrSelfWithNodeName('li');
         const node = /** @type {!Elements.ElementsTreeElement} */ (listItem.treeElement).node();
-        const precomputedFeatures = await this._loadDimensionsForNode(node);
+        const precomputedFeatures = await Components.ImagePreview.loadDimensionsForNode(node);
         const preview = await Components.ImagePreview.build(
             node.domModel().target(), link[Elements.ElementsTreeElement.HrefSymbol], true, precomputedFeatures);
         if (preview)
@@ -536,39 +539,6 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
         return !!preview;
       }
     };
-  }
-
-  /**
-   * @param {!SDK.DOMNode} node
-   * @return {!Promise<!Object|undefined>}
-   */
-  async _loadDimensionsForNode(node) {
-    if (!node.nodeName() || node.nodeName().toLowerCase() !== 'img')
-      return;
-
-    const object = await node.resolveToObject('');
-
-    if (!object)
-      return;
-
-    const promise = object.callFunctionJSONPromise(features, undefined);
-    object.release();
-    return promise;
-
-    /**
-     * @return {!{offsetWidth: number, offsetHeight: number, naturalWidth: number, naturalHeight: number, currentSrc: (string|undefined)}}
-     * @suppressReceiverCheck
-     * @this {!Element}
-     */
-    function features() {
-      return {
-        offsetWidth: this.offsetWidth,
-        offsetHeight: this.offsetHeight,
-        naturalWidth: this.naturalWidth,
-        naturalHeight: this.naturalHeight,
-        currentSrc: this.currentSrc
-      };
-    }
   }
 
   _onmousedown(event) {
@@ -758,6 +728,8 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
     if (textNode && textNode.classList.contains('bogus'))
       textNode = null;
     const commentNode = event.target.enclosingNodeOrSelfWithClass('webkit-html-comment');
+    contextMenu.saveSection().appendItem(
+        ls`Store as global variable`, this._saveNodeToTempVariable.bind(this, treeElement.node()));
     if (textNode)
       treeElement.populateTextContextMenu(contextMenu, textNode);
     else if (isTag)
@@ -769,6 +741,14 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
 
     contextMenu.appendApplicableItems(treeElement.node());
     contextMenu.show();
+  }
+
+  /**
+   * @param {!SDK.DOMNode} node
+   */
+  async _saveNodeToTempVariable(node) {
+    const remoteObjectForConsole = await node.resolveToObject();
+    await SDK.consoleModel.saveToTempVariable(UI.context.flavor(SDK.ExecutionContext), remoteObjectForConsole);
   }
 
   runPendingUpdates() {
@@ -896,10 +876,9 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
     if (!object)
       return;
 
-    const result = object.callFunction(toggleClassAndInjectStyleRule, [{value: pseudoType}, {value: !hidden}]);
+    await object.callFunction(toggleClassAndInjectStyleRule, [{value: pseudoType}, {value: !hidden}]);
     object.release();
     node.setMarker('hidden-marker', hidden ? null : true);
-    return result;
 
     /**
      * @param {?string} pseudoType
@@ -1585,7 +1564,7 @@ Elements.ElementsTreeOutline.Renderer = class {
           reject(new Error('Could not resolve node.'));
           return;
         }
-        const treeOutline = new Elements.ElementsTreeOutline(false, false);
+        const treeOutline = new Elements.ElementsTreeOutline(false, false, true /* hideGutter */);
         treeOutline.rootDOMNode = node;
         if (!treeOutline.firstChild().isExpandable())
           treeOutline._element.classList.add('single-node');

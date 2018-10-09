@@ -29,8 +29,8 @@ fi
 
 # install xvfb (for chrome tests)
 if [[ -z "${TRAVIS_SKIP_XVFB_SETUP}" ]]; then
-  export DISPLAY=:99.1
-  sudo /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 1 1024x768x24
+  export DISPLAY=:99
+  sudo /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1024x768x24 -nolisten tcp
 fi
 
 if [[ -z "${TRAVIS_SKIP_COLORDIFF_INSTALL}" ]]; then

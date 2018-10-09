@@ -23,6 +23,19 @@ Protocol.AccessibilityAgent.GetPartialAXTreeResponse;
  * @return {!Promise<!Protocol.AccessibilityAgent.GetPartialAXTreeResponse>} */
 Protocol.AccessibilityAgent.prototype.invoke_getPartialAXTree = function(obj) {};
 
+/**
+ * @return {!Promise<?Array<Protocol.Accessibility.AXNode>>}
+ */
+Protocol.AccessibilityAgent.prototype.getFullAXTree = function() {};
+/** @typedef {Object|undefined} */
+Protocol.AccessibilityAgent.GetFullAXTreeRequest;
+/** @typedef {!{nodes: !Array<Protocol.Accessibility.AXNode>}} */
+Protocol.AccessibilityAgent.GetFullAXTreeResponse;
+/**
+ * @param {!Protocol.AccessibilityAgent.GetFullAXTreeRequest} obj
+ * @return {!Promise<!Protocol.AccessibilityAgent.GetFullAXTreeResponse>} */
+Protocol.AccessibilityAgent.prototype.invoke_getFullAXTree = function(obj) {};
+
 /** @typedef {string} */
 Protocol.Accessibility.AXNodeId;
 
@@ -1328,12 +1341,12 @@ Protocol.DOMAgent.prototype.invoke_getFlattenedDocument = function(obj) {};
  * @param {number} x
  * @param {number} y
  * @param {boolean=} opt_includeUserAgentShadowDOM
- * @return {!Promise<?Protocol.DOM.NodeId>}
+ * @return {!Promise<?Protocol.DOM.BackendNodeId>}
  */
 Protocol.DOMAgent.prototype.getNodeForLocation = function(x, y, opt_includeUserAgentShadowDOM) {};
 /** @typedef {!{y: number, x: number, includeUserAgentShadowDOM: (boolean|undefined)}} */
 Protocol.DOMAgent.GetNodeForLocationRequest;
-/** @typedef {!{nodeId: Protocol.DOM.NodeId}} */
+/** @typedef {!{nodeId: Protocol.DOM.NodeId, backendNodeId: Protocol.DOM.BackendNodeId}} */
 Protocol.DOMAgent.GetNodeForLocationResponse;
 /**
  * @param {!Protocol.DOMAgent.GetNodeForLocationRequest} obj
@@ -2429,6 +2442,20 @@ Protocol.EmulationAgent.ResetPageScaleFactorResponse;
  * @param {!Protocol.EmulationAgent.ResetPageScaleFactorRequest} obj
  * @return {!Promise<!Protocol.EmulationAgent.ResetPageScaleFactorResponse>} */
 Protocol.EmulationAgent.prototype.invoke_resetPageScaleFactor = function(obj) {};
+
+/**
+ * @param {boolean} enabled
+ * @return {!Promise<undefined>}
+ */
+Protocol.EmulationAgent.prototype.setFocusEmulationEnabled = function(enabled) {};
+/** @typedef {!{enabled: boolean}} */
+Protocol.EmulationAgent.SetFocusEmulationEnabledRequest;
+/** @typedef {Object|undefined} */
+Protocol.EmulationAgent.SetFocusEmulationEnabledResponse;
+/**
+ * @param {!Protocol.EmulationAgent.SetFocusEmulationEnabledRequest} obj
+ * @return {!Promise<!Protocol.EmulationAgent.SetFocusEmulationEnabledResponse>} */
+Protocol.EmulationAgent.prototype.invoke_setFocusEmulationEnabled = function(obj) {};
 
 /**
  * @param {number} rate
@@ -4709,10 +4736,11 @@ Protocol.PageAgent.prototype.invoke_addScriptToEvaluateOnLoad = function(obj) {}
 
 /**
  * @param {string} source
+ * @param {string=} opt_worldName
  * @return {!Promise<?Protocol.Page.ScriptIdentifier>}
  */
-Protocol.PageAgent.prototype.addScriptToEvaluateOnNewDocument = function(source) {};
-/** @typedef {!{source: string}} */
+Protocol.PageAgent.prototype.addScriptToEvaluateOnNewDocument = function(source, opt_worldName) {};
+/** @typedef {!{source: string, worldName: (string|undefined)}} */
 Protocol.PageAgent.AddScriptToEvaluateOnNewDocumentRequest;
 /** @typedef {!{identifier: Protocol.Page.ScriptIdentifier}} */
 Protocol.PageAgent.AddScriptToEvaluateOnNewDocumentResponse;
@@ -5607,6 +5635,20 @@ Protocol.PerformanceAgent.EnableResponse;
  * @param {!Protocol.PerformanceAgent.EnableRequest} obj
  * @return {!Promise<!Protocol.PerformanceAgent.EnableResponse>} */
 Protocol.PerformanceAgent.prototype.invoke_enable = function(obj) {};
+
+/**
+ * @param {string} timeDomain
+ * @return {!Promise<undefined>}
+ */
+Protocol.PerformanceAgent.prototype.setTimeDomain = function(timeDomain) {};
+/** @typedef {!{timeDomain: string}} */
+Protocol.PerformanceAgent.SetTimeDomainRequest;
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.SetTimeDomainResponse;
+/**
+ * @param {!Protocol.PerformanceAgent.SetTimeDomainRequest} obj
+ * @return {!Promise<!Protocol.PerformanceAgent.SetTimeDomainResponse>} */
+Protocol.PerformanceAgent.prototype.invoke_setTimeDomain = function(obj) {};
 
 /**
  * @return {!Promise<?Array<Protocol.Performance.Metric>>}

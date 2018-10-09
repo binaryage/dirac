@@ -1,8 +1,8 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.16")
-(def selected-clojure-version "1.9.0")
 (def selected-clojurescript-version "1.10.339")
+(def selected-clojure-version "1.9.0")
 (def selenium-version "3.14.0")
 (def lein-cljsbuild-version "1.1.7")
 
@@ -13,7 +13,7 @@
 (def required-deps
   [['org.clojure/core.async "0.4.474"]
    ['org.clojure/tools.logging "0.4.1"]
-   ['org.clojure/tools.cli "0.3.7"]
+   ['org.clojure/tools.cli "0.4.1"]
    ['org.clojure/tools.nrepl "0.2.13"]
    ['binaryage/env-config "0.2.2"]
    ['http-kit "2.3.0"]
@@ -26,7 +26,7 @@
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.6.2" :scope "test"]
-   ['binaryage/chromex "0.6.3" :scope "test"]
+   ['binaryage/chromex "0.6.4" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.45" :scope "test"]
@@ -37,15 +37,15 @@
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
    ['org.clojure/tools.reader "1.3.0" :scope "test"]
-   ['fipp "0.6.12" :scope "test"]
+   ['fipp "0.6.13" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
 
    ['http.async.client "1.3.0" :scope "test"]
 
-   ['ring/ring-core "1.6.3" :scope "test"]
-   ['ring/ring-devel "1.6.3" :scope "test"]
+   ['ring/ring-core "1.7.0" :scope "test"]
+   ['ring/ring-devel "1.7.0" :scope "test"]
    ['clj-time "0.14.4" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
@@ -59,7 +59,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.39"
+(defproject binaryage/dirac "1.2.40"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -79,7 +79,6 @@
                  "src/agent"
                  "src/automation"
                  "src/background"
-                 "src/backport"
                  "src/devtools"
                  "src/figwheel"
                  "src/implant"
@@ -126,7 +125,6 @@
               {:dependencies   ~(with-meta lib-deps {:replace true})
                :source-paths   ^:replace ["src/project"
                                           "src/settings"
-                                          "src/backport"
                                           "src/runtime"
                                           "src/lib"
                                           "src/agent"
@@ -161,15 +159,14 @@
              :suspended-debugger-5007
              {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5007"]}
 
-             :clojure17
-             {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided" :upgrade false]
-                             [org.clojure/clojurescript "1.7.228" :scope "provided" :upgrade false]]}
-
              :clojure18
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
              {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
+
+             :clojure110
+             {:dependencies [[org.clojure/clojure "1.10.0-beta1" :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
@@ -184,7 +181,6 @@
              :test-runner
              {:source-paths ^:replace ["src/project"
                                        "src/settings"
-                                       "src/backport"
                                        "src/lib"
                                        "src/agent"
                                        "src/nrepl"
@@ -441,25 +437,29 @@
 
              :parallel-build
              [:prevent-cljsbuild-defaults
-              {:cljsbuild {:builds
-                           {:dirac-implant
-                            {:compiler {:parallel-build true}}
-                            :dirac-background
-                            {:compiler {:parallel-build true}}
-                            :dirac-options
-                            {:compiler {:parallel-build true}}
-                            :marion-background
-                            {:compiler {:parallel-build true}}
-                            :marion-content-script
-                            {:compiler {:parallel-build true}}
-                            :tasks
-                            {:compiler {:parallel-build true}}
-                            :scenarios01
-                            {:compiler {:parallel-build true}}
-                            :scenarios02
-                            {:compiler {:parallel-build true}}
-                            :scenarios03
-                            {:compiler {:parallel-build true}}}}}]
+              ; parallel builds were causing random stack overflows like
+              ; https://travis-ci.org/binaryage/dirac/jobs/437984389#L1126
+              ; => stop using it for now, and wait
+              ;{:cljsbuild {:builds
+              ;             {:dirac-implant
+              ;              {:compiler {:parallel-build true}}
+              ;              :dirac-background
+              ;              {:compiler {:parallel-build true}}
+              ;              :dirac-options
+              ;              {:compiler {:parallel-build true}}
+              ;              :marion-background
+              ;              {:compiler {:parallel-build true}}
+              ;              :marion-content-script
+              ;              {:compiler {:parallel-build true}}
+              ;              :tasks
+              ;              {:compiler {:parallel-build true}}
+              ;              :scenarios01
+              ;              {:compiler {:parallel-build true}}
+              ;              :scenarios02
+              ;              {:compiler {:parallel-build true}}
+              ;              :scenarios03
+              ;              {:compiler {:parallel-build true}}}}}
+              ]
 
              :dirac-whitespace
              {:cljsbuild {:builds
@@ -508,9 +508,9 @@
             "test-browser"               ["shell" "scripts/test-browser.sh"]                                                  ; this will run browser tests against fully optimized dirac extension (release build)
             "test-browser-dev"           ["shell" "scripts/test-browser-dev.sh"]                                              ; this will run browser tests against unpacked dirac extension
 
-            "run-backend-tests-17"       ["with-profile" "+test-runner,+clojure17" "run" "-m" "dirac.tests.backend.runner"]
             "run-backend-tests-18"       ["with-profile" "+test-runner,+clojure18" "run" "-m" "dirac.tests.backend.runner"]
             "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19" "run" "-m" "dirac.tests.backend.runner"]
+            "run-backend-tests-110"      ["with-profile" "+test-runner,+clojure110" "run" "-m" "dirac.tests.backend.runner"]
 
             "run-browser-tests"          ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner"]
             "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner/-dev-main"]

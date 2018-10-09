@@ -234,13 +234,12 @@ Object.assign(window.dirac, (function() {
     const remoteObject = Sources.SourceMapNamesResolver.resolveScopeInObject(scope);
 
     const result = {title: title};
+    let resolved = false;
 
     return new Promise(function(resolve) {
 
-      /**
-       * @param {?Array<!SDK.RemoteObjectProperty>} properties
-       */
-      function processProperties(properties) {
+      function processProperties(answer) {
+        const properties = answer.properties;
         if (properties) {
           result.props = properties.map(function(property) {
             const propertyRecord = {name: property.name};
@@ -254,10 +253,20 @@ Object.assign(window.dirac, (function() {
           });
         }
 
+        resolved = true;
         resolve(result);
       }
 
-      remoteObject.getAllProperties(false, false, processProperties);
+      function timeoutProperties() {
+        if (resolved) {
+          return;
+        }
+        console.warn("Unable to retrieve properties from remote object", remoteObject);
+        resolve(result);
+      }
+
+      remoteObject.getAllProperties(false, false).then(processProperties);
+      setTimeout(timeoutProperties, dirac._REMOTE_OBJECT_PROPERTIES_FETCH_TIMEOUT);
     });
   }
 
@@ -884,6 +893,7 @@ Object.assign(window.dirac, (function() {
     _lazyLoaded: true,
     _namespacesSymbolsCache: namespacesSymbolsCache,
     _namespacesCache: null,
+    _REMOTE_OBJECT_PROPERTIES_FETCH_TIMEOUT: 1000,
     lookupCurrentContext: lookupCurrentContext,
     evalInCurrentContext: evalInCurrentContext,
     hasCurrentContext: hasCurrentContext,

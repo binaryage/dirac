@@ -5,6 +5,15 @@ if (!window.dirac) {
 
 // note: if goog/cljs namespace system comes after us, they don't wipe our properties, they just merge theirs in
 Object.assign(window.dirac, (function() {
+  const readyPromise = new Promise(fulfil => window.dirac._runtimeReadyPromiseCallback = fulfil);
+
+  function getReadyPromise() {
+    return readyPromise;
+  }
+
+  function markAsReady() {
+    window.dirac._runtimeReadyPromiseCallback();
+  }
 
   const featureFlags = {};
 
@@ -209,6 +218,8 @@ Object.assign(window.dirac, (function() {
     hasLinkActions: hasFeature("link-actions"),
 
     // -- INTERFACE -----------------------------------------------------------------------------------------------------
+    getReadyPromise: getReadyPromise,
+    markAsReady: markAsReady,
     hasFeature: hasFeature,
     codeAsString: codeAsString,
     stringEscape: stringEscape,
