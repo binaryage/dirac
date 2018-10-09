@@ -77,7 +77,6 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
   }
 
   /**
-   * @override
    * @return {boolean}
    */
   _isSuggestBoxVisible() {
