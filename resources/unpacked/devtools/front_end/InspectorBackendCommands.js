@@ -1,5 +1,5 @@
 Protocol.BakedInspectorBackendAPIChromeTag='70.0.3505.1';
-Protocol.BakedInspectorBackendAPIChromeRev='173a5dada833bc96df1dcf54cd0bd547fa1e3d18';
+Protocol.BakedInspectorBackendAPIChromeRev='a01a84649ed0ff56c9ebfc8469ff347bfa2436c2';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -131,7 +131,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("DOM.setNodeValue", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "value", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.setOuterHTML", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "outerHTML", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.undo", [], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("DOM.getFrameOwner", [{"name": "frameId", "type": "string", "optional": false}], ["nodeId"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOM.getFrameOwner", [{"name": "frameId", "type": "string", "optional": false}], ["backendNodeId", "nodeId"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("DOMDebugger.DOMBreakpointType", {SubtreeModified: "subtree-modified", AttributeModified: "attribute-modified", NodeRemoved: "node-removed"});\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMDebugger.getEventListeners", [{"name": "objectId", "type": "string", "optional": false}, {"name": "depth", "type": "number", "optional": true}, {"name": "pierce", "type": "boolean", "optional": true}], ["listeners"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMDebugger.removeDOMBreakpoint", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "type", "type": "string", "optional": false}], [], false);\n'
