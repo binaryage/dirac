@@ -7,6 +7,32 @@ Protocol.Accessibility = {};
 Protocol.AccessibilityAgent = function(){};
 
 /**
+ * @return {!Promise<undefined>}
+ */
+Protocol.AccessibilityAgent.prototype.disable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.AccessibilityAgent.DisableRequest;
+/** @typedef {Object|undefined} */
+Protocol.AccessibilityAgent.DisableResponse;
+/**
+ * @param {!Protocol.AccessibilityAgent.DisableRequest} obj
+ * @return {!Promise<!Protocol.AccessibilityAgent.DisableResponse>} */
+Protocol.AccessibilityAgent.prototype.invoke_disable = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.AccessibilityAgent.prototype.enable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.AccessibilityAgent.EnableRequest;
+/** @typedef {Object|undefined} */
+Protocol.AccessibilityAgent.EnableResponse;
+/**
+ * @param {!Protocol.AccessibilityAgent.EnableRequest} obj
+ * @return {!Promise<!Protocol.AccessibilityAgent.EnableResponse>} */
+Protocol.AccessibilityAgent.prototype.invoke_enable = function(obj) {};
+
+/**
  * @param {Protocol.DOM.NodeId=} opt_nodeId
  * @param {Protocol.DOM.BackendNodeId=} opt_backendNodeId
  * @param {Protocol.Runtime.RemoteObjectId=} opt_objectId
@@ -98,10 +124,14 @@ Protocol.Accessibility.AXValue;
 Protocol.Accessibility.AXPropertyName = {
     Busy: "busy",
     Disabled: "disabled",
+    Editable: "editable",
+    Focusable: "focusable",
+    Focused: "focused",
     Hidden: "hidden",
     HiddenRoot: "hiddenRoot",
     Invalid: "invalid",
     Keyshortcuts: "keyshortcuts",
+    Settable: "settable",
     Roledescription: "roledescription",
     Live: "live",
     Atomic: "atomic",
@@ -608,6 +638,7 @@ Protocol.Browser.PermissionType = {
     AccessibilityEvents: "accessibilityEvents",
     AudioCapture: "audioCapture",
     BackgroundSync: "backgroundSync",
+    BackgroundFetch: "backgroundFetch",
     ClipboardRead: "clipboardRead",
     ClipboardWrite: "clipboardWrite",
     DurableStorage: "durableStorage",
