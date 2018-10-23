@@ -7459,10 +7459,13 @@ Protocol.HeapProfilerAgent.prototype.invoke_takeHeapSnapshot = function(obj) {};
 /** @typedef {string} */
 Protocol.HeapProfiler.HeapSnapshotObjectId;
 
-/** @typedef {!{callFrame:(Protocol.Runtime.CallFrame), selfSize:(number), children:(!Array<Protocol.HeapProfiler.SamplingHeapProfileNode>)}} */
+/** @typedef {!{callFrame:(Protocol.Runtime.CallFrame), selfSize:(number), id:(number), children:(!Array<Protocol.HeapProfiler.SamplingHeapProfileNode>)}} */
 Protocol.HeapProfiler.SamplingHeapProfileNode;
 
-/** @typedef {!{head:(Protocol.HeapProfiler.SamplingHeapProfileNode)}} */
+/** @typedef {!{size:(number), nodeId:(number), ordinal:(number)}} */
+Protocol.HeapProfiler.SamplingHeapProfileSample;
+
+/** @typedef {!{head:(Protocol.HeapProfiler.SamplingHeapProfileNode), samples:(!Array<Protocol.HeapProfiler.SamplingHeapProfileSample>)}} */
 Protocol.HeapProfiler.SamplingHeapProfile;
 /** @constructor */
 Protocol.HeapProfilerDispatcher = function() {};
@@ -8082,7 +8085,7 @@ Protocol.Runtime.RemoteObjectSubtype = {
 /** @typedef {!{type:(Protocol.Runtime.RemoteObjectType), subtype:(Protocol.Runtime.RemoteObjectSubtype|undefined), className:(string|undefined), value:(*|undefined), unserializableValue:(Protocol.Runtime.UnserializableValue|undefined), description:(string|undefined), objectId:(Protocol.Runtime.RemoteObjectId|undefined), preview:(Protocol.Runtime.ObjectPreview|undefined), customPreview:(Protocol.Runtime.CustomPreview|undefined)}} */
 Protocol.Runtime.RemoteObject;
 
-/** @typedef {!{header:(string), hasBody:(boolean), formatterObjectId:(Protocol.Runtime.RemoteObjectId), bindRemoteObjectFunctionId:(Protocol.Runtime.RemoteObjectId), configObjectId:(Protocol.Runtime.RemoteObjectId|undefined)}} */
+/** @typedef {!{header:(string), bodyGetterId:(Protocol.Runtime.RemoteObjectId|undefined)}} */
 Protocol.Runtime.CustomPreview;
 
 /** @enum {string} */
