@@ -36,14 +36,14 @@
 
 (def ^:const MARION_STABLE_CONNECTION_TIMEOUT (seconds 2))
 (def ^:const MARION_RECONNECTION_ATTEMPT_DELAY (seconds 2))
-(def ^:const MARION_MESSAGE_REPLY_TIMEOUT (minutes 1))
-(def ^:const MARION_OPEN_SCENARIO_TIMEOUT (minutes 1))                                                                        ; cold start could be quite slow in a docker container on cloud VPS
+(def ^:const MARION_MESSAGE_REPLY_TIMEOUT (minutes 3))
+(def ^:const MARION_OPEN_SCENARIO_TIMEOUT (minutes 3))                                                                        ; cold start could be quite slow in a docker container on cloud VPS
 
 (def ^:const DEFAULT_TASK_TIMEOUT (minutes 5))
 (def ^:const KILL_TASK_TIMEOUT (seconds 5))
 (def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (seconds 30))
 (def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (ms 500))
-(def ^:const PENDING_REPLIES_WAIT_TIMEOUT (seconds 2))
+(def ^:const PENDING_REPLIES_WAIT_TIMEOUT (seconds 10))
 (def ^:const SIGNAL_CLIENT_TASK_RESULT_DELAY (ms 0))
 (def ^:const SIGNAL_CLIENT_CLOSE_DELAY (ms 0))
 (def ^:const SIGNAL_SERVER_MAX_CONNECTION_TIME (seconds 5))
