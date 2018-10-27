@@ -10,5 +10,6 @@ git pull
 git clean -fd
 
 gclient sync --with_branch_heads --reset --delete_unversioned_trees
+git fetch --tags
 
 popd
