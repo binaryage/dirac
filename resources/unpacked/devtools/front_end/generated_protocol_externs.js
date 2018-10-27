@@ -1167,7 +1167,17 @@ Protocol.CacheStorageAgent.prototype.invoke_requestEntries = function(obj) {};
 /** @typedef {string} */
 Protocol.CacheStorage.CacheId;
 
-/** @typedef {!{requestURL:(string), requestMethod:(string), requestHeaders:(!Array<Protocol.CacheStorage.Header>), responseTime:(number), responseStatus:(number), responseStatusText:(string), responseHeaders:(!Array<Protocol.CacheStorage.Header>)}} */
+/** @enum {string} */
+Protocol.CacheStorage.CachedResponseType = {
+    Basic: "basic",
+    Cors: "cors",
+    Default: "default",
+    Error: "error",
+    OpaqueResponse: "opaqueResponse",
+    OpaqueRedirect: "opaqueRedirect"
+};
+
+/** @typedef {!{requestURL:(string), requestMethod:(string), requestHeaders:(!Array<Protocol.CacheStorage.Header>), responseTime:(number), responseStatus:(number), responseStatusText:(string), responseType:(Protocol.CacheStorage.CachedResponseType), responseHeaders:(!Array<Protocol.CacheStorage.Header>)}} */
 Protocol.CacheStorage.DataEntry;
 
 /** @typedef {!{cacheId:(Protocol.CacheStorage.CacheId), securityOrigin:(string), cacheName:(string)}} */
@@ -5799,7 +5809,7 @@ Protocol.Security.SecurityState = {
     Info: "info"
 };
 
-/** @typedef {!{securityState:(Protocol.Security.SecurityState), title:(string), summary:(string), description:(string), mixedContentType:(Protocol.Security.MixedContentType), certificate:(!Array<string>)}} */
+/** @typedef {!{securityState:(Protocol.Security.SecurityState), title:(string), summary:(string), description:(string), mixedContentType:(Protocol.Security.MixedContentType), certificate:(!Array<string>), recommendations:(!Array<string>|undefined)}} */
 Protocol.Security.SecurityStateExplanation;
 
 /** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), containedMixedForm:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(Protocol.Security.SecurityState), displayedInsecureContentStyle:(Protocol.Security.SecurityState)}} */

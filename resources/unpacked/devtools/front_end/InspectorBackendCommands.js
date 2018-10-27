@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='70.0.3505.1';
-Protocol.BakedInspectorBackendAPIChromeRev='3d1328eb256acb19ab135e866425e5c7fd7a34ff';
+Protocol.BakedInspectorBackendAPIChromeTag='72.0.3593.2';
+Protocol.BakedInspectorBackendAPIChromeRev='f4225c913f3aef75d56ca12f7da5b32e0752d5c1';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -72,6 +72,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("CSS.startRuleUsageTracking", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CSS.stopRuleUsageTracking", [], ["ruleUsage"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CSS.takeCoverageDelta", [], ["coverage"], false);\n'
++ 'Protocol.inspectorBackend.registerEnum("CacheStorage.CachedResponseType", {Basic: "basic", Cors: "cors", Default: "default", Error: "error", OpaqueResponse: "opaqueResponse", OpaqueRedirect: "opaqueRedirect"});\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.deleteCache", [{"name": "cacheId", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.deleteEntry", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "request", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestCacheNames", [{"name": "securityOrigin", "type": "string", "optional": false}], ["caches"], false);\n'
