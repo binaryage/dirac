@@ -33,8 +33,7 @@ for i in $(seq ${POSITION} -1 ${MIN_POSITION}); do
   fi
 done
 
-echo "unable to find chromium for platform $PLATFORM in the range [$MIN_POSITION, $POSITION]"
+echoerr "unable to find chromium for platform $PLATFORM in the range [$MIN_POSITION, $POSITION]"
 
+echo ""
 exit 1
-
-popd

@@ -19,8 +19,14 @@ echo "----"
 
 platforms="Mac Linux_x64 Win Win_x64"
 for platform in ${platforms}; do
+  set +e # lookup can fail, we don't provide a link in that case
   LINK=`./scripts/lookup-chromium-link.sh ${platform} ${POSITION} | tail -n1`
-  echo "[$platform](${LINK})"
+  set -e
+  if [ ! -z "${LINK}" ]; then
+    echo "[$platform](${LINK})"
+  else
+    echo "$platform"
+  fi
 done
 
 popd
