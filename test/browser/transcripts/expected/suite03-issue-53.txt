@@ -49,7 +49,7 @@ stdout           displayed 5 items:
                   * x: 1
                   * x: 3
                   * y: 2
-                  * z: <custom>
+                  * z: ƒ ()
 automate #1      simulate-global-action! ["F8"]
 devtools #1      DF.info> null
 devtools #1      repl eval job ended
