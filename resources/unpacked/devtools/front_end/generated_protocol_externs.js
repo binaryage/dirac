@@ -7,6 +7,32 @@ Protocol.Accessibility = {};
 Protocol.AccessibilityAgent = function(){};
 
 /**
+ * @return {!Promise<undefined>}
+ */
+Protocol.AccessibilityAgent.prototype.disable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.AccessibilityAgent.DisableRequest;
+/** @typedef {Object|undefined} */
+Protocol.AccessibilityAgent.DisableResponse;
+/**
+ * @param {!Protocol.AccessibilityAgent.DisableRequest} obj
+ * @return {!Promise<!Protocol.AccessibilityAgent.DisableResponse>} */
+Protocol.AccessibilityAgent.prototype.invoke_disable = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.AccessibilityAgent.prototype.enable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.AccessibilityAgent.EnableRequest;
+/** @typedef {Object|undefined} */
+Protocol.AccessibilityAgent.EnableResponse;
+/**
+ * @param {!Protocol.AccessibilityAgent.EnableRequest} obj
+ * @return {!Promise<!Protocol.AccessibilityAgent.EnableResponse>} */
+Protocol.AccessibilityAgent.prototype.invoke_enable = function(obj) {};
+
+/**
  * @param {Protocol.DOM.NodeId=} opt_nodeId
  * @param {Protocol.DOM.BackendNodeId=} opt_backendNodeId
  * @param {Protocol.Runtime.RemoteObjectId=} opt_objectId
@@ -98,10 +124,14 @@ Protocol.Accessibility.AXValue;
 Protocol.Accessibility.AXPropertyName = {
     Busy: "busy",
     Disabled: "disabled",
+    Editable: "editable",
+    Focusable: "focusable",
+    Focused: "focused",
     Hidden: "hidden",
     HiddenRoot: "hiddenRoot",
     Invalid: "invalid",
     Keyshortcuts: "keyshortcuts",
+    Settable: "settable",
     Roledescription: "roledescription",
     Live: "live",
     Atomic: "atomic",
@@ -608,6 +638,7 @@ Protocol.Browser.PermissionType = {
     AccessibilityEvents: "accessibilityEvents",
     AudioCapture: "audioCapture",
     BackgroundSync: "backgroundSync",
+    BackgroundFetch: "backgroundFetch",
     ClipboardRead: "clipboardRead",
     ClipboardWrite: "clipboardWrite",
     DurableStorage: "durableStorage",
@@ -1136,7 +1167,17 @@ Protocol.CacheStorageAgent.prototype.invoke_requestEntries = function(obj) {};
 /** @typedef {string} */
 Protocol.CacheStorage.CacheId;
 
-/** @typedef {!{requestURL:(string), requestMethod:(string), requestHeaders:(!Array<Protocol.CacheStorage.Header>), responseTime:(number), responseStatus:(number), responseStatusText:(string), responseHeaders:(!Array<Protocol.CacheStorage.Header>)}} */
+/** @enum {string} */
+Protocol.CacheStorage.CachedResponseType = {
+    Basic: "basic",
+    Cors: "cors",
+    Default: "default",
+    Error: "error",
+    OpaqueResponse: "opaqueResponse",
+    OpaqueRedirect: "opaqueRedirect"
+};
+
+/** @typedef {!{requestURL:(string), requestMethod:(string), requestHeaders:(!Array<Protocol.CacheStorage.Header>), responseTime:(number), responseStatus:(number), responseStatusText:(string), responseType:(Protocol.CacheStorage.CachedResponseType), responseHeaders:(!Array<Protocol.CacheStorage.Header>)}} */
 Protocol.CacheStorage.DataEntry;
 
 /** @typedef {!{cacheId:(Protocol.CacheStorage.CacheId), securityOrigin:(string), cacheName:(string)}} */
@@ -1751,12 +1792,12 @@ Protocol.DOMAgent.prototype.invoke_undo = function(obj) {};
 
 /**
  * @param {Protocol.Page.FrameId} frameId
- * @return {!Promise<?Protocol.DOM.NodeId>}
+ * @return {!Promise<?Protocol.DOM.BackendNodeId>}
  */
 Protocol.DOMAgent.prototype.getFrameOwner = function(frameId) {};
 /** @typedef {!{frameId: Protocol.Page.FrameId}} */
 Protocol.DOMAgent.GetFrameOwnerRequest;
-/** @typedef {!{nodeId: Protocol.DOM.NodeId}} */
+/** @typedef {!{nodeId: Protocol.DOM.NodeId, backendNodeId: Protocol.DOM.BackendNodeId}} */
 Protocol.DOMAgent.GetFrameOwnerResponse;
 /**
  * @param {!Protocol.DOMAgent.GetFrameOwnerRequest} obj
@@ -5768,7 +5809,7 @@ Protocol.Security.SecurityState = {
     Info: "info"
 };
 
-/** @typedef {!{securityState:(Protocol.Security.SecurityState), title:(string), summary:(string), description:(string), mixedContentType:(Protocol.Security.MixedContentType), certificate:(!Array<string>)}} */
+/** @typedef {!{securityState:(Protocol.Security.SecurityState), title:(string), summary:(string), description:(string), mixedContentType:(Protocol.Security.MixedContentType), certificate:(!Array<string>), recommendations:(!Array<string>|undefined)}} */
 Protocol.Security.SecurityStateExplanation;
 
 /** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), containedMixedForm:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(Protocol.Security.SecurityState), displayedInsecureContentStyle:(Protocol.Security.SecurityState)}} */
@@ -7428,10 +7469,13 @@ Protocol.HeapProfilerAgent.prototype.invoke_takeHeapSnapshot = function(obj) {};
 /** @typedef {string} */
 Protocol.HeapProfiler.HeapSnapshotObjectId;
 
-/** @typedef {!{callFrame:(Protocol.Runtime.CallFrame), selfSize:(number), children:(!Array<Protocol.HeapProfiler.SamplingHeapProfileNode>)}} */
+/** @typedef {!{callFrame:(Protocol.Runtime.CallFrame), selfSize:(number), id:(number), children:(!Array<Protocol.HeapProfiler.SamplingHeapProfileNode>)}} */
 Protocol.HeapProfiler.SamplingHeapProfileNode;
 
-/** @typedef {!{head:(Protocol.HeapProfiler.SamplingHeapProfileNode)}} */
+/** @typedef {!{size:(number), nodeId:(number), ordinal:(number)}} */
+Protocol.HeapProfiler.SamplingHeapProfileSample;
+
+/** @typedef {!{head:(Protocol.HeapProfiler.SamplingHeapProfileNode), samples:(!Array<Protocol.HeapProfiler.SamplingHeapProfileSample>)}} */
 Protocol.HeapProfiler.SamplingHeapProfile;
 /** @constructor */
 Protocol.HeapProfilerDispatcher = function() {};
@@ -8051,7 +8095,7 @@ Protocol.Runtime.RemoteObjectSubtype = {
 /** @typedef {!{type:(Protocol.Runtime.RemoteObjectType), subtype:(Protocol.Runtime.RemoteObjectSubtype|undefined), className:(string|undefined), value:(*|undefined), unserializableValue:(Protocol.Runtime.UnserializableValue|undefined), description:(string|undefined), objectId:(Protocol.Runtime.RemoteObjectId|undefined), preview:(Protocol.Runtime.ObjectPreview|undefined), customPreview:(Protocol.Runtime.CustomPreview|undefined)}} */
 Protocol.Runtime.RemoteObject;
 
-/** @typedef {!{header:(string), hasBody:(boolean), formatterObjectId:(Protocol.Runtime.RemoteObjectId), bindRemoteObjectFunctionId:(Protocol.Runtime.RemoteObjectId), configObjectId:(Protocol.Runtime.RemoteObjectId|undefined)}} */
+/** @typedef {!{header:(string), bodyGetterId:(Protocol.Runtime.RemoteObjectId|undefined)}} */
 Protocol.Runtime.CustomPreview;
 
 /** @enum {string} */

@@ -44,6 +44,7 @@ git clean -ffd
 git log -1 HEAD
 git status
 gclient sync --with_branch_heads --reset --delete_unversioned_trees
+git fetch --tags
 
 if ! git rev-parse --verify tracker1; then
   echo "tracker1 branch does not exist => filter it"

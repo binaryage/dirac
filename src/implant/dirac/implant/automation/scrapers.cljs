@@ -62,7 +62,7 @@
 
 (defn extract-scope-info [[rep-name rep-value]]
   (let [name (str (:content rep-name))
-        value (str (:content rep-value))
+        value (str (:deep-content rep-value))
         class (str (:class rep-value))
         display-value (if (re-find #"object-properties-section-custom-section" class)
                         "<custom>"

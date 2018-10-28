@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
-(def figwheel-version "0.5.16")
+(def figwheel-version "0.5.17")
 (def selected-clojurescript-version "1.10.339")
 (def selected-clojure-version "1.9.0")
 (def selenium-version "3.14.0")
@@ -36,7 +36,7 @@
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
-   ['org.clojure/tools.reader "1.3.0" :scope "test"]
+   ['org.clojure/tools.reader "1.3.2" :scope "test"]
    ['fipp "0.6.13" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
@@ -46,7 +46,7 @@
 
    ['ring/ring-core "1.7.0" :scope "test"]
    ['ring/ring-devel "1.7.0" :scope "test"]
-   ['clj-time "0.14.4" :scope "test"]
+   ['clj-time "0.15.1" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
    ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
@@ -59,7 +59,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.40"
+(defproject binaryage/dirac "1.2.41"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

@@ -2,7 +2,7 @@
   (:require [com.rpl.specter :refer [ALL continue-then-stay declarepath multi-path must providepath select select-first]]
             [dirac.implant.logging :refer [error info log warn]]
             [dirac.shared.dom :as dom]
-            [oops.core :refer [oapply ocall oget oset!]]))
+            [oops.core :refer [ocall]]))
 
 ; "reps" are simple data structures representing interesting bits of a DOM tree snapshot.
 ; As you can see in `build-rep` we record tag, class, title, content, child DOM nodes and shadow DOM relationships.
@@ -61,13 +61,18 @@
 (defn select-subreps [pred rep]
   (select [RepWalker pred] rep))
 
+; only available inside devtools, see DOMExtensions.js
+(defn get-deep-text-content [el]
+  (ocall el "deepTextContent"))
+
 ; -- building reps ----------------------------------------------------------------------------------------------------------
 
 (defn build-rep [el]
   (if (some? el)
-    (clean-rep {:tag         (dom/get-tag-name el)
-                :class       (dom/get-class-name el)
-                :content     (dom/get-own-text-content el)
-                :title       (dom/get-title el)
-                :children    (doall (map build-rep (dom/get-children el)))
-                :shadow-root (build-rep (dom/get-shadow-root el))})))
+    (clean-rep {:tag          (dom/get-tag-name el)
+                :class        (dom/get-class-name el)
+                :content      (dom/get-own-text-content el)
+                :deep-content (get-deep-text-content el)
+                :title        (dom/get-title el)
+                :children     (doall (map build-rep (dom/get-children el)))
+                :shadow-root  (build-rep (dom/get-shadow-root el))})))
