@@ -3,7 +3,7 @@
 (def figwheel-version "0.5.17")
 (def selected-clojurescript-version "1.10.339")
 (def selected-clojure-version "1.9.0")
-(def selenium-version "3.14.0")
+(def selenium-version "3.141.0")
 (def lein-cljsbuild-version "1.1.7")
 
 (def provided-deps
@@ -20,7 +20,7 @@
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
    ['funcool/cuerdas "2.0.6"]
-   ['com.rpl/specter "1.1.1"]])
+   ['com.rpl/specter "1.1.2"]])
 
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
@@ -37,15 +37,15 @@
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
-   ['fipp "0.6.13" :scope "test"]
+   ['fipp "0.6.14" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
 
    ['http.async.client "1.3.0" :scope "test"]
 
-   ['ring/ring-core "1.7.0" :scope "test"]
-   ['ring/ring-devel "1.7.0" :scope "test"]
+   ['ring/ring-core "1.7.1" :scope "test"]
+   ['ring/ring-devel "1.7.1" :scope "test"]
    ['clj-time "0.15.1" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
