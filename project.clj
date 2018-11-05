@@ -166,7 +166,7 @@
              {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
 
              :clojure110
-             {:dependencies [[org.clojure/clojure "1.10.0-beta1" :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure "1.10.0-beta4" :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
