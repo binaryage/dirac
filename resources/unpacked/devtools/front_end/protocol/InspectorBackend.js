@@ -242,9 +242,9 @@ Protocol.InspectorBackend.Connection.Factory;
 Protocol.TargetBase = class extends Common.Object {
   /**
    * @param {!Protocol.InspectorBackend.Connection.Factory} connectionFactory
-   * @param {boolean} isNodeJS
+   * @param {boolean} needsNodeJSPatching
    */
-  constructor(connectionFactory, isNodeJS) {
+  constructor(connectionFactory, needsNodeJSPatching) {
     super();
     this._connection =
         connectionFactory({onMessage: this._onMessage.bind(this), onDisconnect: this._onDisconnect.bind(this)});
@@ -261,7 +261,7 @@ Protocol.TargetBase = class extends Common.Object {
     }
     if (!Protocol.InspectorBackend.sendRawMessageForTesting)
       Protocol.InspectorBackend.sendRawMessageForTesting = this._sendRawMessageForTesting.bind(this);
-    this._isNodeJS = isNodeJS;
+    this._needsNodeJSPatching = needsNodeJSPatching;
   }
 
   /**
@@ -375,7 +375,8 @@ Protocol.TargetBase = class extends Common.Object {
 
     const messageObject = /** @type {!Object} */ ((typeof message === 'string') ? JSON.parse(message) : message);
 
-    Protocol.NodeURL.patch(this, messageObject);
+    if (this._needsNodeJSPatching)
+      Protocol.NodeURL.patch(messageObject);
 
     if ('id' in messageObject) {  // just a response for some request
       const callback = this._callbacks[messageObject.id];
@@ -517,15 +518,8 @@ Protocol.TargetBase = class extends Common.Object {
         0);
   }
 
-  /**
-   * @return {boolean}
-   */
-  isNodeJS() {
-    return this._isNodeJS;
-  }
-
   markAsNodeJSForTest() {
-    this._isNodeJS = true;
+    this._needsNodeJSPatching = true;
   }
 };
 

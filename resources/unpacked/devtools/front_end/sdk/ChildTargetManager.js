@@ -30,7 +30,7 @@ SDK.ChildTargetManager = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {function({target: !SDK.Target, waitingForDebugger: boolean})=} attachCallback
+   * @param {function({target: !SDK.Target, waitingForDebugger: boolean}):!Promise=} attachCallback
    */
   static install(attachCallback) {
     SDK.ChildTargetManager._attachCallback = attachCallback;
@@ -59,25 +59,6 @@ SDK.ChildTargetManager = class extends SDK.SDKModel {
   dispose() {
     for (const sessionId of this._childConnections.keys())
       this.detachedFromTarget(sessionId, undefined);
-  }
-
-  /**
-   * @param {string} type
-   * @return {number}
-   */
-  _capabilitiesForType(type) {
-    if (type === 'worker') {
-      return SDK.Target.Capability.JS | SDK.Target.Capability.Log | SDK.Target.Capability.Network |
-          SDK.Target.Capability.Target;
-    }
-    if (type === 'service_worker')
-      return SDK.Target.Capability.Log | SDK.Target.Capability.Network | SDK.Target.Capability.Target;
-    if (type === 'iframe') {
-      return SDK.Target.Capability.Browser | SDK.Target.Capability.DOM | SDK.Target.Capability.JS |
-          SDK.Target.Capability.Log | SDK.Target.Capability.Network | SDK.Target.Capability.Target |
-          SDK.Target.Capability.Tracing | SDK.Target.Capability.Emulation | SDK.Target.Capability.Input;
-    }
-    return 0;
   }
 
   /**
@@ -134,13 +115,27 @@ SDK.ChildTargetManager = class extends SDK.SDKModel {
       targetName = parsedURL ? parsedURL.lastPathComponentWithFragment() :
                                '#' + (++SDK.ChildTargetManager._lastAnonymousTargetId);
     }
-    const target = this._targetManager.createTarget(
-        targetInfo.targetId, targetName, this._capabilitiesForType(targetInfo.type),
-        this._createChildConnection.bind(this, this._targetAgent, sessionId), this._parentTarget, false /* isNodeJS */);
 
-    if (SDK.ChildTargetManager._attachCallback)
-      SDK.ChildTargetManager._attachCallback({target, waitingForDebugger});
-    target.runtimeAgent().runIfWaitingForDebugger();
+    let type = SDK.Target.Type.Browser;
+    if (targetInfo.type === 'iframe')
+      type = SDK.Target.Type.Frame;
+    else if (targetInfo.type === 'worker')
+      type = SDK.Target.Type.Worker;
+    else if (targetInfo.type === 'service_worker')
+      type = SDK.Target.Type.ServiceWorker;
+
+
+    const target = this._targetManager.createTarget(
+        targetInfo.targetId, targetName, type, this._createChildConnection.bind(this, this._targetAgent, sessionId),
+        this._parentTarget);
+
+    if (SDK.ChildTargetManager._attachCallback) {
+      SDK.ChildTargetManager._attachCallback({target, waitingForDebugger}).then(() => {
+        target.runtimeAgent().runIfWaitingForDebugger();
+      });
+    } else {
+      target.runtimeAgent().runIfWaitingForDebugger();
+    }
   }
 
   /**

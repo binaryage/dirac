@@ -50,6 +50,8 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
     if (hideGutter)
       this._element.classList.add('elements-hide-gutter');
     UI.ARIAUtils.setAccessibleName(this._element, Common.UIString('Page DOM'));
+    this._element.addEventListener('focusin', this._onfocusin.bind(this), false);
+    this._element.addEventListener('focusout', this._onfocusout.bind(this), false);
     this._element.addEventListener('mousedown', this._onmousedown.bind(this), false);
     this._element.addEventListener('mousemove', this._onmousemove.bind(this), false);
     this._element.addEventListener('mouseleave', this._onmouseleave.bind(this), false);
@@ -541,6 +543,23 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
     };
   }
 
+  /**
+   * @param {!Event} event
+   */
+  _onfocusin(event) {
+    const listItem = event.target.enclosingNodeOrSelfWithNodeName('li');
+    if (!listItem || !listItem.treeElement || !listItem.treeElement.selected)
+      return;
+    this._highlightTreeElement(/** @type {!UI.TreeElement} */ (listItem.treeElement), true /* showInfo */);
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  _onfocusout(event) {
+    SDK.OverlayModel.hideDOMNodeHighlight();
+  }
+
   _onmousedown(event) {
     const element = this._treeElementFromEvent(event);
 
@@ -574,16 +593,23 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
       return;
 
     this.setHoverEffect(element);
+    this._highlightTreeElement(
+        /** @type {!UI.TreeElement} */ (element), !UI.KeyboardShortcut.eventHasCtrlOrMeta(event));
+  }
 
+  /**
+   * @param {!UI.TreeElement} element
+   * @param {boolean} showInfo
+   */
+  _highlightTreeElement(element, showInfo) {
     if (element instanceof Elements.ElementsTreeElement) {
-      element.node().domModel().overlayModel().highlightDOMNodeWithConfig(
-          element.node().id, {mode: 'all', showInfo: !UI.KeyboardShortcut.eventHasCtrlOrMeta(event)});
+      element.node().domModel().overlayModel().highlightDOMNodeWithConfig(element.node().id, {mode: 'all', showInfo});
       return;
     }
 
     if (element instanceof Elements.ElementsTreeOutline.ShortcutTreeElement) {
       element.domModel().overlayModel().highlightDOMNodeWithConfig(
-          undefined, {mode: 'all', showInfo: !UI.KeyboardShortcut.eventHasCtrlOrMeta(event)}, element.backendNodeId());
+          undefined, {mode: 'all', showInfo}, element.backendNodeId());
     }
   }
 
@@ -1532,19 +1558,19 @@ Elements.ElementsTreeOutline.UpdateRecord = class {
 };
 
 /**
- * @implements {Common.Renderer}
+ * @implements {UI.Renderer}
  */
 Elements.ElementsTreeOutline.Renderer = class {
   /**
    * @override
    * @param {!Object} object
-   * @return {!Promise.<?Node>}
+   * @return {!Promise<?{node: !Node, tree: ?UI.TreeOutline}>}
    */
   render(object) {
     return new Promise(renderPromise);
 
     /**
-     * @param {function(!Element)} resolve
+     * @param {function(!{node: !Node, tree: ?UI.TreeOutline})} resolve
      * @param {function(!Error)} reject
      */
     function renderPromise(resolve, reject) {
@@ -1564,13 +1590,14 @@ Elements.ElementsTreeOutline.Renderer = class {
           reject(new Error('Could not resolve node.'));
           return;
         }
-        const treeOutline = new Elements.ElementsTreeOutline(false, false, true /* hideGutter */);
+        const treeOutline = new Elements.ElementsTreeOutline(false, true /* selectEnabled */, true /* hideGutter */);
         treeOutline.rootDOMNode = node;
         if (!treeOutline.firstChild().isExpandable())
           treeOutline._element.classList.add('single-node');
         treeOutline.setVisible(true);
         treeOutline.element.treeElementForTest = treeOutline.firstChild();
-        resolve(treeOutline.element);
+        treeOutline.setShowSelectionOnKeyboardFocus(true, true);
+        resolve({node: treeOutline.element, tree: treeOutline});
       }
     }
   }
@@ -1639,7 +1666,6 @@ Elements.ElementsTreeOutline.ShortcutTreeElement = class extends UI.TreeElement 
   onselect(selectedByUser) {
     if (!selectedByUser)
       return true;
-    this._nodeShortcut.deferredNode.highlight();
     this._nodeShortcut.deferredNode.resolve(resolved.bind(this));
     /**
      * @param {?SDK.DOMNode} node

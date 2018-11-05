@@ -1486,14 +1486,14 @@ ObjectUI.ObjectPropertiesSectionExpandController._cachedPathSymbol = Symbol('cac
 ObjectUI.ObjectPropertiesSectionExpandController._treeOutlineId = Symbol('treeOutlineId');
 
 /**
- * @implements {Common.Renderer}
+ * @implements {UI.Renderer}
  */
 ObjectUI.ObjectPropertiesSection.Renderer = class {
   /**
    * @override
    * @param {!Object} object
-   * @param {!Common.Renderer.Options=} options
-   * @return {!Promise<?Node>}
+   * @param {!UI.Renderer.Options=} options
+   * @return {!Promise<?{node: !Node, tree: ?UI.TreeOutline}>}
    */
   render(object, options) {
     if (!(object instanceof SDK.RemoteObject))
@@ -1503,9 +1503,8 @@ ObjectUI.ObjectPropertiesSection.Renderer = class {
     const section = new ObjectUI.ObjectPropertiesSection(object, title);
     if (!title)
       section.titleLessMode();
-    if (options.expanded)
-      section.expand();
     section.editable = !!options.editable;
-    return Promise.resolve(section.element);
+    return Promise.resolve(
+        /** @type {?{node: !Node, tree: ?UI.TreeOutline}} */ ({node: section.element, tree: section}));
   }
 };

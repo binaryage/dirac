@@ -166,6 +166,8 @@ Persistence.Automapping = class {
     if (networkSourceCode[Persistence.Automapping._processingPromise] ||
         networkSourceCode[Persistence.Automapping._status])
       return;
+    if (networkSourceCode.url().startsWith('wasm://'))
+      return;
     const createBindingPromise =
         this._createBinding(networkSourceCode).then(validateStatus.bind(this)).then(onStatus.bind(this));
     networkSourceCode[Persistence.Automapping._processingPromise] = createBindingPromise;
@@ -217,7 +219,7 @@ Persistence.Automapping = class {
 
       const target = Bindings.NetworkProject.targetForUISourceCode(status.network);
       let isValid = false;
-      if (target && target.isNodeJS()) {
+      if (target && target.type() === SDK.Target.Type.Node) {
         const rewrappedNetworkContent =
             Persistence.Persistence.rewrapNodeJSContent(status.fileSystem, fileSystemContent, networkContent);
         isValid = fileSystemContent === rewrappedNetworkContent;
