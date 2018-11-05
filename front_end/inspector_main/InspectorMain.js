@@ -31,24 +31,10 @@ InspectorMain.InspectorMain = class extends Common.Object {
   }
 
   _connectAndCreateMainTarget() {
-    const isNodeJS = !!Runtime.queryParam('v8only');
+    const type = Runtime.queryParam('v8only') ? SDK.Target.Type.Node : SDK.Target.Type.Frame;
     const target = SDK.targetManager.createTarget(
-        'main', Common.UIString('Main'), this._capabilitiesForMainTarget(), this._createMainConnection.bind(this), null,
-        isNodeJS);
+        'main', Common.UIString('Main'), type, this._createMainConnection.bind(this), null);
     target.runtimeAgent().runIfWaitingForDebugger();
-  }
-
-  /**
-   * @return {number}
-   */
-  _capabilitiesForMainTarget() {
-    if (Runtime.queryParam('v8only'))
-      return SDK.Target.Capability.JS;
-    return SDK.Target.Capability.Browser | SDK.Target.Capability.DOM | SDK.Target.Capability.DeviceEmulation |
-        SDK.Target.Capability.Emulation | SDK.Target.Capability.Input | SDK.Target.Capability.JS |
-        SDK.Target.Capability.Log | SDK.Target.Capability.Network | SDK.Target.Capability.ScreenCapture |
-        SDK.Target.Capability.Security | SDK.Target.Capability.Target | SDK.Target.Capability.Tracing |
-        SDK.Target.Capability.Inspector;
   }
 
   /**
@@ -211,14 +197,14 @@ InspectorMain.BackendSettingsSync = class {
     this._emulatePageFocusSetting = Common.settings.moduleSetting('emulatePageFocus');
     this._emulatePageFocusSetting.addChangeListener(this._update, this);
 
-    SDK.targetManager.observeTargets(this, SDK.Target.Capability.Browser);
+    SDK.targetManager.observeTargets(this);
   }
 
   /**
    * @param {!SDK.Target} target
    */
   _updateTarget(target) {
-    if (target.parentTarget())
+    if (target.type() !== SDK.Target.Type.Frame || target.parentTarget())
       return;
     target.pageAgent().setAdBlockingEnabled(this._adBlockEnabledSetting.get());
     target.emulationAgent().setFocusEmulationEnabled(this._emulatePageFocusSetting.get());
@@ -229,7 +215,8 @@ InspectorMain.BackendSettingsSync = class {
   }
 
   _update() {
-    SDK.targetManager.targets(SDK.Target.Capability.Browser).forEach(this._updateTarget, this);
+    for (const target of SDK.targetManager.targets())
+      this._updateTarget(target);
   }
 
   /**

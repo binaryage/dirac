@@ -45,8 +45,8 @@ Console.ConsoleViewMessage = class {
     this._repeatCount = 1;
     this._closeGroupDecorationCount = 0;
     this._nestingLevel = nestingLevel;
-    /** @type {!Array<!ObjectUI.ObjectPropertiesSection>} */
-    this._focusableChildren = [];
+    /** @type {!Array<!UI.TreeOutline>} */
+    this._treeOutlines = [];
 
     /** @type {?DataGrid.DataGrid} */
     this._dataGrid = null;
@@ -252,14 +252,17 @@ Console.ConsoleViewMessage = class {
     } else {
       let rendered = false;
       this._completeElementForTestPromise = null;
-      for (const extension of self.runtime.extensions(Common.Renderer, this._message)) {
+      for (const extension of self.runtime.extensions(UI.Renderer, this._message)) {
         if (extension.descriptor()['source'] === this._message.source) {
           messageElement = createElement('span');
           let callback;
           this._completeElementForTestPromise = new Promise(fulfill => callback = fulfill);
           extension.instance().then(renderer => {
             renderer.render(this._message)
-                .then(element => messageElement.appendChild(element || this._format([messageText])))
+                .then(result => {
+                  const renderedNode = result ? result.node : null;
+                  messageElement.appendChild(renderedNode || this._format([messageText]));
+                })
                 .then(callback);
           });
           rendered = true;
@@ -610,7 +613,8 @@ Console.ConsoleViewMessage = class {
     const section = new ObjectUI.ObjectPropertiesSection(obj, titleElement, this._linkifier);
     section.element.classList.add('console-view-object-properties-section');
     section.enableContextMenu();
-    this._focusableChildren.push(section);
+    section.setShowSelectionOnKeyboardFocus(true, true);
+    this._treeOutlines.push(section);
     return section.element;
   }
 
@@ -673,18 +677,20 @@ Console.ConsoleViewMessage = class {
     const domModel = remoteObject.runtimeModel().target().model(SDK.DOMModel);
     if (!domModel)
       return result;
-    domModel.pushObjectAsNodeToFrontend(remoteObject).then(node => {
+    domModel.pushObjectAsNodeToFrontend(remoteObject).then(async node => {
       if (!node) {
         result.appendChild(this._formatParameterAsObject(remoteObject, false));
         return;
       }
-      Common.Renderer.render(node).then(rendererNode => {
-        if (rendererNode)
-          result.appendChild(rendererNode);
-        else
-          result.appendChild(this._formatParameterAsObject(remoteObject, false));
-        this._formattedParameterAsNodeForTest();
-      });
+      const renderResult = await UI.Renderer.render(/** @type {!Object} */ (node));
+      if (renderResult) {
+        if (renderResult.tree)
+          this._treeOutlines.push(renderResult.tree);
+        result.appendChild(renderResult.node);
+      } else {
+        result.appendChild(this._formatParameterAsObject(remoteObject, false));
+      }
+      this._formattedParameterAsNodeForTest();
     });
 
     return result;
@@ -1041,9 +1047,9 @@ Console.ConsoleViewMessage = class {
    * @return {number}
    */
   _focusedChildIndex() {
-    if (!this._focusableChildren.length)
+    if (!this._treeOutlines.length)
       return -1;
-    return this._focusableChildren.findIndex(child => child.element.hasFocus());
+    return this._treeOutlines.findIndex(child => child.element.hasFocus());
   }
 
   /**
@@ -1070,7 +1076,7 @@ Console.ConsoleViewMessage = class {
         return true;
       }
     }
-    if (!this._focusableChildren.length)
+    if (!this._treeOutlines.length)
       return false;
 
     if (event.key === 'ArrowLeft') {
@@ -1079,7 +1085,7 @@ Console.ConsoleViewMessage = class {
     }
     if (event.key === 'ArrowRight') {
       if (isWrapperFocused) {
-        this._focusChild(0);
+        this._treeOutlines[0].selectFirst();
         return true;
       }
     }
@@ -1088,35 +1094,25 @@ Console.ConsoleViewMessage = class {
         this._element.focus();
         return true;
       } else if (focusedChildIndex > 0) {
-        this._focusChild(focusedChildIndex - 1);
+        this._treeOutlines[focusedChildIndex - 1].selectFirst();
         return true;
       }
     }
     if (event.key === 'ArrowDown') {
       if (isWrapperFocused) {
-        this._focusChild(0);
+        this._treeOutlines[0].selectFirst();
         return true;
-      } else if (focusedChildIndex < this._focusableChildren.length - 1) {
-        this._focusChild(focusedChildIndex + 1);
+      } else if (focusedChildIndex < this._treeOutlines.length - 1) {
+        this._treeOutlines[focusedChildIndex + 1].selectFirst();
         return true;
       }
     }
     return false;
   }
 
-  /**
-   * @param {number} index
-   */
-  _focusChild(index) {
-    const section = this._focusableChildren[index];
-    if (!section.objectTreeElement().selected)
-      section.objectTreeElement().select();
-    section.focus();
-  }
-
   focusLastChildOrSelf() {
-    if (this._focusableChildren.length)
-      this._focusChild(this._focusableChildren.length - 1);
+    if (this._treeOutlines.length)
+      this._treeOutlines[this._treeOutlines.length - 1].selectFirst();
     else if (this._element)
       this._element.focus();
   }
