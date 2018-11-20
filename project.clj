@@ -3,7 +3,7 @@
 (def figwheel-version "0.5.17")
 (def selected-clojurescript-version "1.10.439")
 (def selected-clojure-version "1.9.0")
-(def selenium-version "3.141.0")
+(def selenium-version "3.141.59")
 (def lein-cljsbuild-version "1.1.7")
 
 (def provided-deps
@@ -11,7 +11,7 @@
    ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "0.4.474"]
+  [['org.clojure/core.async "0.4.490"]
    ['org.clojure/tools.logging "0.4.1"]
    ['org.clojure/tools.cli "0.4.1"]
    ['org.clojure/tools.nrepl "0.2.13"]
@@ -25,8 +25,8 @@
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-   ['binaryage/oops "0.6.2" :scope "test"]
-   ['binaryage/chromex "0.6.4" :scope "test"]
+   ['binaryage/oops "0.6.3" :scope "test"]
+   ['binaryage/chromex "0.6.5" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.45" :scope "test"]
