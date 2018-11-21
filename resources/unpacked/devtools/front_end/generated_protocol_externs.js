@@ -591,11 +591,11 @@ Protocol.BrowserAgent.GetWindowBoundsResponse;
 Protocol.BrowserAgent.prototype.invoke_getWindowBounds = function(obj) {};
 
 /**
- * @param {Protocol.Target.TargetID} targetId
+ * @param {Protocol.Target.TargetID=} opt_targetId
  * @return {!Promise<?Protocol.Browser.WindowID>}
  */
-Protocol.BrowserAgent.prototype.getWindowForTarget = function(targetId) {};
-/** @typedef {!{targetId: Protocol.Target.TargetID}} */
+Protocol.BrowserAgent.prototype.getWindowForTarget = function(opt_targetId) {};
+/** @typedef {!{targetId: (Protocol.Target.TargetID|undefined)}} */
 Protocol.BrowserAgent.GetWindowForTargetRequest;
 /** @typedef {!{windowId: Protocol.Browser.WindowID, bounds: Protocol.Browser.Bounds}} */
 Protocol.BrowserAgent.GetWindowForTargetResponse;
@@ -618,6 +618,21 @@ Protocol.BrowserAgent.SetWindowBoundsResponse;
  * @param {!Protocol.BrowserAgent.SetWindowBoundsRequest} obj
  * @return {!Promise<!Protocol.BrowserAgent.SetWindowBoundsResponse>} */
 Protocol.BrowserAgent.prototype.invoke_setWindowBounds = function(obj) {};
+
+/**
+ * @param {string=} opt_badgeLabel
+ * @param {string=} opt_image
+ * @return {!Promise<undefined>}
+ */
+Protocol.BrowserAgent.prototype.setDockTile = function(opt_badgeLabel, opt_image) {};
+/** @typedef {!{image: (string|undefined), badgeLabel: (string|undefined)}} */
+Protocol.BrowserAgent.SetDockTileRequest;
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.SetDockTileResponse;
+/**
+ * @param {!Protocol.BrowserAgent.SetDockTileRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.SetDockTileResponse>} */
+Protocol.BrowserAgent.prototype.invoke_setDockTile = function(obj) {};
 
 /** @typedef {number} */
 Protocol.Browser.WindowID;
@@ -4706,6 +4721,20 @@ Protocol.OverlayAgent.prototype.invoke_setShowScrollBottleneckRects = function(o
  * @param {boolean} show
  * @return {!Promise<undefined>}
  */
+Protocol.OverlayAgent.prototype.setShowHitTestBorders = function(show) {};
+/** @typedef {!{show: boolean}} */
+Protocol.OverlayAgent.SetShowHitTestBordersRequest;
+/** @typedef {Object|undefined} */
+Protocol.OverlayAgent.SetShowHitTestBordersResponse;
+/**
+ * @param {!Protocol.OverlayAgent.SetShowHitTestBordersRequest} obj
+ * @return {!Promise<!Protocol.OverlayAgent.SetShowHitTestBordersResponse>} */
+Protocol.OverlayAgent.prototype.invoke_setShowHitTestBorders = function(obj) {};
+
+/**
+ * @param {boolean} show
+ * @return {!Promise<undefined>}
+ */
 Protocol.OverlayAgent.prototype.setShowViewportSizeOnResize = function(show) {};
 /** @typedef {!{show: boolean}} */
 Protocol.OverlayAgent.SetShowViewportSizeOnResizeRequest;
@@ -4819,6 +4848,20 @@ Protocol.PageAgent.CaptureScreenshotResponse;
  * @param {!Protocol.PageAgent.CaptureScreenshotRequest} obj
  * @return {!Promise<!Protocol.PageAgent.CaptureScreenshotResponse>} */
 Protocol.PageAgent.prototype.invoke_captureScreenshot = function(obj) {};
+
+/**
+ * @param {string=} opt_format
+ * @return {!Promise<?string>}
+ */
+Protocol.PageAgent.prototype.captureSnapshot = function(opt_format) {};
+/** @typedef {!{format: (string|undefined)}} */
+Protocol.PageAgent.CaptureSnapshotRequest;
+/** @typedef {!{data: string}} */
+Protocol.PageAgent.CaptureSnapshotResponse;
+/**
+ * @param {!Protocol.PageAgent.CaptureSnapshotRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.CaptureSnapshotResponse>} */
+Protocol.PageAgent.prototype.invoke_captureSnapshot = function(obj) {};
 
 /**
  * @return {!Promise<undefined>}
