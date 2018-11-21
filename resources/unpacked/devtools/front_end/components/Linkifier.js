@@ -502,7 +502,8 @@ Components.Linkifier = class {
       return false;
     const actions = Components.Linkifier._linkActions(link);
     if (actions.length) {
-      actions[0].handler.call(null, event);
+      const handler = /** @type { function(?Event=) } */(actions[0].handler);
+      handler.call(null, event);
       return true;
     }
     return false;

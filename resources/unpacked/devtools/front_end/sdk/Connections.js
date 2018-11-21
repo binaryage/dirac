@@ -272,7 +272,7 @@ SDK._createMainConnection = function() {
   const wsParam = Runtime.queryParam('ws');
   const wssParam = Runtime.queryParam('wss');
   if (wsParam || wssParam) {
-    const ws = wsParam ? `ws://${decodeURIComponent(wsParam)}` : `wss://${decodeURIComponent(wssParam)}`;
+    const ws = wsParam ? `ws://${decodeURIComponent(wsParam)}` : `wss://${decodeURIComponent(/** @type {string} */(wssParam))}`;
     SDK._mainConnection = new SDK.WebSocketConnection(ws, SDK._websocketConnectionLost);
   } else if (InspectorFrontendHost.isHostedMode()) {
     SDK._mainConnection = new SDK.StubConnection();
