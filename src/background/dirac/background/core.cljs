@@ -1,6 +1,5 @@
 (ns dirac.background.core
   (:require [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
-            [chromex.protocols :refer [get-name get-sender post-message!]]
             [dirac.background.action :as action]
             [dirac.background.chrome :as chrome]
             [dirac.background.logging :refer [error info log warn]]

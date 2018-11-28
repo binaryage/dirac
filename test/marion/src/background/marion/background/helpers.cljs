@@ -3,7 +3,7 @@
             [chromex.ext.runtime :as runtime]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.windows :as windows]
-            [chromex.protocols :refer [get-sender on-disconnect!]]
+            [chromex.protocols.chrome-port :as chrome-port]
             [dirac.settings :refer [get-dirac-runner-window-height get-dirac-runner-window-left
                                     get-dirac-runner-window-top get-dirac-runner-window-width
                                     get-dirac-scenario-window-height get-dirac-scenario-window-left
@@ -87,7 +87,7 @@
 (defn go-accept-stable-connection-only [extension-id port]
   (let [timeout-channel (go-wait (get-marion-stable-connection-timeout))
         disconnect-channel (go-channel)]
-    (on-disconnect! port #(close! disconnect-channel))
+    (chrome-port/on-disconnect! port #(close! disconnect-channel))
     (go
       (let [[_ channel] (alts! [timeout-channel disconnect-channel])]
         (condp identical? channel
@@ -107,7 +107,7 @@
         (<! (go-accept-stable-connection-only extension-id (runtime/connect extension-id info)))))))
 
 (defn get-client-url [client]
-  (let [sender (get-sender client)
+  (let [sender (chrome-port/get-sender client)
         sender-id (oget sender "id")
         sender-url (oget sender "url")]
     (str sender-id ":" sender-url)))

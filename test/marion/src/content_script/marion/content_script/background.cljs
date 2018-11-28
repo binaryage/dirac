@@ -1,6 +1,6 @@
 (ns marion.content-script.background
   (:require [chromex.ext.runtime :as runtime]
-            [chromex.protocols :refer [on-disconnect! post-message!]]
+            [chromex.protocols.chrome-port :as chrome-port]
             [dirac.settings :refer [get-marion-reconnection-attempt-delay
                                     get-marion-stable-connection-timeout]]
             [dirac.shared.async :refer [<! alts! close! go go-channel go-wait]]
@@ -34,7 +34,7 @@
     (state/reset-background-port! background-port)
     (state/flush-pending-messages! (fn [message]
                                      (log "posting postponed message to marion's background page" message)
-                                     (post-message! background-port message)))
+                                     (chrome-port/post-message! background-port message)))
     (loop []
       (when-let [message (<! background-port)]
         (process-message! message)
@@ -57,7 +57,7 @@
 (defn go-accept-stable-connection-only! [port]
   (let [timeout-channel (go-wait (get-marion-stable-connection-timeout))
         disconnect-channel (go-channel)]
-    (on-disconnect! port #(close! disconnect-channel))
+    (chrome-port/on-disconnect! port #(close! disconnect-channel))
     (go
       (let [[_ channel] (alts! [timeout-channel disconnect-channel])]
         (condp identical? channel

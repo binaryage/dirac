@@ -5,7 +5,7 @@
             [chromex.ext.runtime :as runtime]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.windows :as windows]
-            [chromex.protocols :refer [get-name get-sender post-message!]]
+            [chromex.protocols.chrome-port :as chrome-port]
             [dirac.background.devtools :as devtools]
             [dirac.background.logging :refer [error info log warn]]
             [dirac.background.marion :as marion]
@@ -39,7 +39,7 @@
 
 (defn go-handle-external-client-connection! [client-port]
   (go
-    (case (get-name client-port)
+    (case (chrome-port/get-name client-port)
       "Dirac Marionettist" (let [context {:chrome-event-handler go-process-chrome-event!}]
                              (marion/go-handle-marion-client-connection! context client-port))
       (warn "external connection attempt from unrecognized client" client-port))))

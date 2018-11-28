@@ -1,6 +1,6 @@
 (ns marion.content-script.page
   (:require [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
-            [chromex.protocols :refer [post-message!]]
+            [chromex.protocols.chrome-port :as chrome-port]
             [dirac.shared.async :refer [<! go-channel]]
             [marion.content-script.logging :refer [error info log warn]]
             [marion.content-script.state :as state]
@@ -20,7 +20,7 @@
   (if-some [port (state/get-background-port)]
     (do
       (log "received page message, posting it to marion's background page" message)
-      (post-message! port message))
+      (chrome-port/post-message! port message))
     (do
       (log "received page message, but background page connection is not yet available => postpone" message)
       (state/add-pending-message message))))

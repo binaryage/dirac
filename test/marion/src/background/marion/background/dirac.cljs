@@ -1,6 +1,6 @@
 (ns marion.background.dirac
   (:require [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
-            [chromex.protocols :refer [get-sender post-message!]]
+            [chromex.protocols.chrome-port :as chrome-port]
             [dirac.settings :refer [get-marion-reconnection-attempt-delay]]
             [dirac.shared.async :refer [<! go go-channel go-wait]]
             [marion.background.feedback :as feedback]
@@ -19,7 +19,7 @@
       (reset! pending-messages [])
       (log "flushing " (count messages) " pending messages:" messages)
       (doseq [message messages]
-        (post-message! dirac-extension message)))))
+        (chrome-port/post-message! dirac-extension message)))))
 
 (defn register-pending-message-for-dirac-extension! [message]
   (swap! pending-messages conj message))
@@ -43,7 +43,7 @@
 (defn go-post-message-to-dirac-extension! [command]
   (go
     (if-some [port @dirac-extension]
-      (post-message! port command)
+      (chrome-port/post-message! port command)
       (do
         (warn "dirac extension is not connected with marion => queuing..." (pr-str command))
         (register-pending-message-for-dirac-extension! command)))))

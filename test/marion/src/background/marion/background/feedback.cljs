@@ -1,5 +1,5 @@
 (ns marion.background.feedback
-  (:require [chromex.protocols :refer [get-sender post-message!]]
+  (:require [chromex.protocols.chrome-port :as chrome-port]
             [dirac.shared.async :refer [<! go go-channel go-wait]]
             [marion.background.helpers :as helpers]
             [marion.background.logging :refer [error info log warn]]
@@ -43,7 +43,7 @@
         (warn "feedback broadcast request while no subscribers registered" message)
         (doseq [subscriber subscribers]
           (try
-            (post-message! subscriber message)
+            (chrome-port/post-message! subscriber message)
             (catch :default e
               (warn "cannot post message to a client subscribed to feedback" (helpers/get-client-url subscriber) "\n" e)
               nil)))))))

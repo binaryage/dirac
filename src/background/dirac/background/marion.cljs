@@ -1,5 +1,5 @@
 (ns dirac.background.marion
-  (:require [chromex.protocols :refer [get-name get-sender post-message!]]
+  (:require [chromex.protocols.chrome-port :as chrome-port]
             [cljs.reader :as reader]
             [dirac.background.helpers :as helpers]
             [dirac.background.logging :refer [error info log warn]]
@@ -70,15 +70,15 @@
 ; -- marion event loop ------------------------------------------------------------------------------------------------------
 
 (defn register-marion! [marion-port]
-  (log "marion connected" (get-sender marion-port))
+  (log "marion connected" (chrome-port/get-sender marion-port))
   (when-some [existing-marion-port (state/get-marion-port)]
-    (warn "overwriting previous marion port!" (get-sender existing-marion-port) existing-marion-port))
+    (warn "overwriting previous marion port!" (chrome-port/get-sender existing-marion-port) existing-marion-port))
   (state/set-marion-port! marion-port))
 
 (defn unregister-marion! []
   (if-some [marion-port (state/get-marion-port)]
     (do
-      (log "marion disconnected" (get-sender marion-port) marion-port)
+      (log "marion disconnected" (chrome-port/get-sender marion-port) marion-port)
       (state/set-marion-port! nil))
     (warn "unregister-marion! called when no previous marion port!")))
 

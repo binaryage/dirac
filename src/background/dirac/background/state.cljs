@@ -1,5 +1,5 @@
 (ns dirac.background.state
-  (:require [chromex.protocols :refer [get-name get-sender post-message!]]
+  (:require [chromex.protocols.chrome-port :as chrome-port]
             [clojure.string :as string]
             [dirac.background.logging :refer [error info log warn]]
             [dirac.shared.utils :as utils]
@@ -67,7 +67,7 @@
 
 (defn post-to-marion! [message]
   (if-some [marion-port (get-marion-port)]
-    (post-message! marion-port message)
+    (chrome-port/post-message! marion-port message)
     (warn "marion not yet connected when called post-to-marion! with message:" message)))
 
 (defn post-feedback! [text]
