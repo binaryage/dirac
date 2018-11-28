@@ -32,7 +32,7 @@
    ['cljs-http "0.1.45" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
-   ['rum "0.11.2" :scope "test"]
+   ['rum "0.11.3" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
