@@ -47,7 +47,7 @@ stdout           displayed 40 items:
                   * async.cljs:<line> / async.cljs:<line>
                   * async.cljs:<line> / async.cljs:<line>
                   * chrome_port.cljs:<line> / chrome_port.cljs:<line>
-                  * protocols.cljs:<line> / protocols.cljs:<line>
+                  * chrome_port_state.cljs:<line> / chrome_port_state.cljs:<line>
                   * defaults.cljs:<line> / defaults.cljs:<line>
                   * VM<num> extensions…t_bindings:403 / VM<num> extensions::event_bindings:403
                   * VM<num> extensions::utils:138 / VM<num> extensions::utils:138
@@ -108,7 +108,7 @@ stdout           displayed 40 items:
                   * async.cljs:<line> / async.cljs:<line>
                   * async.cljs:<line> / async.cljs:<line>
                   * chrome_port.cljs:<line> / chrome_port.cljs:<line>
-                  * protocols.cljs:<line> / protocols.cljs:<line>
+                  * chrome_port_state.cljs:<line> / chrome_port_state.cljs:<line>
                   * defaults.cljs:<line> / defaults.cljs:<line>
                   * VM<num> extensions…t_bindings:403 / VM<num> extensions::event_bindings:403
                   * VM<num> extensions::utils:138 / VM<num> extensions::utils:138

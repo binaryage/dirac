@@ -48,8 +48,8 @@ stdout           displayed 42 items:
                   * put! / cljs.core.async.impl.protocols/put!
                   * IFn:-invoke² (put!) / cljs.core.IFn:-invoke² (cljs.core.async/put!)
                   * put! / cljs.core.async/put!
-                  * chromex$chrome-port$ChromePort$chromex$protocols$IChromePortState$put-message!² / chromex$chrome-port$ChromePort$chromex$protocols$IChromePortState$put-message!²
-                  * chromex$protocols$put-message! / chromex$protocols$put-message!
+                  * chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!² / chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!²
+                  * chromex$protocols$chrome-port-state$put-message! / chromex$protocols$chrome-port-state$put-message!
                   * λ
                   * EventImpl.dispatchToListener / EventImpl.dispatchToListener
                   * publicClassPrototype.(anonymous function) / publicClassPrototype.(anonymous function)
@@ -111,8 +111,8 @@ stdout           displayed 42 items:
                   * cljs$core$async$impl$protocols$put_BANG_
                   * cljs.core.async.put_BANG_.cljs$core$IFn$_invoke$arity$2
                   * cljs$core$async$put_BANG_
-                  * chromex.chrome_port.ChromePort.chromex$protocols$IChromePortState$put_message_BANG_$arity$2
-                  * chromex$protocols$put_message_BANG_
+                  * chromex.chrome_port.ChromePort.chromex$protocols$chrome_port_state$IChromePortState$put_message_BANG_$arity$2
+                  * chromex$protocols$chrome_port_state$put_message_BANG_
                   * (anonymous)
                   * EventImpl.dispatchToListener
                   * publicClassPrototype.(anonymous function)
@@ -277,8 +277,8 @@ stdout           displayed 77 items:
                   * put! / cljs.core.async.impl.protocols/put!
                   * IFn:-invoke² (put!) / cljs.core.IFn:-invoke² (cljs.core.async/put!)
                   * put! / cljs.core.async/put!
-                  * chromex$chrome-port$ChromePort$chromex$protocols$IChromePortState$put-message!² / chromex$chrome-port$ChromePort$chromex$protocols$IChromePortState$put-message!²
-                  * chromex$protocols$put-message! / chromex$protocols$put-message!
+                  * chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!² / chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!²
+                  * chromex$protocols$chrome-port-state$put-message! / chromex$protocols$chrome-port-state$put-message!
                   * λ
                   * EventImpl.dispatchToListener / EventImpl.dispatchToListener
                   * publicClassPrototype.(anonymous function) / publicClassPrototype.(anonymous function)
