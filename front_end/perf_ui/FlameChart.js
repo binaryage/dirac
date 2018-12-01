@@ -345,18 +345,7 @@ PerfUI.FlameChart = class extends UI.VBox {
   }
 
   _updateHighlight() {
-    let entryIndex;
-    if (!Runtime.experiments.isEnabled('timelinePaintTimingMarkers')) {
-      const inDividersBar = this._lastMouseOffsetY < PerfUI.FlameChart.HeaderHeight;
-      this._highlightedMarkerIndex = inDividersBar ? this._markerIndexAtPosition(this._lastMouseOffsetX) : -1;
-      this._updateMarkerHighlight();
-
-      entryIndex = this._highlightedMarkerIndex === -1 ?
-          this._coordinatesToEntryIndex(this._lastMouseOffsetX, this._lastMouseOffsetY) :
-          -1;
-    } else {
-      entryIndex = this._coordinatesToEntryIndex(this._lastMouseOffsetX, this._lastMouseOffsetY);
-    }
+    const entryIndex = this._coordinatesToEntryIndex(this._lastMouseOffsetX, this._lastMouseOffsetY);
     if (entryIndex === -1) {
       this.hideHighlight();
       const group =
@@ -1610,11 +1599,17 @@ PerfUI.FlameChart = class extends UI.VBox {
     const timelineData = this._timelineData();
     const startTime = timelineData.entryStartTimes[entryIndex];
     const duration = timelineData.entryTotalTimes[entryIndex];
-    let barX, barWidth;
+    let barX = 0;
+    let barWidth = 0;
+    let visible = true;
     if (Number.isNaN(duration)) {
       const position = this._markerPositions.get(entryIndex);
-      barX = position.x;
-      barWidth = position.width;
+      if (position) {
+        barX = position.x;
+        barWidth = position.width;
+      } else {
+        visible = false;
+      }
     } else {
       barX = this._chartViewport.timeToPosition(startTime);
       barWidth = duration * this._chartViewport.timeToPixel();
@@ -1632,7 +1627,7 @@ PerfUI.FlameChart = class extends UI.VBox {
     style.top = barY + 'px';
     style.width = barWidth + 'px';
     style.height = barHeight - 1 + 'px';
-    element.classList.remove('hidden');
+    element.classList.toggle('hidden', !visible);
     this._viewportElement.appendChild(element);
   }
 
