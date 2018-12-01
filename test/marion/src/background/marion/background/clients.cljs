@@ -1,5 +1,5 @@
 (ns marion.background.clients
-  (:require [chromex.protocols :refer [get-sender post-message!]]
+  (:require [chromex.protocols.chrome-port :as chrome-port]
             [dirac.shared.async :refer [<! go go-channel go-wait]]
             [marion.background.feedback :as feedback]
             [marion.background.helpers :as helpers]
@@ -16,12 +16,12 @@
 ; -- clients manipulation ---------------------------------------------------------------------------------------------------
 
 (defn add-client! [client]
-  (let [sender (get-sender client)]
+  (let [sender (chrome-port/get-sender client)]
     (swap! clients conj client)
     (log (str "a client connected: " (helpers/get-client-url client) " total clients " (count @clients)) sender)))
 
 (defn remove-client! [client]
-  (let [sender (get-sender client)]
+  (let [sender (chrome-port/get-sender client)]
     (feedback/unsubscribe-client-if-subscribed! client)
     (notifications/unsubscribe-client-if-subscribed! client)
     (let [remove-item (fn [coll item] (remove #(identical? item %) coll))]

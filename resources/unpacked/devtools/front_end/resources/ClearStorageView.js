@@ -36,6 +36,11 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
 
     const quota = this._reportView.appendSection(Common.UIString('Usage'));
     this._quotaRow = quota.appendRow();
+    const learnMoreRow = quota.appendRow();
+    const learnMore = UI.XLink.create(
+        'https://developers.google.com/web/tools/chrome-devtools/progressive-web-apps#opaque-responses',
+        ls`Learn more`);
+    learnMoreRow.appendChild(learnMore);
     this._quotaUsage = null;
     this._pieChart = new PerfUI.PieChart(110, Number.bytesToString, true);
     this._pieChartLegend = createElement('div');
@@ -43,6 +48,10 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
     usageBreakdownRow.classList.add('usage-breakdown-row');
     usageBreakdownRow.appendChild(this._pieChart.element);
     usageBreakdownRow.appendChild(this._pieChartLegend);
+
+    const clearButtonSection = this._reportView.appendSection('', 'clear-storage-button').appendRow();
+    this._clearButton = UI.createTextButton(ls`Clear site data`, this._clear.bind(this));
+    clearButtonSection.appendChild(this._clearButton);
 
     const application = this._reportView.appendSection(Common.UIString('Application'));
     this._appendItem(application, Common.UIString('Unregister service workers'), 'service_workers');
@@ -57,11 +66,7 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
     this._appendItem(caches, Common.UIString('Cache storage'), 'cache_storage');
     this._appendItem(caches, Common.UIString('Application cache'), 'appcache');
 
-    SDK.targetManager.observeTargets(this, SDK.Target.Capability.Browser);
-    const footer = this._reportView.appendSection('', 'clear-storage-button').appendRow();
-    this._clearButton = UI.createTextButton(
-        Common.UIString('Clear site data'), this._clear.bind(this), Common.UIString('Clear site data'));
-    footer.appendChild(this._clearButton);
+    SDK.targetManager.observeTargets(this);
   }
 
   /**

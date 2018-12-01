@@ -1,7 +1,7 @@
 (ns dirac.options.model
   (:require [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.storage :as storage]
-            [chromex.protocols :as chromex-protocols]
+            [chromex.protocols.chrome-storage-area :as chrome-storage-area]
             [dirac.options.logging :refer [error info log warn]]
             [dirac.shared.async :refer [<! close! go go-channel]]
             [oops.core :refer [gcall oapply ocall oget]]))
@@ -79,7 +79,7 @@
   (info "write options:" options)
   (let [serialized-options (serialize-options options)
         local-storage (storage/get-local)]
-    (chromex-protocols/set local-storage #js {"options" serialized-options})))                                                ; will trigger on-changed event and a call to reload-options!, which is fine
+    (chrome-storage-area/set local-storage #js {"options" serialized-options})))                                                ; will trigger on-changed event and a call to reload-options!, which is fine
 
 (defn on-cached-options-change! [new-options]
   (when *auto-sync*
@@ -98,7 +98,7 @@
 (defn go-read-options []
   (go
     (let [local-storage (storage/get-local)
-          [[items] _error] (<! (chromex-protocols/get local-storage "options"))
+          [[items] _error] (<! (chrome-storage-area/get local-storage "options"))
           options (parse-options (oget items "?options"))]
       (info "read options:" options)
       options)))

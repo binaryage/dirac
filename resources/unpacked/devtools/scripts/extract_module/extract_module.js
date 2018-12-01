@@ -385,9 +385,9 @@ function mapIdentifiers(identifiersByFile, cssFilesMapping) {
 function renameIdentifiers(identifierMap) {
   walkSync('front_end', write, true);
 
-  walkSync('../../LayoutTests/http/tests/devtools', write, false);
-  walkSync('../../LayoutTests/http/tests/inspector-protocol', write, false);
-  walkSync('../../LayoutTests/inspector-protocol', write, false);
+  walkSync('../../web_tests/http/tests/devtools', write, false);
+  walkSync('../../web_tests/http/tests/inspector-protocol', write, false);
+  walkSync('../../web_tests/inspector-protocol', write, false);
 
   function walkSync(currentDirPath, process, json) {
     fs.readdirSync(currentDirPath).forEach(function(name) {
@@ -399,7 +399,7 @@ function renameIdentifiers(identifierMap) {
           return;
         if (filePath.includes('externs.js'))
           return;
-        if (filePath.includes('eslint') || filePath.includes('lighthouse-background.js') || filePath.includes('/cm/') ||
+        if (filePath.includes('eslint') || filePath.includes('lighthouse-dt-bundle.js') || filePath.includes('/cm/') ||
             filePath.includes('/xterm.js/') || filePath.includes('/acorn/'))
           return;
         if (filePath.includes('/cm_modes/') && !filePath.includes('DefaultCodeMirror') &&

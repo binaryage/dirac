@@ -1,9 +1,9 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.17")
-(def selected-clojurescript-version "1.10.339")
+(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.339"))
 (def selected-clojure-version "1.9.0")
-(def selenium-version "3.14.0")
+(def selenium-version "3.141.59")
 (def lein-cljsbuild-version "1.1.7")
 
 (def provided-deps
@@ -11,7 +11,7 @@
    ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "0.4.474"]
+  [['org.clojure/core.async "0.4.490"]
    ['org.clojure/tools.logging "0.4.1"]
    ['org.clojure/tools.cli "0.4.1"]
    ['org.clojure/tools.nrepl "0.2.13"]
@@ -20,32 +20,32 @@
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
    ['funcool/cuerdas "2.0.6"]
-   ['com.rpl/specter "1.1.1"]])
+   ['com.rpl/specter "1.1.2"]])
 
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-   ['binaryage/oops "0.6.2" :scope "test"]
-   ['binaryage/chromex "0.6.4" :scope "test"]
+   ['binaryage/oops "0.6.3" :scope "test"]
+   ['binaryage/chromex "0.7.0" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.45" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
-   ['rum "0.11.2" :scope "test"]
+   ['rum "0.11.3" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
-   ['fipp "0.6.13" :scope "test"]
+   ['fipp "0.6.14" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
 
    ['http.async.client "1.3.0" :scope "test"]
 
-   ['ring/ring-core "1.7.0" :scope "test"]
-   ['ring/ring-devel "1.7.0" :scope "test"]
+   ['ring/ring-core "1.7.1" :scope "test"]
+   ['ring/ring-devel "1.7.1" :scope "test"]
    ['clj-time "0.15.1" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
@@ -59,7 +59,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.41"
+(defproject binaryage/dirac "1.2.42"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -166,7 +166,7 @@
              {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
 
              :clojure110
-             {:dependencies [[org.clojure/clojure "1.10.0-beta1" :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure "1.10.0-beta8" :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
@@ -437,29 +437,25 @@
 
              :parallel-build
              [:prevent-cljsbuild-defaults
-              ; parallel builds were causing random stack overflows like
-              ; https://travis-ci.org/binaryage/dirac/jobs/437984389#L1126
-              ; => stop using it for now, and wait
-              ;{:cljsbuild {:builds
-              ;             {:dirac-implant
-              ;              {:compiler {:parallel-build true}}
-              ;              :dirac-background
-              ;              {:compiler {:parallel-build true}}
-              ;              :dirac-options
-              ;              {:compiler {:parallel-build true}}
-              ;              :marion-background
-              ;              {:compiler {:parallel-build true}}
-              ;              :marion-content-script
-              ;              {:compiler {:parallel-build true}}
-              ;              :tasks
-              ;              {:compiler {:parallel-build true}}
-              ;              :scenarios01
-              ;              {:compiler {:parallel-build true}}
-              ;              :scenarios02
-              ;              {:compiler {:parallel-build true}}
-              ;              :scenarios03
-              ;              {:compiler {:parallel-build true}}}}}
-              ]
+              {:cljsbuild {:builds
+                           {:dirac-implant
+                            {:compiler {:parallel-build true}}
+                            :dirac-background
+                            {:compiler {:parallel-build true}}
+                            :dirac-options
+                            {:compiler {:parallel-build true}}
+                            :marion-background
+                            {:compiler {:parallel-build true}}
+                            :marion-content-script
+                            {:compiler {:parallel-build true}}
+                            :tasks
+                            {:compiler {:parallel-build true}}
+                            :scenarios01
+                            {:compiler {:parallel-build true}}
+                            :scenarios02
+                            {:compiler {:parallel-build true}}
+                            :scenarios03
+                            {:compiler {:parallel-build true}}}}}]
 
              :dirac-whitespace
              {:cljsbuild {:builds

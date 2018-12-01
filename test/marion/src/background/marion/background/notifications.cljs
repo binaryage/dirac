@@ -1,5 +1,5 @@
 (ns marion.background.notifications
-  (:require [chromex.protocols :refer [get-sender post-message!]]
+  (:require [chromex.protocols.chrome-port :as chrome-port]
             [dirac.shared.async :refer [<! go go-channel go-wait]]
             [marion.background.helpers :as helpers]
             [marion.background.logging :refer [error info log warn]]
@@ -41,4 +41,4 @@
       (if-not (pos? (count subscribers))
         (warn "notification broadcast request while no subscribers registered" message)
         (doseq [subscriber subscribers]
-          (post-message! subscriber message))))))
+          (chrome-port/post-message! subscriber message))))))

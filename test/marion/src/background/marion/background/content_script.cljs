@@ -1,5 +1,5 @@
 (ns marion.background.content-script
-  (:require [chromex.protocols :refer [get-sender post-message!]]
+  (:require [chromex.protocols.chrome-port :as chrome-port]
             [dirac.settings :refer [get-marion-open-scenario-timeout]]
             [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
             [dirac.shared.utils :as utils]
@@ -149,7 +149,7 @@
 
 (defn go-scenario-ready! [message client]
   (go
-    (let [sender (get-sender client)
+    (let [sender (chrome-port/get-sender client)
           scenario-url (oget sender "url")]
       (log "scenario is ready" scenario-url)
       (if-let [callback (get @pending-scenarios scenario-url)]

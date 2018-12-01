@@ -6,7 +6,8 @@
             "id": "audits2",
             "title": "Audits",
             "order": 90,
-            "className": "Audits2.Audits2Panel"
+            "className": "Audits2.Audits2Panel",
+            "tags": "lighthouse, pwa"
         }
     ],
     "dependencies": [
@@ -23,6 +24,7 @@
         "lighthouse/renderer/dom.js",
         "lighthouse/renderer/category-renderer.js",
         "lighthouse/renderer/performance-category-renderer.js",
+        "lighthouse/renderer/pwa-category-renderer.js",
         "lighthouse/renderer/details-renderer.js",
         "lighthouse/renderer/crc-details-renderer.js",
         "lighthouse/renderer/report-renderer.js",
@@ -47,6 +49,7 @@
       "lighthouse/renderer/dom.js",
       "lighthouse/renderer/category-renderer.js",
       "lighthouse/renderer/performance-category-renderer.js",
+      "lighthouse/renderer/pwa-category-renderer.js",
       "lighthouse/renderer/details-renderer.js",
       "lighthouse/renderer/crc-details-renderer.js",
       "lighthouse/renderer/report-renderer.js"

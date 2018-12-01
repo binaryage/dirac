@@ -338,10 +338,8 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
   onselect(selectedByUser) {
     this.treeOutline.suppressRevealAndSelect = true;
     this.treeOutline.selectDOMNode(this._node, selectedByUser);
-    if (selectedByUser) {
-      this._node.highlight();
+    if (selectedByUser)
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.ChangeInspectedNodeInElementsPanel);
-    }
     this._createSelection();
     this._createHint();
     this.treeOutline.suppressRevealAndSelect = false;
@@ -519,8 +517,11 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
           Common.UIString('Copy outerHTML'), treeOutline.performCopyOrCut.bind(treeOutline, false, this._node));
       menuItem.setShortcut(createShortcut('V', modifier));
     }
-    if (this._node.nodeType() === Node.ELEMENT_NODE)
+    if (this._node.nodeType() === Node.ELEMENT_NODE) {
       section.appendItem(Common.UIString('Copy selector'), this._copyCSSPath.bind(this));
+      section.appendItem(
+          Common.UIString('Copy JS path'), this._copyJSPath.bind(this), !Elements.DOMPath.canGetJSPath(this._node));
+    }
     if (!isShadowRoot)
       section.appendItem(Common.UIString('Copy XPath'), this._copyXPath.bind(this));
     if (!isShadowRoot) {
@@ -1618,6 +1619,10 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
 
   _copyCSSPath() {
     InspectorFrontendHost.copyText(Elements.DOMPath.cssPath(this._node, true));
+  }
+
+  _copyJSPath() {
+    InspectorFrontendHost.copyText(Elements.DOMPath.jsPath(this._node, true));
   }
 
   _copyXPath() {

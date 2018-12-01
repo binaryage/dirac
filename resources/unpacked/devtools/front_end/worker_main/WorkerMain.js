@@ -10,29 +10,21 @@ WorkerMain.WorkerMain = class extends Common.Object {
    * @override
    */
   run() {
-    const capabilities = SDK.Target.Capability.Browser | SDK.Target.Capability.Log | SDK.Target.Capability.Network |
-        SDK.Target.Capability.Target | SDK.Target.Capability.Inspector;
-    SDK.targetManager.createTarget(
-        'main', Common.UIString('Main'), capabilities, this._createMainConnection.bind(this), null, false /* isNodeJS */);
-    InspectorFrontendHost.connectionReady();
+    SDK.initMainConnection(() => {
+      SDK.targetManager.createTarget('main', ls`Main`, SDK.Target.Type.ServiceWorker, null);
+    }, Components.TargetDetachedDialog.webSocketConnectionLost);
     new MobileThrottling.NetworkPanelIndicator();
-  }
-
-  /**
-   * @param {!Protocol.InspectorBackend.Connection.Params} params
-   * @return {!Protocol.InspectorBackend.Connection}
-   */
-  _createMainConnection(params) {
-    return SDK.createMainConnection(params, () => Components.TargetDetachedDialog.webSocketConnectionLost());
   }
 };
 
-SDK.ChildTargetManager.install(({target, waitingForDebugger}) => {
-  const parentTarget = target.parentTarget();
+SDK.ChildTargetManager.install(async ({target, waitingForDebugger}) => {
   // Only pause the new worker if debugging SW - we are going through the pause on start checkbox.
-  if (!parentTarget.parentTarget() && waitingForDebugger) {
-    const debuggerModel = target.model(SDK.DebuggerModel);
-    if (debuggerModel)
-      debuggerModel.pause();
-  }
+  if (target.parentTarget().type() !== SDK.Target.Type.ServiceWorker || !waitingForDebugger)
+    return;
+  const debuggerModel = target.model(SDK.DebuggerModel);
+  if (!debuggerModel)
+    return;
+  if (!debuggerModel.isReadyToPause())
+    await debuggerModel.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause);
+  debuggerModel.pause();
 });

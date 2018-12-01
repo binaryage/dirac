@@ -66,8 +66,6 @@ var Runtime = class {  // eslint-disable-line
 
     for (let i = 0; i < descriptors.length; ++i)
       this._registerModule(descriptors[i]);
-
-    Runtime._runtimeReadyPromiseCallback();
   }
 
   /**
@@ -241,8 +239,8 @@ var Runtime = class {  // eslint-disable-line
   /**
    * @return {!Promise}
    */
-  static async runtimeReady() {
-    return Runtime._runtimeReadyPromise;
+  static async appStarted() {
+    return Runtime._appStartedPromise;
   }
 
   /**
@@ -293,7 +291,8 @@ var Runtime = class {  // eslint-disable-line
     }
     self.runtime = new Runtime(moduleDescriptors);
     if (coreModuleNames)
-      return /** @type {!Promise<undefined>} */ (self.runtime._loadAutoStartModules(coreModuleNames));
+      await self.runtime._loadAutoStartModules(coreModuleNames);
+    Runtime._appStartedPromiseCallback();
   }
 
   /**
@@ -313,7 +312,7 @@ var Runtime = class {  // eslint-disable-line
    * @return {?string}
    */
   static queryParam(name) {
-    return Runtime._queryParamsObject[name] || null;
+    return Runtime._queryParamsObject.get(name);
   }
 
   /**
@@ -568,12 +567,8 @@ var Runtime = class {  // eslint-disable-line
   }
 };
 
-/**
- * @type {!Object.<string, string>}
- */
-Runtime._queryParamsObject = {
-  __proto__: null
-};
+/** @type {!URLSearchParams} */
+Runtime._queryParamsObject = new URLSearchParams(Runtime.queryParamsString());
 
 Runtime._instanceSymbol = Symbol('instance');
 
@@ -1073,26 +1068,12 @@ Runtime.Experiment = class {
   }
 };
 
-{
-  (function parseQueryParameters() {
-    const queryParams = Runtime.queryParamsString();
-    if (!queryParams)
-      return;
-    const params = queryParams.substring(1).split('&');
-    for (let i = 0; i < params.length; ++i) {
-      const pair = params[i].split('=');
-      const name = pair.shift();
-      Runtime._queryParamsObject[name] = pair.join('=');
-    }
-  })();
-}
-
 // This must be constructed after the query parameters have been parsed.
 Runtime.experiments = new Runtime.ExperimentsSupport();
 
 /** @type {Function} */
-Runtime._runtimeReadyPromiseCallback;
-Runtime._runtimeReadyPromise = new Promise(fulfil => Runtime._runtimeReadyPromiseCallback = fulfil);
+Runtime._appStartedPromiseCallback;
+Runtime._appStartedPromise = new Promise(fulfil => Runtime._appStartedPromiseCallback = fulfil);
 /**
  * @type {?string}
  */

@@ -115,18 +115,6 @@ Sources.NavigatorView = class extends UI.VBox {
 
   /**
    * @param {!UI.ContextMenu} contextMenu
-   */
-  static appendAddFolderItem(contextMenu) {
-    function addFolder() {
-      Persistence.isolatedFileSystemManager.addFileSystem();
-    }
-
-    const addFolderLabel = Common.UIString('Add folder to workspace');
-    contextMenu.defaultSection().appendItem(addFolderLabel, addFolder);
-  }
-
-  /**
-   * @param {!UI.ContextMenu} contextMenu
    * @param {string=} path
    */
   static appendSearchItem(contextMenu, path) {
@@ -527,7 +515,8 @@ Sources.NavigatorView = class extends UI.VBox {
     if (!targetNode) {
       targetNode = new Sources.NavigatorGroupTreeNode(
           this, project, 'target:' + target.id(),
-          !target.hasBrowserCapability() ? Sources.NavigatorView.Types.Worker : Sources.NavigatorView.Types.Frame,
+          target.type() === SDK.Target.Type.Frame ? Sources.NavigatorView.Types.Frame :
+                                                    Sources.NavigatorView.Types.Worker,
           target.name());
       this._rootNode.appendChild(targetNode);
     }
@@ -752,7 +741,7 @@ Sources.NavigatorView = class extends UI.VBox {
     }
 
     if (project.type() === Workspace.projectTypes.FileSystem) {
-      Sources.NavigatorView.appendAddFolderItem(contextMenu);
+      contextMenu.defaultSection().appendAction('sources.add-folder-to-workspace', undefined, true);
       if (node instanceof Sources.NavigatorGroupTreeNode)
         contextMenu.defaultSection().appendItem(Common.UIString('Remove folder from workspace'), removeFolder);
     }

@@ -88,19 +88,19 @@ TimelineModel.TimelineModel = class {
    * @param {!SDK.TracingModel.Event} event
    * @return {boolean}
    */
-  static isMarkerEvent(event) {
+  isMarkerEvent(event) {
     const recordTypes = TimelineModel.TimelineModel.RecordType;
     switch (event.name) {
-      case recordTypes.FrameStartedLoading:
       case recordTypes.TimeStamp:
+        return true;
       case recordTypes.MarkFirstPaint:
       case recordTypes.MarkFCP:
       case recordTypes.MarkFMP:
-      case recordTypes.MarkFMPCandidate:
-        return true;
+        // TODO(alph): There are duplicate FMP events coming from the backend. Keep the one having 'data' property.
+        return event.args.frame === this._mainFrame.frameId && !!event.args.data;
       case recordTypes.MarkDOMContent:
       case recordTypes.MarkLoad:
-        return event.args['data']['isMainFrame'];
+        return !!event.args['data']['isMainFrame'];
       default:
         return false;
     }
@@ -541,7 +541,7 @@ TimelineModel.TimelineModel = class {
             track.tasks.push(event);
           eventStack.push(event);
         }
-        if (TimelineModel.TimelineModel.isMarkerEvent(event))
+        if (this.isMarkerEvent(event))
           this._timeMarkerEvents.push(event);
 
         track.events.push(event);
@@ -599,7 +599,7 @@ TimelineModel.TimelineModel = class {
         }
 
         if (asyncEvent.hasCategory(TimelineModel.TimelineModel.Category.UserTiming)) {
-          group(TimelineModel.TimelineModel.TrackType.UserTiming).push(asyncEvent);
+          group(TimelineModel.TimelineModel.TrackType.Timings).push(asyncEvent);
           continue;
         }
 
@@ -685,6 +685,10 @@ TimelineModel.TimelineModel = class {
       pageFrameId = TimelineModel.TimelineData.forEvent(eventStack.peekLast()).frameId;
     timelineData.frameId = pageFrameId || (this._mainFrame && this._mainFrame.frameId) || '';
     this._asyncEventTracker.processEvent(event);
+
+    if (this.isMarkerEvent(event))
+      this._ensureNamedTrack(TimelineModel.TimelineModel.TrackType.Timings);
+
     switch (event.name) {
       case recordTypes.ResourceSendRequest:
       case recordTypes.WebSocketCreate:
@@ -1215,7 +1219,6 @@ TimelineModel.TimelineModel.RecordType = {
   MarkFirstPaint: 'MarkFirstPaint',
   MarkFCP: 'firstContentfulPaint',
   MarkFMP: 'firstMeaningfulPaint',
-  MarkFMPCandidate: 'firstMeaningfulPaintCandidate',
 
   TimeStamp: 'TimeStamp',
   ConsoleTime: 'ConsoleTime',
@@ -1396,7 +1399,7 @@ TimelineModel.TimelineModel.TrackType = {
   Worker: Symbol('Worker'),
   Input: Symbol('Input'),
   Animation: Symbol('Animation'),
-  UserTiming: Symbol('UserTiming'),
+  Timings: Symbol('Timings'),
   Console: Symbol('Console'),
   Raster: Symbol('Raster'),
   GPU: Symbol('GPU'),

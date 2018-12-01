@@ -136,6 +136,14 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
       return;
     SDK.DebuggerModel._debuggerIdToModel.set(debuggerId, this);
     this._debuggerId = debuggerId;
+    this.dispatchEventToListeners(SDK.DebuggerModel.Events.DebuggerIsReadyToPause, this);
+  }
+
+  /**
+   * @return {boolean}
+   */
+  isReadyToPause() {
+    return !!this._debuggerId;
   }
 
   /**
@@ -252,7 +260,7 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
   async setBreakpointByURL(url, lineNumber, columnNumber, condition) {
     // Convert file url to node-js path.
     let urlRegex;
-    if (this.target().isNodeJS()) {
+    if (this.target().type() === SDK.Target.Type.Node) {
       const platformPath = Common.ParsedURL.urlToPlatformPath(url, Host.isWin());
       urlRegex = `${platformPath.escapeForRegExp()}|${url.escapeForRegExp()}`;
     }
@@ -929,7 +937,8 @@ SDK.DebuggerModel.Events = {
   DiscardedAnonymousScriptSource: Symbol('DiscardedAnonymousScriptSource'),
   GlobalObjectCleared: Symbol('GlobalObjectCleared'),
   CallFrameSelected: Symbol('CallFrameSelected'),
-  ConsoleCommandEvaluatedInSelectedCallFrame: Symbol('ConsoleCommandEvaluatedInSelectedCallFrame')
+  ConsoleCommandEvaluatedInSelectedCallFrame: Symbol('ConsoleCommandEvaluatedInSelectedCallFrame'),
+  DebuggerIsReadyToPause: Symbol('DebuggerIsReadyToPause'),
 };
 
 /** @enum {string} */
