@@ -437,29 +437,25 @@
 
              :parallel-build
              [:prevent-cljsbuild-defaults
-              ; parallel builds were causing random stack overflows like
-              ; https://travis-ci.org/binaryage/dirac/jobs/437984389#L1126
-              ; => stop using it for now, and wait
-              ;{:cljsbuild {:builds
-              ;             {:dirac-implant
-              ;              {:compiler {:parallel-build true}}
-              ;              :dirac-background
-              ;              {:compiler {:parallel-build true}}
-              ;              :dirac-options
-              ;              {:compiler {:parallel-build true}}
-              ;              :marion-background
-              ;              {:compiler {:parallel-build true}}
-              ;              :marion-content-script
-              ;              {:compiler {:parallel-build true}}
-              ;              :tasks
-              ;              {:compiler {:parallel-build true}}
-              ;              :scenarios01
-              ;              {:compiler {:parallel-build true}}
-              ;              :scenarios02
-              ;              {:compiler {:parallel-build true}}
-              ;              :scenarios03
-              ;              {:compiler {:parallel-build true}}}}}
-              ]
+              {:cljsbuild {:builds
+                           {:dirac-implant
+                            {:compiler {:parallel-build true}}
+                            :dirac-background
+                            {:compiler {:parallel-build true}}
+                            :dirac-options
+                            {:compiler {:parallel-build true}}
+                            :marion-background
+                            {:compiler {:parallel-build true}}
+                            :marion-content-script
+                            {:compiler {:parallel-build true}}
+                            :tasks
+                            {:compiler {:parallel-build true}}
+                            :scenarios01
+                            {:compiler {:parallel-build true}}
+                            :scenarios02
+                            {:compiler {:parallel-build true}}
+                            :scenarios03
+                            {:compiler {:parallel-build true}}}}}]
 
              :dirac-whitespace
              {:cljsbuild {:builds
