@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='72.0.3624.3';
-Protocol.BakedInspectorBackendAPIChromeRev='76cae137ae2d305ea9d271917814c2d83d7411f8';
+Protocol.BakedInspectorBackendAPIChromeTag='73.0.3629.1';
+Protocol.BakedInspectorBackendAPIChromeRev='b6a95ca71e33c6526f67260b0400bbfd907dc33f';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -521,7 +521,6 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Debugger.removeBreakpoint", [{"name": "breakpointId", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.restartFrame", [{"name": "callFrameId", "type": "string", "optional": false}], ["callFrames", "asyncStackTrace", "asyncStackTraceId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.resume", [], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Debugger.scheduleStepIntoAsync", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.searchInContent", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "query", "type": "string", "optional": false}, {"name": "caseSensitive", "type": "boolean", "optional": true}, {"name": "isRegex", "type": "boolean", "optional": true}], ["result"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.setAsyncCallStackDepth", [{"name": "maxDepth", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.setBlackboxPatterns", [{"name": "patterns", "type": "object", "optional": false}], [], false);\n'
