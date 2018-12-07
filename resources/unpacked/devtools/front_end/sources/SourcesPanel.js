@@ -252,11 +252,10 @@ Sources.SourcesPanel = class extends UI.Panel {
    */
   resolveLocation(locationName) {
     if (locationName === 'sources.sidebar-top' || locationName === 'sources.sidebar-bottom' ||
-        locationName === 'sources.sidebar-tabs') {
+        locationName === 'sources.sidebar-tabs')
       return this._sidebarPaneStack;
-    } else {
+    else
       return this._navigatorTabbedLocation;
-    }
   }
 
   /**
