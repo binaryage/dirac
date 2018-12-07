@@ -1998,6 +1998,20 @@ Console.ConsoleViewFilter = class {
  * @unrestricted
  */
 Console.ConsoleCommand = class extends Console.ConsoleViewMessage {
+
+  /**
+   * @param {!SDK.ConsoleMessage} consoleMessage
+   * @param {!Components.Linkifier} linkifier
+   * @param {!ProductRegistry.BadgePool} badgePool
+   * @param {number} nestingLevel
+   * @param {function(!Common.Event)} onResize
+   */
+  constructor(consoleMessage, linkifier, badgePool, nestingLevel, onResize) {
+    super(consoleMessage, linkifier, badgePool, nestingLevel, onResize);
+    this._contentElement = null;
+    this._formattedCommand = null;
+  }
+
   /**
    * @override
    * @return {!Element}
