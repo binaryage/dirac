@@ -183,6 +183,8 @@ Console.ConsoleView = class extends UI.VBox {
     this._messagesElement.addEventListener('clipboard-paste', this._messagesPasted.bind(this), true);
 
     this._viewportThrottler = new Common.Throttler(50);
+    this._pendingBatchResize = false;
+    this._onMessageResizedBound = this._onMessageResized.bind(this);
 
     this._topGroup = Console.ConsoleGroup.createTopGroup();
     this._currentGroup = this._topGroup;
@@ -215,8 +217,13 @@ Console.ConsoleView = class extends UI.VBox {
     this._prompt.addEventListener(Console.ConsolePrompt.Events.TextChanged, this._promptTextChanged, this);
 
     this._keyboardNavigationEnabled = Runtime.experiments.isEnabled('consoleKeyboardNavigation');
-    if (this._keyboardNavigationEnabled)
+    if (this._keyboardNavigationEnabled) {
       this._messagesElement.addEventListener('keydown', this._messagesKeyDown.bind(this), false);
+      this._prompt.element.addEventListener('focusin', () => {
+        if (this._isScrolledToBottom())
+          this._viewport.setStickToBottom(true);
+      });
+    }
 
     this._consoleHistoryAutocompleteSetting.addChangeListener(this._consoleHistoryAutocompleteChanged, this);
 
@@ -388,9 +395,22 @@ Console.ConsoleView = class extends UI.VBox {
    * @override
    */
   focus() {
+    if (!this._keyboardNavigationEnabled) {
+      this._focusPrompt();
+      return;
+    }
+    if (this._viewport.hasVirtualSelection())
+      this._viewport.contentElement().focus();
+    else
+      this._focusPrompt();
+  }
+
+  _focusPrompt() {
     if (!this._prompt.hasFocus()) {
+      const oldStickToBottom = this._viewport.stickToBottom();
       const oldScrollTop = this._viewport.element.scrollTop;
       this._prompt.focus();
+      this._viewport.setStickToBottom(oldStickToBottom);
       this._viewport.element.scrollTop = oldScrollTop;
     }
   }
@@ -625,16 +645,41 @@ Console.ConsoleView = class extends UI.VBox {
     const nestingLevel = this._currentGroup.nestingLevel();
     switch (message.type) {
       case SDK.ConsoleMessage.MessageType.Command:
-        return new Console.ConsoleCommand(message, this._linkifier, this._badgePool, nestingLevel);
+        return new Console.ConsoleCommand(
+            message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.Result:
-        return new Console.ConsoleCommandResult(message, this._linkifier, this._badgePool, nestingLevel);
+        return new Console.ConsoleCommandResult(
+            message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.StartGroupCollapsed:
       case SDK.ConsoleMessage.MessageType.StartGroup:
         return new Console.ConsoleGroupViewMessage(
-            message, this._linkifier, this._badgePool, nestingLevel, this._updateMessageList.bind(this));
+            message, this._linkifier, this._badgePool, nestingLevel, this._updateMessageList.bind(this),
+            this._onMessageResizedBound);
       default:
-        return new Console.ConsoleViewMessage(message, this._linkifier, this._badgePool, nestingLevel);
+        return new Console.ConsoleViewMessage(
+            message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
     }
+  }
+
+  /**
+   * @param {!Common.Event} event
+   * @return {!Promise}
+   */
+  async _onMessageResized(event) {
+    if (!this._keyboardNavigationEnabled)
+      return;
+    const treeElement = /** @type {!UI.TreeElement} */ (event.data);
+    if (this._pendingBatchResize || !treeElement.treeOutline)
+      return;
+    this._pendingBatchResize = true;
+    await Promise.resolve();
+    const treeOutlineElement = treeElement.treeOutline.element;
+    this._viewport.setStickToBottom(this._isScrolledToBottom());
+    // Scroll, in case mutations moved the element below the visible area.
+    if (treeOutlineElement.offsetHeight <= this._messagesElement.offsetHeight)
+      treeOutlineElement.scrollIntoViewIfNeeded();
+
+    this._pendingBatchResize = false;
   }
 
   _consoleCleared() {
@@ -866,12 +911,12 @@ Console.ConsoleView = class extends UI.VBox {
       if (this._keyboardNavigationEnabled) {
         if (clickedOutsideMessageList) {
           this._prompt.moveCaretToEndOfPrompt();
-          this.focus();
+          this._focusPrompt();
         }
       } else {
         if (clickedOutsideMessageList)
           this._prompt.moveCaretToEndOfPrompt();
-        this.focus();
+        this._focusPrompt();
       }
     }
   }
@@ -884,7 +929,7 @@ Console.ConsoleView = class extends UI.VBox {
     if (hasActionModifier || event.key.length !== 1 || UI.isEditing() || this._messagesElement.hasSelection())
       return;
     this._prompt.moveCaretToEndOfPrompt();
-    this.focus();
+    this._focusPrompt();
   }
 
   /**
@@ -1194,7 +1239,11 @@ Console.ConsoleView = class extends UI.VBox {
   }
 
   _promptTextChanged() {
-    this._viewport.setStickToBottom(this._isScrolledToBottom());
+    const oldStickToBottom = this._viewport.stickToBottom();
+    const willStickToBottom = this._isScrolledToBottom();
+    this._viewport.setStickToBottom(willStickToBottom);
+    if (willStickToBottom && !oldStickToBottom)
+      this._scheduleViewportRefresh();
     this._promptTextChangedForTest();
   }
 
@@ -1395,16 +1444,6 @@ Console.ConsoleViewFilter = class {
  */
 Console.ConsoleCommand = class extends Console.ConsoleViewMessage {
   /**
-   * @param {!SDK.ConsoleMessage} message
-   * @param {!Components.Linkifier} linkifier
-   * @param {!ProductRegistry.BadgePool} badgePool
-   * @param {number} nestingLevel
-   */
-  constructor(message, linkifier, badgePool, nestingLevel) {
-    super(message, linkifier, badgePool, nestingLevel);
-  }
-
-  /**
    * @override
    * @return {!Element}
    */
@@ -1445,16 +1484,6 @@ Console.ConsoleCommand = class extends Console.ConsoleViewMessage {
 Console.ConsoleCommand.MaxLengthToIgnoreHighlighter = 10000;
 
 Console.ConsoleCommandResult = class extends Console.ConsoleViewMessage {
-  /**
-   * @param {!SDK.ConsoleMessage} message
-   * @param {!Components.Linkifier} linkifier
-   * @param {!ProductRegistry.BadgePool} badgePool
-   * @param {number} nestingLevel
-   */
-  constructor(message, linkifier, badgePool, nestingLevel) {
-    super(message, linkifier, badgePool, nestingLevel);
-  }
-
   /**
    * @override
    * @return {!Element}
@@ -1528,6 +1557,7 @@ Console.ConsoleView.ActionDelegate = class {
       case 'console.show':
         InspectorFrontendHost.bringToFront();
         Common.console.show();
+        Console.ConsoleView.instance()._focusPrompt();
         return true;
       case 'console.clear':
         Console.ConsoleView.clearConsole();

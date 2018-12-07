@@ -119,6 +119,7 @@ Main.Main = class {
     Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
     Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
     Runtime.experiments.register('sourceDiff', 'Source diff');
+    Runtime.experiments.register('sourcesLogpoints', 'Sources: logpoints');
     Runtime.experiments.register('sourcesPrettyPrint', 'Automatically pretty print in the Sources Panel');
     Runtime.experiments.register(
         'stepIntoAsync', 'Introduce separate step action, stepInto becomes powerful enough to go inside async call');
@@ -151,7 +152,7 @@ Main.Main = class {
 
     Runtime.experiments.setDefaultExperiments([
       'colorContrastRatio', 'stepIntoAsync', 'oopifInlineDOM', 'consoleBelowPrompt', 'timelineTracingJSProfile',
-      'pinnedExpressions'
+      'pinnedExpressions', 'consoleKeyboardNavigation'
     ]);
   }
 
