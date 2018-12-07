@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='73.0.3629.1';
-Protocol.BakedInspectorBackendAPIChromeRev='b6a95ca71e33c6526f67260b0400bbfd907dc33f';
+Protocol.BakedInspectorBackendAPIChromeTag='73.0.3633.2';
+Protocol.BakedInspectorBackendAPIChromeRev='8f3438b8da2b1ac88dccc57facc96183ac5a3b81';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -78,7 +78,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.deleteEntry", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "request", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestCacheNames", [{"name": "securityOrigin", "type": "string", "optional": false}], ["caches"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestCachedResponse", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "requestURL", "type": "string", "optional": false}], ["response"], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestEntries", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "skipCount", "type": "number", "optional": false}, {"name": "pageSize", "type": "number", "optional": false}], ["cacheDataEntries", "hasMore"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestEntries", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "skipCount", "type": "number", "optional": false}, {"name": "pageSize", "type": "number", "optional": false}, {"name": "pathFilter", "type": "string", "optional": true}], ["cacheDataEntries", "hasMore"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("DOM.PseudoType", {FirstLine: "first-line", FirstLetter: "first-letter", Before: "before", After: "after", Backdrop: "backdrop", Selection: "selection", FirstLineInherited: "first-line-inherited", Scrollbar: "scrollbar", ScrollbarThumb: "scrollbar-thumb", ScrollbarButton: "scrollbar-button", ScrollbarTrack: "scrollbar-track", ScrollbarTrackPiece: "scrollbar-track-piece", ScrollbarCorner: "scrollbar-corner", Resizer: "resizer", InputListButton: "input-list-button"});\n'
 + 'Protocol.inspectorBackend.registerEnum("DOM.ShadowRootType", {UserAgent: "user-agent", Open: "open", Closed: "closed"});\n'
 + 'Protocol.inspectorBackend.registerEvent("DOM.attributeModified", ["nodeId", "name", "value"]);\n'
