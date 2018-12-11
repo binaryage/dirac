@@ -1167,10 +1167,11 @@ Protocol.CacheStorageAgent.prototype.invoke_requestCachedResponse = function(obj
  * @param {Protocol.CacheStorage.CacheId} cacheId
  * @param {number} skipCount
  * @param {number} pageSize
+ * @param {string=} opt_pathFilter
  * @return {!Promise<?Array<Protocol.CacheStorage.DataEntry>>}
  */
-Protocol.CacheStorageAgent.prototype.requestEntries = function(cacheId, skipCount, pageSize) {};
-/** @typedef {!{cacheId: Protocol.CacheStorage.CacheId, skipCount: number, pageSize: number}} */
+Protocol.CacheStorageAgent.prototype.requestEntries = function(cacheId, skipCount, pageSize, opt_pathFilter) {};
+/** @typedef {!{pathFilter: (string|undefined), cacheId: Protocol.CacheStorage.CacheId, skipCount: number, pageSize: number}} */
 Protocol.CacheStorageAgent.RequestEntriesRequest;
 /** @typedef {!{hasMore: boolean, cacheDataEntries: !Array<Protocol.CacheStorage.DataEntry>}} */
 Protocol.CacheStorageAgent.RequestEntriesResponse;
@@ -7188,19 +7189,6 @@ Protocol.DebuggerAgent.ResumeResponse;
  * @param {!Protocol.DebuggerAgent.ResumeRequest} obj
  * @return {!Promise<!Protocol.DebuggerAgent.ResumeResponse>} */
 Protocol.DebuggerAgent.prototype.invoke_resume = function(obj) {};
-
-/**
- * @return {!Promise<undefined>}
- */
-Protocol.DebuggerAgent.prototype.scheduleStepIntoAsync = function() {};
-/** @typedef {Object|undefined} */
-Protocol.DebuggerAgent.ScheduleStepIntoAsyncRequest;
-/** @typedef {Object|undefined} */
-Protocol.DebuggerAgent.ScheduleStepIntoAsyncResponse;
-/**
- * @param {!Protocol.DebuggerAgent.ScheduleStepIntoAsyncRequest} obj
- * @return {!Promise<!Protocol.DebuggerAgent.ScheduleStepIntoAsyncResponse>} */
-Protocol.DebuggerAgent.prototype.invoke_scheduleStepIntoAsync = function(obj) {};
 
 /**
  * @param {Protocol.Runtime.ScriptId} scriptId

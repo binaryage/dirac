@@ -177,13 +177,12 @@ Sources.SourcesPanel = class extends UI.Panel {
   _showThreadsIfNeeded() {
     if (Sources.ThreadsSidebarPane.shouldBeShown() && !this._threadsSidebarPane) {
       this._threadsSidebarPane = /** @type {!UI.View} */ (UI.viewManager.view('sources.threads'));
-      if (this._sidebarPaneStack) {
+      if (this._sidebarPaneStack && this._threadsSidebarPane) {
         this._sidebarPaneStack.showView(
             this._threadsSidebarPane, this._splitWidget.isVertical() ? this._watchSidebarPane : this._callstackPane);
       }
     }
   }
-
 
   /**
    * @param {?SDK.Target} target
@@ -252,7 +251,8 @@ Sources.SourcesPanel = class extends UI.Panel {
    * @return {?UI.ViewLocation}
    */
   resolveLocation(locationName) {
-    if (locationName === 'sources-sidebar')
+    if (locationName === 'sources.sidebar-top' || locationName === 'sources.sidebar-bottom' ||
+        locationName === 'sources.sidebar-tabs')
       return this._sidebarPaneStack;
     else
       return this._navigatorTabbedLocation;
@@ -767,7 +767,7 @@ Sources.SourcesPanel = class extends UI.Panel {
   _appendUISourceCodeFrameItems(event, contextMenu, target) {
     if (!(target instanceof Sources.UISourceCodeFrame))
       return;
-    if (target.uiSourceCode().contentType().isFromSourceMap())
+    if (target.uiSourceCode().contentType().isFromSourceMap() || target.textEditor.selection().isEmpty())
       return;
     contextMenu.debugSection().appendAction('debugger.evaluate-selection');
   }
@@ -900,6 +900,7 @@ Sources.SourcesPanel = class extends UI.Panel {
     this._sidebarPaneStack.widget().element.classList.add('overflow-auto');
     this._sidebarPaneStack.widget().show(vbox.element);
     this._sidebarPaneStack.widget().element.appendChild(this._debuggerPausedMessage.element());
+    this._sidebarPaneStack.appendApplicableItems('sources.sidebar-top');
     vbox.element.appendChild(this._debugToolbar.element);
 
     if (this._threadsSidebarPane)
@@ -938,11 +939,12 @@ Sources.SourcesPanel = class extends UI.Panel {
       this._splitWidget.installResizer(this._debugToolbar.gripElementForResize());
       tabbedLocation.appendView(scopeChainView);
       tabbedLocation.appendView(this._watchSidebarPane);
+      tabbedLocation.appendApplicableItems('sources.sidebar-tabs');
       this._extensionSidebarPanesContainer = tabbedLocation;
       this.sidebarPaneView = splitWidget;
     }
 
-    this._sidebarPaneStack.appendApplicableItems('sources-sidebar');
+    this._sidebarPaneStack.appendApplicableItems('sources.sidebar-bottom');
     const extensionSidebarPanes = Extensions.extensionServer.sidebarPanes();
     for (let i = 0; i < extensionSidebarPanes.length; ++i)
       this._addExtensionSidebarPane(extensionSidebarPanes[i]);

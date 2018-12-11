@@ -122,9 +122,7 @@
             (switch-view data :inline-custom-formatters "Inline Custom Formatters" (inline-custom-formatters-details))
             (switch-view data :clean-urls "Enable clean URLs" (clean-urls-details))
             (switch-view data :beautify-function-names "Beautify function names" (beautify-function-names-details))
-            (switch-view data :link-actions "Enable link actions" (link-actions-details))
-            (switch-view data :use-backend-supported-api "Use backend-supported API" (api-details))
-            (switch-view data :use-backend-supported-css "Use backend-supported CSS" (api-details))]]
+            (switch-view data :link-actions "Enable link actions" (link-actions-details))]]
           (extra-params-view data))
         (f/form-buttons
           (f/button "Reset to Defaults and Exit" reset-to-defaults-and-exit!)
