@@ -63,18 +63,6 @@
             first-tab (aget tabs 0)]
         (sugar/get-tab-id first-tab)))))
 
-(defn go-create-bundled-devtools-window! [url]
-  (let [window-params #js {:url   url
-                           :type  "normal"
-                           :state "minimized"}]
-    (sugar/go-create-window-and-wait-for-first-tab-completed! window-params)))
-
-(defn go-create-bundled-devtools-inspector-window! []
-  (go-create-bundled-devtools-window! "chrome-devtools://devtools/bundled/inspector.js"))
-
-(defn go-create-bundled-devtools-shell-window! []
-  (go-create-bundled-devtools-window! "chrome-devtools://devtools/bundled/shell.js"))
-
 (defn go-remove-window! [window-id]
   (windows/remove window-id))
 
@@ -105,20 +93,6 @@
     (assoc options :automate true)
     options))
 
-(defn provide-backend-api-if-available [options]
-  (or
-    (when (options/get-option :use-backend-supported-api)
-      (if-some [backend-api (state/get-backend-api)]
-        (assoc options :backend-api backend-api)))
-    options))
-
-(defn provide-backend-css-if-available [options]
-  (or
-    (when (options/get-option :use-backend-supported-css)
-      (if-some [backend-css (state/get-backend-css)]
-        (assoc options :backend-css backend-css)))
-    options))
-
 (defn provide-user-url-params [options]
   (or
     (if-some [user-url-params (options/get-option :user-frontend-url-params)]
@@ -128,8 +102,6 @@
 (defn prepare-options [initial-options]
   (-> initial-options
       (automate-if-marion-present)
-      (provide-backend-api-if-available)
-      (provide-backend-css-if-available)
       (provide-user-url-params)))
 
 (defn go-wait-for-handshake-completion! [frontend-tab-id timeout-ms]

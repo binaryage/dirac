@@ -21,8 +21,6 @@
    :clean-urls                true
    :beautify-function-names   true
    :link-actions              true
-   :use-backend-supported-api true
-   :use-backend-supported-css true
    :user-frontend-url-params  nil})
 
 (defonce cached-options (atom nil))
