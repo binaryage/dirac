@@ -210,7 +210,8 @@
 (defn prepare-options
   ([] (prepare-options false))
   ([attaching?]
-   (let [defaults {:dirac-host-os                         (System/getProperty "os.name")
+   (let [defaults {:dirac-root                            (System/getProperty "user.dir")
+                   :dirac-host-os                         (System/getProperty "os.name")
                    :dirac-chrome-driver-browser-log-level "SEVERE"}
          env-settings (select-keys env known-env-options)
          overrides {:attaching? attaching?}]
