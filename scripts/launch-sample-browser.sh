@@ -5,18 +5,18 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$ROOT"
 
-if [ ! -d "$DIRAC_BROWSER_TESTS_USER_PROFILE" ] ; then
+if [[ ! -d "$DIRAC_BROWSER_TESTS_USER_PROFILE" ]]; then
   mkdir -p "$DIRAC_BROWSER_TESTS_USER_PROFILE"
 fi
 
 EXE="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
-if [ -n "$DIRAC_USE_CHROME" ] ; then
+if [[ -n "$DIRAC_USE_CHROME" ]]; then
   EXE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 fi
-if [ -n "$DIRAC_USE_CHROMIUM" ] ; then
+if [[ -n "$DIRAC_USE_CHROMIUM" ]]; then
   EXE="/Applications/Chromium.app/Contents/MacOS/Chromium"
 fi
-if [ -n "$DIRAC_USE_CUSTOM_CHROME" ] ; then
+if [[ -n "$DIRAC_USE_CUSTOM_CHROME" ]]; then
   EXE="$DIRAC_USE_CUSTOM_CHROME"
 fi
 

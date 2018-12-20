@@ -17,8 +17,8 @@ find_latest_squash(){
       git-subtree-mainline:) main="$b" ;;
       git-subtree-split:) sub="$b" ;;
       END)
-        if [ -n "$sub" ]; then
-          if [ -n "$main" ]; then
+        if [[ -n "$sub" ]]; then
+          if [[ -n "$main" ]]; then
             # a rejoin commit?
             # Pretend its sub was a squash.
             sq="$sub"
@@ -52,7 +52,7 @@ confirm () {
 SHA=${1:-HEAD}
 FORCE_PUSH=$2
 
-if [ -d "$DIFF_WORK_DIR" ] ; then
+if [[ -d "$DIFF_WORK_DIR" ]]; then
   rm -rf "$DIFF_WORK_DIR"
 fi
 
@@ -70,7 +70,7 @@ first_split="$(find_latest_squash "$OURS")"
 set ${first_split}
 SQUASH_COMMIT_SHA=$1
 LAST_MERGED_DEVTOOLS_SHA=$2
-if [ -z "$LAST_MERGED_DEVTOOLS_SHA" ]; then
+if [[ -z "$LAST_MERGED_DEVTOOLS_SHA" ]]; then
   echo "Can't find last squash-merge in '$OURS'."
   exit 2
 fi

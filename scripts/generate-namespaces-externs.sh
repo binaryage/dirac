@@ -5,13 +5,13 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$DEVTOOLS_ROOT"
 
-if [ -f "$DEVTOOLS_NAMESPACES_EXTERNS_FILE" ]; then
+if [[ -f "$DEVTOOLS_NAMESPACES_EXTERNS_FILE" ]]; then
   rm "$DEVTOOLS_NAMESPACES_EXTERNS_FILE"
 fi
 
 python scripts/generate_namespaces_externs.py "$DEVTOOLS_NAMESPACES_EXTERNS_FILE"
 
-if [ -f "$DEVTOOLS_NAMESPACES_EXTERNS_FILE" ]; then
+if [[ -f "$DEVTOOLS_NAMESPACES_EXTERNS_FILE" ]]; then
   echo "Generated fresh $DEVTOOLS_NAMESPACES_EXTERNS_FILE"
 else
   exit 1

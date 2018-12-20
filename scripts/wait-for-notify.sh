@@ -6,11 +6,11 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 TRIGGER_FILE="$NOTIFY_DIR/$1"
 
 counter=0
-while [ ! -f "$TRIGGER_FILE" ] ;
+while [[ ! -f "$TRIGGER_FILE" ]];
 do
   counter=$((counter+1))
   n=$((counter%60))
-  if [ ${n} -eq 0 ]; then
+  if [[ ${n} -eq 0 ]]; then
     echo "still waiting for '$TRIGGER_FILE' to be created..."
   fi
   sleep 1

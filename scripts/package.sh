@@ -8,37 +8,37 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$ROOT"
 
-if [ ! -f "$CSS_PROPERTIES_OUTPUT_FILE" ] ; then
+if [[ ! -f "$CSS_PROPERTIES_OUTPUT_FILE" ]]; then
   echo "'$CSS_PROPERTIES_OUTPUT_FILE' does not exist, run './scripts/regenerate.sh' first"
   popd
   exit 10
 fi
 
-if [ ! -f "$INSPECTOR_BACKEND_COMMANDS_OUTPUT_FILE" ] ; then
+if [[ ! -f "$INSPECTOR_BACKEND_COMMANDS_OUTPUT_FILE" ]]; then
   echo "'$INSPECTOR_BACKEND_COMMANDS_OUTPUT_FILE' does not exist, run './scripts/regenerate.sh' first"
   popd
   exit 11
 fi
 
-if [ ! -d "$RELEASE_BUILD" ] ; then
+if [[ ! -d "$RELEASE_BUILD" ]]; then
   echo "'$RELEASE_BUILD' does not exist, run 'lein release' first"
   popd
   exit 1
 fi
 
-if [ ! -f "$RELEASE_BUILD_COMPILED_BACKGROUND_JS" ] ; then
+if [[ ! -f "$RELEASE_BUILD_COMPILED_BACKGROUND_JS" ]]; then
   echo "'$RELEASE_BUILD_COMPILED_BACKGROUND_JS' does not exist, run 'lein release' to fully build the project"
   popd
   exit 2
 fi
 
-if [ ! -f "$RELEASE_BUILD_COMPILED_OPTIONS_JS" ] ; then
+if [[ ! -f "$RELEASE_BUILD_COMPILED_OPTIONS_JS" ]]; then
   echo "'$RELEASE_BUILD_COMPILED_OPTIONS_JS' does not exist, run 'lein release' to fully build the project"
   popd
   exit 3
 fi
 
-if [ ! -d "$RELEASES" ] ; then
+if [[ ! -d "$RELEASES" ]]; then
   mkdir -p "$RELEASES"
 fi
 
@@ -48,7 +48,7 @@ PACKAGE_NAME="dirac-$VERSION"
 PACKAGE_DIR="$RELEASES/$PACKAGE_NAME"
 ZIP_NAME="$RELEASES/$PACKAGE_NAME.zip"
 
-if [ -d "$PACKAGE_DIR" ] ; then
+if [[ -d "$PACKAGE_DIR" ]]; then
   rm -rf "$PACKAGE_DIR"
 fi
 
@@ -56,7 +56,7 @@ cp -r "$RELEASE_BUILD" "$PACKAGE_DIR" # this will copy actual files, not symlink
 
 pushd "$PACKAGE_DIR"
 
-if [ -f "$ZIP_NAME" ] ; then
+if [[ -f "$ZIP_NAME" ]]; then
   rm "$ZIP_NAME"
 fi
 

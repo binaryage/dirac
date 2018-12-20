@@ -5,11 +5,11 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$ROOT"
 
-if [ ! -d "$DIRAC_USER_PROFILE" ] ; then
+if [[ ! -d "$DIRAC_USER_PROFILE" ]]; then
   mkdir -p "$DIRAC_USER_PROFILE"
 fi
 
-if [ ! -z "$1" ] ; then
+if [[ ! -z "$1" ]]; then
   EXE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 else
   EXE="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"

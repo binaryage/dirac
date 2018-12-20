@@ -28,21 +28,21 @@ pushd "$ROOT"
 
 ./scripts/check-versions.sh
 
-if [ -z "$RELEASE_BUILD_DEVTOOLS" ] ; then
+if [[ -z "$RELEASE_BUILD_DEVTOOLS" ]]; then
   echo "invalid config: RELEASE_BUILD_DEVTOOLS env var is empty"
   exit 111
 fi
 
-if [ -f "$RELEASE_BUILD_COMPILED_BACKGROUND_JS" ] ; then
+if [[ -f "$RELEASE_BUILD_COMPILED_BACKGROUND_JS" ]]; then
   rm "$RELEASE_BUILD_COMPILED_BACKGROUND_JS"
 fi
-if [ -f "$RELEASE_BUILD_COMPILED_OPTIONS_JS" ] ; then
+if [[ -f "$RELEASE_BUILD_COMPILED_OPTIONS_JS" ]]; then
   rm "$RELEASE_BUILD_COMPILED_OPTIONS_JS"
 fi
-if [ -d "$RELEASE_BUILD_DEVTOOLS" ] ; then
+if [[ -d "$RELEASE_BUILD_DEVTOOLS" ]]; then
   rm -rf "$RELEASE_BUILD_DEVTOOLS"
 fi
-if [ ! -d "$RELEASE_BUILD_DEVTOOLS_FRONTEND" ] ; then
+if [[ ! -d "$RELEASE_BUILD_DEVTOOLS_FRONTEND" ]]; then
   mkdir -p "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 fi
 
@@ -57,13 +57,13 @@ pushd "$DEVTOOLS_ROOT"
 
 # http://stackoverflow.com/a/34676160/84283
 WORK_DIR=`mktemp -q -d /tmp/dirac-build-XXXXXXX`
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
   echo "$0: Can't create temp file, exiting..."
   exit 1
 fi
 
 function cleanup {
-  if [[ "$WORK_DIR" == /tmp/dirac-build-* ]] ; then  # this is just a paranoid test if something went terribly wrong and mktemp returned "/" or something non-tmp-ish
+  if [[ "$WORK_DIR" == /tmp/dirac-build-* ]]; then  # this is just a paranoid test if something went terribly wrong and mktemp returned "/" or something non-tmp-ish
     rm -rf "$WORK_DIR"
     # echo "Deleted temp working directory $WORK_DIR"
   else
@@ -78,7 +78,7 @@ cp -r "$FRONTEND"/* "$WORK_DIR"
 
 # the compiled dir might exist because of dev build
 WORK_DIR_DIRAC_COMPILED="$WORK_DIR/dirac/.compiled"
-if [ -d "$WORK_DIR_DIRAC_COMPILED" ] ; then
+if [[ -d "$WORK_DIR_DIRAC_COMPILED" ]]; then
   rm -rf "$WORK_DIR_DIRAC_COMPILED"
 fi
 cp -r "$ROOT/target/resources/release/devtools/front_end/dirac/.compiled" "$WORK_DIR/dirac" # produced by `lein compile-dirac`

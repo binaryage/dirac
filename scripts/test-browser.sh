@@ -24,7 +24,7 @@ export CHROME_DRIVER_LOG_PATH="$ROOT/target/chromedriver.log"
 export DIRAC_CHROME_DRIVER_VERBOSE=1
 export DIRAC_TEST_BROWSER=1
 
-source ./scripts/lib/travis.sh
+source "$ROOT/scripts/lib/travis.sh"
 
 travis_fold start compile-browser
 travis_time_start
