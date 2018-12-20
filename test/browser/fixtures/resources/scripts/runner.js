@@ -1,3 +1,28 @@
+// install uncaught exception handlers for more descriptive errors in console logs (as retrieved by chromedriver)
+
+function presentError(err, e) {
+    console.error("Uncaught in Dirac test runner: " + err + "\n" + e.stack);
+}
+
+function browserErrorHandler(event) {
+    const error = event ? event.error : undefined;
+    presentError(error, event);
+}
+
+function browserRejectionHandler(event) {
+    const error = event ? event.reason : undefined;
+    presentError(error, event);
+}
+
+function installErrorHandlers() {
+    window.addEventListener('error', browserErrorHandler);
+    window.addEventListener('unhandledrejection', browserRejectionHandler);
+}
+
+installErrorHandlers();
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // quick and dirty, from http://stackoverflow.com/a/901144/84283
 function getParameterByName(name, url) {
     if (!url) url = window.location.href;
@@ -13,7 +38,7 @@ function getParameterByName(name, url) {
 function displayTaskName(task) {
     const nameEl = document.getElementById("task-name");
     if (nameEl) {
-      nameEl.innerText = task;
+        nameEl.innerText = task;
     }
 }
 
