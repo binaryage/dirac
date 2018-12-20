@@ -1208,14 +1208,70 @@
           this.name = selector;
         }
       });
-      const origCreateElementWithClass = Document.prototype.createElementWithClass;
-      Document.prototype.createElementWithClass = function(tagName, className, ...rest) {
-        if (tagName !== 'button' || (className !== 'soft-dropdown' && className !== 'dropdown-button'))
-          return origCreateElementWithClass.call(this, tagName, className, ...rest);
-        const element = origCreateElementWithClass.call(this, 'div', className, ...rest);
-        element.tabIndex = 0;
-        element.role = 'button';
-        return element;
+
+      // Document.prototype.createElementWithClass is a DevTools method, so we
+      // need to wait for DOMContentLoaded in order to override it.
+      if (window.document.head &&
+          (window.document.readyState === 'complete' || window.document.readyState === 'interactive'))
+        overrideCreateElementWithClass();
+      else
+        window.addEventListener('DOMContentLoaded', overrideCreateElementWithClass);
+
+      function overrideCreateElementWithClass() {
+        window.removeEventListener('DOMContentLoaded', overrideCreateElementWithClass);
+
+        const origCreateElementWithClass = Document.prototype.createElementWithClass;
+        Document.prototype.createElementWithClass = function(tagName, className, ...rest) {
+          if (tagName !== 'button' || (className !== 'soft-dropdown' && className !== 'dropdown-button'))
+            return origCreateElementWithClass.call(this, tagName, className, ...rest);
+          const element = origCreateElementWithClass.call(this, 'div', className, ...rest);
+          element.tabIndex = 0;
+          element.role = 'button';
+          return element;
+        };
+      }
+    }
+
+    // Custom Elements V0 polyfill
+    if (majorVersion <= 73 && !Document.prototype.registerElement) {
+      const fakeRegistry = new Map();
+      Document.prototype.registerElement = function(typeExtension, options) {
+        const {prototype, extends: localName} = options;
+        const document = this;
+        const callback = function() {
+          const element = document.createElement(localName || typeExtension);
+          const skip = new Set(['constructor', '__proto__']);
+          for (const key of Object.keys(Object.getOwnPropertyDescriptors(prototype.__proto__ || {}))) {
+            if (skip.has(key))
+              continue;
+            element[key] = prototype[key];
+          }
+          element.setAttribute('is', typeExtension);
+          if (element['createdCallback'])
+            element['createdCallback']();
+          return element;
+        };
+        fakeRegistry.set(typeExtension, callback);
+        return callback;
+      };
+
+      const origCreateElement = Document.prototype.createElement;
+      Document.prototype.createElement = function(tagName, fakeCustomElementType) {
+        const fakeConstructor = fakeRegistry.get(fakeCustomElementType);
+        if (fakeConstructor)
+          return fakeConstructor();
+        return origCreateElement.call(this, tagName, fakeCustomElementType);
+      };
+
+      // DevTools front-ends mistakenly assume that
+      //   classList.toggle('a', undefined) works as
+      //   classList.toggle('a', false) rather than as
+      //   classList.toggle('a');
+      const originalDOMTokenListToggle = DOMTokenList.prototype.toggle;
+      DOMTokenList.prototype.toggle = function(token, force) {
+        if (arguments.length === 1)
+          force = !this.contains(token);
+        return originalDOMTokenListToggle.call(this, token, !!force);
       };
     }
 
@@ -1359,32 +1415,6 @@
     return style;
   }
 
-  function windowLoaded() {
-    window.removeEventListener('DOMContentLoaded', windowLoaded, false);
-    installBackwardsCompatibility();
-  }
-
-  if (window.document.head &&
-      (window.document.readyState === 'complete' || window.document.readyState === 'interactive'))
-    installBackwardsCompatibility();
-  else
-    window.addEventListener('DOMContentLoaded', windowLoaded, false);
-
-  /** @type {(!function(string, boolean=):boolean)|undefined} */
-  DOMTokenList.prototype.__originalDOMTokenListToggle;
-
-  if (!DOMTokenList.prototype.__originalDOMTokenListToggle) {
-    DOMTokenList.prototype.__originalDOMTokenListToggle = DOMTokenList.prototype.toggle;
-    /**
-     * @param {string} token
-     * @param {boolean=} force
-     * @return {boolean}
-     */
-    DOMTokenList.prototype.toggle = function(token, force) {
-      if (arguments.length === 1)
-        force = !this.contains(token);
-      return this.__originalDOMTokenListToggle(token, !!force);
-    };
-  }
+  installBackwardsCompatibility();
 
 })(window);

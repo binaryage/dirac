@@ -28,6 +28,15 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
     this.codeMirror().on('beforeSelectionChange', this._fireBeforeSelectionChanged.bind(this));
     this.element.addEventListener('contextmenu', this._contextMenu.bind(this), false);
 
+    this._gutterMouseMove = event => {
+      this.element.classList.toggle(
+          'CodeMirror-gutter-hovered',
+          event.clientX < this.codeMirror().getGutterElement().getBoundingClientRect().right);
+    };
+    this._gutterMouseOut = event => {
+      this.element.classList.toggle('CodeMirror-gutter-hovered', false);
+    };
+
     this.codeMirror().addKeyMap(SourceFrame.SourcesTextEditor._BlockIndentController);
     this._tokenHighlighter = new SourceFrame.SourcesTextEditor.TokenHighlighter(this, this.codeMirror());
 
@@ -50,6 +59,8 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
     Common.moduleSetting('textEditorIndent').addChangeListener(this._onUpdateEditorIndentation, this);
     Common.moduleSetting('textEditorAutoDetectIndent').addChangeListener(this._onUpdateEditorIndentation, this);
     Common.moduleSetting('showWhitespacesInEditor').addChangeListener(this._updateWhitespace, this);
+    Common.moduleSetting('textEditorCodeFolding').addChangeListener(this._updateCodeFolding, this);
+    this._updateCodeFolding();
 
     /** @type {?UI.AutocompleteConfig} */
     this._autocompleteConfig = {isWordChar: TextUtils.TextUtils.isWordChar};
@@ -308,6 +319,8 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
   }
 
   _gutterClick(instance, lineNumber, gutter, event) {
+    if (gutter !== 'CodeMirror-linenumbers')
+      return;
     this.dispatchEventToListeners(
         SourceFrame.SourcesTextEditor.Events.GutterClick, {lineNumber: lineNumber, event: event});
   }
@@ -469,6 +482,7 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
     Common.moduleSetting('textEditorIndent').removeChangeListener(this._onUpdateEditorIndentation, this);
     Common.moduleSetting('textEditorAutoDetectIndent').removeChangeListener(this._onUpdateEditorIndentation, this);
     Common.moduleSetting('showWhitespacesInEditor').removeChangeListener(this._updateWhitespace, this);
+    Common.moduleSetting('textEditorCodeFolding').removeChangeListener(this._updateCodeFolding, this);
   }
 
   /**
@@ -483,6 +497,22 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
 
   _updateWhitespace() {
     this.setMimeType(this.mimeType());
+  }
+
+  _updateCodeFolding() {
+    if (Common.moduleSetting('textEditorCodeFolding').get()) {
+      this.installGutter('CodeMirror-foldgutter', false);
+      this.element.addEventListener('mousemove', this._gutterMouseMove);
+      this.element.addEventListener('mouseout', this._gutterMouseOut);
+      this.codeMirror().setOption('foldGutter', true);
+      this.codeMirror().setOption('foldOptions', {minFoldSize: 1});
+    } else {
+      this.codeMirror().execCommand('unfoldAll');
+      this.element.removeEventListener('mousemove', this._gutterMouseMove);
+      this.element.removeEventListener('mouseout', this._gutterMouseOut);
+      this.uninstallGutter('CodeMirror-foldgutter');
+      this.codeMirror().setOption('foldGutter', false);
+    }
   }
 
   /**
