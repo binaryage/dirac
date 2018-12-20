@@ -14,7 +14,7 @@ devtools #1      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #1      setCurrentPanel: sources
 automate #1      scrape! [:callstack-pane-functions]
-stdout           displayed 42 items:
+stdout           displayed 36 items:
                   * breakpoint-demo / dirac.tests.scenarios.breakpoint.core/breakpoint-demo
                   * breakpoint-demo-handler / dirac.tests.scenarios.breakpoint.core/breakpoint-demo-handler
                   * λ
@@ -51,12 +51,6 @@ stdout           displayed 42 items:
                   * chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!² / chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!²
                   * chromex$protocols$chrome-port-state$put-message! / chromex$protocols$chrome-port-state$put-message!
                   * λ
-                  * EventImpl.dispatchToListener / EventImpl.dispatchToListener
-                  * publicClassPrototype.(anonymous function) / publicClassPrototype.(anonymous function)
-                  * EventImpl.dispatch_ / EventImpl.dispatch_
-                  * EventImpl.dispatch / EventImpl.dispatch
-                  * publicClassPrototype.(anonymous function) / publicClassPrototype.(anonymous function)
-                  * dispatchOnMessage / dispatchOnMessage
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
@@ -77,7 +71,7 @@ devtools #2      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #2      setCurrentPanel: sources
 automate #2      scrape! [:callstack-pane-functions]
-stdout           displayed 42 items:
+stdout           displayed 36 items:
                   * dirac$tests$scenarios$breakpoint$core$breakpoint_demo
                   * dirac$tests$scenarios$breakpoint$core$breakpoint_demo_handler
                   * (anonymous)
@@ -114,12 +108,6 @@ stdout           displayed 42 items:
                   * chromex.chrome_port.ChromePort.chromex$protocols$chrome_port_state$IChromePortState$put_message_BANG_$arity$2
                   * chromex$protocols$chrome_port_state$put_message_BANG_
                   * (anonymous)
-                  * EventImpl.dispatchToListener
-                  * publicClassPrototype.(anonymous function)
-                  * EventImpl.dispatch_
-                  * EventImpl.dispatch
-                  * publicClassPrototype.(anonymous function)
-                  * dispatchOnMessage
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
@@ -208,7 +196,7 @@ devtools #4      namespacesCache is cool now
 automate         trigger! [:async]
 devtools #4      setCurrentPanel: sources
 automate #4      scrape! [:callstack-pane-functions]
-stdout           displayed 77 items:
+stdout           displayed 71 items:
                   * break-here! / dirac.tests.scenarios.core-async/break-here!
                   * λ
                   * λ
@@ -280,12 +268,6 @@ stdout           displayed 77 items:
                   * chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!² / chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!²
                   * chromex$protocols$chrome-port-state$put-message! / chromex$protocols$chrome-port-state$put-message!
                   * λ
-                  * EventImpl.dispatchToListener / EventImpl.dispatchToListener
-                  * publicClassPrototype.(anonymous function) / publicClassPrototype.(anonymous function)
-                  * EventImpl.dispatch_ / EventImpl.dispatch_
-                  * EventImpl.dispatch / EventImpl.dispatch
-                  * publicClassPrototype.(anonymous function) / publicClassPrototype.(anonymous function)
-                  * dispatchOnMessage / dispatchOnMessage
 automate #4      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #4
