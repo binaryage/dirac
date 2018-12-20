@@ -133,7 +133,7 @@ cd "$DWS/dirac"
 lein test
 ```
 
-Or `lein test-browser` if you want to run just browser tests.
+Or `lein test-browser` if you want to run just browser tests or `lein test-browser issue-55` if you want to run specific tests.
 
 Please note that browser tests require [latest chromedriver](https://sites.google.com/a/chromium.org/chromedriver/) to be 
 installed. Also note that we rsync whole project into `$DWS/.test_stage` and run tests from there. Tests could run longer than 
@@ -162,6 +162,11 @@ This will run all tests using "dirac" image similar to Travis environment:
 This will run only browser tests:
 ```
 ./scripts/docker-run.sh test-browser
+```
+
+And to filter specific test suite:
+```
+./scripts/docker-run.sh test-browser issue-55
 ```
 
 Subsequent `./scripts/docker-run.sh test*` commands will reuse caches (in `$DWS/.docker_test_stage`). So you might want to 

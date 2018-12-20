@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -n "$SKIP_DIRAC_TESTS" ] ; then
+if [[ -n "$SKIP_DIRAC_TESTS" ]] ; then
   echo "skipping tests due to SKIP_DIRAC_TESTS"
   exit 0
 fi
@@ -15,6 +15,6 @@ export LEIN_FAST_TRAMPOLINE=  # lein trampoline caches might get confused in tes
 pushd "$ROOT"
 
 ./scripts/test-backend.sh
-./scripts/test-browser.sh
+./scripts/test-browser.sh "$@"
 
 popd

@@ -5,7 +5,7 @@
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
-redirect_to_test_stage_if_needed
+redirect_to_test_stage_if_needed "$@"
 
 pushd "$ROOT"
 
@@ -34,6 +34,10 @@ lein compile-marion
 ./scripts/release.sh
 travis_time_finish
 travis_fold end compile-browser
+
+if [[ ! -z "$1" ]]; then
+  export DIRAC_SETUP_BROWSER_TEST_FILTER=$1
+fi
 
 ./scripts/run-browser-tests.sh "dirac.tests.browser.runner"
 
