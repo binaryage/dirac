@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='73.0.3637.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='b8a6caa0e7a9130f76f83e9c91913c022b1acbe8';
+Protocol.BakedSupportedCSSPropertiesChromeTag='73.0.3646.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='74efc1ddfa7c804529026d516a598e9509895623';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -76,7 +76,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "align-self"},\n'
 + ' {"svg": true, "name": "alignment-baseline"},\n'
 + ' {"name": "all"},\n'
-+ ' {"longhands": ["animation-name", "animation-duration", "animation-timing-function", "animation-delay", "animation-iteration-count", "animation-direction", "animation-fill-mode", "animation-play-state"], "name": "animation"},\n'
++ ' {"longhands": ["animation-duration", "animation-timing-function", "animation-delay", "animation-iteration-count", "animation-direction", "animation-fill-mode", "animation-play-state", "animation-name"], "name": "animation"},\n'
 + ' {"name": "animation-delay"},\n'
 + ' {"name": "animation-direction"},\n'
 + ' {"name": "animation-duration"},\n'
