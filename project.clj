@@ -14,7 +14,7 @@
   [['org.clojure/core.async "0.4.490"]
    ['org.clojure/tools.logging "0.4.1"]
    ['org.clojure/tools.cli "0.4.1"]
-   ['org.clojure/tools.nrepl "0.2.13"]
+   ['nrepl/nrepl "0.5.3"]
    ['binaryage/env-config "0.2.2"]
    ['http-kit "2.3.0"]
    ['version-clj "0.1.2"]

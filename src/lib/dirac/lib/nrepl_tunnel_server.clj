@@ -6,7 +6,7 @@
             [dirac.lib.version :as lib-version]
             [dirac.lib.ws-server :as ws-server]
             [version-clj.core :refer [version-compare]])
-  (:use [clojure.tools.nrepl.misc :only (uuid)]))
+  (:use [nrepl.misc :only (uuid)]))
 
 (def upgrading-doc-url "https://github.com/binaryage/dirac/blob/master/docs/upgrading.md")
 

@@ -1,6 +1,6 @@
 (ns dirac.nrepl.bootstrap
   (:require [clojure.tools.logging :as log]
-            [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
+            [nrepl.middleware :refer [set-descriptor!]]
             [dirac.lib.utils :as lib-utils]
             [dirac.lib.weasel-server :as weasel-server]
             [dirac.nrepl.debug :as debug]

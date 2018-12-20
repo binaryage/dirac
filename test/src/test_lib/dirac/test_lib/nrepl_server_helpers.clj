@@ -1,6 +1,6 @@
 (ns dirac.test-lib.nrepl-server-helpers
-  (:require [clojure.tools.nrepl.ack :as nrepl.ack]
-            [clojure.tools.nrepl.server :as nrepl.server]
+  (:require [nrepl.ack :as nrepl.ack]
+            [nrepl.server :as nrepl.server]
             [dirac.nrepl :as dirac-repl]
             [dirac.settings :refer [get-backend-tests-nrepl-server-host
                                     get-backend-tests-nrepl-server-port

@@ -11,8 +11,10 @@ Here are the ingredients you are going to need:
 
 1. [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi) installed in your Chrome Canary
 1. Dirac Runtime - a ClojureScript library installed in your page
-1. nREPL server with Dirac nREPL middleware
+1. [nREPL](https://github.com/nrepl/nrepl) server with Dirac nREPL middleware
 1. Dirac Agent - a helper server providing a proxy tunnel between the nREPL server and the Dirac Extension
+
+## Please be aware that nREPL library was recently moved from `org.clojure/tools.nrepl` to `nrepl/nrepl`. Dirac uses the new dependency since v1.3.0. Please refer to [release notes](https://github.com/binaryage/dirac/releases/tag/v1.3.0) to avoid unnecessary confusion.
 
 #### Setup Dirac Chrome Extension
 
@@ -70,7 +72,7 @@ In this mode, Dirac runtime can be additionally configured via `:external-config
 There are many ways how to start an nREPL server. We will use Leiningen's nREPL server here.
 
 By default you should run it on port `8230` and with `dirac.nrepl/middleware` middleware. Please note that Dirac middleware
-was implemented as a [Piggieback middleware](https://github.com/cemerick/piggieback) fork, so you cannot run both.
+was implemented as a [Piggieback middleware](https://github.com/nrepl/piggieback) fork, so you cannot run both.
 Think of Dirac middleware as a Piggieback middleware replacement with some extra features specific to Dirac DevTools.
 
 The configuration snippet could look something like this:
@@ -100,7 +102,7 @@ they all can have their own independent REPLs.
 
 Unfortunately this is the hardest part of the setup and most fragile.
 If you run into issues it is pretty difficult to troubleshoot it without deeper understanding
-[how nREPL works internally](https://github.com/clojure/tools.nrepl), what [Piggieback](https://github.com/cemerick/piggieback) is,
+[how nREPL works internally](https://github.com/nrepl/nrepl), what [Piggieback](https://github.com/nrepl/piggieback) is,
 how [Weasel](https://github.com/tomjakubowski/weasel) comes into play and how Dirac Agent orchestrates all this.
 
 If you hit a wall you can try to ask for help in the `#dirac` channel at http://clojurians.slack.com ([ask for an invitation here](http://clojurians.net/)).
@@ -123,18 +125,18 @@ You can configure it as `:init` command which will be executed every time you st
 Now when you start `lein repl` from command-line you should see something like this:
 
     nREPL server started on port 8230 on host 127.0.0.1 - nrepl://127.0.0.1:8230
-    REPL-y 0.3.7, nREPL 0.2.10
-    Clojure 1.8.0
-    Java HotSpot(TM) 64-Bit Server VM 1.8.0_60-b27
+    REPL-y 0.4.3, nREPL 0.5.3
+    Clojure 1.10.0
+    Java HotSpot(TM) 64-Bit Server VM 11+28
         Docs: (doc function-name-here)
               (find-doc "part-of-name-here")
       Source: (source function-name-here)
      Javadoc: (javadoc java-object-or-class-here)
         Exit: Control+D or (exit) or (quit)
      Results: Stored in vars *1, *2, *3, an exception in *e
-
+    
     user=>
-    Dirac Agent v0.5.0
+    Dirac Agent v1.3.0
     Connected to nREPL server at nrepl://localhost:8230.
     Agent is accepting connections at ws://localhost:8231.
 

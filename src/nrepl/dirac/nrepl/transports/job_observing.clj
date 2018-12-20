@@ -1,11 +1,11 @@
 (ns dirac.nrepl.transports.job-observing
   (:require [clojure.tools.logging :as log]
-            [clojure.tools.nrepl.transport :as nrepl-transport]
+            [nrepl.transport :as nrepl-transport]
             [dirac.lib.utils :as utils]
             [dirac.nrepl.jobs :as jobs]
             [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.sessions :as sessions])
-  (:import (clojure.tools.nrepl.transport Transport)))
+  (:import (nrepl.transport Transport)))
 
 ; Please note that joined session feature is described here:
 ; https://github.com/binaryage/dirac/blob/master/docs/integration.md

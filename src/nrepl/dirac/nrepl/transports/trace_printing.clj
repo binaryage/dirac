@@ -1,10 +1,10 @@
 (ns dirac.nrepl.transports.trace-printing
   (:require [clojure.tools.logging :as log]
-            [clojure.tools.nrepl.transport :as nrepl-transport]
+            [nrepl.transport :as nrepl-transport]
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.protocol :as protocol])
-  (:import (clojure.tools.nrepl.transport Transport)))
+  (:import (nrepl.transport Transport)))
 
 (defn should-output-trace? [nrepl-message]
   (and (some #{:eval-error} (helpers/status-coll nrepl-message))

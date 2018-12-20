@@ -1,7 +1,7 @@
 (ns dirac.nrepl.transports.output-capturing
-  (:require [clojure.tools.nrepl.transport :as nrepl-transport]
+  (:require [nrepl.transport :as nrepl-transport]
             [dirac.nrepl.protocol :as protocol])
-  (:import (clojure.tools.nrepl.transport Transport)))
+  (:import (nrepl.transport Transport)))
 
 ; repl-eval! does not have our sniffing driver in place, we capture output
 ; by observing :out and :err keys in replied messages

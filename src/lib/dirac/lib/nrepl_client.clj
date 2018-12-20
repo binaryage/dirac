@@ -1,18 +1,18 @@
 (ns dirac.lib.nrepl-client
   (:require [clojure.core.async :refer [<! <!! >!! alts!! chan close! go go-loop put! timeout]]
             [clojure.tools.logging :as log]
-            [clojure.tools.nrepl :as nrepl]
-            [clojure.tools.nrepl.transport :as nrepl.transport]
+            [nrepl.core :as nrepl]
+            [nrepl.transport :as nrepl-transport]
             [dirac.lib.bencode-hell :as bencode-hell]
             [dirac.lib.nrepl-protocols :as nrepl-protocols]
             [dirac.lib.utils :as utils])
-  (:use [clojure.tools.nrepl.misc :only (uuid)])
+  (:use [nrepl.misc :only (uuid)])
   (:import (java.net SocketException)))
 
-; this is a thin wrapper of clojure.tools.nrepl/client which cooperates with parent nREPL tunnel
+; this is a thin wrapper of nrepl/client which cooperates with parent nREPL tunnel
 
 ; note: here is a subtle naming clash, we call our namespace 'nrepl-client' to produce nrepl-client instances via connect!
-; but underlying nREPL client created via clojure.tools.nrepl/client can be also called nrepl-client
+; but underlying nREPL client created via nrepl/client can be also called nrepl-client
 ; so we decided to call underlying client "raw-nrepl-client" instead
 
 ; -- NREPLClient constructor ------------------------------------------------------------------------------------------------
@@ -112,7 +112,7 @@
 
 (defn read-next-response [connection]
   (try
-    (nrepl.transport/recv connection)
+    (nrepl-transport/recv connection)
     (catch SocketException _
       ::socket-closed)
     (catch InterruptedException _
