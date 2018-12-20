@@ -1,8 +1,8 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.17")
-(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.339"))
-(def selected-clojure-version "1.9.0")
+(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.439"))
+(def selected-clojure-version "1.10.0")
 (def selenium-version "3.141.59")
 (def lein-cljsbuild-version "1.1.7")
 
@@ -119,8 +119,7 @@
 
   :profiles {:lib
              ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
-             [:nuke-aliases
-              {:dependencies   ~(with-meta lib-deps {:replace true})
+             [{:dependencies   ~(with-meta lib-deps {:replace true})
                :source-paths   ^:replace ["src/project"
                                           "src/settings"
                                           "src/runtime"
@@ -132,9 +131,9 @@
 
              :logging-support
              ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
-             {:dependencies [[clj-logging-config ~clj-logging-config-version :scope nil]
+             [{:dependencies [[clj-logging-config ~clj-logging-config-version :scope nil]
                              [org.slf4j/slf4j-log4j12 ~slf4j-log4j12-version :scope nil]]
-              :source-paths ["src/logging"]}
+              :source-paths ["src/logging"]}]
 
              :lib-with-logging
              [:lib :logging-support]
@@ -161,10 +160,10 @@
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure "1.9.0" :scope "provided" :upgrade false]]}
 
              :clojure110
-             {:dependencies [[org.clojure/clojure "1.10.0-RC4" :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
@@ -551,7 +550,5 @@
 
             "release"                    ["shell" "scripts/release.sh"]
             "package"                    ["shell" "scripts/package.sh"]
-            "install"                    ["shell" "scripts/local-install.sh"]
-            "install-with-logging"       ["shell" "scripts/local-install.sh" "lib-with-logging"]
             "publish"                    ["shell" "scripts/deploy-clojars.sh"]
             "regenerate"                 ["shell" "scripts/regenerate.sh"]})
