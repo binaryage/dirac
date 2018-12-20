@@ -7,6 +7,7 @@
             [clojure.java.io :as io]
             [clojure.string :as string]
             [clojure.tools.logging :as log]
+            [clojure.stacktrace :as stacktrace]
             [dirac.settings :refer [get-script-runner-launch-delay]]
             [environ.core :refer [env]])
   (:import (java.nio.file Paths)
@@ -60,13 +61,15 @@
 (defn get-marion-extension-path [dirac-root]
   [dirac-root "test" "marion" "resources" "unpacked"])                                                                        ; note: we always use dev version, it is just a helper extension, no need for advanced compliation here
 
-(defn slurp-chromedriver-log-if-avail []
-  (if-let [log-path (:chrome-driver-log-path env)]
-    (str "chromedriver log (" log-path "):\n" (slurp log-path))
-    "no chromedriver log available"))
+(defn retrieve-chromedriver-log []
+  (if-some [log-path (:chrome-driver-log-path env)]
+    (if (.exists (io/as-file log-path))
+      (str "chromedriver log at '" log-path "):\n" (slurp log-path))
+      (str "no chromedriver log available at '" log-path "'"))
+    ":chrome-driver-log-path not specified"))
 
 (defn print-chromedriver-log! []
-  (println (slurp-chromedriver-log-if-avail)))
+  (println (retrieve-chromedriver-log)))
 
 (defn pick-chrome-binary-path [options]
   (let [{:keys [dirac-chrome-binary-path dirac-use-chromium dirac-host-os]} options]
@@ -192,7 +195,8 @@
       (set-current-chrome-driver! chrome-driver)
       (init-driver chrome-driver))
     (catch Exception e
-      (log/error (str "got an exception when trying to prepare chrome driver:\n" e))
+      (log/error (str "got an exception when trying to prepare chrome driver:\n"
+                      (with-out-str (stacktrace/print-stack-trace e))))
       (print-chromedriver-log!)
       nil)))
 
