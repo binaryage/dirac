@@ -70,8 +70,7 @@
 
   :dependencies ~all-deps
 
-  :plugins [[lein-shell "0.5.0"]
-            [lein-environ "1.1.0"]]
+  :plugins [[lein-shell "0.5.0"]]
 
   ; this is for Cursive, may be redefined by profiles
   :source-paths ["scripts"
@@ -356,7 +355,8 @@
              :dirac-packed
              ; note: we want to compile under target folder to prevent unnecessary recompilations after running ./scripts/release.sh
              ;       the script will copy most recent build over
-             {:env       {:chromex-elide-verbose-logging "true"}
+             {; TODO: figure out how to pass env to chromex without lein-environ
+              ; :env       {:chromex-elide-verbose-logging "true"}
               :cljsbuild {:builds
                           {:dirac-implant
                            {:source-paths ["src/settings"
