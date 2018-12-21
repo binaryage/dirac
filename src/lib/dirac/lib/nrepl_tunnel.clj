@@ -12,14 +12,14 @@
 
 ; Unfortunately, we cannot easily implement full-blown nREPL client in Dirac DevTools.
 ; First, we don't have real sockets API, we can use only websockets from javascript.
-; Second, we don't have libraries like bencode or clojure.tools.nrepl on javascript side.
+; Second, we don't have libraries like bencode or nrepl on javascript side.
 ; To implement full nREPL client, we would have to re-implement them from scratch.
 ;
 ; Instead we decided to run nREPL client in Clojure on server-side and open a rather dumb websocket tunnel
 ; to expose nREPL functionality to Dirac DevTools.
 ;
 ; The tunnel maintains two things:
-; 1) nrepl-client (an active client nREPL connection implemented using clojure.tools.nrepl)
+; 1) nrepl-client (an active client nREPL connection implemented using nrepl)
 ; 2) nrepl-tunnel-server (a websocket connection to Dirac DevTools for tunneling messages between nREPL and Dirac REPL)
 ;
 ; High level mental model:
@@ -92,7 +92,7 @@
        "\n"
        "Also double check Dirac installation instructions: " nrepl-setup-doc-url "."))
 
-(def ^:dynamic expected-nrepl-version "0.2.13")
+(def ^:dynamic expected-nrepl-version "0.5.3")
 (def ^:dynamic expected-nrepl-middleware-ops
   (list :clone :close :describe :dirac-devtools-request :eval :identify-dirac-nrepl-middleware :interrupt :load-file
         :ls-sessions :stdin))

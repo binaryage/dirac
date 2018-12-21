@@ -39,7 +39,7 @@ echo_cmd() {
 
 # ---------------------------------------------------------------------------------------------------------------------------
 
-if [ "$1" = "prime" ]; then
+if [[ "$1" = "prime" ]]; then
   pushd "$TRAVIS_BUILD_DIR"
   export SKIP_DIRAC_TESTS=1
   init_travis_env
@@ -48,27 +48,29 @@ if [ "$1" = "prime" ]; then
   exit 0
 fi
 
-if [ "$1" = "test" ]; then
+if [[ "$1" = "test" ]]; then
   pushd "$TRAVIS_BUILD_DIR"
   init_travis_env
   print_env
-  echo_cmd ./scripts/test-all.sh
+  shift
+  echo_cmd ./scripts/test-all.sh "$@"
   result=$?
   popd
   exit ${result}
 fi
 
-if [ "$1" = "test-browser" ]; then
+if [[ "$1" = "test-browser" ]]; then
   pushd "$TRAVIS_BUILD_DIR"
   init_travis_env
   print_env
-  echo_cmd ./scripts/test-browser.sh
+  shift
+  echo_cmd ./scripts/test-browser.sh "$@"
   result=$?
   popd
   exit ${result}
 fi
 
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 ]]; then
   echo "no arguments provided"
   echo "please provide a command to run in dirac directory, e.g."
   echo "  launch './scripts/run-docker.sh test'"

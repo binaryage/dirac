@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ensure we start in scripts folder
-cd "$(dirname "${BASH_SOURCE[0]}")";
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 SCRIPTS=`pwd`
 

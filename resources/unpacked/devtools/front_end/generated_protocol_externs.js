@@ -1735,6 +1735,20 @@ Protocol.DOMAgent.SetFileInputFilesResponse;
 Protocol.DOMAgent.prototype.invoke_setFileInputFiles = function(obj) {};
 
 /**
+ * @param {Protocol.Runtime.RemoteObjectId} objectId
+ * @return {!Promise<?string>}
+ */
+Protocol.DOMAgent.prototype.getFileInfo = function(objectId) {};
+/** @typedef {!{objectId: Protocol.Runtime.RemoteObjectId}} */
+Protocol.DOMAgent.GetFileInfoRequest;
+/** @typedef {!{path: string}} */
+Protocol.DOMAgent.GetFileInfoResponse;
+/**
+ * @param {!Protocol.DOMAgent.GetFileInfoRequest} obj
+ * @return {!Promise<!Protocol.DOMAgent.GetFileInfoResponse>} */
+Protocol.DOMAgent.prototype.invoke_getFileInfo = function(obj) {};
+
+/**
  * @param {Protocol.DOM.NodeId} nodeId
  * @return {!Promise<undefined>}
  */
@@ -3119,13 +3133,14 @@ Protocol.InputAgent.prototype.invoke_insertText = function(obj) {};
  * @param {number=} opt_modifiers
  * @param {Protocol.Input.TimeSinceEpoch=} opt_timestamp
  * @param {string=} opt_button
+ * @param {number=} opt_buttons
  * @param {number=} opt_clickCount
  * @param {number=} opt_deltaX
  * @param {number=} opt_deltaY
  * @return {!Promise<undefined>}
  */
-Protocol.InputAgent.prototype.dispatchMouseEvent = function(type, x, y, opt_modifiers, opt_timestamp, opt_button, opt_clickCount, opt_deltaX, opt_deltaY) {};
-/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), deltaX: (number|undefined), timestamp: (Protocol.Input.TimeSinceEpoch|undefined), button: (string|undefined), deltaY: (number|undefined), y: number, x: number, type: string}} */
+Protocol.InputAgent.prototype.dispatchMouseEvent = function(type, x, y, opt_modifiers, opt_timestamp, opt_button, opt_buttons, opt_clickCount, opt_deltaX, opt_deltaY) {};
+/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), deltaX: (number|undefined), timestamp: (Protocol.Input.TimeSinceEpoch|undefined), button: (string|undefined), buttons: (number|undefined), deltaY: (number|undefined), y: number, x: number, type: string}} */
 Protocol.InputAgent.DispatchMouseEventRequest;
 /** @typedef {Object|undefined} */
 Protocol.InputAgent.DispatchMouseEventResponse;
@@ -5026,6 +5041,19 @@ Protocol.PageAgent.GetNavigationHistoryResponse;
 Protocol.PageAgent.prototype.invoke_getNavigationHistory = function(obj) {};
 
 /**
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.resetNavigationHistory = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.ResetNavigationHistoryRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.ResetNavigationHistoryResponse;
+/**
+ * @param {!Protocol.PageAgent.ResetNavigationHistoryRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.ResetNavigationHistoryResponse>} */
+Protocol.PageAgent.prototype.invoke_resetNavigationHistory = function(obj) {};
+
+/**
  * @param {Protocol.Page.FrameId} frameId
  * @param {string} url
  * @return {!Promise<?string>}
@@ -5527,6 +5555,19 @@ Protocol.PageAgent.GenerateTestReportResponse;
  * @param {!Protocol.PageAgent.GenerateTestReportRequest} obj
  * @return {!Promise<!Protocol.PageAgent.GenerateTestReportResponse>} */
 Protocol.PageAgent.prototype.invoke_generateTestReport = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.waitForDebugger = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.WaitForDebuggerRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.WaitForDebuggerResponse;
+/**
+ * @param {!Protocol.PageAgent.WaitForDebuggerRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.WaitForDebuggerResponse>} */
+Protocol.PageAgent.prototype.invoke_waitForDebugger = function(obj) {};
 
 /** @typedef {string} */
 Protocol.Page.FrameId;

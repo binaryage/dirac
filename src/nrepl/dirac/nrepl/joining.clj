@@ -2,7 +2,7 @@
   "A functionality related to joined Dirac sessions."
   (:require [clojure.string :as string]
             [clojure.tools.logging :as log]
-            [clojure.tools.nrepl.transport :as transport]
+            [nrepl.transport :as transport]
             [dirac.lib.utils :as utils]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.jobs :as jobs]

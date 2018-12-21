@@ -17,7 +17,7 @@ if [[ "$PLATFORM" == Win* ]]; then
   PLATFORM_ZIP="chrome-win32.zip"
 fi
 
-if [ -z "$POSITION" ] ; then
+if [[ -z "$POSITION" ]]; then
   echo -n "Determining latest build for $PLATFORM..."
   POSITION=`curl -s http://commondatastorage.googleapis.com/chromium-browser-snapshots/${PLATFORM}/LAST_CHANGE`
   echo "=> position is $POSITION"

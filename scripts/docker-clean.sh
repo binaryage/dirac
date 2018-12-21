@@ -9,15 +9,15 @@ popd
 
 pushd "$DOCKER_TESTS_DIR"
 
-if [ ! -z "$(docker volume ls | grep 'dirac-data-root$')" ]; then
+if [[ ! -z "$(docker volume ls | grep 'dirac-data-root$')" ]]; then
   docker volume rm -f "dirac-data-root"
 fi
 
-if [ ! -z "$(docker volume ls | grep 'dirac-data-var-cache-apt$')" ]; then
+if [[ ! -z "$(docker volume ls | grep 'dirac-data-var-cache&&pt$')" ]]; then
   docker volume rm -f "dirac-data-var-cache-apt"
 fi
 
-if [ ! -z "$(docker images ls | grep 'dirac$')" ]; then
+if [[ ! -z "$(docker images ls | grep 'dirac$')" ]]; then
   docker rmi -f "dirac"
 fi
 

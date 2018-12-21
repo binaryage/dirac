@@ -1,10 +1,10 @@
 (ns dirac.nrepl.transports.status-cutting
   (:require [clojure.tools.logging :as log]
-            [clojure.tools.nrepl.transport :as nrepl-transport]
+            [nrepl.transport :as nrepl-transport]
             [dirac.lib.utils :as utils]
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.protocol :as protocol])
-  (:import (clojure.tools.nrepl.transport Transport)))
+  (:import (nrepl.transport Transport)))
 
 ; Some jobs should be ended by sending {:status :done}. But in case of exceptions our code could have already
 ; sent some other :status, for example see :eval-error sent from driver.

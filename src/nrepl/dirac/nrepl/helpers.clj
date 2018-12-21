@@ -1,7 +1,7 @@
 (ns dirac.nrepl.helpers
   "Low-level helper methods NOT depending on mutable global state."
-  (:require [clojure.tools.nrepl.misc :as nrepl-misc]
-            [clojure.tools.nrepl.transport :as nrepl-transport]
+  (:require [nrepl.misc :as nrepl-misc]
+            [nrepl.transport :as nrepl-transport]
             [dirac.nrepl.version :refer [version]])
   (:import (clojure.lang IExceptionInfo)
            (java.io PrintWriter StringWriter)

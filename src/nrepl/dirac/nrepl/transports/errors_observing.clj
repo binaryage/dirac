@@ -1,17 +1,17 @@
 (ns dirac.nrepl.transports.errors-observing
   (:require [clojure.tools.logging :as log]
-            [clojure.tools.nrepl.transport :as nrepl-transport]
+            [nrepl.transport :as nrepl-transport]
             [dirac.nrepl.helpers :as helpers])
   (:import (clojure.lang IDeref)
-           (clojure.tools.nrepl.transport Transport)))
+           (nrepl.transport Transport)))
 
-; This is a little trick due to unfortunate fact that clojure.tools.nrepl.middleware.interruptible-eval/evaluate does not
+; This is a little trick due to unfortunate fact that nrepl.middleware.interruptible-eval/evaluate does not
 ; offer configurable :caught option. The problem is that eval errors in Clojure REPL are not printed to stderr
 ; for some reasons and reported exception in response message is not helpful.
 ;
 ; Our strategy here is to wrap :transport with our custom implementation which observes send calls and enhances :eval-error
 ; messages with more details. It relies on the fact that :caught implementation
-; in clojure.tools.nrepl.middleware.interruptible-eval/evaluate sets exception into *e binding in the session atom.
+; in nrepl.middleware.interruptible-eval/evaluate sets exception into *e binding in the session atom.
 ;
 ; Also it uses our logging infrastructure to log the error which should be displayed in console (assuming default log
 ; levels)

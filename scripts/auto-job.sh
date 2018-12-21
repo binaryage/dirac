@@ -26,7 +26,7 @@ popd () {
 }
 
 die_if_dirty_working_copy () {
-  if [ -n "$(git status -uno --porcelain)" ] ; then
+  if [[ -n "$(git status -uno --porcelain)" ]]; then
     echo "working copy is not clean in '$(pwd)'"
     exit 1
   fi

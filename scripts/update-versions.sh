@@ -9,7 +9,7 @@ pushd "$ROOT"
 
 VERSION=$1
 
-if [ -z "$VERSION" ] ; then
+if [[ -z "$VERSION" ]]; then
   echo "please specify version as the first argument"
   popd
   exit 1

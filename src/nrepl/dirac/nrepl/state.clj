@@ -41,7 +41,7 @@
 ; -- in-flight message for bootstrapping ------------------------------------------------------------------------------------
 
 ; this is only for bootstrapping Dirac CLJS REPL,
-; we want to avoid depending directly on clojure.tools.nrepl.middleware.interruptible-eval/*msg*
+; we want to avoid depending directly on nrepl.middleware.interruptible-eval/*msg*
 ; please note that the machinery in interruptible-eval is async, the actual message processing could be executed
 ; when leave our stack frame, that is why cannot use simple binding and we have to use session's binding map
 (def ^:dynamic *last-seen-nrepl-message* nil)

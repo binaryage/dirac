@@ -1,8 +1,8 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.17")
-(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.339"))
-(def selected-clojure-version "1.9.0")
+(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.439"))
+(def selected-clojure-version "1.10.0")
 (def selenium-version "3.141.59")
 (def lein-cljsbuild-version "1.1.7")
 
@@ -14,7 +14,7 @@
   [['org.clojure/core.async "0.4.490"]
    ['org.clojure/tools.logging "0.4.1"]
    ['org.clojure/tools.cli "0.4.1"]
-   ['org.clojure/tools.nrepl "0.2.13"]
+   ['nrepl/nrepl "0.5.3"]
    ['binaryage/env-config "0.2.2"]
    ['http-kit "2.3.0"]
    ['version-clj "0.1.2"]
@@ -59,7 +59,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.43"
+(defproject binaryage/dirac "1.3.0"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -70,8 +70,7 @@
 
   :dependencies ~all-deps
 
-  :plugins [[lein-shell "0.5.0"]
-            [lein-environ "1.1.0"]]
+  :plugins [[lein-shell "0.5.0"]]
 
   ; this is for Cursive, may be redefined by profiles
   :source-paths ["scripts"
@@ -117,12 +116,9 @@
 
   :cljsbuild {:builds {}}                                                                                                     ; prevent https://github.com/emezeske/lein-cljsbuild/issues/413
 
-  :env {:dirac-root ~(System/getProperty "user.dir")}
-
   :profiles {:lib
              ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
-             [:nuke-aliases
-              {:dependencies   ~(with-meta lib-deps {:replace true})
+             [{:dependencies   ~(with-meta lib-deps {:replace true})
                :source-paths   ^:replace ["src/project"
                                           "src/settings"
                                           "src/runtime"
@@ -134,9 +130,9 @@
 
              :logging-support
              ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
-             {:dependencies [[clj-logging-config ~clj-logging-config-version :scope nil]
+             [{:dependencies [[clj-logging-config ~clj-logging-config-version :scope nil]
                              [org.slf4j/slf4j-log4j12 ~slf4j-log4j12-version :scope nil]]
-              :source-paths ["src/logging"]}
+              :source-paths ["src/logging"]}]
 
              :lib-with-logging
              [:lib :logging-support]
@@ -163,10 +159,10 @@
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure "1.9.0" :scope "provided" :upgrade false]]}
 
              :clojure110
-             {:dependencies [[org.clojure/clojure "1.10.0-RC4" :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
@@ -359,7 +355,8 @@
              :dirac-packed
              ; note: we want to compile under target folder to prevent unnecessary recompilations after running ./scripts/release.sh
              ;       the script will copy most recent build over
-             {:env       {:chromex-elide-verbose-logging "true"}
+             {; TODO: figure out how to pass env to chromex without lein-environ
+              ; :env       {:chromex-elide-verbose-logging "true"}
               :cljsbuild {:builds
                           {:dirac-implant
                            {:source-paths ["src/settings"
@@ -553,7 +550,5 @@
 
             "release"                    ["shell" "scripts/release.sh"]
             "package"                    ["shell" "scripts/package.sh"]
-            "install"                    ["shell" "scripts/local-install.sh"]
-            "install-with-logging"       ["shell" "scripts/local-install.sh" "lib-with-logging"]
             "publish"                    ["shell" "scripts/deploy-clojars.sh"]
             "regenerate"                 ["shell" "scripts/regenerate.sh"]})

@@ -25,14 +25,14 @@ init_travis_env() {
 
 # ---------------------------------------------------------------------------------------------------------------------------
 
-if [ -z "$1" -o "$1" = "test" ]; then
+if [[ -z "$1" || "$1" = "test" ]]; then
   init_travis_env
   travis_cmd ./scripts/test-all.sh
   result=$?
   exit ${result}
 fi
 
-if [ "$1" = "test-browser" ]; then
+if [[ "$1" = "test-browser" ]]; then
   init_travis_env
   travis_cmd ./scripts/test-browser.sh
   result=$?

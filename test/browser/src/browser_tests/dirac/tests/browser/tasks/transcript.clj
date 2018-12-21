@@ -83,26 +83,27 @@
   (-> text
       (string/replace handshake-params-matching-re handshake-params-replacement)))
 
-(defn present-chrome-log-file []
-  (with-travis-fold "Chrome logs" "chrome-logs"
-    (let [debug-log-path (:chrome-log-file env)
-        max-lines (get-transcript-max-chrome-log-lines)
-        command ["tail" "-n" (str max-lines) debug-log-path]]
-    (try
-      (let [result (apply sh command)]
-        (println)
-        (println chrome-log-file-separator-start)
-        (println "> " (apply str (interpose " " command)))
-        (println (post-process-chrome-log-result (:out result)))
-        (println chrome-log-file-separator-end)
-        (println))
-      (catch Throwable e
-        (println)
-        (println chrome-log-file-separator-start)
-        (println (str "Unable to read Chrome log file at '" debug-log-path "'"))
-        (stacktrace/print-stack-trace e)
-        (println chrome-log-file-separator-end)
-        (println))))))
+(defn present-chrome-log-file! []
+  (if (:dirac-present-chrome-log-file-on-failure env)
+    (with-travis-fold "Chrome logs" "chrome-logs"
+      (let [debug-log-path (:chrome-log-file env)
+            max-lines (get-transcript-max-chrome-log-lines)
+            command ["tail" "-n" (str max-lines) debug-log-path]]
+        (try
+          (let [result (apply sh command)]
+            (println)
+            (println chrome-log-file-separator-start)
+            (println "> " (apply str (interpose " " command)))
+            (println (post-process-chrome-log-result (:out result)))
+            (println chrome-log-file-separator-end)
+            (println))
+          (catch Throwable e
+            (println)
+            (println chrome-log-file-separator-start)
+            (println (str "Unable to read Chrome log file at '" debug-log-path "'"))
+            (stacktrace/print-stack-trace e)
+            (println chrome-log-file-separator-end)
+            (println)))))))
 
 ; -- transcript comparison --------------------------------------------------------------------------------------------------
 
@@ -127,13 +128,13 @@
             (do-report {:type    :pass
                         :message (str (get-transcript-test-label test-name) " passed.")})
             (do
-              (present-chrome-log-file)
+              (present-chrome-log-file!)
               (do-report {:type     :fail
-                        :message  (str (get-transcript-test-label test-name) " failed to match expected transcript.")
-                        :expected (str "to match expected transcript " expected-transcript-path)
-                        :actual   (str "didn't match, see " actual-transcript-path)})))))
+                          :message  (str (get-transcript-test-label test-name) " failed to match expected transcript.")
+                          :expected (str "to match expected transcript " expected-transcript-path)
+                          :actual   (str "didn't match, see " actual-transcript-path)})))))
       (catch Throwable e
-        (present-chrome-log-file)
+        (present-chrome-log-file!)
         (do-report {:type     :fail
                     :message  (str (get-transcript-test-label test-name) " failed with an exception.")
                     :expected "no exception"

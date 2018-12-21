@@ -7,14 +7,15 @@
             [clojure.java.io :as io]
             [clojure.string :as string]
             [clojure.tools.logging :as log]
+            [clojure.stacktrace :as stacktrace]
             [dirac.settings :refer [get-script-runner-launch-delay]]
             [environ.core :refer [env]])
-  (:import (java.nio.file Paths)
-           (java.util Date)
+  (:import (java.util Date)
            (java.util.logging Level)
            (org.openqa.selenium.chrome ChromeDriver ChromeDriverService$Builder ChromeOptions)
            (org.openqa.selenium.logging LoggingPreferences LogType)
-           (org.openqa.selenium.remote CapabilityType DesiredCapabilities)))
+           (org.openqa.selenium.remote CapabilityType DesiredCapabilities)
+           (java.io File)))
 
 (def ^:const CHROME_VERSION_PAGE "chrome://version")
 
@@ -52,21 +53,31 @@
 (defn set-current-chrome-driver! [driver]
   (reset! current-chrome-driver driver))
 
+(defn canonical-path [path]
+  (-> (io/as-file path)
+      (.getCanonicalPath)))
+
 (defn get-dirac-extension-path [dirac-root dev?]
-  (if dev?
-    [dirac-root "resources" "unpacked"]
-    [dirac-root "resources" "release"]))
+  (->> (if dev?
+         [dirac-root "resources" "unpacked"]
+         [dirac-root "resources" "release"])
+       (string/join File/separator)
+       (canonical-path)))
 
 (defn get-marion-extension-path [dirac-root]
-  [dirac-root "test" "marion" "resources" "unpacked"])                                                                        ; note: we always use dev version, it is just a helper extension, no need for advanced compliation here
+  (->> [dirac-root "test" "marion" "resources" "unpacked"]                                                                    ; note: we always use dev version, it is just a helper extension, no need for advanced compliation here
+       (string/join File/separator)
+       (canonical-path)))
 
-(defn slurp-chromedriver-log-if-avail []
-  (if-let [log-path (:chrome-driver-log-path env)]
-    (str "chromedriver log (" log-path "):\n" (slurp log-path))
-    "no chromedriver log available"))
+(defn retrieve-chromedriver-log []
+  (if-some [log-path (:chrome-driver-log-path env)]
+    (if (.exists (io/as-file log-path))
+      (str "chromedriver log at '" log-path "):\n" (slurp log-path))
+      (str "no chromedriver log available at '" log-path "'"))
+    ":chrome-driver-log-path not specified"))
 
 (defn print-chromedriver-log! []
-  (println (slurp-chromedriver-log-if-avail)))
+  (println (retrieve-chromedriver-log)))
 
 (defn pick-chrome-binary-path [options]
   (let [{:keys [dirac-chrome-binary-path dirac-use-chromium dirac-host-os]} options]
@@ -141,8 +152,7 @@
         chrome-options (ChromeOptions.)
         extension-paths [(get-dirac-extension-path dirac-root dirac-dev)
                          (get-marion-extension-path dirac-root)]
-        absolute-extension-paths (map #(.toAbsolutePath (Paths/get "" (into-array String %))) extension-paths)
-        load-extensions-arg (str "load-extension=" (string/join "," absolute-extension-paths))
+        load-extensions-arg (str "load-extension=" (string/join "," extension-paths))
         args [; we need robust startup, chrome tends to display first-run dialogs on clean systems and blocks the driver
               ; but there are still some bugs: https://bugs.chromium.org/p/chromium/issues/detail?id=348426
               ;"--disable-application-cache"
@@ -192,14 +202,16 @@
       (set-current-chrome-driver! chrome-driver)
       (init-driver chrome-driver))
     (catch Exception e
-      (log/error (str "got an exception when trying to prepare chrome driver:\n" e))
+      (log/error (str "got an exception when trying to prepare chrome driver:\n"
+                      (with-out-str (stacktrace/print-stack-trace e))))
       (print-chromedriver-log!)
       nil)))
 
 (defn prepare-options
   ([] (prepare-options false))
   ([attaching?]
-   (let [defaults {:dirac-host-os                         (System/getProperty "os.name")
+   (let [defaults {:dirac-root                            (System/getProperty "user.dir")
+                   :dirac-host-os                         (System/getProperty "os.name")
                    :dirac-chrome-driver-browser-log-level "SEVERE"}
          env-settings (select-keys env known-env-options)
          overrides {:attaching? attaching?}]

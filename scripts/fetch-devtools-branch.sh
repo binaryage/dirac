@@ -19,7 +19,7 @@ pushd "$ROOT"
 #
 # read more docs on subtree: https://github.com/apenwarr/git-subtree/blob/master/git-subtree.txt
 
-if [ ! -d "$CHROMIUM_MIRROR_DIR" ] ; then
+if [[ ! -d "$CHROMIUM_MIRROR_DIR" ]]; then
   echo "'$CHROMIUM_MIRROR_DIR' does not exist, you have to setup chromium mirror first"
   popd
   exit 1

@@ -84,7 +84,7 @@ Except that Clojure is not a LISP interpreter. It is a compiler!
 
 ## Clojure nREPL
 
-What about connecting to REPL over a network? Let's forward to 2011 and introduce [nREPL](https://github.com/clojure/tools.nrepl). 
+What about connecting to REPL over a network? Let's forward to 2011 and introduce [nREPL](https://github.com/nrepl/nrepl). 
 The idea is quite straightforward: let's split the traditional in-process REPL into 
 an nRELP server and an nREPL client. The client will be responsible for 'read' and 'print'
 and the server will provide 'compile' and 'exec'.
@@ -370,7 +370,7 @@ As you can imagine this can be done many ways. We will explore the most popular 
 
 ## Piggieback + Weasel
 
-[Piggieback](https://github.com/cemerick/piggieback) is the master and [Weasel](https://github.com/tomjakubowski/weasel) is the slave.
+[Piggieback](https://github.com/nrepl/piggieback) is the master and [Weasel](https://github.com/tomjakubowski/weasel) is the slave.
 
 Piggieback is a well-known nREPL middleware which adds support for ClojureScript
 evaluation. Instead of introducing a new protocol it hijacks 'ieval' middleware. 
@@ -478,7 +478,7 @@ Please observe following key properties:
 
 Unfortunately, we cannot easily implement standard nREPL client directly in Dirac DevTools.
 First, we don't have real sockets API, we can use only websockets from Javascript.
-Second, we don't have libraries like bencode or clojure.tools.nrepl on Javascript side.
+Second, we don't have libraries like bencode or nrepl on Javascript side.
 To implement full nREPL client, we would have to re-implement them from scratch.
 
 That is why I decided to implement a standalone server "Dirac Agent" which

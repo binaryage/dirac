@@ -14,7 +14,7 @@ devtools #1      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #1      setCurrentPanel: sources
 automate #1      scrape! [:callstack-pane-locations]
-stdout           displayed 40 items:
+stdout           displayed 34 items:
                   * core.cljs:<line> / core.cljs:<line>
                   * core.cljs:<line> / core.cljs:<line>
                   * breakpoint.cljs:<line> / breakpoint.cljs:<line>
@@ -49,12 +49,6 @@ stdout           displayed 40 items:
                   * chrome_port.cljs:<line> / chrome_port.cljs:<line>
                   * chrome_port_state.cljs:<line> / chrome_port_state.cljs:<line>
                   * defaults.cljs:<line> / defaults.cljs:<line>
-                  * VM<num> extensions…t_bindings:403 / VM<num> extensions::event_bindings:403
-                  * VM<num> extensions::utils:138 / VM<num> extensions::utils:138
-                  * VM<num> extensions…t_bindings:387 / VM<num> extensions::event_bindings:387
-                  * VM<num> extensions…t_bindings:409 / VM<num> extensions::event_bindings:409
-                  * VM<num> extensions::utils:138 / VM<num> extensions::utils:138
-                  * VM<num> extensions::messaging:392 / VM<num> extensions::messaging:392
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
@@ -75,7 +69,7 @@ devtools #2      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #2      setCurrentPanel: sources
 automate #2      scrape! [:callstack-pane-locations]
-stdout           displayed 40 items:
+stdout           displayed 34 items:
                   * core.cljs?rel=*** / core.cljs?rel=***
                   * core.cljs?rel=*** / core.cljs?rel=***
                   * breakpoint.cljs…*** / breakpoint.cljs?rel=***
@@ -110,12 +104,6 @@ stdout           displayed 40 items:
                   * chrome_port.cljs:<line> / chrome_port.cljs:<line>
                   * chrome_port_state.cljs:<line> / chrome_port_state.cljs:<line>
                   * defaults.cljs:<line> / defaults.cljs:<line>
-                  * VM<num> extensions…t_bindings:403 / VM<num> extensions::event_bindings:403
-                  * VM<num> extensions::utils:138 / VM<num> extensions::utils:138
-                  * VM<num> extensions…t_bindings:387 / VM<num> extensions::event_bindings:387
-                  * VM<num> extensions…t_bindings:409 / VM<num> extensions::event_bindings:409
-                  * VM<num> extensions::utils:138 / VM<num> extensions::utils:138
-                  * VM<num> extensions::messaging:392 / VM<num> extensions::messaging:392
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2

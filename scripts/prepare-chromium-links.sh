@@ -7,7 +7,7 @@ pushd "$ROOT"
 
 VERSION=$1
 
-if [ ! -z "$VERSION" ] ; then
+if [[ ! -z "$VERSION" ]]; then
   echo "looking up position for version $VERSION..."
   POSITION=`./scripts/position-for-version.sh ${VERSION}`
   echo " => $POSITION"
@@ -22,7 +22,7 @@ for platform in ${platforms}; do
   set +e # lookup can fail, we don't provide a link in that case
   LINK=`./scripts/lookup-chromium-link.sh ${platform} ${POSITION} | tail -n1`
   set -e
-  if [ ! -z "${LINK}" ]; then
+  if [[ ! -z "${LINK}" ]]; then
     echo "[$platform](${LINK})"
   else
     echo "$platform"
