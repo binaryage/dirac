@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
-(def figwheel-version "0.5.17")
+(def figwheel-version "0.5.18")
 (def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.439"))
 (def selected-clojure-version "1.10.0")
 (def selenium-version "3.141.59")
@@ -19,7 +19,7 @@
    ['http-kit "2.3.0"]
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
-   ['funcool/cuerdas "2.0.6"]
+   ['funcool/cuerdas "2.1.0"]
    ['com.rpl/specter "1.1.2"]])
 
 (def test-deps
@@ -37,7 +37,7 @@
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
-   ['fipp "0.6.14" :scope "test"]
+   ['fipp "0.6.15" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
