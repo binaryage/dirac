@@ -19,7 +19,7 @@
    ['http-kit "2.3.0"]
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
-   ['funcool/cuerdas "2.1.0"]
+   ['funcool/cuerdas "2.0.6"]
    ['com.rpl/specter "1.1.2"]])
 
 (def test-deps
