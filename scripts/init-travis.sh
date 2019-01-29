@@ -88,11 +88,24 @@ if [[ -z "${TRAVIS_SKIP_CHROMEDRIVER_UPDATE}" ]]; then
     rm -rf "${CHROMEDRIVER_SLUG}"
     unzip -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
   else
-    CHROMEDRIVER_SLUG="chromedriver-${TRAVIS_CHROMEDRIVER_VERSION}"
-    if [[ ! -z "${TRAVIS_DONT_CACHE_CHROMEDRIVER}" || ! -f "${CHROMEDRIVER_SLUG}" ]]; then
-      wget -O "${CHROMEDRIVER_SLUG}.zip" "https://chromedriver.storage.googleapis.com/${TRAVIS_CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
+    if [[ "${TRAVIS_CHROMEDRIVER_VERSION}" == "latest" ]]; then
+      # https://storage.cloud.google.com/chromedriver-data/continuous/latest_linux64
+      wget https://storage.googleapis.com/pub/gsutil.tar.gz
+      tar xfz gsutil.tar.gz
+      export PATH=${PATH}:`pwd`/gsutil
+      LATEST_DRIVER=`gsutil cat gs://chromedriver-data/continuous/latest_linux64`
+      CHROMEDRIVER_SLUG="chromedriver-latest"
       rm -rf "${CHROMEDRIVER_SLUG}"
+      # https://storage.cloud.google.com/chromedriver-data/continuous/chromedriver_linux64_2.45.626591.zip
+      gsutil cp "gs://chromedriver-data/continuous/${LATEST_DRIVER}" "${CHROMEDRIVER_SLUG}.zip"
       unzip -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
+    else
+      CHROMEDRIVER_SLUG="chromedriver-${TRAVIS_CHROMEDRIVER_VERSION}"
+      if [[ ! -z "${TRAVIS_DONT_CACHE_CHROMEDRIVER}" || ! -f "${CHROMEDRIVER_SLUG}" ]]; then
+        wget -O "${CHROMEDRIVER_SLUG}.zip" "https://chromedriver.storage.googleapis.com/${TRAVIS_CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
+        rm -rf "${CHROMEDRIVER_SLUG}"
+        unzip -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
+      fi
     fi
   fi
   rm -rf chromedriver
