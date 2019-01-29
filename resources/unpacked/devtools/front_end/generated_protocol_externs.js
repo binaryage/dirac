@@ -3739,6 +3739,19 @@ Protocol.MemoryAgent.PrepareForLeakDetectionResponse;
 Protocol.MemoryAgent.prototype.invoke_prepareForLeakDetection = function(obj) {};
 
 /**
+ * @return {!Promise<undefined>}
+ */
+Protocol.MemoryAgent.prototype.forciblyPurgeJavaScriptMemory = function() {};
+/** @typedef {Object|undefined} */
+Protocol.MemoryAgent.ForciblyPurgeJavaScriptMemoryRequest;
+/** @typedef {Object|undefined} */
+Protocol.MemoryAgent.ForciblyPurgeJavaScriptMemoryResponse;
+/**
+ * @param {!Protocol.MemoryAgent.ForciblyPurgeJavaScriptMemoryRequest} obj
+ * @return {!Promise<!Protocol.MemoryAgent.ForciblyPurgeJavaScriptMemoryResponse>} */
+Protocol.MemoryAgent.prototype.invoke_forciblyPurgeJavaScriptMemory = function(obj) {};
+
+/**
  * @param {boolean} suppressed
  * @return {!Promise<undefined>}
  */
@@ -4463,7 +4476,7 @@ Protocol.Network.RequestPattern;
 /** @typedef {!{label:(string), signature:(string), integrity:(string), certUrl:(string|undefined), certSha256:(string|undefined), validityUrl:(string), date:(number), expires:(number), certificates:(!Array<string>|undefined)}} */
 Protocol.Network.SignedExchangeSignature;
 
-/** @typedef {!{requestUrl:(string), requestMethod:(string), responseCode:(number), responseHeaders:(Protocol.Network.Headers), signatures:(!Array<Protocol.Network.SignedExchangeSignature>)}} */
+/** @typedef {!{requestUrl:(string), responseCode:(number), responseHeaders:(Protocol.Network.Headers), signatures:(!Array<Protocol.Network.SignedExchangeSignature>)}} */
 Protocol.Network.SignedExchangeHeader;
 
 /** @enum {string} */

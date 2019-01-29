@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='73.0.3677.1';
-Protocol.BakedInspectorBackendAPIChromeRev='47f5d9434eb58a7bc0862c2e92c7a6cd6d708c36';
+Protocol.BakedInspectorBackendAPIChromeTag='74.0.3687.2';
+Protocol.BakedInspectorBackendAPIChromeRev='c2872ef6f36653fe50debfe34013ea69a316bf47';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -257,6 +257,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Memory.PressureLevel", {Moderate: "moderate", Critical: "critical"});\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.getDOMCounters", [], ["documents", "nodes", "jsEventListeners"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.prepareForLeakDetection", [], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Memory.forciblyPurgeJavaScriptMemory", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.setPressureNotificationsSuppressed", [{"name": "suppressed", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.simulatePressureNotification", [{"name": "level", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.startSampling", [{"name": "samplingInterval", "type": "number", "optional": true}, {"name": "suppressRandomness", "type": "boolean", "optional": true}], [], false);\n'
