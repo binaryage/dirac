@@ -33,7 +33,7 @@
 ; -- call stack UI ----------------------------------------------------------------------------------------------------------
 
 (defn find-call-frame-elements []
-  (dom/query-selector "html /deep/ .call-frame-item"))
+  (dom/query-selector-deep ".call-frame-item"))
 
 (defn extract-sub-elements [selector els]
   (mapcat #(dom/query-selector % selector) els))
@@ -49,7 +49,7 @@
 ; -- scope UI ----------------------------------------------------------------------------------------------------------
 
 (defn find-scope-section-elements []
-  (dom/query-selector "html /deep/ .scope-chain-sidebar-pane-section /deep/ .object-properties-section"))
+  (dom/query-selector-deep ".object-properties-section"))
 
 (defn interesting-scope-class? [class-name]
   (or (= "name" class-name)
@@ -78,7 +78,7 @@
 ; -- suggest box UI (code completions) --------------------------------------------------------------------------------------
 
 (defn find-suggest-box-element []
-  (first (dom/query-selector "html /deep/ .suggest-box")))
+  (first (dom/query-selector-deep ".suggest-box")))
 
 (defn print-suggest-box-item [item-rep]
   (let [{:keys [class]} item-rep
@@ -102,7 +102,7 @@
 ; -- dirac prompt UI --------------------------------------------------------------------------------------------------------
 
 (defn find-dirac-prompt-placeholder-element []
-  (first (dom/query-selector "html /deep/ .dirac-prompt-placeholder")))
+  (first (dom/query-selector-deep ".dirac-prompt-placeholder")))
 
 ; -- console UI -------------------------------------------------------------------------------------------------------------
 
@@ -111,13 +111,13 @@
     (str ".console-" kind "-level")))
 
 (defn find-all-console-log-elements []
-  (dom/query-selector "html /deep/ .console-message-wrapper"))
+  (dom/query-selector-deep ".console-message-wrapper"))
 
 (defn find-expand-group-icon [el]
   (first (dom/query-selector el ".expand-group-icon")))
 
 (defn find-console-log-elements [kind]
-  (dom/query-selector (str "html /deep/ .console-message-wrapper" (log-kind-to-class-name kind))))
+  (dom/query-selector-deep (str ".console-message-wrapper" (log-kind-to-class-name kind))))
 
 (defn find-console-log-element [kind n]
   (nth (find-console-log-elements kind) n nil))
@@ -130,11 +130,11 @@
 
 (defn find-stack-preview-container-in-console-error-element [error-el]
   (when (some? error-el)
-    (first (dom/query-selector error-el "html /deep/ .stack-preview-container"))))
+    (first (dom/query-selector-deep error-el ".stack-preview-container"))))
 
 (defn find-console-message-text-element [console-message-wrapper-element]
   (when (some? console-message-wrapper-element)
-    (first (dom/query-selector console-message-wrapper-element "html /deep/ .console-message-text"))))
+    (first (dom/query-selector-deep console-message-wrapper-element ".console-message-text"))))
 
 (defn extract-log-content [console-message-wrapper-el]
   (-> console-message-wrapper-el

@@ -421,6 +421,11 @@ var dirac = {
     * @param {string} action
     */
     dispatchEventsForAction: function(action) {},
+    /**
+    * @param {Node} node
+    * @param {string} query
+    */
+    querySelectionAllDeep: function(node, query) {},
     lookupCurrentContext: function() {},
     /**
     * @param {string} code
