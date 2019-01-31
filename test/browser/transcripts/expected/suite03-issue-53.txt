@@ -47,9 +47,9 @@ automate #1      scrape! [:scope-content]
 stdout           displayed 5 items:
                   * this: Window
                   * x: 1
-                  * x: 2
                   * x: 3
-                  * z: ƒ ()
+                  * y: 2
+                  * z: <custom>
 automate #1      simulate-global-action! ["F8"]
 devtools #1      DF.info> null
 devtools #1      repl eval job ended
@@ -64,9 +64,9 @@ devtools #1      repl eval job started
 devtools #1      setCurrentPanel: sources
 automate #1      scrape! [:scope-content]
 stdout           displayed 3 items:
-                  * one-one: 2
-                  * one_one: 1
+                  * one-one: 1
                   * this: Window
+                  * two-two: 2
 automate #1      simulate-global-action! ["F8"]
 devtools #1      DF.info> null
 devtools #1      repl eval job ended
