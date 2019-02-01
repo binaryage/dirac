@@ -1,6 +1,7 @@
 (ns dirac.nrepl.state
   (:require [clojure.tools.logging :as log]
-            [dirac.nrepl.helpers :as helpers]))
+            [dirac.nrepl.helpers :as helpers]
+            [dirac.nrepl.messages :as messages]))
 
 ; -- global state -----------------------------------------------------------------------------------------------------------
 
@@ -47,7 +48,10 @@
 (def ^:dynamic *last-seen-nrepl-message* nil)
 
 (defn register-last-seen-nrepl-message!
-  ([nrepl-message] (register-last-seen-nrepl-message! *current-session* nrepl-message))
+  ([nrepl-message]
+   (if (some? *current-session*)
+     (register-last-seen-nrepl-message! *current-session* nrepl-message)
+     (log/error (messages/make-missing-nrepl-session-msg nrepl-message))))
   ([session nrepl-messsage]
    (swap! session assoc #'*last-seen-nrepl-message* nrepl-messsage)))
 

@@ -1214,10 +1214,8 @@ Console.ConsoleViewMessage = class {
       return this._element;
 
     this._element = createElement('div');
-    if (Runtime.experiments.isEnabled('consoleKeyboardNavigation')) {
-      this._element.tabIndex = -1;
-      this._element.addEventListener('keydown', this._onKeyDown.bind(this));
-    }
+    this._element.tabIndex = -1;
+    this._element.addEventListener('keydown', this._onKeyDown.bind(this));
     this.updateMessageElement();
     return this._element;
   }
@@ -1337,7 +1335,7 @@ Console.ConsoleViewMessage = class {
       return;
 
     if (!this._repeatCountElement) {
-      this._repeatCountElement = createElementWithClass('label', 'console-message-repeat-count', 'dt-small-bubble');
+      this._repeatCountElement = createElementWithClass('span', 'console-message-repeat-count', 'dt-small-bubble');
       switch (this._message.level) {
         case SDK.ConsoleMessage.MessageLevel.Warning:
           this._repeatCountElement.type = 'warning';

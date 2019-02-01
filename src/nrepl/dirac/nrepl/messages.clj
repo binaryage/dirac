@@ -1,6 +1,15 @@
 (ns dirac.nrepl.messages
   (:require [clojure.string :as string]
-            [dirac.nrepl.helpers :as helpers]))
+            [dirac.nrepl.helpers :as helpers]
+            [dirac.lib.utils :as utils]))
+
+(defn ^:dynamic make-missing-nrepl-session-msg [nrepl-message]
+  (str "Error when processing a nREPL message. Unable to obtain nREPL session.\n"
+       "Dirac middleware expects the standard nREPL session middleware to be present and installed before Dirac middleware.\n"
+       "It looks like your list of nREPL middleware configured in your nREPL server does not satisfy this.\n"
+       "Please refer to https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-nrepl-server\n"
+       "For reference, the problematic nREPL message was:\n"
+       (utils/pp nrepl-message)))
 
 ; -- dirac! controls --------------------------------------------------------------------------------------------------------
 

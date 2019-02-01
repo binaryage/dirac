@@ -45,8 +45,8 @@
 ;       ...        <-s->  [ nREPL client ] <-> [ nREPL tunnel server ]  <-ws->  [ nREPL tunnel client #2 ]
 ;                                                                       <-ws->  [ nREPL tunnel client #3 ]
 
-(def nrepl-setup-doc-url "https://github.com/binaryage/dirac#start-nrepl-server")
-(def agent-setup-doc-url "https://github.com/binaryage/dirac#start-dirac-agent")
+(def nrepl-setup-doc-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-nrepl-server")
+(def agent-setup-doc-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-dirac-agent")
 
 (defn ^:dynamic missing-nrepl-middleware-msg [url]
   (str "Dirac nREPL middleware is not present in your nREPL server at " url "!\n"

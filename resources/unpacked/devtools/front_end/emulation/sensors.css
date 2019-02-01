@@ -9,10 +9,6 @@
     display: block;
 }
 
-.sensors-view label {
-    margin-bottom: 10px;
-}
-
 .sensors-view input {
     width: 100%;
     max-width: 100px;
@@ -310,6 +306,6 @@ fieldset.device-orientation-override-section {
     margin-left: 10px;
 }
 
-button[is=text-button] {
+button.text-button {
     margin: 0 10px;
 }

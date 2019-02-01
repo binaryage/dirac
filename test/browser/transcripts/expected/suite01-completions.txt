@@ -178,9 +178,10 @@ testing          closure libraries should be listed
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["goog.stri"]
 automate #1      scrape! [:suggest-box]
-stdout           displayed 5 items:
+stdout           displayed 6 items:
                   * goog.stri|ng (ns pseudo selected force-white-icons)
                   * goog.stri|ng.Const (ns pseudo)
+                  * goog.stri|ng.format (ns pseudo)
                   * goog.stri|ng.StringBuffer (ns pseudo)
                   * goog.stri|ng.TypedString (ns pseudo)
                   * goog.stri|ng.Unicode (ns pseudo)

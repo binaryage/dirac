@@ -73,7 +73,7 @@
 .name-and-value {
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: normal;
+    line-height: 16px;
 }
 
 .editing-sub-part .name-and-value {
@@ -89,7 +89,7 @@
     background: none;
 }
 
-.tree-outline.hide-selection-when-blurred .selected:focus[data-keyboard-focus="true"] ::content > *,
+.tree-outline.hide-selection-when-blurred .selected:focus[data-keyboard-focus="true"] ::slotted(*),
 .tree-outline.hide-selection-when-blurred .selected:focus[data-keyboard-focus="true"] .name-and-value {
     background: var(--focus-bg-color);
     border-radius: 2px;

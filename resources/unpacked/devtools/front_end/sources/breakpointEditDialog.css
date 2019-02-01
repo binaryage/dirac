@@ -14,36 +14,16 @@
   pointer-events: auto;
 }
 
-.source-frame-breakpoint-message {
-  background-color: transparent;
-  font-weight: normal;
-  text-align: left;
-  text-shadow: none;
-  color: rgb(85, 85, 85);
-  cursor: default;
-  margin: 0 0 2px 0;
-}
-
-#source-frame-breakpoint-condition {
-  margin: 0;
-  border: 1px inset rgb(190, 190, 190) !important;
-  width: 100%;
-  box-shadow: none !important;
-  outline: none !important;
-  background: white;
-}
-
 :host(.sources-edit-breakpoint-dialog) {
   border: none;
   border-radius: 0;
   z-index: 30;
   background-color: var(--toolbar-bg-color);
-  width: 100%;
-  max-width: 600px;
+  width: 555px;
   pointer-events: auto;
-  margin-bottom: 5px;
+  margin: 2px 0 2px -1px;
   padding: 0 10px 10px 5px;
-  border-left: 3px solid var(--divider-color);
+  border: 1px solid var(--divider-color);
 }
 
 :host-context(.sources-edit-breakpoint-dialog) .condition-editor {

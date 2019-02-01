@@ -79,7 +79,7 @@ Security.SecurityPanel = class extends UI.PanelWithSidebar {
       return text;
     }
 
-    const highlightedUrl = createElement('span', 'url-text');
+    const highlightedUrl = createElement('span');
 
     const scheme = url.substr(0, index);
     const content = url.substr(index + schemeSeparator.length);
@@ -376,7 +376,6 @@ Security.SecurityPanel.Origin;
  * @typedef {Object}
  * @property {!Protocol.Security.SecurityState} securityState
  * @property {?Protocol.Network.SecurityDetails} securityDetails
- * @property {?Promise<>} certificateDetailsPromise
  * @property {?bool} loadedFromCache
  * @property {?Security.SecurityOriginView} originView
  */

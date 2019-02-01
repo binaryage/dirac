@@ -117,6 +117,27 @@ Object.assign(window.dirac, (function() {
     });
   }
 
+  function collectShadowRoots(root = null) {
+    let res = [];
+    const startNode = root || document.body;
+    for (let node = startNode; node; node = node.traverseNextNode(startNode)) {
+      if (node instanceof ShadowRoot) {
+        res.push(node);
+      }
+    }
+    return res;
+  }
+
+  function querySelectorAllDeep(node, query) {
+    const roots = [node].concat(collectShadowRoots(node));
+    let res = [];
+    for (const node of roots) {
+      let partial = node.querySelectorAll(query);
+      res = res.concat(Array.from(partial));
+    }
+    return res;
+  }
+
   // --- lazy APIs --------------------------------------------------------------------------------------------------------
   // calling any of these functions will trigger loading dirac_lazy overlay
   // which will eventually overwrite those functions when fully loaded
@@ -227,6 +248,7 @@ Object.assign(window.dirac, (function() {
     stableSort: stableSort,
     getNamespace: getNamespace,
     dispatchEventsForAction: dispatchEventsForAction,
+    querySelectorAllDeep: querySelectorAllDeep,
 
     // -- LAZY INTERFACE ------------------------------------------------------------------------------------------------
     lookupCurrentContext: lookupCurrentContext,

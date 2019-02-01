@@ -41,6 +41,12 @@ SDK.OverlayModel = class extends SDK.SDKModel {
     if (this._showPaintRectsSetting.get())
       this._overlayAgent.setShowPaintRects(true);
 
+    this._showAdHighlightsSetting = Common.moduleSetting('showAdHighlights');
+    this._showAdHighlightsSetting.addChangeListener(
+        () => this._overlayAgent.setShowAdHighlights(this._showAdHighlightsSetting.get()));
+    if (this._showAdHighlightsSetting.get())
+      this._overlayAgent.setShowAdHighlights(true);
+
     this._showDebugBordersSetting = Common.moduleSetting('showDebugBorders');
     this._showDebugBordersSetting.addChangeListener(
         () => this._overlayAgent.setShowDebugBorders(this._showDebugBordersSetting.get()));
@@ -75,7 +81,7 @@ SDK.OverlayModel = class extends SDK.SDKModel {
   static highlightObjectAsDOMNode(object) {
     const domModel = object.runtimeModel().target().model(SDK.DOMModel);
     if (domModel)
-      domModel.overlayModel().highlightDOMNode(undefined, undefined, undefined, object.objectId);
+      domModel.overlayModel().highlightInOverlay({object});
   }
 
   static hideDOMNodeHighlight() {
@@ -86,10 +92,14 @@ SDK.OverlayModel = class extends SDK.SDKModel {
   static muteHighlight() {
     SDK.OverlayModel.hideDOMNodeHighlight();
     SDK.OverlayModel._highlightDisabled = true;
+    for (const overlayModel of SDK.targetManager.models(SDK.OverlayModel))
+      overlayModel._updatePausedInDebuggerMessage();
   }
 
   static unmuteHighlight() {
     SDK.OverlayModel._highlightDisabled = false;
+    for (const overlayModel of SDK.targetManager.models(SDK.OverlayModel))
+      overlayModel._updatePausedInDebuggerMessage();
   }
 
   /**
@@ -113,7 +123,8 @@ SDK.OverlayModel = class extends SDK.SDKModel {
   }
 
   _updatePausedInDebuggerMessage() {
-    const message = this._debuggerModel.isPaused() && !Common.moduleSetting('disablePausedStateOverlay').get() ?
+    const message = this._debuggerModel.isPaused() && !Common.moduleSetting('disablePausedStateOverlay').get() &&
+            !SDK.OverlayModel._highlightDisabled ?
         Common.UIString('Paused in debugger') :
         undefined;
     this._overlayAgent.setPausedInDebuggerMessage(message);
@@ -134,7 +145,7 @@ SDK.OverlayModel = class extends SDK.SDKModel {
     await this._domModel.requestDocument();
     this._inspectModeEnabled = mode !== Protocol.Overlay.InspectMode.None;
     this.dispatchEventToListeners(SDK.OverlayModel.Events.InspectModeWillBeToggled, this);
-    this._highlighter.setInspectMode(mode, this._buildHighlightConfig());
+    this._highlighter.setInspectMode(mode, this._buildHighlightConfig('all', true));
   }
 
   /**
@@ -145,42 +156,28 @@ SDK.OverlayModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {!Protocol.DOM.NodeId=} nodeId
+   * @param {!SDK.OverlayModel.HighlightData} data
    * @param {string=} mode
-   * @param {!Protocol.DOM.BackendNodeId=} backendNodeId
-   * @param {!Protocol.Runtime.RemoteObjectId=} objectId
+   * @param {boolean=} showInfo
    */
-  highlightDOMNode(nodeId, mode, backendNodeId, objectId) {
-    this.highlightDOMNodeWithConfig(nodeId, {mode: mode}, backendNodeId, objectId);
-  }
-
-  /**
-   * @param {!Protocol.DOM.NodeId=} nodeId
-   * @param {!{mode: (string|undefined), showInfo: (boolean|undefined), selectors: (string|undefined)}=} config
-   * @param {!Protocol.DOM.BackendNodeId=} backendNodeId
-   * @param {!Protocol.Runtime.RemoteObjectId=} objectId
-   */
-  highlightDOMNodeWithConfig(nodeId, config, backendNodeId, objectId) {
+  highlightInOverlay(data, mode, showInfo) {
     if (SDK.OverlayModel._highlightDisabled)
       return;
-    config = config || {mode: 'all', showInfo: undefined, selectors: undefined};
     if (this._hideHighlightTimeout) {
       clearTimeout(this._hideHighlightTimeout);
       this._hideHighlightTimeout = null;
     }
-    const highlightConfig = this._buildHighlightConfig(config.mode);
-    if (typeof config.showInfo !== 'undefined')
-      highlightConfig.showInfo = config.showInfo;
-    if (typeof config.selectors !== 'undefined')
-      highlightConfig.selectorList = config.selectors;
-    this._highlighter.highlightDOMNode(this._domModel.nodeForId(nodeId || 0), highlightConfig, backendNodeId, objectId);
+    const highlightConfig = this._buildHighlightConfig(mode);
+    if (typeof showInfo !== 'undefined')
+      highlightConfig.showInfo = showInfo;
+    this._highlighter.highlightInOverlay(data, highlightConfig);
   }
 
   /**
-   * @param {!Protocol.DOM.NodeId} nodeId
+   * @param {!SDK.OverlayModel.HighlightData} data
    */
-  highlightDOMNodeForTwoSeconds(nodeId) {
-    this.highlightDOMNode(nodeId);
+  highlightInOverlayForTwoSeconds(data) {
+    this.highlightInOverlay(data);
     this._delayedHideHighlight(2000);
   }
 
@@ -189,7 +186,7 @@ SDK.OverlayModel = class extends SDK.SDKModel {
    */
   _delayedHideHighlight(delay) {
     if (this._hideHighlightTimeout === null)
-      this._hideHighlightTimeout = setTimeout(() => this.highlightDOMNode(0), delay);
+      this._hideHighlightTimeout = setTimeout(() => this.highlightInOverlay({}), delay);
   }
 
   /**
@@ -203,12 +200,13 @@ SDK.OverlayModel = class extends SDK.SDKModel {
 
   /**
    * @param {string=} mode
+   * @param {boolean=} showStyles
    * @return {!Protocol.Overlay.HighlightConfig}
    */
-  _buildHighlightConfig(mode) {
-    mode = mode || 'all';
+  _buildHighlightConfig(mode = 'all', showStyles = false) {
     const showRulers = Common.moduleSetting('showMetricsRulers').get();
-    const highlightConfig = {showInfo: mode === 'all', showRulers: showRulers, showExtensionLines: showRulers};
+    const highlightConfig =
+        {showInfo: mode === 'all', showRulers: showRulers, showStyles, showExtensionLines: showRulers};
     if (mode === 'all' || mode === 'content')
       highlightConfig.contentColor = Common.Color.PageHighlight.Content.toProtocolRGBA();
 
@@ -225,7 +223,6 @@ SDK.OverlayModel = class extends SDK.SDKModel {
       highlightConfig.eventTargetColor = Common.Color.PageHighlight.EventTarget.toProtocolRGBA();
       highlightConfig.shapeColor = Common.Color.PageHighlight.Shape.toProtocolRGBA();
       highlightConfig.shapeMarginColor = Common.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
-      highlightConfig.displayAsMaterial = true;
     }
 
     if (mode === 'all')
@@ -245,12 +242,27 @@ SDK.OverlayModel = class extends SDK.SDKModel {
   }
 
   /**
+   * @param {function(!SDK.DOMNode)} handler
+   */
+  static setInspectNodeHandler(handler) {
+    SDK.OverlayModel._inspectNodeHandler = handler;
+  }
+
+  /**
    * @override
    * @param {!Protocol.DOM.BackendNodeId} backendNodeId
    */
   inspectNodeRequested(backendNodeId) {
     const deferredNode = new SDK.DeferredDOMNode(this.target(), backendNodeId);
-    this.dispatchEventToListeners(SDK.OverlayModel.Events.InspectNodeRequested, deferredNode);
+    if (SDK.OverlayModel._inspectNodeHandler) {
+      deferredNode.resolvePromise().then(node => {
+        if (node)
+          SDK.OverlayModel._inspectNodeHandler(node);
+      });
+    } else {
+      Common.Revealer.reveal(deferredNode);
+    }
+    this.dispatchEventToListeners(SDK.OverlayModel.Events.ExitedInspectMode);
   }
 
   /**
@@ -259,6 +271,14 @@ SDK.OverlayModel = class extends SDK.SDKModel {
    */
   screenshotRequested(viewport) {
     this.dispatchEventToListeners(SDK.OverlayModel.Events.ScreenshotRequested, viewport);
+    this.dispatchEventToListeners(SDK.OverlayModel.Events.ExitedInspectMode);
+  }
+
+  /**
+   * @override
+   */
+  inspectModeCanceled() {
+    this.dispatchEventToListeners(SDK.OverlayModel.Events.ExitedInspectMode);
   }
 };
 
@@ -267,8 +287,8 @@ SDK.SDKModel.register(SDK.OverlayModel, SDK.Target.Capability.DOM, true);
 /** @enum {symbol} */
 SDK.OverlayModel.Events = {
   InspectModeWillBeToggled: Symbol('InspectModeWillBeToggled'),
+  ExitedInspectMode: Symbol('InspectModeExited'),
   HighlightNodeRequested: Symbol('HighlightNodeRequested'),
-  InspectNodeRequested: Symbol('InspectNodeRequested'),
   ScreenshotRequested: Symbol('ScreenshotRequested'),
 };
 
@@ -277,14 +297,18 @@ SDK.OverlayModel.Events = {
  */
 SDK.OverlayModel.Highlighter = function() {};
 
+/** @typedef {{node: (!SDK.DOMNode|undefined),
+               deferredNode: (!SDK.DeferredDOMNode|undefined),
+               selectorList: (string|undefined),
+               object:(!SDK.RemoteObject|undefined)}} */
+SDK.OverlayModel.HighlightData;
+
 SDK.OverlayModel.Highlighter.prototype = {
   /**
-   * @param {?SDK.DOMNode} node
+   * @param {!SDK.OverlayModel.HighlightData} data
    * @param {!Protocol.Overlay.HighlightConfig} config
-   * @param {!Protocol.DOM.BackendNodeId=} backendNodeId
-   * @param {!Protocol.Runtime.RemoteObjectId=} objectId
    */
-  highlightDOMNode(node, config, backendNodeId, objectId) {},
+  highlightInOverlay(data, config) {},
 
   /**
    * @param {!Protocol.Overlay.InspectMode} mode
@@ -312,18 +336,18 @@ SDK.OverlayModel.DefaultHighlighter = class {
 
   /**
    * @override
-   * @param {?SDK.DOMNode} node
+   * @param {!SDK.OverlayModel.HighlightData} data
    * @param {!Protocol.Overlay.HighlightConfig} config
-   * @param {!Protocol.DOM.BackendNodeId=} backendNodeId
-   * @param {!Protocol.Runtime.RemoteObjectId=} objectId
    */
-  highlightDOMNode(node, config, backendNodeId, objectId) {
-    if (objectId || node || backendNodeId) {
-      this._model._overlayAgent.highlightNode(
-          config, (objectId || backendNodeId) ? undefined : node.id, backendNodeId, objectId);
-    } else {
+  highlightInOverlay(data, config) {
+    const {node, deferredNode, object, selectorList} = data;
+    const nodeId = node ? node.id : undefined;
+    const backendNodeId = deferredNode ? deferredNode.backendNodeId() : undefined;
+    const objectId = object ? object.objectId : undefined;
+    if (nodeId || backendNodeId || objectId)
+      this._model._overlayAgent.highlightNode(config, nodeId, backendNodeId, objectId, selectorList);
+    else
       this._model._overlayAgent.hideHighlight();
-    }
   }
 
   /**

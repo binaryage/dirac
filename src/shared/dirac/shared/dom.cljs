@@ -2,7 +2,7 @@
   (:require [clojure.string :as string]
             [dirac.shared.dom.shim]
             [dirac.shared.logging :refer [error info log warn]]
-            [oops.core :refer [gcall oapply ocall oget oset!]]))
+            [oops.core :refer [gcall gget oapply ocall oget oset!]]))
 
 ; -- DOM access -------------------------------------------------------------------------------------------------------------
 
@@ -12,6 +12,10 @@
 (defn query-selector
   ([selector] (gcall "document.querySelectorAll" selector))
   ([element selector] (ocall element "querySelectorAll" selector)))
+
+(defn query-selector-deep
+  ([selector] (query-selector-deep  (gget "document.body") selector))
+  ([node selector] (gcall "dirac.querySelectorAllDeep" node selector)))
 
 (defn get-tag-name [el]
   (when-some [tag-name (oget el "?tagName")]

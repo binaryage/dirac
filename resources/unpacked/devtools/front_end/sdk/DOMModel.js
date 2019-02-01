@@ -115,7 +115,7 @@ SDK.DOMNode = class {
       this._contentDocument = new SDK.DOMDocument(this._domModel, payload.contentDocument);
       this._contentDocument.parentNode = this;
       this._children = [];
-    } else if (payload.nodeName === 'IFRAME' && payload.frameId && Runtime.experiments.isEnabled('oopifInlineDOM')) {
+    } else if (payload.nodeName === 'IFRAME' && payload.frameId) {
       const childTarget = SDK.targetManager.targetById(payload.frameId);
       const childModel = childTarget ? childTarget.model(SDK.DOMModel) : null;
       if (childModel)
@@ -870,14 +870,13 @@ SDK.DOMNode = class {
 
   /**
    * @param {string=} mode
-   * @param {!Protocol.Runtime.RemoteObjectId=} objectId
    */
-  highlight(mode, objectId) {
-    this._domModel.overlayModel().highlightDOMNode(this.id, mode, undefined, objectId);
+  highlight(mode) {
+    this._domModel.overlayModel().highlightInOverlay({node: this}, mode);
   }
 
   highlightForTwoSeconds() {
-    this._domModel.overlayModel().highlightDOMNodeForTwoSeconds(this.id);
+    this._domModel.overlayModel().highlightInOverlayForTwoSeconds({node: this});
   }
 
   /**
@@ -1044,7 +1043,7 @@ SDK.DeferredDOMNode = class {
   }
 
   highlight() {
-    this._domModel.overlayModel().highlightDOMNode(undefined, undefined, this._backendNodeId);
+    this._domModel.overlayModel().highlightInOverlay({deferredNode: this});
   }
 };
 
@@ -1636,8 +1635,6 @@ SDK.DOMModel = class extends SDK.SDKModel {
    * @return {?SDK.DOMModel}
    */
   parentModel() {
-    if (!Runtime.experiments.isEnabled('oopifInlineDOM'))
-      return null;
     const parentTarget = this.target().parentTarget();
     return parentTarget ? parentTarget.model(SDK.DOMModel) : null;
   }
