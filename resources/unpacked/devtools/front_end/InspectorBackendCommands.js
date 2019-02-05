@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='74.0.3689.1';
-Protocol.BakedInspectorBackendAPIChromeRev='25f07772472c0d47bc73b066bc73e52b6b9b3581';
+Protocol.BakedInspectorBackendAPIChromeTag='74.0.3694.2';
+Protocol.BakedInspectorBackendAPIChromeRev='1ad93fdf8b78a8d08969934fc3b86c4843e0a77e';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -177,9 +177,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("DeviceOrientation.setDeviceOrientationOverride", [{"name": "alpha", "type": "number", "optional": false}, {"name": "beta", "type": "number", "optional": false}, {"name": "gamma", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Emulation.ScreenOrientationType", {PortraitPrimary: "portraitPrimary", PortraitSecondary: "portraitSecondary", LandscapePrimary: "landscapePrimary", LandscapeSecondary: "landscapeSecondary"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Emulation.VirtualTimePolicy", {Advance: "advance", Pause: "pause", PauseIfNetworkFetchesPending: "pauseIfNetworkFetchesPending"});\n'
-+ 'Protocol.inspectorBackend.registerEvent("Emulation.virtualTimeAdvanced", ["virtualTimeElapsed"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Emulation.virtualTimeBudgetExpired", []);\n'
-+ 'Protocol.inspectorBackend.registerEvent("Emulation.virtualTimePaused", ["virtualTimeElapsed"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.canEmulate", [], ["result"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.clearDeviceMetricsOverride", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.clearGeolocationOverride", [], [], false);\n'
