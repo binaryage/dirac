@@ -85,7 +85,7 @@
 (defn ^:dynamic unexpected-tools-nrepl-version-msg [url versions reported-version expected-version]
   (str "We detected unexpected tools.nrepl library version in your nREPL server at " url "!\n"
        "The server reported version " reported-version ", but Dirac expected version " expected-version ".\n"
-       "This could potentialy lead to unexpected behaviour. Please check your dependencies and use latest Dirac release.\n"
+       "This could potentially lead to unexpected behaviour. Please check your dependencies and use latest Dirac release.\n"
        "\n"
        "For reference, the reported versions by the nREPL server are:\n"
        (utils/pp (into (sorted-map) (map (fn [[k v]] [k (:version-string v)]) versions)))
@@ -195,12 +195,12 @@
 
 ; -- tunnel message channels ------------------------------------------------------------------------------------------------
 ;
-; When nREPL client receives a message fron nREPL server, we don't send the message immediatelly through the tunnel.
+; When nREPL client receives a message from nREPL server, we don't send the message immediately through the tunnel.
 ; Instead we put! it into server-messages-channel and run independent processing loop to consume this channel
 ; and feed the tunnel sequentially.
 ;
 ; It works similar way in the other direction. When tunnel client sends a message and we receive it in our tunnel server,
-; we don't immediatelly call nrepl-client/send!, instead we put! the message onto client-messages-channel and
+; we don't immediately call nrepl-client/send!, instead we put! the message onto client-messages-channel and
 ; let client-messages processing loop consume it and send it to nREPL client.
 ;
 ; Using channels has two main advantages:
@@ -229,7 +229,7 @@
           (log/trace (str tunnel) (str "Sent message " (utils/sid message) " to nREPL server"))
           (recur))
         (do
-          (log/debug (str tunnel) "Exitting server-messages-channel-processing-loop")
+          (log/debug (str tunnel) "Exiting server-messages-channel-processing-loop")
           (deliver (get-server-messages-done-promise tunnel) true))))))
 
 (defn deliver-client-message! [tunnel message]
@@ -253,7 +253,7 @@
           (log/trace (str tunnel) (str "Dispatched message " (utils/sid message) " to tunnel"))
           (recur))
         (do
-          (log/debug (str tunnel) "Exitting client-messages-channel-processing-loop")
+          (log/debug (str tunnel) "Exiting client-messages-channel-processing-loop")
           (deliver (get-client-messages-done-promise tunnel) true))))))
 
 ; -- NREPLTunnel life cycle -------------------------------------------------------------------------------------------------
