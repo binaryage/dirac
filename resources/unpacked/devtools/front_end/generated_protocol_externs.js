@@ -521,6 +521,19 @@ Protocol.BrowserAgent.CrashResponse;
 Protocol.BrowserAgent.prototype.invoke_crash = function(obj) {};
 
 /**
+ * @return {!Promise<undefined>}
+ */
+Protocol.BrowserAgent.prototype.crashGpuProcess = function() {};
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.CrashGpuProcessRequest;
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.CrashGpuProcessResponse;
+/**
+ * @param {!Protocol.BrowserAgent.CrashGpuProcessRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.CrashGpuProcessResponse>} */
+Protocol.BrowserAgent.prototype.invoke_crashGpuProcess = function(obj) {};
+
+/**
  * @return {!Promise<?string>}
  */
 Protocol.BrowserAgent.prototype.getVersion = function() {};
@@ -1152,10 +1165,11 @@ Protocol.CacheStorageAgent.prototype.invoke_requestCacheNames = function(obj) {}
 /**
  * @param {Protocol.CacheStorage.CacheId} cacheId
  * @param {string} requestURL
+ * @param {!Array<Protocol.CacheStorage.Header>} requestHeaders
  * @return {!Promise<?Protocol.CacheStorage.CachedResponse>}
  */
-Protocol.CacheStorageAgent.prototype.requestCachedResponse = function(cacheId, requestURL) {};
-/** @typedef {!{cacheId: Protocol.CacheStorage.CacheId, requestURL: string}} */
+Protocol.CacheStorageAgent.prototype.requestCachedResponse = function(cacheId, requestURL, requestHeaders) {};
+/** @typedef {!{requestHeaders: !Array<Protocol.CacheStorage.Header>, cacheId: Protocol.CacheStorage.CacheId, requestURL: string}} */
 Protocol.CacheStorageAgent.RequestCachedResponseRequest;
 /** @typedef {!{response: Protocol.CacheStorage.CachedResponse}} */
 Protocol.CacheStorageAgent.RequestCachedResponseResponse;
@@ -2867,15 +2881,7 @@ Protocol.Emulation.VirtualTimePolicy = {
 };
 /** @interface */
 Protocol.EmulationDispatcher = function() {};
-/**
- * @param {number} virtualTimeElapsed
- */
-Protocol.EmulationDispatcher.prototype.virtualTimeAdvanced = function(virtualTimeElapsed) {};
 Protocol.EmulationDispatcher.prototype.virtualTimeBudgetExpired = function() {};
-/**
- * @param {number} virtualTimeElapsed
- */
-Protocol.EmulationDispatcher.prototype.virtualTimePaused = function(virtualTimeElapsed) {};
 Protocol.HeadlessExperimental = {};
 
 

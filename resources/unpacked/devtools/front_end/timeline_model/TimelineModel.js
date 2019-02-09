@@ -716,7 +716,6 @@ TimelineModel.TimelineModel = class {
       case recordTypes.LayoutInvalidationTracking:
       case recordTypes.LayerInvalidationTracking:
       case recordTypes.PaintInvalidationTracking:
-      case recordTypes.ScrollInvalidationTracking:
         this._invalidationTracker.addInvalidation(new TimelineModel.InvalidationTrackingEvent(event));
         break;
 
@@ -744,6 +743,11 @@ TimelineModel.TimelineModel = class {
           this._currentTaskLayoutAndRecalcEvents.push(event);
         break;
       }
+
+      case recordTypes.Task:
+        if (event.duration > TimelineModel.TimelineModel.Thresholds.LongTask)
+          timelineData.warning = TimelineModel.TimelineModel.WarningType.LongTask;
+        break;
 
       case recordTypes.EventDispatch:
         if (event.duration > TimelineModel.TimelineModel.Thresholds.RecurringHandler)
@@ -1196,7 +1200,6 @@ TimelineModel.TimelineModel.RecordType = {
   LayoutInvalidationTracking: 'LayoutInvalidationTracking',
   LayerInvalidationTracking: 'LayerInvalidationTracking',
   PaintInvalidationTracking: 'PaintInvalidationTracking',
-  ScrollInvalidationTracking: 'ScrollInvalidationTracking',
 
   ParseHTML: 'ParseHTML',
   ParseAuthorStyleSheet: 'ParseAuthorStyleSheet',
@@ -1211,12 +1214,17 @@ TimelineModel.TimelineModel.RecordType = {
   EvaluateScript: 'EvaluateScript',
   CompileModule: 'v8.compileModule',
   EvaluateModule: 'v8.evaluateModule',
+  WasmStreamFromResponseCallback: 'v8.wasm.streamFromResponseCallback',
+  WasmCompiledModule: 'v8.wasm.compiledModule',
+  WasmCachedModule: 'v8.wasm.cachedModule',
+  WasmModuleCacheHit: 'v8.wasm.moduleCacheHit',
+  WasmModuleCacheInvalid: 'v8.wasm.moduleCacheInvalid',
 
   FrameStartedLoading: 'FrameStartedLoading',
   CommitLoad: 'CommitLoad',
   MarkLoad: 'MarkLoad',
   MarkDOMContent: 'MarkDOMContent',
-  MarkFirstPaint: 'MarkFirstPaint',
+  MarkFirstPaint: 'firstPaint',
   MarkFCP: 'firstContentfulPaint',
   MarkFMP: 'firstMeaningfulPaint',
 
@@ -1311,6 +1319,7 @@ TimelineModel.TimelineModel.Category = {
  * @enum {string}
  */
 TimelineModel.TimelineModel.WarningType = {
+  LongTask: 'LongTask',
   ForcedStyle: 'ForcedStyle',
   ForcedLayout: 'ForcedLayout',
   IdleDeadlineExceeded: 'IdleDeadlineExceeded',
@@ -1334,6 +1343,7 @@ TimelineModel.TimelineModel.DevToolsMetadataEvent = {
 };
 
 TimelineModel.TimelineModel.Thresholds = {
+  LongTask: 200,
   Handler: 150,
   RecurringHandler: 50,
   ForcedLayout: 30,
@@ -1804,8 +1814,7 @@ TimelineModel.InvalidationTracker = class {
     const types = [
       TimelineModel.TimelineModel.RecordType.StyleRecalcInvalidationTracking,
       TimelineModel.TimelineModel.RecordType.LayoutInvalidationTracking,
-      TimelineModel.TimelineModel.RecordType.PaintInvalidationTracking,
-      TimelineModel.TimelineModel.RecordType.ScrollInvalidationTracking
+      TimelineModel.TimelineModel.RecordType.PaintInvalidationTracking
     ];
     for (const invalidation of this._invalidationsOfTypes(types)) {
       if (invalidation.paintId === effectivePaintId)

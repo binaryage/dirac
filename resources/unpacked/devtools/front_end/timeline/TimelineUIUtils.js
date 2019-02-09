@@ -109,6 +109,16 @@ Timeline.TimelineUIUtils = class {
         new Timeline.TimelineRecordStyle(Common.UIString('Evaluate Module'), categories['scripting']);
     eventStyles[recordTypes.ParseScriptOnBackground] =
         new Timeline.TimelineRecordStyle(Common.UIString('Parse Script'), categories['scripting']);
+    eventStyles[recordTypes.WasmStreamFromResponseCallback] =
+        new Timeline.TimelineRecordStyle(Common.UIString(ls`Streaming Wasm Response`), categories['scripting']);
+    eventStyles[recordTypes.WasmCompiledModule] =
+        new Timeline.TimelineRecordStyle(Common.UIString(ls`Compiled Wasm Module`), categories['scripting']);
+    eventStyles[recordTypes.WasmCachedModule] =
+        new Timeline.TimelineRecordStyle(Common.UIString(ls`Cached Wasm Module`), categories['scripting']);
+    eventStyles[recordTypes.WasmModuleCacheHit] =
+        new Timeline.TimelineRecordStyle(Common.UIString(ls`Wasm Module Cache Hit`), categories['scripting']);
+    eventStyles[recordTypes.WasmModuleCacheInvalid] =
+        new Timeline.TimelineRecordStyle(Common.UIString(ls`Wasm Module Cache Invalid`), categories['scripting']);
     eventStyles[recordTypes.FrameStartedLoading] =
         new Timeline.TimelineRecordStyle(ls`Frame Started Loading`, categories['loading'], true);
     eventStyles[recordTypes.MarkLoad] =
@@ -560,6 +570,14 @@ Timeline.TimelineUIUtils = class {
           detailsText = Bindings.displayNameForURL(url) + ':' + (eventData['lineNumber'] + 1);
         break;
       }
+      case recordType.WasmCompiledModule:
+      case recordType.WasmModuleCacheHit: {
+        const url = event.args['url'];
+        if (url)
+          detailsText = Bindings.displayNameForURL(url);
+        break;
+      }
+
       case recordType.ParseScriptOnBackground:
       case recordType.XHRReadyStateChange:
       case recordType.XHRLoad: {
@@ -666,6 +684,11 @@ Timeline.TimelineUIUtils = class {
       case recordType.Animation:
       case recordType.EmbedderCallback:
       case recordType.ParseHTML:
+      case recordType.WasmStreamFromResponseCallback:
+      case recordType.WasmCompiledModule:
+      case recordType.WasmModuleCacheHit:
+      case recordType.WasmCachedModule:
+      case recordType.WasmModuleCacheInvalid:
       case recordType.WebSocketCreate:
       case recordType.WebSocketSendHandshakeRequest:
       case recordType.WebSocketReceiveHandshakeResponse:
@@ -893,6 +916,23 @@ Timeline.TimelineUIUtils = class {
         if (url)
           contentHelper.appendLocationRow(ls`Script`, url, eventData['lineNumber'], eventData['columnNumber']);
         break;
+      case recordTypes.WasmStreamFromResponseCallback:
+      case recordTypes.WasmCompiledModule:
+      case recordTypes.WasmCachedModule:
+      case recordTypes.WasmModuleCacheHit:
+      case recordTypes.WasmModuleCacheInvalid:
+        if (eventData) {
+          url = event.args['url'];
+          if (url)
+            contentHelper.appendTextRow(ls`Url`, url);
+          const producedCachedSize = event.args['producedCachedSize'];
+          if (producedCachedSize)
+            contentHelper.appendTextRow(ls`Produced Cache Size`, producedCachedSize);
+          const consumedCachedSize = event.args['consumedCachedSize'];
+          if (consumedCachedSize)
+            contentHelper.appendTextRow(ls`Consumed Cache Size`, consumedCachedSize);
+        }
+        break;
       case recordTypes.Paint:
         const clip = eventData['clip'];
         contentHelper.appendTextRow(ls`Location`, ls`(${clip[0]}, ${clip[1]})`);
@@ -976,6 +1016,7 @@ Timeline.TimelineUIUtils = class {
         contentHelper.appendTextRow(ls`Type`, eventData['type']);
         break;
 
+      case recordTypes.MarkFirstPaint:
       case recordTypes.MarkFCP:
       case recordTypes.MarkFMP:
       case recordTypes.MarkLoad:
@@ -1786,15 +1827,15 @@ Timeline.TimelineUIUtils = class {
         tall = true;
         break;
       case recordTypes.MarkFirstPaint:
-        color = 'hsl(180, 45%, 79%)';
+        color = '#228847';
         tall = true;
         break;
       case recordTypes.MarkFCP:
-        color = '#208043';
+        color = '#1A6937';
         tall = true;
         break;
       case recordTypes.MarkFMP:
-        color = '#14522B';
+        color = '#134A26';
         tall = true;
         break;
       case recordTypes.TimeStamp:
@@ -1870,6 +1911,11 @@ Timeline.TimelineUIUtils = class {
         break;
       case warnings.LongRecurringHandler:
         span.textContent = Common.UIString('Recurring handler took %s', Number.millisToString(event.duration, true));
+        break;
+      case warnings.LongTask:
+        span.appendChild(
+            UI.createDocumentationLink('../../fundamentals/performance/rail#goals-and-guidelines', ls`Long task`));
+        span.createTextChild(ls` took ${Number.millisToString(event.duration, true)}.`);
         break;
       case warnings.V8Deopt:
         span.appendChild(UI.XLink.create(

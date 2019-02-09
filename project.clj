@@ -14,7 +14,7 @@
   [['org.clojure/core.async "0.4.490"]
    ['org.clojure/tools.logging "0.4.1"]
    ['org.clojure/tools.cli "0.4.1"]
-   ['nrepl/nrepl "0.5.3"]
+   ['nrepl/nrepl "0.6.0"]
    ['binaryage/env-config "0.2.2"]
    ['http-kit "2.3.0"]
    ['version-clj "0.1.2"]
@@ -29,7 +29,7 @@
    ['binaryage/chromex "0.7.2" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
-   ['cljs-http "0.1.45" :scope "test"]
+   ['cljs-http "0.1.46" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
    ['rum "0.11.3" :scope "test"]
@@ -37,7 +37,7 @@
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
-   ['fipp "0.6.15" :scope "test"]
+   ['fipp "0.6.16" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
@@ -59,7 +59,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.3.1"
+(defproject binaryage/dirac "1.3.2"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
