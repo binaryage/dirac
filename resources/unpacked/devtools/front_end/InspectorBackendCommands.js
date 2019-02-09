@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='74.0.3694.2';
-Protocol.BakedInspectorBackendAPIChromeRev='1ad93fdf8b78a8d08969934fc3b86c4843e0a77e';
+Protocol.BakedInspectorBackendAPIChromeTag='74.0.3700.1';
+Protocol.BakedInspectorBackendAPIChromeRev='0f751c73a9d55f91595ab5b1f6d5819470a7b377';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -36,6 +36,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Browser.resetPermissions", [{"name": "browserContextId", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Browser.close", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Browser.crash", [], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Browser.crashGpuProcess", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Browser.getVersion", [], ["protocolVersion", "product", "revision", "userAgent", "jsVersion"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Browser.getBrowserCommandLine", [], ["arguments"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Browser.getHistograms", [{"name": "query", "type": "string", "optional": true}, {"name": "delta", "type": "boolean", "optional": true}], ["histograms"], false);\n'
@@ -77,7 +78,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.deleteCache", [{"name": "cacheId", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.deleteEntry", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "request", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestCacheNames", [{"name": "securityOrigin", "type": "string", "optional": false}], ["caches"], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestCachedResponse", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "requestURL", "type": "string", "optional": false}], ["response"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestCachedResponse", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "requestURL", "type": "string", "optional": false}, {"name": "requestHeaders", "type": "object", "optional": false}], ["response"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestEntries", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "skipCount", "type": "number", "optional": false}, {"name": "pageSize", "type": "number", "optional": false}, {"name": "pathFilter", "type": "string", "optional": true}], ["cacheDataEntries", "hasMore"], false);\n'
 + 'Protocol.inspectorBackend.registerEvent("Cast.sinksUpdated", ["sinkNames"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Cast.issueUpdated", ["issueMessage"]);\n'
