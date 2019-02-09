@@ -14,7 +14,7 @@ if [[ "$PLATFORM" == Linux* ]]; then
   PLATFORM_ZIP="chrome-linux.zip"
 fi
 if [[ "$PLATFORM" == Win* ]]; then
-  PLATFORM_ZIP="chrome-win32.zip"
+  PLATFORM_ZIP="chrome-win.zip"
 fi
 
 if [[ -z "$POSITION" ]]; then
