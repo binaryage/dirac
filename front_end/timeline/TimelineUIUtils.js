@@ -1016,6 +1016,7 @@ Timeline.TimelineUIUtils = class {
         contentHelper.appendTextRow(ls`Type`, eventData['type']);
         break;
 
+      case recordTypes.MarkFirstPaint:
       case recordTypes.MarkFCP:
       case recordTypes.MarkFMP:
       case recordTypes.MarkLoad:
@@ -1826,15 +1827,15 @@ Timeline.TimelineUIUtils = class {
         tall = true;
         break;
       case recordTypes.MarkFirstPaint:
-        color = 'hsl(180, 45%, 79%)';
+        color = '#228847';
         tall = true;
         break;
       case recordTypes.MarkFCP:
-        color = '#208043';
+        color = '#1A6937';
         tall = true;
         break;
       case recordTypes.MarkFMP:
-        color = '#14522B';
+        color = '#134A26';
         tall = true;
         break;
       case recordTypes.TimeStamp:
@@ -1910,6 +1911,11 @@ Timeline.TimelineUIUtils = class {
         break;
       case warnings.LongRecurringHandler:
         span.textContent = Common.UIString('Recurring handler took %s', Number.millisToString(event.duration, true));
+        break;
+      case warnings.LongTask:
+        span.appendChild(
+            UI.createDocumentationLink('../../fundamentals/performance/rail#goals-and-guidelines', ls`Long task`));
+        span.createTextChild(ls` took ${Number.millisToString(event.duration, true)}.`);
         break;
       case warnings.V8Deopt:
         span.appendChild(UI.XLink.create(
