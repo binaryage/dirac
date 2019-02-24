@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='74.0.3700.1';
-Protocol.BakedInspectorBackendAPIChromeRev='0f751c73a9d55f91595ab5b1f6d5819470a7b377';
+Protocol.BakedInspectorBackendAPIChromeTag='74.0.3715.1';
+Protocol.BakedInspectorBackendAPIChromeRev='e9d0a01bc47d487b5b7467952590e962c6584c4e';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -215,6 +215,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.requestData", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}, {"name": "objectStoreName", "type": "string", "optional": false}, {"name": "indexName", "type": "string", "optional": false}, {"name": "skipCount", "type": "number", "optional": false}, {"name": "pageSize", "type": "number", "optional": false}, {"name": "keyRange", "type": "object", "optional": true}], ["objectStoreDataEntries", "hasMore"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("IndexedDB.getKeyGeneratorCurrentNumber", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}, {"name": "objectStoreName", "type": "string", "optional": false}], ["currentNumber"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.requestDatabase", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}], ["databaseWithObjectStores"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.requestDatabaseNames", [{"name": "securityOrigin", "type": "string", "optional": false}], ["databaseNames"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Input.GestureSourceType", {Default: "default", Touch: "touch", Mouse: "mouse"});\n'
