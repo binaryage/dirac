@@ -3,12 +3,20 @@
 // found in the LICENSE file.
 
 UI.ARIAUtils = {};
+UI.ARIAUtils._id = 0;
 
 /**
  * @param {!Element} element
  */
 UI.ARIAUtils.markAsButton = function(element) {
   element.setAttribute('role', 'button');
+};
+
+/**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsCheckbox = function(element) {
+  element.setAttribute('role', 'checkbox');
 };
 
 /**
@@ -93,6 +101,14 @@ UI.ARIAUtils.markAsPresentation = function(element) {
 };
 
 /**
+ * @param {string} prefix
+ * @return {string}
+ */
+UI.ARIAUtils.nextId = function(prefix) {
+  return (prefix || '') + ++UI.ARIAUtils._id;
+};
+
+/**
  * @param {!Element} element
  * @param {?Element} controlledElement
  */
@@ -106,6 +122,14 @@ UI.ARIAUtils.setControls = function(element, controlledElement) {
     throw new Error('Controlled element must have ID');
 
   element.setAttribute('aria-controls', controlledElement.id);
+};
+
+/**
+ * @param {!Element} element
+ * @param {boolean} value
+ */
+UI.ARIAUtils.setChecked = function(element, value) {
+  element.setAttribute('aria-checked', !!value);
 };
 
 /**
