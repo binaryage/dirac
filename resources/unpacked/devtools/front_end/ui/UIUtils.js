@@ -1174,6 +1174,16 @@ UI.beautifyFunctionName = function(name) {
 };
 
 /**
+ * @param {!Element} label
+ * @param {!Element} control
+ */
+UI.bindLabelToControl = function(label, control) {
+  const controlId = UI.ARIAUtils.nextId('labelledControl');
+  control.id = controlId;
+  label.setAttribute('for', controlId);
+};
+
+/**
  * @param {string} localName
  * @param {string} typeExtension
  * @param {function(new:HTMLElement, *)} definition
@@ -1225,6 +1235,21 @@ UI.createInput = function(className, type) {
 };
 
 /**
+ * @param {string} title
+ * @param {string=} className
+ * @param {!Element=} associatedControl
+ * @return {!Element}
+ */
+UI.createLabel = function(title, className, associatedControl) {
+  const element = createElementWithClass('label', className || '');
+  element.textContent = title;
+  if (associatedControl)
+    UI.bindLabelToControl(element, associatedControl);
+
+  return element;
+};
+
+/**
  * @param {string} name
  * @param {string} title
  * @param {boolean=} checked
@@ -1243,7 +1268,7 @@ UI.createRadioLabel = function(name, title, checked) {
  * @param {string} iconClass
  * @return {!Element}
  */
-UI.createLabel = function(title, iconClass) {
+UI.createIconLabel = function(title, iconClass) {
   const element = createElement('span', 'dt-icon-label');
   element.createChild('span').textContent = title;
   element.type = iconClass;
