@@ -110,15 +110,15 @@ Timeline.TimelineUIUtils = class {
     eventStyles[recordTypes.ParseScriptOnBackground] =
         new Timeline.TimelineRecordStyle(Common.UIString('Parse Script'), categories['scripting']);
     eventStyles[recordTypes.WasmStreamFromResponseCallback] =
-        new Timeline.TimelineRecordStyle(Common.UIString(ls`Streaming Wasm Response`), categories['scripting']);
+        new Timeline.TimelineRecordStyle(ls`Streaming Wasm Response`, categories['scripting']);
     eventStyles[recordTypes.WasmCompiledModule] =
-        new Timeline.TimelineRecordStyle(Common.UIString(ls`Compiled Wasm Module`), categories['scripting']);
+        new Timeline.TimelineRecordStyle(ls`Compiled Wasm Module`, categories['scripting']);
     eventStyles[recordTypes.WasmCachedModule] =
-        new Timeline.TimelineRecordStyle(Common.UIString(ls`Cached Wasm Module`), categories['scripting']);
+        new Timeline.TimelineRecordStyle(ls`Cached Wasm Module`, categories['scripting']);
     eventStyles[recordTypes.WasmModuleCacheHit] =
-        new Timeline.TimelineRecordStyle(Common.UIString(ls`Wasm Module Cache Hit`), categories['scripting']);
+        new Timeline.TimelineRecordStyle(ls`Wasm Module Cache Hit`, categories['scripting']);
     eventStyles[recordTypes.WasmModuleCacheInvalid] =
-        new Timeline.TimelineRecordStyle(Common.UIString(ls`Wasm Module Cache Invalid`), categories['scripting']);
+        new Timeline.TimelineRecordStyle(ls`Wasm Module Cache Invalid`, categories['scripting']);
     eventStyles[recordTypes.FrameStartedLoading] =
         new Timeline.TimelineRecordStyle(ls`Frame Started Loading`, categories['loading'], true);
     eventStyles[recordTypes.MarkLoad] =
@@ -899,11 +899,9 @@ Timeline.TimelineUIUtils = class {
         if (url)
           contentHelper.appendLocationRow(ls`Script`, url, eventData['lineNumber'], eventData['columnNumber']);
         contentHelper.appendTextRow(ls`Streamed`, eventData['streamed']);
-        const cacheProduceOptions = eventData && eventData['cacheProduceOptions'];
-        if (cacheProduceOptions) {
-          contentHelper.appendTextRow(ls`Cache Produce Options`, cacheProduceOptions);
-          contentHelper.appendTextRow(ls`Produced Cache Size`, eventData['producedCacheSize']);
-        }
+        const producedCacheSize = eventData && eventData['producedCacheSize'];
+        if (producedCacheSize)
+          contentHelper.appendTextRow(ls`Produced Cache Size`, producedCacheSize);
         const cacheConsumeOptions = eventData && eventData['cacheConsumeOptions'];
         if (cacheConsumeOptions) {
           contentHelper.appendTextRow(ls`Cache Consume Options`, cacheConsumeOptions);
@@ -1898,9 +1896,8 @@ Timeline.TimelineUIUtils = class {
         span.createTextChild(Common.UIString(' is a likely performance bottleneck.'));
         break;
       case warnings.IdleDeadlineExceeded:
-        span.textContent = Common.UIString(
-            'Idle callback execution extended beyond deadline by ' +
-            Number.millisToString(event.duration - eventData['allottedMilliseconds'], true));
+        const exceededMs = Number.millisToString(event.duration - eventData['allottedMilliseconds'], true);
+        span.textContent = ls`Idle callback execution extended beyond deadline by ${exceededMs}`;
         break;
       case warnings.LongHandler:
         span.textContent = Common.UIString('Handler took %s', Number.millisToString(event.duration, true));
