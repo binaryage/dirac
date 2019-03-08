@@ -46,7 +46,7 @@ Profiler.CPUProfileView = class extends Profiler.ProfileView {
    */
   wasShown() {
     super.wasShown();
-    const lineLevelProfile = PerfUI.LineLevelProfile.instance();
+    const lineLevelProfile = PerfUI.LineLevelProfile.Performance.instance();
     lineLevelProfile.reset();
     lineLevelProfile.appendCPUProfile(this._profileHeader.profileModel());
   }
@@ -242,7 +242,8 @@ Profiler.CPUProfileHeader = class extends Profiler.WritableProfileHeader {
    * @param {!Protocol.Profiler.Profile} profile
    */
   setProfile(profile) {
-    this._profileModel = new SDK.CPUProfileDataModel(profile);
+    const target = this._cpuProfilerModel && this._cpuProfilerModel.target() || null;
+    this._profileModel = new SDK.CPUProfileDataModel(profile, target);
   }
 };
 

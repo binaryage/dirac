@@ -17,11 +17,9 @@ init_travis_env() {
   #export TRAVIS_USE_CUSTOM_CHROMEDRIVER=https://storage.googleapis.com/chromedriver-data/continuous/chromedriver_linux64_2.34.527066.zip
 
   echo "====================================================================================================================="
-  set -x
   pushd /root
   source "$TRAVIS_BUILD_DIR/scripts/init-travis.sh"
   popd
-  set +x
   echo "====================================================================================================================="
 }
 

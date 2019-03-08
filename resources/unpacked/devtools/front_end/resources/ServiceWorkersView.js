@@ -20,6 +20,8 @@ Resources.ServiceWorkersView = class extends UI.VBox {
 
     /** @type {!Map<!SDK.ServiceWorkerRegistration, !Resources.ServiceWorkersView.Section>} */
     this._sections = new Map();
+    /** @type {symbol} */
+    this._registrationSymbol = Symbol('Resources.ServiceWorkersView');
 
     /** @type {?SDK.ServiceWorkerManager} */
     this._manager = null;
@@ -113,6 +115,33 @@ Resources.ServiceWorkersView = class extends UI.VBox {
     this._securityOriginManager = null;
   }
 
+
+  /**
+   * @param {!SDK.ServiceWorkerRegistration} registration
+   * @return {number}
+   */
+  _getTimeStamp(registration) {
+    const versions = registration.versionsByMode();
+
+    let timestamp = 0;
+
+    const active = versions.get(SDK.ServiceWorkerVersion.Modes.Active);
+    const installing = versions.get(SDK.ServiceWorkerVersion.Modes.Installing);
+    const waiting = versions.get(SDK.ServiceWorkerVersion.Modes.Waiting);
+    const redundant = versions.get(SDK.ServiceWorkerVersion.Modes.Redundant);
+
+    if (active)
+      timestamp = active.scriptResponseTime;
+    else if (waiting)
+      timestamp = waiting.scriptResponseTime;
+    else if (installing)
+      timestamp = installing.scriptResponseTime;
+    else if (redundant)
+      timestamp = redundant.scriptResponseTime;
+
+    return timestamp;
+  }
+
   _updateSectionVisibility() {
     let hasOthers = false;
     let hasThis = false;
@@ -130,6 +159,13 @@ Resources.ServiceWorkersView = class extends UI.VBox {
       this._removeRegistrationFromList(registration);
       this._updateRegistration(registration, true);
     }
+
+    this._currentWorkersView.sortSections((a, b) => {
+      const aTimestamp = this._getTimeStamp(a[this._registrationSymbol]);
+      const bTimestamp = this._getTimeStamp(b[this._registrationSymbol]);
+      // the newest (largest timestamp value) should be the first
+      return bTimestamp - aTimestamp;
+    });
 
     const scorer = new Sources.FilePathScoreFunction(this._filter.value());
     this._otherWorkersView.sortSections((a, b) => {
@@ -198,9 +234,10 @@ Resources.ServiceWorkersView = class extends UI.VBox {
     let section = this._sections.get(registration);
     if (!section) {
       const title = Resources.ServiceWorkersView._displayScopeURL(registration.scopeURL);
+      const uiSection = this._getReportViewForOrigin(registration.securityOrigin).appendSection(title);
+      uiSection[this._registrationSymbol] = registration;
       section = new Resources.ServiceWorkersView.Section(
-          /** @type {!SDK.ServiceWorkerManager} */ (this._manager),
-          this._getReportViewForOrigin(registration.securityOrigin).appendSection(title), registration);
+          /** @type {!SDK.ServiceWorkerManager} */ (this._manager), uiSection, registration);
       this._sections.set(registration, section);
     }
     if (skipUpdate)
@@ -401,7 +438,7 @@ Resources.ServiceWorkersView.Section = class {
     const name = this._sourceField.createChild('div', 'report-field-value-filename');
     name.appendChild(Components.Linkifier.linkifyURL(version.scriptURL, {text: fileName}));
     if (this._registration.errors.length) {
-      const errorsLabel = UI.createLabel(String(this._registration.errors.length), 'smallicon-error');
+      const errorsLabel = UI.createIconLabel(String(this._registration.errors.length), 'smallicon-error');
       errorsLabel.classList.add('link');
       errorsLabel.addEventListener('click', () => Common.console.show());
       name.appendChild(errorsLabel);
@@ -537,7 +574,7 @@ Resources.ServiceWorkersView.Section = class {
   _updateClientInfo(element, targetInfo) {
     if (targetInfo.type !== 'page' && targetInfo.type === 'iframe') {
       const clientString = element.createChild('span', 'service-worker-client-string');
-      clientString.createTextChild(ls`Worker: ` + targetInfo.url);
+      clientString.createTextChild(ls`Worker: ${targetInfo.url}`);
       return;
     }
     element.removeChildren();

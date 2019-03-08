@@ -125,7 +125,8 @@ Resources.IDBDataView = class extends UI.SimpleView {
     this._clearButton = new UI.ToolbarButton(Common.UIString('Clear object store'), 'largeicon-clear');
     this._clearButton.addEventListener(UI.ToolbarButton.Events.Click, this._clearButtonClicked, this);
 
-    this._needsRefresh = new UI.ToolbarItem(UI.createLabel(Common.UIString('Data may be stale'), 'smallicon-warning'));
+    this._needsRefresh =
+        new UI.ToolbarItem(UI.createIconLabel(Common.UIString('Data may be stale'), 'smallicon-warning'));
     this._needsRefresh.setVisible(false);
     this._needsRefresh.setTitle(Common.UIString('Some entries may have been modified'));
 
@@ -133,6 +134,8 @@ Resources.IDBDataView = class extends UI.SimpleView {
 
     this._pageSize = 50;
     this._skipCount = 0;
+    /** @type {?number} */
+    this._keyGeneratorValue = null;
 
     this.update(objectStore, index);
     this._entries = [];
@@ -336,6 +339,15 @@ Resources.IDBDataView = class extends UI.SimpleView {
       this._updatedDataForTests();
     }
 
+    /**
+     * @param {?number} number
+     * @this {Resources.IDBDataView}
+     */
+    function callbackKeyGeneratorValue(number) {
+      this._keyGeneratorValue = number;
+      this._updateSummaryBar();
+    }
+
     const idbKeyRange = key ? window.IDBKeyRange.lowerBound(key) : null;
     if (this._isIndex) {
       this._model.loadIndexData(
@@ -345,6 +357,18 @@ Resources.IDBDataView = class extends UI.SimpleView {
       this._model.loadObjectStoreData(
           this._databaseId, this._objectStore.name, idbKeyRange, skipCount, pageSize, callback.bind(this));
     }
+    this._model.getKeyGeneratorValue(this._databaseId, this._objectStore).then(callbackKeyGeneratorValue.bind(this));
+    this._updateSummaryBar();
+  }
+
+  _updateSummaryBar() {
+    if (this._keyGeneratorValue === null)
+      return;
+    if (!this._summaryBarElement)
+      this._summaryBarElement = this.element.createChild('div', 'object-store-summary-bar');
+    this._summaryBarElement.removeChildren();
+    const span = this._summaryBarElement.createChild('span');
+    span.textContent = ls`key generator value: ${String(this._keyGeneratorValue)}`;
   }
 
   _updatedDataForTests() {

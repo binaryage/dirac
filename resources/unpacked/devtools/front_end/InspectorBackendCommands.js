@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='74.0.3700.1';
-Protocol.BakedInspectorBackendAPIChromeRev='0f751c73a9d55f91595ab5b1f6d5819470a7b377';
+Protocol.BakedInspectorBackendAPIChromeTag='74.0.3724.5';
+Protocol.BakedInspectorBackendAPIChromeRev='97c62e5d27f5c3fd7777eea4c55614ef7ee91cb9';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -30,6 +30,11 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("ApplicationCache.getFramesWithManifests", [], ["frameIds"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("ApplicationCache.getManifestForFrame", [{"name": "frameId", "type": "string", "optional": false}], ["manifestURL"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Audits.getEncodedResponse", [{"name": "requestId", "type": "string", "optional": false}, {"name": "encoding", "type": "string", "optional": false}, {"name": "quality", "type": "number", "optional": true}, {"name": "sizeOnly", "type": "boolean", "optional": true}], ["body", "originalSize", "encodedSize"], false);\n'
++ 'Protocol.inspectorBackend.registerEnum("BackgroundService.ServiceName", {BackgroundFetch: "backgroundFetch", BackgroundSync: "backgroundSync"});\n'
++ 'Protocol.inspectorBackend.registerEvent("BackgroundService.recordingStateChanged", ["isRecording", "service"]);\n'
++ 'Protocol.inspectorBackend.registerCommand("BackgroundService.enable", [{"name": "service", "type": "string", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("BackgroundService.disable", [{"name": "service", "type": "string", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("BackgroundService.setRecording", [{"name": "shouldRecord", "type": "boolean", "optional": false}, {"name": "service", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Browser.WindowState", {Normal: "normal", Minimized: "minimized", Maximized: "maximized", Fullscreen: "fullscreen"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Browser.PermissionType", {AccessibilityEvents: "accessibilityEvents", AudioCapture: "audioCapture", BackgroundSync: "backgroundSync", BackgroundFetch: "backgroundFetch", ClipboardRead: "clipboardRead", ClipboardWrite: "clipboardWrite", DurableStorage: "durableStorage", Flash: "flash", Geolocation: "geolocation", Midi: "midi", MidiSysex: "midiSysex", Notifications: "notifications", PaymentHandler: "paymentHandler", ProtectedMediaIdentifier: "protectedMediaIdentifier", Sensors: "sensors", VideoCapture: "videoCapture", IdleDetection: "idleDetection"});\n'
 + 'Protocol.inspectorBackend.registerCommand("Browser.grantPermissions", [{"name": "origin", "type": "string", "optional": false}, {"name": "permissions", "type": "object", "optional": false}, {"name": "browserContextId", "type": "string", "optional": true}], [], false);\n'
@@ -215,6 +220,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.requestData", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}, {"name": "objectStoreName", "type": "string", "optional": false}, {"name": "indexName", "type": "string", "optional": false}, {"name": "skipCount", "type": "number", "optional": false}, {"name": "pageSize", "type": "number", "optional": false}, {"name": "keyRange", "type": "object", "optional": true}], ["objectStoreDataEntries", "hasMore"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("IndexedDB.getKeyGeneratorCurrentNumber", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}, {"name": "objectStoreName", "type": "string", "optional": false}], ["currentNumber"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.requestDatabase", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}], ["databaseWithObjectStores"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.requestDatabaseNames", [{"name": "securityOrigin", "type": "string", "optional": false}], ["databaseNames"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Input.GestureSourceType", {Default: "default", Touch: "touch", Mouse: "mouse"});\n'

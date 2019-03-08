@@ -255,6 +255,22 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   /**
+   * @param {!SDK.NetworkRequest} request
+   * @return {boolean}
+   */
+  static _interceptedByServiceWorkerFilter(request) {
+    return request.fetchedViaServiceWorker;
+  }
+
+  /**
+   * @param {!SDK.NetworkRequest} request
+   * @return {boolean}
+   */
+  static _initiatedByServiceWorkerFilter(request) {
+    return request.initiatedByServiceWorker();
+  }
+
+  /**
    * @param {string} value
    * @param {!SDK.NetworkRequest} request
    * @return {boolean}
@@ -574,6 +590,10 @@ Network.NetworkLogView = class extends UI.VBox {
     this._suggestionBuilder.addItem(Network.NetworkLogView.FilterType.Is, Network.NetworkLogView.IsFilterType.Running);
     this._suggestionBuilder.addItem(
         Network.NetworkLogView.FilterType.Is, Network.NetworkLogView.IsFilterType.FromCache);
+    this._suggestionBuilder.addItem(
+        Network.NetworkLogView.FilterType.Is, Network.NetworkLogView.IsFilterType.ServiceWorkerIntercepted);
+    this._suggestionBuilder.addItem(
+        Network.NetworkLogView.FilterType.Is, Network.NetworkLogView.IsFilterType.ServiceWorkerInitiated);
     this._suggestionBuilder.addItem(Network.NetworkLogView.FilterType.LargerThan, '100');
     this._suggestionBuilder.addItem(Network.NetworkLogView.FilterType.LargerThan, '10k');
     this._suggestionBuilder.addItem(Network.NetworkLogView.FilterType.LargerThan, '1M');
@@ -619,6 +639,10 @@ Network.NetworkLogView = class extends UI.VBox {
         hintText.appendChild(UI.formatLocalized('Record (%s) to display network activity.', [recordNode]));
       }
     }
+    hintText.createChild('br');
+    hintText.appendChild(UI.XLink.create(
+        'https://developers.google.com/web/tools/chrome-devtools/network/?utm_source=devtools&utm_campaign=2019Q1',
+        'Learn more'));
   }
 
   _hideRecordingHint() {
@@ -1404,6 +1428,10 @@ Network.NetworkLogView = class extends UI.VBox {
           return Network.NetworkLogView._runningRequestFilter;
         if (value.toLowerCase() === Network.NetworkLogView.IsFilterType.FromCache)
           return Network.NetworkLogView._fromCacheRequestFilter;
+        if (value.toLowerCase() === Network.NetworkLogView.IsFilterType.ServiceWorkerIntercepted)
+          return Network.NetworkLogView._interceptedByServiceWorkerFilter;
+        if (value.toLowerCase() === Network.NetworkLogView.IsFilterType.ServiceWorkerInitiated)
+          return Network.NetworkLogView._initiatedByServiceWorkerFilter;
         break;
 
       case Network.NetworkLogView.FilterType.LargerThan:
@@ -1859,7 +1887,9 @@ Network.NetworkLogView.MixedContentFilterValues = {
 /** @enum {string} */
 Network.NetworkLogView.IsFilterType = {
   Running: 'running',
-  FromCache: 'from-cache'
+  FromCache: 'from-cache',
+  ServiceWorkerIntercepted: 'service-worker-intercepted',
+  ServiceWorkerInitiated: 'service-worker-initiated'
 };
 
 /** @type {!Array<string>} */
