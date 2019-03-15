@@ -19,7 +19,7 @@ Resources.BackgroundServiceModel = class extends SDK.SDKModel {
    * @param {!Protocol.BackgroundService.ServiceName} serviceName
    */
   enable(serviceName) {
-    this._backgroundServiceAgent.enable(serviceName);
+    this._backgroundServiceAgent.startObserving(serviceName);
   }
 
   /**
@@ -31,6 +31,13 @@ Resources.BackgroundServiceModel = class extends SDK.SDKModel {
   }
 
   /**
+   * @param {!Protocol.BackgroundService.ServiceName} serviceName
+   */
+  clearEvents(serviceName) {
+    this._backgroundServiceAgent.clearEvents(serviceName);
+  }
+
+  /**
    * @override
    * @param {boolean} isRecording
    * @param {!Protocol.BackgroundService.ServiceName} serviceName
@@ -39,6 +46,15 @@ Resources.BackgroundServiceModel = class extends SDK.SDKModel {
     this.dispatchEventToListeners(
         Resources.BackgroundServiceModel.Events.RecordingStateChanged, {isRecording, serviceName});
   }
+
+  /**
+   * @override
+   * @param {!Protocol.BackgroundService.BackgroundServiceEvent} backgroundServiceEvent
+   */
+  backgroundServiceEventReceived(backgroundServiceEvent) {
+    this.dispatchEventToListeners(
+        Resources.BackgroundServiceModel.Events.BackgroundServiceEventReceived, backgroundServiceEvent);
+  }
 };
 
 SDK.SDKModel.register(Resources.BackgroundServiceModel, SDK.Target.Capability.Browser, false);
@@ -46,6 +62,7 @@ SDK.SDKModel.register(Resources.BackgroundServiceModel, SDK.Target.Capability.Br
 /** @enum {symbol} */
 Resources.BackgroundServiceModel.Events = {
   RecordingStateChanged: Symbol('RecordingStateChanged'),
+  BackgroundServiceEventReceived: Symbol('BackgroundServiceEventReceived'),
 };
 
 /**
