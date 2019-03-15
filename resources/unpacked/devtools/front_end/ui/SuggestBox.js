@@ -34,7 +34,7 @@ UI.SuggestBoxDelegate = function() {};
 
 UI.SuggestBoxDelegate.prototype = {
   /**
-   * @param {string} suggestion
+   * @param {?UI.SuggestBox.Suggestion} suggestion
    * @param {boolean=} isIntermediateSuggestion
    */
   applySuggestion(suggestion, isIntermediateSuggestion) {},
@@ -60,7 +60,7 @@ UI.SuggestBox = class {
     this._userEnteredText = '';
     this._defaultSelectionIsDimmed = false;
 
-    /** @type {?string} */
+    /** @type {?UI.SuggestBox.Suggestion} */
     this._onlyCompletion = null;
 
     /** @type {!UI.ListModel<!UI.SuggestBox.Suggestion>} */
@@ -160,13 +160,13 @@ UI.SuggestBox = class {
    */
   _applySuggestion(isIntermediateSuggestion) {
     if (this._onlyCompletion) {
-      UI.ARIAUtils.alert(ls`${this._onlyCompletion}, suggestion`, this._element);
+      UI.ARIAUtils.alert(ls`${this._onlyCompletion.text}, suggestion`, this._element);
       this._suggestBoxDelegate.applySuggestion(this._onlyCompletion, isIntermediateSuggestion);
       return true;
     }
-    const suggestion = this._list.selectedItem() ? this._list.selectedItem().text : '';
-    if (suggestion)
-      UI.ARIAUtils.alert(ls`${suggestion}, suggestion`, this._element);
+    const suggestion = this._list.selectedItem();
+    if (suggestion && suggestion.text)
+      UI.ARIAUtils.alert(ls`${suggestion.title || suggestion.text}, suggestion`, this._element);
     this._suggestBoxDelegate.applySuggestion(suggestion, isIntermediateSuggestion);
 
     return this.visible() && !!suggestion;
@@ -321,7 +321,7 @@ UI.SuggestBox = class {
         this._list.selectItem(null);
     } else {
       if (completions.length === 1) {
-        this._onlyCompletion = completions[0].text;
+        this._onlyCompletion = completions[0];
         this._applySuggestion(true);
       }
       this.hide();
@@ -370,6 +370,7 @@ UI.SuggestBox = class {
  *      priority: (number|undefined),
  *      isSecondary: (boolean|undefined),
  *      subtitleRenderer: (function():!Element|undefined),
+ *      selectionRange: ({startColumn: number, endColumn: number}|undefined),
  *      prologue: (string|undefined),
  *      epilogue: (string|undefined)
  * }}
