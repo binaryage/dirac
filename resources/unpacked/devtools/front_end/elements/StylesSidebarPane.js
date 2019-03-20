@@ -732,7 +732,7 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
   }
 };
 
-Elements.StylesSidebarPane._maxLinkLength = 30;
+Elements.StylesSidebarPane._maxLinkLength = 23;
 
 Elements.SectionBlock = class {
   /**
@@ -761,7 +761,7 @@ Elements.SectionBlock = class {
   static createKeyframesBlock(keyframesName) {
     const separatorElement = createElement('div');
     separatorElement.className = 'sidebar-separator';
-    separatorElement.textContent = Common.UIString('@keyframes ' + keyframesName);
+    separatorElement.textContent = `@keyframes ${keyframesName}`;
     return new Elements.SectionBlock(separatorElement);
   }
 
@@ -772,7 +772,7 @@ Elements.SectionBlock = class {
   static async _createInheritedNodeBlock(node) {
     const separatorElement = createElement('div');
     separatorElement.className = 'sidebar-separator';
-    separatorElement.createTextChild(Common.UIString('Inherited from') + ' ');
+    separatorElement.createTextChild(ls`Inherited from${' '}`);
     const link = await Common.Linkifier.linkify(node);
     separatorElement.appendChild(link);
     return new Elements.SectionBlock(separatorElement);
@@ -844,9 +844,8 @@ Elements.StylePropertiesSection = class {
     this._selectorElement.addEventListener('mousemove', event => event.consume(), false);
     this._selectorElement.addEventListener('mouseleave', this._onMouseOutSelector.bind(this), false);
 
-    const openBrace = createElement('span');
+    const openBrace = selectorContainer.createChild('span', 'sidebar-pane-open-brace');
     openBrace.textContent = ' {';
-    selectorContainer.appendChild(openBrace);
     selectorContainer.addEventListener('mousedown', this._handleEmptySpaceMouseDown.bind(this), false);
     selectorContainer.addEventListener('click', this._handleSelectorContainerClick.bind(this), false);
 
@@ -929,7 +928,7 @@ Elements.StylePropertiesSection = class {
 
     if (header && header.ownerNode) {
       const link = Elements.DOMLinkifier.linkifyDeferredNodeReference(header.ownerNode);
-      link.textContent = '<style>…</style>';
+      link.textContent = '<style>';
       return link;
     }
 
@@ -1084,7 +1083,7 @@ Elements.StylePropertiesSection = class {
     if (this._style.type === SDK.CSSStyleDeclaration.Type.Inline)
       return this._matchedStyles.isInherited(this._style) ? Common.UIString('Style Attribute') : 'element.style';
     if (this._style.type === SDK.CSSStyleDeclaration.Type.Attributes)
-      return node.nodeNameInCorrectCase() + '[' + Common.UIString('Attributes Style') + ']';
+      return ls`${node.nodeNameInCorrectCase()}[Attributes Style]`;
     return this._style.parentRule.selectorText();
   }
 
@@ -2138,14 +2137,13 @@ Elements.StylesSidebarPane.CSSPropertyPrompt = class extends UI.TextPrompt {
       // If a CSS value is being edited that has a numeric or hex substring, hint that precision modifier shortcuts are available.
       if (treeElement && treeElement.valueElement) {
         const cssValueText = treeElement.valueElement.textContent;
+        const cmdOrCtrl = Host.isMac() ? 'Cmd' : 'Ctrl';
         if (cssValueText.match(/#[\da-f]{3,6}$/i)) {
-          this.setTitle(Common.UIString(
-              'Increment/decrement with mousewheel or up/down keys. %s: R ±1, Shift: G ±1, Alt: B ±1',
-              Host.isMac() ? 'Cmd' : 'Ctrl'));
+          this.setTitle(ls
+              `Increment/decrement with mousewheel or up/down keys. ${cmdOrCtrl}: R ±1, Shift: G ±1, Alt: B ±1`);
         } else if (cssValueText.match(/\d+/)) {
-          this.setTitle(Common.UIString(
-              'Increment/decrement with mousewheel or up/down keys. %s: ±100, Shift: ±10, Alt: ±0.1',
-              Host.isMac() ? 'Cmd' : 'Ctrl'));
+          this.setTitle(ls
+              `Increment/decrement with mousewheel or up/down keys. ${cmdOrCtrl}: ±100, Shift: ±10, Alt: ±0.1`);
         }
       }
     }
