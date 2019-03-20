@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='75.0.3734.1';
-Protocol.BakedInspectorBackendAPIChromeRev='a9f8954bbc77047d4d3725cc7aa6c7a65dd45999';
+Protocol.BakedInspectorBackendAPIChromeTag='75.0.3739.1';
+Protocol.BakedInspectorBackendAPIChromeRev='b57a03014063d14d58d5e1c65562c1f6e0da6c93';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -529,7 +529,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "isLiveEdit", "sourceMapURL", "hasSourceURL", "isModule", "length", "stackTrace"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.continueToLocation", [{"name": "location", "type": "object", "optional": false}, {"name": "targetCallFrames", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.disable", [], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Debugger.enable", [], ["debuggerId"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Debugger.enable", [{"name": "maxScriptsCacheSize", "type": "number", "optional": true}], ["debuggerId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "callFrameId", "type": "string", "optional": false}, {"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "silent", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "throwOnSideEffect", "type": "boolean", "optional": true}, {"name": "timeout", "type": "number", "optional": true}], ["result", "exceptionDetails"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.getPossibleBreakpoints", [{"name": "start", "type": "object", "optional": false}, {"name": "end", "type": "object", "optional": true}, {"name": "restrictToFunction", "type": "boolean", "optional": true}], ["locations"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.getScriptSource", [{"name": "scriptId", "type": "string", "optional": false}], ["scriptSource"], false);\n'
