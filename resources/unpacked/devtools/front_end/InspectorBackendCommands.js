@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='75.0.3739.1';
-Protocol.BakedInspectorBackendAPIChromeRev='b57a03014063d14d58d5e1c65562c1f6e0da6c93';
+Protocol.BakedInspectorBackendAPIChromeTag='75.0.3747.0';
+Protocol.BakedInspectorBackendAPIChromeRev='16e760965326c204362ef3c891549974ff59b8cd';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -354,12 +354,14 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Overlay.setShowViewportSizeOnResize", [{"name": "show", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Page.TransitionType", {Link: "link", Typed: "typed", Address_bar: "address_bar", Auto_bookmark: "auto_bookmark", Auto_subframe: "auto_subframe", Manual_subframe: "manual_subframe", Generated: "generated", Auto_toplevel: "auto_toplevel", Form_submit: "form_submit", Reload: "reload", Keyword: "keyword", Keyword_generated: "keyword_generated", Other: "other"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Page.DialogType", {Alert: "alert", Confirm: "confirm", Prompt: "prompt", Beforeunload: "beforeunload"});\n'
++ 'Protocol.inspectorBackend.registerEnum("Page.ClientNavigationReason", {FormSubmissionGet: "formSubmissionGet", FormSubmissionPost: "formSubmissionPost", HttpHeaderRefresh: "httpHeaderRefresh", ScriptInitiated: "scriptInitiated", MetaTagRefresh: "metaTagRefresh", PageBlockInterstitial: "pageBlockInterstitial", Reload: "reload"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.domContentEventFired", ["timestamp"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.frameAttached", ["frameId", "parentFrameId", "stack"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.frameClearedScheduledNavigation", ["frameId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.frameDetached", ["frameId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.frameNavigated", ["frame"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.frameResized", []);\n'
++ 'Protocol.inspectorBackend.registerEvent("Page.frameRequestedNavigation", ["frameId", "reason", "url"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.frameScheduledNavigation", ["frameId", "delay", "reason", "url"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.frameStartedLoading", ["frameId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.frameStoppedLoading", ["frameId"]);\n'
