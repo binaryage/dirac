@@ -290,9 +290,15 @@ Console.ConsoleViewMessage = class {
       if (request.statusText)
         messageElement.createTextChildren(' (', request.statusText, ')');
     } else {
-      const fragment = this._linkifyWithCustomLinkifier(this._message.messageText, title => {
-        const linkElement = Components.Linkifier.linkifyRevealable(
-            /** @type {!SDK.NetworkRequest} */ (request), title, request.url());
+      const messageText = this._message.messageText;
+      const fragment = this._linkifyWithCustomLinkifier(messageText, (text, url, lineNumber, columnNumber) => {
+        let linkElement;
+        if (url === request.url()) {
+          linkElement = Components.Linkifier.linkifyRevealable(
+              /** @type {!SDK.NetworkRequest} */ (request), url, request.url());
+        } else {
+          linkElement = Components.Linkifier.linkifyURL(url, {text, lineNumber, columnNumber});
+        }
         linkElement.tabIndex = -1;
         this._selectableChildren.push({element: linkElement, forceSelect: () => linkElement.focus()});
         return linkElement;
@@ -980,36 +986,12 @@ Console.ConsoleViewMessage = class {
     if (Common.moduleSetting('consoleTimestampsEnabled').get()) {
       if (!this._timestampElement)
         this._timestampElement = createElementWithClass('span', 'console-timestamp');
-      this._timestampElement.textContent = formatTimestamp(this._message.timestamp, false) + ' ';
-      this._timestampElement.title = formatTimestamp(this._message.timestamp, true);
+      this._timestampElement.textContent = UI.formatTimestamp(this._message.timestamp, false) + ' ';
+      this._timestampElement.title = UI.formatTimestamp(this._message.timestamp, true);
       this._contentElement.insertBefore(this._timestampElement, this._contentElement.firstChild);
     } else if (this._timestampElement) {
       this._timestampElement.remove();
       delete this._timestampElement;
-    }
-
-    /**
-     * @param {number} timestamp
-     * @param {boolean} full
-     * @return {string}
-     */
-    function formatTimestamp(timestamp, full) {
-      const date = new Date(timestamp);
-      const yymmdd = date.getFullYear() + '-' + leadZero(date.getMonth() + 1, 2) + '-' + leadZero(date.getDate(), 2);
-      const hhmmssfff = leadZero(date.getHours(), 2) + ':' + leadZero(date.getMinutes(), 2) + ':' +
-          leadZero(date.getSeconds(), 2) + '.' + leadZero(date.getMilliseconds(), 3);
-      return full ? (yymmdd + ' ' + hhmmssfff) : hhmmssfff;
-
-      /**
-       * @param {number} value
-       * @param {number} length
-       * @return {string}
-       */
-      function leadZero(value, length) {
-        const valueString = value.toString();
-        const padding = length - valueString.length;
-        return padding <= 0 ? valueString : '0'.repeat(padding) + valueString;
-      }
     }
   }
 
