@@ -13,13 +13,13 @@
 (def required-deps
   [['org.clojure/core.async "0.4.490"]
    ['org.clojure/tools.logging "0.5.0-alpha.1"]
-   ['org.clojure/tools.cli "0.4.1"]
+   ['org.clojure/tools.cli "0.4.2"]
    ['nrepl/nrepl "0.6.0"]
    ['binaryage/env-config "0.2.2"]
    ['http-kit "2.3.0"]
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
-   ['funcool/cuerdas "2.0.6"]
+   ['funcool/cuerdas "2.2.0"]
    ['com.rpl/specter "1.1.2"]])
 
 (def test-deps
