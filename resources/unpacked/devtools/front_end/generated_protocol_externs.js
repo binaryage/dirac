@@ -1275,7 +1275,7 @@ Protocol.CacheStorageAgent.prototype.invoke_requestCachedResponse = function(obj
 Protocol.CacheStorageAgent.prototype.requestEntries = function(cacheId, skipCount, pageSize, opt_pathFilter) {};
 /** @typedef {!{pathFilter: (string|undefined), cacheId: Protocol.CacheStorage.CacheId, skipCount: number, pageSize: number}} */
 Protocol.CacheStorageAgent.RequestEntriesRequest;
-/** @typedef {!{hasMore: boolean, cacheDataEntries: !Array<Protocol.CacheStorage.DataEntry>}} */
+/** @typedef {!{returnCount: number, cacheDataEntries: !Array<Protocol.CacheStorage.DataEntry>}} */
 Protocol.CacheStorageAgent.RequestEntriesResponse;
 /**
  * @param {!Protocol.CacheStorageAgent.RequestEntriesRequest} obj
@@ -6983,30 +6983,6 @@ Protocol.TracingDispatcher.prototype.dataCollected = function(value) {};
  * @param {Protocol.Tracing.StreamCompression=} opt_streamCompression
  */
 Protocol.TracingDispatcher.prototype.tracingComplete = function(opt_stream, opt_streamCompression) {};
-Protocol.Testing = {};
-
-
-/**
- * @constructor
-*/
-Protocol.TestingAgent = function(){};
-
-/**
- * @param {string} message
- * @param {string=} opt_group
- * @return {!Promise<undefined>}
- */
-Protocol.TestingAgent.prototype.generateTestReport = function(message, opt_group) {};
-/** @typedef {!{message: string, group: (string|undefined)}} */
-Protocol.TestingAgent.GenerateTestReportRequest;
-/** @typedef {Object|undefined} */
-Protocol.TestingAgent.GenerateTestReportResponse;
-/**
- * @param {!Protocol.TestingAgent.GenerateTestReportRequest} obj
- * @return {!Promise<!Protocol.TestingAgent.GenerateTestReportResponse>} */
-Protocol.TestingAgent.prototype.invoke_generateTestReport = function(obj) {};
-/** @interface */
-Protocol.TestingDispatcher = function() {};
 Protocol.Fetch = {};
 
 
@@ -8973,12 +8949,6 @@ Protocol.TargetBase.prototype.tracingAgent = function(){};
  * @param {!Protocol.TracingDispatcher} dispatcher
  */
 Protocol.TargetBase.prototype.registerTracingDispatcher = function(dispatcher) {}
-/** @return {!Protocol.TestingAgent}*/
-Protocol.TargetBase.prototype.testingAgent = function(){};
-/**
- * @param {!Protocol.TestingDispatcher} dispatcher
- */
-Protocol.TargetBase.prototype.registerTestingDispatcher = function(dispatcher) {}
 /** @return {!Protocol.FetchAgent}*/
 Protocol.TargetBase.prototype.fetchAgent = function(){};
 /**

@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='75.0.3747.0';
-Protocol.BakedInspectorBackendAPIChromeRev='16e760965326c204362ef3c891549974ff59b8cd';
+Protocol.BakedInspectorBackendAPIChromeTag='75.0.3752.1';
+Protocol.BakedInspectorBackendAPIChromeRev='2d824e4b22c1c926400284082c92577c1d24c776';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -86,7 +86,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.deleteEntry", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "request", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestCacheNames", [{"name": "securityOrigin", "type": "string", "optional": false}], ["caches"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestCachedResponse", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "requestURL", "type": "string", "optional": false}, {"name": "requestHeaders", "type": "object", "optional": false}], ["response"], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestEntries", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "skipCount", "type": "number", "optional": false}, {"name": "pageSize", "type": "number", "optional": false}, {"name": "pathFilter", "type": "string", "optional": true}], ["cacheDataEntries", "hasMore"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestEntries", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "skipCount", "type": "number", "optional": false}, {"name": "pageSize", "type": "number", "optional": false}, {"name": "pathFilter", "type": "string", "optional": true}], ["cacheDataEntries", "returnCount"], false);\n'
 + 'Protocol.inspectorBackend.registerEvent("Cast.sinksUpdated", ["sinkNames"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Cast.issueUpdated", ["issueMessage"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Cast.enable", [{"name": "presentationUrl", "type": "string", "optional": true}], [], false);\n'
@@ -508,7 +508,6 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Tracing.recordClockSyncMarker", [{"name": "syncId", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Tracing.requestMemoryDump", [], ["dumpGuid", "success"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Tracing.start", [{"name": "categories", "type": "string", "optional": true}, {"name": "options", "type": "string", "optional": true}, {"name": "bufferUsageReportingInterval", "type": "number", "optional": true}, {"name": "transferMode", "type": "string", "optional": true}, {"name": "streamCompression", "type": "string", "optional": true}, {"name": "traceConfig", "type": "object", "optional": true}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Testing.generateTestReport", [{"name": "message", "type": "string", "optional": false}, {"name": "group", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Fetch.RequestStage", {Request: "Request", Response: "Response"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Fetch.AuthChallengeSource", {Server: "Server", Proxy: "Proxy"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Fetch.AuthChallengeResponseResponse", {Default: "Default", CancelAuth: "CancelAuth", ProvideCredentials: "ProvideCredentials"});\n'
