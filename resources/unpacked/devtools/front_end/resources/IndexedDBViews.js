@@ -40,23 +40,22 @@ Resources.IDBDatabaseView = class extends UI.VBox {
     super();
 
     this._model = model;
-    const databaseName = database ? database.databaseId.name : Common.UIString('Loading\u2026');
+    const databaseName = database ? database.databaseId.name : ls`Loading\u2026`;
 
     this._reportView = new UI.ReportView(databaseName);
     this._reportView.show(this.contentElement);
 
     const bodySection = this._reportView.appendSection('');
-    this._securityOriginElement = bodySection.appendField(Common.UIString('Security origin'));
-    this._versionElement = bodySection.appendField(Common.UIString('Version'));
+    this._securityOriginElement = bodySection.appendField(ls`Security origin`);
+    this._versionElement = bodySection.appendField(ls`Version`);
+    this._objectStoreCountElement = bodySection.appendField(ls`Object stores`);
 
     const footer = this._reportView.appendSection('').appendRow();
-    this._clearButton = UI.createTextButton(
-        Common.UIString('Delete database'), () => this._deleteDatabase(), Common.UIString('Delete database'));
+    this._clearButton = UI.createTextButton(ls`Delete database`, () => this._deleteDatabase(), ls`Delete database`);
     footer.appendChild(this._clearButton);
 
-    this._refreshButton = UI.createTextButton(
-        Common.UIString('Refresh database'), () => this._refreshDatabaseButtonClicked(),
-        Common.UIString('Refresh database'));
+    this._refreshButton =
+        UI.createTextButton(ls`Refresh database`, () => this._refreshDatabaseButtonClicked(), ls`Refresh database`);
     footer.appendChild(this._refreshButton);
 
     if (database)
@@ -66,6 +65,7 @@ Resources.IDBDatabaseView = class extends UI.VBox {
   _refreshDatabase() {
     this._securityOriginElement.textContent = this._database.databaseId.securityOrigin;
     this._versionElement.textContent = this._database.version;
+    this._objectStoreCountElement.textContent = Object.keys(this._database.objectStores).length;
   }
 
   _refreshDatabaseButtonClicked() {
@@ -134,8 +134,6 @@ Resources.IDBDataView = class extends UI.SimpleView {
 
     this._pageSize = 50;
     this._skipCount = 0;
-    /** @type {?number} */
-    this._keyGeneratorValue = null;
 
     this.update(objectStore, index);
     this._entries = [];
@@ -339,15 +337,6 @@ Resources.IDBDataView = class extends UI.SimpleView {
       this._updatedDataForTests();
     }
 
-    /**
-     * @param {?number} number
-     * @this {Resources.IDBDataView}
-     */
-    function callbackKeyGeneratorValue(number) {
-      this._keyGeneratorValue = number;
-      this._updateSummaryBar();
-    }
-
     const idbKeyRange = key ? window.IDBKeyRange.lowerBound(key) : null;
     if (this._isIndex) {
       this._model.loadIndexData(
@@ -357,18 +346,28 @@ Resources.IDBDataView = class extends UI.SimpleView {
       this._model.loadObjectStoreData(
           this._databaseId, this._objectStore.name, idbKeyRange, skipCount, pageSize, callback.bind(this));
     }
-    this._model.getKeyGeneratorValue(this._databaseId, this._objectStore).then(callbackKeyGeneratorValue.bind(this));
-    this._updateSummaryBar();
+    this._model.getMetadata(this._databaseId, this._objectStore).then(this._updateSummaryBar.bind(this));
   }
 
-  _updateSummaryBar() {
-    if (this._keyGeneratorValue === null)
-      return;
+  /**
+   * @param {?Resources.IndexedDBModel.ObjectStoreMetadata} metadata
+   */
+  _updateSummaryBar(metadata) {
     if (!this._summaryBarElement)
       this._summaryBarElement = this.element.createChild('div', 'object-store-summary-bar');
     this._summaryBarElement.removeChildren();
+    if (!metadata)
+      return;
+
+    const separator = '\u2002\u2758\u2002';
+
     const span = this._summaryBarElement.createChild('span');
-    span.textContent = ls`key generator value: ${String(this._keyGeneratorValue)}`;
+    span.textContent = ls`Total entries: ${String(metadata.entriesCount)}`;
+
+    if (this._objectStore.autoIncrement) {
+      span.textContent += separator;
+      span.textContent += ls`Key generator value: ${String(metadata.keyGeneratorValue)}`;
+    }
   }
 
   _updatedDataForTests() {
@@ -448,7 +447,7 @@ Resources.IDBDataGridNode = class extends DataGrid.DataGridNode {
       case 'key':
       case 'primaryKey':
         cell.removeChildren();
-        const objectElement = ObjectUI.ObjectPropertiesSection.defaultObjectPresentation(value, undefined, true);
+        const objectElement = ObjectUI.ObjectPropertiesSection.defaultObjectPresentation(value, undefined, true, true);
         cell.appendChild(objectElement);
         break;
       default:

@@ -42,7 +42,7 @@ UI.TextPrompt = class extends Common.Object {
     this._title = '';
     this._queryRange = null;
     this._previousText = '';
-    this._currentSuggestion = '';
+    this._currentSuggestion = null;
     this._completionRequestId = 0;
     this._ghostTextElement = createElementWithClass('span', 'auto-complete-text');
     this._ghostTextElement.setAttribute('contenteditable', 'false');
@@ -150,8 +150,8 @@ UI.TextPrompt = class extends Common.Object {
     const text = this.text();
     if (!this._queryRange)
       return text;
-    return text.substring(0, this._queryRange.startColumn) + this._currentSuggestion +
-        text.substring(this._queryRange.endColumn);
+    const suggestion = this._currentSuggestion ? this._currentSuggestion.text : '';
+    return text.substring(0, this._queryRange.startColumn) + suggestion + text.substring(this._queryRange.endColumn);
   }
 
   /**
@@ -320,13 +320,32 @@ UI.TextPrompt = class extends Common.Object {
   }
 
   /**
+   * @param {string} key
+   * @return {boolean}
+   */
+  _acceptSuggestionOnStopCharacters(key) {
+    if (!this._currentSuggestion || !this._queryRange || key.length !== 1 ||
+        !this._completionStopCharacters.includes(key))
+      return false;
+
+    const query = this.text().substring(this._queryRange.startColumn, this._queryRange.endColumn);
+    if (query && this._currentSuggestion.text.startsWith(query + key)) {
+      this._queryRange.endColumn += 1;
+      return this.acceptAutoComplete();
+    }
+    return false;
+  }
+
+  /**
    * @param {!Event} event
    */
   onInput(event) {
     const text = this.text();
-    const hasCommonPrefix = text.startsWith(this._previousText) || this._previousText.startsWith(text);
-    if (this._queryRange && hasCommonPrefix)
-      this._queryRange.endColumn += text.length - this._previousText.length;
+    if (event.data && !this._acceptSuggestionOnStopCharacters(event.data)) {
+      const hasCommonPrefix = text.startsWith(this._previousText) || this._previousText.startsWith(text);
+      if (this._queryRange && hasCommonPrefix)
+        this._queryRange.endColumn += text.length - this._previousText.length;
+    }
     this._refreshGhostText();
     this._previousText = text;
     this.dispatchEventToListeners(UI.TextPrompt.Events.TextChanged);
@@ -362,9 +381,9 @@ UI.TextPrompt = class extends Common.Object {
 
   _refreshGhostText() {
     if (this._queryRange && this._currentSuggestion && this._isCaretAtEndOfPrompt() &&
-        this._currentSuggestion.startsWith(this.text().substring(this._queryRange.startColumn))) {
+        this._currentSuggestion.text.startsWith(this.text().substring(this._queryRange.startColumn))) {
       this._ghostTextElement.textContent =
-          this._currentSuggestion.substring(this._queryRange.endColumn - this._queryRange.startColumn);
+          this._currentSuggestion.text.substring(this._queryRange.endColumn - this._queryRange.startColumn);
       this._element.appendChild(this._ghostTextElement);
     } else {
       this._ghostTextElement.remove();
@@ -513,7 +532,7 @@ UI.TextPrompt = class extends Common.Object {
 
   /**
    * @override
-   * @param {string} suggestion
+   * @param {?UI.SuggestBox.Suggestion} suggestion
    * @param {boolean=} isIntermediateSuggestion
    */
   applySuggestion(suggestion, isIntermediateSuggestion) {
@@ -537,10 +556,12 @@ UI.TextPrompt = class extends Common.Object {
     if (!this._queryRange)
       return false;
 
+    const suggestionLength = this._currentSuggestion ? this._currentSuggestion.text.length : 0;
+    const selectionRange = this._currentSuggestion ? this._currentSuggestion.selectionRange : null;
+    const endColumn = selectionRange ? selectionRange.endColumn : suggestionLength;
+    const startColumn = selectionRange ? selectionRange.startColumn : suggestionLength;
     this._element.textContent = this.textWithCurrentSuggestion();
-    this.setDOMSelection(
-        this._queryRange.startColumn + this._currentSuggestion.length,
-        this._queryRange.startColumn + this._currentSuggestion.length);
+    this.setDOMSelection(this._queryRange.startColumn + startColumn, this._queryRange.startColumn + endColumn);
 
     this.clearAutocomplete();
     this.dispatchEventToListeners(UI.TextPrompt.Events.TextChanged);

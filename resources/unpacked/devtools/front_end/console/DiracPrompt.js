@@ -815,14 +815,15 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
 
   /**
    * @override
-   * @param {string} suggestion
+   * @param {?UI.SuggestBox.Suggestion} suggestion
    * @param {boolean=} isIntermediateSuggestion
    */
   applySuggestion(suggestion, isIntermediateSuggestion) {
     if (dirac._DEBUG_COMPLETIONS) {
       console.log("applySuggestion", this._lastExpression, suggestion);
     }
-    this._currentSuggestion = this._lastExpression + suggestion;
+    let suggestionText = suggestion ? suggestion.text : "";
+    this._currentSuggestion = this._lastExpression + suggestionText;
   }
 
   /**

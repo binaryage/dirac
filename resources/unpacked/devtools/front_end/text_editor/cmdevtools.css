@@ -16,7 +16,7 @@
 }
 
 .CodeMirror-gutter-memory {
-    width: 60px;
+    width: 48px;
     background-color: white;
     margin-left: 3px;
 }
@@ -434,10 +434,12 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
 .CodeMirror .text-editor-line-marker-text {
     text-align: right;
     padding-right: 3px;
+    height: 12px;
 }
 
 .CodeMirror .text-editor-line-marker-text span.line-marker-units {
-    color: #999;
+    color: #555;
+    font-size: 75%;
     margin-left: 3px;
 }
 

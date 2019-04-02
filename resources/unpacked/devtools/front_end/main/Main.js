@@ -112,16 +112,18 @@ Main.Main = class {
   _initializeExperiments() {
     // Keep this sorted alphabetically: both keys and values.
     Runtime.experiments.register('applyCustomStylesheet', 'Allow custom UI themes');
+    Runtime.experiments.register('sourcesPrettyPrint', 'Automatically pretty print in the Sources Panel');
     Runtime.experiments.register('backgroundServices', 'Background web platform feature events', true);
     Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
+    Runtime.experiments.register('liveHeapProfile', 'Live heap profile', true);
     Runtime.experiments.register('nativeHeapProfiler', 'Native memory sampling heap profiler', true);
     Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
     Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
     Runtime.experiments.register('sourceDiff', 'Source diff');
-    Runtime.experiments.register('sourcesPrettyPrint', 'Automatically pretty print in the Sources Panel');
     Runtime.experiments.register('splitInDrawer', 'Split in drawer', true);
+    Runtime.experiments.register('spotlight', 'Spotlight', true);
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
 
     // Timeline
@@ -134,6 +136,9 @@ Main.Main = class {
 
     Runtime.experiments.cleanUpStaleExperiments();
     Runtime.experiments.setDefaultExperiments([]);
+
+    if (Host.isUnderTest() && Runtime.queryParam('test').includes('live-line-level-heap-profile.js'))
+      Runtime.experiments.enableForTest('liveHeapProfile');
   }
 
   /**
@@ -270,10 +275,8 @@ Main.Main = class {
     Main.Main.time('Main._lateInitialization');
     this._registerShortcuts();
     Extensions.extensionServer.initializeExtensions();
-    if (!Host.isUnderTest()) {
-      for (const extension of self.runtime.extensions('late-initialization'))
-        extension.instance().then(instance => (/** @type {!Common.Runnable} */ (instance)).run());
-    }
+    for (const extension of self.runtime.extensions('late-initialization'))
+      extension.instance().then(instance => (/** @type {!Common.Runnable} */ (instance)).run());
     Main.Main.timeEnd('Main._lateInitialization');
     dirac.notifyFrontendInitialized();
   }
