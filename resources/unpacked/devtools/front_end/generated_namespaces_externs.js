@@ -11,6 +11,8 @@ var Audits2 = {};
 /** @const */
 var Audits2TestRunner = {};
 /** @const */
+var AxeCoreTestRunner = {};
+/** @const */
 var Bindings = {};
 /** @const */
 var BindingsTestRunner = {};
