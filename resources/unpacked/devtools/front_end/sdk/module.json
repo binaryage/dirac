@@ -329,6 +329,7 @@
         "TracingModel.js",
         "OverlayModel.js",
         "RuntimeModel.js",
+        "IsolateManager.js",
         "ScreenCaptureModel.js",
         "Script.js",
         "ServiceWorkerCacheModel.js",
