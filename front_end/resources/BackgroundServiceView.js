@@ -36,13 +36,34 @@ Resources.BackgroundServiceView = class extends UI.VBox {
     /** @type {?UI.ToolbarCheckbox} */
     this._originCheckbox = null;
 
+    /** @type {?UI.ToolbarButton} */
+    this._saveButton = null;
+
     /** @const {!UI.Toolbar} */
     this._toolbar = new UI.Toolbar('background-service-toolbar', this.contentElement);
     this._setupToolbar();
 
+    /**
+     * This will contain the DataGrid for displaying events, and a panel at the bottom for showing
+     * extra metadata related to the selected event.
+     * @const {!UI.SplitWidget}
+     */
+    this._splitWidget = new UI.SplitWidget(/* isVertical= */ false, /* secondIsSidebar= */ true);
+    this._splitWidget.show(this.contentElement);
+
     /** @const {!DataGrid.DataGrid} */
     this._dataGrid = this._createDataGrid();
-    this._dataGrid.asWidget().show(this.contentElement);
+
+    /** @const {!UI.VBox} */
+    this._previewPanel = new UI.VBox();
+
+    /** @type {?UI.Widget} */
+    this._preview = null;
+
+    this._splitWidget.setMainWidget(this._dataGrid.asWidget());
+    this._splitWidget.setSidebarWidget(this._previewPanel);
+
+    this._showPreview(null);
   }
 
   /**
@@ -50,30 +71,46 @@ Resources.BackgroundServiceView = class extends UI.VBox {
    */
   async _setupToolbar() {
     this._recordButton =
-        new UI.ToolbarToggle(Common.UIString('Toggle Record'), 'largeicon-start-recording', 'largeicon-stop-recording');
+        new UI.ToolbarToggle(ls`Toggle Record`, 'largeicon-start-recording', 'largeicon-stop-recording');
     this._recordButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._toggleRecording());
     this._recordButton.setToggleWithRedColor(true);
     this._toolbar.appendToolbarItem(this._recordButton);
 
-    const refreshButton = new UI.ToolbarButton(Common.UIString('Refresh'), 'largeicon-refresh');
-    refreshButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._refreshView());
-    this._toolbar.appendToolbarItem(refreshButton);
-
-    const clearButton = new UI.ToolbarButton(Common.UIString('Clear'), 'largeicon-clear');
-    clearButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._clearView());
+    const clearButton = new UI.ToolbarButton(ls`Clear`, 'largeicon-clear');
+    clearButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._clearEvents());
     this._toolbar.appendToolbarItem(clearButton);
 
     this._toolbar.appendSeparator();
 
-    const deleteButton = new UI.ToolbarButton(Common.UIString('Delete'), 'largeicon-trash-bin');
-    deleteButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._deleteEvents());
-    this._toolbar.appendToolbarItem(deleteButton);
+    this._originCheckbox =
+        new UI.ToolbarCheckbox(ls`Show events from other domains`, undefined, () => this._refreshView());
+    this._toolbar.appendToolbarItem(this._originCheckbox);
 
     this._toolbar.appendSeparator();
 
-    this._originCheckbox =
-        new UI.ToolbarCheckbox(Common.UIString('Show events from other domains'), undefined, () => this._refreshView());
-    this._toolbar.appendToolbarItem(this._originCheckbox);
+    this._saveButton = new UI.ToolbarButton(ls`Save events`, 'largeicon-download');
+    this._saveButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._saveToFile());
+    this._saveButton.setEnabled(false);
+    this._toolbar.appendToolbarItem(this._saveButton);
+  }
+
+  /**
+   * Displays all available events in the grid.
+   */
+  _refreshView() {
+    this._clearView();
+    const events = this._model.getEvents(this._serviceName).filter(event => this._acceptEvent(event));
+    for (const event of events)
+      this._addEvent(event);
+  }
+
+  /**
+   * Clears the grid and panel.
+   */
+  _clearView() {
+    this._dataGrid.rootNode().removeChildren();
+    this._showPreview(null);
+    this._saveButton.setEnabled(false);
   }
 
   /**
@@ -84,26 +121,9 @@ Resources.BackgroundServiceView = class extends UI.VBox {
   }
 
   /**
-   * Called when the `Refresh` button is clicked.
-   */
-  _refreshView() {
-    this._clearView();
-    const events = this._model.getEvents(this._serviceName).filter(event => this._acceptEvent(event));
-    for (const event of events)
-      this._addEvent(event);
-  }
-
-  /**
    * Called when the `Clear` button is clicked.
    */
-  _clearView() {
-    this._dataGrid.rootNode().removeChildren();
-  }
-
-  /**
-   * Called when the `Delete` button is clicked.
-   */
-  _deleteEvents() {
+  _clearEvents() {
     this._model.clearEvents(this._serviceName);
     this._clearView();
   }
@@ -142,6 +162,9 @@ Resources.BackgroundServiceView = class extends UI.VBox {
     const data = this._createEventData(serviceEvent);
     const dataNode = new Resources.BackgroundServiceView.EventDataNode(data, serviceEvent.eventMetadata);
     this._dataGrid.rootNode().appendChild(dataNode);
+
+    // There's at least one event. So we can allow saving the events.
+    this._saveButton.setEnabled(true);
   }
 
   /**
@@ -149,15 +172,20 @@ Resources.BackgroundServiceView = class extends UI.VBox {
    */
   _createDataGrid() {
     const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
-      {id: 'id', title: Common.UIString('#'), weight: 1},
-      {id: 'timestamp', title: Common.UIString('Timestamp'), weight: 8},
-      {id: 'origin', title: Common.UIString('Origin'), weight: 10},
-      {id: 'swSource', title: Common.UIString('SW Source'), weight: 4},
-      {id: 'eventName', title: Common.UIString('Event'), weight: 10},
-      {id: 'instanceId', title: Common.UIString('Instance ID'), weight: 10},
+      {id: 'id', title: ls`#`, weight: 1},
+      {id: 'timestamp', title: ls`Timestamp`, weight: 8},
+      {id: 'origin', title: ls`Origin`, weight: 10},
+      {id: 'swSource', title: ls`SW Source`, weight: 4},
+      {id: 'eventName', title: ls`Event`, weight: 10},
+      {id: 'instanceId', title: ls`Instance ID`, weight: 10},
     ]);
     const dataGrid = new DataGrid.DataGrid(columns);
     dataGrid.setStriped(true);
+
+    dataGrid.addEventListener(
+        DataGrid.DataGrid.Events.SelectedNode,
+        event => this._showPreview(/** @type {!Resources.BackgroundServiceView.EventDataNode} */ (event.data)));
+
     return dataGrid;
   }
 
@@ -205,6 +233,37 @@ Resources.BackgroundServiceView = class extends UI.VBox {
 
     return this._securityOriginManager.securityOrigins().includes(origin);
   }
+
+  /**
+   * @param {?Resources.BackgroundServiceView.EventDataNode} dataNode
+   */
+  _showPreview(dataNode) {
+    if (this._preview)
+      this._preview.detach();
+
+    if (dataNode)
+      this._preview = dataNode.createPreview();
+    else
+      this._preview = new UI.EmptyWidget(ls`Select a value to preview`);
+
+    this._preview.show(this._previewPanel.contentElement);
+  }
+
+  /**
+   * Saves all currently displayed events in a file (JSON format).
+   */
+  async _saveToFile() {
+    const fileName = `${this._serviceName}-${new Date().toISO8601Compact()}.json`;
+    const stream = new Bindings.FileOutputStream();
+
+    const accepted = await stream.open(fileName);
+    if (!accepted)
+      return;
+
+    const events = this._model.getEvents(this._serviceName).filter(event => this._acceptEvent(event));
+    await stream.write(JSON.stringify(events, undefined, 2));
+    stream.close();
+  }
 };
 
 /**
@@ -229,60 +288,15 @@ Resources.BackgroundServiceView.EventDataNode = class extends DataGrid.DataGridN
 
     /** @const {!Array<!Protocol.BackgroundService.EventMetadata>} */
     this._eventMetadata = eventMetadata;
-
-    /** @type {?UI.PopoverHelper} */
-    this._popoverHelper = null;
   }
 
   /**
-   * @override
-   * @return {!Element}
+   * @return {!UI.SearchableView}
    */
-  createElement() {
-    const element = super.createElement();
-
-    this._popoverHelper = new UI.PopoverHelper(element, event => this._createPopover(event));
-    this._popoverHelper.setHasPadding(true);
-    this._popoverHelper.setTimeout(300, 300);
-
-    return element;
-  }
-
-  /**
-   * @param {!Event} event
-   * @return {?UI.PopoverRequest}
-   */
-  _createPopover(event) {
-    if (event.type !== 'mousedown')
-      return null;
-
-    // Create popover container.
-    const container = createElementWithClass('div', 'background-service-popover-container');
-    UI.appendStyle(container, 'resources/backgroundServiceView.css');
-
-    if (!this._eventMetadata.length) {
-      const entryDiv = createElementWithClass('div', 'background-service-metadata-entry');
-      entryDiv.textContent = 'There is no metadata for this event';
-      container.appendChild(entryDiv);
-    }
-
-    for (const entry of this._eventMetadata) {
-      const entryDiv = createElementWithClass('div', 'background-service-metadata-entry');
-      const key = createElementWithClass('label', 'background-service-metadata-key');
-      key.textContent = `${entry.key}: `;
-      const value = createElementWithClass('label', 'background-service-metadata-value');
-      value.textContent = entry.value;
-      entryDiv.appendChild(key);
-      entryDiv.appendChild(value);
-      container.appendChild(entryDiv);
-    }
-
-    return {
-      box: event.target.boxInWindow(),
-      show: popover => {
-        popover.contentElement.appendChild(container);
-        return Promise.resolve(true);
-      },
-    };
+  createPreview() {
+    const metadata = {};
+    for (const entry of this._eventMetadata)
+      metadata[entry.key] = entry.value;
+    return SourceFrame.JSONView.createViewSync(metadata);
   }
 };
