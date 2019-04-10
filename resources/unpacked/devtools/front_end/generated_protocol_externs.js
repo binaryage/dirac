@@ -4648,8 +4648,9 @@ Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, times
  * @param {Protocol.Network.ErrorReason=} opt_responseErrorReason
  * @param {number=} opt_responseStatusCode
  * @param {Protocol.Network.Headers=} opt_responseHeaders
+ * @param {Protocol.Network.RequestId=} opt_requestId
  */
-Protocol.NetworkDispatcher.prototype.requestIntercepted = function(interceptionId, request, frameId, resourceType, isNavigationRequest, opt_isDownload, opt_redirectUrl, opt_authChallenge, opt_responseErrorReason, opt_responseStatusCode, opt_responseHeaders) {};
+Protocol.NetworkDispatcher.prototype.requestIntercepted = function(interceptionId, request, frameId, resourceType, isNavigationRequest, opt_isDownload, opt_redirectUrl, opt_authChallenge, opt_responseErrorReason, opt_responseStatusCode, opt_responseHeaders, opt_requestId) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
  */
@@ -4995,6 +4996,7 @@ Protocol.Overlay.InspectMode = {
     SearchForNode: "searchForNode",
     SearchForUAShadowDOM: "searchForUAShadowDOM",
     CaptureAreaScreenshot: "captureAreaScreenshot",
+    ShowDistances: "showDistances",
     None: "none"
 };
 /** @interface */
@@ -6933,12 +6935,13 @@ Protocol.TracingAgent.prototype.invoke_requestMemoryDump = function(obj) {};
  * @param {string=} opt_options
  * @param {number=} opt_bufferUsageReportingInterval
  * @param {string=} opt_transferMode
+ * @param {Protocol.Tracing.StreamFormat=} opt_streamFormat
  * @param {Protocol.Tracing.StreamCompression=} opt_streamCompression
  * @param {Protocol.Tracing.TraceConfig=} opt_traceConfig
  * @return {!Promise<undefined>}
  */
-Protocol.TracingAgent.prototype.start = function(opt_categories, opt_options, opt_bufferUsageReportingInterval, opt_transferMode, opt_streamCompression, opt_traceConfig) {};
-/** @typedef {!{traceConfig: (Protocol.Tracing.TraceConfig|undefined), transferMode: (string|undefined), bufferUsageReportingInterval: (number|undefined), options: (string|undefined), categories: (string|undefined), streamCompression: (Protocol.Tracing.StreamCompression|undefined)}} */
+Protocol.TracingAgent.prototype.start = function(opt_categories, opt_options, opt_bufferUsageReportingInterval, opt_transferMode, opt_streamFormat, opt_streamCompression, opt_traceConfig) {};
+/** @typedef {!{traceConfig: (Protocol.Tracing.TraceConfig|undefined), transferMode: (string|undefined), bufferUsageReportingInterval: (number|undefined), streamFormat: (Protocol.Tracing.StreamFormat|undefined), options: (string|undefined), categories: (string|undefined), streamCompression: (Protocol.Tracing.StreamCompression|undefined)}} */
 Protocol.TracingAgent.StartRequest;
 /** @typedef {Object|undefined} */
 Protocol.TracingAgent.StartResponse;
@@ -6962,6 +6965,12 @@ Protocol.Tracing.TraceConfigRecordMode = {
 Protocol.Tracing.TraceConfig;
 
 /** @enum {string} */
+Protocol.Tracing.StreamFormat = {
+    Json: "json",
+    Proto: "proto"
+};
+
+/** @enum {string} */
 Protocol.Tracing.StreamCompression = {
     None: "none",
     Gzip: "gzip"
@@ -6980,9 +6989,10 @@ Protocol.TracingDispatcher.prototype.bufferUsage = function(opt_percentFull, opt
 Protocol.TracingDispatcher.prototype.dataCollected = function(value) {};
 /**
  * @param {Protocol.IO.StreamHandle=} opt_stream
+ * @param {Protocol.Tracing.StreamFormat=} opt_traceFormat
  * @param {Protocol.Tracing.StreamCompression=} opt_streamCompression
  */
-Protocol.TracingDispatcher.prototype.tracingComplete = function(opt_stream, opt_streamCompression) {};
+Protocol.TracingDispatcher.prototype.tracingComplete = function(opt_stream, opt_traceFormat, opt_streamCompression) {};
 Protocol.Fetch = {};
 
 
@@ -7156,8 +7166,9 @@ Protocol.FetchDispatcher = function() {};
  * @param {Protocol.Network.ErrorReason=} opt_responseErrorReason
  * @param {number=} opt_responseStatusCode
  * @param {!Array<Protocol.Fetch.HeaderEntry>=} opt_responseHeaders
+ * @param {Protocol.Fetch.RequestId=} opt_networkId
  */
-Protocol.FetchDispatcher.prototype.requestPaused = function(requestId, request, frameId, resourceType, opt_responseErrorReason, opt_responseStatusCode, opt_responseHeaders) {};
+Protocol.FetchDispatcher.prototype.requestPaused = function(requestId, request, frameId, resourceType, opt_responseErrorReason, opt_responseStatusCode, opt_responseHeaders, opt_networkId) {};
 /**
  * @param {Protocol.Fetch.RequestId} requestId
  * @param {Protocol.Network.Request} request
