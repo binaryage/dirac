@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='75.0.3761.2';
-Protocol.BakedInspectorBackendAPIChromeRev='e01759d624a5af6ea5436378ca27c7d55968a2f6';
+Protocol.BakedInspectorBackendAPIChromeTag='75.0.3765.1';
+Protocol.BakedInspectorBackendAPIChromeRev='220405595fdb0f785650b9c825c3f131b0621809';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -389,6 +389,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Page.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.getAppManifest", [], ["url", "errors", "data"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Page.getInstallabilityErrors", [], ["errors"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.getCookies", [], ["cookies"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.getFrameTree", [], ["frameTree"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.getLayoutMetrics", [], ["layoutViewport", "visualViewport", "contentSize"], false);\n'
