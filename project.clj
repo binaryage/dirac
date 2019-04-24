@@ -205,6 +205,7 @@
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/tasks/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/tasks"
                                              :optimizations        :none                                                      ; we rely on optimizations :none in test runner
+                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :source-map           true
                                              :source-map-timestamp true}}
                            :scenarios01
