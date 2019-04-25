@@ -4,6 +4,7 @@
 
 /**
  * @implements {UI.ListDelegate<!Profiler.IsolateSelector.ListItem>}
+ * @implements {SDK.IsolateManager.Observer}
  */
 Profiler.IsolateSelector = class extends UI.VBox {
   constructor() {
@@ -16,14 +17,10 @@ Profiler.IsolateSelector = class extends UI.VBox {
     this.contentElement.appendChild(this._list.element);
 
     this.registerRequiredCSS('profiler/profileLauncherView.css');
-    /** @type {!Map<!Profiler.IsolateManager.Isolate, !Profiler.IsolateSelector.ListItem>} */
+    /** @type {!Map<!SDK.IsolateManager.Isolate, !Profiler.IsolateSelector.ListItem>} */
     this._itemByIsolate = new Map();
-    this._updateTimer = null;
 
-    this._isolateManager = new Profiler.IsolateManager();
-    this._isolateManager.addEventListener(Profiler.IsolateManager.Events.IsolateAdded, this._isolateAdded, this);
-    this._isolateManager.addEventListener(Profiler.IsolateManager.Events.IsolateRemoved, this._isolateRemoved, this);
-    this._isolateManager.addEventListener(Profiler.IsolateManager.Events.IsolateChanged, this._isolateChanged, this);
+    SDK.isolateManager.observeIsolates(this);
 
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.NameChanged, this._targetChanged, this);
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this._targetChanged, this);
@@ -33,21 +30,21 @@ Profiler.IsolateSelector = class extends UI.VBox {
    * @override
    */
   wasShown() {
-    this._updateStats();
+    SDK.isolateManager.addEventListener(SDK.IsolateManager.Events.MemoryChanged, this._heapStatsChanged, this);
   }
 
   /**
    * @override
    */
   willHide() {
-    clearTimeout(this._updateTimer);
+    SDK.isolateManager.removeEventListener(SDK.IsolateManager.Events.MemoryChanged, this._heapStatsChanged, this);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @override
+   * @param {!SDK.IsolateManager.Isolate} isolate
    */
-  _isolateAdded(event) {
-    const isolate = /** @type {!Profiler.IsolateManager.Isolate} */ (event.data);
+  isolateAdded(isolate) {
     const item = new Profiler.IsolateSelector.ListItem(isolate);
     const index = item.model().target() === SDK.targetManager.mainTarget() ? 0 : this._items.length;
     this._items.insert(index, item);
@@ -58,20 +55,20 @@ Profiler.IsolateSelector = class extends UI.VBox {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @override
+   * @param {!SDK.IsolateManager.Isolate} isolate
    */
-  _isolateChanged(event) {
-    const isolate = /** @type {!Profiler.IsolateManager.Isolate} */ (event.data);
+  isolateChanged(isolate) {
     const item = this._itemByIsolate.get(isolate);
     item.updateTitle();
     this._update();
   }
 
   /**
-   * @param {!Common.Event} event
+   * @override
+   * @param {!SDK.IsolateManager.Isolate} isolate
    */
-  _isolateRemoved(event) {
-    const isolate = /** @type {!Profiler.IsolateManager.Isolate} */ (event.data);
+  isolateRemoved(isolate) {
     const item = this._itemByIsolate.get(isolate);
     this._items.remove(this._items.indexOf(item));
     this._itemByIsolate.delete(isolate);
@@ -86,10 +83,20 @@ Profiler.IsolateSelector = class extends UI.VBox {
     const model = target.model(SDK.RuntimeModel);
     if (!model)
       return;
-    const isolate = this._isolateManager.isolateByModel(model);
+    const isolate = SDK.isolateManager.isolateByModel(model);
     const item = isolate && this._itemByIsolate.get(isolate);
     if (item)
       item.updateTitle();
+  }
+
+  /**
+   * @param {!Common.Event} event
+   */
+  _heapStatsChanged(event) {
+    const isolate = /** @type {!SDK.IsolateManager.Isolate} */ (event.data);
+    const listItem = this._itemByIsolate.get(isolate);
+    if (listItem)
+      listItem.updateStats();
   }
 
   /**
@@ -138,64 +145,50 @@ Profiler.IsolateSelector = class extends UI.VBox {
   _update() {
     this._list.invalidateRange(0, this._items.length);
   }
-
-  _updateStats() {
-    for (const item of this._itemByIsolate.values())
-      item.updateStats();
-    const heapStatsUpdateIntervalMs = 2000;
-    this._updateTimer = setTimeout(() => this._updateStats(), heapStatsUpdateIntervalMs);
-  }
 };
 
 Profiler.IsolateSelector.ListItem = class {
   /**
-   * @param {!Profiler.IsolateManager.Isolate} isolateInfo
+   * @param {!SDK.IsolateManager.Isolate} isolate
    */
-  constructor(isolateInfo) {
-    this._isolateInfo = isolateInfo;
+  constructor(isolate) {
+    this._isolate = isolate;
+    const trendIntervalMinutes = Math.round(SDK.IsolateManager.MemoryTrendWindowMs / 60e3);
     this.element = createElementWithClass('div', 'profile-isolate-item hbox');
     this._heapDiv = this.element.createChild('div', 'profile-isolate-item-heap');
+    this._trendDiv = this.element.createChild('div', 'profile-isolate-item-trend');
+    this._trendDiv.setAttribute('title', ls`Heap size change trend over the last ${trendIntervalMinutes} minutes.`);
     this._nameDiv = this.element.createChild('div', 'profile-isolate-item-name');
-    this._updatesDisabled = false;
+    this._heapDiv.setAttribute('title', ls`Heap size in use by live JS objects.`);
     this.updateTitle();
-    this.updateStats();
-  }
-
-  /**
-   * @return {!Set<!SDK.RuntimeModel>}
-   */
-  models() {
-    return this._isolateInfo.models();
   }
 
   /**
    * @return {!SDK.RuntimeModel}
    */
   model() {
-    return this.models().values().next().value;
+    return this._isolate.models().values().next().value;
   }
 
-  async updateStats() {
-    if (this._updatesDisabled)
-      return;
-    const heapStats = await this.model().heapUsage();
-    if (!heapStats) {
-      this._updatesDisabled = true;
-      return;
-    }
-    const usedTitle = ls`Heap size in use by live JS objects.`;
-    const totalTitle = ls`Total JS heap size including live objects, garbage, and reserved space.`;
+  updateStats() {
     this._heapDiv.removeChildren();
-    this._heapDiv.append(UI.html`
-        <span title="${usedTitle}">${Number.bytesToString(heapStats.usedSize)}</span>
-        <span> / </span>
-        <span title="${totalTitle}">${Number.bytesToString(heapStats.totalSize)}</span>`);
+    this._heapDiv.textContent = Number.bytesToString(this._isolate.usedHeapSize());
+
+    const changeRateBytesPerSecond = this._isolate.usedHeapSizeGrowRate() * 1e3;
+    const changeRateThresholdBytesPerSecond = 1024;
+    if (Math.abs(changeRateBytesPerSecond) < changeRateThresholdBytesPerSecond || this._isolate.samplesCount() < 5)
+      return;
+    const changeRateText = changeRateBytesPerSecond > 0 ?
+        ls`\u2B06${Number.bytesToString(changeRateBytesPerSecond)}/s` :
+        ls`\u2B07${Number.bytesToString(-changeRateBytesPerSecond)}/s`;
+    this._trendDiv.classList.toggle('increasing', changeRateBytesPerSecond > 0);
+    this._trendDiv.textContent = changeRateText;
   }
 
   updateTitle() {
     /** @type {!Map<string, number>} */
     const modelCountByName = new Map();
-    for (const model of this.models()) {
+    for (const model of this._isolate.models()) {
       const target = model.target();
       const name = SDK.targetManager.mainTarget() !== target ? target.name() : '';
       const parsedURL = new Common.ParsedURL(target.inspectedURL());

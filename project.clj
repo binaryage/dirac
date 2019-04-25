@@ -26,7 +26,7 @@
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.7.0" :scope "test"]
-   ['binaryage/chromex "0.7.2" :scope "test"]
+   ['binaryage/chromex "0.8.0" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.46" :scope "test"]
@@ -37,7 +37,7 @@
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
-   ['fipp "0.6.17" :scope "test"]
+   ['fipp "0.6.18" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
@@ -59,7 +59,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.3.5"
+(defproject binaryage/dirac "1.3.6"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -205,6 +205,7 @@
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/tasks/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/tasks"
                                              :optimizations        :none                                                      ; we rely on optimizations :none in test runner
+                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :source-map           true
                                              :source-map-timestamp true}}
                            :scenarios01

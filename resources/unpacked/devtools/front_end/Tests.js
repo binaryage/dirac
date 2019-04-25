@@ -727,6 +727,35 @@
     }
   };
 
+  TestSuite.prototype.testKeyEventUnhandled = function() {
+    function onKeyEventUnhandledKeyDown(event) {
+      this.assertEquals('keydown', event.data.type);
+      this.assertEquals('F8', event.data.key);
+      this.assertEquals(119, event.data.keyCode);
+      this.assertEquals(0, event.data.modifiers);
+      this.assertEquals('', event.data.code);
+      InspectorFrontendHost.events.removeEventListener(
+          InspectorFrontendHostAPI.Events.KeyEventUnhandled, onKeyEventUnhandledKeyDown, this);
+      InspectorFrontendHost.events.addEventListener(
+          InspectorFrontendHostAPI.Events.KeyEventUnhandled, onKeyEventUnhandledKeyUp, this);
+      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+          {type: 'keyUp', key: 'F8', code: 'F8', windowsVirtualKeyCode: 119, nativeVirtualKeyCode: 119});
+    }
+    function onKeyEventUnhandledKeyUp(event) {
+      this.assertEquals('keyup', event.data.type);
+      this.assertEquals('F8', event.data.key);
+      this.assertEquals(119, event.data.keyCode);
+      this.assertEquals(0, event.data.modifiers);
+      this.assertEquals('F8', event.data.code);
+      this.releaseControl();
+    }
+    this.takeControl();
+    InspectorFrontendHost.events.addEventListener(
+        InspectorFrontendHostAPI.Events.KeyEventUnhandled, onKeyEventUnhandledKeyDown, this);
+    SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+        {type: 'rawKeyDown', key: 'F8', windowsVirtualKeyCode: 119, nativeVirtualKeyCode: 119});
+  };
+
   TestSuite.prototype.testDispatchKeyEventDoesNotCrash = function() {
     SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
         {type: 'rawKeyDown', windowsVirtualKeyCode: 0x23, key: 'End'});
@@ -1298,6 +1327,33 @@
     await testCase(fileURL, undefined, 200, [], '<html>\n<body>\nDummy page.\n</body>\n</html>\n');
 
     this.releaseControl();
+  };
+
+  TestSuite.prototype.testExtensionWebSocketUserAgentOverride = async function(websocketPort) {
+    this.takeControl();
+
+    const testUserAgent = 'test user agent';
+    SDK.multitargetNetworkManager.setUserAgentOverride(testUserAgent);
+
+    function onRequestUpdated(event) {
+      const request = event.data;
+      if (request.resourceType() !== Common.resourceTypes.WebSocket)
+        return;
+      if (!request.requestHeadersText())
+        return;
+
+      let actualUserAgent = 'no user-agent header';
+      for (const {name, value} of request.requestHeaders()) {
+        if (name.toLowerCase() === 'user-agent')
+          actualUserAgent = value;
+      }
+      this.assertEquals(testUserAgent, actualUserAgent);
+      this.releaseControl();
+    }
+    SDK.targetManager.addModelListener(
+        SDK.NetworkManager, SDK.NetworkManager.Events.RequestUpdated, onRequestUpdated.bind(this));
+
+    this.evaluateInConsole_(`new WebSocket('ws://127.0.0.1:${websocketPort}')`, () => {});
   };
 
   /**

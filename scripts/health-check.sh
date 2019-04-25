@@ -47,6 +47,10 @@ popd
 # checkout or create health-check branch
 pushd "$ROOT"
 
+# configure repo
+git config user.email "bot@binaryage.com"
+git config user.name "BinaryAge Bot"
+
 git checkout master
 git pull origin
 
@@ -70,7 +74,7 @@ git merge --no-edit --no-verify-signatures -Xtheirs -m "merge tag $TAG into heal
 
 # commit an empty commit to trigger travis build
 # note that CHROMIUM_DOWNLOAD_URL will be used by travis
-git commit --author="BinaryAge Bot <bot@binaryage.com>" --allow-empty -F- << EOF
+git commit --allow-empty -F- << EOF
 check Dirac ${TAG} under ${CHROMIUM_VERSION}
 
 CHROMIUM_REVISION=${CHROMIUM_REVISION}
@@ -82,7 +86,7 @@ if [[ -z "${HEALTH_CHECK_DRY_RUN}" ]]; then
   git push --force origin health-check
 fi
 
-# push return to master branch
+# return to master branch
 git checkout master
 
 popd

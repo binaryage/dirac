@@ -39,6 +39,10 @@ fi
 
 # install latest chromium
 pushd "$TRAVIS_BUILD_DIR"
+# HACK: we rely on the fact that the tmp dir is mapped to host and persists
+mkdir -p "$ROOT_TMP_DIR_RELATIVE"
+cd "$ROOT_TMP_DIR_RELATIVE"
+
 if [[ -z "${TRAVIS_SKIP_CHROMIUM_SETUP}" ]]; then
   if [[ -z "$TRAVIS_COMMIT" ]]; then
     TRAVIS_COMMIT="HEAD"
@@ -64,48 +68,66 @@ if [[ -z "${TRAVIS_SKIP_CHROMIUM_SETUP}" ]]; then
 
   # CHROMIUM_DOWNLOAD_URL not present => use the latest
   if [[ -z "$DIRAC_CHROME_BINARY_PATH" ]]; then
-    if cd chromium-latest-linux; then
-      git pull
-      cd ..
+    CHROMIUM_LASTCHANGE_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2FLAST_CHANGE?alt=media"
+    CHROMIUM_REVISION=$(curl -s -S "$CHROMIUM_LASTCHANGE_URL")
+    CHROMIUM_DOWNLOAD_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F$CHROMIUM_REVISION%2Fchrome-linux.zip?alt=media"
+    echo "latest Chromium revision is $CHROMIUM_REVISION"
+    if [[ -d ${CHROMIUM_REVISION} ]] ; then
+      echo "... already have downloaded that version"
     else
-      git clone --depth 1 https://github.com/scheib/chromium-latest-linux.git
+      ZIP_FILE="${CHROMIUM_REVISION}-chrome-linux.zip"
+      echo "fetching $CHROMIUM_DOWNLOAD_URL"
+      rm -rf "$CHROMIUM_REVISION"
+      mkdir "$CHROMIUM_REVISION"
+      pushd "$CHROMIUM_REVISION"
+      curl -s "$CHROMIUM_DOWNLOAD_URL" > "$ZIP_FILE"
+      unzip -q "$ZIP_FILE"
+      popd
     fi
-    if [[ -z "${TRAVIS_SKIP_CHROMIUM_UPDATE}" ]]; then
-      ./chromium-latest-linux/update.sh
-    fi
-    export DIRAC_CHROME_BINARY_PATH=`pwd`/chromium-latest-linux/latest/chrome
+    export DIRAC_CHROME_BINARY_PATH="`pwd`/${CHROMIUM_REVISION}/chrome-linux/chrome"
   fi
 else
   export DIRAC_CHROME_BINARY_PATH=`which chrome`
 fi
-popd
+
+echo "Chrome binary is located at '$DIRAC_CHROME_BINARY_PATH'"
 
 # install chromedriver
 if [[ -z "${TRAVIS_SKIP_CHROMEDRIVER_UPDATE}" ]]; then
   if [[ ! -z "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" ]]; then
     CHROMEDRIVER_SLUG="chromedriver-custom"
-    wget -O "${CHROMEDRIVER_SLUG}.zip" "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" # http://x.binaryage.com/chromedriver.zip
+    curl -s "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" > "${CHROMEDRIVER_SLUG}.zip" # http://x.binaryage.com/chromedriver.zip
     rm -rf "${CHROMEDRIVER_SLUG}"
-    unzip -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
+    unzip -q -j -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
   else
-    if [[ "${TRAVIS_CHROMEDRIVER_VERSION}" == "LATEST"* ]]; then
+    if [[ "${TRAVIS_CHROMEDRIVER_VERSION}" == "VIA_CHROMIUM_DOWNLOAD_URL" ]]; then
+      echo "CHROMIUM_DOWNLOAD_URL is $CHROMIUM_DOWNLOAD_URL"
+      CHROMEDRIVER_DOWNLOAD_URL=${CHROMIUM_DOWNLOAD_URL/chrome-linux/chromedriver_linux64}
+      echo "CHROMEDRIVER_DOWNLOAD_URL is $CHROMEDRIVER_DOWNLOAD_URL"
+      CHROMEDRIVER_SLUG="chromedriver-via-chromium-download-url"
+      curl -s "$CHROMEDRIVER_DOWNLOAD_URL" > "${CHROMEDRIVER_SLUG}.zip"
+      rm -rf "${CHROMEDRIVER_SLUG}"
+      unzip -q -j -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
+    elif  [[ "${TRAVIS_CHROMEDRIVER_VERSION}" == "LATEST"* ]]; then
       LATEST_VERSION=`curl -L "https://chromedriver.storage.googleapis.com/${TRAVIS_CHROMEDRIVER_VERSION}"`
       CHROMEDRIVER_SLUG="chromedriver-latest"
-      wget -O "${CHROMEDRIVER_SLUG}.zip" "https://chromedriver.storage.googleapis.com/${LATEST_VERSION}/chromedriver_linux64.zip"
+      curl -s "https://chromedriver.storage.googleapis.com/${LATEST_VERSION}/chromedriver_linux64.zip" > "${CHROMEDRIVER_SLUG}.zip"
       rm -rf "${CHROMEDRIVER_SLUG}"
-      unzip -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
+      unzip -q -j -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
     else
       CHROMEDRIVER_SLUG="chromedriver-${TRAVIS_CHROMEDRIVER_VERSION}"
       if [[ ! -z "${TRAVIS_DONT_CACHE_CHROMEDRIVER}" || ! -f "${CHROMEDRIVER_SLUG}" ]]; then
-        wget -O "${CHROMEDRIVER_SLUG}.zip" "https://chromedriver.storage.googleapis.com/${TRAVIS_CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
+        curl -s "https://chromedriver.storage.googleapis.com/${TRAVIS_CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" > "${CHROMEDRIVER_SLUG}.zip"
         rm -rf "${CHROMEDRIVER_SLUG}"
-        unzip -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
+        unzip -q -j -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
       fi
     fi
   fi
-  rm -rf chromedriver
-  cp "${CHROMEDRIVER_SLUG}/chromedriver" chromedriver
 fi
-export CHROME_DRIVER_PATH=`pwd`/chromedriver
+export CHROME_DRIVER_PATH="`pwd`/${CHROMEDRIVER_SLUG}/chromedriver"
+echo "ChromeDriver binary is located at '$CHROME_DRIVER_PATH'"
 
-${CHROME_DRIVER_PATH} --version
+popd # "$TRAVIS_BUILD_DIR"
+
+"$DIRAC_CHROME_BINARY_PATH" --version
+"$CHROME_DRIVER_PATH" --version

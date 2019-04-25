@@ -609,8 +609,6 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
 
     this._prompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(this, isEditingName);
     this._prompt.setAutocompletionTimeout(0);
-    if (section)
-      section.startEditing();
 
     // Do not live-edit "content" property of pseudo elements. crbug.com/433889
     if (!isEditingName && (!this._parentPane.node().pseudoType() || this.name !== 'content'))
@@ -780,7 +778,6 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
    * @param {string} moveDirection
    */
   async _editingCommitted(userInput, context, moveDirection) {
-    const hadFocus = this._parentPane.element.hasFocus();
     this._removePrompt();
     this.editingEnded(context);
     const isEditingName = context.isEditingName;
@@ -814,8 +811,6 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
         (isPropertySplitPaste || moveToOther || (!moveDirection && !isEditingName) || (isEditingName && blankInput));
     const section = /** @type {!Elements.StylePropertiesSection} */ (this.section());
     if (((userInput !== context.previousContent || isDirtyViaPaste) && !this._newProperty) || shouldCommitNewProperty) {
-      if (hadFocus)
-        this._parentPane.element.focus();
       let propertyText;
       if (blankInput || (this._newProperty && this.valueElement.textContent.isWhitespace())) {
         propertyText = '';
@@ -913,9 +908,6 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
       this._prompt.detach();
       this._prompt = null;
     }
-    const section = this.section();
-    if (section)
-      section.stopEditing();
   }
 
   styleTextAppliedForTest() {

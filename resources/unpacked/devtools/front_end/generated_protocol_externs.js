@@ -4466,7 +4466,9 @@ Protocol.Network.ConnectionType = {
 /** @enum {string} */
 Protocol.Network.CookieSameSite = {
     Strict: "Strict",
-    Lax: "Lax"
+    Lax: "Lax",
+    Extended: "Extended",
+    None: "None"
 };
 
 /** @typedef {!{requestTime:(number), proxyStart:(number), proxyEnd:(number), dnsStart:(number), dnsEnd:(number), connectStart:(number), connectEnd:(number), sslStart:(number), sslEnd:(number), workerStart:(number), workerReady:(number), sendStart:(number), sendEnd:(number), pushStart:(number), pushEnd:(number), receiveHeadersEnd:(number)}} */
@@ -4648,8 +4650,9 @@ Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, times
  * @param {Protocol.Network.ErrorReason=} opt_responseErrorReason
  * @param {number=} opt_responseStatusCode
  * @param {Protocol.Network.Headers=} opt_responseHeaders
+ * @param {Protocol.Network.RequestId=} opt_requestId
  */
-Protocol.NetworkDispatcher.prototype.requestIntercepted = function(interceptionId, request, frameId, resourceType, isNavigationRequest, opt_isDownload, opt_redirectUrl, opt_authChallenge, opt_responseErrorReason, opt_responseStatusCode, opt_responseHeaders) {};
+Protocol.NetworkDispatcher.prototype.requestIntercepted = function(interceptionId, request, frameId, resourceType, isNavigationRequest, opt_isDownload, opt_redirectUrl, opt_authChallenge, opt_responseErrorReason, opt_responseStatusCode, opt_responseHeaders, opt_requestId) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
  */
@@ -4995,6 +4998,7 @@ Protocol.Overlay.InspectMode = {
     SearchForNode: "searchForNode",
     SearchForUAShadowDOM: "searchForUAShadowDOM",
     CaptureAreaScreenshot: "captureAreaScreenshot",
+    ShowDistances: "showDistances",
     None: "none"
 };
 /** @interface */
@@ -5201,6 +5205,19 @@ Protocol.PageAgent.GetAppManifestResponse;
  * @param {!Protocol.PageAgent.GetAppManifestRequest} obj
  * @return {!Promise<!Protocol.PageAgent.GetAppManifestResponse>} */
 Protocol.PageAgent.prototype.invoke_getAppManifest = function(obj) {};
+
+/**
+ * @return {!Promise<?Array<string>>}
+ */
+Protocol.PageAgent.prototype.getInstallabilityErrors = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.GetInstallabilityErrorsRequest;
+/** @typedef {!{errors: !Array<string>}} */
+Protocol.PageAgent.GetInstallabilityErrorsResponse;
+/**
+ * @param {!Protocol.PageAgent.GetInstallabilityErrorsRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.GetInstallabilityErrorsResponse>} */
+Protocol.PageAgent.prototype.invoke_getInstallabilityErrors = function(obj) {};
 
 /**
  * @return {!Promise<?Array<Protocol.Network.Cookie>>}
@@ -6933,12 +6950,13 @@ Protocol.TracingAgent.prototype.invoke_requestMemoryDump = function(obj) {};
  * @param {string=} opt_options
  * @param {number=} opt_bufferUsageReportingInterval
  * @param {string=} opt_transferMode
+ * @param {Protocol.Tracing.StreamFormat=} opt_streamFormat
  * @param {Protocol.Tracing.StreamCompression=} opt_streamCompression
  * @param {Protocol.Tracing.TraceConfig=} opt_traceConfig
  * @return {!Promise<undefined>}
  */
-Protocol.TracingAgent.prototype.start = function(opt_categories, opt_options, opt_bufferUsageReportingInterval, opt_transferMode, opt_streamCompression, opt_traceConfig) {};
-/** @typedef {!{traceConfig: (Protocol.Tracing.TraceConfig|undefined), transferMode: (string|undefined), bufferUsageReportingInterval: (number|undefined), options: (string|undefined), categories: (string|undefined), streamCompression: (Protocol.Tracing.StreamCompression|undefined)}} */
+Protocol.TracingAgent.prototype.start = function(opt_categories, opt_options, opt_bufferUsageReportingInterval, opt_transferMode, opt_streamFormat, opt_streamCompression, opt_traceConfig) {};
+/** @typedef {!{traceConfig: (Protocol.Tracing.TraceConfig|undefined), transferMode: (string|undefined), bufferUsageReportingInterval: (number|undefined), streamFormat: (Protocol.Tracing.StreamFormat|undefined), options: (string|undefined), categories: (string|undefined), streamCompression: (Protocol.Tracing.StreamCompression|undefined)}} */
 Protocol.TracingAgent.StartRequest;
 /** @typedef {Object|undefined} */
 Protocol.TracingAgent.StartResponse;
@@ -6962,6 +6980,12 @@ Protocol.Tracing.TraceConfigRecordMode = {
 Protocol.Tracing.TraceConfig;
 
 /** @enum {string} */
+Protocol.Tracing.StreamFormat = {
+    Json: "json",
+    Proto: "proto"
+};
+
+/** @enum {string} */
 Protocol.Tracing.StreamCompression = {
     None: "none",
     Gzip: "gzip"
@@ -6980,9 +7004,10 @@ Protocol.TracingDispatcher.prototype.bufferUsage = function(opt_percentFull, opt
 Protocol.TracingDispatcher.prototype.dataCollected = function(value) {};
 /**
  * @param {Protocol.IO.StreamHandle=} opt_stream
+ * @param {Protocol.Tracing.StreamFormat=} opt_traceFormat
  * @param {Protocol.Tracing.StreamCompression=} opt_streamCompression
  */
-Protocol.TracingDispatcher.prototype.tracingComplete = function(opt_stream, opt_streamCompression) {};
+Protocol.TracingDispatcher.prototype.tracingComplete = function(opt_stream, opt_traceFormat, opt_streamCompression) {};
 Protocol.Fetch = {};
 
 
@@ -7156,8 +7181,9 @@ Protocol.FetchDispatcher = function() {};
  * @param {Protocol.Network.ErrorReason=} opt_responseErrorReason
  * @param {number=} opt_responseStatusCode
  * @param {!Array<Protocol.Fetch.HeaderEntry>=} opt_responseHeaders
+ * @param {Protocol.Fetch.RequestId=} opt_networkId
  */
-Protocol.FetchDispatcher.prototype.requestPaused = function(requestId, request, frameId, resourceType, opt_responseErrorReason, opt_responseStatusCode, opt_responseHeaders) {};
+Protocol.FetchDispatcher.prototype.requestPaused = function(requestId, request, frameId, resourceType, opt_responseErrorReason, opt_responseStatusCode, opt_responseHeaders, opt_networkId) {};
 /**
  * @param {Protocol.Fetch.RequestId} requestId
  * @param {Protocol.Network.Request} request
@@ -7166,6 +7192,89 @@ Protocol.FetchDispatcher.prototype.requestPaused = function(requestId, request, 
  * @param {Protocol.Fetch.AuthChallenge} authChallenge
  */
 Protocol.FetchDispatcher.prototype.authRequired = function(requestId, request, frameId, resourceType, authChallenge) {};
+Protocol.WebAudio = {};
+
+
+/**
+ * @constructor
+*/
+Protocol.WebAudioAgent = function(){};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAudioAgent.prototype.enable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.WebAudioAgent.EnableRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAudioAgent.EnableResponse;
+/**
+ * @param {!Protocol.WebAudioAgent.EnableRequest} obj
+ * @return {!Promise<!Protocol.WebAudioAgent.EnableResponse>} */
+Protocol.WebAudioAgent.prototype.invoke_enable = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAudioAgent.prototype.disable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.WebAudioAgent.DisableRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAudioAgent.DisableResponse;
+/**
+ * @param {!Protocol.WebAudioAgent.DisableRequest} obj
+ * @return {!Promise<!Protocol.WebAudioAgent.DisableResponse>} */
+Protocol.WebAudioAgent.prototype.invoke_disable = function(obj) {};
+
+/**
+ * @param {Protocol.WebAudio.ContextId} contextId
+ * @return {!Promise<?Protocol.WebAudio.ContextRealtimeData>}
+ */
+Protocol.WebAudioAgent.prototype.getRealtimeData = function(contextId) {};
+/** @typedef {!{contextId: Protocol.WebAudio.ContextId}} */
+Protocol.WebAudioAgent.GetRealtimeDataRequest;
+/** @typedef {!{realtimeData: Protocol.WebAudio.ContextRealtimeData}} */
+Protocol.WebAudioAgent.GetRealtimeDataResponse;
+/**
+ * @param {!Protocol.WebAudioAgent.GetRealtimeDataRequest} obj
+ * @return {!Promise<!Protocol.WebAudioAgent.GetRealtimeDataResponse>} */
+Protocol.WebAudioAgent.prototype.invoke_getRealtimeData = function(obj) {};
+
+/** @typedef {string} */
+Protocol.WebAudio.ContextId;
+
+/** @enum {string} */
+Protocol.WebAudio.ContextType = {
+    Realtime: "realtime",
+    Offline: "offline"
+};
+
+/** @enum {string} */
+Protocol.WebAudio.ContextState = {
+    Suspended: "suspended",
+    Running: "running",
+    Closed: "closed"
+};
+
+/** @typedef {!{currentTime:(number|undefined), renderCapacity:(number|undefined)}} */
+Protocol.WebAudio.ContextRealtimeData;
+
+/** @typedef {!{contextId:(Protocol.WebAudio.ContextId), contextType:(Protocol.WebAudio.ContextType), contextState:(Protocol.WebAudio.ContextState), realtimeData:(Protocol.WebAudio.ContextRealtimeData|undefined), callbackBufferSize:(number), maxOutputChannelCount:(number), sampleRate:(number)}} */
+Protocol.WebAudio.BaseAudioContext;
+/** @interface */
+Protocol.WebAudioDispatcher = function() {};
+/**
+ * @param {Protocol.WebAudio.BaseAudioContext} context
+ */
+Protocol.WebAudioDispatcher.prototype.contextCreated = function(context) {};
+/**
+ * @param {Protocol.WebAudio.ContextId} contextId
+ */
+Protocol.WebAudioDispatcher.prototype.contextDestroyed = function(contextId) {};
+/**
+ * @param {Protocol.WebAudio.BaseAudioContext} context
+ */
+Protocol.WebAudioDispatcher.prototype.contextChanged = function(context) {};
 Protocol.Console = {};
 
 
@@ -8955,6 +9064,12 @@ Protocol.TargetBase.prototype.fetchAgent = function(){};
  * @param {!Protocol.FetchDispatcher} dispatcher
  */
 Protocol.TargetBase.prototype.registerFetchDispatcher = function(dispatcher) {}
+/** @return {!Protocol.WebAudioAgent}*/
+Protocol.TargetBase.prototype.webAudioAgent = function(){};
+/**
+ * @param {!Protocol.WebAudioDispatcher} dispatcher
+ */
+Protocol.TargetBase.prototype.registerWebAudioDispatcher = function(dispatcher) {}
 /** @return {!Protocol.ConsoleAgent}*/
 Protocol.TargetBase.prototype.consoleAgent = function(){};
 /**

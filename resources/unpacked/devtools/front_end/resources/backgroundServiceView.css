@@ -5,20 +5,46 @@
 
 .data-grid {
     flex: auto;
+    border: none;
 }
 
-.background-service-popover-container {
-    padding: 12px 16px 0px 16px;
+.background-service-landing-page {
+    justify-content: center;
+    align-items: center;
+    font-size: 13px;
+    color: #777;
+}
+
+.background-service-landing-page > div {
+    max-width: 450px;
+    margin: 10px;
+}
+
+.background-service-landing-page > div > p {
+    flex: none;
+    white-space: pre-line;
+}
+
+.background-service-metadata {
+    padding-left: 5px;
+    padding-top: 10px;
 }
 
 .background-service-metadata-entry {
-    margin-bottom: 12px;
+    padding-left: 10px;
+    padding-bottom: 5px;
 }
 
-.background-service-metadata-key {
+.background-service-metadata-name {
+    color: rgb(33%, 33%, 33%);
+    display: inline-block;
+    margin-right: 0.25em;
     font-weight: bold;
 }
 
 .background-service-metadata-value {
-    font-family: monospace;
+    display: inline;
+    margin-right: 1em;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
