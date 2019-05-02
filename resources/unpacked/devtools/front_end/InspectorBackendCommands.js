@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='76.0.3775.3';
-Protocol.BakedInspectorBackendAPIChromeRev='eed9cc06486289d15a6e981ec167a5fdda3cf6be';
+Protocol.BakedInspectorBackendAPIChromeTag='76.0.3782.1';
+Protocol.BakedInspectorBackendAPIChromeRev='eb5cc595c4ff457e61f02a22b09873676416ed0a';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -365,6 +365,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Page.frameScheduledNavigation", ["frameId", "delay", "reason", "url"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.frameStartedLoading", ["frameId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.frameStoppedLoading", ["frameId"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Page.downloadWillBegin", ["frameId", "url"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.interstitialHidden", []);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.interstitialShown", []);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.javascriptDialogClosed", ["result", "userInput"]);\n'
