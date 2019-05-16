@@ -177,6 +177,8 @@ var ToolboxBootstrap = {};
 /** @const */
 var UI = {};
 /** @const */
+var WebAudio = {};
+/** @const */
 var Workspace = {};
 /** @const */
 var WorkspaceDiff = {};

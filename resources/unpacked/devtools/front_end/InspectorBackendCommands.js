@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='76.0.3789.1';
-Protocol.BakedInspectorBackendAPIChromeRev='42db9ce267ad400b508f7cb22ab1d5bf806f535e';
+Protocol.BakedInspectorBackendAPIChromeTag='76.0.3796.1';
+Protocol.BakedInspectorBackendAPIChromeRev='b440193535de9ce630b43e55497b52d61eb15214';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -337,7 +337,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Overlay.inspectModeCanceled", []);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.enable", [], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Overlay.getHighlightObjectForTest", [{"name": "nodeId", "type": "number", "optional": false}], ["highlight"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Overlay.getHighlightObjectForTest", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "includeDistance", "type": "boolean", "optional": true}], ["highlight"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.hideHighlight", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.highlightFrame", [{"name": "frameId", "type": "string", "optional": false}, {"name": "contentColor", "type": "object", "optional": true}, {"name": "contentOutlineColor", "type": "object", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.highlightNode", [{"name": "highlightConfig", "type": "object", "optional": false}, {"name": "nodeId", "type": "number", "optional": true}, {"name": "backendNodeId", "type": "number", "optional": true}, {"name": "objectId", "type": "string", "optional": true}, {"name": "selector", "type": "string", "optional": true}], [], false);\n'
@@ -556,6 +556,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Debugger.setBlackboxPatterns", [{"name": "patterns", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.setBlackboxedRanges", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "positions", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.setBreakpoint", [{"name": "location", "type": "object", "optional": false}, {"name": "condition", "type": "string", "optional": true}], ["breakpointId", "actualLocation"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Debugger.setInstrumentationBreakpoint", [{"name": "instrumentation", "type": "string", "optional": false}], ["breakpointId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.setBreakpointByUrl", [{"name": "lineNumber", "type": "number", "optional": false}, {"name": "url", "type": "string", "optional": true}, {"name": "urlRegex", "type": "string", "optional": true}, {"name": "scriptHash", "type": "string", "optional": true}, {"name": "columnNumber", "type": "number", "optional": true}, {"name": "condition", "type": "string", "optional": true}], ["breakpointId", "locations"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.setBreakpointOnFunctionCall", [{"name": "objectId", "type": "string", "optional": false}, {"name": "condition", "type": "string", "optional": true}], ["breakpointId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.setBreakpointsActive", [{"name": "active", "type": "boolean", "optional": false}], [], false);\n'

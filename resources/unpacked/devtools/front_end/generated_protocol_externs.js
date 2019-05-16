@@ -4770,10 +4770,11 @@ Protocol.OverlayAgent.prototype.invoke_enable = function(obj) {};
 
 /**
  * @param {Protocol.DOM.NodeId} nodeId
+ * @param {boolean=} opt_includeDistance
  * @return {!Promise<?Object>}
  */
-Protocol.OverlayAgent.prototype.getHighlightObjectForTest = function(nodeId) {};
-/** @typedef {!{nodeId: Protocol.DOM.NodeId}} */
+Protocol.OverlayAgent.prototype.getHighlightObjectForTest = function(nodeId, opt_includeDistance) {};
+/** @typedef {!{includeDistance: (boolean|undefined), nodeId: Protocol.DOM.NodeId}} */
 Protocol.OverlayAgent.GetHighlightObjectForTestRequest;
 /** @typedef {!{highlight: !Object}} */
 Protocol.OverlayAgent.GetHighlightObjectForTestResponse;
@@ -7618,6 +7619,20 @@ Protocol.DebuggerAgent.SetBreakpointResponse;
  * @param {!Protocol.DebuggerAgent.SetBreakpointRequest} obj
  * @return {!Promise<!Protocol.DebuggerAgent.SetBreakpointResponse>} */
 Protocol.DebuggerAgent.prototype.invoke_setBreakpoint = function(obj) {};
+
+/**
+ * @param {string} instrumentation
+ * @return {!Promise<?Protocol.Debugger.BreakpointId>}
+ */
+Protocol.DebuggerAgent.prototype.setInstrumentationBreakpoint = function(instrumentation) {};
+/** @typedef {!{instrumentation: string}} */
+Protocol.DebuggerAgent.SetInstrumentationBreakpointRequest;
+/** @typedef {!{breakpointId: Protocol.Debugger.BreakpointId}} */
+Protocol.DebuggerAgent.SetInstrumentationBreakpointResponse;
+/**
+ * @param {!Protocol.DebuggerAgent.SetInstrumentationBreakpointRequest} obj
+ * @return {!Promise<!Protocol.DebuggerAgent.SetInstrumentationBreakpointResponse>} */
+Protocol.DebuggerAgent.prototype.invoke_setInstrumentationBreakpoint = function(obj) {};
 
 /**
  * @param {number} lineNumber
