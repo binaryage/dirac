@@ -158,6 +158,18 @@
               ;"--disable-application-cache"
               ;"--log-net-log=target/net.log"
               ;"--enable-extension-activity-logging "
+
+              ; see https://stackoverflow.com/a/52340526/84283
+              "start-maximized"
+              "enable-automation"
+              ;"--headless"
+              "--disable-infobars"
+              "--no-sandbox"
+              "--disable-dev-shm-usage"
+              "--disable-browser-side-navigation"
+              "--disable-gpu"
+
+              ; other flags
               "--disable-hang-monitor"
               "--disable-prompt-on-repost"
               "--dom-automation"
@@ -168,14 +180,12 @@
               "--homepage=about:blank"
               "--enable-experimental-extension-apis"
               "--dns-prefetch-disable"                                                                                        ; https://bugs.chromium.org/p/chromedriver/issues/detail?id=848#c10
-              "--disable-gpu"
-              "--disable-infobars"
               "--disable-default-apps"
               "--noerrdialogs"
               "--enable-logging"
               "--v=0"
-              "--no-sandbox"
               "--disable-setuid-sandbox"                                                                                      ; for docker container https://eshlox.net/2016/11/22/dockerize-behave-selenium-tests/
+              "--window-size=1920,1080"
               load-extensions-arg]]
     (.addArguments chrome-options args)
 

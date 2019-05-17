@@ -25,6 +25,7 @@ Resources.BackgroundServiceView = class extends UI.VBox {
   constructor(serviceName, model) {
     super(true);
     this.registerRequiredCSS('resources/backgroundServiceView.css');
+    this.registerRequiredCSS('ui/emptyWidget.css');
 
     /** @const {!Protocol.BackgroundService.ServiceName} */
     this._serviceName = serviceName;
@@ -45,6 +46,9 @@ Resources.BackgroundServiceView = class extends UI.VBox {
     this._securityOriginManager.addEventListener(
         SDK.SecurityOriginManager.Events.MainSecurityOriginChanged, () => this._onOriginChanged());
 
+
+    /** @const {!UI.Action} */
+    this._recordAction = /** @type {!UI.Action} */ (UI.actionRegistry.action('background-service.toggle-recording'));
     /** @type {?UI.ToolbarToggle} */
     this._recordButton = null;
 
@@ -88,10 +92,7 @@ Resources.BackgroundServiceView = class extends UI.VBox {
    * Creates the toolbar UI element.
    */
   async _setupToolbar() {
-    this._recordButton =
-        new UI.ToolbarToggle(ls`Toggle Record`, 'largeicon-start-recording', 'largeicon-stop-recording');
-    this._recordButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._toggleRecording());
-    this._recordButton.setToggleWithRedColor(true);
+    this._recordButton = UI.Toolbar.createActionButton(this._recordAction);
     this._toolbar.appendToolbarItem(this._recordButton);
 
     const clearButton = new UI.ToolbarButton(ls`Clear`, 'largeicon-clear');
@@ -158,7 +159,7 @@ Resources.BackgroundServiceView = class extends UI.VBox {
     if (state.isRecording === this._recordButton.toggled())
       return;
 
-    this._recordButton.setToggled(state.isRecording);
+    this._recordAction.setToggled(state.isRecording);
     this._showPreview(this._selectedEventNode);
   }
 
@@ -202,7 +203,7 @@ Resources.BackgroundServiceView = class extends UI.VBox {
       {id: 'timestamp', title: ls`Timestamp`, weight: 8},
       {id: 'eventName', title: ls`Event`, weight: 10},
       {id: 'origin', title: ls`Origin`, weight: 10},
-      {id: 'swSource', title: ls`SW Source`, weight: 4},
+      {id: 'swScope', title: ls`SW Scope`, weight: 2},
       {id: 'instanceId', title: ls`Instance ID`, weight: 10},
     ]);
     const dataGrid = new DataGrid.DataGrid(columns);
@@ -221,22 +222,18 @@ Resources.BackgroundServiceView = class extends UI.VBox {
    * @return {!Resources.BackgroundServiceView.EventData}
    */
   _createEventData(serviceEvent) {
-    let swSource = '';
+    let swScope = '';
 
-    // Try to get the script name of the Service Worker registration to be more user-friendly.
-    const registrations = this._serviceWorkerManager.registrations().get(serviceEvent.serviceWorkerRegistrationId);
-    if (registrations && registrations.versions.size) {
-      // Any version will do since we care about the script URL.
-      const version = registrations.versions.values().next().value;
-      // Get the relative path.
-      swSource = version.scriptURL.substr(version.securityOrigin.length);
-    }
+    // Try to get the scope of the Service Worker registration to be more user-friendly.
+    const registration = this._serviceWorkerManager.registrations().get(serviceEvent.serviceWorkerRegistrationId);
+    if (registration)
+      swScope = registration.scopeURL.substr(registration.securityOrigin.length);
 
     return {
       id: this._dataGrid.rootNode().children.length,
       timestamp: UI.formatTimestamp(serviceEvent.timestamp * 1000, /* full= */ true),
       origin: serviceEvent.origin,
-      swSource,
+      swScope,
       eventName: serviceEvent.eventName,
       instanceId: serviceEvent.instanceId,
     };
@@ -283,16 +280,18 @@ Resources.BackgroundServiceView = class extends UI.VBox {
           ls`Recording ${Resources.BackgroundServiceView.getUIString(this._serviceName)} activity...`);
     } else {
       this._preview = new UI.VBox();
-      this._preview.contentElement.classList.add('background-service-landing-page');
-      const centered = this._preview.contentElement.createChild('div');
+      this._preview.contentElement.classList.add('empty-view-scroller');
+      const centered = this._preview.contentElement.createChild('div', 'empty-view');
 
-      const landingRecordButton =
-          new UI.ToolbarToggle(ls`Toggle Record`, 'largeicon-start-recording', 'largeicon-stop-recording');
-      landingRecordButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._toggleRecording());
+      const landingRecordButton = UI.Toolbar.createActionButton(this._recordAction);
 
-      // TODO(rayankans): Add a keyboard shortcut.
-      centered.createChild('p').appendChild(UI.formatLocalized(
-          'Click the record button %s to start recording.', [UI.createInlineButton(landingRecordButton)]));
+      const recordKey = createElementWithClass('b', 'background-service-shortcut');
+      recordKey.textContent =
+          UI.shortcutRegistry.shortcutDescriptorsForAction('background-service.toggle-recording')[0].name;
+
+      centered.createChild('h2').appendChild(UI.formatLocalized(
+          'Click the record button %s or hit %s to start recording.',
+          [UI.createInlineButton(landingRecordButton), recordKey]));
     }
 
     this._preview.show(this._previewPanel.contentElement);
@@ -320,7 +319,7 @@ Resources.BackgroundServiceView = class extends UI.VBox {
  *    id: number,
  *    timestamp: string,
  *    origin: string,
- *    swSource: string,
+ *    swScope: string,
  *    eventName: string,
  *    instanceId: string,
  * }}
@@ -360,5 +359,27 @@ Resources.BackgroundServiceView.EventDataNode = class extends DataGrid.DataGridN
     }
 
     return preview;
+  }
+};
+
+/**
+ * @implements {UI.ActionDelegate}
+ * @unrestricted
+ */
+Resources.BackgroundServiceView.ActionDelegate = class {
+  /**
+   * @override
+   * @param {!UI.Context} context
+   * @param {string} actionId
+   * @return {boolean}
+   */
+  handleAction(context, actionId) {
+    const view = context.flavor(Resources.BackgroundServiceView);
+    switch (actionId) {
+      case 'background-service.toggle-recording':
+        view._toggleRecording();
+        return true;
+    }
+    return false;
   }
 };

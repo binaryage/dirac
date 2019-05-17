@@ -23,6 +23,38 @@
             "actionId": "resources.clear",
             "title": "Clear site data",
             "className": "Resources.ClearStorageView.ActionDelegate"
+        },
+        {
+          "type": "action",
+          "actionId": "background-service.toggle-recording",
+          "iconClass": "largeicon-start-recording",
+          "toggledIconClass": "largeicon-stop-recording",
+          "toggleWithRedColor": true,
+          "contextTypes": [
+              "Resources.BackgroundServiceView"
+          ],
+          "className": "Resources.BackgroundServiceView.ActionDelegate",
+          "category": "Background Services",
+          "options": [
+              {
+                  "value": true,
+                  "title": "Start recording events"
+              },
+              {
+                  "value": false,
+                  "title": "Stop recording events"
+              }
+          ],
+          "bindings": [
+              {
+                  "platform": "windows,linux",
+                  "shortcut": "Ctrl+E"
+              },
+              {
+                  "platform": "mac",
+                  "shortcut": "Meta+E"
+              }
+          ]
         }
     ],
     "dependencies": [
