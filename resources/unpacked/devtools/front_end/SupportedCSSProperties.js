@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='76.0.3796.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='b440193535de9ce630b43e55497b52d61eb15214';
+Protocol.BakedSupportedCSSPropertiesChromeTag='76.0.3802.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='a13dd846c1cb8941f70aa47640ff78813877fa6a';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -177,6 +177,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "color-interpolation", "svg": true, "inherited": true},\n'
 + ' {"svg": true, "name": "color-interpolation-filters", "inherited": true},\n'
 + ' {"name": "color-rendering", "svg": true, "inherited": true},\n'
++ ' {"name": "color-scheme", "inherited": true},\n'
 + ' {"name": "column-count"},\n'
 + ' {"name": "column-fill"},\n'
 + ' {"name": "column-gap"},\n'

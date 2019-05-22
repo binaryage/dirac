@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='76.0.3796.1';
-Protocol.BakedInspectorBackendAPIChromeRev='b440193535de9ce630b43e55497b52d61eb15214';
+Protocol.BakedInspectorBackendAPIChromeTag='76.0.3802.1';
+Protocol.BakedInspectorBackendAPIChromeRev='a13dd846c1cb8941f70aa47640ff78813877fa6a';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -30,7 +30,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("ApplicationCache.getFramesWithManifests", [], ["frameIds"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("ApplicationCache.getManifestForFrame", [{"name": "frameId", "type": "string", "optional": false}], ["manifestURL"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Audits.getEncodedResponse", [{"name": "requestId", "type": "string", "optional": false}, {"name": "encoding", "type": "string", "optional": false}, {"name": "quality", "type": "number", "optional": true}, {"name": "sizeOnly", "type": "boolean", "optional": true}], ["body", "originalSize", "encodedSize"], false);\n'
-+ 'Protocol.inspectorBackend.registerEnum("BackgroundService.ServiceName", {BackgroundFetch: "backgroundFetch", BackgroundSync: "backgroundSync"});\n'
++ 'Protocol.inspectorBackend.registerEnum("BackgroundService.ServiceName", {BackgroundFetch: "backgroundFetch", BackgroundSync: "backgroundSync", PushMessaging: "pushMessaging", Notifications: "notifications"});\n'
 + 'Protocol.inspectorBackend.registerEvent("BackgroundService.recordingStateChanged", ["isRecording", "service"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("BackgroundService.backgroundServiceEventReceived", ["backgroundServiceEvent"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("BackgroundService.startObserving", [{"name": "service", "type": "string", "optional": false}], [], false);\n'
