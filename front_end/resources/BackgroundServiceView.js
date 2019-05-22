@@ -13,6 +13,10 @@ Resources.BackgroundServiceView = class extends UI.VBox {
         return ls`Background Fetch`;
       case Protocol.BackgroundService.ServiceName.BackgroundSync:
         return ls`Background Sync`;
+      case Protocol.BackgroundService.ServiceName.PushMessaging:
+        return ls`Push Messaging`;
+      case Protocol.BackgroundService.ServiceName.Notifications:
+        return ls`Notifications`;
       default:
         return '';
     }
@@ -159,7 +163,7 @@ Resources.BackgroundServiceView = class extends UI.VBox {
     if (state.isRecording === this._recordButton.toggled())
       return;
 
-    this._recordAction.setToggled(state.isRecording);
+    this._recordButton.setToggled(state.isRecording);
     this._showPreview(this._selectedEventNode);
   }
 
