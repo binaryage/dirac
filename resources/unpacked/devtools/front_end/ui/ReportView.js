@@ -118,7 +118,7 @@ UI.ReportView.Section = class extends UI.VBox {
       this.element.classList.add(className);
     this._headerElement = this.element.createChild('div', 'report-section-header');
     this._titleElement = this._headerElement.createChild('div', 'report-section-title');
-    this._titleElement.textContent = title;
+    this.setTitle(title);
     UI.ARIAUtils.markAsHeading(this._titleElement, 2);
     this._fieldList = this.element.createChild('div', 'vbox');
     /** @type {!Map.<string, !Element>} */
@@ -138,6 +138,7 @@ UI.ReportView.Section = class extends UI.VBox {
   setTitle(title) {
     if (this._titleElement.textContent !== title)
       this._titleElement.textContent = title;
+    this._titleElement.classList.toggle('hidden', !this._titleElement.textContent);
   }
 
   /**
@@ -203,8 +204,20 @@ UI.ReportView.Section = class extends UI.VBox {
     return this._fieldList.createChild('div', 'report-row');
   }
 
+  /**
+   * @return {!Element}
+   */
+  appendSelectableRow() {
+    return this._fieldList.createChild('div', 'report-row report-row-selectable');
+  }
+
   clearContent() {
     this._fieldList.removeChildren();
     this._fieldMap.clear();
+  }
+
+  markFieldListAsGroup() {
+    UI.ARIAUtils.markAsGroup(this._fieldList);
+    UI.ARIAUtils.setAccessibleName(this._fieldList, this.title());
   }
 };
