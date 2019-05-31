@@ -7,9 +7,9 @@ var Animation = {};
 /** @const */
 var ApplicationTestRunner = {};
 /** @const */
-var Audits2 = {};
+var Audits = {};
 /** @const */
-var Audits2TestRunner = {};
+var AuditsTestRunner = {};
 /** @const */
 var AxeCoreTestRunner = {};
 /** @const */

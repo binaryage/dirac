@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='76.0.3802.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='a13dd846c1cb8941f70aa47640ff78813877fa6a';
+Protocol.BakedSupportedCSSPropertiesChromeTag='76.0.3809.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='00d9b6b3cf78a878ab0d9be3298ffeff17348908';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -323,6 +323,8 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "outline-width"},\n'
 + ' {"longhands": ["overflow-x", "overflow-y"], "name": "overflow"},\n'
 + ' {"name": "overflow-anchor", "inherited": false},\n'
++ ' {"name": "overflow-block"},\n'
++ ' {"name": "overflow-inline"},\n'
 + ' {"name": "overflow-wrap", "inherited": true},\n'
 + ' {"name": "overflow-x"},\n'
 + ' {"name": "overflow-y"},\n'

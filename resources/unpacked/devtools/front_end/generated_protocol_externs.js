@@ -1387,12 +1387,15 @@ Protocol.CastAgent.StopCastingResponse;
  * @param {!Protocol.CastAgent.StopCastingRequest} obj
  * @return {!Promise<!Protocol.CastAgent.StopCastingResponse>} */
 Protocol.CastAgent.prototype.invoke_stopCasting = function(obj) {};
+
+/** @typedef {!{name:(string), id:(string), session:(string|undefined)}} */
+Protocol.Cast.Sink;
 /** @interface */
 Protocol.CastDispatcher = function() {};
 /**
- * @param {!Array<string>} sinkNames
+ * @param {!Array<Protocol.Cast.Sink>} sinks
  */
-Protocol.CastDispatcher.prototype.sinksUpdated = function(sinkNames) {};
+Protocol.CastDispatcher.prototype.sinksUpdated = function(sinks) {};
 /**
  * @param {string} issueMessage
  */
@@ -2920,6 +2923,20 @@ Protocol.EmulationAgent.SetVirtualTimePolicyResponse;
  * @param {!Protocol.EmulationAgent.SetVirtualTimePolicyRequest} obj
  * @return {!Promise<!Protocol.EmulationAgent.SetVirtualTimePolicyResponse>} */
 Protocol.EmulationAgent.prototype.invoke_setVirtualTimePolicy = function(obj) {};
+
+/**
+ * @param {string} timezoneId
+ * @return {!Promise<undefined>}
+ */
+Protocol.EmulationAgent.prototype.setTimezoneOverride = function(timezoneId) {};
+/** @typedef {!{timezoneId: string}} */
+Protocol.EmulationAgent.SetTimezoneOverrideRequest;
+/** @typedef {Object|undefined} */
+Protocol.EmulationAgent.SetTimezoneOverrideResponse;
+/**
+ * @param {!Protocol.EmulationAgent.SetTimezoneOverrideRequest} obj
+ * @return {!Promise<!Protocol.EmulationAgent.SetTimezoneOverrideResponse>} */
+Protocol.EmulationAgent.prototype.invoke_setTimezoneOverride = function(obj) {};
 
 /**
  * @param {number} width
@@ -4526,7 +4543,7 @@ Protocol.Network.BlockedReason = {
     CollapsedByClient: "collapsed-by-client"
 };
 
-/** @typedef {!{url:(string), status:(number), statusText:(string), headers:(Protocol.Network.Headers), headersText:(string|undefined), mimeType:(string), requestHeaders:(Protocol.Network.Headers|undefined), requestHeadersText:(string|undefined), connectionReused:(boolean), connectionId:(number), remoteIPAddress:(string|undefined), remotePort:(number|undefined), fromDiskCache:(boolean|undefined), fromServiceWorker:(boolean|undefined), encodedDataLength:(number), timing:(Protocol.Network.ResourceTiming|undefined), protocol:(string|undefined), securityState:(Protocol.Security.SecurityState), securityDetails:(Protocol.Network.SecurityDetails|undefined)}} */
+/** @typedef {!{url:(string), status:(number), statusText:(string), headers:(Protocol.Network.Headers), headersText:(string|undefined), mimeType:(string), requestHeaders:(Protocol.Network.Headers|undefined), requestHeadersText:(string|undefined), connectionReused:(boolean), connectionId:(number), remoteIPAddress:(string|undefined), remotePort:(number|undefined), fromDiskCache:(boolean|undefined), fromServiceWorker:(boolean|undefined), fromPrefetchCache:(boolean|undefined), encodedDataLength:(number), timing:(Protocol.Network.ResourceTiming|undefined), protocol:(string|undefined), securityState:(Protocol.Security.SecurityState), securityDetails:(Protocol.Network.SecurityDetails|undefined)}} */
 Protocol.Network.Response;
 
 /** @typedef {!{headers:(Protocol.Network.Headers)}} */
@@ -6672,10 +6689,12 @@ Protocol.TargetAgent.prototype.invoke_getBrowserContexts = function(obj) {};
  * @param {number=} opt_height
  * @param {Protocol.Target.BrowserContextID=} opt_browserContextId
  * @param {boolean=} opt_enableBeginFrameControl
+ * @param {boolean=} opt_newWindow
+ * @param {boolean=} opt_background
  * @return {!Promise<?Protocol.Target.TargetID>}
  */
-Protocol.TargetAgent.prototype.createTarget = function(url, opt_width, opt_height, opt_browserContextId, opt_enableBeginFrameControl) {};
-/** @typedef {!{url: string, width: (number|undefined), browserContextId: (Protocol.Target.BrowserContextID|undefined), enableBeginFrameControl: (boolean|undefined), height: (number|undefined)}} */
+Protocol.TargetAgent.prototype.createTarget = function(url, opt_width, opt_height, opt_browserContextId, opt_enableBeginFrameControl, opt_newWindow, opt_background) {};
+/** @typedef {!{browserContextId: (Protocol.Target.BrowserContextID|undefined), url: string, newWindow: (boolean|undefined), width: (number|undefined), enableBeginFrameControl: (boolean|undefined), background: (boolean|undefined), height: (number|undefined)}} */
 Protocol.TargetAgent.CreateTargetRequest;
 /** @typedef {!{targetId: Protocol.Target.TargetID}} */
 Protocol.TargetAgent.CreateTargetResponse;
@@ -7284,6 +7303,41 @@ Protocol.WebAudioDispatcher.prototype.contextDestroyed = function(contextId) {};
  * @param {Protocol.WebAudio.BaseAudioContext} context
  */
 Protocol.WebAudioDispatcher.prototype.contextChanged = function(context) {};
+Protocol.WebAuthn = {};
+
+
+/**
+ * @constructor
+*/
+Protocol.WebAuthnAgent = function(){};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAuthnAgent.prototype.enable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.EnableRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.EnableResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.EnableRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.EnableResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_enable = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAuthnAgent.prototype.disable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.DisableRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.DisableResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.DisableRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.DisableResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_disable = function(obj) {};
+/** @interface */
+Protocol.WebAuthnDispatcher = function() {};
 Protocol.Console = {};
 
 
@@ -9093,6 +9147,12 @@ Protocol.TargetBase.prototype.webAudioAgent = function(){};
  * @param {!Protocol.WebAudioDispatcher} dispatcher
  */
 Protocol.TargetBase.prototype.registerWebAudioDispatcher = function(dispatcher) {}
+/** @return {!Protocol.WebAuthnAgent}*/
+Protocol.TargetBase.prototype.webAuthnAgent = function(){};
+/**
+ * @param {!Protocol.WebAuthnDispatcher} dispatcher
+ */
+Protocol.TargetBase.prototype.registerWebAuthnDispatcher = function(dispatcher) {}
 /** @return {!Protocol.ConsoleAgent}*/
 Protocol.TargetBase.prototype.consoleAgent = function(){};
 /**
