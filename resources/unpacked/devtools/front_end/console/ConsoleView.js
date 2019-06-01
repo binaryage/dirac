@@ -1452,6 +1452,8 @@ Console.ConsoleView = class extends UI.VBox {
     this._shortcuts[UI.KeyboardShortcut.makeKey('u', UI.KeyboardShortcut.Modifiers.Ctrl)] =
         this._clearPromptBackwards.bind(this);
 
+    const section = UI.shortcutsScreen.section(Common.UIString('Console'));
+    const shortcut = UI.KeyboardShortcut;
     if (dirac.hasREPL) {
       let keys = [
         shortcut.makeDescriptor(shortcut.Keys.Comma, UI.KeyboardShortcut.Modifiers.Ctrl),
