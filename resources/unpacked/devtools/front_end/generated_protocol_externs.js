@@ -2354,10 +2354,11 @@ Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
 /**
  * @param {!Array<string>} computedStyles
+ * @param {boolean=} opt_includeDOMRects
  * @return {!Promise<?Array<Protocol.DOMSnapshot.DocumentSnapshot>>}
  */
-Protocol.DOMSnapshotAgent.prototype.captureSnapshot = function(computedStyles) {};
-/** @typedef {!{computedStyles: !Array<string>}} */
+Protocol.DOMSnapshotAgent.prototype.captureSnapshot = function(computedStyles, opt_includeDOMRects) {};
+/** @typedef {!{includeDOMRects: (boolean|undefined), computedStyles: !Array<string>}} */
 Protocol.DOMSnapshotAgent.CaptureSnapshotRequest;
 /** @typedef {!{documents: !Array<Protocol.DOMSnapshot.DocumentSnapshot>, strings: !Array<string>}} */
 Protocol.DOMSnapshotAgent.CaptureSnapshotResponse;
@@ -2405,7 +2406,7 @@ Protocol.DOMSnapshot.DocumentSnapshot;
 /** @typedef {!{parentIndex:(!Array<number>|undefined), nodeType:(!Array<number>|undefined), nodeName:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), nodeValue:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), backendNodeId:(!Array<Protocol.DOM.BackendNodeId>|undefined), attributes:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>|undefined), textValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputChecked:(Protocol.DOMSnapshot.RareBooleanData|undefined), optionSelected:(Protocol.DOMSnapshot.RareBooleanData|undefined), contentDocumentIndex:(Protocol.DOMSnapshot.RareIntegerData|undefined), pseudoType:(Protocol.DOMSnapshot.RareStringData|undefined), isClickable:(Protocol.DOMSnapshot.RareBooleanData|undefined), currentSourceURL:(Protocol.DOMSnapshot.RareStringData|undefined), originURL:(Protocol.DOMSnapshot.RareStringData|undefined)}} */
 Protocol.DOMSnapshot.NodeTreeSnapshot;
 
-/** @typedef {!{nodeIndex:(!Array<number>), styles:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>), bounds:(!Array<Protocol.DOMSnapshot.Rectangle>), text:(!Array<Protocol.DOMSnapshot.StringIndex>), stackingContexts:(Protocol.DOMSnapshot.RareBooleanData)}} */
+/** @typedef {!{nodeIndex:(!Array<number>), styles:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>), bounds:(!Array<Protocol.DOMSnapshot.Rectangle>), text:(!Array<Protocol.DOMSnapshot.StringIndex>), stackingContexts:(Protocol.DOMSnapshot.RareBooleanData), offsetRects:(!Array<Protocol.DOMSnapshot.Rectangle>|undefined), scrollRects:(!Array<Protocol.DOMSnapshot.Rectangle>|undefined), clientRects:(!Array<Protocol.DOMSnapshot.Rectangle>|undefined)}} */
 Protocol.DOMSnapshot.LayoutTreeSnapshot;
 
 /** @typedef {!{layoutIndex:(!Array<number>), bounds:(!Array<Protocol.DOMSnapshot.Rectangle>), start:(!Array<number>), length:(!Array<number>)}} */
@@ -7284,7 +7285,7 @@ Protocol.WebAudio.ContextState = {
     Closed: "closed"
 };
 
-/** @typedef {!{currentTime:(number|undefined), renderCapacity:(number|undefined)}} */
+/** @typedef {!{currentTime:(number), renderCapacity:(number), callbackIntervalMean:(number), callbackIntervalVariance:(number)}} */
 Protocol.WebAudio.ContextRealtimeData;
 
 /** @typedef {!{contextId:(Protocol.WebAudio.ContextId), contextType:(Protocol.WebAudio.ContextType), contextState:(Protocol.WebAudio.ContextState), realtimeData:(Protocol.WebAudio.ContextRealtimeData|undefined), callbackBufferSize:(number), maxOutputChannelCount:(number), sampleRate:(number)}} */
@@ -7336,6 +7337,55 @@ Protocol.WebAuthnAgent.DisableResponse;
  * @param {!Protocol.WebAuthnAgent.DisableRequest} obj
  * @return {!Promise<!Protocol.WebAuthnAgent.DisableResponse>} */
 Protocol.WebAuthnAgent.prototype.invoke_disable = function(obj) {};
+
+/**
+ * @param {Protocol.WebAuthn.VirtualAuthenticatorOptions} options
+ * @return {!Promise<?Protocol.WebAuthn.AuthenticatorId>}
+ */
+Protocol.WebAuthnAgent.prototype.addVirtualAuthenticator = function(options) {};
+/** @typedef {!{options: Protocol.WebAuthn.VirtualAuthenticatorOptions}} */
+Protocol.WebAuthnAgent.AddVirtualAuthenticatorRequest;
+/** @typedef {!{authenticatorId: Protocol.WebAuthn.AuthenticatorId}} */
+Protocol.WebAuthnAgent.AddVirtualAuthenticatorResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.AddVirtualAuthenticatorRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.AddVirtualAuthenticatorResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_addVirtualAuthenticator = function(obj) {};
+
+/**
+ * @param {Protocol.WebAuthn.AuthenticatorId} authenticatorId
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAuthnAgent.prototype.removeVirtualAuthenticator = function(authenticatorId) {};
+/** @typedef {!{authenticatorId: Protocol.WebAuthn.AuthenticatorId}} */
+Protocol.WebAuthnAgent.RemoveVirtualAuthenticatorRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.RemoveVirtualAuthenticatorResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.RemoveVirtualAuthenticatorRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.RemoveVirtualAuthenticatorResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_removeVirtualAuthenticator = function(obj) {};
+
+/** @typedef {string} */
+Protocol.WebAuthn.AuthenticatorId;
+
+/** @enum {string} */
+Protocol.WebAuthn.AuthenticatorProtocol = {
+    U2f: "u2f",
+    Ctap2: "ctap2"
+};
+
+/** @enum {string} */
+Protocol.WebAuthn.AuthenticatorTransport = {
+    Usb: "usb",
+    Nfc: "nfc",
+    Ble: "ble",
+    Cable: "cable",
+    Internal: "internal"
+};
+
+/** @typedef {!{protocol:(Protocol.WebAuthn.AuthenticatorProtocol), transport:(Protocol.WebAuthn.AuthenticatorTransport), hasResidentKey:(boolean), hasUserVerification:(boolean)}} */
+Protocol.WebAuthn.VirtualAuthenticatorOptions;
 /** @interface */
 Protocol.WebAuthnDispatcher = function() {};
 Protocol.Console = {};
