@@ -815,7 +815,7 @@ CodeMirror.prototype = {
 };
 /** @type {!{cursorDiv: Element, lineDiv: Element, lineSpace: Element, gutters: Element}} */
 CodeMirror.prototype.display;
-/** @type {!{mode: string, lineWrapping: boolean}} */
+/** @type {!{devtoolsAccessibleName: string, mode: string, lineWrapping: boolean}} */
 CodeMirror.prototype.options;
 /** @type {!Object} */
 CodeMirror.Pass;
