@@ -2,7 +2,7 @@
 (def slf4j-log4j12-version "1.7.26")
 (def figwheel-version "0.5.18")
 (def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.520"))
-(def selected-clojure-version "1.10.0")
+(def selected-clojure-version "1.10.1")
 (def selenium-version "3.141.59")
 (def lein-cljsbuild-version "1.1.7")
 
