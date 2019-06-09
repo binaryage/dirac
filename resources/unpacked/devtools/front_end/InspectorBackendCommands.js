@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='77.0.3816.1';
-Protocol.BakedInspectorBackendAPIChromeRev='315062ee0d6ba61adc21c0e19be58d56fb07c0e0';
+Protocol.BakedInspectorBackendAPIChromeTag='77.0.3819.1';
+Protocol.BakedInspectorBackendAPIChromeRev='6e412f0f47110c35b4cbb75c700975d54b1359af';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -350,6 +350,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Overlay.setShowDebugBorders", [{"name": "show", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.setShowFPSCounter", [{"name": "show", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.setShowPaintRects", [{"name": "result", "type": "boolean", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Overlay.setShowLayoutShiftRegions", [{"name": "result", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.setShowScrollBottleneckRects", [{"name": "show", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.setShowHitTestBorders", [{"name": "show", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.setShowViewportSizeOnResize", [{"name": "show", "type": "boolean", "optional": false}], [], false);\n'
