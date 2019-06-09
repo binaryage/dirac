@@ -173,11 +173,7 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
       if (friendlyNameNum) {
         numHtml = UI.html`<sub class="friendly-num">${friendlyNameNum}</sub>`
       }
-      let titleHtml="";
-      if (name) {
-        titleHtml=`title="${name}"`
-      }
-      return UI.html`<span class="name friendly-name" ${titleHtml}>${friendlyName}${numHtml}</span>`;
+      return UI.html`<span class="name friendly-name" title="${name}">${friendlyName}${numHtml}</span>`;
     }
 
     if (/^\s|\s$|^$|\n/.test(name))
