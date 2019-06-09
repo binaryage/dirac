@@ -117,6 +117,9 @@ Object.assign(window.dirac, (function() {
     });
   }
 
+  /**
+   * @suppressGlobalPropertiesCheck
+   **/
   function collectShadowRoots(root = null) {
     let res = [];
     const startNode = root || document.body;
