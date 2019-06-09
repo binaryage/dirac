@@ -153,36 +153,41 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
       return 1;
     if (propertyB.symbol && !propertyA.symbol)
       return -1;
+    if (propertyA.private && !propertyB.private)
+      return 1;
+    if (propertyB.private && !propertyA.private)
+      return -1;
     return String.naturalOrderComparator(a, b);
   }
 
   /**
-   * @param {?string} name
-   * @param {?string=} friendlyName
-   * @param {?string=} friendlyNameNum
+   * @param {string} name
+   * @param {boolean=} isPrivate
+   * @param {string=} friendlyName
+   * @param {string=} friendlyNameNum
    * @return {!Element}
    */
-  static createNameElement(name, friendlyName, friendlyNameNum) {
-    const nameElement = createElementWithClass("span", "name");
-    const effectiveName = friendlyName || name;
-    if (/^\s|\s$|^$|\n/.test(effectiveName))
-      nameElement.createTextChildren("\"", effectiveName.replace(/\n/g, "\u21B5"), "\"");
-    else
-      nameElement.textContent = effectiveName;
-
+  static createNameElement(name, isPrivate, friendlyName, friendlyNameNum) {
     if (friendlyName) {
-      nameElement.classList.add("friendly-name");
+      let numHtml="";
       if (friendlyNameNum) {
-        var sub = createElementWithClass("sub", "friendly-num");
-        sub.textContent = friendlyNameNum;
-        nameElement.appendChild(sub);
+        numHtml = UI.html`<sub class="friendly-num">${friendlyNameNum}</sub>`
       }
+      let titleHtml="";
       if (name) {
-        nameElement.title = name;
+        titleHtml=`title="${name}"`
       }
+      return UI.html`<span class="name friendly-name" ${titleHtml}>${friendlyName}${numHtml}</span>`;
     }
 
-    return nameElement;
+    if (/^\s|\s$|^$|\n/.test(name))
+      return UI.html`<span class="name">"${name.replace(/\n/g, '\u21B5')}"</span>`;
+    if (isPrivate) {
+      return UI.html`<span class="name">
+        <span class="private-property-hash">${name[0]}</span>${name.substring(1)}
+      </span>`;
+    }
+    return UI.html`<span class="name">${name}</span>`;
   }
 
   /**
@@ -894,7 +899,7 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
   }
 
   update() {
-    this.nameElement = ObjectUI.ObjectPropertiesSection.createNameElement(this.property.name, this.property._friendlyName, this.property._friendlyNameNum);
+    this.nameElement = ObjectUI.ObjectPropertiesSection.createNameElement(this.property.name, this.property.private, this.property._friendlyName, this.property._friendlyNameNum);
     if (!this.property.enumerable)
       this.nameElement.classList.add('object-properties-section-dimmed');
     if (this.property.synthetic)
@@ -957,7 +962,7 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
     const parentPath =
         (this.parent.nameElement && !this.parent.property.synthetic) ? this.parent.nameElement.title : '';
 
-    if (useDotNotation.test(name))
+    if (this.property.private || useDotNotation.test(name))
       this.nameElement.title = parentPath ? `${parentPath}.${name}` : name;
     else if (isInteger.test(name))
       this.nameElement.title = parentPath + '[' + name + ']';
