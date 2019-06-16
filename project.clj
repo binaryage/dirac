@@ -11,7 +11,7 @@
    ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "0.4.490"]
+  [['org.clojure/core.async "0.4.500"]
    ['org.clojure/tools.logging "0.5.0-alpha.1"]
    ['org.clojure/tools.cli "0.4.2"]
    ['nrepl/nrepl "0.6.0"]
@@ -35,14 +35,14 @@
    ['rum "0.11.3" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-   ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
+   ['org.clojure/tools.namespace "0.3.0" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
    ['fipp "0.6.18" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
 
-   ['http.async.client "1.3.0" :scope "test"]
+   ['http.async.client "1.3.1" :scope "test"]
 
    ['ring/ring-core "1.7.1" :scope "test"]
    ['ring/ring-devel "1.7.1" :scope "test"]
