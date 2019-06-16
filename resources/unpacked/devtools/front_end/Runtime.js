@@ -932,6 +932,8 @@ Runtime.ExperimentsSupport = class {
     this._experiments = [];
     this._experimentNames = {};
     this._enabledTransiently = {};
+    /** @type {!Set<string>} */
+    this._serverEnabled = new Set();
   }
 
   /**
@@ -986,6 +988,8 @@ Runtime.ExperimentsSupport = class {
       return false;
     if (this._enabledTransiently[experimentName])
       return true;
+    if (this._serverEnabled.has(experimentName))
+      return true;
     if (!this.supportEnabled())
       return false;
 
@@ -1014,6 +1018,16 @@ Runtime.ExperimentsSupport = class {
   }
 
   /**
+   * @param {!Array.<string>} experimentNames
+   */
+  setServerEnabledExperiments(experimentNames) {
+    for (const experiment of experimentNames) {
+      this._checkExperiment(experiment);
+      this._serverEnabled.add(experiment);
+    }
+  }
+
+  /**
    * @param {string} experimentName
    */
   enableForTest(experimentName) {
@@ -1025,6 +1039,7 @@ Runtime.ExperimentsSupport = class {
     this._experiments = [];
     this._experimentNames = {};
     this._enabledTransiently = {};
+    this._serverEnabled.clear();
   }
 
   cleanUpStaleExperiments() {
