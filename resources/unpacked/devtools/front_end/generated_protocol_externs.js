@@ -5410,12 +5410,13 @@ Protocol.PageAgent.prototype.invoke_navigateToHistoryEntry = function(obj) {};
  * @param {string=} opt_headerTemplate
  * @param {string=} opt_footerTemplate
  * @param {boolean=} opt_preferCSSPageSize
+ * @param {string=} opt_transferMode
  * @return {!Promise<?string>}
  */
-Protocol.PageAgent.prototype.printToPDF = function(opt_landscape, opt_displayHeaderFooter, opt_printBackground, opt_scale, opt_paperWidth, opt_paperHeight, opt_marginTop, opt_marginBottom, opt_marginLeft, opt_marginRight, opt_pageRanges, opt_ignoreInvalidPageRanges, opt_headerTemplate, opt_footerTemplate, opt_preferCSSPageSize) {};
-/** @typedef {!{paperHeight: (number|undefined), scale: (number|undefined), footerTemplate: (string|undefined), displayHeaderFooter: (boolean|undefined), marginBottom: (number|undefined), paperWidth: (number|undefined), headerTemplate: (string|undefined), marginLeft: (number|undefined), preferCSSPageSize: (boolean|undefined), printBackground: (boolean|undefined), marginRight: (number|undefined), ignoreInvalidPageRanges: (boolean|undefined), pageRanges: (string|undefined), marginTop: (number|undefined), landscape: (boolean|undefined)}} */
+Protocol.PageAgent.prototype.printToPDF = function(opt_landscape, opt_displayHeaderFooter, opt_printBackground, opt_scale, opt_paperWidth, opt_paperHeight, opt_marginTop, opt_marginBottom, opt_marginLeft, opt_marginRight, opt_pageRanges, opt_ignoreInvalidPageRanges, opt_headerTemplate, opt_footerTemplate, opt_preferCSSPageSize, opt_transferMode) {};
+/** @typedef {!{paperHeight: (number|undefined), scale: (number|undefined), footerTemplate: (string|undefined), displayHeaderFooter: (boolean|undefined), transferMode: (string|undefined), marginBottom: (number|undefined), paperWidth: (number|undefined), headerTemplate: (string|undefined), marginLeft: (number|undefined), preferCSSPageSize: (boolean|undefined), printBackground: (boolean|undefined), marginRight: (number|undefined), ignoreInvalidPageRanges: (boolean|undefined), pageRanges: (string|undefined), marginTop: (number|undefined), landscape: (boolean|undefined)}} */
 Protocol.PageAgent.PrintToPDFRequest;
-/** @typedef {!{data: string}} */
+/** @typedef {!{data: string, stream: Protocol.IO.StreamHandle}} */
 Protocol.PageAgent.PrintToPDFResponse;
 /**
  * @param {!Protocol.PageAgent.PrintToPDFRequest} obj
@@ -5826,7 +5827,7 @@ Protocol.PageAgent.prototype.invoke_waitForDebugger = function(obj) {};
 /** @typedef {string} */
 Protocol.Page.FrameId;
 
-/** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string), mimeType:(string), unreachableUrl:(string|undefined)}} */
+/** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), urlFragment:(string|undefined), securityOrigin:(string), mimeType:(string), unreachableUrl:(string|undefined)}} */
 Protocol.Page.Frame;
 
 /** @typedef {!{url:(string), type:(Protocol.Network.ResourceType), mimeType:(string), lastModified:(Protocol.Network.TimeSinceEpoch|undefined), contentSize:(number|undefined), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
@@ -6586,7 +6587,26 @@ Protocol.SystemInfoAgent.prototype.invoke_getProcessInfo = function(obj) {};
 /** @typedef {!{vendorId:(number), deviceId:(number), vendorString:(string), deviceString:(string), driverVendor:(string), driverVersion:(string)}} */
 Protocol.SystemInfo.GPUDevice;
 
-/** @typedef {!{devices:(!Array<Protocol.SystemInfo.GPUDevice>), auxAttributes:(!Object|undefined), featureStatus:(!Object|undefined), driverBugWorkarounds:(!Array<string>)}} */
+/** @typedef {!{width:(number), height:(number)}} */
+Protocol.SystemInfo.Size;
+
+/** @typedef {!{profile:(string), maxResolution:(Protocol.SystemInfo.Size), minResolution:(Protocol.SystemInfo.Size)}} */
+Protocol.SystemInfo.VideoDecodeAcceleratorCapability;
+
+/** @typedef {!{profile:(string), maxResolution:(Protocol.SystemInfo.Size), maxFramerateNumerator:(number), maxFramerateDenominator:(number)}} */
+Protocol.SystemInfo.VideoEncodeAcceleratorCapability;
+
+/** @enum {string} */
+Protocol.SystemInfo.SubsamplingFormat = {
+    Yuv420: "yuv420",
+    Yuv422: "yuv422",
+    Yuv444: "yuv444"
+};
+
+/** @typedef {!{imageType:(string), maxDimensions:(Protocol.SystemInfo.Size), minDimensions:(Protocol.SystemInfo.Size), subsamplings:(!Array<Protocol.SystemInfo.SubsamplingFormat>)}} */
+Protocol.SystemInfo.ImageDecodeAcceleratorCapability;
+
+/** @typedef {!{devices:(!Array<Protocol.SystemInfo.GPUDevice>), auxAttributes:(!Object|undefined), featureStatus:(!Object|undefined), driverBugWorkarounds:(!Array<string>), videoDecoding:(!Array<Protocol.SystemInfo.VideoDecodeAcceleratorCapability>), videoEncoding:(!Array<Protocol.SystemInfo.VideoEncodeAcceleratorCapability>), imageDecoding:(!Array<Protocol.SystemInfo.ImageDecodeAcceleratorCapability>)}} */
 Protocol.SystemInfo.GPUInfo;
 
 /** @typedef {!{type:(string), id:(number), cpuTime:(number)}} */
@@ -7380,6 +7400,49 @@ Protocol.WebAuthnAgent.RemoveVirtualAuthenticatorResponse;
  * @return {!Promise<!Protocol.WebAuthnAgent.RemoveVirtualAuthenticatorResponse>} */
 Protocol.WebAuthnAgent.prototype.invoke_removeVirtualAuthenticator = function(obj) {};
 
+/**
+ * @param {Protocol.WebAuthn.AuthenticatorId} authenticatorId
+ * @param {Protocol.WebAuthn.Credential} credential
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAuthnAgent.prototype.addCredential = function(authenticatorId, credential) {};
+/** @typedef {!{authenticatorId: Protocol.WebAuthn.AuthenticatorId, credential: Protocol.WebAuthn.Credential}} */
+Protocol.WebAuthnAgent.AddCredentialRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.AddCredentialResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.AddCredentialRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.AddCredentialResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_addCredential = function(obj) {};
+
+/**
+ * @param {Protocol.WebAuthn.AuthenticatorId} authenticatorId
+ * @return {!Promise<?Array<Protocol.WebAuthn.Credential>>}
+ */
+Protocol.WebAuthnAgent.prototype.getCredentials = function(authenticatorId) {};
+/** @typedef {!{authenticatorId: Protocol.WebAuthn.AuthenticatorId}} */
+Protocol.WebAuthnAgent.GetCredentialsRequest;
+/** @typedef {!{credentials: !Array<Protocol.WebAuthn.Credential>}} */
+Protocol.WebAuthnAgent.GetCredentialsResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.GetCredentialsRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.GetCredentialsResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_getCredentials = function(obj) {};
+
+/**
+ * @param {Protocol.WebAuthn.AuthenticatorId} authenticatorId
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAuthnAgent.prototype.clearCredentials = function(authenticatorId) {};
+/** @typedef {!{authenticatorId: Protocol.WebAuthn.AuthenticatorId}} */
+Protocol.WebAuthnAgent.ClearCredentialsRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.ClearCredentialsResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.ClearCredentialsRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.ClearCredentialsResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_clearCredentials = function(obj) {};
+
 /** @typedef {string} */
 Protocol.WebAuthn.AuthenticatorId;
 
@@ -7400,6 +7463,9 @@ Protocol.WebAuthn.AuthenticatorTransport = {
 
 /** @typedef {!{protocol:(Protocol.WebAuthn.AuthenticatorProtocol), transport:(Protocol.WebAuthn.AuthenticatorTransport), hasResidentKey:(boolean), hasUserVerification:(boolean)}} */
 Protocol.WebAuthn.VirtualAuthenticatorOptions;
+
+/** @typedef {!{credentialId:(string), rpIdHash:(string), privateKey:(string), signCount:(number)}} */
+Protocol.WebAuthn.Credential;
 /** @interface */
 Protocol.WebAuthnDispatcher = function() {};
 Protocol.Console = {};
