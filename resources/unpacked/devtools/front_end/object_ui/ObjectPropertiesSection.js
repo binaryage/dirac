@@ -161,7 +161,7 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
   }
 
   /**
-   * @param {string} name
+   * @param {?string} name
    * @param {boolean=} isPrivate
    * @param {string=} friendlyName
    * @param {string=} friendlyNameNum
@@ -176,6 +176,8 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
       return UI.html`<span class="name friendly-name" title="${name}">${friendlyName}${numHtml}</span>`;
     }
 
+    if (name === null)
+      return UI.html`<span class="name"></span>`;
     if (/^\s|\s$|^$|\n/.test(name))
       return UI.html`<span class="name">"${name.replace(/\n/g, '\u21B5')}"</span>`;
     if (isPrivate) {
