@@ -769,7 +769,9 @@ Protocol.Browser.PermissionType = {
     ProtectedMediaIdentifier: "protectedMediaIdentifier",
     Sensors: "sensors",
     VideoCapture: "videoCapture",
-    IdleDetection: "idleDetection"
+    IdleDetection: "idleDetection",
+    WakeLockScreen: "wakeLockScreen",
+    WakeLockSystem: "wakeLockSystem"
 };
 
 /** @typedef {!{low:(number), high:(number), count:(number)}} */
@@ -7461,7 +7463,7 @@ Protocol.WebAuthn.AuthenticatorTransport = {
     Internal: "internal"
 };
 
-/** @typedef {!{protocol:(Protocol.WebAuthn.AuthenticatorProtocol), transport:(Protocol.WebAuthn.AuthenticatorTransport), hasResidentKey:(boolean), hasUserVerification:(boolean)}} */
+/** @typedef {!{protocol:(Protocol.WebAuthn.AuthenticatorProtocol), transport:(Protocol.WebAuthn.AuthenticatorTransport), hasResidentKey:(boolean), hasUserVerification:(boolean), automaticPresenceSimulation:(boolean|undefined)}} */
 Protocol.WebAuthn.VirtualAuthenticatorOptions;
 
 /** @typedef {!{credentialId:(string), rpIdHash:(string), privateKey:(string), signCount:(number)}} */

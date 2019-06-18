@@ -1,7 +1,8 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='77.0.3827.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='2a20104296054827180de5f97aaf0e0bb4663076';
+Protocol.BakedSupportedCSSPropertiesChromeTag='77.0.3829.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='185cd4cd724d15f6a54de1cab6061b9dc8752136';
 Protocol.BakedSupportedCSSProperties=''
-+ '[{"name": "-internal-visited-background-color"},\n'
++ '[{"name": "-internal-effective-zoom", "inherited": true},\n'
++ ' {"name": "-internal-visited-background-color"},\n'
 + ' {"name": "-internal-visited-border-block-end-color"},\n'
 + ' {"name": "-internal-visited-border-block-start-color"},\n'
 + ' {"name": "-internal-visited-border-bottom-color"},\n'
