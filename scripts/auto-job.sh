@@ -51,9 +51,8 @@ die_if_dirty_working_copy
 
 git fetch origin
 
-git checkout master
-git reset --hard origin/master
-git clean -fd
+git checkout -f -B master origin/master
+git clean -ffd
 
 time ./scripts/fetch-devtools-branch.sh
 
