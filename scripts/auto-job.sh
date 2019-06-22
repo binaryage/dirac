@@ -13,7 +13,7 @@ finish () {
 }
 trap finish EXIT
 
-export CHROMIUM_MIRROR_DIR=~/tasks/chromium/src/
+CHROMIUM_MIRROR_DIR=${CHROMIUM_MIRROR_DIR:?please specify CHROMIUM_MIRROR_DIR} # ~/tasks/chromium/src/
 
 set -ex
 
