@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='77.0.3829.1';
-Protocol.BakedInspectorBackendAPIChromeRev='185cd4cd724d15f6a54de1cab6061b9dc8752136';
+Protocol.BakedInspectorBackendAPIChromeTag='77.0.3832.3';
+Protocol.BakedInspectorBackendAPIChromeRev='10d79b787e4deab03ca6941733dcc7ceeb79a535';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -508,7 +508,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Tracing.StreamCompression", {None: "none", Gzip: "gzip"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Tracing.bufferUsage", ["percentFull", "eventCount", "value"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Tracing.dataCollected", ["value"]);\n'
-+ 'Protocol.inspectorBackend.registerEvent("Tracing.tracingComplete", ["stream", "traceFormat", "streamCompression"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Tracing.tracingComplete", ["dataLossOccurred", "stream", "traceFormat", "streamCompression"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Tracing.end", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Tracing.getCategories", [], ["categories"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Tracing.recordClockSyncMarker", [{"name": "syncId", "type": "string", "optional": false}], [], false);\n'
@@ -544,6 +544,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("WebAuthn.addCredential", [{"name": "authenticatorId", "type": "string", "optional": false}, {"name": "credential", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("WebAuthn.getCredentials", [{"name": "authenticatorId", "type": "string", "optional": false}], ["credentials"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("WebAuthn.clearCredentials", [{"name": "authenticatorId", "type": "string", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("WebAuthn.setUserVerified", [{"name": "authenticatorId", "type": "string", "optional": false}, {"name": "isUserVerified", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Debugger.ScopeType", {Global: "global", Local: "local", With: "with", Closure: "closure", Catch: "catch", Block: "block", Script: "script", Eval: "eval", Module: "module"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Debugger.BreakLocationType", {DebuggerStatement: "debuggerStatement", Call: "call", Return: "return"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Debugger.breakpointResolved", ["breakpointId", "location"]);\n'
