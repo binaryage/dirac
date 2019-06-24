@@ -13,6 +13,10 @@ Resources.BackgroundServiceView = class extends UI.VBox {
         return ls`Background Fetch`;
       case Protocol.BackgroundService.ServiceName.BackgroundSync:
         return ls`Background Sync`;
+      case Protocol.BackgroundService.ServiceName.PushMessaging:
+        return ls`Push Messaging`;
+      case Protocol.BackgroundService.ServiceName.Notifications:
+        return ls`Notifications`;
       default:
         return '';
     }
@@ -159,7 +163,7 @@ Resources.BackgroundServiceView = class extends UI.VBox {
     if (state.isRecording === this._recordButton.toggled())
       return;
 
-    this._recordAction.setToggled(state.isRecording);
+    this._recordButton.setToggled(state.isRecording);
     this._showPreview(this._selectedEventNode);
   }
 
@@ -230,7 +234,7 @@ Resources.BackgroundServiceView = class extends UI.VBox {
       swScope = registration.scopeURL.substr(registration.securityOrigin.length);
 
     return {
-      id: this._dataGrid.rootNode().children.length,
+      id: this._dataGrid.rootNode().children.length + 1,
       timestamp: UI.formatTimestamp(serviceEvent.timestamp * 1000, /* full= */ true),
       origin: serviceEvent.origin,
       swScope,
@@ -335,7 +339,7 @@ Resources.BackgroundServiceView.EventDataNode = class extends DataGrid.DataGridN
     super(data);
 
     /** @const {!Array<!Protocol.BackgroundService.EventMetadata>} */
-    this._eventMetadata = eventMetadata;
+    this._eventMetadata = eventMetadata.sort((m1, m2) => m1.key.compareTo(m2.key));
   }
 
   /**

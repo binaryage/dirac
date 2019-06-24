@@ -1,8 +1,8 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.26")
-(def figwheel-version "0.5.18")
+(def figwheel-version "0.5.19")
 (def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.520"))
-(def selected-clojure-version "1.10.0")
+(def selected-clojure-version "1.10.1")
 (def selenium-version "3.141.59")
 (def lein-cljsbuild-version "1.1.7")
 
@@ -11,7 +11,7 @@
    ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "0.4.490"]
+  [['org.clojure/core.async "0.4.500"]
    ['org.clojure/tools.logging "0.5.0-alpha.1"]
    ['org.clojure/tools.cli "0.4.2"]
    ['nrepl/nrepl "0.6.0"]
@@ -26,7 +26,7 @@
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.7.0" :scope "test"]
-   ['binaryage/chromex "0.8.0" :scope "test"]
+   ['binaryage/chromex "0.8.1" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.46" :scope "test"]
@@ -35,14 +35,14 @@
    ['rum "0.11.3" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-   ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
+   ['org.clojure/tools.namespace "0.3.0" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
    ['fipp "0.6.18" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
 
-   ['http.async.client "1.3.0" :scope "test"]
+   ['http.async.client "1.3.1" :scope "test"]
 
    ['ring/ring-core "1.7.1" :scope "test"]
    ['ring/ring-devel "1.7.1" :scope "test"]
@@ -59,7 +59,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.3.7"
+(defproject binaryage/dirac "1.3.8"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

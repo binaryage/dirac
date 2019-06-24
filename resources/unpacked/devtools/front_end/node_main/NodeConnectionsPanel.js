@@ -55,11 +55,10 @@ NodeMain.NodeConnectionsView = class extends UI.VBox {
     this.element.classList.add('network-discovery-view');
 
     const networkDiscoveryFooter = this.element.createChild('div', 'network-discovery-footer');
-    networkDiscoveryFooter.createChild('span').textContent =
-        Common.UIString('Specify network endpoint and DevTools will connect to it automatically. ');
-    const link = networkDiscoveryFooter.createChild('span', 'link');
-    link.textContent = Common.UIString('Learn more');
-    link.addEventListener('click', () => InspectorFrontendHost.openInNewTab('https://nodejs.org/en/docs/inspector/'));
+    const documentationLink = UI.XLink.create('https://nodejs.org/en/docs/inspector/', ls`Node.js debugging guide`);
+    networkDiscoveryFooter.appendChild(UI.formatLocalized(
+        'Specify network endpoint and DevTools will connect to it automatically. Read %s to learn more.',
+        [documentationLink]));
 
     /** @type {!UI.ListWidget<!Adb.PortForwardingRule>} */
     this._list = new UI.ListWidget(this);
@@ -163,7 +162,7 @@ NodeMain.NodeConnectionsView = class extends UI.VBox {
     this._editor = editor;
     const content = editor.contentElement();
     const fields = content.createChild('div', 'network-discovery-edit-row');
-    const input = editor.createInput('address', 'text', 'Network address (e.g. localhost:9229)', addressValidator);
+    const input = editor.createInput('address', 'text', ls`Network address (e.g. localhost:9229)`, addressValidator);
     fields.createChild('div', 'network-discovery-value network-discovery-address').appendChild(input);
     return editor;
 

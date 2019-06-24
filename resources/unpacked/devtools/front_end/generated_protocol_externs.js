@@ -524,7 +524,9 @@ Protocol.BackgroundServiceAgent.prototype.invoke_clearEvents = function(obj) {};
 /** @enum {string} */
 Protocol.BackgroundService.ServiceName = {
     BackgroundFetch: "backgroundFetch",
-    BackgroundSync: "backgroundSync"
+    BackgroundSync: "backgroundSync",
+    PushMessaging: "pushMessaging",
+    Notifications: "notifications"
 };
 
 /** @typedef {!{key:(string), value:(string)}} */
@@ -767,7 +769,9 @@ Protocol.Browser.PermissionType = {
     ProtectedMediaIdentifier: "protectedMediaIdentifier",
     Sensors: "sensors",
     VideoCapture: "videoCapture",
-    IdleDetection: "idleDetection"
+    IdleDetection: "idleDetection",
+    WakeLockScreen: "wakeLockScreen",
+    WakeLockSystem: "wakeLockSystem"
 };
 
 /** @typedef {!{low:(number), high:(number), count:(number)}} */
@@ -1385,12 +1389,15 @@ Protocol.CastAgent.StopCastingResponse;
  * @param {!Protocol.CastAgent.StopCastingRequest} obj
  * @return {!Promise<!Protocol.CastAgent.StopCastingResponse>} */
 Protocol.CastAgent.prototype.invoke_stopCasting = function(obj) {};
+
+/** @typedef {!{name:(string), id:(string), session:(string|undefined)}} */
+Protocol.Cast.Sink;
 /** @interface */
 Protocol.CastDispatcher = function() {};
 /**
- * @param {!Array<string>} sinkNames
+ * @param {!Array<Protocol.Cast.Sink>} sinks
  */
-Protocol.CastDispatcher.prototype.sinksUpdated = function(sinkNames) {};
+Protocol.CastDispatcher.prototype.sinksUpdated = function(sinks) {};
 /**
  * @param {string} issueMessage
  */
@@ -2349,10 +2356,11 @@ Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
 /**
  * @param {!Array<string>} computedStyles
+ * @param {boolean=} opt_includeDOMRects
  * @return {!Promise<?Array<Protocol.DOMSnapshot.DocumentSnapshot>>}
  */
-Protocol.DOMSnapshotAgent.prototype.captureSnapshot = function(computedStyles) {};
-/** @typedef {!{computedStyles: !Array<string>}} */
+Protocol.DOMSnapshotAgent.prototype.captureSnapshot = function(computedStyles, opt_includeDOMRects) {};
+/** @typedef {!{includeDOMRects: (boolean|undefined), computedStyles: !Array<string>}} */
 Protocol.DOMSnapshotAgent.CaptureSnapshotRequest;
 /** @typedef {!{documents: !Array<Protocol.DOMSnapshot.DocumentSnapshot>, strings: !Array<string>}} */
 Protocol.DOMSnapshotAgent.CaptureSnapshotResponse;
@@ -2400,7 +2408,7 @@ Protocol.DOMSnapshot.DocumentSnapshot;
 /** @typedef {!{parentIndex:(!Array<number>|undefined), nodeType:(!Array<number>|undefined), nodeName:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), nodeValue:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), backendNodeId:(!Array<Protocol.DOM.BackendNodeId>|undefined), attributes:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>|undefined), textValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputChecked:(Protocol.DOMSnapshot.RareBooleanData|undefined), optionSelected:(Protocol.DOMSnapshot.RareBooleanData|undefined), contentDocumentIndex:(Protocol.DOMSnapshot.RareIntegerData|undefined), pseudoType:(Protocol.DOMSnapshot.RareStringData|undefined), isClickable:(Protocol.DOMSnapshot.RareBooleanData|undefined), currentSourceURL:(Protocol.DOMSnapshot.RareStringData|undefined), originURL:(Protocol.DOMSnapshot.RareStringData|undefined)}} */
 Protocol.DOMSnapshot.NodeTreeSnapshot;
 
-/** @typedef {!{nodeIndex:(!Array<number>), styles:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>), bounds:(!Array<Protocol.DOMSnapshot.Rectangle>), text:(!Array<Protocol.DOMSnapshot.StringIndex>), stackingContexts:(Protocol.DOMSnapshot.RareBooleanData)}} */
+/** @typedef {!{nodeIndex:(!Array<number>), styles:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>), bounds:(!Array<Protocol.DOMSnapshot.Rectangle>), text:(!Array<Protocol.DOMSnapshot.StringIndex>), stackingContexts:(Protocol.DOMSnapshot.RareBooleanData), offsetRects:(!Array<Protocol.DOMSnapshot.Rectangle>|undefined), scrollRects:(!Array<Protocol.DOMSnapshot.Rectangle>|undefined), clientRects:(!Array<Protocol.DOMSnapshot.Rectangle>|undefined)}} */
 Protocol.DOMSnapshot.LayoutTreeSnapshot;
 
 /** @typedef {!{layoutIndex:(!Array<number>), bounds:(!Array<Protocol.DOMSnapshot.Rectangle>), start:(!Array<number>), length:(!Array<number>)}} */
@@ -2918,6 +2926,20 @@ Protocol.EmulationAgent.SetVirtualTimePolicyResponse;
  * @param {!Protocol.EmulationAgent.SetVirtualTimePolicyRequest} obj
  * @return {!Promise<!Protocol.EmulationAgent.SetVirtualTimePolicyResponse>} */
 Protocol.EmulationAgent.prototype.invoke_setVirtualTimePolicy = function(obj) {};
+
+/**
+ * @param {string} timezoneId
+ * @return {!Promise<undefined>}
+ */
+Protocol.EmulationAgent.prototype.setTimezoneOverride = function(timezoneId) {};
+/** @typedef {!{timezoneId: string}} */
+Protocol.EmulationAgent.SetTimezoneOverrideRequest;
+/** @typedef {Object|undefined} */
+Protocol.EmulationAgent.SetTimezoneOverrideResponse;
+/**
+ * @param {!Protocol.EmulationAgent.SetTimezoneOverrideRequest} obj
+ * @return {!Promise<!Protocol.EmulationAgent.SetTimezoneOverrideResponse>} */
+Protocol.EmulationAgent.prototype.invoke_setTimezoneOverride = function(obj) {};
 
 /**
  * @param {number} width
@@ -4524,7 +4546,7 @@ Protocol.Network.BlockedReason = {
     CollapsedByClient: "collapsed-by-client"
 };
 
-/** @typedef {!{url:(string), status:(number), statusText:(string), headers:(Protocol.Network.Headers), headersText:(string|undefined), mimeType:(string), requestHeaders:(Protocol.Network.Headers|undefined), requestHeadersText:(string|undefined), connectionReused:(boolean), connectionId:(number), remoteIPAddress:(string|undefined), remotePort:(number|undefined), fromDiskCache:(boolean|undefined), fromServiceWorker:(boolean|undefined), encodedDataLength:(number), timing:(Protocol.Network.ResourceTiming|undefined), protocol:(string|undefined), securityState:(Protocol.Security.SecurityState), securityDetails:(Protocol.Network.SecurityDetails|undefined)}} */
+/** @typedef {!{url:(string), status:(number), statusText:(string), headers:(Protocol.Network.Headers), headersText:(string|undefined), mimeType:(string), requestHeaders:(Protocol.Network.Headers|undefined), requestHeadersText:(string|undefined), connectionReused:(boolean), connectionId:(number), remoteIPAddress:(string|undefined), remotePort:(number|undefined), fromDiskCache:(boolean|undefined), fromServiceWorker:(boolean|undefined), fromPrefetchCache:(boolean|undefined), encodedDataLength:(number), timing:(Protocol.Network.ResourceTiming|undefined), protocol:(string|undefined), securityState:(Protocol.Security.SecurityState), securityDetails:(Protocol.Network.SecurityDetails|undefined)}} */
 Protocol.Network.Response;
 
 /** @typedef {!{headers:(Protocol.Network.Headers)}} */
@@ -4949,6 +4971,20 @@ Protocol.OverlayAgent.SetShowPaintRectsResponse;
  * @param {!Protocol.OverlayAgent.SetShowPaintRectsRequest} obj
  * @return {!Promise<!Protocol.OverlayAgent.SetShowPaintRectsResponse>} */
 Protocol.OverlayAgent.prototype.invoke_setShowPaintRects = function(obj) {};
+
+/**
+ * @param {boolean} result
+ * @return {!Promise<undefined>}
+ */
+Protocol.OverlayAgent.prototype.setShowLayoutShiftRegions = function(result) {};
+/** @typedef {!{result: boolean}} */
+Protocol.OverlayAgent.SetShowLayoutShiftRegionsRequest;
+/** @typedef {Object|undefined} */
+Protocol.OverlayAgent.SetShowLayoutShiftRegionsResponse;
+/**
+ * @param {!Protocol.OverlayAgent.SetShowLayoutShiftRegionsRequest} obj
+ * @return {!Promise<!Protocol.OverlayAgent.SetShowLayoutShiftRegionsResponse>} */
+Protocol.OverlayAgent.prototype.invoke_setShowLayoutShiftRegions = function(obj) {};
 
 /**
  * @param {boolean} show
@@ -5376,12 +5412,13 @@ Protocol.PageAgent.prototype.invoke_navigateToHistoryEntry = function(obj) {};
  * @param {string=} opt_headerTemplate
  * @param {string=} opt_footerTemplate
  * @param {boolean=} opt_preferCSSPageSize
+ * @param {string=} opt_transferMode
  * @return {!Promise<?string>}
  */
-Protocol.PageAgent.prototype.printToPDF = function(opt_landscape, opt_displayHeaderFooter, opt_printBackground, opt_scale, opt_paperWidth, opt_paperHeight, opt_marginTop, opt_marginBottom, opt_marginLeft, opt_marginRight, opt_pageRanges, opt_ignoreInvalidPageRanges, opt_headerTemplate, opt_footerTemplate, opt_preferCSSPageSize) {};
-/** @typedef {!{paperHeight: (number|undefined), scale: (number|undefined), footerTemplate: (string|undefined), displayHeaderFooter: (boolean|undefined), marginBottom: (number|undefined), paperWidth: (number|undefined), headerTemplate: (string|undefined), marginLeft: (number|undefined), preferCSSPageSize: (boolean|undefined), printBackground: (boolean|undefined), marginRight: (number|undefined), ignoreInvalidPageRanges: (boolean|undefined), pageRanges: (string|undefined), marginTop: (number|undefined), landscape: (boolean|undefined)}} */
+Protocol.PageAgent.prototype.printToPDF = function(opt_landscape, opt_displayHeaderFooter, opt_printBackground, opt_scale, opt_paperWidth, opt_paperHeight, opt_marginTop, opt_marginBottom, opt_marginLeft, opt_marginRight, opt_pageRanges, opt_ignoreInvalidPageRanges, opt_headerTemplate, opt_footerTemplate, opt_preferCSSPageSize, opt_transferMode) {};
+/** @typedef {!{paperHeight: (number|undefined), scale: (number|undefined), footerTemplate: (string|undefined), displayHeaderFooter: (boolean|undefined), transferMode: (string|undefined), marginBottom: (number|undefined), paperWidth: (number|undefined), headerTemplate: (string|undefined), marginLeft: (number|undefined), preferCSSPageSize: (boolean|undefined), printBackground: (boolean|undefined), marginRight: (number|undefined), ignoreInvalidPageRanges: (boolean|undefined), pageRanges: (string|undefined), marginTop: (number|undefined), landscape: (boolean|undefined)}} */
 Protocol.PageAgent.PrintToPDFRequest;
-/** @typedef {!{data: string}} */
+/** @typedef {!{data: string, stream: Protocol.IO.StreamHandle}} */
 Protocol.PageAgent.PrintToPDFResponse;
 /**
  * @param {!Protocol.PageAgent.PrintToPDFRequest} obj
@@ -5792,7 +5829,7 @@ Protocol.PageAgent.prototype.invoke_waitForDebugger = function(obj) {};
 /** @typedef {string} */
 Protocol.Page.FrameId;
 
-/** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string), mimeType:(string), unreachableUrl:(string|undefined)}} */
+/** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), urlFragment:(string|undefined), securityOrigin:(string), mimeType:(string), unreachableUrl:(string|undefined)}} */
 Protocol.Page.Frame;
 
 /** @typedef {!{url:(string), type:(Protocol.Network.ResourceType), mimeType:(string), lastModified:(Protocol.Network.TimeSinceEpoch|undefined), contentSize:(number|undefined), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
@@ -6549,10 +6586,29 @@ Protocol.SystemInfoAgent.GetProcessInfoResponse;
  * @return {!Promise<!Protocol.SystemInfoAgent.GetProcessInfoResponse>} */
 Protocol.SystemInfoAgent.prototype.invoke_getProcessInfo = function(obj) {};
 
-/** @typedef {!{vendorId:(number), deviceId:(number), vendorString:(string), deviceString:(string)}} */
+/** @typedef {!{vendorId:(number), deviceId:(number), vendorString:(string), deviceString:(string), driverVendor:(string), driverVersion:(string)}} */
 Protocol.SystemInfo.GPUDevice;
 
-/** @typedef {!{devices:(!Array<Protocol.SystemInfo.GPUDevice>), auxAttributes:(!Object|undefined), featureStatus:(!Object|undefined), driverBugWorkarounds:(!Array<string>)}} */
+/** @typedef {!{width:(number), height:(number)}} */
+Protocol.SystemInfo.Size;
+
+/** @typedef {!{profile:(string), maxResolution:(Protocol.SystemInfo.Size), minResolution:(Protocol.SystemInfo.Size)}} */
+Protocol.SystemInfo.VideoDecodeAcceleratorCapability;
+
+/** @typedef {!{profile:(string), maxResolution:(Protocol.SystemInfo.Size), maxFramerateNumerator:(number), maxFramerateDenominator:(number)}} */
+Protocol.SystemInfo.VideoEncodeAcceleratorCapability;
+
+/** @enum {string} */
+Protocol.SystemInfo.SubsamplingFormat = {
+    Yuv420: "yuv420",
+    Yuv422: "yuv422",
+    Yuv444: "yuv444"
+};
+
+/** @typedef {!{imageType:(string), maxDimensions:(Protocol.SystemInfo.Size), minDimensions:(Protocol.SystemInfo.Size), subsamplings:(!Array<Protocol.SystemInfo.SubsamplingFormat>)}} */
+Protocol.SystemInfo.ImageDecodeAcceleratorCapability;
+
+/** @typedef {!{devices:(!Array<Protocol.SystemInfo.GPUDevice>), auxAttributes:(!Object|undefined), featureStatus:(!Object|undefined), driverBugWorkarounds:(!Array<string>), videoDecoding:(!Array<Protocol.SystemInfo.VideoDecodeAcceleratorCapability>), videoEncoding:(!Array<Protocol.SystemInfo.VideoEncodeAcceleratorCapability>), imageDecoding:(!Array<Protocol.SystemInfo.ImageDecodeAcceleratorCapability>)}} */
 Protocol.SystemInfo.GPUInfo;
 
 /** @typedef {!{type:(string), id:(number), cpuTime:(number)}} */
@@ -6670,10 +6726,12 @@ Protocol.TargetAgent.prototype.invoke_getBrowserContexts = function(obj) {};
  * @param {number=} opt_height
  * @param {Protocol.Target.BrowserContextID=} opt_browserContextId
  * @param {boolean=} opt_enableBeginFrameControl
+ * @param {boolean=} opt_newWindow
+ * @param {boolean=} opt_background
  * @return {!Promise<?Protocol.Target.TargetID>}
  */
-Protocol.TargetAgent.prototype.createTarget = function(url, opt_width, opt_height, opt_browserContextId, opt_enableBeginFrameControl) {};
-/** @typedef {!{url: string, width: (number|undefined), browserContextId: (Protocol.Target.BrowserContextID|undefined), enableBeginFrameControl: (boolean|undefined), height: (number|undefined)}} */
+Protocol.TargetAgent.prototype.createTarget = function(url, opt_width, opt_height, opt_browserContextId, opt_enableBeginFrameControl, opt_newWindow, opt_background) {};
+/** @typedef {!{browserContextId: (Protocol.Target.BrowserContextID|undefined), url: string, newWindow: (boolean|undefined), width: (number|undefined), enableBeginFrameControl: (boolean|undefined), background: (boolean|undefined), height: (number|undefined)}} */
 Protocol.TargetAgent.CreateTargetRequest;
 /** @typedef {!{targetId: Protocol.Target.TargetID}} */
 Protocol.TargetAgent.CreateTargetResponse;
@@ -7010,11 +7068,12 @@ Protocol.TracingDispatcher.prototype.bufferUsage = function(opt_percentFull, opt
  */
 Protocol.TracingDispatcher.prototype.dataCollected = function(value) {};
 /**
+ * @param {boolean} dataLossOccurred
  * @param {Protocol.IO.StreamHandle=} opt_stream
  * @param {Protocol.Tracing.StreamFormat=} opt_traceFormat
  * @param {Protocol.Tracing.StreamCompression=} opt_streamCompression
  */
-Protocol.TracingDispatcher.prototype.tracingComplete = function(opt_stream, opt_traceFormat, opt_streamCompression) {};
+Protocol.TracingDispatcher.prototype.tracingComplete = function(dataLossOccurred, opt_stream, opt_traceFormat, opt_streamCompression) {};
 Protocol.Fetch = {};
 
 
@@ -7263,7 +7322,7 @@ Protocol.WebAudio.ContextState = {
     Closed: "closed"
 };
 
-/** @typedef {!{currentTime:(number|undefined), renderCapacity:(number|undefined)}} */
+/** @typedef {!{currentTime:(number), renderCapacity:(number), callbackIntervalMean:(number), callbackIntervalVariance:(number)}} */
 Protocol.WebAudio.ContextRealtimeData;
 
 /** @typedef {!{contextId:(Protocol.WebAudio.ContextId), contextType:(Protocol.WebAudio.ContextType), contextState:(Protocol.WebAudio.ContextState), realtimeData:(Protocol.WebAudio.ContextRealtimeData|undefined), callbackBufferSize:(number), maxOutputChannelCount:(number), sampleRate:(number)}} */
@@ -7282,6 +7341,151 @@ Protocol.WebAudioDispatcher.prototype.contextDestroyed = function(contextId) {};
  * @param {Protocol.WebAudio.BaseAudioContext} context
  */
 Protocol.WebAudioDispatcher.prototype.contextChanged = function(context) {};
+Protocol.WebAuthn = {};
+
+
+/**
+ * @constructor
+*/
+Protocol.WebAuthnAgent = function(){};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAuthnAgent.prototype.enable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.EnableRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.EnableResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.EnableRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.EnableResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_enable = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAuthnAgent.prototype.disable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.DisableRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.DisableResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.DisableRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.DisableResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_disable = function(obj) {};
+
+/**
+ * @param {Protocol.WebAuthn.VirtualAuthenticatorOptions} options
+ * @return {!Promise<?Protocol.WebAuthn.AuthenticatorId>}
+ */
+Protocol.WebAuthnAgent.prototype.addVirtualAuthenticator = function(options) {};
+/** @typedef {!{options: Protocol.WebAuthn.VirtualAuthenticatorOptions}} */
+Protocol.WebAuthnAgent.AddVirtualAuthenticatorRequest;
+/** @typedef {!{authenticatorId: Protocol.WebAuthn.AuthenticatorId}} */
+Protocol.WebAuthnAgent.AddVirtualAuthenticatorResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.AddVirtualAuthenticatorRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.AddVirtualAuthenticatorResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_addVirtualAuthenticator = function(obj) {};
+
+/**
+ * @param {Protocol.WebAuthn.AuthenticatorId} authenticatorId
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAuthnAgent.prototype.removeVirtualAuthenticator = function(authenticatorId) {};
+/** @typedef {!{authenticatorId: Protocol.WebAuthn.AuthenticatorId}} */
+Protocol.WebAuthnAgent.RemoveVirtualAuthenticatorRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.RemoveVirtualAuthenticatorResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.RemoveVirtualAuthenticatorRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.RemoveVirtualAuthenticatorResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_removeVirtualAuthenticator = function(obj) {};
+
+/**
+ * @param {Protocol.WebAuthn.AuthenticatorId} authenticatorId
+ * @param {Protocol.WebAuthn.Credential} credential
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAuthnAgent.prototype.addCredential = function(authenticatorId, credential) {};
+/** @typedef {!{authenticatorId: Protocol.WebAuthn.AuthenticatorId, credential: Protocol.WebAuthn.Credential}} */
+Protocol.WebAuthnAgent.AddCredentialRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.AddCredentialResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.AddCredentialRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.AddCredentialResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_addCredential = function(obj) {};
+
+/**
+ * @param {Protocol.WebAuthn.AuthenticatorId} authenticatorId
+ * @return {!Promise<?Array<Protocol.WebAuthn.Credential>>}
+ */
+Protocol.WebAuthnAgent.prototype.getCredentials = function(authenticatorId) {};
+/** @typedef {!{authenticatorId: Protocol.WebAuthn.AuthenticatorId}} */
+Protocol.WebAuthnAgent.GetCredentialsRequest;
+/** @typedef {!{credentials: !Array<Protocol.WebAuthn.Credential>}} */
+Protocol.WebAuthnAgent.GetCredentialsResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.GetCredentialsRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.GetCredentialsResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_getCredentials = function(obj) {};
+
+/**
+ * @param {Protocol.WebAuthn.AuthenticatorId} authenticatorId
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAuthnAgent.prototype.clearCredentials = function(authenticatorId) {};
+/** @typedef {!{authenticatorId: Protocol.WebAuthn.AuthenticatorId}} */
+Protocol.WebAuthnAgent.ClearCredentialsRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.ClearCredentialsResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.ClearCredentialsRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.ClearCredentialsResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_clearCredentials = function(obj) {};
+
+/**
+ * @param {Protocol.WebAuthn.AuthenticatorId} authenticatorId
+ * @param {boolean} isUserVerified
+ * @return {!Promise<undefined>}
+ */
+Protocol.WebAuthnAgent.prototype.setUserVerified = function(authenticatorId, isUserVerified) {};
+/** @typedef {!{authenticatorId: Protocol.WebAuthn.AuthenticatorId, isUserVerified: boolean}} */
+Protocol.WebAuthnAgent.SetUserVerifiedRequest;
+/** @typedef {Object|undefined} */
+Protocol.WebAuthnAgent.SetUserVerifiedResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.SetUserVerifiedRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.SetUserVerifiedResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_setUserVerified = function(obj) {};
+
+/** @typedef {string} */
+Protocol.WebAuthn.AuthenticatorId;
+
+/** @enum {string} */
+Protocol.WebAuthn.AuthenticatorProtocol = {
+    U2f: "u2f",
+    Ctap2: "ctap2"
+};
+
+/** @enum {string} */
+Protocol.WebAuthn.AuthenticatorTransport = {
+    Usb: "usb",
+    Nfc: "nfc",
+    Ble: "ble",
+    Cable: "cable",
+    Internal: "internal"
+};
+
+/** @typedef {!{protocol:(Protocol.WebAuthn.AuthenticatorProtocol), transport:(Protocol.WebAuthn.AuthenticatorTransport), hasResidentKey:(boolean), hasUserVerification:(boolean), automaticPresenceSimulation:(boolean|undefined)}} */
+Protocol.WebAuthn.VirtualAuthenticatorOptions;
+
+/** @typedef {!{credentialId:(string), rpIdHash:(string), privateKey:(string), signCount:(number)}} */
+Protocol.WebAuthn.Credential;
+/** @interface */
+Protocol.WebAuthnDispatcher = function() {};
 Protocol.Console = {};
 
 
@@ -9091,6 +9295,12 @@ Protocol.TargetBase.prototype.webAudioAgent = function(){};
  * @param {!Protocol.WebAudioDispatcher} dispatcher
  */
 Protocol.TargetBase.prototype.registerWebAudioDispatcher = function(dispatcher) {}
+/** @return {!Protocol.WebAuthnAgent}*/
+Protocol.TargetBase.prototype.webAuthnAgent = function(){};
+/**
+ * @param {!Protocol.WebAuthnDispatcher} dispatcher
+ */
+Protocol.TargetBase.prototype.registerWebAuthnDispatcher = function(dispatcher) {}
 /** @return {!Protocol.ConsoleAgent}*/
 Protocol.TargetBase.prototype.consoleAgent = function(){};
 /**

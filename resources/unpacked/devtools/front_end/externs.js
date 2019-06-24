@@ -815,7 +815,7 @@ CodeMirror.prototype = {
 };
 /** @type {!{cursorDiv: Element, lineDiv: Element, lineSpace: Element, gutters: Element}} */
 CodeMirror.prototype.display;
-/** @type {!{mode: string, lineWrapping: boolean}} */
+/** @type {!{devtoolsAccessibleName: string, mode: string, lineWrapping: boolean}} */
 CodeMirror.prototype.options;
 /** @type {!Object} */
 CodeMirror.Pass;
@@ -1175,6 +1175,24 @@ ReportRenderer.prototype = {
    */
   setTemplateContext: function(context) {},
 
+};
+
+/**
+ * @constructor
+ * @param {!DOM} dom
+ */
+const ReportUIFeatures = function(dom) {};
+
+ReportUIFeatures.prototype = {
+  /**
+   * @param {!Document|!Element} context
+   */
+  setTemplateContext: function(context) {},
+
+  /**
+   * @param {!ReportRenderer.ReportJSON} report
+   */
+  initFeatures: function(report) {},
 };
 
 /**

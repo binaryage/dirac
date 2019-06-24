@@ -691,6 +691,20 @@
         },
         {
             "type": "action",
+            "actionId": "debugger.breakpoint-input-window",
+            "bindings": [
+                {
+                    "platform":"windows,linux",
+                    "shortcut": "Ctrl+Alt+b"
+                },
+                {
+                    "platform":"mac",
+                    "shortcut": "Meta+Alt+b"
+                }
+            ]
+        },
+        {
+            "type": "action",
             "actionId": "sources.save",
             "className": "Sources.SourcesView.ActionDelegate",
             "contextTypes": [
@@ -933,9 +947,7 @@
         "javaScriptBreakpointsSidebarPane.css",
         "navigatorTree.css",
         "navigatorView.css",
-        "revisionHistory.css",
         "scopeChainSidebarPane.css",
-        "serviceWorkersSidebar.css",
         "sourcesPanel.css",
         "sourcesView.css",
         "threadsSidebarPane.css",

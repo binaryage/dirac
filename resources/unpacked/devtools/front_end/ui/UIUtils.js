@@ -662,10 +662,10 @@ UI.anotherProfilerActiveLabel = function() {
 UI.asyncStackTraceLabel = function(description) {
   if (description) {
     if (description === 'Promise.resolve')
-      description = Common.UIString('Promise resolved');
+      return ls`Promise resolved (async)`;
     else if (description === 'Promise.reject')
-      description = Common.UIString('Promise rejected');
-    return description + ' ' + Common.UIString('(async)');
+      return ls`Promise rejected (async)`;
+    return ls`${description} (async)`;
   }
   return Common.UIString('Async Call');
 };
@@ -1174,16 +1174,6 @@ UI.beautifyFunctionName = function(name) {
 };
 
 /**
- * @param {!Element} label
- * @param {!Element} control
- */
-UI.bindLabelToControl = function(label, control) {
-  const controlId = UI.ARIAUtils.nextId('labelledControl');
-  control.id = controlId;
-  label.setAttribute('for', controlId);
-};
-
-/**
  * @param {string} localName
  * @param {string} typeExtension
  * @param {function(new:HTMLElement, *)} definition
@@ -1244,7 +1234,7 @@ UI.createLabel = function(title, className, associatedControl) {
   const element = createElementWithClass('label', className || '');
   element.textContent = title;
   if (associatedControl)
-    UI.bindLabelToControl(element, associatedControl);
+    UI.ARIAUtils.bindLabelToControl(element, associatedControl);
 
   return element;
 };
@@ -2040,6 +2030,11 @@ UI.createInlineButton = function(toolbarButton) {
  * @return {!DocumentFragment}
  */
 UI.createExpandableText = function(text, maxLength) {
+  const clickHandler = () => {
+    if (expandElement.parentElement)
+      expandElement.parentElement.insertBefore(createTextNode(text.slice(maxLength)), expandElement);
+    expandElement.remove();
+  };
   const fragment = createDocumentFragment();
   fragment.textContent = text.slice(0, maxLength);
   const expandElement = fragment.createChild('span');
@@ -2047,11 +2042,13 @@ UI.createExpandableText = function(text, maxLength) {
   if (text.length < 10000000) {
     expandElement.setAttribute('data-text', ls`Show more (${totalBytes})`);
     expandElement.classList.add('expandable-inline-button');
-    expandElement.addEventListener('click', () => {
-      if (expandElement.parentElement)
-        expandElement.parentElement.insertBefore(createTextNode(text.slice(maxLength)), expandElement);
-      expandElement.remove();
+    expandElement.addEventListener('click', clickHandler);
+    expandElement.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ')
+        clickHandler();
     });
+    UI.ARIAUtils.markAsButton(expandElement);
+
   } else {
     expandElement.setAttribute('data-text', ls`long text was truncated (${totalBytes})`);
     expandElement.classList.add('undisplayable-text');
@@ -2062,6 +2059,11 @@ UI.createExpandableText = function(text, maxLength) {
   copyButton.addEventListener('click', () => {
     InspectorFrontendHost.copyText(text);
   });
+  copyButton.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ')
+      InspectorFrontendHost.copyText(text);
+  });
+  UI.ARIAUtils.markAsButton(copyButton);
   return fragment;
 };
 

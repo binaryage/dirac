@@ -6,6 +6,16 @@ UI.ARIAUtils = {};
 UI.ARIAUtils._id = 0;
 
 /**
+ * @param {!Element} label
+ * @param {!Element} control
+ */
+UI.ARIAUtils.bindLabelToControl = function(label, control) {
+  const controlId = UI.ARIAUtils.nextId('labelledControl');
+  control.id = controlId;
+  label.setAttribute('for', controlId);
+};
+
+/**
  * @param {!Element} element
  */
 UI.ARIAUtils.markAsButton = function(element) {
@@ -17,6 +27,16 @@ UI.ARIAUtils.markAsButton = function(element) {
  */
 UI.ARIAUtils.markAsCheckbox = function(element) {
   element.setAttribute('role', 'checkbox');
+};
+
+/**
+ * @param {!Element} element
+ * @param {boolean=} modal
+ */
+UI.ARIAUtils.markAsDialog = function(element, modal) {
+  element.setAttribute('role', 'dialog');
+  if (modal)
+    element.setAttribute('aria-modal', 'true');
 };
 
 /**
@@ -110,6 +130,14 @@ UI.ARIAUtils.markAsPresentation = function(element) {
 };
 
 /**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.ensureId = function(element) {
+  if (!element.id)
+    element.id = UI.ARIAUtils.nextId('ariaElement');
+};
+
+/**
  * @param {string} prefix
  * @return {string}
  */
@@ -184,6 +212,15 @@ UI.ARIAUtils.setPressed = function(element, value) {
  */
 UI.ARIAUtils.setAccessibleName = function(element, name) {
   element.setAttribute('aria-label', name);
+};
+
+/**
+ * @param {!Element} element
+ * @param {!Element} labelElement
+ */
+UI.ARIAUtils.setLabelledBy = function(element, labelElement) {
+  UI.ARIAUtils.ensureId(labelElement);
+  element.setAttribute('aria-labelledby', labelElement.id);
 };
 
 /**

@@ -29,6 +29,8 @@
             <string>/Users/darwin/bin/depot_tools:/Users/darwin/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin</string>
             <key>PYTHONPATH</key>
             <string>/usr/local/lib/python2.7/site-packages</string>
+            <key>CHROMIUM_MIRROR_DIR</key>
+            <string>/Users/darwin/tasks/chromium/src</string>
         </dict>
     </dict>
 </plist>

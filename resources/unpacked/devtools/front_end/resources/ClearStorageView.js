@@ -33,19 +33,18 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
       this._settings.set(type, Common.settings.createSetting('clear-storage-' + type, true));
 
     const quota = this._reportView.appendSection(Common.UIString('Usage'));
-    this._quotaRow = quota.appendRow();
+    this._quotaRow = quota.appendSelectableRow();
     const learnMoreRow = quota.appendRow();
     const learnMore = UI.XLink.create(
         'https://developers.google.com/web/tools/chrome-devtools/progressive-web-apps#opaque-responses',
         ls`Learn more`);
     learnMoreRow.appendChild(learnMore);
     this._quotaUsage = null;
-    this._pieChart = new PerfUI.PieChart(110, Number.bytesToString, true);
-    this._pieChartLegend = createElement('div');
+    this._pieChart = new PerfUI.PieChart(
+        {chartName: ls`Storage Usage`, size: 110, formatter: Number.bytesToString, showLegend: true});
     const usageBreakdownRow = quota.appendRow();
     usageBreakdownRow.classList.add('usage-breakdown-row');
     usageBreakdownRow.appendChild(this._pieChart.element);
-    usageBreakdownRow.appendChild(this._pieChartLegend);
 
     const clearButtonSection = this._reportView.appendSection('', 'clear-storage-button').appendRow();
     this._clearButton = UI.createTextButton(ls`Clear site data`, this._clear.bind(this));
@@ -53,16 +52,19 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
 
     const application = this._reportView.appendSection(Common.UIString('Application'));
     this._appendItem(application, Common.UIString('Unregister service workers'), 'service_workers');
+    application.markFieldListAsGroup();
 
     const storage = this._reportView.appendSection(Common.UIString('Storage'));
     this._appendItem(storage, Common.UIString('Local and session storage'), 'local_storage');
     this._appendItem(storage, Common.UIString('IndexedDB'), 'indexeddb');
     this._appendItem(storage, Common.UIString('Web SQL'), 'websql');
     this._appendItem(storage, Common.UIString('Cookies'), 'cookies');
+    storage.markFieldListAsGroup();
 
     const caches = this._reportView.appendSection(Common.UIString('Cache'));
     this._appendItem(caches, Common.UIString('Cache storage'), 'cache_storage');
     this._appendItem(caches, Common.UIString('Application cache'), 'appcache');
+    caches.markFieldListAsGroup();
 
     SDK.targetManager.observeTargets(this);
   }
@@ -234,11 +236,7 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
           continue;
         const title = this._getStorageTypeName(usageForType.storageType);
         const color = this._pieColors.get(usageForType.storageType) || '#ccc';
-        this._pieChart.addSlice(value, color);
-        const rowElement = this._pieChartLegend.createChild('div', 'usage-breakdown-legend-row');
-        rowElement.createChild('span', 'usage-breakdown-legend-value').textContent = Number.bytesToString(value);
-        rowElement.createChild('span', 'usage-breakdown-legend-swatch').style.backgroundColor = color;
-        rowElement.createChild('span', 'usage-breakdown-legend-title').textContent = title;
+        this._pieChart.addSlice(value, color, title);
       }
     }
 
@@ -251,7 +249,6 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
    */
   _resetPieChart(total) {
     this._pieChart.setTotal(total);
-    this._pieChartLegend.removeChildren();
   }
 
   /**

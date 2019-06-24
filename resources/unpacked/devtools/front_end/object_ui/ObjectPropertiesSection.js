@@ -153,36 +153,39 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
       return 1;
     if (propertyB.symbol && !propertyA.symbol)
       return -1;
+    if (propertyA.private && !propertyB.private)
+      return 1;
+    if (propertyB.private && !propertyA.private)
+      return -1;
     return String.naturalOrderComparator(a, b);
   }
 
   /**
    * @param {?string} name
-   * @param {?string=} friendlyName
-   * @param {?string=} friendlyNameNum
+   * @param {boolean=} isPrivate
+   * @param {string=} friendlyName
+   * @param {string=} friendlyNameNum
    * @return {!Element}
    */
-  static createNameElement(name, friendlyName, friendlyNameNum) {
-    const nameElement = createElementWithClass("span", "name");
-    const effectiveName = friendlyName || name;
-    if (/^\s|\s$|^$|\n/.test(effectiveName))
-      nameElement.createTextChildren("\"", effectiveName.replace(/\n/g, "\u21B5"), "\"");
-    else
-      nameElement.textContent = effectiveName;
-
+  static createNameElement(name, isPrivate, friendlyName, friendlyNameNum) {
     if (friendlyName) {
-      nameElement.classList.add("friendly-name");
+      let numHtml="";
       if (friendlyNameNum) {
-        var sub = createElementWithClass("sub", "friendly-num");
-        sub.textContent = friendlyNameNum;
-        nameElement.appendChild(sub);
+        numHtml = UI.html`<sub class="friendly-num">${friendlyNameNum}</sub>`
       }
-      if (name) {
-        nameElement.title = name;
-      }
+      return UI.html`<span class="name friendly-name" title="${name}">${friendlyName}${numHtml}</span>`;
     }
 
-    return nameElement;
+    if (name === null)
+      return UI.html`<span class="name"></span>`;
+    if (/^\s|\s$|^$|\n/.test(name))
+      return UI.html`<span class="name">"${name.replace(/\n/g, '\u21B5')}"</span>`;
+    if (isPrivate) {
+      return UI.html`<span class="name">
+        <span class="private-property-hash">${name[0]}</span>${name.substring(1)}
+      </span>`;
+    }
+    return UI.html`<span class="name">${name}</span>`;
   }
 
   /**
@@ -335,9 +338,7 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
 
     if (wasThrown) {
       const wrapperElement = createElementWithClass('span', 'error value');
-      wrapperElement.createTextChild('[' + Common.UIString('Exception') + ': ');
-      wrapperElement.appendChild(valueElement);
-      wrapperElement.createTextChild(']');
+      wrapperElement.appendChild(UI.formatLocalized('[Exception: %s]', [valueElement]));
       return wrapperElement;
     }
     valueElement.classList.add('value');
@@ -425,6 +426,19 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
           func.description, includePreview, defaultName);
       element.appendChild(valueElement);
     }
+  }
+
+  /**
+   * @param {!SDK.RemoteObjectProperty} property
+   * @param {!SDK.RemoteObjectProperty=} parentProperty
+   * @return {boolean}
+   */
+  static _isDisplayableProperty(property, parentProperty) {
+    if (!parentProperty || !parentProperty.synthetic)
+      return true;
+    const name = property.name;
+    const useless = (parentProperty.name === '[[Entries]]' && (name === 'length' || name === '__proto__'));
+    return !useless;
   }
 
   skipProto() {
@@ -617,30 +631,42 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
       linkifier,
       emptyPlaceholder) {
     properties.sort(ObjectUI.ObjectPropertiesSection.CompareProperties);
+    internalProperties = internalProperties || [];
+
+    const entriesProperty = internalProperties.find(property => property.name === '[[Entries]]');
+    if (entriesProperty) {
+      entriesProperty.parentObject = value;
+      const treeElement = new ObjectUI.ObjectPropertyTreeElement(entriesProperty, linkifier);
+      treeElement.setExpandable(true);
+      treeElement.expand();
+      treeNode.appendChild(treeElement);
+    }
 
     /**
      * @param {string} name
      * @return {?string}
      */
     function getFriendlyName(name) {
-      var duIndex = name.indexOf("__");
+      let duIndex = name.indexOf("__");
       if (duIndex != -1) {
         return name.substring(0, duIndex);
       }
-      var suMatch = name.match(/(.*?)_\d+$/);
+      let suMatch = name.match(/(.*?)_\d+$/);
       if (suMatch) {
         return suMatch[1];
       }
       return null;
     }
 
-    var friendlyNamesTable = {};
-    var previousProperty = null;
-    var tailProperties = [];
-    var protoProperty = null;
-    for (var i = 0; i < properties.length; ++i) {
-      var property = properties[i];
+    let friendlyNamesTable = {};
+    let previousProperty = null;
+    const tailProperties = [];
+    let protoProperty = null;
+    for (let i = 0; i < properties.length; ++i) {
+      const property = properties[i];
       property.parentObject = value;
+      if (!ObjectUI.ObjectPropertiesSection._isDisplayableProperty(property, treeNode.property))
+        continue;
 
       if (dirac.hasClusteredLocals) {
         property._cluster = ObjectUI.ObjectPropertiesSection.PropertyCluster(property);
@@ -651,10 +677,10 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
       }
 
       if (dirac.hasFriendlyLocals) {
-        var friendlyName = getFriendlyName(property.name);
+        let friendlyName = getFriendlyName(property.name);
         if (friendlyName) {
           property._friendlyName = friendlyName;
-          var num = friendlyNamesTable[friendlyName];
+          let num = friendlyNamesTable[friendlyName];
           if (!num) num = 0;
           num += 1;
           property._friendlyNameNum = num;
@@ -687,16 +713,12 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
     if (!skipProto && protoProperty)
       treeNode.appendChild(new ObjectUI.ObjectPropertyTreeElement(protoProperty, linkifier));
 
-    if (internalProperties) {
-      for (let i = 0; i < internalProperties.length; i++) {
-        internalProperties[i].parentObject = value;
-        const treeElement = new ObjectUI.ObjectPropertyTreeElement(internalProperties[i], linkifier);
-        if (internalProperties[i].name === '[[Entries]]') {
-          treeElement.setExpandable(true);
-          treeElement.expand();
-        }
-        treeNode.appendChild(treeElement);
-      }
+    for (const property of internalProperties) {
+      property.parentObject = value;
+      const treeElement = new ObjectUI.ObjectPropertyTreeElement(property, linkifier);
+      if (property.name === '[[Entries]]')
+        continue;
+      treeNode.appendChild(treeElement);
     }
 
     ObjectUI.ObjectPropertyTreeElement._appendEmptyPlaceholderIfNeeded(treeNode, emptyPlaceholder);
@@ -873,7 +895,7 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
   }
 
   update() {
-    this.nameElement = ObjectUI.ObjectPropertiesSection.createNameElement(this.property.name, this.property._friendlyName, this.property._friendlyNameNum);
+    this.nameElement = ObjectUI.ObjectPropertiesSection.createNameElement(this.property.name, this.property.private, this.property._friendlyName, this.property._friendlyNameNum);
     if (!this.property.enumerable)
       this.nameElement.classList.add('object-properties-section-dimmed');
     if (this.property.synthetic)
@@ -881,7 +903,10 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
 
     this._updatePropertyPath();
 
-    if (this.property.value) {
+    const isInternalEntries = this.property.synthetic && this.property.name === '[[Entries]]';
+    if (isInternalEntries) {
+      this.valueElement = createElementWithClass('span', 'value');
+    } else if (this.property.value) {
       const showPreview = this.property.name !== '__proto__';
       this.valueElement = ObjectUI.ObjectPropertiesSection.createValueElementWithCustomSupport(
           this.property.value, this.property.wasThrown, showPreview, this.listItemElement, this._linkifier);
@@ -909,7 +934,10 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
       this.expandedValueElement = this._createExpandedValueElement(this.property.value);
 
     this.listItemElement.removeChildren();
-    this._rowContainer = UI.html`<span class='name-and-value'>${this.nameElement}: ${this.valueElement}</span>`;
+    if (isInternalEntries)
+      this._rowContainer = UI.html`<span class='name-and-value'>${this.nameElement}</span>`;
+    else
+      this._rowContainer = UI.html`<span class='name-and-value'>${this.nameElement}: ${this.valueElement}</span>`;
     this.listItemElement.appendChild(this._rowContainer);
   }
 
@@ -930,7 +958,7 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
     const parentPath =
         (this.parent.nameElement && !this.parent.property.synthetic) ? this.parent.nameElement.title : '';
 
-    if (useDotNotation.test(name))
+    if (this.property.private || useDotNotation.test(name))
       this.nameElement.title = parentPath ? `${parentPath}.${name}` : name;
     else if (isInteger.test(name))
       this.nameElement.title = parentPath + '[' + name + ']';
@@ -1330,9 +1358,11 @@ ObjectUI.ArrayGroupingTreeElement = class extends UI.TreeElement {
       return;
     const properties = allProperties.properties;
     properties.sort(ObjectUI.ObjectPropertiesSection.CompareProperties);
-    for (let i = 0; i < properties.length; ++i) {
-      properties[i].parentObject = this._object;
-      const childTreeElement = new ObjectUI.ObjectPropertyTreeElement(properties[i], linkifier);
+    for (const property of properties) {
+      property.parentObject = this._object;
+      if (!ObjectUI.ObjectPropertiesSection._isDisplayableProperty(property, treeNode.property))
+        continue;
+      const childTreeElement = new ObjectUI.ObjectPropertyTreeElement(property, linkifier);
       childTreeElement._readOnly = true;
       treeNode.appendChild(childTreeElement);
     }

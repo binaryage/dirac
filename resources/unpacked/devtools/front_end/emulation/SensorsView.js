@@ -51,7 +51,7 @@ Emulation.SensorsView = class extends UI.VBox {
     };
 
     this._locationSelectElement = fields.createChild('select', 'chrome-select');
-    UI.bindLabelToControl(geogroupTitle, this._locationSelectElement);
+    UI.ARIAUtils.bindLabelToControl(geogroupTitle, this._locationSelectElement);
 
     // No override
     this._locationSelectElement.appendChild(new Option(noOverrideOption.title, noOverrideOption.location));
@@ -182,7 +182,7 @@ Emulation.SensorsView = class extends UI.VBox {
       orientation: Emulation.SensorsView.NonPresetOptions.Custom
     };
     this._orientationSelectElement = this.contentElement.createChild('select', 'chrome-select');
-    UI.bindLabelToControl(orientationTitle, this._orientationSelectElement);
+    UI.ARIAUtils.bindLabelToControl(orientationTitle, this._orientationSelectElement);
     this._orientationSelectElement.appendChild(
         new Option(orientationOffOption.title, orientationOffOption.orientation));
     this._orientationSelectElement.appendChild(
@@ -203,7 +203,6 @@ Emulation.SensorsView = class extends UI.VBox {
     this._deviceOrientationFieldset = this._createDeviceOrientationOverrideElement(this._deviceOrientation);
 
     this._stageElement = orientationContent.createChild('div', 'orientation-stage');
-    this._stageElement.title = Common.UIString('Shift+drag horizontally to rotate around the y-axis');
     this._orientationLayer = this._stageElement.createChild('div', 'orientation-layer');
     this._boxElement = this._orientationLayer.createChild('section', 'orientation-box orientation-element');
 
@@ -230,9 +229,11 @@ Emulation.SensorsView = class extends UI.VBox {
     if (disable) {
       this._deviceOrientationFieldset.disabled = true;
       this._stageElement.classList.add('disabled');
+      this._stageElement.title = ls`Enable orientation to rotate`;
     } else {
       this._deviceOrientationFieldset.disabled = false;
       this._stageElement.classList.remove('disabled');
+      this._stageElement.title = ls`Shift+drag horizontally to rotate around the y-axis`;
     }
   }
 
@@ -457,7 +458,7 @@ Emulation.SensorsView = class extends UI.VBox {
     const fieldsElement = groupElement.createChild('div', 'sensors-group-fields');
 
     const select = fieldsElement.createChild('select', 'chrome-select');
-    UI.bindLabelToControl(title, select);
+    UI.ARIAUtils.bindLabelToControl(title, select);
     select.appendChild(new Option(Common.UIString('Device-based'), 'auto'));
     select.appendChild(new Option(Common.UIString('Force enabled'), 'enabled'));
     select.addEventListener('change', applyTouch, false);

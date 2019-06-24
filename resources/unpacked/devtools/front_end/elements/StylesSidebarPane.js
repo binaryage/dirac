@@ -2091,6 +2091,7 @@ Elements.StylesSidebarPane.CSSPropertyPrompt = class extends UI.TextPrompt {
     super();
     this.initialize(this._buildPropertyCompletions.bind(this), UI.StyleValueDelimiters);
     this._isColorAware = SDK.cssMetadata().isColorAwareProperty(treeElement.property.name);
+    /** @type {!Array<string>} */
     this._cssCompletions = [];
     if (isEditingName) {
       this._cssCompletions = SDK.cssMetadata().allProperties();
@@ -2142,6 +2143,8 @@ Elements.StylesSidebarPane.CSSPropertyPrompt = class extends UI.TextPrompt {
         }
         break;
       case 'Enter':
+        if (event.shiftKey)
+          return;
         // Accept any available autocompletions and advance to the next field.
         this.tabKeyPressed();
         event.preventDefault();
@@ -2240,6 +2243,11 @@ Elements.StylesSidebarPane.CSSPropertyPrompt = class extends UI.TextPrompt {
     const anywhereResults = [];
     if (!editingVariable)
       this._cssCompletions.forEach(completion => filterCompletions.call(this, completion, false /* variable */));
+    if (this._isEditingName) {
+      const nameValuePresets = SDK.cssMetadata().nameValuePresets(this._treeElement.node().isSVGNode());
+      nameValuePresets.forEach(
+          preset => filterCompletions.call(this, preset, false /* variable */, true /* nameValue */));
+    }
     if (this._isEditingName || editingVariable)
       this._cssVariables.forEach(variable => filterCompletions.call(this, variable, true /* variable */));
 
@@ -2278,9 +2286,10 @@ Elements.StylesSidebarPane.CSSPropertyPrompt = class extends UI.TextPrompt {
     /**
      * @param {string} completion
      * @param {boolean} variable
+     * @param {boolean=} nameValue
      * @this {Elements.StylesSidebarPane.CSSPropertyPrompt}
      */
-    function filterCompletions(completion, variable) {
+    function filterCompletions(completion, variable, nameValue) {
       const index = completion.toLowerCase().indexOf(lowerQuery);
       const result = {text: completion};
       if (variable) {
@@ -2292,6 +2301,8 @@ Elements.StylesSidebarPane.CSSPropertyPrompt = class extends UI.TextPrompt {
             result.subtitleRenderer = swatchRenderer.bind(null, color);
         }
       }
+      if (nameValue)
+        result.hideGhostText = true;
       if (index === 0) {
         result.priority = this._isEditingName ? SDK.cssMetadata().propertyUsageWeight(completion) : 1;
         prefixResults.push(result);
@@ -2332,6 +2343,8 @@ Elements.StylesSidebarPropertyRenderer = class {
     this._bezierHandler = null;
     /** @type {?function(string, string):!Node} */
     this._shadowHandler = null;
+    /** @type {?function(string, string):!Node} */
+    this._gridHandler = null;
     /** @type {?function(string):!Node} */
     this._varHandler = createTextNode;
   }
@@ -2355,6 +2368,13 @@ Elements.StylesSidebarPropertyRenderer = class {
    */
   setShadowHandler(handler) {
     this._shadowHandler = handler;
+  }
+
+  /**
+   * @param {function(string, string):!Node} handler
+   */
+  setGridHandler(handler) {
+    this._gridHandler = handler;
   }
 
   /**
@@ -2388,6 +2408,12 @@ Elements.StylesSidebarPropertyRenderer = class {
                                 this._propertyName === '-webkit-box-shadow') &&
         !SDK.CSSMetadata.VariableRegex.test(this._propertyValue)) {
       valueElement.appendChild(this._shadowHandler(this._propertyValue, this._propertyName));
+      valueElement.normalize();
+      return valueElement;
+    }
+
+    if (this._gridHandler && SDK.cssMetadata().isGridAreaDefiningProperty(this._propertyName)) {
+      valueElement.appendChild(this._gridHandler(this._propertyValue, this._propertyName));
       valueElement.normalize();
       return valueElement;
     }

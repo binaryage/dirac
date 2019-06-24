@@ -137,6 +137,8 @@ Console.ConsoleView = class extends UI.VBox {
     settingsPane.show(this._contentsElement);
     settingsPane.element.classList.add('console-settings-pane');
 
+    UI.ARIAUtils.setAccessibleName(settingsPane.element, ls`Console settings`);
+    UI.ARIAUtils.markAsGroup(settingsPane.element);
     const settingsToolbarLeft = new UI.Toolbar('', settingsPane.element);
     settingsToolbarLeft.makeVertical();
     settingsToolbarLeft.appendToolbarItem(this._hideNetworkMessagesCheckbox);
@@ -151,6 +153,9 @@ Console.ConsoleView = class extends UI.VBox {
         Common.settings.moduleSetting('consoleEagerEval'), ls`Eagerly evaluate text in the prompt`);
     settingsToolbarRight.appendToolbarItem(eagerEvalCheckbox);
     settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(this._consoleHistoryAutocompleteSetting));
+    const userGestureCheckbox =
+        new UI.ToolbarSettingCheckbox(Common.settings.moduleSetting('consoleUserActivationEval'));
+    settingsToolbarRight.appendToolbarItem(userGestureCheckbox);
     if (!this._showSettingsPaneSetting.get())
       settingsPane.element.classList.add('hidden');
     this._showSettingsPaneSetting.addChangeListener(
@@ -1446,38 +1451,13 @@ Console.ConsoleView = class extends UI.VBox {
 
   _registerShortcuts() {
     this._shortcuts = {};
+    this._shortcuts[UI.KeyboardShortcut.makeKey('u', UI.KeyboardShortcut.Modifiers.Ctrl)] =
+        this._clearPromptBackwards.bind(this);
 
-    const shortcut = UI.KeyboardShortcut;
     const section = UI.shortcutsScreen.section(Common.UIString('Console'));
-
-    const shortcutL = shortcut.makeDescriptor('l', UI.KeyboardShortcut.Modifiers.Ctrl);
-    let keys = [shortcutL];
-    if (Host.isMac()) {
-      const shortcutK = shortcut.makeDescriptor('k', UI.KeyboardShortcut.Modifiers.Meta);
-      keys.unshift(shortcutK);
-    }
-    section.addAlternateKeys(keys, Common.UIString('Clear console'));
-
-    keys = [shortcut.makeDescriptor(shortcut.Keys.Tab), shortcut.makeDescriptor(shortcut.Keys.Right)];
-    section.addRelatedKeys(keys, Common.UIString('Accept suggestion'));
-
-    const shortcutU = shortcut.makeDescriptor('u', UI.KeyboardShortcut.Modifiers.Ctrl);
-    this._shortcuts[shortcutU.key] = this._clearPromptBackwards.bind(this);
-    section.addAlternateKeys([shortcutU], Common.UIString('Clear console prompt'));
-
-    keys = [shortcut.makeDescriptor(shortcut.Keys.Down), shortcut.makeDescriptor(shortcut.Keys.Up)];
-    section.addRelatedKeys(keys, Common.UIString('Next/previous line'));
-
-    if (Host.isMac()) {
-      keys =
-          [shortcut.makeDescriptor('N', shortcut.Modifiers.Alt), shortcut.makeDescriptor('P', shortcut.Modifiers.Alt)];
-      section.addRelatedKeys(keys, Common.UIString('Next/previous command'));
-    }
-
-    section.addKey(shortcut.makeDescriptor(shortcut.Keys.Enter), Common.UIString('Execute command'));
-
+    const shortcut = UI.KeyboardShortcut;
     if (dirac.hasREPL) {
-      keys = [
+      let keys = [
         shortcut.makeDescriptor(shortcut.Keys.Comma, UI.KeyboardShortcut.Modifiers.Ctrl),
         shortcut.makeDescriptor(shortcut.Keys.Period, UI.KeyboardShortcut.Modifiers.Ctrl)
       ];

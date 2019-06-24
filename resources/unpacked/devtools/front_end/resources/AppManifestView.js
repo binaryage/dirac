@@ -10,6 +10,8 @@ Resources.AppManifestView = class extends UI.VBox {
     super(true);
     this.registerRequiredCSS('resources/appManifestView.css');
 
+    Common.moduleSetting('colorFormat').addChangeListener(this._updateManifest.bind(this, true));
+
     this._emptyView = new UI.EmptyWidget(Common.UIString('No manifest detected'));
     this._emptyView.appendLink(
         'https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/?utm_source=devtools');
@@ -109,7 +111,9 @@ Resources.AppManifestView = class extends UI.VBox {
     this._emptyView.hideWidget();
     this._reportView.showWidget();
 
-    this._reportView.setURL(Components.Linkifier.linkifyURL(url));
+    const link = Components.Linkifier.linkifyURL(url);
+    link.tabIndex = 0;
+    this._reportView.setURL(link);
     this._errorsSection.clearContent();
     this._errorsSection.element.classList.toggle('hidden', !errors.length);
     for (const error of errors) {
@@ -131,16 +135,20 @@ Resources.AppManifestView = class extends UI.VBox {
     const startURL = stringProperty('start_url');
     if (startURL) {
       const completeURL = /** @type {string} */ (Common.ParsedURL.completeURL(url, startURL));
-      this._startURLField.appendChild(Components.Linkifier.linkifyURL(completeURL, {text: startURL}));
+      const link = Components.Linkifier.linkifyURL(completeURL, {text: startURL});
+      link.tabIndex = 0;
+      this._startURLField.appendChild(link);
     }
 
     this._themeColorSwatch.classList.toggle('hidden', !stringProperty('theme_color'));
     const themeColor = Common.Color.parse(stringProperty('theme_color') || 'white') || Common.Color.parse('white');
     this._themeColorSwatch.setColor(/** @type {!Common.Color} */ (themeColor));
+    this._themeColorSwatch.setFormat(Common.Color.detectColorFormat(this._themeColorSwatch.color()));
     this._backgroundColorSwatch.classList.toggle('hidden', !stringProperty('background_color'));
     const backgroundColor =
         Common.Color.parse(stringProperty('background_color') || 'white') || Common.Color.parse('white');
     this._backgroundColorSwatch.setColor(/** @type {!Common.Color} */ (backgroundColor));
+    this._backgroundColorSwatch.setFormat(Common.Color.detectColorFormat(this._backgroundColorSwatch.color()));
 
     this._orientationField.textContent = stringProperty('orientation');
     const displayType = stringProperty('display');
@@ -187,6 +195,7 @@ Resources.AppManifestView = class extends UI.VBox {
       image.onerror = r;
     });
     image.src = url;
+    image.alt = ls`Image from ${url}`;
     try {
       await result;
       return image;

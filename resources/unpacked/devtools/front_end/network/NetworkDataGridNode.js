@@ -796,12 +796,14 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     let iconElement;
     if (this._request.resourceType() === Common.resourceTypes.Image) {
       const previewImage = createElementWithClass('img', 'image-network-icon-preview');
+      UI.ARIAUtils.setAccessibleName(previewImage, this._request.resourceType().title());
       this._request.populateImageSource(previewImage);
 
       iconElement = createElementWithClass('div', 'icon');
       iconElement.appendChild(previewImage);
     } else {
       iconElement = createElementWithClass('img', 'icon');
+      UI.ARIAUtils.setAccessibleName(iconElement, this._request.resourceType().title());
     }
     iconElement.classList.add(this._request.resourceType().name());
 
@@ -968,6 +970,10 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
         !this._request.redirectSource().signedExchangeInfo().errors) {
       cell.createTextChild(ls`(signed-exchange)`);
       cell.title = ls`Served from Signed HTTP Exchange, resource size: ${resourceSize}`;
+      cell.classList.add('network-dim-cell');
+    } else if (this._request.fromPrefetchCache()) {
+      cell.createTextChild(ls`(prefetch cache)`);
+      cell.title = ls`Served from prefetch cache, resource size: ${resourceSize}`;
       cell.classList.add('network-dim-cell');
     } else if (this._request.cached()) {
       cell.createTextChild(ls`(disk cache)`);

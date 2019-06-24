@@ -50,6 +50,7 @@ WebAudio.WebAudioView = class extends UI.ThrottledWidget {
    * @override
    */
   wasShown() {
+    super.wasShown();
     for (const model of SDK.targetManager.models(WebAudio.WebAudioModel))
       this._addEventListeners(model);
   }
@@ -96,6 +97,7 @@ WebAudio.WebAudioView = class extends UI.ThrottledWidget {
     webAudioModel.addEventListener(WebAudio.WebAudioModel.Events.ContextCreated, this._contextCreated, this);
     webAudioModel.addEventListener(WebAudio.WebAudioModel.Events.ContextDestroyed, this._contextDestroyed, this);
     webAudioModel.addEventListener(WebAudio.WebAudioModel.Events.ContextChanged, this._contextChanged, this);
+    webAudioModel.addEventListener(WebAudio.WebAudioModel.Events.ModelReset, this._reset, this);
   }
 
   /**
@@ -105,6 +107,7 @@ WebAudio.WebAudioView = class extends UI.ThrottledWidget {
     webAudioModel.removeEventListener(WebAudio.WebAudioModel.Events.ContextCreated, this._contextCreated, this);
     webAudioModel.removeEventListener(WebAudio.WebAudioModel.Events.ContextDestroyed, this._contextDestroyed, this);
     webAudioModel.removeEventListener(WebAudio.WebAudioModel.Events.ContextChanged, this._contextChanged, this);
+    webAudioModel.removeEventListener(WebAudio.WebAudioModel.Events.ModelReset, this._reset, this);
   }
 
   /**
@@ -173,7 +176,7 @@ WebAudio.WebAudioView = class extends UI.ThrottledWidget {
       // Display summary only for real-time context.
       if (context.contextType === 'realtime') {
         const realtimeData = await model.requestRealtimeData(context.contextId);
-        if (realtimeData && realtimeData.currentTime && realtimeData.renderCapacity)
+        if (realtimeData)
           this._updateSummaryBar(context.contextId, realtimeData);
       } else {
         this._clearSummaryBar();
