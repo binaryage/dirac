@@ -56,6 +56,14 @@ UI.ARIAUtils.markAsLink = function(element) {
 /**
  * @param {!Element} element
  */
+UI.ARIAUtils.markAsMenuButton = function(element) {
+  UI.ARIAUtils.markAsButton(element);
+  element.setAttribute('aria-haspopup', true);
+};
+
+/**
+ * @param {!Element} element
+ */
 UI.ARIAUtils.markAsTab = function(element) {
   element.setAttribute('role', 'tab');
 };
@@ -93,6 +101,29 @@ UI.ARIAUtils.markAsMenu = function(element) {
  */
 UI.ARIAUtils.markAsMenuItem = function(element) {
   element.setAttribute('role', 'menuitem');
+};
+
+/**
+ * Must contain children whose role is option.
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsListBox = function(element) {
+  element.setAttribute('role', 'listbox');
+};
+
+/**
+ * Must be contained in, or owned by, an element with the role listbox.
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsOption = function(element) {
+  element.setAttribute('role', 'option');
+};
+
+/**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsRadioGroup = function(element) {
+  element.setAttribute('role', 'radiogroup');
 };
 
 /**
@@ -155,9 +186,7 @@ UI.ARIAUtils.setControls = function(element, controlledElement) {
     return;
   }
 
-  if (controlledElement.id === '')
-    throw new Error('Controlled element must have ID');
-
+  UI.ARIAUtils.ensureId(controlledElement);
   element.setAttribute('aria-controls', controlledElement.id);
 };
 
@@ -216,11 +245,50 @@ UI.ARIAUtils.setAccessibleName = function(element, name) {
 
 /**
  * @param {!Element} element
- * @param {!Element} labelElement
+ * @param {!Array<!Element>} labelElements
  */
-UI.ARIAUtils.setLabelledBy = function(element, labelElement) {
-  UI.ARIAUtils.ensureId(labelElement);
-  element.setAttribute('aria-labelledby', labelElement.id);
+UI.ARIAUtils.setLabelledBy = function(element, labelElements) {
+  let labelledby = '';
+  for (const labelElement of labelElements) {
+    console.assert(element.hasSameShadowRoot(labelElement), 'elements are not in the same shadow dom');
+
+    UI.ARIAUtils.ensureId(labelElement);
+    labelledby += labelElement.id + ' ';
+  }
+
+  element.setAttribute('aria-labelledby', labelledby);
+};
+
+/**
+ * @param {!Element} element
+ * @param {!Array<!Element>} descriptionElements
+ */
+UI.ARIAUtils.setDescribedBy = function(element, descriptionElements) {
+  let describedby = '';
+  for (const descriptionElement of descriptionElements) {
+    console.assert(element.hasSameShadowRoot(descriptionElement), 'elements are not in the same shadow dom');
+
+    UI.ARIAUtils.ensureId(descriptionElement);
+    describedby += descriptionElement.id + ' ';
+  }
+
+  element.setAttribute('aria-describedby', describedby);
+};
+
+/**
+ * @param {!Element} element
+ * @param {?Element} activedescendant
+ */
+UI.ARIAUtils.setActiveDescendant = function(element, activedescendant) {
+  if (!activedescendant) {
+    element.removeAttribute('aria-activedescendant');
+    return;
+  }
+
+  console.assert(element.hasSameShadowRoot(activedescendant), 'elements are not in the same shadow dom');
+
+  UI.ARIAUtils.ensureId(activedescendant);
+  element.setAttribute('aria-activedescendant', activedescendant.id);
 };
 
 /**

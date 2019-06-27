@@ -78,9 +78,6 @@
   <message name="IDS_DEVTOOLS_6565973a762b83f476e9a76a0015b539" desc="">
     At least one category must be selected.
   </message>
-  <message name="IDS_DEVTOOLS_671b3beee69d9180412202b6528ec8f7" desc="">
-    Download report
-  </message>
   <message name="IDS_DEVTOOLS_67aa731132e0e7bbabb1b3d3c363e7d6" desc="">
     Multiple tabs are being controlled by the same service worker. Close your other tabs on the same origin to audit this page.
   </message>
@@ -120,10 +117,6 @@
   <message name="IDS_DEVTOOLS_c2ffe02d76c4f089648f1647b43e4ee5" desc="">
     Best practices
   </message>
-  <message name="IDS_DEVTOOLS_c3669fa42d4becdd2831b9685cf607bb" desc="">
-    Identify and fix common problems that affect your site&apos;s performance,
-                accessibility, and user experience.
-  </message>
   <message name="IDS_DEVTOOLS_c91c7b93c28cd18741b71f727ee81ee3" desc="">
     Reports
   </message>
@@ -132,6 +125,9 @@
   </message>
   <message name="IDS_DEVTOOLS_d88946b678e4c2f251d4e292e8142291" desc="">
     SEO
+  </message>
+  <message name="IDS_DEVTOOLS_deeacee140c7d3a451440dd0e206e256" desc="">
+    Identify and fix common problems that affect your site&apos;s performance, accessibility, and user experience.
   </message>
   <message name="IDS_DEVTOOLS_e0ac20adce6ffee48c7151b070aa5737" desc="">
     Device

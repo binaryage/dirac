@@ -53,6 +53,8 @@ all_devtools_files = [
   "front_end/audits/RadioSetting.js",
   "front_end/audits/lighthouse/report.css",
   "front_end/audits/lighthouse/report.js",
+  "front_end/audits/lighthouse/report-generator.js",
+  "front_end/audits/lighthouse/template.html",
   "front_end/audits/lighthouse/templates.html",
   "front_end/audits/module.json",
   "front_end/audits_test_runner/AuditsTestRunner.js",
@@ -1466,7 +1468,7 @@ group("devtools_closure_compile") {
     "//testing/xvfb.py",
     "//third_party/blink/renderer/core/inspector/browser_protocol.pdl",
     "//third_party/inspector_protocol/pdl.py",
-    "//v8/src/inspector/js_protocol.pdl",
+    "//v8/include/js_protocol.pdl",
   ]
 }
 
