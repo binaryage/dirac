@@ -135,7 +135,8 @@ Main.Main = class {
     const enabledExperiments = Runtime.queryParam('enabledExperiments');
     if (enabledExperiments)
       Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(';'));
-    Runtime.experiments.setDefaultExperiments(['backgroundServices']);
+    Runtime.experiments.setDefaultExperiments(
+        ['backgroundServices', 'backgroundServicesNotifications', 'backgroundServicesPushMessaging']);
 
     if (Host.isUnderTest() && Runtime.queryParam('test').includes('live-line-level-heap-profile.js'))
       Runtime.experiments.enableForTest('liveHeapProfile');
@@ -152,7 +153,7 @@ Main.Main = class {
     // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
     Persistence.isolatedFileSystemManager = new Persistence.IsolatedFileSystemManager();
 
-    const themeSetting = Common.settings.createSetting('uiTheme', 'default');
+    const themeSetting = Common.settings.createSetting('uiTheme', 'systemPreferred');
     UI.initializeUIUtils(document, themeSetting);
     themeSetting.addChangeListener(Components.reload.bind(Components));
 
