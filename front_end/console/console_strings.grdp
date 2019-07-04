@@ -3,6 +3,9 @@
   <message name="IDS_DEVTOOLS_02969932cf572213e2401893f4182af2" desc="">
     Remove all expressions
   </message>
+  <message name="IDS_DEVTOOLS_0351df5b6bdc3a8cfb762210881619a4" desc="">
+    JavaScript context: Not selected
+  </message>
   <message name="IDS_DEVTOOLS_047e62ee63b0c14a249a79bc6be0a493" desc="">
     Do not group similar messages in console
   </message>
@@ -186,9 +189,6 @@
   <message name="IDS_DEVTOOLS_b2f8489bbd55a4e9b9edbbbfe49edf70" desc="">
     not available
   </message>
-  <message name="IDS_DEVTOOLS_b5735f8c6deff6306a2216612ca80f0e" desc="">
-    JavaScript contexts
-  </message>
   <message name="IDS_DEVTOOLS_bafd7322c6e97d25b6299b5d6fe8920b" desc="">
     No
   </message>
@@ -197,6 +197,9 @@
   </message>
   <message name="IDS_DEVTOOLS_c0274fa278f2e0dfef862234e0eb9b8b" desc="">
     &lt;exception&gt;
+  </message>
+  <message name="IDS_DEVTOOLS_c43a34d2abee57824fac5bb704994d88" desc="">
+    Console prompt
   </message>
   <message name="IDS_DEVTOOLS_c9818b2c0890a205d294a2b31354f8b4" desc="">
     All levels
@@ -261,11 +264,17 @@
   <message name="IDS_DEVTOOLS_e1dd1b8e32626f508bd3a5612a60ab97" desc="">
     Create live expression
   </message>
+  <message name="IDS_DEVTOOLS_e6320ee2b5f66ac1520e6156e5ac8fb3" desc="">
+    JavaScript context: <ph name="THIS_TITLEFOR_ITEM_">$1s</ph>
+  </message>
   <message name="IDS_DEVTOOLS_eacaf2bd1c1414e5086cf04573e154ef" desc="">
     e.g. /event\d/ -cdn url:a.com
   </message>
   <message name="IDS_DEVTOOLS_ebfab4df1bb91688c62d4523eba870a5" desc="">
     Evaluate triggers user activation
+  </message>
+  <message name="IDS_DEVTOOLS_f0b0e075af71ecd9b3435697417c1f05" desc="">
+    Log level: <ph name="TEXT">$1s</ph>
   </message>
   <message name="IDS_DEVTOOLS_f8ec55cf268ca6106fb23a98523b7549" desc="">
     user message

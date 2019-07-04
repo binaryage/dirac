@@ -18,6 +18,14 @@ UI.ARIAUtils.bindLabelToControl = function(label, control) {
 /**
  * @param {!Element} element
  */
+UI.ARIAUtils.markAsAlert = function(element) {
+  element.setAttribute('role', 'alert');
+  element.setAttribute('aria-live', 'polite');
+};
+
+/**
+ * @param {!Element} element
+ */
 UI.ARIAUtils.markAsButton = function(element) {
   element.setAttribute('role', 'button');
 };
@@ -109,6 +117,13 @@ UI.ARIAUtils.markAsMenuItem = function(element) {
  */
 UI.ARIAUtils.markAsListBox = function(element) {
   element.setAttribute('role', 'listbox');
+};
+
+/**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsMultiSelectable = function(element) {
+  element.setAttribute('aria-multiselectable', 'true');
 };
 
 /**
@@ -222,6 +237,17 @@ UI.ARIAUtils.setSelected = function(element, value) {
   // Often times undefined values are unintentionally typed as booleans.
   // Use !! to make sure this is true or false.
   element.setAttribute('aria-selected', !!value);
+};
+
+/**
+ * @param {!Element} element
+ * @param {boolean} value
+ */
+UI.ARIAUtils.setInvalid = function(element, value) {
+  if (value)
+    element.setAttribute('aria-invalid', value);
+  else
+    element.removeAttribute('aria-invalid');
 };
 
 /**

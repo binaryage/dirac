@@ -201,6 +201,9 @@
   <message name="IDS_DEVTOOLS_4dea2ac78e9450e62e96c166ef9f5d4c" desc="">
     Manage Header Columns…
   </message>
+  <message name="IDS_DEVTOOLS_4dec8df20c6bc162fd77420b6f17edc5" desc="">
+    Resource types to include
+  </message>
   <message name="IDS_DEVTOOLS_4e88c13fb97f356a81c48bf2644bef51" desc="">
     Connection Start
   </message>
@@ -656,6 +659,9 @@
   </message>
   <message name="IDS_DEVTOOLS_dd47445f60115097d07d4cf2e61d933b" desc="">
     CAUTION: request is not finished yet!
+  </message>
+  <message name="IDS_DEVTOOLS_dd89b012e0c000394cd13185cb4d6756" desc="">
+    Header integrity hash
   </message>
   <message name="IDS_DEVTOOLS_de4642e93235c872dcc21d7e4c926c36" desc="">
     Copy all as fetch
