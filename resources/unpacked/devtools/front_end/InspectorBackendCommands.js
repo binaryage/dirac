@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='77.0.3843.2';
-Protocol.BakedInspectorBackendAPIChromeRev='4330e2a6afc27fd8aa3ac7d21f7c2587ea0ed744';
+Protocol.BakedInspectorBackendAPIChromeTag='77.0.3851.1';
+Protocol.BakedInspectorBackendAPIChromeRev='61639afda22eeccf13269061518d17a822f2264c';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -338,7 +338,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Overlay.inspectModeCanceled", []);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.enable", [], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Overlay.getHighlightObjectForTest", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "includeDistance", "type": "boolean", "optional": true}], ["highlight"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Overlay.getHighlightObjectForTest", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "includeDistance", "type": "boolean", "optional": true}, {"name": "includeStyle", "type": "boolean", "optional": true}], ["highlight"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.hideHighlight", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.highlightFrame", [{"name": "frameId", "type": "string", "optional": false}, {"name": "contentColor", "type": "object", "optional": true}, {"name": "contentOutlineColor", "type": "object", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.highlightNode", [{"name": "highlightConfig", "type": "object", "optional": false}, {"name": "nodeId", "type": "number", "optional": true}, {"name": "backendNodeId", "type": "number", "optional": true}, {"name": "objectId", "type": "string", "optional": true}, {"name": "selector", "type": "string", "optional": true}], [], false);\n'
