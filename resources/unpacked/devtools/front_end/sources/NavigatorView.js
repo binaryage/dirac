@@ -155,14 +155,21 @@ Sources.NavigatorView = class extends UI.VBox {
     console.assert(!this._placeholder, 'A placeholder widget was already set');
     this._placeholder = placeholder;
     placeholder.show(this.contentElement, this.contentElement.firstChild);
-    if (this._scriptsTree.firstChild())
-      placeholder.hideWidget();
+    updateVisibility.call(this);
+    this._scriptsTree.addEventListener(UI.TreeOutline.Events.ElementAttached, updateVisibility.bind(this));
+    this._scriptsTree.addEventListener(UI.TreeOutline.Events.ElementsDetached, updateVisibility.bind(this));
 
-    this._scriptsTree.addEventListener(UI.TreeOutline.Events.ElementAttached, () => placeholder.hideWidget());
-    this._scriptsTree.addEventListener(UI.TreeOutline.Events.ElementsDetached, () => {
-      if (!this._scriptsTree.firstChild())
+    /**
+     * @this {!Sources.NavigatorView}
+     */
+    function updateVisibility() {
+      const showTree = this._scriptsTree.firstChild();
+      if (showTree)
+        placeholder.hideWidget();
+      else
         placeholder.showWidget();
-    });
+      this._scriptsTree.element.classList.toggle('hidden', !showTree);
+    }
   }
 
   /**
@@ -314,6 +321,7 @@ Sources.NavigatorView = class extends UI.VBox {
     const uiSourceCodeNode = new Sources.NavigatorUISourceCodeTreeNode(this, uiSourceCode, frame);
     folderNode.appendChild(uiSourceCodeNode);
     this._uiSourceCodeNodes.set(uiSourceCode, uiSourceCodeNode);
+    this._selectDefaultTreeNode();
   }
 
   /**
@@ -356,6 +364,14 @@ Sources.NavigatorView = class extends UI.VBox {
       return;
     this._rootNode.appendChild(new Sources.NavigatorGroupTreeNode(
         this, project, project.id(), Sources.NavigatorView.Types.FileSystem, project.displayName()));
+    this._selectDefaultTreeNode();
+  }
+
+  // TODO(einbinder) remove this code after crbug.com/964075 is fixed
+  _selectDefaultTreeNode() {
+    const children = this._rootNode.children();
+    if (children.length && !this._scriptsTree.selectedTreeElement)
+      children[0].treeNode().select(true /* omitFocus */, false /* selectedByUser */);
   }
 
   _computeUniqueFileSystemProjectNames() {
@@ -913,8 +929,9 @@ Sources.NavigatorFolderTreeElement = class extends UI.TreeElement {
 
   /**
    * @override
+   * @returns {!Promise}
    */
-  onpopulate() {
+  async onpopulate() {
     this._node.populate();
   }
 

@@ -164,8 +164,6 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
     this._populate();
     this._searchThrottler = new Common.Throttler(0);
 
-    this.element.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), true);
-
     for (const existingProfile of this._profiles())
       existingProfile.addEventListener(Profiler.ProfileHeader.Events.ProfileTitleChanged, this._updateControls, this);
   }
@@ -356,16 +354,6 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
   _selectRevealedNode(node) {
     if (node)
       node.select();
-  }
-
-  /**
-   * @param {!Event} event
-   */
-  _handleContextMenuEvent(event) {
-    const contextMenu = new UI.ContextMenu(event);
-    if (this._dataGrid)
-      this._dataGrid.populateContextMenu(contextMenu, event);
-    contextMenu.show();
   }
 
   /**
@@ -1167,6 +1155,8 @@ Profiler.TrackingHeapSnapshotProfileType = class extends Profiler.HeapSnapshotPr
   constructor() {
     super(Profiler.TrackingHeapSnapshotProfileType.TypeId, ls`Allocation instrumentation on timeline`);
     this._recordAllocationStacksSetting = Common.settings.createSetting('recordAllocationStacks', false);
+    /** @type {?UI.CheckboxLabel} */
+    this._customContent = null;
   }
 
   /**
@@ -1269,8 +1259,18 @@ Profiler.TrackingHeapSnapshotProfileType = class extends Profiler.HeapSnapshotPr
    * @return {?Element}
    */
   customContent() {
-    return UI.SettingsUI.createSettingCheckbox(
+    const checkboxSetting = UI.SettingsUI.createSettingCheckbox(
         ls`Record allocation stacks (extra performance overhead)`, this._recordAllocationStacksSetting, true);
+    this._customContent = /** @type {!UI.CheckboxLabel} */ (checkboxSetting);
+    return checkboxSetting;
+  }
+
+  /**
+   * @override
+   * @param {boolean} enable
+   */
+  setCustomContentEnabled(enable) {
+    this._customContent.checkboxElement.disabled = !enable;
   }
 
   /**

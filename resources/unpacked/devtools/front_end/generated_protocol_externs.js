@@ -526,7 +526,8 @@ Protocol.BackgroundService.ServiceName = {
     BackgroundFetch: "backgroundFetch",
     BackgroundSync: "backgroundSync",
     PushMessaging: "pushMessaging",
-    Notifications: "notifications"
+    Notifications: "notifications",
+    PaymentHandler: "paymentHandler"
 };
 
 /** @typedef {!{key:(string), value:(string)}} */
@@ -4610,7 +4611,7 @@ Protocol.Network.RequestPattern;
 /** @typedef {!{label:(string), signature:(string), integrity:(string), certUrl:(string|undefined), certSha256:(string|undefined), validityUrl:(string), date:(number), expires:(number), certificates:(!Array<string>|undefined)}} */
 Protocol.Network.SignedExchangeSignature;
 
-/** @typedef {!{requestUrl:(string), responseCode:(number), responseHeaders:(Protocol.Network.Headers), signatures:(!Array<Protocol.Network.SignedExchangeSignature>)}} */
+/** @typedef {!{requestUrl:(string), responseCode:(number), responseHeaders:(Protocol.Network.Headers), signatures:(!Array<Protocol.Network.SignedExchangeSignature>), headerIntegrity:(string)}} */
 Protocol.Network.SignedExchangeHeader;
 
 /** @enum {string} */
@@ -4793,10 +4794,11 @@ Protocol.OverlayAgent.prototype.invoke_enable = function(obj) {};
 /**
  * @param {Protocol.DOM.NodeId} nodeId
  * @param {boolean=} opt_includeDistance
+ * @param {boolean=} opt_includeStyle
  * @return {!Promise<?Object>}
  */
-Protocol.OverlayAgent.prototype.getHighlightObjectForTest = function(nodeId, opt_includeDistance) {};
-/** @typedef {!{includeDistance: (boolean|undefined), nodeId: Protocol.DOM.NodeId}} */
+Protocol.OverlayAgent.prototype.getHighlightObjectForTest = function(nodeId, opt_includeDistance, opt_includeStyle) {};
+/** @typedef {!{includeDistance: (boolean|undefined), nodeId: Protocol.DOM.NodeId, includeStyle: (boolean|undefined)}} */
 Protocol.OverlayAgent.GetHighlightObjectForTestRequest;
 /** @typedef {!{highlight: !Object}} */
 Protocol.OverlayAgent.GetHighlightObjectForTestResponse;
@@ -5826,6 +5828,35 @@ Protocol.PageAgent.WaitForDebuggerResponse;
  * @return {!Promise<!Protocol.PageAgent.WaitForDebuggerResponse>} */
 Protocol.PageAgent.prototype.invoke_waitForDebugger = function(obj) {};
 
+/**
+ * @param {boolean} enabled
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.setInterceptFileChooserDialog = function(enabled) {};
+/** @typedef {!{enabled: boolean}} */
+Protocol.PageAgent.SetInterceptFileChooserDialogRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.SetInterceptFileChooserDialogResponse;
+/**
+ * @param {!Protocol.PageAgent.SetInterceptFileChooserDialogRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.SetInterceptFileChooserDialogResponse>} */
+Protocol.PageAgent.prototype.invoke_setInterceptFileChooserDialog = function(obj) {};
+
+/**
+ * @param {string} action
+ * @param {!Array<string>=} opt_files
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.handleFileChooser = function(action, opt_files) {};
+/** @typedef {!{action: string, files: (!Array<string>|undefined)}} */
+Protocol.PageAgent.HandleFileChooserRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.HandleFileChooserResponse;
+/**
+ * @param {!Protocol.PageAgent.HandleFileChooserRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.HandleFileChooserResponse>} */
+Protocol.PageAgent.prototype.invoke_handleFileChooser = function(obj) {};
+
 /** @typedef {string} */
 Protocol.Page.FrameId;
 
@@ -5909,6 +5940,10 @@ Protocol.PageDispatcher = function() {};
  * @param {Protocol.Network.MonotonicTime} timestamp
  */
 Protocol.PageDispatcher.prototype.domContentEventFired = function(timestamp) {};
+/**
+ * @param {string} mode
+ */
+Protocol.PageDispatcher.prototype.fileChooserOpened = function(mode) {};
 /**
  * @param {Protocol.Page.FrameId} frameId
  * @param {Protocol.Page.FrameId} parentFrameId

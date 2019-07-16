@@ -930,8 +930,9 @@ UI.TreeElement = class {
 
   /**
    * @param {number=} maxDepth
+   * @returns {!Promise}
    */
-  expandRecursively(maxDepth) {
+  async expandRecursively(maxDepth) {
     let item = this;
     const info = {};
     let depth = 0;
@@ -943,8 +944,11 @@ UI.TreeElement = class {
       maxDepth = 3;
 
     while (item) {
+      await item._populateIfNeeded();
+
       if (depth < maxDepth)
         item.expand();
+
       item = item.traverseNextTreeElement(false, this, (depth >= maxDepth), info);
       depth += info.depthChange;
     }
@@ -1136,14 +1140,20 @@ UI.TreeElement = class {
     }
   }
 
-  _populateIfNeeded() {
+  /**
+   * @returns {!Promise}
+   */
+  async _populateIfNeeded() {
     if (this.treeOutline && this._expandable && !this._children) {
       this._children = [];
-      this.onpopulate();
+      await this.onpopulate();
     }
   }
 
-  onpopulate() {
+  /**
+   * @return {!Promise}
+   */
+  async onpopulate() {
     // Overridden by subclasses.
   }
 

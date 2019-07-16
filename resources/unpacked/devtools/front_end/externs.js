@@ -1181,7 +1181,13 @@ ReportRenderer.prototype = {
  * @constructor
  * @param {!DOM} dom
  */
-const ReportUIFeatures = function(dom) {};
+const ReportUIFeatures = function(dom) {
+  /** @type {!ReportRenderer.ReportJSON} */
+  this.json;
+
+  /** @type {!Document} */
+  this._document;
+};
 
 ReportUIFeatures.prototype = {
   /**
@@ -1193,6 +1199,8 @@ ReportUIFeatures.prototype = {
    * @param {!ReportRenderer.ReportJSON} report
    */
   initFeatures: function(report) {},
+
+  _resetUIState: function() {},
 };
 
 /**

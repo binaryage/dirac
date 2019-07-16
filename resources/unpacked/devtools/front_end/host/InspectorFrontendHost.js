@@ -495,6 +495,14 @@ Host.InspectorFrontendHostStub = class {
   isHostedMode() {
     return true;
   }
+
+  /**
+   * @override
+   * @param {function(!ExtensionDescriptor)} callback
+   */
+  setAddExtensionCallback(callback) {
+    // Extensions are not supported in hosted mode.
+  }
 };
 
 /**

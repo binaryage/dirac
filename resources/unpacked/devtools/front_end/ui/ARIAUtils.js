@@ -18,6 +18,14 @@ UI.ARIAUtils.bindLabelToControl = function(label, control) {
 /**
  * @param {!Element} element
  */
+UI.ARIAUtils.markAsAlert = function(element) {
+  element.setAttribute('role', 'alert');
+  element.setAttribute('aria-live', 'polite');
+};
+
+/**
+ * @param {!Element} element
+ */
 UI.ARIAUtils.markAsButton = function(element) {
   element.setAttribute('role', 'button');
 };
@@ -51,6 +59,14 @@ UI.ARIAUtils.markAsGroup = function(element) {
  */
 UI.ARIAUtils.markAsLink = function(element) {
   element.setAttribute('role', 'link');
+};
+
+/**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsMenuButton = function(element) {
+  UI.ARIAUtils.markAsButton(element);
+  element.setAttribute('aria-haspopup', true);
 };
 
 /**
@@ -93,6 +109,36 @@ UI.ARIAUtils.markAsMenu = function(element) {
  */
 UI.ARIAUtils.markAsMenuItem = function(element) {
   element.setAttribute('role', 'menuitem');
+};
+
+/**
+ * Must contain children whose role is option.
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsListBox = function(element) {
+  element.setAttribute('role', 'listbox');
+};
+
+/**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsMultiSelectable = function(element) {
+  element.setAttribute('aria-multiselectable', 'true');
+};
+
+/**
+ * Must be contained in, or owned by, an element with the role listbox.
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsOption = function(element) {
+  element.setAttribute('role', 'option');
+};
+
+/**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsRadioGroup = function(element) {
+  element.setAttribute('role', 'radiogroup');
 };
 
 /**
@@ -155,9 +201,7 @@ UI.ARIAUtils.setControls = function(element, controlledElement) {
     return;
   }
 
-  if (controlledElement.id === '')
-    throw new Error('Controlled element must have ID');
-
+  UI.ARIAUtils.ensureId(controlledElement);
   element.setAttribute('aria-controls', controlledElement.id);
 };
 
@@ -199,6 +243,17 @@ UI.ARIAUtils.setSelected = function(element, value) {
  * @param {!Element} element
  * @param {boolean} value
  */
+UI.ARIAUtils.setInvalid = function(element, value) {
+  if (value)
+    element.setAttribute('aria-invalid', value);
+  else
+    element.removeAttribute('aria-invalid');
+};
+
+/**
+ * @param {!Element} element
+ * @param {boolean} value
+ */
 UI.ARIAUtils.setPressed = function(element, value) {
   // aria-pressed behaves differently for false and undefined.
   // Often times undefined values are unintentionally typed as booleans.
@@ -216,11 +271,50 @@ UI.ARIAUtils.setAccessibleName = function(element, name) {
 
 /**
  * @param {!Element} element
- * @param {!Element} labelElement
+ * @param {!Array<!Element>} labelElements
  */
-UI.ARIAUtils.setLabelledBy = function(element, labelElement) {
-  UI.ARIAUtils.ensureId(labelElement);
-  element.setAttribute('aria-labelledby', labelElement.id);
+UI.ARIAUtils.setLabelledBy = function(element, labelElements) {
+  let labelledby = '';
+  for (const labelElement of labelElements) {
+    console.assert(element.hasSameShadowRoot(labelElement), 'elements are not in the same shadow dom');
+
+    UI.ARIAUtils.ensureId(labelElement);
+    labelledby += labelElement.id + ' ';
+  }
+
+  element.setAttribute('aria-labelledby', labelledby);
+};
+
+/**
+ * @param {!Element} element
+ * @param {!Array<!Element>} descriptionElements
+ */
+UI.ARIAUtils.setDescribedBy = function(element, descriptionElements) {
+  let describedby = '';
+  for (const descriptionElement of descriptionElements) {
+    console.assert(element.hasSameShadowRoot(descriptionElement), 'elements are not in the same shadow dom');
+
+    UI.ARIAUtils.ensureId(descriptionElement);
+    describedby += descriptionElement.id + ' ';
+  }
+
+  element.setAttribute('aria-describedby', describedby);
+};
+
+/**
+ * @param {!Element} element
+ * @param {?Element} activedescendant
+ */
+UI.ARIAUtils.setActiveDescendant = function(element, activedescendant) {
+  if (!activedescendant) {
+    element.removeAttribute('aria-activedescendant');
+    return;
+  }
+
+  console.assert(element.hasSameShadowRoot(activedescendant), 'elements are not in the same shadow dom');
+
+  UI.ARIAUtils.ensureId(activedescendant);
+  element.setAttribute('aria-activedescendant', activedescendant.id);
 };
 
 /**
