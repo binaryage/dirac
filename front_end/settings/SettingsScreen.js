@@ -71,7 +71,7 @@ Settings.SettingsScreen = class extends UI.VBox {
         /** @type {!Settings.SettingsScreen} */ (self.runtime.sharedInstance(Settings.SettingsScreen));
     if (settingsScreen.isShowing())
       return;
-    const dialog = new UI.Dialog(/* modal=*/ true);
+    const dialog = new UI.Dialog();
     dialog.addCloseButton();
     settingsScreen.show(dialog.contentElement);
     dialog.show();
@@ -135,7 +135,7 @@ Settings.SettingsTab = class extends UI.VBox {
       const title = block.createChild('div', 'settings-section-title');
       title.textContent = name;
       UI.ARIAUtils.markAsHeading(title, 2);
-      UI.ARIAUtils.setLabelledBy(block, [title]);
+      UI.ARIAUtils.setAccessibleName(block, name);
     }
     return block;
   }

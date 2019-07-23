@@ -18,16 +18,17 @@ Audits.StartView = class extends UI.Widget {
 
   /**
    * @param {string} settingName
+   * @param {string} label
    * @param {!Element} parentElement
    */
-  _populateRuntimeSettingAsRadio(settingName, parentElement) {
+  _populateRuntimeSettingAsRadio(settingName, label, parentElement) {
     const runtimeSetting = Audits.RuntimeSettings.find(item => item.setting.name === settingName);
     if (!runtimeSetting || !runtimeSetting.options)
       throw new Error(`${settingName} is not a setting with options`);
 
-    const control = new Audits.RadioSetting(runtimeSetting.options, runtimeSetting.setting);
-    control.element.title = runtimeSetting.description;
+    const control = new Audits.RadioSetting(runtimeSetting.options, runtimeSetting.setting, runtimeSetting.description);
     parentElement.appendChild(control.element);
+    UI.ARIAUtils.setAccessibleName(control.element, label);
   }
 
   /**
@@ -50,7 +51,7 @@ Audits.StartView = class extends UI.Widget {
   _populateFormControls(fragment) {
     // Populate the device type
     const deviceTypeFormElements = fragment.$('device-type-form-elements');
-    this._populateRuntimeSettingAsRadio('audits.device_type', deviceTypeFormElements);
+    this._populateRuntimeSettingAsRadio('audits.device_type', ls`Device`, deviceTypeFormElements);
 
     // Populate the audit categories
     const categoryFormElements = fragment.$('categories-form-elements');
@@ -64,7 +65,7 @@ Audits.StartView = class extends UI.Widget {
 
     // Populate the throttling
     const throttlingFormElements = fragment.$('throttling-form-elements');
-    this._populateRuntimeSettingAsRadio('audits.throttling', throttlingFormElements);
+    this._populateRuntimeSettingAsRadio('audits.throttling', ls`Throttling`, throttlingFormElements);
 
 
     // Populate other settings
@@ -89,10 +90,10 @@ Audits.StartView = class extends UI.Widget {
         <header>
           <div class="audits-logo"></div>
           <div class="audits-start-view-text">
-          <h2>${ls`Audits`}</h2>
+          <h1>${ls`Audits`}</h1>
           <p>
             <span class="text">${auditsDescription}</span>
-            <span class="link" $="learn-more">${ls`Learn more`}</a>
+            ${UI.XLink.create('https://developers.google.com/web/tools/lighthouse/', ls`Learn more`)}
           </p>
           </div>
         </header>
@@ -134,11 +135,6 @@ Audits.StartView = class extends UI.Widget {
     `;
 
     this._helpText = fragment.$('help-text');
-
-    const learnMoreLink = fragment.$('learn-more');
-    learnMoreLink.addEventListener(
-        'click', () => InspectorFrontendHost.openInNewTab('https://developers.google.com/web/tools/lighthouse/'));
-
     this._populateFormControls(fragment);
     this.contentElement.appendChild(fragment.element());
     this.contentElement.style.overflow = 'auto';
