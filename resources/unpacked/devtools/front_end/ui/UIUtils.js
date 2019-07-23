@@ -2015,7 +2015,7 @@ UI.ConfirmDialog = class {
 };
 
 /**
- * @param {!UI.ToolbarToggle} toolbarButton
+ * @param {!UI.ToolbarButton} toolbarButton
  * @return {!Element}
  */
 UI.createInlineButton = function(toolbarButton) {
