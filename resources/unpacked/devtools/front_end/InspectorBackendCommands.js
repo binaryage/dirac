@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='77.0.3851.1';
-Protocol.BakedInspectorBackendAPIChromeRev='61639afda22eeccf13269061518d17a822f2264c';
+Protocol.BakedInspectorBackendAPIChromeTag='77.0.3862.1';
+Protocol.BakedInspectorBackendAPIChromeRev='703fea9cb916e3e6b44068f10c990c542715fb7b';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -282,6 +282,8 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Network.CertificateTransparencyCompliance", {Unknown: "unknown", NotCompliant: "not-compliant", Compliant: "compliant"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.BlockedReason", {Other: "other", Csp: "csp", MixedContent: "mixed-content", Origin: "origin", Inspector: "inspector", SubresourceFilter: "subresource-filter", ContentType: "content-type", CollapsedByClient: "collapsed-by-client"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.InitiatorType", {Parser: "parser", Script: "script", Preload: "preload", SignedExchange: "SignedExchange", Other: "other"});\n'
++ 'Protocol.inspectorBackend.registerEnum("Network.SetCookieBlockedReason", {SecureOnly: "SecureOnly", SameSiteStrict: "SameSiteStrict", SameSiteLax: "SameSiteLax", SameSiteExtended: "SameSiteExtended", SameSiteUnspecifiedTreatedAsLax: "SameSiteUnspecifiedTreatedAsLax", SameSiteNoneInsecure: "SameSiteNoneInsecure", UserPreferences: "UserPreferences", SyntaxError: "SyntaxError", SchemeNotSupported: "SchemeNotSupported", OverwriteSecure: "OverwriteSecure", InvalidDomain: "InvalidDomain", InvalidPrefix: "InvalidPrefix", UnknownError: "UnknownError"});\n'
++ 'Protocol.inspectorBackend.registerEnum("Network.CookieBlockedReason", {SecureOnly: "SecureOnly", NotOnPath: "NotOnPath", DomainMismatch: "DomainMismatch", SameSiteStrict: "SameSiteStrict", SameSiteLax: "SameSiteLax", SameSiteExtended: "SameSiteExtended", SameSiteUnspecifiedTreatedAsLax: "SameSiteUnspecifiedTreatedAsLax", SameSiteNoneInsecure: "SameSiteNoneInsecure", UserPreferences: "UserPreferences", UnknownError: "UnknownError"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.AuthChallengeSource", {Server: "Server", Proxy: "Proxy"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.AuthChallengeResponseResponse", {Default: "Default", CancelAuth: "CancelAuth", ProvideCredentials: "ProvideCredentials"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.InterceptionStage", {Request: "Request", HeadersReceived: "HeadersReceived"});\n'
@@ -303,6 +305,8 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Network.webSocketFrameSent", ["requestId", "timestamp", "response"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.webSocketHandshakeResponseReceived", ["requestId", "timestamp", "response"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.webSocketWillSendHandshakeRequest", ["requestId", "timestamp", "wallTime", "request"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Network.requestWillBeSentExtraInfo", ["requestId", "blockedCookies", "headers"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Network.responseReceivedExtraInfo", ["requestId", "blockedCookies", "headers", "headersText"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.canClearBrowserCache", [], ["result"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.canClearBrowserCookies", [], ["result"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.canEmulateNetworkConditions", [], ["result"], false);\n'
