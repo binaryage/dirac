@@ -12,7 +12,7 @@
 
 (def required-deps
   [['org.clojure/core.async "0.4.500"]
-   ['org.clojure/tools.logging "0.5.0-alpha.1"]
+   ['org.clojure/tools.logging "0.5.0"]
    ['org.clojure/tools.cli "0.4.2"]
    ['nrepl/nrepl "0.6.0"]
    ['binaryage/env-config "0.2.2"]
@@ -59,7 +59,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.3.9"
+(defproject binaryage/dirac "1.3.10"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

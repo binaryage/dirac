@@ -142,7 +142,10 @@ Audits.AuditController = class extends Common.Object {
    * @return {!Object}
    */
   getFlags() {
-    const flags = {};
+    const flags = {
+      // DevTools handles all the emulation. This tells Lighthouse to not bother with emulation.
+      deviceScreenEmulationMethod: 'provided'
+    };
     for (const runtimeSetting of Audits.RuntimeSettings)
       runtimeSetting.setFlags(flags, runtimeSetting.setting.get());
     return flags;
@@ -237,6 +240,7 @@ Audits.RuntimeSettings = [
     setting: Common.settings.createSetting('audits.device_type', 'mobile'),
     description: ls`Apply mobile emulation during auditing`,
     setFlags: (flags, value) => {
+      // See Audits.AuditsPanel._setupEmulationAndProtocolConnection()
       flags.emulatedFormFactor = value;
     },
     options: [
