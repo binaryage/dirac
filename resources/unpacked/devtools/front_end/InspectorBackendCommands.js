@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='77.0.3862.1';
-Protocol.BakedInspectorBackendAPIChromeRev='703fea9cb916e3e6b44068f10c990c542715fb7b';
+Protocol.BakedInspectorBackendAPIChromeTag='77.0.3865.1';
+Protocol.BakedInspectorBackendAPIChromeRev='6d397588a4960420d43ea7ff5735e956b62cb29d';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -30,7 +30,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("ApplicationCache.getFramesWithManifests", [], ["frameIds"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("ApplicationCache.getManifestForFrame", [{"name": "frameId", "type": "string", "optional": false}], ["manifestURL"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Audits.getEncodedResponse", [{"name": "requestId", "type": "string", "optional": false}, {"name": "encoding", "type": "string", "optional": false}, {"name": "quality", "type": "number", "optional": true}, {"name": "sizeOnly", "type": "boolean", "optional": true}], ["body", "originalSize", "encodedSize"], false);\n'
-+ 'Protocol.inspectorBackend.registerEnum("BackgroundService.ServiceName", {BackgroundFetch: "backgroundFetch", BackgroundSync: "backgroundSync", PushMessaging: "pushMessaging", Notifications: "notifications", PaymentHandler: "paymentHandler"});\n'
++ 'Protocol.inspectorBackend.registerEnum("BackgroundService.ServiceName", {BackgroundFetch: "backgroundFetch", BackgroundSync: "backgroundSync", PushMessaging: "pushMessaging", Notifications: "notifications", PaymentHandler: "paymentHandler", PeriodicBackgroundSync: "periodicBackgroundSync"});\n'
 + 'Protocol.inspectorBackend.registerEvent("BackgroundService.recordingStateChanged", ["isRecording", "service"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("BackgroundService.backgroundServiceEventReceived", ["backgroundServiceEvent"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("BackgroundService.startObserving", [{"name": "service", "type": "string", "optional": false}], [], false);\n'
@@ -482,6 +482,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Storage.untrackCacheStorageForOrigin", [{"name": "origin", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Storage.untrackIndexedDBForOrigin", [{"name": "origin", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("SystemInfo.SubsamplingFormat", {Yuv420: "yuv420", Yuv422: "yuv422", Yuv444: "yuv444"});\n'
++ 'Protocol.inspectorBackend.registerEnum("SystemInfo.ImageType", {Jpeg: "jpeg", Webp: "webp", Unknown: "unknown"});\n'
 + 'Protocol.inspectorBackend.registerCommand("SystemInfo.getInfo", [], ["gpu", "modelName", "modelVersion", "commandLine"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("SystemInfo.getProcessInfo", [], ["processInfo"], false);\n'
 + 'Protocol.inspectorBackend.registerEvent("Target.attachedToTarget", ["sessionId", "targetInfo", "waitingForDebugger"]);\n'
