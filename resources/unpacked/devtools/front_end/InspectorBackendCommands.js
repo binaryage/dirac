@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='77.0.3865.1';
-Protocol.BakedInspectorBackendAPIChromeRev='6d397588a4960420d43ea7ff5735e956b62cb29d';
+Protocol.BakedInspectorBackendAPIChromeTag='78.0.3869.1';
+Protocol.BakedInspectorBackendAPIChromeRev='7d71ee6c60f698a8bfe543fdd1f78417e7a67c83';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -145,6 +145,8 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("DOM.setAttributeValue", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "name", "type": "string", "optional": false}, {"name": "value", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.setAttributesAsText", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "text", "type": "string", "optional": false}, {"name": "name", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.setFileInputFiles", [{"name": "files", "type": "object", "optional": false}, {"name": "nodeId", "type": "number", "optional": true}, {"name": "backendNodeId", "type": "number", "optional": true}, {"name": "objectId", "type": "string", "optional": true}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOM.setNodeStackTracesEnabled", [{"name": "enable", "type": "boolean", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOM.getNodeStackTraces", [{"name": "nodeId", "type": "number", "optional": false}], ["creation"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.getFileInfo", [{"name": "objectId", "type": "string", "optional": false}], ["path"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.setInspectedNode", [{"name": "nodeId", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.setNodeName", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "name", "type": "string", "optional": false}], ["nodeId"], false);\n'

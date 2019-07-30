@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='77.0.3865.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='6d397588a4960420d43ea7ff5735e956b62cb29d';
+Protocol.BakedSupportedCSSPropertiesChromeTag='78.0.3869.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='7d71ee6c60f698a8bfe543fdd1f78417e7a67c83';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-internal-effective-zoom", "inherited": true},\n'
 + ' {"name": "-internal-visited-background-color"},\n'
