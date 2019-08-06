@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='78.0.3869.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='7d71ee6c60f698a8bfe543fdd1f78417e7a67c83';
+Protocol.BakedSupportedCSSPropertiesChromeTag='78.0.3875.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='70ac2bd3a25da153f39cef4599317d1202cbc70c';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-internal-effective-zoom", "inherited": true},\n'
 + ' {"name": "-internal-visited-background-color"},\n'
@@ -309,7 +309,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "margin-left"},\n'
 + ' {"name": "margin-right"},\n'
 + ' {"name": "margin-top"},\n'
-+ ' {"longhands": ["marker-start", "marker-mid", "marker-end"], "name": "marker", "inherited": true},\n'
++ ' {"longhands": ["marker-start", "marker-mid", "marker-end"], "inherited": true, "name": "marker", "svg": true},\n'
 + ' {"svg": true, "inherited": true, "name": "marker-end"},\n'
 + ' {"svg": true, "inherited": true, "name": "marker-mid"},\n'
 + ' {"svg": true, "inherited": true, "name": "marker-start"},\n'

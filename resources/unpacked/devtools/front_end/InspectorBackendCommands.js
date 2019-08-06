@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='78.0.3869.1';
-Protocol.BakedInspectorBackendAPIChromeRev='7d71ee6c60f698a8bfe543fdd1f78417e7a67c83';
+Protocol.BakedInspectorBackendAPIChromeTag='78.0.3875.1';
+Protocol.BakedInspectorBackendAPIChromeRev='70ac2bd3a25da153f39cef4599317d1202cbc70c';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -540,7 +540,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("WebAudio.ContextType", {Realtime: "realtime", Offline: "offline"});\n'
 + 'Protocol.inspectorBackend.registerEnum("WebAudio.ContextState", {Suspended: "suspended", Running: "running", Closed: "closed"});\n'
 + 'Protocol.inspectorBackend.registerEvent("WebAudio.contextCreated", ["context"]);\n'
-+ 'Protocol.inspectorBackend.registerEvent("WebAudio.contextDestroyed", ["contextId"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("WebAudio.contextWillBeDestroyed", ["contextId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("WebAudio.contextChanged", ["context"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("WebAudio.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("WebAudio.disable", [], [], false);\n'
