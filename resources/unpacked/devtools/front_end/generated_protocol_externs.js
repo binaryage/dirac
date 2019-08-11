@@ -557,6 +557,23 @@ Protocol.BrowserAgent = function(){};
 
 /**
  * @param {string} origin
+ * @param {Protocol.Browser.PermissionDescriptor} permission
+ * @param {Protocol.Browser.PermissionSetting} setting
+ * @param {Protocol.Target.TargetID=} opt_browserContextId
+ * @return {!Promise<undefined>}
+ */
+Protocol.BrowserAgent.prototype.setPermission = function(origin, permission, setting, opt_browserContextId) {};
+/** @typedef {!{origin: string, browserContextId: (Protocol.Target.TargetID|undefined), setting: Protocol.Browser.PermissionSetting, permission: Protocol.Browser.PermissionDescriptor}} */
+Protocol.BrowserAgent.SetPermissionRequest;
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.SetPermissionResponse;
+/**
+ * @param {!Protocol.BrowserAgent.SetPermissionRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.SetPermissionResponse>} */
+Protocol.BrowserAgent.prototype.invoke_setPermission = function(obj) {};
+
+/**
+ * @param {string} origin
  * @param {!Array<Protocol.Browser.PermissionType>} permissions
  * @param {Protocol.Target.BrowserContextID=} opt_browserContextId
  * @return {!Promise<undefined>}
@@ -775,6 +792,16 @@ Protocol.Browser.PermissionType = {
     WakeLockScreen: "wakeLockScreen",
     WakeLockSystem: "wakeLockSystem"
 };
+
+/** @enum {string} */
+Protocol.Browser.PermissionSetting = {
+    Granted: "granted",
+    Denied: "denied",
+    Prompt: "prompt"
+};
+
+/** @typedef {!{name:(string), sysex:(boolean|undefined), userVisibleOnly:(boolean|undefined), type:(string|undefined)}} */
+Protocol.Browser.PermissionDescriptor;
 
 /** @typedef {!{low:(number), high:(number), count:(number)}} */
 Protocol.Browser.Bucket;
@@ -5939,7 +5966,7 @@ Protocol.PageAgent.prototype.invoke_handleFileChooser = function(obj) {};
 /** @typedef {string} */
 Protocol.Page.FrameId;
 
-/** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), urlFragment:(string|undefined), securityOrigin:(string), mimeType:(string), unreachableUrl:(string|undefined)}} */
+/** @typedef {!{id:(Protocol.Page.FrameId), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), urlFragment:(string|undefined), securityOrigin:(string), mimeType:(string), unreachableUrl:(string|undefined)}} */
 Protocol.Page.Frame;
 
 /** @typedef {!{url:(string), type:(Protocol.Network.ResourceType), mimeType:(string), lastModified:(Protocol.Network.TimeSinceEpoch|undefined), contentSize:(number|undefined), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
@@ -6367,6 +6394,22 @@ Protocol.ServiceWorkerAgent.DispatchSyncEventResponse;
  * @param {!Protocol.ServiceWorkerAgent.DispatchSyncEventRequest} obj
  * @return {!Promise<!Protocol.ServiceWorkerAgent.DispatchSyncEventResponse>} */
 Protocol.ServiceWorkerAgent.prototype.invoke_dispatchSyncEvent = function(obj) {};
+
+/**
+ * @param {string} origin
+ * @param {Protocol.ServiceWorker.RegistrationID} registrationId
+ * @param {string} tag
+ * @return {!Promise<undefined>}
+ */
+Protocol.ServiceWorkerAgent.prototype.dispatchPeriodicSyncEvent = function(origin, registrationId, tag) {};
+/** @typedef {!{origin: string, registrationId: Protocol.ServiceWorker.RegistrationID, tag: string}} */
+Protocol.ServiceWorkerAgent.DispatchPeriodicSyncEventRequest;
+/** @typedef {Object|undefined} */
+Protocol.ServiceWorkerAgent.DispatchPeriodicSyncEventResponse;
+/**
+ * @param {!Protocol.ServiceWorkerAgent.DispatchPeriodicSyncEventRequest} obj
+ * @return {!Promise<!Protocol.ServiceWorkerAgent.DispatchPeriodicSyncEventResponse>} */
+Protocol.ServiceWorkerAgent.prototype.invoke_dispatchPeriodicSyncEvent = function(obj) {};
 
 /**
  * @return {!Promise<undefined>}
@@ -7414,11 +7457,11 @@ Protocol.WebAudioAgent.DisableResponse;
 Protocol.WebAudioAgent.prototype.invoke_disable = function(obj) {};
 
 /**
- * @param {Protocol.WebAudio.ContextId} contextId
+ * @param {Protocol.WebAudio.GraphObjectId} contextId
  * @return {!Promise<?Protocol.WebAudio.ContextRealtimeData>}
  */
 Protocol.WebAudioAgent.prototype.getRealtimeData = function(contextId) {};
-/** @typedef {!{contextId: Protocol.WebAudio.ContextId}} */
+/** @typedef {!{contextId: Protocol.WebAudio.GraphObjectId}} */
 Protocol.WebAudioAgent.GetRealtimeDataRequest;
 /** @typedef {!{realtimeData: Protocol.WebAudio.ContextRealtimeData}} */
 Protocol.WebAudioAgent.GetRealtimeDataResponse;
@@ -7428,7 +7471,7 @@ Protocol.WebAudioAgent.GetRealtimeDataResponse;
 Protocol.WebAudioAgent.prototype.invoke_getRealtimeData = function(obj) {};
 
 /** @typedef {string} */
-Protocol.WebAudio.ContextId;
+Protocol.WebAudio.GraphObjectId;
 
 /** @enum {string} */
 Protocol.WebAudio.ContextType = {
@@ -7443,11 +7486,45 @@ Protocol.WebAudio.ContextState = {
     Closed: "closed"
 };
 
+/** @typedef {string} */
+Protocol.WebAudio.NodeType;
+
+/** @enum {string} */
+Protocol.WebAudio.ChannelCountMode = {
+    ClampedMax: "clamped-max",
+    Explicit: "explicit",
+    Max: "max"
+};
+
+/** @enum {string} */
+Protocol.WebAudio.ChannelInterpretation = {
+    Discrete: "discrete",
+    Speakers: "speakers"
+};
+
+/** @typedef {string} */
+Protocol.WebAudio.ParamType;
+
+/** @enum {string} */
+Protocol.WebAudio.AutomationRate = {
+    ARate: "a-rate",
+    KRate: "k-rate"
+};
+
 /** @typedef {!{currentTime:(number), renderCapacity:(number), callbackIntervalMean:(number), callbackIntervalVariance:(number)}} */
 Protocol.WebAudio.ContextRealtimeData;
 
-/** @typedef {!{contextId:(Protocol.WebAudio.ContextId), contextType:(Protocol.WebAudio.ContextType), contextState:(Protocol.WebAudio.ContextState), realtimeData:(Protocol.WebAudio.ContextRealtimeData|undefined), callbackBufferSize:(number), maxOutputChannelCount:(number), sampleRate:(number)}} */
+/** @typedef {!{contextId:(Protocol.WebAudio.GraphObjectId), contextType:(Protocol.WebAudio.ContextType), contextState:(Protocol.WebAudio.ContextState), realtimeData:(Protocol.WebAudio.ContextRealtimeData|undefined), callbackBufferSize:(number), maxOutputChannelCount:(number), sampleRate:(number)}} */
 Protocol.WebAudio.BaseAudioContext;
+
+/** @typedef {!{listenerId:(Protocol.WebAudio.GraphObjectId), contextId:(Protocol.WebAudio.GraphObjectId)}} */
+Protocol.WebAudio.AudioListener;
+
+/** @typedef {!{nodeId:(Protocol.WebAudio.GraphObjectId), contextId:(Protocol.WebAudio.GraphObjectId), nodeType:(Protocol.WebAudio.NodeType), numberOfInputs:(number), numberOfOutputs:(number), channelCount:(number), channelCountMode:(Protocol.WebAudio.ChannelCountMode), channelInterpretation:(Protocol.WebAudio.ChannelInterpretation)}} */
+Protocol.WebAudio.AudioNode;
+
+/** @typedef {!{paramId:(Protocol.WebAudio.GraphObjectId), nodeId:(Protocol.WebAudio.GraphObjectId), contextId:(Protocol.WebAudio.GraphObjectId), paramType:(Protocol.WebAudio.ParamType), rate:(Protocol.WebAudio.AutomationRate), defaultValue:(number), minValue:(number), maxValue:(number)}} */
+Protocol.WebAudio.AudioParam;
 /** @interface */
 Protocol.WebAudioDispatcher = function() {};
 /**
@@ -7455,13 +7532,71 @@ Protocol.WebAudioDispatcher = function() {};
  */
 Protocol.WebAudioDispatcher.prototype.contextCreated = function(context) {};
 /**
- * @param {Protocol.WebAudio.ContextId} contextId
+ * @param {Protocol.WebAudio.GraphObjectId} contextId
  */
 Protocol.WebAudioDispatcher.prototype.contextWillBeDestroyed = function(contextId) {};
 /**
  * @param {Protocol.WebAudio.BaseAudioContext} context
  */
 Protocol.WebAudioDispatcher.prototype.contextChanged = function(context) {};
+/**
+ * @param {Protocol.WebAudio.AudioListener} listener
+ */
+Protocol.WebAudioDispatcher.prototype.audioListenerCreated = function(listener) {};
+/**
+ * @param {Protocol.WebAudio.GraphObjectId} contextId
+ * @param {Protocol.WebAudio.GraphObjectId} listenerId
+ */
+Protocol.WebAudioDispatcher.prototype.audioListenerWillBeDestroyed = function(contextId, listenerId) {};
+/**
+ * @param {Protocol.WebAudio.AudioNode} node
+ */
+Protocol.WebAudioDispatcher.prototype.audioNodeCreated = function(node) {};
+/**
+ * @param {Protocol.WebAudio.GraphObjectId} contextId
+ * @param {Protocol.WebAudio.GraphObjectId} nodeId
+ */
+Protocol.WebAudioDispatcher.prototype.audioNodeWillBeDestroyed = function(contextId, nodeId) {};
+/**
+ * @param {Protocol.WebAudio.AudioParam} param
+ */
+Protocol.WebAudioDispatcher.prototype.audioParamCreated = function(param) {};
+/**
+ * @param {Protocol.WebAudio.GraphObjectId} contextId
+ * @param {Protocol.WebAudio.GraphObjectId} nodeId
+ * @param {Protocol.WebAudio.GraphObjectId} paramId
+ */
+Protocol.WebAudioDispatcher.prototype.audioParamWillBeDestroyed = function(contextId, nodeId, paramId) {};
+/**
+ * @param {Protocol.WebAudio.GraphObjectId} contextId
+ * @param {Protocol.WebAudio.GraphObjectId} sourceId
+ * @param {Protocol.WebAudio.GraphObjectId} destinationId
+ * @param {number=} opt_sourceOutputIndex
+ * @param {number=} opt_destinationInputIndex
+ */
+Protocol.WebAudioDispatcher.prototype.nodesConnected = function(contextId, sourceId, destinationId, opt_sourceOutputIndex, opt_destinationInputIndex) {};
+/**
+ * @param {Protocol.WebAudio.GraphObjectId} contextId
+ * @param {Protocol.WebAudio.GraphObjectId} sourceId
+ * @param {Protocol.WebAudio.GraphObjectId} destinationId
+ * @param {number=} opt_sourceOutputIndex
+ * @param {number=} opt_destinationInputIndex
+ */
+Protocol.WebAudioDispatcher.prototype.nodesDisconnected = function(contextId, sourceId, destinationId, opt_sourceOutputIndex, opt_destinationInputIndex) {};
+/**
+ * @param {Protocol.WebAudio.GraphObjectId} contextId
+ * @param {Protocol.WebAudio.GraphObjectId} sourceId
+ * @param {Protocol.WebAudio.GraphObjectId} destinationId
+ * @param {number=} opt_sourceOutputIndex
+ */
+Protocol.WebAudioDispatcher.prototype.nodeParamConnected = function(contextId, sourceId, destinationId, opt_sourceOutputIndex) {};
+/**
+ * @param {Protocol.WebAudio.GraphObjectId} contextId
+ * @param {Protocol.WebAudio.GraphObjectId} sourceId
+ * @param {Protocol.WebAudio.GraphObjectId} destinationId
+ * @param {number=} opt_sourceOutputIndex
+ */
+Protocol.WebAudioDispatcher.prototype.nodeParamDisconnected = function(contextId, sourceId, destinationId, opt_sourceOutputIndex) {};
 Protocol.WebAuthn = {};
 
 
@@ -7541,6 +7676,21 @@ Protocol.WebAuthnAgent.prototype.invoke_addCredential = function(obj) {};
 
 /**
  * @param {Protocol.WebAuthn.AuthenticatorId} authenticatorId
+ * @param {string} credentialId
+ * @return {!Promise<?Protocol.WebAuthn.Credential>}
+ */
+Protocol.WebAuthnAgent.prototype.getCredential = function(authenticatorId, credentialId) {};
+/** @typedef {!{credentialId: string, authenticatorId: Protocol.WebAuthn.AuthenticatorId}} */
+Protocol.WebAuthnAgent.GetCredentialRequest;
+/** @typedef {!{credential: Protocol.WebAuthn.Credential}} */
+Protocol.WebAuthnAgent.GetCredentialResponse;
+/**
+ * @param {!Protocol.WebAuthnAgent.GetCredentialRequest} obj
+ * @return {!Promise<!Protocol.WebAuthnAgent.GetCredentialResponse>} */
+Protocol.WebAuthnAgent.prototype.invoke_getCredential = function(obj) {};
+
+/**
+ * @param {Protocol.WebAuthn.AuthenticatorId} authenticatorId
  * @return {!Promise<?Array<Protocol.WebAuthn.Credential>>}
  */
 Protocol.WebAuthnAgent.prototype.getCredentials = function(authenticatorId) {};
@@ -7607,6 +7757,74 @@ Protocol.WebAuthn.VirtualAuthenticatorOptions;
 Protocol.WebAuthn.Credential;
 /** @interface */
 Protocol.WebAuthnDispatcher = function() {};
+Protocol.Media = {};
+
+
+/**
+ * @constructor
+*/
+Protocol.MediaAgent = function(){};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.MediaAgent.prototype.enable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.MediaAgent.EnableRequest;
+/** @typedef {Object|undefined} */
+Protocol.MediaAgent.EnableResponse;
+/**
+ * @param {!Protocol.MediaAgent.EnableRequest} obj
+ * @return {!Promise<!Protocol.MediaAgent.EnableResponse>} */
+Protocol.MediaAgent.prototype.invoke_enable = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.MediaAgent.prototype.disable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.MediaAgent.DisableRequest;
+/** @typedef {Object|undefined} */
+Protocol.MediaAgent.DisableResponse;
+/**
+ * @param {!Protocol.MediaAgent.DisableRequest} obj
+ * @return {!Promise<!Protocol.MediaAgent.DisableResponse>} */
+Protocol.MediaAgent.prototype.invoke_disable = function(obj) {};
+
+/** @typedef {string} */
+Protocol.Media.PlayerId;
+
+/** @typedef {number} */
+Protocol.Media.Timestamp;
+
+/** @typedef {!{name:(string), value:(string|undefined)}} */
+Protocol.Media.PlayerProperty;
+
+/** @enum {string} */
+Protocol.Media.PlayerEventType = {
+    PlaybackEvent: "playbackEvent",
+    SystemEvent: "systemEvent",
+    MessageEvent: "messageEvent"
+};
+
+/** @typedef {!{type:(Protocol.Media.PlayerEventType), timestamp:(Protocol.Media.Timestamp), name:(string), value:(string)}} */
+Protocol.Media.PlayerEvent;
+/** @interface */
+Protocol.MediaDispatcher = function() {};
+/**
+ * @param {Protocol.Media.PlayerId} playerId
+ * @param {!Array<Protocol.Media.PlayerProperty>} properties
+ */
+Protocol.MediaDispatcher.prototype.playerPropertiesChanged = function(playerId, properties) {};
+/**
+ * @param {Protocol.Media.PlayerId} playerId
+ * @param {!Array<Protocol.Media.PlayerEvent>} events
+ */
+Protocol.MediaDispatcher.prototype.playerEventsAdded = function(playerId, events) {};
+/**
+ * @param {!Array<Protocol.Media.PlayerId>} players
+ */
+Protocol.MediaDispatcher.prototype.playersCreated = function(players) {};
 Protocol.Console = {};
 
 
@@ -9422,6 +9640,12 @@ Protocol.TargetBase.prototype.webAuthnAgent = function(){};
  * @param {!Protocol.WebAuthnDispatcher} dispatcher
  */
 Protocol.TargetBase.prototype.registerWebAuthnDispatcher = function(dispatcher) {}
+/** @return {!Protocol.MediaAgent}*/
+Protocol.TargetBase.prototype.mediaAgent = function(){};
+/**
+ * @param {!Protocol.MediaDispatcher} dispatcher
+ */
+Protocol.TargetBase.prototype.registerMediaDispatcher = function(dispatcher) {}
 /** @return {!Protocol.ConsoleAgent}*/
 Protocol.TargetBase.prototype.consoleAgent = function(){};
 /**
