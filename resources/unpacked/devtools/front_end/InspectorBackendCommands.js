@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='78.0.3879.2';
-Protocol.BakedInspectorBackendAPIChromeRev='f478ba7211a5f4f8cc25a9adfa391a12b9222aea';
+Protocol.BakedInspectorBackendAPIChromeTag='78.0.3896.2';
+Protocol.BakedInspectorBackendAPIChromeRev='b72ae910eb9f8b4e3a4a0fab20acbfe11213da6a';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -169,7 +169,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("DOMSnapshot.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMSnapshot.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMSnapshot.getSnapshot", [{"name": "computedStyleWhitelist", "type": "object", "optional": false}, {"name": "includeEventListeners", "type": "boolean", "optional": true}, {"name": "includePaintOrder", "type": "boolean", "optional": true}, {"name": "includeUserAgentShadowTree", "type": "boolean", "optional": true}], ["domNodes", "layoutTreeNodes", "computedStyles"], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("DOMSnapshot.captureSnapshot", [{"name": "computedStyles", "type": "object", "optional": false}, {"name": "includeDOMRects", "type": "boolean", "optional": true}], ["documents", "strings"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOMSnapshot.captureSnapshot", [{"name": "computedStyles", "type": "object", "optional": false}, {"name": "includePaintOrder", "type": "boolean", "optional": true}, {"name": "includeDOMRects", "type": "boolean", "optional": true}], ["documents", "strings"], false);\n'
 + 'Protocol.inspectorBackend.registerEvent("DOMStorage.domStorageItemAdded", ["storageId", "key", "newValue"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("DOMStorage.domStorageItemRemoved", ["storageId", "key"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("DOMStorage.domStorageItemUpdated", ["storageId", "key", "oldValue", "newValue"]);\n'
@@ -570,6 +570,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("WebAuthn.addCredential", [{"name": "authenticatorId", "type": "string", "optional": false}, {"name": "credential", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("WebAuthn.getCredential", [{"name": "authenticatorId", "type": "string", "optional": false}, {"name": "credentialId", "type": "string", "optional": false}], ["credential"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("WebAuthn.getCredentials", [{"name": "authenticatorId", "type": "string", "optional": false}], ["credentials"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("WebAuthn.removeCredential", [{"name": "authenticatorId", "type": "string", "optional": false}, {"name": "credentialId", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("WebAuthn.clearCredentials", [{"name": "authenticatorId", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("WebAuthn.setUserVerified", [{"name": "authenticatorId", "type": "string", "optional": false}, {"name": "isUserVerified", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Media.PlayerEventType", {PlaybackEvent: "playbackEvent", SystemEvent: "systemEvent", MessageEvent: "messageEvent"});\n'
