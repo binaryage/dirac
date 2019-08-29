@@ -1,5 +1,5 @@
 (def clj-logging-config-version "1.9.12")
-(def slf4j-log4j12-version "1.7.26")
+(def slf4j-log4j12-version "1.7.28")
 (def figwheel-version "0.5.19")
 (def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.520"))
 (def selected-clojure-version "1.10.1")
@@ -35,7 +35,7 @@
    ['rum "0.11.3" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-   ['org.clojure/tools.namespace "0.3.0" :scope "test"]
+   ['org.clojure/tools.namespace "0.3.1" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
    ['fipp "0.6.18" :scope "test"]
 
@@ -46,7 +46,7 @@
 
    ['ring/ring-core "1.7.1" :scope "test"]
    ['ring/ring-devel "1.7.1" :scope "test"]
-   ['clj-time "0.15.1" :scope "test"]
+   ['clj-time "0.15.2" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
    ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
