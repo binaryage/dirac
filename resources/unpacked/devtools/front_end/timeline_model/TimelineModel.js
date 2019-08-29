@@ -100,10 +100,30 @@ TimelineModel.TimelineModel = class {
         return this._mainFrame && event.args.frame === this._mainFrame.frameId && !!event.args.data;
       case recordTypes.MarkDOMContent:
       case recordTypes.MarkLoad:
+      case recordTypes.MarkLCPCandidate:
+      case recordTypes.MarkLCPInvalidate:
         return !!event.args['data']['isMainFrame'];
       default:
         return false;
     }
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {boolean}
+   */
+  isLCPCandidateEvent(event) {
+    return event.name === TimelineModel.TimelineModel.RecordType.MarkLCPCandidate &&
+        !!event.args['data']['isMainFrame'];
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {boolean}
+   */
+  isLCPInvalidateEvent(event) {
+    return event.name === TimelineModel.TimelineModel.RecordType.MarkLCPInvalidate &&
+        !!event.args['data']['isMainFrame'];
   }
 
   /**
@@ -244,8 +264,7 @@ TimelineModel.TimelineModel = class {
           data = [];
           processData.set(pid, data);
         }
-        const to = i === frame.processes.length - 1 ? (frame.deletedTime || this._maximumRecordTime) :
-                                                      frame.processes[i + 1].time;
+        const to = i === frame.processes.length - 1 ? (frame.deletedTime || Infinity) : frame.processes[i + 1].time;
         data.push({from: frame.processes[i].time, to: to, main: !frame.parent, url: frame.processes[i].url});
       }
     }
@@ -875,6 +894,10 @@ TimelineModel.TimelineModel = class {
           return false;
         break;
 
+      case recordTypes.MarkLCPCandidate:
+        timelineData.backendNodeId = eventData['nodeId'];
+        break;
+
       case recordTypes.MarkDOMContent:
       case recordTypes.MarkLoad: {
         const frameId = TimelineModel.TimelineModel.eventFrameId(event);
@@ -1147,8 +1170,10 @@ TimelineModel.TimelineModel = class {
     /** @type {!Array<!TimelineModel.TimelineModel.NetworkRequest>} */
     const zeroStartRequestsList = [];
     const types = TimelineModel.TimelineModel.RecordType;
-    const resourceTypes = new Set(
-        [types.ResourceSendRequest, types.ResourceReceiveResponse, types.ResourceReceivedData, types.ResourceFinish]);
+    const resourceTypes = new Set([
+      types.ResourceSendRequest, types.ResourceReceiveResponse, types.ResourceReceivedData, types.ResourceFinish,
+      types.ResourceMarkAsCached
+    ]);
     const events = this.inspectedTargetEvents();
     for (let i = 0; i < events.length; ++i) {
       const e = events[i];
@@ -1235,6 +1260,8 @@ TimelineModel.TimelineModel.RecordType = {
   MarkFirstPaint: 'firstPaint',
   MarkFCP: 'firstContentfulPaint',
   MarkFMP: 'firstMeaningfulPaint',
+  MarkLCPCandidate: 'largestContentfulPaint::Candidate',
+  MarkLCPInvalidate: 'largestContentfulPaint::Invalidate',
 
   TimeStamp: 'TimeStamp',
   ConsoleTime: 'ConsoleTime',
@@ -1244,6 +1271,7 @@ TimelineModel.TimelineModel.RecordType = {
   ResourceReceiveResponse: 'ResourceReceiveResponse',
   ResourceReceivedData: 'ResourceReceivedData',
   ResourceFinish: 'ResourceFinish',
+  ResourceMarkAsCached: 'ResourceMarkAsCached',
 
   RunMicrotasks: 'RunMicrotasks',
   FunctionCall: 'FunctionCall',
@@ -1508,6 +1536,12 @@ TimelineModel.TimelineModel.NetworkRequest = class {
     this.url;
     /** @type {string} */
     this.requestMethod;
+    /** @type {number} */
+    this._transferSize = 0;
+    /** @type {boolean} */
+    this._maybeDiskCached = false;
+    /** @type {boolean} */
+    this._memoryCached = false;
     this.addEvent(event);
   }
 
@@ -1517,6 +1551,7 @@ TimelineModel.TimelineModel.NetworkRequest = class {
   addEvent(event) {
     this.children.push(event);
     const recordType = TimelineModel.TimelineModel.RecordType;
+    // This Math.min is likely because of BUG(chromium:865066).
     this.startTime = Math.min(this.startTime, event.startTime);
     const eventData = event.args['data'];
     if (eventData['mimeType'])
@@ -1531,17 +1566,30 @@ TimelineModel.TimelineModel.NetworkRequest = class {
         (event.name === recordType.ResourceReceiveResponse || event.name === recordType.ResourceReceivedData))
       this.responseTime = event.startTime;
     const encodedDataLength = eventData['encodedDataLength'] || 0;
+    if (event.name === recordType.ResourceMarkAsCached) {
+      // This is a reliable signal for memory caching.
+      this._memoryCached = true;
+    }
     if (event.name === recordType.ResourceReceiveResponse) {
-      if (eventData['fromCache'])
-        this.fromCache = true;
+      if (eventData['fromCache']) {
+        // See BUG(chromium:998397): back-end over-approximates caching.
+        this._maybeDiskCached = true;
+      }
       if (eventData['fromServiceWorker'])
         this.fromServiceWorker = true;
+      if (eventData['hasCachedResource'])
+        this.hasCachedResource = true;
       this.encodedDataLength = encodedDataLength;
     }
     if (event.name === recordType.ResourceReceivedData)
       this.encodedDataLength += encodedDataLength;
-    if (event.name === recordType.ResourceFinish && encodedDataLength)
+    if (event.name === recordType.ResourceFinish && encodedDataLength) {
       this.encodedDataLength = encodedDataLength;
+      // If a ResourceFinish event with an encoded data length is received,
+      // then the resource was not cached; it was fetched before it was
+      // requested, e.g. because it was pushed in this navigation.
+      this._transferSize = encodedDataLength;
+    }
     const decodedBodyLength = eventData['decodedBodyLength'];
     if (event.name === recordType.ResourceFinish && decodedBodyLength)
       this.decodedBodyLength = decodedBodyLength;
@@ -1556,12 +1604,64 @@ TimelineModel.TimelineModel.NetworkRequest = class {
   }
 
   /**
+   * Return whether this request was cached. This works around BUG(chromium:998397),
+   * which reports pushed resources as disk cached. Pushed resources that were not
+   * disk cached, however, have a non-zero `_transferSize`.
+   * @return {boolean}
+   */
+  cached() {
+    return !!this._memoryCached || (!!this._maybeDiskCached && !this._transferSize);
+  }
+
+  /**
+   * Return whether this request was served from a memory cache.
+   * @return {boolean}
+   */
+  memoryCached() {
+    return this._memoryCached;
+  }
+
+  /**
+   * Get the timing information for this request. If the request was cached,
+   * the timing refers to the original (uncached) load, and should not be used.
+   * @return {!{sendStartTime: number, headersEndTime: number}}
+   */
+  getSendReceiveTiming() {
+    if (this.cached() || !this.timing) {
+      // If the request is served from cache, the timing refers to the original
+      // resource load, and should not be used.
+      return {sendStartTime: this.startTime, headersEndTime: this.startTime};
+    }
+    const requestTime = this.timing.requestTime * 1000;
+    const sendStartTime = requestTime + this.timing.sendStart;
+    const headersEndTime = requestTime + this.timing.receiveHeadersEnd;
+    return {sendStartTime, headersEndTime};
+  }
+
+  /**
+   * Get the start time of this request, i.e. the time when the browser or
+   * renderer queued this request. There are two cases where request time is
+   * earlier than `startTime`: (1) if the request is served from cache, because
+   * it refers to the original load of the resource. (2) if the request was
+   * initiated by the browser instead of the renderer. Only in case (2) the
+   * the request time must be used instead of the start time to work around
+   * BUG(chromium:865066).
+   * @return {number}
+   */
+  getStartTime() {
+    return Math.min(this.startTime, !this.cached() && this.timing && this.timing.requestTime * 1000 || Infinity);
+  }
+
+  /**
+   * Returns the time where the earliest event belonging to this request starts.
+   * This differs from `getStartTime()` if a previous HTTP/2 request pushed the
+   * resource proactively: Then `beginTime()` refers to the time the push was received.
    * @return {number}
    */
   beginTime() {
-    return Math.min(
-        this.startTime, this.timing && this.timing.requestTime * 1000 || Infinity,
-        this.timing && this.timing.pushStart * 1000 || Infinity);
+    // `pushStart` is referring to the original push if the request was cached (i.e. in
+    // general not the most recent push), and should hence only be used for requests that were not cached.
+    return Math.min(this.getStartTime(), !this.cached() && this.timing && this.timing.pushStart * 1000 || Infinity);
   }
 };
 
@@ -1869,9 +1969,10 @@ TimelineModel.TimelineAsyncEventTracker = class {
     let type = TimelineModel.TimelineModel.RecordType;
 
     events.set(type.TimerInstall, {causes: [type.TimerFire], joinBy: 'timerId'});
-    events.set(
-        type.ResourceSendRequest,
-        {causes: [type.ResourceReceiveResponse, type.ResourceReceivedData, type.ResourceFinish], joinBy: 'requestId'});
+    events.set(type.ResourceSendRequest, {
+      causes: [type.ResourceMarkAsCached, type.ResourceReceiveResponse, type.ResourceReceivedData, type.ResourceFinish],
+      joinBy: 'requestId'
+    });
     events.set(type.RequestAnimationFrame, {causes: [type.FireAnimationFrame], joinBy: 'id'});
     events.set(type.RequestIdleCallback, {causes: [type.FireIdleCallback], joinBy: 'id'});
     events.set(type.WebSocketCreate, {

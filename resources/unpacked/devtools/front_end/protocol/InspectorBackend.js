@@ -289,7 +289,7 @@ Protocol.SessionRouter = class {
     this._pendingResponsesCount = 0;
     this._domainToLogger = new Map();
 
-    /** @type {!Map<string, {target: !Protocol.TargetBase, callbacks: !Map<number, !Protocol._Callback>}>} */
+    /** @type {!Map<string, {target: !Protocol.TargetBase, callbacks: !Map<number, !Protocol._Callback>, proxyConnection: ?Protocol.Connection}>} */
     this._sessions = new Map();
 
     /** @type {!Array<function()>} */
@@ -310,9 +310,10 @@ Protocol.SessionRouter = class {
   /**
    * @param {!Protocol.TargetBase} target
    * @param {string} sessionId
+   * @param {?Protocol.Connection} proxyConnection
    */
-  registerSession(target, sessionId) {
-    this._sessions.set(sessionId, {target, callbacks: new Map()});
+  registerSession(target, sessionId, proxyConnection) {
+    this._sessions.set(sessionId, {target, callbacks: new Map(), proxyConnection});
   }
 
   /**
@@ -330,6 +331,13 @@ Protocol.SessionRouter = class {
    */
   _nextMessageId() {
     return this._lastMessageId++;
+  }
+
+  /**
+   * @return {!Protocol.Connection}
+   */
+  connection() {
+    return this._connection;
   }
 
   /**
@@ -395,6 +403,16 @@ Protocol.SessionRouter = class {
 
     if (session.target._needsNodeJSPatching)
       Protocol.NodeURL.patch(messageObject);
+
+    if (session.proxyConnection) {
+      if (session.proxyConnection._onMessage) {
+        session.proxyConnection._onMessage(messageObject);
+      } else {
+        Protocol.InspectorBackend.reportProtocolError(
+            'Protocol Error: the message has a proxyConnection with no _onMessage', messageObject);
+      }
+      return;
+    }
 
     if ('id' in messageObject) {  // just a response for some request
       const callback = session.callbacks.get(messageObject.id);
@@ -531,6 +549,13 @@ Protocol.TargetBase = class {
 
   markAsNodeJSForTest() {
     this._needsNodeJSPatching = true;
+  }
+
+  /**
+   * @return {!Protocol.SessionRouter}
+   */
+  router() {
+    return this._router;
   }
 };
 
