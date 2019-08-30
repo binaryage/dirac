@@ -331,9 +331,6 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_53081d6225e780e0f0d94351251be91c" desc="Text of a DOM element in Timeline UIUtils of the Performance panel">
     (changed &quot;<ph name="INVALIDATION_SELECTORPART">$1s<ex>part</ex></ph>&quot;<ph name="EXTRADATA">$2s<ex>a, b</ex></ph>)
   </message>
-  <message name="IDS_DEVTOOLS_539dddc574d3cd85ba73df93df7a76d0" desc="Text in Timeline UIUtils of the Performance panel">
-    Stack Trace
-  </message>
   <message name="IDS_DEVTOOLS_5402f18025999ebf70fd56d8ca1b1909" desc="Text in Timeline UIUtils of the Performance panel">
     GC Event
   </message>
@@ -361,6 +358,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_5878904937ecbc1d0556f79782ab03cd" desc="Text in Timeline UIUtils of the Performance panel">
     Scroll Update
   </message>
+  <message name="IDS_DEVTOOLS_5936c61a9f71fdd7e0cfd388a4c37353" desc="Text in Timeline UIUtils of the Performance panel">
+    LCP
+  </message>
   <message name="IDS_DEVTOOLS_59cf59caeba8075dec6a745b083edd0c" desc="Text in Timeline UIUtils of the Performance panel">
     Time Waiting for Main Thread
   </message>
@@ -375,6 +375,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   </message>
   <message name="IDS_DEVTOOLS_5c593b83b0fca15af4b50ca95c9d3e87" desc="Text in Timeline UIUtils of the Performance panel">
     Sign Reply
+  </message>
+  <message name="IDS_DEVTOOLS_5e1f827f43b25804948ad57149ad369e" desc="Screen reader label for a select box that filters the Performance panel Event Log by duration.">
+    Duration filter
   </message>
   <message name="IDS_DEVTOOLS_5e8170b28aaa693ca9170bb0d65b3043" desc="Text in Timeline UIUtils of the Performance panel">
     Destroy WebSocket
@@ -487,6 +490,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_798afebf1a5e9d795a96f0c82cccaae2" desc="Text in Timeline UIUtils of the Performance panel">
     Cached Wasm Module
   </message>
+  <message name="IDS_DEVTOOLS_7ac6c415cd08c0ba2c0a1f54c0a62a52" desc="Text in Timeline UIUtils of the Performance panel">
+    ''' (from push)
+  </message>
   <message name="IDS_DEVTOOLS_7b3a6b02f467b95f2b5267aa94708c07" desc="Text in Timeline Flame Chart Data Provider of the Performance panel">
     Thread <ph name="__THREADINDEX">$1s<ex>2</ex></ph>
   </message>
@@ -495,6 +501,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   </message>
   <message name="IDS_DEVTOOLS_80a4b8755d836d50c19e6eefb976bc2e" desc="Text in Timeline UIUtils of the Performance panel">
     <ph name="SELFCATEGORY_TITLE">$1s<ex>blink.console</ex></ph> (self)
+  </message>
+  <message name="IDS_DEVTOOLS_812f4cf4e8c262a256350332191a52b2" desc="Status text to indicate the recording has failed in the Performance panel">
+    Recording failed
   </message>
   <message name="IDS_DEVTOOLS_81e91be8db96be69e372f0c715ec7444" desc="Text in Timeline UIUtils of the Performance panel">
     Collected
@@ -507,6 +516,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   </message>
   <message name="IDS_DEVTOOLS_83e393be9178c404eb013bca48782312" desc="Text in Timeline UIUtils of the Performance panel">
     <ph name="CLIPWIDTH">$1s<ex>2</ex></ph> × <ph name="CLIPHEIGHT">$2s<ex>2</ex></ph>
+  </message>
+  <message name="IDS_DEVTOOLS_84497a704396fa5a9e67913f67fc465a" desc="Text in Timeline UIUtils of the Performance panel">
+    ''' (from memory cache)
   </message>
   <message name="IDS_DEVTOOLS_86c8559f4d7d1d74dc3e04baf2b65cc6" desc="Text in Timeline UIUtils of the Performance panel">
     Decoded Body
@@ -806,6 +818,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_d88a137b62e15eece2884fa04bc36099" desc="Text in Timeline Flame Chart View of the Performance panel">
     <ph name="THIS__STYLE_TITLE">$1s<ex>Frame</ex></ph> at <ph name="STARTTIME">$2s<ex>10ms</ex></ph>
+  </message>
+  <message name="IDS_DEVTOOLS_d9070adf25882bbae3339d42bd4efd62" desc="Text in Timeline UIUtils of the Performance panel">
+    Largest Contentful Paint
   </message>
   <message name="IDS_DEVTOOLS_d97477d6d8a838ead9348185bb5b6742" desc="Text in Timeline Flame Chart Data Provider of the Performance panel">
     Thread

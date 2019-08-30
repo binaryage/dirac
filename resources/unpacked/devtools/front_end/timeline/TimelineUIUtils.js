@@ -99,6 +99,8 @@ Timeline.TimelineUIUtils = class {
     eventStyles[type.MarkFirstPaint] = new Timeline.TimelineRecordStyle(ls`First Paint`, painting, true);
     eventStyles[type.MarkFCP] = new Timeline.TimelineRecordStyle(ls`First Contentful Paint`, rendering, true);
     eventStyles[type.MarkFMP] = new Timeline.TimelineRecordStyle(ls`First Meaningful Paint`, rendering, true);
+    eventStyles[type.MarkLCPCandidate] =
+        new Timeline.TimelineRecordStyle(ls`Largest Contentful Paint`, rendering, true);
     eventStyles[type.TimeStamp] = new Timeline.TimelineRecordStyle(ls`Timestamp`, scripting);
     eventStyles[type.ConsoleTime] = new Timeline.TimelineRecordStyle(ls`Console Time`, scripting);
     eventStyles[type.UserTiming] = new Timeline.TimelineRecordStyle(ls`User Timing`, scripting);
@@ -941,6 +943,10 @@ Timeline.TimelineUIUtils = class {
         contentHelper.appendTextRow(ls`Type`, eventData['type']);
         break;
 
+      case recordTypes.MarkLCPCandidate:
+        contentHelper.appendTextRow(ls`Type`, String(eventData['type']));
+        contentHelper.appendTextRow(ls`Size`, String(eventData['size']));
+        // Fall-through intended.
       case recordTypes.MarkFirstPaint:
       case recordTypes.MarkFCP:
       case recordTypes.MarkFMP:
@@ -1158,7 +1164,7 @@ Timeline.TimelineUIUtils = class {
     const color = Timeline.TimelineUIUtils.networkCategoryColor(category);
     contentHelper.addSection(ls`Network request`, color);
 
-    const duration = request.endTime - (request.startTime || -Infinity);
+    const duration = request.endTime - (request.getStartTime() || -Infinity);
     if (request.url)
       contentHelper.appendElementRow(ls`URL`, Components.Linkifier.linkifyURL(request.url));
     Timeline.TimelineUIUtils._maybeAppendProductToDetails(contentHelper, badgePool, request.url);
@@ -1174,8 +1180,12 @@ Timeline.TimelineUIUtils = class {
     if (request.mimeType)
       contentHelper.appendTextRow(ls`Mime Type`, request.mimeType);
     let lengthText = '';
-    if (request.fromCache)
+    if (request.memoryCached())
+      lengthText += ls` (from memory cache)`;
+    else if (request.cached())
       lengthText += ls` (from cache)`;
+    else if (request.timing && request.timing.pushStart)
+      lengthText += ls` (from push)`;
     if (request.fromServiceWorker)
       lengthText += ls` (from service worker)`;
     if (request.encodedDataLength || !lengthText)
@@ -1699,6 +1709,8 @@ Timeline.TimelineUIUtils = class {
         return ls`FCP`;
       case recordTypes.MarkFMP:
         return ls`FMP`;
+      case recordTypes.MarkLCPCandidate:
+        return ls`LCP`;
     }
     return null;
   }
@@ -1748,6 +1760,10 @@ Timeline.TimelineUIUtils = class {
         break;
       case recordTypes.MarkFMP:
         color = '#134A26';
+        tall = true;
+        break;
+      case recordTypes.MarkLCPCandidate:
+        color = '#1A3422';
         tall = true;
         break;
       case recordTypes.TimeStamp:

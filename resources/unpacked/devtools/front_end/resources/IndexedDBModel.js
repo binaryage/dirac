@@ -160,7 +160,7 @@ Resources.IndexedDBModel = class extends SDK.SDKModel {
    * @param {string} origin
    */
   clearForOrigin(origin) {
-    if (!this._enabled)
+    if (!this._enabled || !this._databaseNamesBySecurityOrigin[origin])
       return;
 
     this._removeOrigin(origin);
@@ -499,7 +499,7 @@ Resources.IndexedDBModel = class extends SDK.SDKModel {
   }
 };
 
-SDK.SDKModel.register(Resources.IndexedDBModel, SDK.Target.Capability.DOM, false);
+SDK.SDKModel.register(Resources.IndexedDBModel, SDK.Target.Capability.Storage, false);
 
 Resources.IndexedDBModel.KeyTypes = {
   NumberType: 'number',

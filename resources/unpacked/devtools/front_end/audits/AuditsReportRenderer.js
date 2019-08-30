@@ -14,11 +14,15 @@ Audits.ReportRenderer = class extends ReportRenderer {
     if (!artifacts || !artifacts.traces || !artifacts.traces.defaultPass)
       return;
 
+    const container = el.querySelector('.lh-audit-group');
+    const columnsEl = container.querySelector('.lh-columns');
+    // There will be no columns if just the PWA category.
+    if (!columnsEl)
+      return;
+
     const defaultPassTrace = artifacts.traces.defaultPass;
     const timelineButton = UI.createTextButton(Common.UIString('View Trace'), onViewTraceClick, 'view-trace');
-    const container = el.querySelector('.lh-audit-group');
-    container.insertBefore(timelineButton, container.querySelector('.lh-columns').nextSibling);
-    return el;
+    container.insertBefore(timelineButton, columnsEl.nextSibling);
 
     async function onViewTraceClick() {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.AuditsViewTrace);
@@ -48,8 +52,7 @@ Audits.ReportRenderer = class extends ReportRenderer {
       if (!node)
         continue;
 
-      const element =
-          await Common.Linkifier.linkify(node, /** @type {!Common.Linkifier.Options} */ ({title: detailsItem.snippet}));
+      const element = await Common.Linkifier.linkify(node, {tooltip: detailsItem.snippet});
       origElement.title = '';
       origElement.textContent = '';
       origElement.appendChild(element);
@@ -69,6 +72,29 @@ Audits.ReportRenderer = class extends ReportRenderer {
  * @override
  */
 Audits.ReportUIFeatures = class extends ReportUIFeatures {
+  /**
+   * @param {!DOM} dom
+   */
+  constructor(dom) {
+    super(dom);
+    this._beforePrint = null;
+    this._afterPrint = null;
+  }
+
+  /**
+   * @param {?function()} beforePrint
+   */
+  setBeforePrint(beforePrint) {
+    this._beforePrint = beforePrint;
+  }
+
+  /**
+   * @param {?function()} afterPrint
+   */
+  setAfterPrint(afterPrint) {
+    this._afterPrint = afterPrint;
+  }
+
   /**
    * Returns the html that recreates this report.
    * @return {string}
@@ -103,9 +129,14 @@ Audits.ReportUIFeatures = class extends ReportUIFeatures {
     printWindow.document.body.replaceWith(clonedReport);
     // Linkified nodes are shadow elements, which aren't exposed via `cloneNode`.
     await Audits.ReportRenderer.linkifyNodeDetails(clonedReport);
+
+    if (this._beforePrint)
+      this._beforePrint();
     printWindow.focus();
     printWindow.print();
     printWindow.close();
+    if (this._afterPrint)
+      this._afterPrint();
   }
 
   /**

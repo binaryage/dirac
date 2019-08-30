@@ -35,15 +35,12 @@ Resources.ServiceWorkersView = class extends UI.VBox {
     this._otherSWFilter.setAttribute('tabindex', 0);
     this._otherSWFilter.setAttribute('role', 'switch');
     this._otherSWFilter.setAttribute('aria-checked', false);
-    this._otherSWFilter.addEventListener('keydown', event => {
-      if (event.target !== this._otherSWFilter)
-        return;
-      if (isEnterKey(event) || event.key === ' ')
-        this._toggleFilter();
-    });
     const filterLabel = this._otherSWFilter.createChild('label', 'service-worker-filter-label');
     filterLabel.textContent = Common.UIString('Service workers from other origins');
-    filterLabel.addEventListener('click', () => this._toggleFilter());
+    onInvokeElement(this._otherSWFilter, event => {
+      if (event.target === this._otherSWFilter || event.target === filterLabel)
+        this._toggleFilter();
+    });
 
     const toolbar = new UI.Toolbar('service-worker-filter-toolbar', this._otherSWFilter);
     this._filter = new UI.ToolbarInput(ls`Filter service worker`, 1);
@@ -319,6 +316,8 @@ Resources.ServiceWorkersView.Section = class {
     this._pushNotificationDataSetting =
         Common.settings.createLocalSetting('pushData', Common.UIString('Test push message from DevTools.'));
     this._syncTagNameSetting = Common.settings.createLocalSetting('syncTagName', 'test-tag-from-devtools');
+    this._periodicSyncTagNameSetting =
+        Common.settings.createLocalSetting('periodicSyncTagName', 'test-tag-from-devtools');
 
     this._toolbar = section.createToolbar();
     this._toolbar.renderAsLinks();
@@ -339,6 +338,11 @@ Resources.ServiceWorkersView.Section = class {
         this._push.bind(this));
     this._createSyncNotificationField(
         Common.UIString('Sync'), this._syncTagNameSetting.get(), Common.UIString('Sync tag'), this._sync.bind(this));
+    if (Runtime.experiments.isEnabled('backgroundServicesPeriodicBackgroundSync')) {
+      this._createSyncNotificationField(
+          ls`Periodic Sync`, this._periodicSyncTagNameSetting.get(), ls`Periodic Sync tag`,
+          tag => this._periodicSync(tag));
+    }
 
     this._linkifier = new Components.Linkifier();
     /** @type {!Map<string, !Protocol.Target.TargetInfo>} */
@@ -433,11 +437,7 @@ Resources.ServiceWorkersView.Section = class {
       errorsLabel.classList.add('link');
       errorsLabel.tabIndex = 0;
       UI.ARIAUtils.setAccessibleName(errorsLabel, ls`${this._registration.errors.length} registration errors`);
-      errorsLabel.addEventListener('click', () => Common.console.show());
-      errorsLabel.addEventListener('keydown', event => {
-        if (isEnterKey(event) || event.key === ' ')
-          Common.console.show();
-      });
+      onInvokeElement(errorsLabel, () => Common.console.show());
       name.appendChild(errorsLabel);
     }
     this._sourceField.createChild('div', 'report-field-value-subtitle').textContent =
@@ -557,6 +557,14 @@ Resources.ServiceWorkersView.Section = class {
   _sync(tag) {
     this._syncTagNameSetting.set(tag);
     this._manager.dispatchSyncEvent(this._registration.id, tag, true);
+  }
+
+  /**
+   * @param {string} tag
+   */
+  _periodicSync(tag) {
+    this._periodicSyncTagNameSetting.set(tag);
+    this._manager.dispatchPeriodicSyncEvent(this._registration.id, tag);
   }
 
   /**
