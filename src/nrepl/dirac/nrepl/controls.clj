@@ -1,6 +1,7 @@
 (ns dirac.nrepl.controls
   (:require [dirac.nrepl.compilers :as compilers]
             [dirac.nrepl.figwheel :as figwheel]
+            [dirac.nrepl.figwheel2 :as figwheel2]
             [dirac.nrepl.helpers :as helpers :refer [with-coalesced-output]]
             [dirac.nrepl.messages :as messages]
             [dirac.nrepl.sessions :as sessions]
@@ -210,6 +211,19 @@
     (let [response (case result
                      ::figwheel/not-found (error-println (messages/make-figwheel-api-not-found-msg api-name))
                      ::figwheel/not-fn (error-println (messages/make-figwheel-bad-api-msg api-name))
+                     result)]
+      (state/send-response! (utils/prepare-current-env-info-response))
+      response)))
+
+; -- (dirac! :fig2) ---------------------------------------------------------------------------------------------------------
+
+(defmethod dirac! :fig2 [_ & [api-name & args]]
+  ; must not use with-coalesced-output, because builds can take longer time and user would not have feedback
+  (let [full-api-name (figwheel2/resolve-full-api-name api-name)
+        result (apply figwheel2/call-repl-api! full-api-name args)]
+    (let [response (case result
+                     ::figwheel2/not-found (error-println (messages/make-figwheel2-api-not-found-msg (str full-api-name)))
+                     ::figwheel2/not-callable (error-println (messages/make-figwheel2-bad-api-msg (str full-api-name)))
                      result)]
       (state/send-response! (utils/prepare-current-env-info-response))
       response)))

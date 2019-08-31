@@ -24,6 +24,7 @@
    "  `:match`      list matching Dirac sessions"
    ""
    "  `:fig`        Figwheel REPL API bridge"
+   "  `:fig2`       Figwheel Main REPL API bridge"
    ""
    "  `:version`    print version info"
    "  `:help`       print usage help"
@@ -164,7 +165,7 @@
    "  1. `(dirac :fig)`"
    "  2. `(dirac :fig api-fn & args)`"
    ""
-   "This is a bridge provided for convenince to allow controlling Figwheel directly from Dirac REPL."
+   "This is a bridge provided for convenience to allow controlling Figwheel directly from Dirac REPL."
    ""
    "You may provide api-fn as a string, a keyword or a symbol. Figwheel API function is resolved dynamically."
    "Function arguments must be specified precisely as expected by Figwheel API."
@@ -177,6 +178,31 @@
    ""
    "Please refer to Figwheel docs for full list of control functions:"
    "  => https://github.com/bhauman/lein-figwheel#repl-figwheel-control-functions"])
+
+(def ^:dynamic fig2-usage
+  ["Call Figwheel Main REPL Controls API (if present)."
+   ""
+   "  1. `(dirac :fig2)`"
+   "  2. `(dirac :fig2 api-fn & args)`"
+   ""
+   "This is a bridge provided for convenience to allow controlling Figwheel directly from Dirac REPL."
+   ""
+   "You may provide api-fn as a string, a keyword or a symbol. Figwheel API function is resolved dynamically."
+   "Function arguments must be specified precisely as expected by Figwheel API."
+   ""
+   "  Examples:"
+   "    `(dirac :fig2 :status)`  ; <= this is equivalent to `(dirac :fig)`"
+   "    `(dirac :fig2 :clean)`"
+   "    `(dirac :fig2 :reset \"my-build-id\")`"
+   "    `(dirac :fig2 :build-once \"my-build-id\")`"
+   "    `(dirac :fig2 :stop-builds \"my-build-id\")`"
+   "    `(dirac :fig2 :start-builds \"my-build-id\")`"
+   ""
+   "    `(dirac :fig2 :figwheel.repl/conns)`"
+   "    `(dirac :fig2 :figwheel.repl/focus \"session-name\")`"
+   ""
+   "Please refer to Figwheel docs for full list of control functions:"
+   "  => https://figwheel.org/docs"])
 
 ; -- public docs map --------------------------------------------------------------------------------------------------------
 
@@ -195,4 +221,5 @@
    :switch  (render-usage switch-usage)
    :spawn   (render-usage spawn-usage)
    :kill    (render-usage kill-usage)
-   :fig     (render-usage fig-usage)})
+   :fig     (render-usage fig-usage)
+   :fig2    (render-usage fig2-usage)})
