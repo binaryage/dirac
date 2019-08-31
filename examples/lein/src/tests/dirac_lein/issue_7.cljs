@@ -1,5 +1,5 @@
-(ns dirac-sample.issue-7
-  (:require-macros [dirac-sample.logging :refer [log]]))
+(ns dirac-lein.issue-7
+  (:require-macros [dirac-lein.logging :refer [log]]))
 
 ; https://github.com/binaryage/dirac/issues/7
 

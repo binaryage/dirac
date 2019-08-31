@@ -1,16 +1,16 @@
-# dirac-sample [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt)
+# dirac-lein [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt)
 
 This project is an example of integration of [**Dirac DevTools**](https://github.com/binaryage/dirac) into a
 Leiningen-based ClojureScript project.
 
-![](https://box.binaryage.com/dirac-main-01.png)
+![main screenshot](https://box.binaryage.com/dirac-main-01.png)
 
 ## Local setup
 
-    git clone https://github.com/binaryage/dirac-sample.git
-    cd dirac-sample
+    git clone https://github.com/binaryage/dirac.git
+    cd dirac/examples/lein
 
-## Demo time!
+## Demo time
 
 ### Installation
 
@@ -86,15 +86,15 @@ If you see something very similar to the first screenshot at the top, you have D
 
 ### Hello, World!
 
-Let's try to call `hello!` function from our namespace `dirac-sample.demo`.
+Let's try to call `hello!` function from our namespace `dirac-lein.demo`.
 
-    (dirac-sample.demo/hello! "World")
+    (dirac-lein.demo/hello! "World")
 
 It worked `"Hello, World!"` was logged into the console (white background means that the logging output originated in Javascript land).
 
 As you probably know you should first require (or eval) namespace in the REPL context to make it aware of namespace content.
 
-    (require 'dirac-sample.demo)
+    (require 'dirac-lein.demo)
 
 But still you have to type fully qualified name because currently you are in `cljs.user` namespace. To switch you can use `in-ns` special function.
 
@@ -105,7 +105,7 @@ Let's try it:
 You get an error `java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.`. This is a Java exception from nREPL side.
  Execute `(doc in-ns)` to see the documentation for this special REPL function. It expects namespace name as the first argument.
 
-    (in-ns 'dirac-sample.demo)
+    (in-ns 'dirac-lein.demo)
     (hello! "Dirac")
 
 Should log `Hello, Dirac!` into the console without warnings.

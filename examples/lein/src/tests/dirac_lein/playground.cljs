@@ -1,5 +1,5 @@
-(ns dirac-sample.playground
-  (:require-macros [dirac-sample.logging :refer [log]])
+(ns dirac-lein.playground
+  (:require-macros [dirac-lein.logging :refer [log]])
   (:require [goog.i18n.uChar :as u]
             [clojure.string :as s]))
 

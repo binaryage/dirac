@@ -1,9 +1,9 @@
 (def devtools-version "0.9.10")
 (def dirac-version "1.3.11")
 (def figwheel-version "0.5.19")
-(defproject binaryage/dirac-sample "0.1.0-SNAPSHOT"
-  :description "An example integration of Dirac DevTools"
-  :url "https://github.com/binaryage/dirac-sample"
+(defproject binaryage/dirac-lein "0.1.0-SNAPSHOT"
+  :description "An example integration of Dirac DevTools with a Leiningen-based project"
+  :url "https://github.com/binaryage/dirac"
 
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/clojurescript "1.10.520"]
@@ -72,7 +72,7 @@
                                                    :output-dir      "resources/public/.compiled/demo"
                                                    :asset-path      ".compiled/demo"
                                                    :preloads        [devtools.preload dirac.runtime.preload]
-                                                   :main            dirac-sample.demo
+                                                   :main            dirac-lein.demo
                                                    :external-config {:dirac.runtime/config {:nrepl-config {:reveal-url-script-path "scripts/reveal.sh"
                                                                                                            ;:reveal-url-request-handler (fn [config url line column]
                                                                                                            ;                              (str "ERR REPLY>" url))
@@ -90,7 +90,7 @@
                                                    :asset-path    ".compiled/demo_advanced"
                                                    :pseudo-names  true
                                                    :preloads      [dirac.runtime.preload]
-                                                   :main          dirac-sample.demo
+                                                   :main          dirac-lein.demo
                                                    :optimizations :advanced}}}}}
 
              ; --------------------------------------------------------------------------------------------------------------
@@ -103,7 +103,7 @@
                                                    :asset-path            ".compiled"
                                                    :source-map-asset-path "http://localhost:9988/.compiled"                   ; see run-demo-node-source-maps-server.sh, CLJS-1075
                                                    :preloads              [devtools.preload dirac.runtime.preload]
-                                                   :main                  dirac-sample.demo
+                                                   :main                  dirac-lein.demo
                                                    :target                :nodejs
                                                    :optimizations         :none}}}}}
 
@@ -120,7 +120,7 @@
                                                    :output-dir    "resources/public/.compiled/tests"
                                                    :asset-path    ".compiled/tests"
                                                    :preloads      [devtools.preload dirac.runtime.preload]
-                                                   :main          dirac-sample.main
+                                                   :main          dirac-lein.main
                                                    :optimizations :none
                                                    :source-map    true}}}}}
 
@@ -196,7 +196,7 @@
                                                                                       :output-dir    "resources/public/.compiled/demo"
                                                                                       :asset-path    ".compiled/demo"
                                                                                       :preloads      ['devtools.preload 'dirac.runtime.preload]
-                                                                                      :main          'dirac-sample.demo
+                                                                                      :main          'dirac-lein.demo
                                                                                       :optimizations :none
                                                                                       :source-map    true}}]})
                                                 (dirac.agent/boot!)

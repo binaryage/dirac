@@ -1,5 +1,5 @@
-(ns dirac-sample.demo
-  (:require-macros [dirac-sample.logging :refer [log]])
+(ns dirac-lein.demo
+  (:require-macros [dirac-lein.logging :refer [log]])
   (:require [dirac.runtime :as dirac]
             [cljs.nodejs :as nodejs]))
 

@@ -1,5 +1,5 @@
-(ns dirac-sample.inline-breakpoints
-  (:require-macros [dirac-sample.logging :refer [log]])
+(ns dirac-lein.inline-breakpoints
+  (:require-macros [dirac-lein.logging :refer [log]])
   (:require [clojure.string :as string]))
 
 (defn ^:export trigger []
