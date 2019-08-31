@@ -1,0 +1,31 @@
+;; Figwheel-main configuration options see: https://figwheel.org/config-options
+;; these will be overriden by the metadata config options in dev.cljs.edn build file
+{ 
+ ;; Set the server port https://figwheel.org/config-options#ring-server-options
+ ;; :ring-server-options {:port 9500}
+
+ ;; Target directory https://figwheel.org/config-options#target-dir
+ ;; you may want to set this to resources if you are using Leiningen
+ ;; :target-dir "resources"
+ 
+ ;; Server Ring Handler (optional) https://figwheel.org/docs/ring-handler.html
+ ;; If you want to embed a ring handler into the figwheel server, this
+ ;; is for simple ring servers
+ ;; :ring-handler hello_world.server/handler
+ 
+ ;; To be able to open files in your editor from the heads up display
+ ;; you will need to put a script on your path. This script will have
+ ;; to take a file path and a line number ie.
+ ;; in ~/bin/myfile-opener:
+ ;;
+ ;; #! /bin/sh
+ ;; emacsclient -n +$2:$3 $1
+ ;;
+ ;; :open-file-command "myfile-opener"
+ 
+ ;; if you are using emacsclient you can just use
+ ;; :open-file-command "emacsclient"
+
+ ;; Logging output gets printed to the REPL, if you want to redirect it to a file:
+ ;; :log-file "figwheel-main.log"
+}
