@@ -1,4 +1,4 @@
-# dirac-lein [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt)
+# dirac-lein
 
 This project is an example of integration of [**Dirac DevTools**](https://github.com/binaryage/dirac) into a
 Leiningen-based ClojureScript project.

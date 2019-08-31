@@ -28,4 +28,6 @@
 
  ;; Logging output gets printed to the REPL, if you want to redirect it to a file:
  ;; :log-file "figwheel-main.log"
+
+ :open-url false
 }
