@@ -15,7 +15,7 @@
 
 ; this message is sent to client after booting into a Dirac REPL
 (defn send-bootstrap-info! [nrepl-message weasel-url]
-  (assert (state/has-session?))                                                                                               ; we asssume this code is running within ensure-session
+  (assert (state/has-session?))                                                                                               ; we assume this code is running within ensure-session
   (debug/log-stack-trace!)
   (let [info-message {:op         :bootstrap-info
                       :weasel-url weasel-url}]
@@ -25,7 +25,7 @@
 
 (defn weasel-server-started! [nrepl-message weasel-url runtime-tag]
   (assert weasel-url)
-  (assert (state/has-session?))                                                                                               ; we asssume this code is running within ensure-session
+  (assert (state/has-session?))                                                                                               ; we assume this code is running within ensure-session
   (debug/log-stack-trace!)
   (let [{:keys [session transport]} nrepl-message]
     (sessions/add-dirac-session-descriptor! session transport runtime-tag)
@@ -84,7 +84,7 @@
             cljs-repl-options (:cljs-repl-options config)]
         (assert (not (state/has-session?)))
         (state/ensure-session (:session nrepl-message)
-          (start-cljs-repl! nrepl-message config repl-env cljs-repl-options)))
+                              (start-cljs-repl! nrepl-message config repl-env cljs-repl-options)))
       (catch Throwable e
         (log/error "Unable to bootstrap Dirac ClojureScript REPL:\n" e)
         (helpers/send-response! nrepl-message (protocol/prepare-bootstrap-error-response (helpers/capture-exception-details e)))
