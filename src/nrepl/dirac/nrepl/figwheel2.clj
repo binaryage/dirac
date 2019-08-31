@@ -23,7 +23,8 @@
   (try-resolve-ns-var 'figwheel.main 'build-registry))
 
 (defn get-all-figwheel-builds []
-  @(get-figwheel-build-registry))
+  (if-some [registry (get-figwheel-build-registry)]
+    @registry))
 
 (defn make-figwheel-compiler-id [build-id]
   (str "figwheel.main/" (or build-id "?")))
