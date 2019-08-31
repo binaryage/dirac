@@ -67,9 +67,9 @@
           (state/set-session-selected-compiler! preferred-compiler)))                                                         ; TODO: validate that preferred compiler exists
       (set! *ns* (find-ns (state/get-session-cljs-ns)))                                                                       ; TODO: is this really needed? is it for macros?
       (helpers/send-response! nrepl-message (utils/prepare-current-env-info-response))
-      (catch Exception e
-        (state/set-session-meta! initial-session-meta)                                                                        ; restore session to initial state
-        (throw e)))))
+      (finally
+        (state/set-session-meta! initial-session-meta)))))                                                                    ; restore session to initial state
+
 
 (defn bootstrap! [config]
   (if-some [nrepl-message (state/get-last-seen-nrepl-message)]
