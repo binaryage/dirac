@@ -42,7 +42,6 @@
   (symbol (name v)))
 
 (defn try-resolve-callable-api [qualified-sym-name]
-  (assert (qualified-symbol? qualified-sym-name))
   (let [val (try-resolve-ns-symbol (symbol (namespace qualified-sym-name)) (symbol (name qualified-sym-name)))]
     (when (var? val)
       [(meta val) (var-get val)])))
@@ -83,7 +82,6 @@
       (eval form))))
 
 (defn call-repl-api! [full-api-name & args]
-  (assert (qualified-symbol? full-api-name))
   (if-some [[var-descriptor var-value] (try-resolve-callable-api full-api-name)]
     (cond
       ; in case of a macro we have to resort to evil eval
