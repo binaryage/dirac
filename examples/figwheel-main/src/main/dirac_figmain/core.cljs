@@ -5,6 +5,8 @@
             [sablono.core :as sab :include-macros true]
             [dirac.runtime :as dirac]))
 
+; -- figwheel template ------------------------------------------------------------------------------------------------------
+
 (println "This text is printed from src/dirac_figmain/core.cljs. Go ahead and edit it and see reloading in action.")
 
 (defn multiply [a b] (* a b))
@@ -17,7 +19,7 @@
 (defn hello-world [state]
   (sab/html [:div
              [:h1 (:text @state)]
-             [:h3 "Edit 1 this in src/dirac_figmain/core.cljs and watch it change!"]]))
+             [:h3 "Edit this in src/dirac_figmain/core.cljs and watch it change!"]]))
 
 (defn mount [el]
   (js/ReactDOM.render (hello-world app-state) el))
