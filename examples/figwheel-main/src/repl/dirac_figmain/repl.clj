@@ -10,14 +10,14 @@
 ; For conceptual overview please see https://github.com/binaryage/dirac/blob/master/docs/about-repls.md#dirac--figwheel
 
 (def nrepl-port (Integer/parseInt (or (System/getenv "DIRAC_NREPL_PORT") "8230")))
-(def nrepl-version-string (str "v" (:version-string nrepl.version/version)))
 
 ; see https://nrepl.org/nrepl/0.6.0/usage/server.html
 (defn start-nrepl-server! []
-  (println "Starting nREPL server" nrepl-version-string "on port" nrepl-port)
-  (nrepl.server/start-server
-    :port nrepl-port
-    :handler (nrepl.server/default-handler #'dirac.nrepl/middleware)))
+  (let [nrepl-version-string (str "v" (:version-string nrepl.version/version))]
+    (println "Starting nREPL server" nrepl-version-string "on port" nrepl-port)
+    (nrepl.server/start-server
+      :port nrepl-port
+      :handler (nrepl.server/default-handler #'dirac.nrepl/middleware))))
 
 ; see https://figwheel.org/docs/scripting_api.html#starting-figwheel-from-the-repl-or-script
 (defn start-figwheel-in-background! []
