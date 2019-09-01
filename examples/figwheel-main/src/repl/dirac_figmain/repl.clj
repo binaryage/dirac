@@ -9,7 +9,7 @@
 ; With this setup Dirac (v1.4.0+) can be aware of Figwheel Main and use its CLJS compiler auto-magically
 ; For conceptual overview please see https://github.com/binaryage/dirac/blob/master/docs/about-repls.md#dirac--figwheel
 
-(def nrepl-port (Integer/parseInt (or (System/getenv "DIRAC_NREPL_PORT") "8230")))
+(def nrepl-port (Integer/parseInt (or (System/getenv "DIRAC_NREPL_SERVER_PORT") "8230")))
 
 ; see https://nrepl.org/nrepl/0.6.0/usage/server.html
 (defn start-nrepl-server! []
