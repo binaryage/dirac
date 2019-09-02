@@ -3,7 +3,7 @@
 This project is an example of integration of [**Dirac DevTools**](https://github.com/binaryage/dirac) into a
 ClojureScript project with [Figwheel Main](https://github.com/bhauman/figwheel-main).
 
-![main screenshot](https://box.binaryage.com/dirac-main-01.png)
+![main screenshot](https://box.binaryage.com/dirac-figwheel-main-01.png)
 
 ## Local setup
 
@@ -30,24 +30,22 @@ After installation, should see a new extension icon next to your address bar <im
 Now you can launch the project from terminal:
 
     ./scripts/repl.sh
-    
+
 After it fully starts, you should see something like:
 
-```
-[Figwheel] Validating figwheel-main.edn
-[Figwheel] figwheel-main.edn is valid \(ツ)/
-[Figwheel] Compiling build dev to "target/public/cljs-out/dev-main.js"
-[Figwheel] Successfully compiled build dev to "target/public/cljs-out/dev-main.js" in 3.254 seconds.
-[Figwheel] Outputting main file: target/public/cljs-out/dev-main-auto-testing.js
-[Figwheel] Watching paths: ("test" "src/main") to compile build - dev
-[Figwheel] Starting Server at http://localhost:9500
-JavaScript environment will not launch automatically when :open-url is false
-Starting nREPL server v0.6.0 on port 8230
+    [Figwheel] Validating figwheel-main.edn
+    [Figwheel] figwheel-main.edn is valid \(ツ)/
+    [Figwheel] Compiling build dev to "target/public/cljs-out/dev-main.js"
+    [Figwheel] Successfully compiled build dev to "target/public/cljs-out/dev-main.js" in 3.254 seconds.
+    [Figwheel] Outputting main file: target/public/cljs-out/dev-main-auto-testing.js
+    [Figwheel] Watching paths: ("test" "src/main") to compile build - dev
+    [Figwheel] Starting Server at http://localhost:9500
+    JavaScript environment will not launch automatically when :open-url is false
+    Starting nREPL server v0.6.0 on port 8230
 
-Dirac Agent v1.4.0
-Connected to nREPL server at nrepl://localhost:8230.
-Agent is accepting connections at ws://localhost:8231.
-```
+    Dirac Agent v1.4.0
+    Connected to nREPL server at nrepl://localhost:8230.
+    Agent is accepting connections at ws://localhost:8231.
 
 It tries to communicate three things:
 
@@ -133,19 +131,30 @@ This is a proof that Dirac REPL can execute arbitrary ClojureScript code in the 
 ## More tips
 
 Skeleton of this project was generated from official [Figwheel Main template](https://rigsomelight.com/figwheel-main-template/).
-   
-#### To clean all compiled files:
 
-    rm -rf target/public
+### To clean all compiled files
 
-#### To create a production build run:
+    ./scripts/clean.sh
 
-	rm -rf target/public
-	clojure -A:fig:min
-	
-#### You can connect to your nREPL server from other clients as well
+### To create a production build run
+
+    ./scripts/clean.sh
+    clojure -A:fig:min
+
+### You can control Figwheel Main via Dirac
+
+In Dirac REPL you show docs by:
+
+    (dirac :help :fig2)
+
+For example you can force on-off build:
+
+    (dirac :fig2 :build-once "my-build-id")
+
+### You can connect to your nREPL server from other clients as well
 
 1. You can connect from Cursive via "Clojure REPL -> Remote"
 2. Or, if you have Leiningen, you can connect via `lein repl :connect 8230`
 
 To join Dirac REPL session you might want to issue `(dirac :join)` after connection. See [integration doc page](https://github.com/binaryage/dirac/blob/master/docs/integration.md).
+
