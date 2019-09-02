@@ -1,5 +1,6 @@
 (ns dirac.nrepl.state
   (:require [clojure.tools.logging :as log]
+            [dirac.lib.utils :as utils]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.messages :as messages]))
 
@@ -52,8 +53,8 @@
    (if (some? *current-session*)
      (register-last-seen-nrepl-message! *current-session* nrepl-message)
      (log/error (messages/make-missing-nrepl-session-msg nrepl-message))))
-  ([session nrepl-messsage]
-   (swap! session assoc #'*last-seen-nrepl-message* nrepl-messsage)))
+  ([session nrepl-message]
+   (swap! session assoc #'*last-seen-nrepl-message* nrepl-message)))
 
 (defn get-last-seen-nrepl-message []
   *last-seen-nrepl-message*)
@@ -93,6 +94,7 @@
   ([cljs-repl-env] (set-session-cljs-repl-env! *current-session* cljs-repl-env))
   ([session cljs-repl-env]
    (assert session)
+   (log/debug (str "set-session-cljs-repl-env! " (get-session-id session) " => " (utils/pp cljs-repl-env)))
    (alter-meta! session assoc ::cljs-repl-env cljs-repl-env)))
 
 (defn dirac-session?
@@ -124,6 +126,7 @@
   ([compiler-descriptors] (set-session-compiler-descriptors! *current-session* compiler-descriptors))
   ([session compiler-descriptors]
    (assert session)
+   (log/debug (str "set-session-compiler-descriptors! " (get-session-id session) " => " (utils/pp compiler-descriptors)))
    (alter-meta! session assoc ::compiler-descriptors compiler-descriptors)))
 
 (defn get-session-cljs-repl-options
@@ -136,6 +139,7 @@
   ([cljs-repl-options] (set-session-cljs-repl-options! *current-session* cljs-repl-options))
   ([session cljs-repl-options]
    (assert session)
+   (log/debug (str "set-session-cljs-repl-options! " (get-session-id session) " => " (utils/pp cljs-repl-options)))
    (alter-meta! session assoc ::cljs-repl-options cljs-repl-options)))
 
 (defn get-session-original-clj-ns
@@ -148,6 +152,7 @@
   ([original-clj-ns] (set-session-original-clj-ns! *current-session* original-clj-ns))
   ([session original-clj-ns]
    (assert session)
+   (log/debug (str "set-session-original-clj-ns! " (get-session-id session) " => " (utils/pp original-clj-ns)))
    (alter-meta! session assoc ::original-clj-ns original-clj-ns)))
 
 (defn get-session-cljs-ns
@@ -160,6 +165,7 @@
   ([cljs-ns] (set-session-cljs-ns! *current-session* cljs-ns))
   ([session cljs-ns]
    (assert session)
+   (log/debug (str "set-session-cljs-ns! " (get-session-id session) " => " (utils/pp cljs-ns)))
    (alter-meta! session assoc ::cljs-ns cljs-ns)))
 
 (defn get-session-last-compiler-number
@@ -172,6 +178,7 @@
   ([n] (set-session-last-compiler-number! *current-session* n))
   ([session n]
    (assert session)
+   (log/debug (str "set-session-last-compiler-number! " (get-session-id session) " => " n))
    (alter-meta! session assoc ::last-compiler-number n)))
 
 (defn get-session-dirac-nrepl-config
@@ -184,6 +191,7 @@
   ([dirac-nrepl-config] (set-session-dirac-nrepl-config! *current-session* dirac-nrepl-config))
   ([session dirac-nrepl-config]
    (assert session)
+   (log/debug (str "set-session-dirac-nrepl-config! " (get-session-id session) " => " (utils/pp dirac-nrepl-config)))
    (alter-meta! session assoc ::dirac-nrepl-config dirac-nrepl-config)))
 
 (defn get-session-meta
@@ -199,7 +207,7 @@
    (reset-meta! session meta)))
 
 (defn register-selected-compiler-for-dead-session! [session-id selected-compiler]
-  (log/debug (str "register-selected-compiler-for-dead-session! " session-id " => " (pr-str selected-compiler)))
+  (log/debug (str "register-selected-compiler-for-dead-session! " session-id " => " (utils/pp selected-compiler)))
   (swap! selected-compilers-of-dead-sessions assoc session-id selected-compiler))
 
 (defn get-selected-compiler-of-dead-session [session-id]

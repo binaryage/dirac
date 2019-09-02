@@ -45,7 +45,14 @@
   (eval/prepare-current-env-info-response))
 
 (defn start-new-cljs-compiler-repl-environment! [nrepl-message dirac-nrepl-config repl-env repl-options]
-  (log/trace "start-new-cljs-compiler-repl-environment!\n")
+  (log/debug "start-new-cljs-compiler-repl-environment!")
+  (log/trace "start-new-cljs-compiler-repl-environment!\n"
+             "dirac-nrepl-config:\n"
+             (utils/pp dirac-nrepl-config)
+             "repl-env:\n"
+             (utils/pp repl-env)
+             "repl-options:\n"
+             (utils/pp repl-options))
   (let [compiler-env nil
         code (or (:repl-init-code dirac-nrepl-config) (:repl-init-code config/default-config))
         job-id "init"                                                                                                         ; this is a special case of init code
