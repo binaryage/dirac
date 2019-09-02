@@ -273,12 +273,11 @@
 
 (declare go-react-on-global-object-cleared!)
 
-(def handle-global-object-cleared (gfns/debounce go-react-on-global-object-cleared! 500))
-
 (defn on-debugger-event [type & args]
   (log "on-debugger-event" type)
   (case type
-    "GlobalObjectCleared" (apply handle-global-object-cleared args)
+    "GlobalObjectCleared" (let [handle-global-object-cleared (gfns/debounce go-react-on-global-object-cleared! 500)]
+                            (apply handle-global-object-cleared args))
     true))
 
 (defn subscribe-debugger-events! []
