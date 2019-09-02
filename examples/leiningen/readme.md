@@ -8,7 +8,7 @@ Leiningen-based ClojureScript project.
 ## Local setup
 
     git clone https://github.com/binaryage/dirac.git
-    cd dirac/examples/lein
+    cd dirac/examples/leiningen
 
 ## Demo time
 
