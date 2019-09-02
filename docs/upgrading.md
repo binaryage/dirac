@@ -59,6 +59,6 @@ Here is a quick check list in case of upgrading troubles:
 1. make sure you have restarted everything depending on Dirac library and your Chrome (and `lein clean` to play it safe)
 1. read release notes, in case of known breaking changes there should be some word about it
 1. try installing everything from scratch with clean Chrome profile as described in the [installation guide](installation.md)
-1. try to look at the [sample project](https://github.com/binaryage/dirac-sample) which should be always working with the latest Dirac version
+1. try to look at the [example projects](https://github.com/binaryage/dirac/tree/master/examples) which should be always working with the latest Dirac version
 1. you might want to look into [issues at github](https://github.com/binaryage/dirac/issues), chances are you have encountered an open problem
 1. you might also try to ask for help in `#dirac` channel on [clojurians Slack](http://clojurians.net)

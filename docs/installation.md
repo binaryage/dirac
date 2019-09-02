@@ -4,7 +4,7 @@ Dirac integration with your project requires some effort and can be configured i
 In this document I will discuss standard configuration with Leiningen. For custom configuration refer to [this document](configuration.md).
 
 If this is your first Dirac installation and you are not familiar with Dirac features
-I first recommend following [the demo walktrough in Dirac Example project](https://github.com/binaryage/dirac-sample) to learn
+I first recommend following [the demo in Dirac Example project](https://github.com/binaryage/dirac/tree/master/examples/leiningen) to learn
 the basics and test-drive Dirac on a properly-configured project.
 
 Here are the ingredients you are going to need:
@@ -83,7 +83,7 @@ The configuration snippet could look something like this:
 Replace `<DIRAC-VERSION>` with actual version of your Dirac Runtime.
 
 I tend to put this extra config under `:repl` profile in my `project.clj` files
-(see an [example here](https://github.com/binaryage/dirac-sample/blob/master/project.clj)).
+(see an [example here](https://github.com/binaryage/dirac/tree/master/examples/leiningen/project.clj)).
 
 #### Start Dirac Agent
 

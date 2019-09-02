@@ -3,7 +3,7 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt) 
 [![Clojars Project](https://img.shields.io/clojars/v/binaryage/dirac.svg)](https://clojars.org/binaryage/dirac) 
 [![Travis](https://img.shields.io/travis/binaryage/dirac/master.svg)](https://travis-ci.org/binaryage/dirac) 
-[![Example Projects](https://img.shields.io/badge/project-examples-ff69b4.svg)](https://github.com/binaryage/dirac/tree/master/examples) 
+[![Examples](https://img.shields.io/badge/project-examples-ff69b4.svg)](https://github.com/binaryage/dirac/tree/master/examples) 
 [![Chrome Extension](https://img.shields.io/badge/chrome-extension-ebb338.svg)](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi)
 
 Dirac is a [Chrome DevTools][1] fork with extra features for ClojureScript developers.
@@ -18,7 +18,7 @@ Dirac is a [Chrome DevTools][1] fork with extra features for ClojureScript devel
 | **[Upgrading](docs/upgrading.md)**
 | **[Configuration](docs/configuration.md)**
 | **[Integration](docs/integration.md)**
-| **[Example project](https://github.com/binaryage/dirac-sample)**
+| **[Examples](https://github.com/binaryage/dirac/tree/master/examples)**
 | **[FAQ](docs/faq.md)**
 
 ### Introduction

@@ -487,13 +487,6 @@
                        "marion-cs"       ["lein" "auto-compile-marion-cs"]
                        "tests"           ["lein" "auto-compile-browser-tests"]
                        "browser"         ["scripts/launch-test-browser.sh"]}}
-             :dev-dirac-sample
-             {:cooper {"fig-dirac"     ["lein" "fig-dirac"]
-                       "fig-marion"    ["lein" "fig-marion"]
-                       "marion-cs"     ["lein" "auto-compile-marion-cs"]
-                       "fig-sample"    ["scripts/dev-sample.sh" "dev-fig"]
-                       "server-sample" ["scripts/dev-sample.sh" "dev-server"]
-                       "browser"       ["scripts/launch-sample-browser.sh"]}}}
 
   :aliases {"check"                      ["shell" "scripts/check-code.sh"]
             "test"                       ["shell" "scripts/test-all.sh"]
@@ -511,7 +504,6 @@
             "run-browser-tests-agent"    ["with-profile" "+test-runner,+debugger-5005" "run" "-m" "dirac.tests.browser.runner/run-agent"]
 
             "dev-browser-tests"          ["shell" "scripts/dev-browser-tests.sh"]
-            "dev-dirac-sample"           ["shell" "scripts/dev-dirac-sample.sh"]
 
             "fig-dirac"                  ["with-profile" "+cljs,+dirac-unpacked,+dirac-figwheel"
                                           "figwheel"
