@@ -140,8 +140,7 @@
           (eval/eval-in-cljs-repl! code ns cljs-repl-env compiler-env cljs-repl-options job-id response-fn scope-info mode)
           (report-missing-compiler! nrepl-message selected-compiler)))
       (let [original-clj-ns (state/get-session-original-clj-ns)]
-        (reset! (:cached-setup cljs-repl-env) :tear-down)                                                                     ; TODO: find a better way
-        (cljs.repl/-tear-down cljs-repl-env)
+        (cljs.repl/-tear-down (assoc cljs-repl-env :dirac.lib.weasel-server/perform-teardown true))
         (sessions/remove-dirac-session-descriptor! session)
         (swap! session assoc #'*ns* original-clj-ns)                                                                          ; TODO: is this really needed?
         (helpers/send-response! nrepl-message (merge (protocol/prepare-printed-value-response nil)

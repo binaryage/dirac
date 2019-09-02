@@ -44,11 +44,15 @@
     (log/trace (str env) "-load called" (str env) provides url)
     (load-javascript env provides url))
   (-tear-down [env]
-    (let [current-setup (:cached-setup env)
-          current-setup-value @current-setup]
-      (if (= current-setup-value :tear-down)                                                                                  ; see evaluate!*
-        (do
-          (log/trace (str env) "-tear-down called => shutting down the env")
+    (if (::perform-teardown env)                                                                                              ; see evaluate!*
+      (let [current-setup (:cached-setup env)
+            current-setup-value @current-setup]
+        (log/trace (str env) "-tear-down called => shutting down the env")
+        ; sometimes we enter imbalanced tear-down request
+        ; this happens when someone/something issues :cljs/quit before our env is fully setup
+        ; see https://github.com/binaryage/dirac/issues/67
+        (if (not= current-setup-value :initialized)
+          (log/trace (str env) "  env is not initialized => ignoring")
           (reset! current-setup (tear-down-env env)))
         (log/trace (str env) "-tear-down called => ignoring"))))
 
