@@ -158,3 +158,8 @@ For example you can force on-off build:
 
 To join Dirac REPL session you might want to issue `(dirac :join)` after connection. See [integration doc page](https://github.com/binaryage/dirac/blob/master/docs/integration.md).
 
+![Cursive screenshot](https://box.binaryage.com/dirac-figwheel-main-02.png)
+![Dirac with Cursive screenshot](https://box.binaryage.com/dirac-figwheel-main-03.png)
+
+
+
