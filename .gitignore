@@ -31,3 +31,4 @@ chrome-linux/
 snapshot.zip
 chromium-latest-linux/
 !/.lein-fast-trampoline
+.cpcache/

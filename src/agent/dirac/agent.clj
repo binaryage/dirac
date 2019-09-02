@@ -4,7 +4,7 @@
 (defn ^:dynamic dirac-require-failure-msg []
   (str "\n"
        "Dirac failed to require its implementation. This is likely caused by missing or wrong dependencies in your project.\n"
-       "Please review your project configuration with Dirac installation instructuctions here: "
+       "Please review your project configuration with Dirac installation instructions here: "
        "https://github.com/binaryage/dirac#installation.\n"))
 
 ; we want to provide meaningful errors when people forget to include some Dirac dependencies into their projects

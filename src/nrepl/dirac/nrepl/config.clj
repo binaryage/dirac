@@ -14,8 +14,8 @@
    :weasel-repl                {:host       "localhost"
                                 :port       8232
                                 :port-range 10}                                                                               ; how many ports to try if the default port is taken
-   ; dirac/sticky means we will inherit preferred compiler from old session on browser refresh
-   :preferred-compiler         "dirac/sticky"                                                                                 ; or "dirac/new", or compiler matching strategy
+   ; we will try to keep compiler from old session on browser refresh
+   :preferred-compiler         nil                                                                                            ; or compiler matching strategy, e.g. "figwheel"
    :cljs-repl-options          nil
    :repl-init-code             standard-repl-init-code
    :reveal-url-script-path     nil                                                                                            ; e.g. ".reveal.sh"

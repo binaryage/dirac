@@ -1,0 +1,15 @@
+pom.xml
+*jar
+/lib/
+/classes/
+/out/
+/target/
+.lein-deps-sum
+.lein-repl-history
+.lein-plugins/
+.repl
+.nrepl-port
+.cpcache/
+.rebel_readline_history
+.test-dirac-chrome-profile/
+.idea/

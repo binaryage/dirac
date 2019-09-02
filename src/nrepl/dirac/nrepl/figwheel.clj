@@ -47,7 +47,7 @@
     (keep (fn [[_id build]] (make-compiler-descriptor build)) builds)))
 
 (defn call-repl-api! [fn-name & args]
-  (when-some [f (try-resolve-figwheel-repl-api (symbol (name fn-name)))]
+  (if-some [f (try-resolve-figwheel-repl-api (symbol (name fn-name)))]
     (if (fn? f)
       (apply f args)
       ::not-fn)

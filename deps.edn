@@ -1,0 +1,30 @@
+; this is an experimental deps.end for dirac
+; we use it from test/gpig project to refer to local dirac code
+; currently I maintain it by hand when need to test/debug something
+{:deps  {org.clojure/clojure       {:mvn/version "1.10.1"}
+         org.clojure/clojurescript {:mvn/version "1.10.520"}
+
+         org.clojure/core.async    {:mvn/version "0.4.500"}
+         org.clojure/tools.logging {:mvn/version "0.5.0"}
+         org.clojure/tools.cli     {:mvn/version "0.4.2"}
+
+         nrepl/nrepl               {:mvn/version "0.6.0"}
+         binaryage/env-config      {:mvn/version "0.2.2"}
+         http-kit                  {:mvn/version "2.3.0"}
+         version-clj               {:mvn/version "0.1.2"}
+         clansi                    {:mvn/version "1.0.0"}
+         funcool/cuerdas           {:mvn/version "2.2.0"}
+         com.rpl/specter           {:mvn/version "1.1.2"}}
+ :paths ["src/agent"
+         "src/automation"
+         "src/background"
+         "src/devtools"
+         "src/implant"
+         "src/lib"
+         "src/logging"
+         "src/nrepl"
+         "src/options"
+         "src/project"
+         "src/runtime"
+         "src/settings"
+         "src/shared"]}

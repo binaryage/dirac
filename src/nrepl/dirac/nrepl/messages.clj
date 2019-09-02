@@ -117,6 +117,16 @@
        "Please make sure you are loading the latest/expected Figwheel version in your nREPL server to prevent any mismatch:\n"
        "  => https://github.com/bhauman/lein-figwheel/wiki/Using-the-Figwheel-REPL-within-NRepl"))
 
+(defn ^:dynamic make-figwheel2-api-not-found-msg [api-name]
+  (str "Figwheel Main API '" api-name "' was not found.\n"
+       "Please make sure you have figwheel-main properly installed in your nREPL server:\n"
+       "  => https://github.com/binaryage/dirac/tree/master/examples/figwheel-main"))
+
+(defn ^:dynamic make-figwheel2-bad-api-msg [api-name]
+  (str "Figwheel Main API '" api-name "' is not a callable function/macro.\n"
+       "Please make sure you are loading the latest/expected Figwheel version in your nREPL server to prevent any mismatch:\n"
+       "  => https://github.com/binaryage/dirac/tree/master/examples/figwheel-main"))
+
 ; -- joined session ---------------------------------------------------------------------------------------------------------
 
 (defn ^:dynamic make-missing-nrepl-message-msg []
