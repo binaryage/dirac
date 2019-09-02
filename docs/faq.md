@@ -54,6 +54,10 @@ Agent. I usually tend to [disable Figwheel's REPL feature](https://github.com/bi
 in my projects and use Figwheel just as a hot code/css reloader + HUD display for compilation feedback. Figwheel's REPL is an
 extra feature which is not required for core Figwheel functionality.
 
+### What about Figwheel Main?
+
+Dirac supports Figwheel Main since v1.4.0. Check out this example project: [examples/figwheel-main](https://github.com/binaryage/dirac/tree/master/examples/figwheel-main).
+
 ### Why my project needs working source maps and no optimizations?
 
 Dirac's code completion relies on source maps and the fact that project structure does not get transformed.
