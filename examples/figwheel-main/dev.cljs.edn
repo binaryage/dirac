@@ -3,5 +3,5 @@
   :auto-testing true}
 {:main     dirac-figmain.core
  :preloads [dirac.runtime.preload]
- ;:external-config {:dirac.runtime/config {:nrepl-config {:preferred-compiler "figwheel"}}}
+ :external-config {:dirac.runtime/config {:nrepl-config {:preferred-compiler "figwheel"}}}
  }
