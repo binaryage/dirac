@@ -31,9 +31,8 @@
     (sessions/add-dirac-session-descriptor! session transport runtime-tag)
     (send-bootstrap-info! nrepl-message weasel-url)))
 
-(defn preferred-compiler-selection [sticky? dirac-nrepl-config]
-  (when sticky?
-    (state/get-selected-compiler-of-dead-session (:parent-session dirac-nrepl-config))))                                      ; attempt to stick to previous compiler selection
+(defn sticky-compiler-selection [dirac-nrepl-config]
+  (state/get-selected-compiler-of-dead-session (:parent-session dirac-nrepl-config)))                                         ; attempt to stick to previous compiler selection
 
 (defn start-cljs-repl! [nrepl-message dirac-nrepl-config repl-env repl-options]
   (log/trace "start-cljs-repl!\n"
@@ -57,14 +56,9 @@
         nrepl-message (utils/wrap-nrepl-message nrepl-message)                                                                ; warnings: we depend on going after state/set-session-cljs-repl-env! setup
         initial-session-meta (state/get-session-meta)]
     (try
-      (let [preferred-compiler (or (:preferred-compiler dirac-nrepl-config) "dirac/sticky")
-            want-new? (= preferred-compiler "dirac/new")
-            want-sticky? (= preferred-compiler "dirac/sticky")]
-        (if (or want-new? want-sticky?)
-          (do
-            (state/set-session-selected-compiler! (preferred-compiler-selection want-sticky? dirac-nrepl-config))
-            (utils/start-new-cljs-compiler-repl-environment! nrepl-message dirac-nrepl-config repl-env repl-options))
-          (state/set-session-selected-compiler! preferred-compiler)))                                                         ; TODO: validate that preferred compiler exists
+      (let [selected-compiler (or (sticky-compiler-selection dirac-nrepl-config) (:preferred-compiler dirac-nrepl-config))]   ; try to stick to previous, or use preferred
+        (state/set-session-selected-compiler! selected-compiler))                                                             ; TODO: validate that preferred compiler exists
+      (utils/start-new-cljs-compiler-repl-environment! nrepl-message dirac-nrepl-config repl-env repl-options)
       (set! *ns* (find-ns (state/get-session-cljs-ns)))                                                                       ; TODO: is this really needed? is it for macros?
       (helpers/send-response! nrepl-message (utils/prepare-current-env-info-response))
       (catch Exception e
