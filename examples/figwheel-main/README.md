@@ -53,17 +53,15 @@ It tries to communicate three things:
 2. you have Dirac Agent connected to it and listening to Dirac DevTools connections on port 8231
 3. you have Figwheel Main watching your "dev" build and serving your site at http://localhost:9500  
 
-At this point you should have a demo website accessible at [http://localhost:9500](http://localhost:9500).
-
-Please navigate there, do not open internal DevTools and click Dirac icon while on the `http://localhost:9977/demo.html` page.
-It should open you a new window with Dirac DevTools app.
+Please in Chrome Canary navigate to [http://localhost:9500](http://localhost:9500) and click Dirac icon while on the 
+`http://localhost:9500` page. It should open you a new window with Dirac DevTools app.
 It will look almost the same as internal DevTools, but you can tell the difference at first glance: active tab highlight
-will be green instead of blue (see the screenshots above).
+will be green instead of blue (see the screenshot above).
 
-Ok, now you can switch to Javascript Console in Dirac DevTools. Focus prompt field and press `CTRL+,` or `CTRL+.`.
+Ok, now you can switch to Javascript Console in Dirac DevTools. Focus prompt field and press `CTRL+.`.
 This will cycle between Javascript to ClojureScript REPL prompts.
 
-Connected? The red message should go away and you should see `cljs.user >> figwheel.main/dev` indicating your
+Connected? The red message should go away and you should see `cljs.user » figwheel.main/dev` indicating your
 current namespace and that you are actually using Figwheel's compiler.
 REPL is ready for your input at this point. You can try:
 
