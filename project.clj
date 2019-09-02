@@ -486,7 +486,7 @@
                        "fig-marion"      ["lein" "fig-marion"]
                        "marion-cs"       ["lein" "auto-compile-marion-cs"]
                        "tests"           ["lein" "auto-compile-browser-tests"]
-                       "browser"         ["scripts/launch-test-browser.sh"]}}
+                       "browser"         ["scripts/launch-test-browser.sh"]}}}
 
   :aliases {"check"                      ["shell" "scripts/check-code.sh"]
             "test"                       ["shell" "scripts/test-all.sh"]
