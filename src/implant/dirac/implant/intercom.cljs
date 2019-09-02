@@ -327,7 +327,8 @@
                        true (assoc :runtime-tag runtime-tag)
                        (some? *last-session-id*) (assoc :parent-session *last-session-id*))]
     {:op   "eval"
-     :code (pr-str `(do
+     :nrepl.middleware.caught/print? true
+     :code (pr-str `(~'do
                       (~'require '~'dirac.nrepl)
                       (~'dirac.nrepl/boot-dirac-repl! '~nrepl-config)))}))
 
@@ -341,7 +342,9 @@
       (loop []
         (if-some [response (<! responses-chan)]
           (if-not (empty? (:status response))
-            (case (first (:status response))
+            (do
+              (log "got bootstrap response" response)
+              (case (first (:status response))
               "done" (do
                        (log "Bootstrap done" response)
                        (set! *repl-bootstrapped* true)
@@ -349,8 +352,8 @@
                        (update-repl-mode!)
                        {:op :bootstrap-done})
               (do
-                (display-prompt-status (bootstrap-error-msg (:details response)))
-                {:op :bootstrap-error}))
+                (display-prompt-status (bootstrap-error-msg (:nrepl.middleware.caught/throwable response)))
+                {:op :bootstrap-error})))
             (recur))
           (do
             (display-prompt-status (unable-to-bootstrap-due-to-timeout-msg))
