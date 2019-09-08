@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='78.0.3896.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='b72ae910eb9f8b4e3a4a0fab20acbfe11213da6a';
+Protocol.BakedSupportedCSSPropertiesChromeTag='79.0.3906.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='4eb6af88cf3cb916013e4e283911786743fa4b9c';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-internal-effective-zoom", "inherited": true},\n'
 + ' {"name": "-internal-visited-background-color"},\n'
@@ -210,6 +210,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"longhands": ["column-width", "column-count"], "name": "columns"},\n'
 + ' {"name": "contain"},\n'
 + ' {"name": "content"},\n'
++ ' {"name": "content-size"},\n'
 + ' {"name": "counter-increment"},\n'
 + ' {"name": "counter-reset"},\n'
 + ' {"name": "cursor", "inherited": true},\n'

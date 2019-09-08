@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='78.0.3896.2';
-Protocol.BakedInspectorBackendAPIChromeRev='b72ae910eb9f8b4e3a4a0fab20acbfe11213da6a';
+Protocol.BakedInspectorBackendAPIChromeTag='79.0.3906.1';
+Protocol.BakedInspectorBackendAPIChromeRev='4eb6af88cf3cb916013e4e283911786743fa4b9c';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -124,7 +124,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("DOM.getContentQuads", [{"name": "nodeId", "type": "number", "optional": true}, {"name": "backendNodeId", "type": "number", "optional": true}, {"name": "objectId", "type": "string", "optional": true}], ["quads"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.getDocument", [{"name": "depth", "type": "number", "optional": true}, {"name": "pierce", "type": "boolean", "optional": true}], ["root"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.getFlattenedDocument", [{"name": "depth", "type": "number", "optional": true}, {"name": "pierce", "type": "boolean", "optional": true}], ["nodes"], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("DOM.getNodeForLocation", [{"name": "x", "type": "number", "optional": false}, {"name": "y", "type": "number", "optional": false}, {"name": "includeUserAgentShadowDOM", "type": "boolean", "optional": true}], ["backendNodeId", "nodeId"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOM.getNodeForLocation", [{"name": "x", "type": "number", "optional": false}, {"name": "y", "type": "number", "optional": false}, {"name": "includeUserAgentShadowDOM", "type": "boolean", "optional": true}, {"name": "ignorePointerEventsNone", "type": "boolean", "optional": true}], ["backendNodeId", "frameId", "nodeId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.getOuterHTML", [{"name": "nodeId", "type": "number", "optional": true}, {"name": "backendNodeId", "type": "number", "optional": true}, {"name": "objectId", "type": "string", "optional": true}], ["outerHTML"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.getRelayoutBoundary", [{"name": "nodeId", "type": "number", "optional": false}], ["nodeId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.getSearchResults", [{"name": "searchId", "type": "string", "optional": false}, {"name": "fromIndex", "type": "number", "optional": false}, {"name": "toIndex", "type": "number", "optional": false}], ["nodeIds"], false);\n'
