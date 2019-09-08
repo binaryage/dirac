@@ -8,8 +8,8 @@ Coverage.CoverageView = class extends UI.VBox {
 
     /** @type {?Coverage.CoverageModel} */
     this._model = null;
-    /** @type {number|undefined} */
-    this._pollTimer;
+    /** @type {?number} */
+    this._pollTimer = null;
     /** @type {?Coverage.CoverageDecorationManager} */
     this._decorationManager = null;
     /** @type {?SDK.ResourceTreeModel} */
@@ -116,22 +116,25 @@ Coverage.CoverageView = class extends UI.VBox {
   /**
    * @param {boolean} reload
    */
-  _startRecording(reload) {
+  async _startRecording(reload) {
     this._reset();
     const mainTarget = SDK.targetManager.mainTarget();
     if (!mainTarget)
       return;
+
     if (!this._model || reload)
-      this._model = new Coverage.CoverageModel(mainTarget);
+      this._model = new Coverage.CoverageModel(/** @type {!SDK.Target} */ (mainTarget));
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.CoverageStarted);
-    if (!this._model.start())
+    const success = await this._model.start();
+    if (!success)
       return;
     this._resourceTreeModel = /** @type {?SDK.ResourceTreeModel} */ (mainTarget.model(SDK.ResourceTreeModel));
     if (this._resourceTreeModel) {
       this._resourceTreeModel.addEventListener(
           SDK.ResourceTreeModel.Events.MainFrameNavigated, this._onMainFrameNavigated, this);
     }
-    this._decorationManager = new Coverage.CoverageDecorationManager(this._model);
+    this._decorationManager =
+        new Coverage.CoverageDecorationManager(/** @type {!Coverage.CoverageModel} */ (this._model));
     this._toggleRecordAction.setToggled(true);
     this._clearButton.setEnabled(false);
     if (this._startWithReloadButton)
@@ -147,7 +150,11 @@ Coverage.CoverageView = class extends UI.VBox {
   }
 
   async _poll() {
-    delete this._pollTimer;
+    if (this._pollTimer) {
+      clearTimeout(this._pollTimer);
+      // Clear until this._model.poll() finishes.
+      this._pollTimer = null;
+    }
     const updates = await this._model.poll();
     this._updateViews(updates);
     this._pollTimer = setTimeout(() => this._poll(), 700);
@@ -156,7 +163,7 @@ Coverage.CoverageView = class extends UI.VBox {
   async _stopRecording() {
     if (this._pollTimer) {
       clearTimeout(this._pollTimer);
-      delete this._pollTimer;
+      this._pollTimer = null;
     }
     if (this._resourceTreeModel) {
       this._resourceTreeModel.removeEventListener(
@@ -197,10 +204,11 @@ Coverage.CoverageView = class extends UI.VBox {
       unused += info.unusedSize();
     }
 
-    const percentUnused = total ? Math.round(100 * unused / total) : 0;
-    this._statusMessageElement.textContent = Common.UIString(
-        '%s of %s bytes are not used. (%d%%)', Number.bytesToString(unused), Number.bytesToString(total),
-        percentUnused);
+    const used = total - unused;
+    const percentUsed = total ? Math.round(100 * used / total) : 0;
+    this._statusMessageElement.textContent =
+        ls`${Number.bytesToString(used)} of ${Number.bytesToString(total)} (${percentUsed}%) used so far.
+        ${Number.bytesToString(unused)} unused.`;
   }
 
   _onFilterChanged() {
