@@ -121,6 +121,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_1b2c363066d5912ae8b27a1527f3d45e" desc="Text in Timeline Tree View of the Performance panel">
     Group by Domain
   </message>
+  <message name="IDS_DEVTOOLS_1c481aa99d081c32182011a758f73d33" desc="Duration text in the Performance panel">
+    <ph name="DURATIONTEXT">$1s<ex>100ms (at 200ms)</ex></ph>
+  </message>
   <message name="IDS_DEVTOOLS_1e3eaaac8d3c9cffea8ee7f03a8a6121" desc="Text in Timeline UIUtils of the Performance panel">
     DOMContentLoaded Event
   </message>
@@ -496,9 +499,6 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_7b3a6b02f467b95f2b5267aa94708c07" desc="Text in Timeline Flame Chart Data Provider of the Performance panel">
     Thread <ph name="__THREADINDEX">$1s<ex>2</ex></ph>
   </message>
-  <message name="IDS_DEVTOOLS_7d341c08fd102f0b86285b5ff2e26ea7" desc="Text in Timeline UIUtils of the Performance panel">
-    <ph name="TITLE">$1s<ex>Loading</ex></ph>: <ph name="EVENTDATA__MESSAGE__">$2s<ex>paint</ex></ph>
-  </message>
   <message name="IDS_DEVTOOLS_80a4b8755d836d50c19e6eefb976bc2e" desc="Text in Timeline UIUtils of the Performance panel">
     <ph name="SELFCATEGORY_TITLE">$1s<ex>blink.console</ex></ph> (self)
   </message>
@@ -863,9 +863,6 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_dfe67b764ba5e3f6b674f049db64e165" desc="Call site stack label in Timeline UIUtils of the Performance panel">
     First Layout Invalidation
-  </message>
-  <message name="IDS_DEVTOOLS_e02d2ae03de9d493df2b6b2d2813d302" desc="Text in Timeline UIUtils of the Performance panel">
-    Duration
   </message>
   <message name="IDS_DEVTOOLS_e0c70bcb54d7f58615eb895c232049ce" desc="Text in Timeline UIUtils of the Performance panel">
     Composite Layers
