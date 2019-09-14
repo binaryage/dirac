@@ -168,6 +168,13 @@ UI.ARIAUtils.markAsHeading = function(element, level) {
 
 /**
  * @param {!Element} element
+ */
+UI.ARIAUtils.markAsPoliteLiveRegion = function(element) {
+  element.setAttribute('aria-live', 'polite');
+};
+
+/**
+ * @param {!Element} element
  * @param {?string} placeholder
  */
 UI.ARIAUtils.setPlaceholder = function(element, placeholder) {
@@ -227,6 +234,13 @@ UI.ARIAUtils.setControls = function(element, controlledElement) {
  */
 UI.ARIAUtils.setChecked = function(element, value) {
   element.setAttribute('aria-checked', !!value);
+};
+
+/**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.setCheckboxAsIndeterminate = function(element) {
+  element.setAttribute('aria-checked', 'mixed');
 };
 
 /**
