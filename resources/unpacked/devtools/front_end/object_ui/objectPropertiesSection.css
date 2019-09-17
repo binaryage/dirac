@@ -75,8 +75,9 @@
 }
 
 .name-and-value {
+    /* see https://github.com/binaryage/cljs-devtools/issues/52
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis;*/
     line-height: 16px;
 }
 
