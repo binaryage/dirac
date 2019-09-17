@@ -218,7 +218,7 @@ String.prototype.trimMiddle = function(maxLength) {
  * @param {number} maxLength
  * @return {string}
  */
-String.prototype.trimEnd = function(maxLength) {
+String.prototype.trimEndWithMaxLength = function(maxLength) {
   if (this.length <= maxLength)
     return String(this);
   return this.substr(0, maxLength - 1) + '\u2026';
@@ -1021,7 +1021,7 @@ self.countRegexMatches = function(regex, content) {
  * @return {string}
  */
 self.spacesPadding = function(spacesCount) {
-  return '\u00a0'.repeat(spacesCount);
+  return '\xA0'.repeat(spacesCount);
 };
 
 /**

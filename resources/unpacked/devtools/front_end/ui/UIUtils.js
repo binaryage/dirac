@@ -1290,14 +1290,12 @@ UI.appendStyle = function(node, cssFile) {
   if (!content)
     console.error(cssFile + ' not preloaded. Check module.json');
   let styleElement = createElement('style');
-  styleElement.type = 'text/css';
   styleElement.textContent = content;
   node.appendChild(styleElement);
 
   const themeStyleSheet = UI.themeSupport.themeStyleSheet(cssFile, content);
   if (themeStyleSheet) {
     styleElement = createElement('style');
-    styleElement.type = 'text/css';
     styleElement.textContent = themeStyleSheet + '\n' + Runtime.resolveSourceURL(cssFile + '.theme');
     node.appendChild(styleElement);
   }
@@ -1621,7 +1619,7 @@ UI.trimTextMiddle = function(context, text, maxWidth) {
  * @return {string}
  */
 UI.trimTextEnd = function(context, text, maxWidth) {
-  return UI.trimText(context, text, maxWidth, (text, width) => text.trimEnd(width));
+  return UI.trimText(context, text, maxWidth, (text, width) => text.trimEndWithMaxLength(width));
 };
 
 /**
@@ -1705,7 +1703,6 @@ UI.ThemeSupport = class {
   injectCustomStyleSheets(element) {
     for (const sheet of this._customSheets){
       const styleElement = createElement('style');
-      styleElement.type = 'text/css';
       styleElement.textContent = sheet;
       element.appendChild(styleElement);
     }
@@ -1735,7 +1732,6 @@ UI.ThemeSupport = class {
     result.push('/*# sourceURL=inspector.css.theme */');
 
     const styleElement = createElement('style');
-    styleElement.type = 'text/css';
     styleElement.textContent = result.join('\n');
     document.head.appendChild(styleElement);
   }
@@ -1753,7 +1749,6 @@ UI.ThemeSupport = class {
     let patch = this._cachedThemePatches.get(id);
     if (!patch) {
       const styleElement = createElement('style');
-      styleElement.type = 'text/css';
       styleElement.textContent = text;
       document.body.appendChild(styleElement);
       patch = this._patchForTheme(id, styleElement.sheet);
@@ -1831,7 +1826,7 @@ UI.ThemeSupport = class {
     output.push(':');
     const items = value.replace(Common.Color.Regex, '\0$1\0').split('\0');
     for (let i = 0; i < items.length; ++i)
-      output.push(this.patchColorText(items[i], colorUsage));
+      output.push(this.patchColorText(items[i], /** @type {!UI.ThemeSupport.ColorUsage} */ (colorUsage)));
     if (style.getPropertyPriority(name))
       output.push(' !important');
     output.push(';');
@@ -2118,8 +2113,7 @@ UI.formatTimestamp = function(timestamp, full) {
    * @return {string}
    */
   function leadZero(value, length) {
-    const valueString = value.toString();
-    const padding = length - valueString.length;
-    return padding <= 0 ? valueString : '0'.repeat(padding) + valueString;
+    const valueString = String(value);
+    return valueString.padStart(length, '0');
   }
 };
