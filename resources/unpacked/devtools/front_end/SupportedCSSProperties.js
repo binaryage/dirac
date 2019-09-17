@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='79.0.3912.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='79901dcd9293ef2e8e78c1a48a2d3c53af3b13f8';
+Protocol.BakedSupportedCSSPropertiesChromeTag='79.0.3915.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='43b5d3a03168bb9d8f54484804a5d08238758a7b';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-internal-effective-zoom", "inherited": true},\n'
 + ' {"name": "-internal-visited-background-color"},\n'
@@ -240,6 +240,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "font-family", "inherited": true},\n'
 + ' {"name": "font-feature-settings", "inherited": true},\n'
 + ' {"name": "font-kerning", "inherited": true},\n'
++ ' {"name": "font-optical-sizing", "inherited": true},\n'
 + ' {"name": "font-size", "inherited": true},\n'
 + ' {"name": "font-size-adjust", "inherited": true},\n'
 + ' {"name": "font-stretch", "inherited": true},\n'
