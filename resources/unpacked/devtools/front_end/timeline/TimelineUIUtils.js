@@ -104,6 +104,7 @@ Timeline.TimelineUIUtils = class {
     eventStyles[type.TimeStamp] = new Timeline.TimelineRecordStyle(ls`Timestamp`, scripting);
     eventStyles[type.ConsoleTime] = new Timeline.TimelineRecordStyle(ls`Console Time`, scripting);
     eventStyles[type.UserTiming] = new Timeline.TimelineRecordStyle(ls`User Timing`, scripting);
+    eventStyles[type.ResourceWillSendRequest] = new Timeline.TimelineRecordStyle(ls`Will Send Request`, loading);
     eventStyles[type.ResourceSendRequest] = new Timeline.TimelineRecordStyle(ls`Send Request`, loading);
     eventStyles[type.ResourceReceiveResponse] = new Timeline.TimelineRecordStyle(ls`Receive Response`, loading);
     eventStyles[type.ResourceFinish] = new Timeline.TimelineRecordStyle(ls`Finish Loading`, loading);
@@ -523,6 +524,7 @@ Timeline.TimelineUIUtils = class {
       case recordType.WebSocketSendHandshakeRequest:
       case recordType.WebSocketReceiveHandshakeResponse:
       case recordType.WebSocketDestroy:
+      case recordType.ResourceWillSendRequest:
       case recordType.ResourceSendRequest:
       case recordType.ResourceReceivedData:
       case recordType.ResourceReceiveResponse:
@@ -630,6 +632,7 @@ Timeline.TimelineUIUtils = class {
       case recordType.DecodeLazyPixelRef:
       case recordType.XHRReadyStateChange:
       case recordType.XHRLoad:
+      case recordType.ResourceWillSendRequest:
       case recordType.ResourceSendRequest:
       case recordType.ResourceReceivedData:
       case recordType.ResourceReceiveResponse:
@@ -696,6 +699,36 @@ Timeline.TimelineUIUtils = class {
       const frame = TimelineModel.TimelineData.forEvent(event).topFrame();
       return frame ? linkifier.maybeLinkifyConsoleCallFrame(target, frame, 'timeline-details') : null;
     }
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {!Element}
+   */
+  static buildDetailsNodeForPerformanceEvent(event) {
+    /** @type {string} */
+    let link =
+        'https://developers.google.com/web/fundamentals/performance/user-centric-performance-metrics#user-centric_performance_metrics';
+    let name = 'page performance metrics';
+    const recordType = TimelineModel.TimelineModel.RecordType;
+    switch (event.name) {
+      case recordType.MarkLCPCandidate:
+        link = 'https://web.dev/largest-contentful-paint';
+        name = 'largest contentful paint';
+        break;
+      case recordType.MarkFCP:
+        link = 'https://web.dev/first-contentful-paint';
+        name = 'first contentful paint';
+        break;
+      case recordType.MarkFMP:
+        link = 'https://web.dev/first-meaningful-paint/';
+        name = 'first meaningful paint';
+        break;
+      default:
+        break;
+    }
+
+    return UI.html`<div>${UI.XLink.create(link, ls`Learn more`)} about ${name}.</div>`;
   }
 
   /**
@@ -798,6 +831,7 @@ Timeline.TimelineUIUtils = class {
       case recordTypes.FireAnimationFrame:
         contentHelper.appendTextRow(ls`Callback ID`, eventData['id']);
         break;
+      case recordTypes.ResourceWillSendRequest:
       case recordTypes.ResourceSendRequest:
       case recordTypes.ResourceReceiveResponse:
       case recordTypes.ResourceReceivedData:
@@ -954,11 +988,8 @@ Timeline.TimelineUIUtils = class {
       case recordTypes.MarkDOMContent:
         contentHelper.appendTextRow(
             ls`Timestamp`, Number.preciseMillisToString(event.startTime - model.minimumRecordTime(), 1));
-        const learnMoreLink = UI.XLink.create(
-            'https://developers.google.com/web/fundamentals/performance/user-centric-performance-metrics#user-centric_performance_metrics',
-            ls`Learn more`);
-        const linkDiv = UI.html`<div>${learnMoreLink} about page performance metrics.</div>`;
-        contentHelper.appendElementRow(ls`Details`, linkDiv);
+        contentHelper.appendElementRow(
+            ls`Details`, Timeline.TimelineUIUtils.buildDetailsNodeForPerformanceEvent(event));
         break;
 
       default: {
@@ -1164,12 +1195,28 @@ Timeline.TimelineUIUtils = class {
     const color = Timeline.TimelineUIUtils.networkCategoryColor(category);
     contentHelper.addSection(ls`Network request`, color);
 
-    const duration = request.endTime - (request.getStartTime() || -Infinity);
     if (request.url)
       contentHelper.appendElementRow(ls`URL`, Components.Linkifier.linkifyURL(request.url));
     Timeline.TimelineUIUtils._maybeAppendProductToDetails(contentHelper, badgePool, request.url);
-    if (isFinite(duration))
-      contentHelper.appendTextRow(ls`Duration`, Number.millisToString(duration, true));
+
+    // The time from queueing the request until resource processing is finished.
+    const fullDuration = request.endTime - (request.getStartTime() || -Infinity);
+    if (isFinite(fullDuration)) {
+      let textRow = Number.millisToString(fullDuration, true);
+      // The time from queueing the request until the download is finished. This
+      // corresponds to the total time reported for the request in the network tab.
+      const networkDuration = request.finishTime - request.getStartTime();
+      // The time it takes to make the resource available to the renderer process.
+      const processingDuration = request.endTime - request.finishTime;
+      if (isFinite(networkDuration) && isFinite(processingDuration)) {
+        const networkDurationStr = Number.millisToString(networkDuration, true);
+        const processingDurationStr = Number.millisToString(processingDuration, true);
+        const cacheOrNetworkLabel = request.cached() ? ls`load from cache` : ls`network transfer`;
+        textRow += ls` (${networkDurationStr} ${cacheOrNetworkLabel} + ${processingDurationStr} resource loading)`;
+      }
+      contentHelper.appendTextRow(ls`Duration`, textRow);
+    }
+
     if (request.requestMethod)
       contentHelper.appendTextRow(ls`Request Method`, request.requestMethod);
     if (typeof request.priority === 'string') {

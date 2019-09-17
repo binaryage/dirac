@@ -407,7 +407,7 @@ TestRunner._evaluateInPageCounter = 0;
 
 /**
  * @param {string} code
- * @return {!Promise<{response: !SDK.RemoteObject,
+ * @return {!Promise<undefined|{response: (!SDK.RemoteObject|undefined),
  *   exceptionDetails: (!Protocol.Runtime.ExceptionDetails|undefined)}>}
  */
 TestRunner._evaluateInPage = async function(code) {
@@ -577,14 +577,13 @@ TestRunner.addScriptTag = function(path) {
 TestRunner.addStylesheetTag = function(path) {
   return TestRunner.evaluateInPageAsync(`
     (function(){
-      let link = document.createElement('link');
+      const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.type = 'text/css';
       link.href = '${path}';
       link.onload = onload;
       document.head.append(link);
       let resolve;
-      let promise = new Promise(r => resolve = r);
+      const promise = new Promise(r => resolve = r);
       function onload() {
         // TODO(chenwilliam): It shouldn't be necessary to force
         // style recalc here but some tests rely on it.
@@ -603,10 +602,10 @@ TestRunner.addStylesheetTag = function(path) {
 TestRunner.addHTMLImport = function(path) {
   return TestRunner.evaluateInPageAsync(`
     (function(){
-      let link = document.createElement('link');
+      const link = document.createElement('link');
       link.rel = 'import';
       link.href = '${path}';
-      let promise = new Promise(r => link.onload = r);
+      const promise = new Promise(r => link.onload = r);
       document.body.append(link);
       return promise;
     })();
@@ -626,7 +625,7 @@ TestRunner.addIframe = function(path, options = {}) {
   options.name = options.name || '';
   return TestRunner.evaluateInPageAsync(`
     (function(){
-      let iframe = document.createElement('iframe');
+      const iframe = document.createElement('iframe');
       iframe.src = '${path}';
       iframe.id = '${options.id}';
       iframe.name = '${options.name}';
@@ -877,17 +876,17 @@ TestRunner.dumpObjectPropertyTreeElement = function(treeElement) {
 };
 
 /**
- * @param {symbol} event
+ * @param {symbol} eventName
  * @param {!Common.Object} obj
  * @param {function(?):boolean=} condition
  * @return {!Promise}
  */
-TestRunner.waitForEvent = function(event, obj, condition) {
+TestRunner.waitForEvent = function(eventName, obj, condition) {
   condition = condition || function() {
     return true;
   };
   return new Promise(resolve => {
-    obj.addEventListener(event, onEventFired);
+    obj.addEventListener(eventName, onEventFired);
 
     /**
      * @param {!Common.Event} event
@@ -895,7 +894,7 @@ TestRunner.waitForEvent = function(event, obj, condition) {
     function onEventFired(event) {
       if (!condition(event.data))
         return;
-      obj.removeEventListener(event, onEventFired);
+      obj.removeEventListener(eventName, onEventFired);
       resolve(event.data);
     }
   });

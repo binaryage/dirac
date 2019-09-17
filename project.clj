@@ -26,7 +26,7 @@
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.7.0" :scope "test"]
-   ['binaryage/chromex "0.8.1" :scope "test"]
+   ['binaryage/chromex "0.8.2" :scope "test"]
    ['binaryage/devtools "0.9.10" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.46" :scope "test"]
@@ -37,7 +37,7 @@
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "0.3.1" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
-   ['fipp "0.6.18" :scope "test"]
+   ['fipp "0.6.19" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
@@ -59,7 +59,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.4.0"
+(defproject binaryage/dirac "1.4.1"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -486,14 +486,7 @@
                        "fig-marion"      ["lein" "fig-marion"]
                        "marion-cs"       ["lein" "auto-compile-marion-cs"]
                        "tests"           ["lein" "auto-compile-browser-tests"]
-                       "browser"         ["scripts/launch-test-browser.sh"]}}
-             :dev-dirac-sample
-             {:cooper {"fig-dirac"     ["lein" "fig-dirac"]
-                       "fig-marion"    ["lein" "fig-marion"]
-                       "marion-cs"     ["lein" "auto-compile-marion-cs"]
-                       "fig-sample"    ["scripts/dev-sample.sh" "dev-fig"]
-                       "server-sample" ["scripts/dev-sample.sh" "dev-server"]
-                       "browser"       ["scripts/launch-sample-browser.sh"]}}}
+                       "browser"         ["scripts/launch-test-browser.sh"]}}}
 
   :aliases {"check"                      ["shell" "scripts/check-code.sh"]
             "test"                       ["shell" "scripts/test-all.sh"]
@@ -511,7 +504,6 @@
             "run-browser-tests-agent"    ["with-profile" "+test-runner,+debugger-5005" "run" "-m" "dirac.tests.browser.runner/run-agent"]
 
             "dev-browser-tests"          ["shell" "scripts/dev-browser-tests.sh"]
-            "dev-dirac-sample"           ["shell" "scripts/dev-dirac-sample.sh"]
 
             "fig-dirac"                  ["with-profile" "+cljs,+dirac-unpacked,+dirac-figwheel"
                                           "figwheel"

@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='78.0.3896.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='b72ae910eb9f8b4e3a4a0fab20acbfe11213da6a';
+Protocol.BakedSupportedCSSPropertiesChromeTag='79.0.3915.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='43b5d3a03168bb9d8f54484804a5d08238758a7b';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-internal-effective-zoom", "inherited": true},\n'
 + ' {"name": "-internal-visited-background-color"},\n'
@@ -210,6 +210,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"longhands": ["column-width", "column-count"], "name": "columns"},\n'
 + ' {"name": "contain"},\n'
 + ' {"name": "content"},\n'
++ ' {"name": "content-size"},\n'
 + ' {"name": "counter-increment"},\n'
 + ' {"name": "counter-reset"},\n'
 + ' {"name": "cursor", "inherited": true},\n'
@@ -239,6 +240,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "font-family", "inherited": true},\n'
 + ' {"name": "font-feature-settings", "inherited": true},\n'
 + ' {"name": "font-kerning", "inherited": true},\n'
++ ' {"name": "font-optical-sizing", "inherited": true},\n'
 + ' {"name": "font-size", "inherited": true},\n'
 + ' {"name": "font-size-adjust", "inherited": true},\n'
 + ' {"name": "font-stretch", "inherited": true},\n'

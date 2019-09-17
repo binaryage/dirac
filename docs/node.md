@@ -32,7 +32,7 @@ debuggable Javascript contexts running inside your node.js process, you might sp
 
 ### Example project
 
-You can follow [dirac-sample](https://github.com/binaryage/dirac-sample) project.
+You can follow [example project](https://github.com/binaryage/dirac/tree/master/examples/leiningen) project.
 
 1. first, make sure that your [Dirac installation](installation.md) works for classic browser debugging, 
 2. instead `lein demo`, run `lein demo-node`, this should start an [example node app](https://github.com/binaryage/dirac-sample/blob/master/src/demo-node/dirac_sample/demo.cljs)

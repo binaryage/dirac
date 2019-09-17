@@ -224,7 +224,7 @@ Network.RequestHeadersView = class extends UI.VBox {
     paramsTreeElement.listItemElement.createTextChild(title);
 
     const headerCount = createElementWithClass('span', 'header-count');
-    headerCount.textContent = Common.UIString('\u00A0(%d)', params.length);
+    headerCount.textContent = Common.UIString('\xA0(%d)', params.length);
     paramsTreeElement.listItemElement.appendChild(headerCount);
 
     /**
@@ -356,10 +356,13 @@ Network.RequestHeadersView = class extends UI.VBox {
     const headers = this._request.sortedResponseHeaders.slice();
     const headersText = this._request.responseHeadersText;
 
-    if (this._showResponseHeadersText)
+    if (this._showResponseHeadersText) {
       this._refreshHeadersText(Common.UIString('Response Headers'), headers.length, headersText, treeElement);
-    else
-      this._refreshHeaders(Common.UIString('Response Headers'), headers, treeElement);
+    } else {
+      this._refreshHeaders(
+          Common.UIString('Response Headers'), headers, treeElement, /* provisional */ false,
+          this._request.blockedResponseCookies());
+    }
 
     if (headersText) {
       const toggleButton = this._createHeadersToggleButton(this._showResponseHeadersText);
@@ -427,7 +430,7 @@ Network.RequestHeadersView = class extends UI.VBox {
     headersTreeElement.listItemElement.removeChildren();
     headersTreeElement.listItemElement.createTextChild(title);
 
-    const headerCount = Common.UIString('\u00A0(%d)', headersLength);
+    const headerCount = Common.UIString('\xA0(%d)', headersLength);
     headersTreeElement.listItemElement.createChild('span', 'header-count').textContent = headerCount;
   }
 
@@ -436,8 +439,9 @@ Network.RequestHeadersView = class extends UI.VBox {
    * @param {!Array.<!SDK.NetworkRequest.NameValue>} headers
    * @param {!UI.TreeElement} headersTreeElement
    * @param {boolean=} provisionalHeaders
+   * @param {!Array<!SDK.NetworkRequest.BlockedSetCookieWithReason>=} blockedResponseCookies
    */
-  _refreshHeaders(title, headers, headersTreeElement, provisionalHeaders) {
+  _refreshHeaders(title, headers, headersTreeElement, provisionalHeaders, blockedResponseCookies) {
     headersTreeElement.removeChildren();
 
     const length = headers.length;
@@ -453,12 +457,37 @@ Network.RequestHeadersView = class extends UI.VBox {
       headersTreeElement.appendChild(cautionTreeElement);
     }
 
+    /** @type {!Map<string, !Array<!Protocol.Network.SetCookieBlockedReason>>} */
+    const blockedCookieLineToReasons = new Map();
+    if (blockedResponseCookies) {
+      blockedResponseCookies.forEach(blockedCookie => {
+        blockedCookieLineToReasons.set(blockedCookie.cookieLine, blockedCookie.blockedReasons);
+      });
+    }
+
     headersTreeElement.hidden = !length && !provisionalHeaders;
     for (let i = 0; i < length; ++i) {
       const headerTreeElement = new UI.TreeElement(this._formatHeader(headers[i].name, headers[i].value));
       headerTreeElement.selectable = false;
-      headersTreeElement.appendChild(headerTreeElement);
       headerTreeElement[Network.RequestHeadersView._headerNameSymbol] = headers[i].name;
+
+      if (headers[i].name.toLowerCase() === 'set-cookie') {
+        const matchingBlockedReasons = blockedCookieLineToReasons.get(headers[i].value);
+        if (matchingBlockedReasons) {
+          const icon = UI.Icon.create('smallicon-warning', '');
+          headerTreeElement.listItemElement.appendChild(icon);
+
+          let titleText = '';
+          for (const blockedReason of matchingBlockedReasons) {
+            if (titleText)
+              titleText += '\n';
+            titleText += SDK.NetworkRequest.setCookieBlockedReasonToUiString(blockedReason);
+          }
+          icon.title = titleText;
+        }
+      }
+
+      headersTreeElement.appendChild(headerTreeElement);
     }
   }
 

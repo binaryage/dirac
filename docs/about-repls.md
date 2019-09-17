@@ -86,7 +86,7 @@ Except that Clojure is not a LISP interpreter. It is a compiler!
 
 What about connecting to REPL over a network? Let's forward to 2011 and introduce [nREPL](https://github.com/nrepl/nrepl). 
 The idea is quite straightforward: let's split the traditional in-process REPL into 
-an nRELP server and an nREPL client. The client will be responsible for 'read' and 'print'
+an nREPL server and an nREPL client. The client will be responsible for 'read' and 'print'
 and the server will provide 'compile' and 'exec'.
 
   * JVM is running our app as well as nREPL server

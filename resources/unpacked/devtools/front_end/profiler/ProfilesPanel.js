@@ -52,6 +52,8 @@ Profiler.ProfilesPanel = class extends UI.PanelWithSidebar {
 
     this._sidebarTree.appendChild(this.profilesItemTreeElement);
 
+    this._sidebarTree.element.addEventListener('keydown', this._onKeyDown.bind(this), false);
+
     this.profileViews = createElement('div');
     this.profileViews.id = 'profile-views';
     this.profileViews.classList.add('vbox');
@@ -94,8 +96,6 @@ Profiler.ProfilesPanel = class extends UI.PanelWithSidebar {
 
     this._createFileSelectorElement();
     this.element.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), false);
-
-    this.contentElement.addEventListener('keydown', this._onKeyDown.bind(this), false);
 
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
     UI.context.addFlavorChangeListener(SDK.CPUProfilerModel, this._updateProfileTypeSpecificUI, this);
@@ -597,10 +597,10 @@ Profiler.ProfileSidebarTreeElement = class extends UI.TreeElement {
     this._iconElement = createElementWithClass('div', 'icon');
     this._titlesElement = createElementWithClass('div', 'titles no-subtitle');
     this._titleContainer = this._titlesElement.createChild('span', 'title-container');
-    this._titleElement = this._titleContainer.createChild('span', 'title');
+    this.titleElement = this._titleContainer.createChild('span', 'title');
     this._subtitleElement = this._titlesElement.createChild('span', 'subtitle');
 
-    this._titleElement.textContent = profile.title;
+    this.titleElement.textContent = profile.title;
     this._className = className;
     this._small = false;
     this._dataDisplayDelegate = dataDisplayDelegate;
@@ -738,7 +738,7 @@ Profiler.ProfileSidebarTreeElement = class extends UI.TreeElement {
    * @param {string} title
    */
   setMainTitle(title) {
-    this._titleElement.textContent = title;
+    this.titleElement.textContent = title;
   }
 };
 

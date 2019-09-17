@@ -166,7 +166,7 @@ input {
     color: inherit;
 }
 
-:host-context(.-theme-with-dark-background) input[type="checkbox"]::not(.-theme-preserve) {
+:host-context(.-theme-with-dark-background) input[type="checkbox"]:not(.-theme-preserve) {
     -webkit-filter: invert(80%);
 }
 
@@ -267,6 +267,16 @@ input {
 
 .chrome-select:disabled {
     opacity: 0.38;
+}
+
+.chrome-select-label {
+  margin: 0px 22px;
+  flex: none;
+}
+
+.chrome-select-label p {
+  margin-top: 0;
+  color: gray;
 }
 
 .chrome-select optgroup,

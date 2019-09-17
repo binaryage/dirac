@@ -121,6 +121,14 @@ UI.ARIAUtils.markAsMenuItem = function(element) {
 };
 
 /**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsMenuItemSubMenu = function(element) {
+  UI.ARIAUtils.markAsMenuItem(element);
+  element.setAttribute('aria-haspopup', true);
+};
+
+/**
  * Must contain children whose role is option.
  * @param {!Element} element
  */
@@ -164,6 +172,13 @@ UI.ARIAUtils.markAsHidden = function(element) {
 UI.ARIAUtils.markAsHeading = function(element, level) {
   element.setAttribute('role', 'heading');
   element.setAttribute('aria-level', level);
+};
+
+/**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.markAsPoliteLiveRegion = function(element) {
+  element.setAttribute('aria-live', 'polite');
 };
 
 /**
@@ -227,6 +242,13 @@ UI.ARIAUtils.setControls = function(element, controlledElement) {
  */
 UI.ARIAUtils.setChecked = function(element, value) {
   element.setAttribute('aria-checked', !!value);
+};
+
+/**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.setCheckboxAsIndeterminate = function(element) {
+  element.setAttribute('aria-checked', 'mixed');
 };
 
 /**
@@ -417,7 +439,7 @@ UI.ARIAUtils.alert = function(message, element) {
     alertElement.setAttribute('aria-atomic', 'true');
     document[UI.ARIAUtils.AlertElementSymbol] = alertElement;
   }
-  document[UI.ARIAUtils.AlertElementSymbol].textContent = message.trimEnd(10000);
+  document[UI.ARIAUtils.AlertElementSymbol].textContent = message.trimEndWithMaxLength(10000);
 };
 
 UI.ARIAUtils.AlertElementSymbol = Symbol('AlertElementSybmol');

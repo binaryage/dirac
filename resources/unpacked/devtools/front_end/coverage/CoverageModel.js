@@ -36,19 +36,21 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @return {boolean}
+   * @return {!Promise<boolean>}
    */
-  start() {
+  async start() {
+    const promises = [];
     if (this._cssModel) {
       // Note there's no JS coverage since JS won't ever return
       // coverage twice, even after it's restarted.
       this._clearCSS();
-      this._cssModel.startCoverage();
+      promises.push(this._cssModel.startCoverage());
     }
     if (this._cpuProfilerModel) {
       this._bestEffortCoveragePromise = this._cpuProfilerModel.bestEffortCoverage();
-      this._cpuProfilerModel.startPreciseCoverage();
+      promises.push(this._cpuProfilerModel.startPreciseCoverage());
     }
+    await Promise.all(promises);
     return !!(this._cssModel || this._cpuProfilerModel);
   }
 
@@ -149,8 +151,9 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
         for (const range of func.ranges)
           ranges.push(range);
       }
-      const subentry =
-          this._addCoverage(script, script.contentLength, script.lineOffset, script.columnOffset, ranges, type);
+      const subentry = this._addCoverage(
+          script, script.contentLength, script.lineOffset, script.columnOffset, ranges,
+          /** @type {!Coverage.CoverageType} */ (type));
       if (subentry)
         updatedEntries.push(subentry);
     }
@@ -280,7 +283,14 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
    */
   async exportReport(fos) {
     const result = [];
-    for (const urlInfo of this._coverageByURL.values()) {
+    function locationCompare(a, b) {
+      const [aLine, aPos] = a.split(':');
+      const [bLine, bPos] = b.split(':');
+      return aLine - bLine || aPos - bPos;
+    }
+    const coverageByUrlKeys = Array.from(this._coverageByURL.keys()).sort();
+    for (const urlInfoKey of coverageByUrlKeys) {
+      const urlInfo = this._coverageByURL.get(urlInfoKey);
       const url = urlInfo.url();
       if (url.startsWith('extensions::') || url.startsWith('chrome-extension://'))
         continue;
@@ -300,10 +310,13 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
         fullText = resource ? new TextUtils.Text(await resource.requestContent()) : null;
       }
 
+      const coverageByLocationKeys = Array.from(urlInfo._coverageInfoByLocation.keys()).sort(locationCompare);
+
       // We have full text for this resource, resolve the offsets using the text line endings.
       if (fullText) {
         const entry = {url, ranges: [], text: fullText.value()};
-        for (const info of urlInfo._coverageInfoByLocation.values()) {
+        for (const infoKey of coverageByLocationKeys) {
+          const info = urlInfo._coverageInfoByLocation.get(infoKey);
           const offset = fullText ? fullText.offsetFromPosition(info._lineOffset, info._columnOffset) : 0;
           let start = 0;
           for (const segment of info._segments) {
@@ -318,7 +331,8 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
       }
 
       // Fall back to the per-script operation.
-      for (const info of urlInfo._coverageInfoByLocation.values()) {
+      for (const infoKey of coverageByLocationKeys) {
+        const info = urlInfo._coverageInfoByLocation.get(infoKey);
         const entry = {url, ranges: [], text: await info.contentProvider().requestContent()};
         let start = 0;
         for (const segment of info._segments) {

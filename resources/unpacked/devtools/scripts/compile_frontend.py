@@ -257,7 +257,6 @@ common_closure_args = [
     '--extra_annotation_name',
     'suppressGlobalPropertiesCheck',
     '--checks-only',
-    '--allow_method_call_decomposing',
 ]
 
 
