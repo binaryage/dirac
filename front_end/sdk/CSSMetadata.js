@@ -198,6 +198,8 @@ SDK.CSSMetadata = class {
    * @return {string}
    */
   canonicalPropertyName(name) {
+    if (this.isCustomProperty(name))
+      return name;
     name = name.toLowerCase();
     if (!name || name.length < 9 || name.charAt(0) !== '-')
       return name;
@@ -401,7 +403,6 @@ SDK.CSSMetadata._colorAwareProperties = new Set([
   'column-rule',
   'column-rule-color',
   'fill',
-  'list-style',
   'list-style-image',
   'outline',
   'outline-color',

@@ -21,6 +21,7 @@ Sources.GutterDiffPlugin = class extends Sources.UISourceCodeFrame.Plugin {
   }
 
   /**
+   * @override
    * @param {!Workspace.UISourceCode} uiSourceCode
    * @return {boolean}
    */
@@ -168,7 +169,7 @@ Sources.GutterDiffPlugin.GutterDecoration = class {
     if (!location)
       return;
     const element = createElementWithClass('div', 'diff-marker');
-    element.textContent = '\u00A0';
+    element.textContent = '\xA0';
     this._textEditor.setGutterDecoration(location.lineNumber, Sources.GutterDiffPlugin.DiffGutterType, element);
     this._textEditor.toggleLineClass(location.lineNumber, this._className, true);
   }
