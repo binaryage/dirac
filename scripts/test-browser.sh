@@ -2,12 +2,13 @@
 
 # this will run browser tests against fully optimized dirac extension (release build)
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 redirect_to_test_stage_if_needed "$@"
 
-pushd "$ROOT"
+cd "$ROOT"
 
 # we want to prevent clashes between:
 #   *  chrome instance for developing tests (port 9333)
@@ -24,7 +25,7 @@ export CHROME_DRIVER_LOG_PATH="$ROOT/target/chromedriver.log"
 export DIRAC_CHROME_DRIVER_VERBOSE=1
 export DIRAC_TEST_BROWSER=1
 
-source "$ROOT/scripts/lib/travis.sh"
+source "scripts/lib/travis.sh"
 
 travis_fold start compile-browser
 travis_time_start
@@ -35,10 +36,8 @@ lein compile-marion
 travis_time_finish
 travis_fold end compile-browser
 
-if [[ ! -z "$1" ]]; then
+if [[ -n "$1" ]]; then
   export DIRAC_SETUP_BROWSER_TEST_FILTER=$1
 fi
 
 ./scripts/run-browser-tests.sh "dirac.tests.browser.runner"
-
-popd

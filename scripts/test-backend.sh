@@ -2,12 +2,13 @@
 
 # this will run browser tests against fully optimized dirac extension (release build)
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 redirect_to_test_stage_if_needed
 
-pushd "$ROOT"
+cd "$ROOT"
 
 # we want to prevent clashes between:
 #   *  chrome instance for developing tests (port 9333)
@@ -21,5 +22,3 @@ export DIRAC_RUNTIME__AGENT_PORT=12041
 export DIRAC_NREPL__WEASEL_PORT=12042
 
 ./scripts/run-backend-tests.sh
-
-popd

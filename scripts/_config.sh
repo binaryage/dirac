@@ -3,7 +3,7 @@
 # standard bash switches for our scripts
 set -e -o pipefail
 
-SPAWN_DIR=`pwd`
+SPAWN_DIR=$(pwd)
 SPAWN_COMMAND="$0"
 SPAWN_ARGS="$@"
 
@@ -14,7 +14,7 @@ source "lib/tools.sh"
 
 cd ..
 
-ROOT=`pwd`
+ROOT=$(pwd)
 CHROMIUM_MIRROR_DIR=${CHROMIUM_MIRROR_DIR:-"$ROOT/../chromium-mirror"}
 export DIRAC_CHROMIUM_MIRROR_DIR=${CHROMIUM_MIRROR_DIR}
 DEVTOOLS_BRANCH="devtools"

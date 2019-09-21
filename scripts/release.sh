@@ -20,9 +20,8 @@
 # - remove unneeded files from resources/release
 
 set -e -o pipefail
-
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 TASK=${1:-compile-dirac-pseudo-names}
 
@@ -57,6 +56,7 @@ cd "$DEVTOOLS_ROOT"
 
 # http://stackoverflow.com/a/34676160/84283
 WORK_DIR=$(mktemp -q -d /tmp/dirac-build-XXXXXXX)
+# shellcheck disable=SC2181
 if [[ $? -ne 0 ]]; then
   echo "$0: Can't create temp file, exiting..."
   exit 1

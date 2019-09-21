@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
-pushd "$ROOT"
+cd "$ROOT"
 
 if [[ ! -d "$DIRAC_BROWSER_TESTS_USER_PROFILE" ]]; then
   mkdir -p "$DIRAC_BROWSER_TESTS_USER_PROFILE"
@@ -58,5 +59,3 @@ set -x
       --load-extension="$DEV_DIRAC_EXTENSION_PATH,$DEV_MARION_EXTENSION_PATH" \
       "http://localhost:$DEV_FIXTURES_SERVER_PORT?set-agent-port=$DIRAC_AGENT_PORT" 2> /dev/null
 set +x
-
-popd

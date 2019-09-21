@@ -2,12 +2,13 @@
 
 # this will run browser tests against unpacked dirac extension
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 redirect_to_test_stage_if_needed
 
-pushd "$ROOT"
+cd "$ROOT"
 
 # we want to prevent clashes between:
 #   *  chrome instance for developing tests (port 9333)
@@ -24,5 +25,3 @@ lein compile-browser-tests
 lein compile-marion
 lein compile-dirac-dev
 ./scripts/run-browser-tests.sh "dirac.tests.browser.runner/-dev-main"
-
-popd

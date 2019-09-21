@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 # taken from git/contrib/subtree
 find_latest_squash(){
@@ -89,7 +90,7 @@ cp -R "$OURS/$DEVTOOLS_DIRAC_PREFIX"/* .
 git add -A
 git commit -m "devtools -> dirac as of $FULL_SHA" --author="BinaryAge Bot <bot@binaryage.com>"
 
-if [[ ! -z "$FORCE_PUSH" ]] || confirm "Do you want to force push new $DIFF_BRANCH of github's Dirac repo? [y/N]" ; then
+if [[ -n "$FORCE_PUSH" ]] || confirm "Do you want to force push new $DIFF_BRANCH of github's Dirac repo? [y/N]" ; then
   git push -f git@github.com:binaryage/dirac.git "$DIFF_BRANCH"
 fi
 
