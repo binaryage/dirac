@@ -19,12 +19,14 @@
 # - copy compiled code to appropriate places in resources/release
 # - remove unneeded files from resources/release
 
+set -e -o pipefail
+
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 TASK=${1:-compile-dirac-pseudo-names}
 
-pushd "$ROOT"
+cd "$ROOT"
 
 ./scripts/check-versions.sh
 
@@ -49,14 +51,12 @@ fi
 FRONTEND="$DEVTOOLS_ROOT/front_end"
 
 echo "Building dirac extension in advanced mode..."
-lein ${TASK}
+lein "${TASK}"
 
-popd
-
-pushd "$DEVTOOLS_ROOT"
+cd "$DEVTOOLS_ROOT"
 
 # http://stackoverflow.com/a/34676160/84283
-WORK_DIR=`mktemp -q -d /tmp/dirac-build-XXXXXXX`
+WORK_DIR=$(mktemp -q -d /tmp/dirac-build-XXXXXXX)
 if [[ $? -ne 0 ]]; then
   echo "$0: Can't create temp file, exiting..."
   exit 1
@@ -102,9 +102,7 @@ echo "Building devtools in advanced mode..."
   --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" \
   --debug 0
 
-popd
-
-pushd "$ROOT"
+cd "$ROOT"
 
 # copy handshake files
 cp "$FRONTEND/handshake.html" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
@@ -123,5 +121,3 @@ cp "$ROOT/target/resources/release/.compiled/options.js" "$RELEASE_BUILD/options
 # ad-hoc cleanup
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/dirac"
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/Images/src"
-
-popd
