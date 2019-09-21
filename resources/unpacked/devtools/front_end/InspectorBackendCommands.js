@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='79.0.3915.2';
-Protocol.BakedInspectorBackendAPIChromeRev='43b5d3a03168bb9d8f54484804a5d08238758a7b';
+Protocol.BakedInspectorBackendAPIChromeTag='79.0.3919.1';
+Protocol.BakedInspectorBackendAPIChromeRev='a4ee456040d803f7a863f583d98e534854bef8f6';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -535,7 +535,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Fetch.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Fetch.enable", [{"name": "patterns", "type": "object", "optional": true}, {"name": "handleAuthRequests", "type": "boolean", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Fetch.failRequest", [{"name": "requestId", "type": "string", "optional": false}, {"name": "errorReason", "type": "string", "optional": false}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Fetch.fulfillRequest", [{"name": "requestId", "type": "string", "optional": false}, {"name": "responseCode", "type": "number", "optional": false}, {"name": "responseHeaders", "type": "object", "optional": false}, {"name": "body", "type": "string", "optional": true}, {"name": "responsePhrase", "type": "string", "optional": true}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Fetch.fulfillRequest", [{"name": "requestId", "type": "string", "optional": false}, {"name": "responseCode", "type": "number", "optional": false}, {"name": "responseHeaders", "type": "object", "optional": true}, {"name": "binaryResponseHeaders", "type": "string", "optional": true}, {"name": "body", "type": "string", "optional": true}, {"name": "responsePhrase", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Fetch.continueRequest", [{"name": "requestId", "type": "string", "optional": false}, {"name": "url", "type": "string", "optional": true}, {"name": "method", "type": "string", "optional": true}, {"name": "postData", "type": "string", "optional": true}, {"name": "headers", "type": "object", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Fetch.continueWithAuth", [{"name": "requestId", "type": "string", "optional": false}, {"name": "authChallengeResponse", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Fetch.getResponseBody", [{"name": "requestId", "type": "string", "optional": false}], ["body", "base64Encoded"], false);\n'
