@@ -11,7 +11,6 @@ pushd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null
 
 source "lib/utils.sh"
 source "lib/tools.sh"
-source "export-windows-layout.sh"
 
 cd ..
 
