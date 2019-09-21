@@ -72,6 +72,8 @@ function cleanup {
 }
 trap cleanup EXIT
 
+WORK_DIR="$WORK_DIR/front_end" # a hack for input_path of copy_devtools_modules.py
+
 mkdir -p "$WORK_DIR"
 
 cp -r "$FRONTEND"/* "$WORK_DIR"
@@ -101,6 +103,17 @@ echo "Building devtools in advanced mode..."
   --input_path "$WORK_DIR" \
   --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" \
   --debug 0
+
+echo "Copying devtools modules..."
+
+# DANGER! this list of applications must be the same as specified in resources/unpacked/devtools/BUILD.gn (see copy_devtools_modules action)
+mkdir -p "$RELEASE_BUILD_DEVTOOLS_FRONTEND/ui"
+./scripts/build/copy_devtools_modules.py \
+  front_end/root.js \
+  front_end/ui/ARIAUtils.js \
+  front_end/ui/ui.js \
+  --input_path "$WORK_DIR/.." \
+  --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 
 cd "$ROOT"
 

@@ -957,11 +957,11 @@ lighthouse_locale_files = [
 
 all_devtools_files += lighthouse_locale_files
 
-all_devtools_modules = [
-  "front_end/root.js",
-  "front_end/ui/ARIAUtils.js",
-  "front_end/ui/ui.js",
-]
+all_devtools_modules = [ # -- darwin
+  "front_end/root.js", # -- darwin
+  "front_end/ui/ARIAUtils.js", # -- darwin
+  "front_end/ui/ui.js", # -- darwin
+] # -- darwin
 
 devtools_test_files = [
   "//third_party/axe-core/axe.js",
@@ -1154,11 +1154,12 @@ application_templates = [
   "front_end/worker_app.html",
 ]
 
-copied_devtools_modules = [
-  "$resources_out_dir/root.js",
-  "$resources_out_dir/ui/ARIAUtils.js",
-  "$resources_out_dir/ui/ui.js",
-]
+# mark for conflicts -- darwin
+copied_devtools_modules = [ # -- darwin
+  "$resources_out_dir/root.js", # -- darwin
+  "$resources_out_dir/ui/ARIAUtils.js", # -- darwin
+  "$resources_out_dir/ui/ui.js", # -- darwin
+] # -- darwin
 
 # mark for conflicts -- darwin
 generated_applications = [ # -- darwin
