@@ -19,6 +19,7 @@ const extensionStringKeys = ['category', 'destination', 'title', 'title-mac'];
 // { IDS_md5-hash => {
 //     string: string,
 //     code: string,
+//     isShared: boolean,
 //     filepath: string,
 //     grdpPath: string,
 //     location: {
@@ -93,9 +94,20 @@ async function parseLocalizableStringsFromFile(filePath) {
   if (path.basename(filePath) === 'module.json')
     return parseLocalizableStringFromModuleJson(fileContent, filePath);
 
-  const ast = esprima.parse(fileContent, {loc: true});
-  for (const node of ast.body)
+  let ast;
+  try {
+    ast = esprima.parseModule(fileContent, {loc: true});
+  } catch (e) {
+    throw new Error(
+        `DevTools localization parser failed:\n${localizationUtils.getRelativeFilePathFromSrc(filePath)}: ${
+            e.message}` +
+        `\nThis error is likely due to unsupported JavaScript features.` +
+        ` Such features are not supported by eslint either and will cause presubmit to fail.` +
+        ` Please update the code and use official JavaScript features.`);
+  }
+  for (const node of ast.body) {
     parseLocalizableStringFromNode(node, filePath);
+  }
 }
 
 function parseLocalizableStringFromModuleJson(fileContent, filePath) {
@@ -119,6 +131,12 @@ function parseLocalizableStringFromModuleJson(fileContent, filePath) {
         for (const defaultVal of extension[key]) {
           if (defaultVal.title)
             addString(defaultVal.title, defaultVal.title, filePath);
+        }
+      } else if (key === 'tags' && extension[key]) {
+        const tagsList = extension[key].split(',');
+        for (let tag of tagsList) {
+          tag = tag.trim();
+          addString(tag, tag, filePath);
         }
       }
     }
@@ -208,18 +226,27 @@ function handleTemplateLiteral(node, code, filePath, argumentNodes) {
 }
 
 function addString(str, code, filePath, location, argumentNodes) {
-  const currentString = {string: str, code: code, filepath: filePath, grdpPath: fileToGRDPMap.get(filePath)};
+  const ids = localizationUtils.getIDSKey(str);
+
+  // In the case of duplicates, the corresponding grdp message should be added
+  // to the shared strings file only if the duplicate strings span across different
+  // grdp files
+  const existingString = frontendStrings.get(ids);
+  if (existingString) {
+    if (!existingString.isShared && existingString.grdpPath !== fileToGRDPMap.get(filePath)) {
+      existingString.isShared = true;
+      existingString.grdpPath = localizationUtils.SHARED_STRINGS_PATH;
+    }
+    return;
+  }
+
+  const currentString =
+      {string: str, code: code, isShared: false, filepath: filePath, grdpPath: fileToGRDPMap.get(filePath)};
   if (location)
     currentString.location = location;
   if (argumentNodes && argumentNodes.length > 0)
     currentString.arguments = argumentNodes.map(argNode => escodegen.generate(argNode));
 
-  // In the case of duplicates, to enforce that entries are added to
-  // a consistent GRDP file, we use the file path that sorts lowest as
-  // the winning entry into frontendStrings.
-  const ids = localizationUtils.getIDSKey(str);
-  if (frontendStrings.has(ids) && frontendStrings.get(ids).filepath <= filePath)
-    return;
   frontendStrings.set(ids, currentString);
 }
 

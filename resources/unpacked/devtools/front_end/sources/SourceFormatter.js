@@ -182,12 +182,10 @@ Sources.SourceFormatter.ScriptMapping = class {
     const formatData = Sources.SourceFormatData._for(uiSourceCode);
     if (!formatData)
       return [];
-    const originalLocation = formatData.mapping.formattedToOriginal(lineNumber, columnNumber);
-    const scripts = this._scriptsForUISourceCode(formatData.originalSourceCode);
-    if (!scripts.length)
-      return [];
-    return scripts.map(
-        script => script.debuggerModel.createRawLocation(script, originalLocation[0], originalLocation[1]));
+    const [originalLine, originalColumn] = formatData.mapping.formattedToOriginal(lineNumber, columnNumber);
+    const scripts = this._scriptsForUISourceCode(formatData.originalSourceCode)
+                        .filter(script => script.containsLocation(originalLine, originalColumn));
+    return scripts.map(script => script.debuggerModel.createRawLocation(script, originalLine, originalColumn));
   }
 
   /**
@@ -264,9 +262,20 @@ Sources.SourceFormatter.StyleMapping = class {
     const formatData = Sources.SourceFormatData._for(uiLocation.uiSourceCode);
     if (!formatData)
       return [];
-    const originalLocation = formatData.mapping.formattedToOriginal(uiLocation.lineNumber, uiLocation.columnNumber);
+    const [originalLine, originalColumn] =
+        formatData.mapping.formattedToOriginal(uiLocation.lineNumber, uiLocation.columnNumber);
     const headers = formatData.originalSourceCode[this._headersSymbol];
-    return headers.map(header => new SDK.CSSLocation(header, originalLocation[0], originalLocation[1]));
+    const locations = [];
+    for (const header of headers) {
+      // TODO(chromium:1005708): Remove this computation and use the end location from `header` once the back-end provides it.
+      const [formattedStartLine, formattedStartColumn] =
+          formatData.mapping.originalToFormatted(header.startLine, header.startColumn);
+      const [originalEndLine, originalEndColumn] =
+          formatData.mapping.formattedToOriginal(formattedStartLine, formattedStartColumn, header.contentLength);
+      if (header.containsLocation(originalLine, originalColumn, originalEndLine, originalEndColumn))
+        locations.push(new SDK.CSSLocation(header, originalLine, originalColumn));
+    }
+    return locations;
   }
 
   /**
@@ -275,10 +284,7 @@ Sources.SourceFormatter.StyleMapping = class {
    */
   _setSourceMappingEnabled(formatData, enable) {
     const original = formatData.originalSourceCode;
-    const rawLocations = Bindings.cssWorkspaceBinding.uiLocationToRawLocations(original.uiLocation(0, 0));
-    const headers = rawLocations.map(rawLocation => rawLocation.header()).filter(header => !!header);
-    if (!headers.length)
-      return;
+    const headers = this._headersForUISourceCode(original);
     if (enable) {
       original[this._headersSymbol] = headers;
       headers.forEach(header => header[Sources.SourceFormatData._formatDataSymbol] = formatData);
@@ -287,6 +293,25 @@ Sources.SourceFormatter.StyleMapping = class {
       headers.forEach(header => delete header[Sources.SourceFormatData._formatDataSymbol]);
     }
     headers.forEach(header => Bindings.cssWorkspaceBinding.updateLocations(header));
+  }
+
+  /**
+   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @return {!Array<!SDK.CSSStyleSheetHeader>}
+   */
+  _headersForUISourceCode(uiSourceCode) {
+    if (uiSourceCode.contentType() === Common.resourceTypes.Document) {
+      const target = Bindings.NetworkProject.targetForUISourceCode(uiSourceCode);
+      const cssModel = target && target.model(SDK.CSSModel);
+      if (cssModel) {
+        return cssModel.headersForSourceURL(uiSourceCode.url())
+            .filter(header => header.isInline && !header.hasSourceURL);
+      }
+    } else if (uiSourceCode.contentType().isStyleSheet()) {
+      const rawLocations = Bindings.cssWorkspaceBinding.uiLocationToRawLocations(uiSourceCode.uiLocation(0, 0));
+      return rawLocations.map(rawLocation => rawLocation.header()).filter(header => !!header);
+    }
+    return [];
   }
 };
 
