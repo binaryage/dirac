@@ -86,5 +86,5 @@ automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         close-scenario! ["scenario-tab#1"]
-summary          Automated 19 actions with 5 check-points containing 0 assertions.
+summary          Automated 19 actions with 6 check-points containing 0 assertions.
                  0 failures, 0 errors.
