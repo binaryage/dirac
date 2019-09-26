@@ -106,12 +106,39 @@ echo "Building devtools in advanced mode..."
 
 echo "Copying devtools modules..."
 
-# DANGER! this list of applications must be the same as specified in resources/unpacked/devtools/BUILD.gn (see copy_devtools_modules action)
+# DANGER! this list of applications must be the same as specified in resources/unpacked/devtools/BUILD.gn (see all_devtools_modules list)
 mkdir -p "$RELEASE_BUILD_DEVTOOLS_FRONTEND/ui"
+mkdir -p "$RELEASE_BUILD_DEVTOOLS_FRONTEND/common"
 ./scripts/build/copy_devtools_modules.py \
   front_end/root.js \
   front_end/ui/ARIAUtils.js \
   front_end/ui/ui.js \
+  front_end/common/common.js \
+  front_end/common/App.js \
+  front_end/common/AppProvider.js \
+  front_end/common/CharacterIdMap.js \
+  front_end/common/Color.js \
+  front_end/common/ContentProvider.js \
+  front_end/common/EventTarget.js \
+  front_end/common/JavaScriptMetaData.js \
+  front_end/common/Linkifier.js \
+  front_end/common/Object.js \
+  front_end/common/Console.js \
+  front_end/common/ParsedURL.js \
+  front_end/common/Progress.js \
+  front_end/common/QueryParamHandler.js \
+  front_end/common/ResourceType.js \
+  front_end/common/Revealer.js \
+  front_end/common/Runnable.js \
+  front_end/common/SegmentedRange.js \
+  front_end/common/Settings.js \
+  front_end/common/StaticContentProvider.js \
+  front_end/common/StringOutputStream.js \
+  front_end/common/TextDictionary.js \
+  front_end/common/Throttler.js \
+  front_end/common/Trie.js \
+  front_end/common/UIString.js \
+  front_end/common/Worker.js \
   --input_path "$WORK_DIR/.." \
   --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 
