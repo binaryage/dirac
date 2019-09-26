@@ -70,6 +70,13 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._showScreenshotsSetting.setTitle(Common.UIString('Screenshots'));
     this._showScreenshotsSetting.addChangeListener(this._updateOverviewControls, this);
 
+    this._startCoverage = Common.settings.createSetting('timelineStartCoverage', false);
+    this._startCoverage.setTitle(ls`Coverage`);
+
+    if (!Runtime.experiments.isEnabled('recordCoverageWithPerformanceTracing'))
+      this._startCoverage.set(false);
+
+
     this._showMemorySetting = Common.settings.createSetting('timelineShowMemory', false);
     this._showMemorySetting.setTitle(Common.UIString('Memory'));
     this._showMemorySetting.addChangeListener(this._onModeChanged, this);
@@ -226,6 +233,12 @@ Timeline.TimelinePanel = class extends UI.Panel {
         this._createSettingCheckbox(this._showMemorySetting, Common.UIString('Show memory timeline'));
     this._panelToolbar.appendToolbarItem(this._showMemoryToolbarCheckbox);
 
+    if (Runtime.experiments.isEnabled('recordCoverageWithPerformanceTracing')) {
+      this._startCoverageCheckbox =
+          this._createSettingCheckbox(this._startCoverage, ls`Record coverage with performance trace`);
+      this._panelToolbar.appendToolbarItem(this._startCoverageCheckbox);
+    }
+
     // GC
     this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButtonForId('components.collect-garbage'));
 
@@ -306,7 +319,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
    * @return {!UI.ToolbarComboBox}
    */
   _createNetworkConditionsSelect() {
-    const toolbarItem = new UI.ToolbarComboBox(null);
+    const toolbarItem = new UI.ToolbarComboBox(null, ls`Network conditions`);
     toolbarItem.setMaxWidth(140);
     MobileThrottling.throttlingManager().decorateSelectWithNetworkThrottling(toolbarItem.selectElement());
     return toolbarItem;
@@ -417,6 +430,8 @@ Timeline.TimelinePanel = class extends UI.Panel {
       this._overviewControls.push(new Timeline.TimelineFilmStripOverview());
     if (this._showMemorySetting.get())
       this._overviewControls.push(new Timeline.TimelineEventOverviewMemory());
+    if (this._startCoverage.get())
+      this._overviewControls.push(new Timeline.TimelineEventOverviewCoverage());
     for (const control of this._overviewControls)
       control.setModel(this._performanceModel);
     this._overviewPane.setOverviewControls(this._overviewControls);
@@ -470,16 +485,24 @@ Timeline.TimelinePanel = class extends UI.Panel {
   async _startRecording() {
     console.assert(!this._statusPane, 'Status pane is already opened.');
     this._setState(Timeline.TimelinePanel.State.StartPending);
-    this._showRecordingStarted();
-
-    const enabledTraceProviders = Extensions.extensionServer.traceProviders().filter(
-        provider => Timeline.TimelinePanel._settingForTraceProvider(provider).get());
 
     const recordingOptions = {
       enableJSSampling: !this._disableCaptureJSProfileSetting.get(),
       capturePictures: this._captureLayersAndPicturesSetting.get(),
-      captureFilmStrip: this._showScreenshotsSetting.get()
+      captureFilmStrip: this._showScreenshotsSetting.get(),
+      startCoverage: this._startCoverage.get()
     };
+
+    if (recordingOptions.startCoverage) {
+      await UI.viewManager.showView('coverage')
+          .then(() => UI.viewManager.view('coverage').widget())
+          .then(widget => widget.ensureRecordingStarted());
+    }
+
+    this._showRecordingStarted();
+
+    const enabledTraceProviders = Extensions.extensionServer.traceProviders().filter(
+        provider => Timeline.TimelinePanel._settingForTraceProvider(provider).get());
 
     const mainTarget = /** @type {!SDK.Target} */ (SDK.targetManager.mainTarget());
     this._controller = new Timeline.TimelineController(mainTarget, this);
@@ -746,6 +769,13 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._performanceModel.setTracingModel(tracingModel);
     this._setModel(this._performanceModel);
     this._historyManager.addRecording(this._performanceModel);
+
+    if (this._startCoverage.get()) {
+      UI.viewManager.showView('coverage')
+          .then(() => UI.viewManager.view('coverage').widget())
+          .then(widget => widget.stopRecording())
+          .then(() => this._updateOverviewControls());
+    }
   }
 
   _showRecordingStarted() {

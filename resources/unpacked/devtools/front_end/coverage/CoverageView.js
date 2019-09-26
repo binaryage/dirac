@@ -42,7 +42,7 @@ Coverage.CoverageView = class extends UI.VBox {
     /** @type {?RegExp} */
     this._textFilterRegExp = null;
     toolbar.appendSeparator();
-    this._filterInput = new UI.ToolbarInput(Common.UIString('URL filter'), 0.4, 1);
+    this._filterInput = new UI.ToolbarInput(Common.UIString('URL filter'), '', 0.4, 1);
     this._filterInput.setEnabled(false);
     this._filterInput.addEventListener(UI.ToolbarInput.Event.TextChanged, this._onFilterChanged, this);
     toolbar.appendToolbarItem(this._filterInput);
@@ -109,7 +109,14 @@ Coverage.CoverageView = class extends UI.VBox {
     if (enable)
       this._startRecording(false);
     else
-      this._stopRecording();
+      this.stopRecording();
+  }
+
+  async ensureRecordingStarted() {
+    const enable = !this._toggleRecordAction.toggled();
+
+    if (enable)
+      await this._startRecording(false);
   }
 
   /**
@@ -153,7 +160,7 @@ Coverage.CoverageView = class extends UI.VBox {
     this._updateViews(event.data);
   }
 
-  async _stopRecording() {
+  async stopRecording() {
     if (this._resourceTreeModel) {
       this._resourceTreeModel.removeEventListener(
           SDK.ResourceTreeModel.Events.MainFrameNavigated, this._onMainFrameNavigated, this);
@@ -231,6 +238,10 @@ Coverage.CoverageView = class extends UI.VBox {
     if (!accepted)
       return;
     this._model.exportReport(fos);
+  }
+
+  selectCoverageItemByUrl(url) {
+    this._listView.selectByUrl(url);
   }
 };
 

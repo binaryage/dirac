@@ -1484,6 +1484,8 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
       return;
 
     const eventData = /** @type {!SourceFrame.SourcesTextEditor.GutterClickEventData} */ (event.data);
+    if (eventData.gutterType !== SourceFrame.SourcesTextEditor.lineNumbersGutterType)
+      return;
     const editorLineNumber = eventData.lineNumber;
     const eventObject = eventData.event;
 
