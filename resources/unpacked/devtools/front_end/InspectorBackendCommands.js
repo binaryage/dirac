@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='79.0.3919.1';
-Protocol.BakedInspectorBackendAPIChromeRev='a4ee456040d803f7a863f583d98e534854bef8f6';
+Protocol.BakedInspectorBackendAPIChromeTag='79.0.3924.1';
+Protocol.BakedInspectorBackendAPIChromeRev='adbaa35571b171c280d17c4e4f73925f92d8a1f9';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -588,10 +588,11 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "isLiveEdit", "sourceMapURL", "hasSourceURL", "isModule", "length", "stackTrace"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.continueToLocation", [{"name": "location", "type": "object", "optional": false}, {"name": "targetCallFrames", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.disable", [], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Debugger.enable", [{"name": "maxScriptsCacheSize", "type": "number", "optional": true}], ["debuggerId"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Debugger.enable", [{"name": "maxScriptsCacheSize", "type": "number", "optional": true}, {"name": "supportsWasmDwarf", "type": "boolean", "optional": true}], ["debuggerId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "callFrameId", "type": "string", "optional": false}, {"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "silent", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "throwOnSideEffect", "type": "boolean", "optional": true}, {"name": "timeout", "type": "number", "optional": true}], ["result", "exceptionDetails"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.getPossibleBreakpoints", [{"name": "start", "type": "object", "optional": false}, {"name": "end", "type": "object", "optional": true}, {"name": "restrictToFunction", "type": "boolean", "optional": true}], ["locations"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.getScriptSource", [{"name": "scriptId", "type": "string", "optional": false}], ["scriptSource"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Debugger.getWasmBytecode", [{"name": "scriptId", "type": "string", "optional": false}], ["bytecode"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.getStackTrace", [{"name": "stackTraceId", "type": "object", "optional": false}], ["stackTrace"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.pause", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.pauseOnAsyncCall", [{"name": "parentStackTraceId", "type": "object", "optional": false}], [], false);\n'
