@@ -18,6 +18,9 @@
   <message name="IDS_DEVTOOLS_01ea16e89d02c33ef2a6a5db67665e0a" desc="Text in Timeline Flame Chart Data Provider of the Performance panel">
     Main — <ph name="TRACK_URL">$1s<ex>example.com</ex></ph>
   </message>
+  <message name="IDS_DEVTOOLS_02a3a357710cc2a5dfdfb74ed012fb59" desc="Text in Timeline UIUtils of the Performance panel">
+    Url
+  </message>
   <message name="IDS_DEVTOOLS_04cbdd8baeb482d9ff2e48b186479a06" desc="Text in Timeline UIUtils of the Performance panel">
     Streaming Wasm Response
   </message>
@@ -65,6 +68,9 @@
   </message>
   <message name="IDS_DEVTOOLS_08db5f30f625a406882862b8a29b1bc6" desc="Text in Timeline UIUtils of the Performance panel">
     Major GC
+  </message>
+  <message name="IDS_DEVTOOLS_099ca81d7a70c42447d89e172198ba5d" desc="Aria-label for filter bar in Event Log view">
+    Filter event log
   </message>
   <message name="IDS_DEVTOOLS_09d66464ad53e6080988ad30824ea023" desc="Text in Timeline Flame Chart Data Provider of the Performance panel">
     Frame — <ph name="TRACK_URL">$1s<ex>https://example.com</ex></ph>
@@ -421,6 +427,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_66f1aed235ade25269a561e81cbbb43a" desc="Text in Timeline UIUtils of the Performance panel">
     Scripting
   </message>
+  <message name="IDS_DEVTOOLS_6734ebb8322bff404034f6ebbcc0d2fb" desc="Aria-label for filter bar in Call Tree view">
+    Filter call tree
+  </message>
   <message name="IDS_DEVTOOLS_67eed98f4bc75c4ab261b79a0e2c52cd" desc="Text in Timeline UIUtils of the Performance panel">
     Cache Rejected
   </message>
@@ -630,6 +639,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   <message name="IDS_DEVTOOLS_a580a76abe8b0912889d80f5c4cb9559" desc="Text in Timeline Tree View of the Performance panel">
     Group by Product
   </message>
+  <message name="IDS_DEVTOOLS_a5d91e1697b7c75863fb9c6163a3446e" desc="Text in Timeline Event Overview of the Performance panel">
+    COVERAGE
+  </message>
   <message name="IDS_DEVTOOLS_a6f22a2373839a1d417d7a4078f0383a" desc="Text in Timeline Panel of the Performance panel">
     - CPU throttling is enabled
   </message>
@@ -653,6 +665,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_aed0e2bd848c2ac9dddb03d8c21c67b6" desc="Text in Timeline UIUtils of the Performance panel">
     Touch Cancel
+  </message>
+  <message name="IDS_DEVTOOLS_af812f467030e02c8bc8a81b4db8e562" desc="Text in Timeline Panel of the Performance panel">
+    Record coverage with performance trace
   </message>
   <message name="IDS_DEVTOOLS_b030f7d30297555390c6d2d23af55fa1" desc="Text in Timeline History Manager of the Performance panel">
     moments
@@ -713,6 +728,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_be85f6b3661854c85ddbde4c1429b2a2" desc="Text in Timeline UIUtils of the Performance panel">
     (<ph name="CLIP___">$1s<ex>2</ex></ph>, <ph name="CLIP___">$2s<ex>2</ex></ph>)
+  </message>
+  <message name="IDS_DEVTOOLS_be87d8c3de2675bbc53f9442af9d8feb" desc="Aria-label for grouping combo box in Timeline Details View">
+    Group by
   </message>
   <message name="IDS_DEVTOOLS_be97c5beb33f5316b2c221bfbb95852b" desc="Text in Timeline UIUtils of the Performance panel">
     MIME Type
@@ -806,6 +824,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_d5f967961bccf06a9eb7989d69d94a15" desc="Text in Timeline UIUtils of the Performance panel">
     network transfer
+  </message>
+  <message name="IDS_DEVTOOLS_d6ef31f5b235ec815c3b62fc6f236804" desc="Aria-label for the filter bar in Bottom-Up view">
+    Filter bottom-up
   </message>
   <message name="IDS_DEVTOOLS_d84fe3f1d290e4855cc0487b5ea18a4a" desc="Text in Timeline UIUtils of the Performance panel">
     Pinch Begin
