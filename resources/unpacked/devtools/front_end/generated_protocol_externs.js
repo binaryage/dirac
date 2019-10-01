@@ -2461,7 +2461,7 @@ Protocol.DOMSnapshot.RareIntegerData;
 /** @typedef {!Array<!number>} */
 Protocol.DOMSnapshot.Rectangle;
 
-/** @typedef {!{documentURL:(Protocol.DOMSnapshot.StringIndex), baseURL:(Protocol.DOMSnapshot.StringIndex), contentLanguage:(Protocol.DOMSnapshot.StringIndex), encodingName:(Protocol.DOMSnapshot.StringIndex), publicId:(Protocol.DOMSnapshot.StringIndex), systemId:(Protocol.DOMSnapshot.StringIndex), frameId:(Protocol.DOMSnapshot.StringIndex), nodes:(Protocol.DOMSnapshot.NodeTreeSnapshot), layout:(Protocol.DOMSnapshot.LayoutTreeSnapshot), textBoxes:(Protocol.DOMSnapshot.TextBoxSnapshot), scrollOffsetX:(number|undefined), scrollOffsetY:(number|undefined)}} */
+/** @typedef {!{documentURL:(Protocol.DOMSnapshot.StringIndex), title:(Protocol.DOMSnapshot.StringIndex), baseURL:(Protocol.DOMSnapshot.StringIndex), contentLanguage:(Protocol.DOMSnapshot.StringIndex), encodingName:(Protocol.DOMSnapshot.StringIndex), publicId:(Protocol.DOMSnapshot.StringIndex), systemId:(Protocol.DOMSnapshot.StringIndex), frameId:(Protocol.DOMSnapshot.StringIndex), nodes:(Protocol.DOMSnapshot.NodeTreeSnapshot), layout:(Protocol.DOMSnapshot.LayoutTreeSnapshot), textBoxes:(Protocol.DOMSnapshot.TextBoxSnapshot), scrollOffsetX:(number|undefined), scrollOffsetY:(number|undefined), contentWidth:(number|undefined), contentHeight:(number|undefined)}} */
 Protocol.DOMSnapshot.DocumentSnapshot;
 
 /** @typedef {!{parentIndex:(!Array<number>|undefined), nodeType:(!Array<number>|undefined), nodeName:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), nodeValue:(!Array<Protocol.DOMSnapshot.StringIndex>|undefined), backendNodeId:(!Array<Protocol.DOM.BackendNodeId>|undefined), attributes:(!Array<Protocol.DOMSnapshot.ArrayOfStrings>|undefined), textValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputValue:(Protocol.DOMSnapshot.RareStringData|undefined), inputChecked:(Protocol.DOMSnapshot.RareBooleanData|undefined), optionSelected:(Protocol.DOMSnapshot.RareBooleanData|undefined), contentDocumentIndex:(Protocol.DOMSnapshot.RareIntegerData|undefined), pseudoType:(Protocol.DOMSnapshot.RareStringData|undefined), isClickable:(Protocol.DOMSnapshot.RareBooleanData|undefined), currentSourceURL:(Protocol.DOMSnapshot.RareStringData|undefined), originURL:(Protocol.DOMSnapshot.RareStringData|undefined)}} */
@@ -2882,11 +2882,12 @@ Protocol.EmulationAgent.SetEmitTouchEventsForMouseResponse;
 Protocol.EmulationAgent.prototype.invoke_setEmitTouchEventsForMouse = function(obj) {};
 
 /**
- * @param {string} media
+ * @param {string=} opt_media
+ * @param {!Array<Protocol.Emulation.MediaFeature>=} opt_features
  * @return {!Promise<undefined>}
  */
-Protocol.EmulationAgent.prototype.setEmulatedMedia = function(media) {};
-/** @typedef {!{media: string}} */
+Protocol.EmulationAgent.prototype.setEmulatedMedia = function(opt_media, opt_features) {};
+/** @typedef {!{media: (string|undefined), features: (!Array<Protocol.Emulation.MediaFeature>|undefined)}} */
 Protocol.EmulationAgent.SetEmulatedMediaRequest;
 /** @typedef {Object|undefined} */
 Protocol.EmulationAgent.SetEmulatedMediaResponse;
@@ -3041,6 +3042,9 @@ Protocol.Emulation.ScreenOrientationType = {
 
 /** @typedef {!{type:(Protocol.Emulation.ScreenOrientationType), angle:(number)}} */
 Protocol.Emulation.ScreenOrientation;
+
+/** @typedef {!{name:(string), value:(string)}} */
+Protocol.Emulation.MediaFeature;
 
 /** @enum {string} */
 Protocol.Emulation.VirtualTimePolicy = {
@@ -6745,7 +6749,7 @@ Protocol.SystemInfoAgent.GetProcessInfoResponse;
  * @return {!Promise<!Protocol.SystemInfoAgent.GetProcessInfoResponse>} */
 Protocol.SystemInfoAgent.prototype.invoke_getProcessInfo = function(obj) {};
 
-/** @typedef {!{vendorId:(number), deviceId:(number), vendorString:(string), deviceString:(string), driverVendor:(string), driverVersion:(string)}} */
+/** @typedef {!{vendorId:(number), deviceId:(number), subSysId:(number|undefined), revision:(number|undefined), vendorString:(string), deviceString:(string), driverVendor:(string), driverVersion:(string)}} */
 Protocol.SystemInfo.GPUDevice;
 
 /** @typedef {!{width:(number), height:(number)}} */
@@ -6982,10 +6986,11 @@ Protocol.TargetAgent.prototype.invoke_sendMessageToTarget = function(obj) {};
  * @param {boolean} autoAttach
  * @param {boolean} waitForDebuggerOnStart
  * @param {boolean=} opt_flatten
+ * @param {boolean=} opt_windowOpen
  * @return {!Promise<undefined>}
  */
-Protocol.TargetAgent.prototype.setAutoAttach = function(autoAttach, waitForDebuggerOnStart, opt_flatten) {};
-/** @typedef {!{waitForDebuggerOnStart: boolean, autoAttach: boolean, flatten: (boolean|undefined)}} */
+Protocol.TargetAgent.prototype.setAutoAttach = function(autoAttach, waitForDebuggerOnStart, opt_flatten, opt_windowOpen) {};
+/** @typedef {!{waitForDebuggerOnStart: boolean, autoAttach: boolean, flatten: (boolean|undefined), windowOpen: (boolean|undefined)}} */
 Protocol.TargetAgent.SetAutoAttachRequest;
 /** @typedef {Object|undefined} */
 Protocol.TargetAgent.SetAutoAttachResponse;
@@ -7164,10 +7169,11 @@ Protocol.TracingAgent.RecordClockSyncMarkerResponse;
 Protocol.TracingAgent.prototype.invoke_recordClockSyncMarker = function(obj) {};
 
 /**
+ * @param {boolean=} opt_deterministic
  * @return {!Promise<?string>}
  */
-Protocol.TracingAgent.prototype.requestMemoryDump = function() {};
-/** @typedef {Object|undefined} */
+Protocol.TracingAgent.prototype.requestMemoryDump = function(opt_deterministic) {};
+/** @typedef {!{deterministic: (boolean|undefined)}} */
 Protocol.TracingAgent.RequestMemoryDumpRequest;
 /** @typedef {!{dumpGuid: string, success: boolean}} */
 Protocol.TracingAgent.RequestMemoryDumpResponse;
@@ -8997,10 +9003,11 @@ Protocol.RuntimeAgent.prototype.invoke_enable = function(obj) {};
  * @param {boolean=} opt_awaitPromise
  * @param {boolean=} opt_throwOnSideEffect
  * @param {Protocol.Runtime.TimeDelta=} opt_timeout
+ * @param {boolean=} opt_disableBreaks
  * @return {!Promise<?Protocol.Runtime.RemoteObject>}
  */
-Protocol.RuntimeAgent.prototype.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_contextId, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise, opt_throwOnSideEffect, opt_timeout) {};
-/** @typedef {!{objectGroup: (string|undefined), includeCommandLineAPI: (boolean|undefined), contextId: (Protocol.Runtime.ExecutionContextId|undefined), silent: (boolean|undefined), throwOnSideEffect: (boolean|undefined), generatePreview: (boolean|undefined), returnByValue: (boolean|undefined), timeout: (Protocol.Runtime.TimeDelta|undefined), expression: string, userGesture: (boolean|undefined), awaitPromise: (boolean|undefined)}} */
+Protocol.RuntimeAgent.prototype.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_contextId, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise, opt_throwOnSideEffect, opt_timeout, opt_disableBreaks) {};
+/** @typedef {!{objectGroup: (string|undefined), includeCommandLineAPI: (boolean|undefined), contextId: (Protocol.Runtime.ExecutionContextId|undefined), silent: (boolean|undefined), throwOnSideEffect: (boolean|undefined), generatePreview: (boolean|undefined), returnByValue: (boolean|undefined), timeout: (Protocol.Runtime.TimeDelta|undefined), expression: string, userGesture: (boolean|undefined), disableBreaks: (boolean|undefined), awaitPromise: (boolean|undefined)}} */
 Protocol.RuntimeAgent.EvaluateRequest;
 /** @typedef {!{exceptionDetails: Protocol.Runtime.ExceptionDetails, result: Protocol.Runtime.RemoteObject}} */
 Protocol.RuntimeAgent.EvaluateResponse;

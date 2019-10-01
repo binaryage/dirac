@@ -22,6 +22,7 @@ var ConsoleTestRunner = {};
 var CookieTable = {};
 var Coverage = {};
 var CoverageTestRunner = {};
+var CssOverview = {};
 var DataGrid = {};
 var DataGridTestRunner = {};
 var DeviceModeTestRunner = {};
