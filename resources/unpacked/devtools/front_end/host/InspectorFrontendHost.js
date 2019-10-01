@@ -42,14 +42,20 @@ Host.InspectorFrontendHostStub = class {
     function stopEventPropagation(event) {
       // Let browser handle Ctrl+/Ctrl- shortcuts in hosted mode.
       const zoomModifier = Host.isMac() ? event.metaKey : event.ctrlKey;
-      if (zoomModifier && (event.keyCode === 187 || event.keyCode === 189))
+      if (zoomModifier && (event.keyCode === 187 || event.keyCode === 189)) {
         event.stopPropagation();
+      }
     }
     document.addEventListener('keydown', stopEventPropagation, true);
     /**
      * @type {!Map<string, !Array<string>>}
      */
     this._urlsBeingSaved = new Map();
+
+    /**
+     * @type {!Common.EventTarget}
+     */
+    this.events;
   }
 
   /**
@@ -58,11 +64,13 @@ Host.InspectorFrontendHostStub = class {
    */
   platform() {
     let match = navigator.userAgent.match(/Windows NT/);
-    if (match)
+    if (match) {
       return 'windows';
+    }
     match = navigator.userAgent.match(/Mac OS X/);
-    if (match)
+    if (match) {
       return 'mac';
+    }
     return 'linux';
   }
 
@@ -145,10 +153,13 @@ Host.InspectorFrontendHostStub = class {
 
   /**
    * @override
-   * @param {string} text
+   * @param {?(string|undefined)} text
    * @suppressGlobalPropertiesCheck
    */
   copyText(text) {
+    if (text === undefined || text === null) {
+      return;
+    }
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text);
     } else if (document.queryCommandSupported('copy')) {
@@ -192,7 +203,7 @@ Host.InspectorFrontendHostStub = class {
       this._urlsBeingSaved.set(url, buffer);
     }
     buffer.push(content);
-    this.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.SavedURL, {url, fileSystemPath: url});
+    this.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.SavedURL, {url, fileSystemPath: url});
   }
 
   /**
@@ -203,7 +214,7 @@ Host.InspectorFrontendHostStub = class {
   append(url, content) {
     const buffer = this._urlsBeingSaved.get(url);
     buffer.push(content);
-    this.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.AppendedToURL, url);
+    this.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.AppendedToURL, url);
   }
 
   /**
@@ -256,7 +267,7 @@ Host.InspectorFrontendHostStub = class {
    * @override
    */
   requestFileSystems() {
-    this.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemsLoaded, []);
+    this.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.FileSystemsLoaded, []);
   }
 
   /**
@@ -307,8 +318,9 @@ Host.InspectorFrontendHostStub = class {
    */
   getPreferences(callback) {
     const prefs = {};
-    for (const name in window.localStorage)
+    for (const name in window.localStorage) {
       prefs[name] = window.localStorage[name];
+    }
     callback(prefs);
   }
 
@@ -513,9 +525,10 @@ Host.InspectorFrontendAPIImpl = class {
     this._debugFrontend =
         !!Runtime.queryParam('debugFrontend') || (window['InspectorTest'] && window['InspectorTest']['debugTest']);
 
-    const descriptors = InspectorFrontendHostAPI.EventDescriptors;
-    for (let i = 0; i < descriptors.length; ++i)
+    const descriptors = Host.InspectorFrontendAPIImpl.EventDescriptors;
+    for (let i = 0; i < descriptors.length; ++i) {
       this[descriptors[i][1]] = this._dispatch.bind(this, descriptors[i][0], descriptors[i][2], descriptors[i][3]);
+    }
   }
 
   /**
@@ -526,10 +539,11 @@ Host.InspectorFrontendAPIImpl = class {
   _dispatch(name, signature, runOnceLoaded) {
     const params = Array.prototype.slice.call(arguments, 3);
 
-    if (this._debugFrontend)
+    if (this._debugFrontend) {
       setImmediate(innerDispatch);
-    else
+    } else {
       innerDispatch();
+    }
 
     function innerDispatch() {
       // Single argument methods get dispatched with the param.
@@ -542,8 +556,9 @@ Host.InspectorFrontendAPIImpl = class {
         return;
       }
       const data = {};
-      for (let i = 0; i < signature.length; ++i)
+      for (let i = 0; i < signature.length; ++i) {
         data[signature[i]] = params[i];
+      }
       try {
         InspectorFrontendHost.events.dispatchEventToListeners(name, data);
       } catch (e) {
@@ -561,8 +576,47 @@ Host.InspectorFrontendAPIImpl = class {
   }
 };
 
+Host.InspectorFrontendAPIImpl.EventDescriptors = [
+  [Host.InspectorFrontendHostAPI.Events.AppendedToURL, 'appendedToURL', ['url']],
+  [Host.InspectorFrontendHostAPI.Events.CanceledSaveURL, 'canceledSaveURL', ['url']],
+  [Host.InspectorFrontendHostAPI.Events.ContextMenuCleared, 'contextMenuCleared', []],
+  [Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, 'contextMenuItemSelected', ['id']],
+  [Host.InspectorFrontendHostAPI.Events.DeviceCountUpdated, 'deviceCountUpdated', ['count']],
+  [Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, 'devicesDiscoveryConfigChanged', ['config']],
+  [
+    Host.InspectorFrontendHostAPI.Events.DevicesPortForwardingStatusChanged, 'devicesPortForwardingStatusChanged',
+    ['status']
+  ],
+  [Host.InspectorFrontendHostAPI.Events.DevicesUpdated, 'devicesUpdated', ['devices']],
+  [Host.InspectorFrontendHostAPI.Events.DispatchMessage, 'dispatchMessage', ['messageObject']],
+  [Host.InspectorFrontendHostAPI.Events.DispatchMessageChunk, 'dispatchMessageChunk', ['messageChunk', 'messageSize']],
+  [Host.InspectorFrontendHostAPI.Events.EnterInspectElementMode, 'enterInspectElementMode', []],
+  [Host.InspectorFrontendHostAPI.Events.EyeDropperPickedColor, 'eyeDropperPickedColor', ['color']],
+  [Host.InspectorFrontendHostAPI.Events.FileSystemsLoaded, 'fileSystemsLoaded', ['fileSystems']],
+  [Host.InspectorFrontendHostAPI.Events.FileSystemRemoved, 'fileSystemRemoved', ['fileSystemPath']],
+  [Host.InspectorFrontendHostAPI.Events.FileSystemAdded, 'fileSystemAdded', ['errorMessage', 'fileSystem']],
+  [
+    Host.InspectorFrontendHostAPI.Events.FileSystemFilesChangedAddedRemoved, 'fileSystemFilesChangedAddedRemoved',
+    ['changed', 'added', 'removed']
+  ],
+  [
+    Host.InspectorFrontendHostAPI.Events.IndexingTotalWorkCalculated, 'indexingTotalWorkCalculated',
+    ['requestId', 'fileSystemPath', 'totalWork']
+  ],
+  [Host.InspectorFrontendHostAPI.Events.IndexingWorked, 'indexingWorked', ['requestId', 'fileSystemPath', 'worked']],
+  [Host.InspectorFrontendHostAPI.Events.IndexingDone, 'indexingDone', ['requestId', 'fileSystemPath']],
+  [Host.InspectorFrontendHostAPI.Events.KeyEventUnhandled, 'keyEventUnhandled', ['event']],
+  [Host.InspectorFrontendHostAPI.Events.ReloadInspectedPage, 'reloadInspectedPage', ['hard']],
+  [Host.InspectorFrontendHostAPI.Events.RevealSourceLine, 'revealSourceLine', ['url', 'lineNumber', 'columnNumber']],
+  [Host.InspectorFrontendHostAPI.Events.SavedURL, 'savedURL', ['url', 'fileSystemPath']],
+  [Host.InspectorFrontendHostAPI.Events.SearchCompleted, 'searchCompleted', ['requestId', 'fileSystemPath', 'files']],
+  [Host.InspectorFrontendHostAPI.Events.SetInspectedTabId, 'setInspectedTabId', ['tabId']],
+  [Host.InspectorFrontendHostAPI.Events.SetUseSoftMenu, 'setUseSoftMenu', ['useSoftMenu']],
+  [Host.InspectorFrontendHostAPI.Events.ShowPanel, 'showPanel', ['panelName']]
+];
+
 /**
- * @type {!InspectorFrontendHostAPI}
+ * @type {!Host.InspectorFrontendHostStub}
  */
 let InspectorFrontendHost = window.InspectorFrontendHost;
 (function() {
@@ -577,8 +631,9 @@ let InspectorFrontendHost = window.InspectorFrontendHost;
       proto = Host.InspectorFrontendHostStub.prototype;
       for (const name of Object.getOwnPropertyNames(proto)) {
         const stub = proto[name];
-        if (typeof stub !== 'function' || InspectorFrontendHost[name])
+        if (typeof stub !== 'function' || InspectorFrontendHost[name]) {
           continue;
+        }
 
         console.error(
             'Incompatible embedder: method InspectorFrontendHost.' + name + ' is missing. Using stub instead.');
@@ -597,20 +652,17 @@ let InspectorFrontendHost = window.InspectorFrontendHost;
 })();
 
 /**
- * @type {!Common.EventTarget}
- */
-InspectorFrontendHost.events;
-
-/**
  * @param {!Object<string, string>=} prefs
  * @return {boolean}
  */
 Host.isUnderTest = function(prefs) {
   // Integration tests rely on test queryParam.
-  if (Runtime.queryParam('test'))
+  if (Runtime.queryParam('test')) {
     return true;
+  }
   // Browser tests rely on prefs.
-  if (prefs)
+  if (prefs) {
     return prefs['isUnderTest'] === 'true';
+  }
   return Common.settings && Common.settings.createSetting('isUnderTest', false).get();
 };

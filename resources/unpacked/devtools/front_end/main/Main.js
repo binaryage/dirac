@@ -44,8 +44,9 @@ Main.Main = class {
    * @param {string} label
    */
   static time(label) {
-    if (Host.isUnderTest())
+    if (Host.isUnderTest()) {
       return;
+    }
     console.time(label);
   }
 
@@ -53,8 +54,9 @@ Main.Main = class {
    * @param {string} label
    */
   static timeEnd(label) {
-    if (Host.isUnderTest())
+    if (Host.isUnderTest()) {
       return;
+    }
     console.timeEnd(label);
   }
 
@@ -71,8 +73,9 @@ Main.Main = class {
    */
   _gotPreferences(prefs) {
     console.timeStamp('Main._gotPreferences');
-    if (Host.isUnderTest(prefs))
+    if (Host.isUnderTest(prefs)) {
       self.runtime.useTestBase();
+    }
     // for dirac testing
     if (Runtime.queryParam("reset_settings")) {
       console.info("DIRAC TESTING: clear devtools settings because reset_settings is present in url params");
@@ -90,10 +93,11 @@ Main.Main = class {
   _createSettings(prefs) {
     this._initializeExperiments();
     let storagePrefix = '';
-    if (Host.isCustomDevtoolsFrontend())
+    if (Host.isCustomDevtoolsFrontend()) {
       storagePrefix = '__custom__';
-    else if (!Runtime.queryParam('can_dock') && !!Runtime.queryParam('debugFrontend') && !Host.isUnderTest())
+    } else if (!Runtime.queryParam('can_dock') && !!Runtime.queryParam('debugFrontend') && !Host.isUnderTest()) {
       storagePrefix = '__bundled__';
+    }
 
     let localStorage;
     if (!Host.isUnderTest() && window.localStorage) {
@@ -106,8 +110,9 @@ Main.Main = class {
         prefs, InspectorFrontendHost.setPreference, InspectorFrontendHost.removePreference,
         InspectorFrontendHost.clearPreferences, storagePrefix);
     Common.settings = new Common.Settings(globalStorage, localStorage);
-    if (!Host.isUnderTest())
+    if (!Host.isUnderTest()) {
       new Common.VersionController().updateVersion();
+    }
   }
 
   _initializeExperiments() {
@@ -122,6 +127,7 @@ Main.Main = class {
     Runtime.experiments.register(
         'backgroundServicesPeriodicBackgroundSync', 'Background services section for Periodic Background Sync');
     Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
+    Runtime.experiments.register('cssOverview', 'CSS Overview');
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Runtime.experiments.register('liveHeapProfile', 'Live heap profile', true);
@@ -144,8 +150,9 @@ Main.Main = class {
 
     Runtime.experiments.cleanUpStaleExperiments();
     const enabledExperiments = Runtime.queryParam('enabledExperiments');
-    if (enabledExperiments)
+    if (enabledExperiments) {
       Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(';'));
+    }
     Runtime.experiments.setDefaultExperiments([
       'backgroundServices',
       'backgroundServicesNotifications',
@@ -153,8 +160,9 @@ Main.Main = class {
       'backgroundServicesPaymentHandler',
     ]);
 
-    if (Host.isUnderTest() && Runtime.queryParam('test').includes('live-line-level-heap-profile.js'))
+    if (Host.isUnderTest() && Runtime.queryParam('test').includes('live-line-level-heap-profile.js')) {
       Runtime.experiments.enableForTest('liveHeapProfile');
+    }
   }
 
   /**
@@ -244,11 +252,11 @@ Main.Main = class {
     // TODO: we should not access actions from other modules.
     if (toggleSearchNodeAction) {
       InspectorFrontendHost.events.addEventListener(
-          InspectorFrontendHostAPI.Events.EnterInspectElementMode,
+          Host.InspectorFrontendHostAPI.Events.EnterInspectElementMode,
           toggleSearchNodeAction.execute.bind(toggleSearchNodeAction), this);
     }
     InspectorFrontendHost.events.addEventListener(
-        InspectorFrontendHostAPI.Events.RevealSourceLine, this._revealSourceLine, this);
+        Host.InspectorFrontendHostAPI.Events.RevealSourceLine, this._revealSourceLine, this);
 
     UI.inspectorView.createToolbars();
     InspectorFrontendHost.loadCompleted();
@@ -256,8 +264,9 @@ Main.Main = class {
     const extensions = self.runtime.extensions(Common.QueryParamHandler);
     for (const extension of extensions) {
       const value = Runtime.queryParam(extension.descriptor()['name']);
-      if (value !== null)
+      if (value !== null) {
         extension.instance().then(handleQueryParam.bind(null, value));
+      }
     }
 
     /**
@@ -278,8 +287,9 @@ Main.Main = class {
     Main.Main.time('Main._initializeTarget');
     const instances =
         await Promise.all(self.runtime.extensions('early-initialization').map(extension => extension.instance()));
-    for (const instance of instances)
+    for (const instance of instances) {
       await /** @type {!Common.Runnable} */ (instance).run();
+    }
     // Used for browser tests.
     InspectorFrontendHost.readyForTest();
     // Asynchronously run the extensions.
@@ -303,8 +313,9 @@ Main.Main = class {
        * @param {!Common.Event} event
        */
       async function changeListener(event) {
-        if (!event.data)
+        if (!event.data) {
           return;
+        }
         Common.settings.moduleSetting(setting).removeChangeListener(changeListener);
         (/** @type {!Common.Runnable} */ (await extension.instance())).run();
       }
@@ -340,8 +351,9 @@ Main.Main = class {
      */
     function messageAdded(event) {
       const message = /** @type {!Common.Console.Message} */ (event.data);
-      if (message.show)
+      if (message.show) {
         Common.console.show();
+      }
     }
   }
 
@@ -403,8 +415,9 @@ Main.Main = class {
 
     const inspectElementModeShortcuts =
         UI.shortcutRegistry.shortcutDescriptorsForAction('elements.toggle-element-search');
-    if (inspectElementModeShortcuts.length)
+    if (inspectElementModeShortcuts.length) {
       section.addKey(inspectElementModeShortcuts[0], Common.UIString('Select node to inspect'));
+    }
 
     const openResourceShortcut = UI.KeyboardShortcut.makeDescriptor('p', UI.KeyboardShortcut.Modifiers.CtrlOrMeta);
     section.addKey(openResourceShortcut, Common.UIString('Go to source'));
@@ -419,8 +432,9 @@ Main.Main = class {
   }
 
   _postDocumentKeyDown(event) {
-    if (!event.handled)
+    if (!event.handled) {
       UI.shortcutRegistry.handleShortcut(event);
+    }
   }
 
   /**
@@ -431,15 +445,18 @@ Main.Main = class {
     eventCopy['original'] = event;
     const document = event.target && event.target.ownerDocument;
     const target = document ? document.deepActiveElement() : null;
-    if (target)
+    if (target) {
       target.dispatchEvent(eventCopy);
-    if (eventCopy.handled)
+    }
+    if (eventCopy.handled) {
       event.preventDefault();
+    }
   }
 
   _contextMenuEventFired(event) {
-    if (event.handled || event.target.classList.contains('popup-glasspane'))
+    if (event.handled || event.target.classList.contains('popup-glasspane')) {
       event.preventDefault();
+    }
   }
 
   /**
@@ -472,8 +489,9 @@ Main.Main.ZoomActionDelegate = class {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    if (InspectorFrontendHost.isHostedMode())
+    if (InspectorFrontendHost.isHostedMode()) {
       return false;
+    }
 
     switch (actionId) {
       case 'main.zoom-in':
@@ -505,8 +523,9 @@ Main.Main.SearchActionDelegate = class {
   handleAction(context, actionId) {
     const searchableView = UI.SearchableView.fromElement(document.deepActiveElement()) ||
         UI.inspectorView.currentPanelDeprecated().searchableView();
-    if (!searchableView)
+    if (!searchableView) {
       return false;
+    }
     switch (actionId) {
       case 'main.search-in-panel.find':
         return searchableView.handleFindShortcut();
@@ -552,8 +571,9 @@ Main.Main.MainMenuItem = class {
           'Placement of DevTools relative to the page. (%s to restore last position)', toggleDockSideShorcuts[0].name);
       dockItemElement.appendChild(titleElement);
       const dockItemToolbar = new UI.Toolbar('', dockItemElement);
-      if (Host.isMac() && !UI.themeSupport.hasTheme())
+      if (Host.isMac() && !UI.themeSupport.hasTheme()) {
         dockItemToolbar.makeBlueOnHover();
+      }
       const undock = new UI.ToolbarToggle(Common.UIString('Undock into separate window'), 'largeicon-undock');
       const bottom = new UI.ToolbarToggle(Common.UIString('Dock to bottom'), 'largeicon-dock-to-bottom');
       const right = new UI.ToolbarToggle(Common.UIString('Dock to right'), 'largeicon-dock-to-right');
@@ -580,12 +600,13 @@ Main.Main.MainMenuItem = class {
       dockItemToolbar.appendToolbarItem(right);
       dockItemElement.addEventListener('keydown', event => {
         let dir = 0;
-        if (event.key === 'ArrowLeft')
+        if (event.key === 'ArrowLeft') {
           dir = -1;
-        else if (event.key === 'ArrowRight')
+        } else if (event.key === 'ArrowRight') {
           dir = 1;
-        else
+        } else {
           return;
+        }
 
         const buttons = [undock, left, bottom, right];
         let index = buttons.findIndex(button => button.element.hasFocus());
@@ -606,8 +627,9 @@ Main.Main.MainMenuItem = class {
     }
 
     if (Components.dockController.dockSide() === Components.DockController.State.Undocked &&
-        SDK.targetManager.mainTarget() && SDK.targetManager.mainTarget().type() === SDK.Target.Type.Frame)
+        SDK.targetManager.mainTarget() && SDK.targetManager.mainTarget().type() === SDK.Target.Type.Frame) {
       contextMenu.defaultSection().appendAction('inspector_main.focus-debuggee', Common.UIString('Focus debuggee'));
+    }
 
     contextMenu.defaultSection().appendAction(
         'main.toggle-drawer',
@@ -618,10 +640,12 @@ Main.Main.MainMenuItem = class {
     const extensions = self.runtime.extensions('view', undefined, true);
     for (const extension of extensions) {
       const descriptor = extension.descriptor();
-      if (descriptor['persistence'] !== 'closeable')
+      if (descriptor['persistence'] !== 'closeable') {
         continue;
-      if (descriptor['location'] !== 'drawer-view' && descriptor['location'] !== 'panel')
+      }
+      if (descriptor['location'] !== 'drawer-view' && descriptor['location'] !== 'panel') {
         continue;
+      }
       moreTools.defaultSection().appendItem(
           extension.title(), UI.viewManager.showView.bind(UI.viewManager, descriptor['id']));
     }
@@ -661,8 +685,9 @@ Main.Main.PauseListener = class {
 Main.sendOverProtocol = function(method, params) {
   return new Promise((resolve, reject) => {
     Protocol.test.sendRawMessage(method, params, (err, ...results) => {
-      if (err)
+      if (err) {
         return reject(err);
+      }
       return resolve(results);
     });
   });

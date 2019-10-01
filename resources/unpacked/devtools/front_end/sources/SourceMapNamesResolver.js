@@ -62,8 +62,9 @@ Sources.SourceMapNamesResolver._scopeIdentifiers = function(scope) {
 
   if (scope.type() === Protocol.Debugger.ScopeType.Global || !startLocation || !endLocation ||
       !startLocation.script() || !startLocation.script().sourceMapURL ||
-      (startLocation.script() !== endLocation.script()))
+      (startLocation.script() !== endLocation.script())) {
     return Promise.resolve(/** @type {!Array<!Sources.SourceMapNamesResolver.Identifier>}*/ ([]));
+  }
 
   const script = startLocation.script();
   return script.requestContent().then(onContent);
@@ -73,8 +74,9 @@ Sources.SourceMapNamesResolver._scopeIdentifiers = function(scope) {
    * @return {!Promise<!Array<!Sources.SourceMapNamesResolver.Identifier>>}
    */
   function onContent(content) {
-    if (!content)
+    if (!content) {
       return Promise.resolve(/** @type {!Array<!Sources.SourceMapNamesResolver.Identifier>}*/ ([]));
+    }
 
     const text = new TextUtils.Text(content);
     const scopeRange = new TextUtils.TextRange(
@@ -99,8 +101,9 @@ Sources.SourceMapNamesResolver._scopeIdentifiers = function(scope) {
     const cursor = new TextUtils.TextCursor(text.lineEndings());
     for (let i = 0; i < identifiers.length; ++i) {
       const id = identifiers[i];
-      if (id.offset < prefix.length)
+      if (id.offset < prefix.length) {
         continue;
+      }
       const start = scopeStart + id.offset - prefix.length;
       cursor.resetTo(start);
       result.push(new Sources.SourceMapNamesResolver.Identifier(id.name, cursor.lineNumber(), cursor.columnNumber()));
@@ -115,13 +118,15 @@ Sources.SourceMapNamesResolver._scopeIdentifiers = function(scope) {
  */
 Sources.SourceMapNamesResolver._resolveScope = function(scope) {
   let identifiersPromise = scope[Sources.SourceMapNamesResolver._cachedIdentifiersSymbol];
-  if (identifiersPromise)
+  if (identifiersPromise) {
     return identifiersPromise;
+  }
 
   const script = scope.callFrame().script;
   const sourceMap = Bindings.debuggerWorkspaceBinding.sourceMapForScript(script);
-  if (!sourceMap)
+  if (!sourceMap) {
     return Promise.resolve([]);
+  }
 
   /** @type {!Map<string, !TextUtils.Text>} */
   const textCache = new Map();
@@ -166,8 +171,9 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
    * @param {?Sources.SourceMapNamesResolver.NameDescriptor} originalNameDescriptor
    */
   function onSourceNameResolved(namesMapping, id, originalNameDescriptor) {
-    if (!originalNameDescriptor)
+    if (!originalNameDescriptor) {
       return;
+    }
     const compiled = new Sources.SourceMapNamesResolver.NameDescriptor(id.name, id.lineNumber, id.columnNumber);
     namesMapping.push(new Sources.SourceMapNamesResolver.MappingRecord(compiled, originalNameDescriptor));
   }
@@ -181,15 +187,17 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
     const endEntry = sourceMap.findEntry(id.lineNumber, id.columnNumber + id.name.length);
     if (!startEntry || !endEntry || !startEntry.sourceURL || startEntry.sourceURL !== endEntry.sourceURL ||
         !startEntry.sourceLineNumber || !startEntry.sourceColumnNumber || !endEntry.sourceLineNumber ||
-        !endEntry.sourceColumnNumber)
+        !endEntry.sourceColumnNumber) {
       return Promise.resolve(/** @type {?Sources.SourceMapNamesResolver.NameDescriptor} */(null));
+    }
     const sourceTextRange = new TextUtils.TextRange(
         startEntry.sourceLineNumber, startEntry.sourceColumnNumber, endEntry.sourceLineNumber,
         endEntry.sourceColumnNumber);
     const uiSourceCode = Bindings.debuggerWorkspaceBinding.uiSourceCodeForSourceMapSourceURL(
         script.debuggerModel, startEntry.sourceURL, script.isContentScript());
-    if (!uiSourceCode)
+    if (!uiSourceCode) {
       return Promise.resolve(/** @type {?Sources.SourceMapNamesResolver.NameDescriptor} */(null));
+    }
 
     return uiSourceCode.requestContent().then(onSourceContent.bind(null,
       sourceTextRange, startEntry.sourceLineNumber, startEntry.sourceColumnNumber));
@@ -203,8 +211,9 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
    * @return {?Sources.SourceMapNamesResolver.NameDescriptor}
    */
   function onSourceContent(sourceTextRange, line, column, content) {
-    if (!content)
+    if (!content) {
       return null;
+    }
     let text = textCache.get(content);
     if (!text) {
       text = new TextUtils.Text(content);
@@ -226,13 +235,15 @@ Sources.SourceMapNamesResolver._scopeResolvedForTest = function() {};
  */
 Sources.SourceMapNamesResolver._allVariablesInCallFrame = function(callFrame) {
   const cached = callFrame[Sources.SourceMapNamesResolver._cachedMapSymbol];
-  if (cached)
+  if (cached) {
     return Promise.resolve(cached);
+  }
 
   const promises = [];
   const scopeChain = callFrame.scopeChain();
-  for (let i = 0; i < scopeChain.length; ++i)
+  for (let i = 0; i < scopeChain.length; ++i) {
     promises.push(Sources.SourceMapNamesResolver._resolveScope(scopeChain[i]));
+  }
 
   return Promise.all(promises).then(mergeVariables);
 
@@ -318,8 +329,9 @@ Sources.SourceMapNamesResolver.collectMappingRecordsForCompiledName = function(m
  */
 Sources.SourceMapNamesResolver.resolveExpression = function(
     callFrame, originalText, uiSourceCode, lineNumber, startColumnNumber, endColumnNumber) {
-  if (!uiSourceCode.contentType().isFromSourceMap())
+  if (!uiSourceCode.contentType().isFromSourceMap()) {
     return Promise.resolve('');
+  }
 
   return Sources.SourceMapNamesResolver._allVariablesInCallFrame(callFrame).then(
       reverseMapping => findCompiledName(callFrame.debuggerModel, reverseMapping));
@@ -354,15 +366,18 @@ Sources.SourceMapNamesResolver._resolveExpression = function(
   const rawLocations =
       Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, lineNumber, startColumnNumber);
   const rawLocation = rawLocations.find(location => location.debuggerModel === debuggerModel);
-  if (!rawLocation)
+  if (!rawLocation) {
     return Promise.resolve('');
+  }
 
   const script = rawLocation.script();
-  if (!script)
+  if (!script) {
     return Promise.resolve('');
+  }
   const sourceMap = Bindings.debuggerWorkspaceBinding.sourceMapForScript(script);
-  if (!sourceMap)
+  if (!sourceMap) {
     return Promise.resolve('');
+  }
 
   return script.requestContent().then(onContent);
 
@@ -371,15 +386,17 @@ Sources.SourceMapNamesResolver._resolveExpression = function(
    * @return {!Promise<string>}
    */
   function onContent(content) {
-    if (!content)
+    if (!content) {
       return Promise.resolve('');
+    }
 
     const text = new TextUtils.Text(content);
     const textRange = sourceMap.reverseMapTextRange(
         uiSourceCode.url(), new TextUtils.TextRange(lineNumber, startColumnNumber, lineNumber, endColumnNumber));
     const originalText = text.extract(textRange);
-    if (!originalText)
+    if (!originalText) {
       return Promise.resolve('');
+    }
     return Formatter.formatterWorkerPool().evaluatableJavaScriptSubstring(originalText);
   }
 };
@@ -389,10 +406,12 @@ Sources.SourceMapNamesResolver._resolveExpression = function(
  * @return {!Promise<?SDK.RemoteObject>}
  */
 Sources.SourceMapNamesResolver.resolveThisObject = function(callFrame) {
-  if (!callFrame)
+  if (!callFrame) {
     return Promise.resolve(/** @type {?SDK.RemoteObject} */ (null));
-  if (!callFrame.scopeChain().length)
+  }
+  if (!callFrame.scopeChain().length) {
     return Promise.resolve(callFrame.thisObject());
+  }
 
   return Sources.SourceMapNamesResolver._resolveScope(callFrame.scopeChain()[0]).then(onScopeResolved);
 
@@ -402,8 +421,9 @@ Sources.SourceMapNamesResolver.resolveThisObject = function(callFrame) {
    */
   function onScopeResolved(namesMapping) {
     const thisRecords = Sources.SourceMapNamesResolver.collectMappingRecordsForOriginalName(namesMapping, 'this');
-    if (thisRecords.size !== 1)
+    if (thisRecords.size !== 1) {
       return Promise.resolve(callFrame.thisObject());
+    }
 
     var compiledName = thisRecords[0].compiledNameDescriptor.name;
     return callFrame
@@ -437,8 +457,9 @@ Sources.SourceMapNamesResolver.resolveScopeInObject = function(scope) {
 
   if (scope.type() === Protocol.Debugger.ScopeType.Global || !startLocation || !endLocation ||
       !startLocation.script() || !startLocation.script().sourceMapURL ||
-      startLocation.script() !== endLocation.script())
+      startLocation.script() !== endLocation.script()) {
     return scope.object();
+  }
 
   return new Sources.SourceMapNamesResolver.RemoteObject(scope);
 };
@@ -584,10 +605,11 @@ Sources.SourceMapNamesResolver.RemoteObject = class extends SDK.RemoteObject {
     const namesMapping = await Sources.SourceMapNamesResolver._resolveScope(this._scope);
 
     let name;
-    if (typeof argumentName === 'string')
+    if (typeof argumentName === 'string') {
       name = argumentName;
-    else
+    } else {
       name = /** @type {string} */ (argumentName.value);
+    }
 
     var actualName = name;
     let matchingRecords = Sources.SourceMapNamesResolver.collectMappingRecordsForOriginalName(namesMapping, name);

@@ -47,8 +47,9 @@ Workspace.UISourceCode = class extends Common.Object {
       this._origin = parsedURL.securityOrigin();
       this._parentURL = this._origin + parsedURL.folderPathComponents;
       this._name = parsedURL.lastPathComponent;
-      if (parsedURL.queryParams)
+      if (parsedURL.queryParams) {
         this._name += '?' + parsedURL.queryParams;
+      }
     } else {
       this._origin = '';
       this._parentURL = '';
@@ -132,14 +133,16 @@ Workspace.UISourceCode = class extends Common.Object {
    * @return {string}
    */
   displayName(skipTrim) {
-    if (!this._name)
+    if (!this._name) {
       return Common.UIString('(index)');
+    }
     let name = this._name;
     try {
-      if (this.project().type() === Workspace.projectTypes.FileSystem)
+      if (this.project().type() === Workspace.projectTypes.FileSystem) {
         name = unescape(name);
-      else
+      } else {
         name = decodeURI(name);
+      }
       if (dirac.hasCleanUrls) {
         // strip all after ? in the name
         const qmarkIndex = name.indexOf("?");
@@ -204,10 +207,12 @@ Workspace.UISourceCode = class extends Common.Object {
     const oldURL = this._url;
     this._url = this._url.substring(0, this._url.length - this._name.length) + name;
     this._name = name;
-    if (url)
+    if (url) {
       this._url = url;
-    if (contentType)
+    }
+    if (contentType) {
       this._contentType = contentType;
+    }
     this.dispatchEventToListeners(Workspace.UISourceCode.Events.TitleChanged, this);
     this.project().workspace().dispatchEventToListeners(
         Workspace.Workspace.Events.UISourceCodeRenamed, {oldURL: oldURL, uiSourceCode: this});
@@ -250,8 +255,9 @@ Workspace.UISourceCode = class extends Common.Object {
    * @return {!Promise<string>}
    */
   requestContent() {
-    if (this._requestContentPromise)
+    if (this._requestContentPromise) {
       return this._requestContentPromise;
+    }
 
     if (this._contentLoaded) {
       this._requestContentPromise = Promise.resolve(this._content || '');
@@ -271,11 +277,13 @@ Workspace.UISourceCode = class extends Common.Object {
   }
 
   checkContentUpdated() {
-    if (!this._contentLoaded && !this._forceLoadOnCheckContent)
+    if (!this._contentLoaded && !this._forceLoadOnCheckContent) {
       return;
+    }
 
-    if (!this._project.canSetFileContent() || this._checkingContent)
+    if (!this._project.canSetFileContent() || this._checkingContent) {
       return;
+    }
 
     this._checkingContent = true;
     this._project.requestFileContent(this, contentLoaded.bind(this));
@@ -293,8 +301,9 @@ Workspace.UISourceCode = class extends Common.Object {
         this.setWorkingCopy(workingCopy);
         return;
       }
-      if (this._lastAcceptedContent === updatedContent)
+      if (this._lastAcceptedContent === updatedContent) {
         return;
+      }
 
       if (this._content === updatedContent) {
         this._lastAcceptedContent = null;
@@ -313,10 +322,11 @@ Workspace.UISourceCode = class extends Common.Object {
 
       const shouldUpdate =
           window.confirm(Common.UIString('This file was changed externally. Would you like to reload it?'));
-      if (shouldUpdate)
+      if (shouldUpdate) {
         this._contentCommitted(/** @type {string} */ (updatedContent), false);
-      else
+      } else {
         this._lastAcceptedContent = updatedContent;
+      }
     }
   }
 
@@ -328,8 +338,9 @@ Workspace.UISourceCode = class extends Common.Object {
    * @param {string} content
    */
   _commitContent(content) {
-    if (this._project.canSetFileContent())
+    if (this._project.canSetFileContent()) {
       this._project.setFileContent(this, content, false);
+    }
     this._contentCommitted(content, true);
   }
 
@@ -349,8 +360,9 @@ Workspace.UISourceCode = class extends Common.Object {
     const data = {uiSourceCode: this, content, encoded: this._contentEncoded};
     this.dispatchEventToListeners(Workspace.UISourceCode.Events.WorkingCopyCommitted, data);
     this._project.workspace().dispatchEventToListeners(Workspace.Workspace.Events.WorkingCopyCommitted, data);
-    if (committedByUser)
+    if (committedByUser) {
       this._project.workspace().dispatchEventToListeners(Workspace.Workspace.Events.WorkingCopyCommittedByUser, data);
+    }
   }
 
   /**
@@ -375,8 +387,9 @@ Workspace.UISourceCode = class extends Common.Object {
       this._workingCopy = this._workingCopyGetter();
       this._workingCopyGetter = null;
     }
-    if (this.isDirty())
+    if (this.isDirty()) {
       return /** @type {string} */ (this._workingCopy);
+    }
     return this._content || '';
   }
 
@@ -405,8 +418,9 @@ Workspace.UISourceCode = class extends Common.Object {
    */
   setContent(content, isBase64) {
     this._contentEncoded = isBase64;
-    if (this._project.canSetFileContent())
+    if (this._project.canSetFileContent()) {
       this._project.setFileContent(this, content, isBase64);
+    }
     this._contentCommitted(content, true);
   }
 
@@ -426,15 +440,17 @@ Workspace.UISourceCode = class extends Common.Object {
   }
 
   removeWorkingCopyGetter() {
-    if (!this._workingCopyGetter)
+    if (!this._workingCopyGetter) {
       return;
+    }
     this._workingCopy = this._workingCopyGetter();
     this._workingCopyGetter = null;
   }
 
   commitWorkingCopy() {
-    if (this.isDirty())
+    if (this.isDirty()) {
       this._commitContent(this.workingCopy());
+    }
   }
 
   /**
@@ -467,8 +483,9 @@ Workspace.UISourceCode = class extends Common.Object {
    */
   searchInContent(query, caseSensitive, isRegex) {
     const content = this.content();
-    if (!content)
+    if (!content) {
       return this._project.searchInFileContent(this, query, caseSensitive, isRegex);
+    }
     return Promise.resolve(Common.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex));
   }
 
@@ -485,8 +502,9 @@ Workspace.UISourceCode = class extends Common.Object {
    * @return {!Workspace.UILocation}
    */
   uiLocation(lineNumber, columnNumber) {
-    if (typeof columnNumber === 'undefined')
+    if (typeof columnNumber === 'undefined') {
       columnNumber = 0;
+    }
     return new Workspace.UILocation(this, lineNumber, columnNumber);
   }
 
@@ -517,8 +535,9 @@ Workspace.UISourceCode = class extends Common.Object {
    */
   addMessage(level, text, range) {
     const message = new Workspace.UISourceCode.Message(this, level, text, range);
-    if (!this._messages)
+    if (!this._messages) {
       this._messages = new Set();
+    }
     this._messages.add(message);
     this.dispatchEventToListeners(Workspace.UISourceCode.Events.MessageAdded, message);
     return message;
@@ -528,15 +547,18 @@ Workspace.UISourceCode = class extends Common.Object {
    * @param {!Workspace.UISourceCode.Message} message
    */
   removeMessage(message) {
-    if (this._messages && this._messages.delete(message))
+    if (this._messages && this._messages.delete(message)) {
       this.dispatchEventToListeners(Workspace.UISourceCode.Events.MessageRemoved, message);
+    }
   }
 
   _removeAllMessages() {
-    if (!this._messages)
+    if (!this._messages) {
       return;
-    for (const message of this._messages)
+    }
+    for (const message of this._messages) {
       this.dispatchEventToListeners(Workspace.UISourceCode.Events.MessageRemoved, message);
+    }
     this._messages = null;
   }
 
@@ -556,8 +578,9 @@ Workspace.UISourceCode = class extends Common.Object {
    */
   addDecoration(range, type, data) {
     const marker = new Workspace.UISourceCode.LineMarker(range, type, data);
-    if (!this._decorations)
+    if (!this._decorations) {
       this._decorations = new Multimap();
+    }
     this._decorations.set(type, marker);
     this.dispatchEventToListeners(Workspace.UISourceCode.Events.LineDecorationAdded, marker);
   }
@@ -566,8 +589,9 @@ Workspace.UISourceCode = class extends Common.Object {
    * @param {string} type
    */
   removeDecorationsForType(type) {
-    if (!this._decorations)
+    if (!this._decorations) {
       return;
+    }
     const markers = this._decorations.get(type);
     this._decorations.deleteAll(type);
     markers.forEach(marker => {
@@ -583,8 +607,9 @@ Workspace.UISourceCode = class extends Common.Object {
   }
 
   removeAllDecorations() {
-    if (!this._decorations)
+    if (!this._decorations) {
       return;
+    }
     const decorationList = this._decorations.valuesArray();
     this._decorations.clear();
     decorationList.forEach(
@@ -632,8 +657,9 @@ Workspace.UILocation = class {
    */
   linkText(skipTrim) {
     let linkText = this.uiSourceCode.displayName(skipTrim);
-    if (typeof this.lineNumber === 'number')
+    if (typeof this.lineNumber === 'number') {
       linkText += ':' + (this.lineNumber + 1);
+    }
     return linkText;
   }
 
@@ -666,10 +692,12 @@ Workspace.UILocation = class {
    * @return {number}
    */
   compareTo(other) {
-    if (this.uiSourceCode.url() !== other.uiSourceCode.url())
+    if (this.uiSourceCode.url() !== other.uiSourceCode.url()) {
       return this.uiSourceCode.url() > other.uiSourceCode.url() ? 1 : -1;
-    if (this.lineNumber !== other.lineNumber)
+    }
+    if (this.lineNumber !== other.lineNumber) {
       return this.lineNumber - other.lineNumber;
+    }
     return this.columnNumber - other.columnNumber;
   }
 };

@@ -39,7 +39,7 @@ NodeMain.NodeChildTargetManager = class extends SDK.SDKModel {
     this._targetAgent.setDiscoverTargets(true);
 
     InspectorFrontendHost.events.addEventListener(
-        InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this._devicesDiscoveryConfigChanged, this);
+        Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this._devicesDiscoveryConfigChanged, this);
     InspectorFrontendHost.setDevicesUpdatesEnabled(false);
     InspectorFrontendHost.setDevicesUpdatesEnabled(true);
   }
@@ -53,8 +53,9 @@ NodeMain.NodeChildTargetManager = class extends SDK.SDKModel {
     for (const address of config.networkDiscoveryConfig) {
       const parts = address.split(':');
       const port = parseInt(parts[1], 10);
-      if (parts[0] && port)
+      if (parts[0] && port) {
         locations.push({host: parts[0], port: port});
+      }
     }
     this._targetAgent.setRemoteLocations(locations);
   }
@@ -64,10 +65,11 @@ NodeMain.NodeChildTargetManager = class extends SDK.SDKModel {
    */
   dispose() {
     InspectorFrontendHost.events.removeEventListener(
-        InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this._devicesDiscoveryConfigChanged, this);
+        Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this._devicesDiscoveryConfigChanged, this);
 
-    for (const sessionId of this._childTargets.keys())
+    for (const sessionId of this._childTargets.keys()) {
       this.detachedFromTarget(sessionId, undefined);
+    }
   }
 
   /**
@@ -75,8 +77,9 @@ NodeMain.NodeChildTargetManager = class extends SDK.SDKModel {
    * @param {!Protocol.Target.TargetInfo} targetInfo
    */
   targetCreated(targetInfo) {
-    if (targetInfo.type === 'node' && !targetInfo.attached)
+    if (targetInfo.type === 'node' && !targetInfo.attached) {
       this._targetAgent.attachToTarget(targetInfo.targetId, false /* flatten */);
+    }
   }
 
   /**
@@ -129,8 +132,9 @@ NodeMain.NodeChildTargetManager = class extends SDK.SDKModel {
   receivedMessageFromTarget(sessionId, message, childTargetId) {
     const connection = this._childConnections.get(sessionId);
     const onMessage = connection ? connection._onMessage : null;
-    if (onMessage)
+    if (onMessage) {
       onMessage.call(null, message);
+    }
   }
 };
 
@@ -178,8 +182,9 @@ NodeMain.NodeConnection = class {
    * @return {!Promise}
    */
   disconnect() {
-    if (this._onDisconnect)
+    if (this._onDisconnect) {
       this._onDisconnect.call(null, 'force disconnect');
+    }
     this._onDisconnect = null;
     this._onMessage = null;
     return this._targetAgent.detachFromTarget(this._sessionId);

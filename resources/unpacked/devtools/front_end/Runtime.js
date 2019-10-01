@@ -64,8 +64,9 @@ var Runtime = class {  // eslint-disable-line
     /** @type {!Object<string, !Runtime.ModuleDescriptor>} */
     this._descriptorsMap = {};
 
-    for (let i = 0; i < descriptors.length; ++i)
+    for (let i = 0; i < descriptors.length; ++i) {
       this._registerModule(descriptors[i]);
+    }
   }
 
   /**
@@ -88,16 +89,19 @@ var Runtime = class {  // eslint-disable-line
        * @param {Event} e
        */
       function onreadystatechange(e) {
-        if (xhr.readyState !== XMLHttpRequest.DONE)
+        if (xhr.readyState !== XMLHttpRequest.DONE) {
           return;
+        }
 
         // DevTools Proxy server can mask 404s as 200s, check the body to be sure
         const status = /^HTTP\/1.1 404/.test(e.target.response) ? 404 : xhr.status;
 
         if ([0, 200, 304].indexOf(status) === -1)  // Testing harness file:/// results in 0.
+        {
           reject(new Error('While loading from url ' + url + ' server responded with a status of ' + status));
-        else
+        } else {
           fulfill(e.target.response);
+        }
       }
       xhr.send(null);
     }
@@ -111,8 +115,9 @@ var Runtime = class {  // eslint-disable-line
     return Runtime.loadResourcePromise(url).catch(err => {
       const urlWithFallbackVersion = url.replace(/@[0-9a-f]{40}/, REMOTE_MODULE_FALLBACK_REVISION);
       // TODO(phulce): mark fallbacks in module.json and modify build script instead
-      if (urlWithFallbackVersion === url || !url.includes('audits_worker_module'))
+      if (urlWithFallbackVersion === url || !url.includes('audits_worker_module')) {
         throw err;
+      }
       return Runtime.loadResourcePromise(urlWithFallbackVersion);
     });
   }
@@ -123,28 +128,33 @@ var Runtime = class {  // eslint-disable-line
    * @return {string}
    */
   static normalizePath(path) {
-    if (path.indexOf('..') === -1 && path.indexOf('.') === -1)
+    if (path.indexOf('..') === -1 && path.indexOf('.') === -1) {
       return path;
+    }
 
     const normalizedSegments = [];
     const segments = path.split('/');
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i];
-      if (segment === '.')
+      if (segment === '.') {
         continue;
-      else if (segment === '..')
+      } else if (segment === '..') {
         normalizedSegments.pop();
-      else if (segment)
+      } else if (segment) {
         normalizedSegments.push(segment);
+      }
     }
     let normalizedPath = normalizedSegments.join('/');
-    if (normalizedPath[normalizedPath.length - 1] === '/')
+    if (normalizedPath[normalizedPath.length - 1] === '/') {
       return normalizedPath;
-    if (path[0] === '/' && normalizedPath)
+    }
+    if (path[0] === '/' && normalizedPath) {
       normalizedPath = '/' + normalizedPath;
+    }
     if ((path[path.length - 1] === '/') || (segments[segments.length - 1] === '.') ||
-        (segments[segments.length - 1] === '..'))
+        (segments[segments.length - 1] === '..')) {
       normalizedPath = normalizedPath + '/';
+    }
 
     return normalizedPath;
   }
@@ -158,8 +168,9 @@ var Runtime = class {  // eslint-disable-line
     const sourceURL = (base || self._importScriptPathPrefix) + scriptName;
     const schemaIndex = sourceURL.indexOf('://') + 3;
     let pathIndex = sourceURL.indexOf('/', schemaIndex);
-    if (pathIndex === -1)
+    if (pathIndex === -1) {
       pathIndex = sourceURL.length;
+    }
     return sourceURL.substring(0, pathIndex) + Runtime.normalizePath(sourceURL.substring(pathIndex));
   }
 
@@ -179,8 +190,9 @@ var Runtime = class {  // eslint-disable-line
       const scriptName = scriptNames[i];
       const sourceURL = Runtime.getResourceURL(scriptName, base);
 
-      if (_loadedScripts[sourceURL])
+      if (_loadedScripts[sourceURL]) {
         continue;
+      }
       urls.push(sourceURL);
       const loadResourcePromise =
           base ? Runtime.loadResourcePromiseWithFallback(sourceURL) : Runtime.loadResourcePromise(sourceURL);
@@ -282,12 +294,14 @@ var Runtime = class {  // eslint-disable-line
       const descriptor = configuration[i];
       const name = descriptor['name'];
       const moduleJSON = allDescriptorsByName[name];
-      if (moduleJSON)
+      if (moduleJSON) {
         moduleJSONPromises.push(Promise.resolve(moduleJSON));
-      else
+      } else {
         moduleJSONPromises.push(Runtime.loadResourcePromise(name + '/module.json').then(JSON.parse.bind(JSON)));
-      if (descriptor['type'] === 'autostart')
+      }
+      if (descriptor['type'] === 'autostart') {
         coreModuleNames.push(name);
+      }
     }
 
     const moduleDescriptors = await Promise.all(moduleJSONPromises);
@@ -298,8 +312,9 @@ var Runtime = class {  // eslint-disable-line
       moduleDescriptors[i].remote = configuration[i]['type'] === 'remote';
     }
     self.runtime = new Runtime(moduleDescriptors);
-    if (coreModuleNames)
+    if (coreModuleNames) {
       await self.runtime._loadAutoStartModules(coreModuleNames);
+    }
     Runtime._appStartedPromiseCallback();
   }
 
@@ -344,8 +359,9 @@ var Runtime = class {  // eslint-disable-line
   }
 
   static _assert(value, message) {
-    if (value)
+    if (value) {
       return;
+    }
     Runtime._originalAssert.call(Runtime._console, value, message + ' ' + new Error().stack);
   }
 
@@ -362,19 +378,24 @@ var Runtime = class {  // eslint-disable-line
    */
   static _isDescriptorEnabled(descriptor) {
     const activatorExperiment = descriptor['experiment'];
-    if (activatorExperiment === '*')
+    if (activatorExperiment === '*') {
       return Runtime.experiments.supportEnabled();
+    }
     if (activatorExperiment && activatorExperiment.startsWith('!') &&
-        Runtime.experiments.isEnabled(activatorExperiment.substring(1)))
+        Runtime.experiments.isEnabled(activatorExperiment.substring(1))) {
       return false;
+    }
     if (activatorExperiment && !activatorExperiment.startsWith('!') &&
-        !Runtime.experiments.isEnabled(activatorExperiment))
+        !Runtime.experiments.isEnabled(activatorExperiment)) {
       return false;
+    }
     const condition = descriptor['condition'];
-    if (condition && !condition.startsWith('!') && !Runtime.queryParam(condition))
+    if (condition && !condition.startsWith('!') && !Runtime.queryParam(condition)) {
       return false;
-    if (condition && condition.startsWith('!') && Runtime.queryParam(condition.substring(1)))
+    }
+    if (condition && condition.startsWith('!') && Runtime.queryParam(condition.substring(1))) {
       return false;
+    }
     return true;
   }
 
@@ -384,8 +405,9 @@ var Runtime = class {  // eslint-disable-line
    */
   static resolveSourceURL(path) {
     let sourceURL = self.location.href;
-    if (self.location.search)
+    if (self.location.search) {
       sourceURL = sourceURL.replace(self.location.search, '');
+    }
     sourceURL = sourceURL.substring(0, sourceURL.lastIndexOf('/') + 1) + path;
     return '\n/*# sourceURL=' + sourceURL + ' */';
   }
@@ -399,8 +421,9 @@ var Runtime = class {  // eslint-disable-line
 
   useTestBase() {
     Runtime._remoteBase = 'http://localhost:8000/inspector-sources/';
-    if (Runtime.queryParam('debugFrontend'))
+    if (Runtime.queryParam('debugFrontend')) {
       Runtime._remoteBase += 'debug/';
+    }
   }
 
   /**
@@ -434,8 +457,9 @@ var Runtime = class {  // eslint-disable-line
    */
   _loadAutoStartModules(moduleNames) {
     const promises = [];
-    for (let i = 0; i < moduleNames.length; ++i)
+    for (let i = 0; i < moduleNames.length; ++i) {
       promises.push(this.loadModulePromise(moduleNames[i]));
+    }
     return Promise.all(promises);
   }
 
@@ -445,16 +469,19 @@ var Runtime = class {  // eslint-disable-line
    * @return {boolean}
    */
   _checkExtensionApplicability(extension, predicate) {
-    if (!predicate)
+    if (!predicate) {
       return false;
+    }
     const contextTypes = extension.descriptor().contextTypes;
-    if (!contextTypes)
+    if (!contextTypes) {
       return true;
+    }
     for (let i = 0; i < contextTypes.length; ++i) {
       const contextType = this._resolve(contextTypes[i]);
       const isMatching = !!contextType && predicate(contextType);
-      if (isMatching)
+      if (isMatching) {
         return true;
+      }
     }
     return false;
   }
@@ -465,8 +492,9 @@ var Runtime = class {  // eslint-disable-line
    * @return {boolean}
    */
   isExtensionApplicableToContext(extension, context) {
-    if (!context)
+    if (!context) {
       return true;
+    }
     return this._checkExtensionApplicability(extension, isInstanceOf);
 
     /**
@@ -484,8 +512,9 @@ var Runtime = class {  // eslint-disable-line
    * @return {boolean}
    */
   isExtensionApplicableToContextTypes(extension, currentContextTypes) {
-    if (!extension.descriptor().contextTypes)
+    if (!extension.descriptor().contextTypes) {
       return true;
+    }
 
     return this._checkExtensionApplicability(extension, currentContextTypes ? isContextTypeKnown : null);
 
@@ -512,10 +541,12 @@ var Runtime = class {  // eslint-disable-line
      * @return {boolean}
      */
     function filter(extension) {
-      if (extension._type !== type && extension._typeClass() !== type)
+      if (extension._type !== type && extension._typeClass() !== type) {
         return false;
-      if (!extension.enabled())
+      }
+      if (!extension.enabled()) {
         return false;
+      }
       return !context || extension.isApplicable(context);
     }
 
@@ -567,10 +598,12 @@ var Runtime = class {  // eslint-disable-line
     if (!this._cachedTypeClasses[typeName]) {
       const path = typeName.split('.');
       let object = self;
-      for (let i = 0; object && (i < path.length); ++i)
+      for (let i = 0; object && (i < path.length); ++i) {
         object = object[path[i]];
-      if (object)
+      }
+      if (object) {
         this._cachedTypeClasses[typeName] = /** @type function(new:Object) */ (object);
+      }
     }
     return this._cachedTypeClasses[typeName] || null;
   }
@@ -582,8 +615,9 @@ var Runtime = class {  // eslint-disable-line
    */
   sharedInstance(constructorFunction) {
     if (Runtime._instanceSymbol in constructorFunction &&
-        Object.getOwnPropertySymbols(constructorFunction).includes(Runtime._instanceSymbol))
+        Object.getOwnPropertySymbols(constructorFunction).includes(Runtime._instanceSymbol)) {
       return constructorFunction[Runtime._instanceSymbol];
+    }
 
     const instance = new constructorFunction();
     constructorFunction[Runtime._instanceSymbol] = instance;
@@ -722,8 +756,9 @@ Runtime.Module = class {
   resource(name) {
     const fullName = this._name + '/' + name;
     const content = Runtime.cachedResources[fullName];
-    if (!content)
+    if (!content) {
       throw new Error(fullName + ' not preloaded. Check module.json');
+    }
     return content;
   }
 
@@ -731,16 +766,19 @@ Runtime.Module = class {
    * @return {!Promise.<undefined>}
    */
   _loadPromise() {
-    if (!this.enabled())
+    if (!this.enabled()) {
       return Promise.reject(new Error('Module ' + this._name + ' is not enabled'));
+    }
 
-    if (this._pendingLoadPromise)
+    if (this._pendingLoadPromise) {
       return this._pendingLoadPromise;
+    }
 
     const dependencies = this._descriptor.dependencies;
     const dependencyPromises = [];
-    for (let i = 0; dependencies && i < dependencies.length; ++i)
+    for (let i = 0; dependencies && i < dependencies.length; ++i) {
       dependencyPromises.push(this._manager._modulesMap[dependencies[i]]._loadPromise());
+    }
 
     this._pendingLoadPromise = Promise.all(dependencyPromises)
                                    .then(this._loadResources.bind(this))
@@ -756,8 +794,9 @@ Runtime.Module = class {
    */
   _loadResources() {
     const resources = this._descriptor['resources'];
-    if (!resources || !resources.length)
+    if (!resources || !resources.length) {
       return Promise.resolve();
+    }
     const promises = [];
     for (let i = 0; i < resources.length; ++i) {
       const url = this._modularizeURL(resources[i]);
@@ -771,8 +810,9 @@ Runtime.Module = class {
    * @return {!Promise.<undefined>}
    */
   _loadScripts() {
-    if (!this._descriptor.scripts || !this._descriptor.scripts.length)
+    if (!this._descriptor.scripts || !this._descriptor.scripts.length) {
       return Promise.resolve();
+    }
 
     // Module namespaces.
     // NOTE: Update scripts/special_case_namespaces.json if you add a special cased namespace.
@@ -882,8 +922,9 @@ Runtime.Extension = class {
    * @return {?function(new:Object)}
    */
   _typeClass() {
-    if (!this._hasTypeClass)
+    if (!this._hasTypeClass) {
       return null;
+    }
     return this._module._manager._resolve(this._type.substring(1));
   }
 
@@ -914,13 +955,16 @@ Runtime.Extension = class {
    */
   _createInstance() {
     const className = this._className || this._factoryName;
-    if (!className)
+    if (!className) {
       throw new Error('Could not instantiate extension with no class');
+    }
     const constructorFunction = self.eval(/** @type {string} */ (className));
-    if (!(constructorFunction instanceof Function))
+    if (!(constructorFunction instanceof Function)) {
       throw new Error('Could not instantiate: ' + className);
-    if (this._className)
+    }
+    if (this._className) {
       return this._module._manager.sharedInstance(constructorFunction);
+    }
     return new constructorFunction(this);
   }
 
@@ -929,8 +973,9 @@ Runtime.Extension = class {
    */
   title() {
     const title = this._descriptor['title-' + Runtime._platform] || this._descriptor['title'];
-    if (title && Runtime._l10nCallback)
+    if (title && Runtime._l10nCallback) {
       return Runtime._l10nCallback(title);
+    }
     return title;
   }
 
@@ -940,11 +985,13 @@ Runtime.Extension = class {
    */
   hasContextType(contextType) {
     const contextTypes = this.descriptor().contextTypes;
-    if (!contextTypes)
+    if (!contextTypes) {
       return false;
+    }
     for (let i = 0; i < contextTypes.length; ++i) {
-      if (contextType === this._module._manager._resolve(contextTypes[i]))
+      if (contextType === this._module._manager._resolve(contextTypes[i])) {
         return true;
+      }
     }
     return false;
   }
@@ -970,8 +1017,9 @@ Runtime.ExperimentsSupport = class {
     const result = [];
     for (let i = 0; i < this._experiments.length; i++) {
       const experiment = this._experiments[i];
-      if (!this._enabledTransiently[experiment.name])
+      if (!this._enabledTransiently[experiment.name]) {
         result.push(experiment);
+      }
     }
     return result;
   }
@@ -987,8 +1035,9 @@ Runtime.ExperimentsSupport = class {
    * @param {!Object} value
    */
   _setExperimentsSetting(value) {
-    if (!self.localStorage)
+    if (!self.localStorage) {
       return;
+    }
     self.localStorage['experiments'] = JSON.stringify(value);
   }
 
@@ -1011,14 +1060,18 @@ Runtime.ExperimentsSupport = class {
     this._checkExperiment(experimentName);
     // Check for explicitly disabled experiments first - the code could call setEnable(false) on the experiment enabled
     // by default and we should respect that.
-    if (Runtime._experimentsSetting()[experimentName] === false)
+    if (Runtime._experimentsSetting()[experimentName] === false) {
       return false;
-    if (this._enabledTransiently[experimentName])
+    }
+    if (this._enabledTransiently[experimentName]) {
       return true;
-    if (this._serverEnabled.has(experimentName))
+    }
+    if (this._serverEnabled.has(experimentName)) {
       return true;
-    if (!this.supportEnabled())
+    }
+    if (!this.supportEnabled()) {
       return false;
+    }
 
     return !!Runtime._experimentsSetting()[experimentName];
   }
@@ -1074,8 +1127,9 @@ Runtime.ExperimentsSupport = class {
     const cleanedUpExperimentSetting = {};
     for (let i = 0; i < this._experiments.length; ++i) {
       const experimentName = this._experiments[i].name;
-      if (experimentsSetting[experimentName])
+      if (experimentsSetting[experimentName]) {
         cleanedUpExperimentSetting[experimentName] = true;
+      }
     }
     this._setExperimentsSetting(cleanedUpExperimentSetting);
   }
@@ -1137,8 +1191,9 @@ Runtime._remoteBase;
 (function validateRemoteBase() {
   if (location.href.startsWith('devtools://devtools/bundled/') && Runtime.queryParam('remoteBase')) {
     const versionMatch = /\/serve_file\/(@[0-9a-zA-Z]+)\/?$/.exec(Runtime.queryParam('remoteBase'));
-    if (versionMatch)
+    if (versionMatch) {
       Runtime._remoteBase = `${location.origin}/remote/serve_file/${versionMatch[1]}/`;
+    }
   }
 })();
 

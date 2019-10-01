@@ -117,8 +117,9 @@ UI.SuggestBox = class {
    */
   _maxWidth(items) {
     const kMaxWidth = 100000; // dirac: do not limit max-width
-    if (!items.length)
+    if (!items.length) {
       return kMaxWidth;
+    }
     let maxItem;
     let maxLength = -Infinity;
     for (let i = 0; i < items.length; i++) {
@@ -140,8 +141,9 @@ UI.SuggestBox = class {
    * @suppressGlobalPropertiesCheck
    */
   _show() {
-    if (this.visible())
+    if (this.visible()) {
       return;
+    }
     // TODO(dgozman): take document as a parameter.
     this._glassPane.show(document);
     this._rowHeight =
@@ -149,8 +151,9 @@ UI.SuggestBox = class {
   }
 
   hide() {
-    if (!this.visible())
+    if (!this.visible()) {
       return;
+    }
     this._glassPane.hide();
   }
 
@@ -165,8 +168,9 @@ UI.SuggestBox = class {
       return true;
     }
     const suggestion = this._list.selectedItem();
-    if (suggestion && suggestion.text)
+    if (suggestion && suggestion.text) {
       UI.ARIAUtils.alert(ls`${suggestion.title || suggestion.text}, suggestion`, this._element);
+    }
     this._suggestBoxDelegate.applySuggestion(suggestion, isIntermediateSuggestion);
 
     return this.visible() && !!suggestion;
@@ -178,8 +182,9 @@ UI.SuggestBox = class {
   acceptSuggestion() {
     const result = this._applySuggestion();
     this.hide();
-    if (!result)
+    if (!result) {
       return false;
+    }
 
     this._suggestBoxDelegate.acceptSuggestion();
 
@@ -198,8 +203,9 @@ UI.SuggestBox = class {
       const icon = UI.Icon.create(item.iconType, 'suggestion-icon');
       element.appendChild(icon);
     }
-    if (item.isSecondary)
+    if (item.isSecondary) {
       element.classList.add('secondary');
+    }
     element.tabIndex = -1;
     element.createChild("span", "prologue").textContent = (item.prologue || "").trimEnd(50);
     const maxTextLength = 50 + query.length;
@@ -207,10 +213,12 @@ UI.SuggestBox = class {
 
     const titleElement = element.createChild('span', 'suggestion-title');
     const index = displayText.toLowerCase().indexOf(query.toLowerCase());
-    if (index > 0)
+    if (index > 0) {
       titleElement.createChild('span', 'pre-query').textContent = displayText.substring(0, index);
-    if (index > -1)
+    }
+    if (index > -1) {
       titleElement.createChild('span', 'query').textContent = displayText.substring(index, index + query.length);
+    }
     titleElement.createChild('span', 'post-query').textContent = displayText.substring(index > -1 ? index + query.length : 0);
     element.createChild("span", "epilogue").textContent = (item.epilogue || "").trimEnd(50);
     titleElement.createChild('span', 'spacer');
@@ -251,8 +259,9 @@ UI.SuggestBox = class {
    * @param {?Element} toElement
    */
   selectedItemChanged(from, to, fromElement, toElement) {
-    if (fromElement)
+    if (fromElement) {
       fromElement.classList.remove('selected', 'force-white-icons');
+    }
     if (toElement) {
       toElement.classList.add('selected');
       toElement.classList.add('force-white-icons');
@@ -265,8 +274,9 @@ UI.SuggestBox = class {
    */
   _onClick(event) {
     const item = this._list.itemForNode(/** @type {?Node} */ (event.target));
-    if (!item)
+    if (!item) {
       return;
+    }
 
     this._list.selectItem(item);
     this.acceptSuggestion();
@@ -281,15 +291,18 @@ UI.SuggestBox = class {
    * @return {boolean}
    */
   _canShowBox(completions, highestPriorityItem, canShowForSingleItem, userEnteredText) {
-    if (!completions || !completions.length)
+    if (!completions || !completions.length) {
       return false;
+    }
 
-    if (completions.length > 1)
+    if (completions.length > 1) {
       return true;
+    }
 
     if (!highestPriorityItem || highestPriorityItem.isSecondary ||
-        !highestPriorityItem.text.startsWith(userEnteredText))
+        !highestPriorityItem.text.startsWith(userEnteredText)) {
       return true;
+    }
 
     // Do not show a single suggestion if it is the same as user-entered query, even if allowed to show single-item suggest boxes.
     return canShowForSingleItem && highestPriorityItem.text !== userEnteredText;
@@ -315,10 +328,11 @@ UI.SuggestBox = class {
       this._list.invalidateItemHeight();
       this._items.replaceAll(completions);
 
-      if (highestPriorityItem && !highestPriorityItem.isSecondary)
+      if (highestPriorityItem && !highestPriorityItem.isSecondary) {
         this._list.selectItem(highestPriorityItem, true);
-      else
+      } else {
         this._list.selectItem(null);
+      }
     } else {
       if (completions.length === 1) {
         this._onlyCompletion = completions[0];
