@@ -60,8 +60,11 @@ Network.RequestCookiesView = class extends UI.Widget {
     });
     this._requestCookiesTitle.appendChild(requestCookiesCheckbox);
 
+    this._requestCookiesEmpty = this.element.createChild('div', 'cookies-panel-item');
+    this._requestCookiesEmpty.textContent = ls`No request cookies were sent.`;
+
     this._requestCookiesTable = new CookieTable.CookiesTable(/* renderInline */ true);
-    this._requestCookiesTable.contentElement.classList.add('cookie-table');
+    this._requestCookiesTable.contentElement.classList.add('cookie-table', 'cookies-panel-item');
     this._requestCookiesTable.show(this.element);
 
     this._responseCookiesTitle = this.element.createChild('div', 'request-cookies-title');
@@ -70,7 +73,7 @@ Network.RequestCookiesView = class extends UI.Widget {
         ls`Cookies that were received from the server in the 'set-cookie' header of the response`;
 
     this._responseCookiesTable = new CookieTable.CookiesTable(/* renderInline */ true);
-    this._responseCookiesTable.contentElement.classList.add('cookie-table');
+    this._responseCookiesTable.contentElement.classList.add('cookie-table', 'cookies-panel-item');
     this._responseCookiesTable.show(this.element);
 
     this._malformedResponseCookiesTitle = this.element.createChild('div', 'request-cookies-title');
@@ -90,33 +93,21 @@ Network.RequestCookiesView = class extends UI.Widget {
     const requestCookieToBlockedReasons = new Map();
 
     if (this._request.requestCookies) {
+      requestCookies = this._request.requestCookies.slice();
+
       // request.requestCookies are generated from headers which are missing
       // cookie attributes that we can fetch from the backend.
-      requestCookies = this._request.requestCookies.slice();
       if (this._detailedRequestCookies) {
         requestCookies = requestCookies.map(cookie => {
           for (const detailedCookie of (this._detailedRequestCookies || [])) {
-            if (detailedCookie.name() === cookie.name() && detailedCookie.value() === cookie.value())
+            if (detailedCookie.name() === cookie.name() && detailedCookie.value() === cookie.value()) {
               return detailedCookie;
+            }
           }
           return cookie;
         });
-      }
 
-      if (this._showFilteredOutCookiesSetting.get()) {
-        const blockedRequestCookies = this._request.blockedRequestCookies().slice();
-        for (const blockedCookie of blockedRequestCookies) {
-          requestCookieToBlockedReasons.set(blockedCookie.cookie, blockedCookie.blockedReasons.map(blockedReason => {
-            return {
-              attribute: SDK.NetworkRequest.cookieBlockedReasonToAttribute(blockedReason),
-              uiString: SDK.NetworkRequest.cookieBlockedReasonToUiString(blockedReason)
-            };
-          }));
-          requestCookies.push(blockedCookie.cookie);
-        }
-      }
-
-      if (!this._detailedRequestCookies) {
+      } else {
         const networkManager = SDK.NetworkManager.forRequest(this._request);
         if (networkManager) {
           const cookieModel = networkManager.target().model(SDK.CookieModel);
@@ -127,6 +118,18 @@ Network.RequestCookiesView = class extends UI.Widget {
             });
           }
         }
+      }
+    }
+
+    if (this._showFilteredOutCookiesSetting.get()) {
+      for (const blockedCookie of this._request.blockedRequestCookies()) {
+        requestCookieToBlockedReasons.set(blockedCookie.cookie, blockedCookie.blockedReasons.map(blockedReason => {
+          return {
+            attribute: SDK.NetworkRequest.cookieBlockedReasonToAttribute(blockedReason),
+            uiString: SDK.NetworkRequest.cookieBlockedReasonToUiString(blockedReason)
+          };
+        }));
+        requestCookies.push(blockedCookie.cookie);
       }
     }
 
@@ -178,18 +181,27 @@ Network.RequestCookiesView = class extends UI.Widget {
   }
 
   _refreshRequestCookiesView() {
-    if (!this.isShowing())
+    if (!this.isShowing()) {
       return;
+    }
 
     const {requestCookies, requestCookieToBlockedReasons} = this._getRequestCookies();
     const {responseCookies, responseCookieToBlockedReasons, malformedResponseCookies} = this._getResponseCookies();
 
     if (requestCookies.length) {
       this._requestCookiesTitle.classList.remove('hidden');
+      this._requestCookiesEmpty.classList.add('hidden');
       this._requestCookiesTable.showWidget();
       this._requestCookiesTable.setCookies(requestCookies, requestCookieToBlockedReasons);
+
+    } else if (this._request.blockedRequestCookies().length) {
+      this._requestCookiesTitle.classList.remove('hidden');
+      this._requestCookiesEmpty.classList.remove('hidden');
+      this._requestCookiesTable.hideWidget();
+
     } else {
       this._requestCookiesTitle.classList.add('hidden');
+      this._requestCookiesEmpty.classList.add('hidden');
       this._requestCookiesTable.hideWidget();
     }
 
@@ -209,7 +221,7 @@ Network.RequestCookiesView = class extends UI.Widget {
       this._malformedResponseCookiesList.removeChildren();
       for (const malformedCookie of malformedResponseCookies) {
         const listItem = this._malformedResponseCookiesList.createChild('span', 'cookie-line source-code');
-        const icon = UI.Icon.create('smallicon-error', '');
+        const icon = UI.Icon.create('smallicon-error', 'cookie-warning-icon');
         listItem.appendChild(icon);
         listItem.createTextChild(malformedCookie.cookieLine);
         listItem.title =
@@ -253,8 +265,9 @@ Network.RequestCookiesView = class extends UI.Widget {
   }
 
   _cookiesUpdated() {
-    if (!this.isShowing())
+    if (!this.isShowing()) {
       return;
+    }
 
     if (this._gotCookies()) {
       this._refreshRequestCookiesView();

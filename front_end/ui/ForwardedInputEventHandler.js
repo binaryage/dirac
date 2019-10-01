@@ -7,7 +7,7 @@
 UI.ForwardedInputEventHandler = class {
   constructor() {
     InspectorFrontendHost.events.addEventListener(
-        InspectorFrontendHostAPI.Events.KeyEventUnhandled, this._onKeyEventUnhandled, this);
+        Host.InspectorFrontendHostAPI.Events.KeyEventUnhandled, this._onKeyEventUnhandled, this);
   }
 
   /**
@@ -20,8 +20,9 @@ UI.ForwardedInputEventHandler = class {
     const keyCode = /** @type {number} */ (data.keyCode);
     const modifiers = /** @type {number} */ (data.modifiers);
 
-    if (type !== 'keydown')
+    if (type !== 'keydown') {
       return;
+    }
 
     UI.context.setFlavor(UI.ShortcutRegistry.ForwardedShortcut, UI.ShortcutRegistry.ForwardedShortcut.instance);
     UI.shortcutRegistry.handleKey(UI.KeyboardShortcut.makeKey(keyCode, modifiers), key);
