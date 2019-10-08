@@ -36,11 +36,11 @@ Workspace.FileManager = class extends Common.Object {
     super();
     /** @type {!Map<string, function(?{fileSystemPath: (string|undefined)})>} */
     this._saveCallbacks = new Map();
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SavedURL, this._savedURL, this);
+    InspectorFrontendHost.events.addEventListener(Host.InspectorFrontendHostAPI.Events.SavedURL, this._savedURL, this);
     InspectorFrontendHost.events.addEventListener(
-        InspectorFrontendHostAPI.Events.CanceledSaveURL, this._canceledSavedURL, this);
+        Host.InspectorFrontendHostAPI.Events.CanceledSaveURL, this._canceledSavedURL, this);
     InspectorFrontendHost.events.addEventListener(
-        InspectorFrontendHostAPI.Events.AppendedToURL, this._appendedToURL, this);
+        Host.InspectorFrontendHostAPI.Events.AppendedToURL, this._appendedToURL, this);
   }
 
   /**
@@ -63,8 +63,9 @@ Workspace.FileManager = class extends Common.Object {
     const url = /** @type {string} */ (event.data.url);
     const callback = this._saveCallbacks.get(url);
     this._saveCallbacks.delete(url);
-    if (callback)
+    if (callback) {
       callback({fileSystemPath: /** @type {string} */ (event.data.fileSystemPath)});
+    }
   }
 
   /**
@@ -74,8 +75,9 @@ Workspace.FileManager = class extends Common.Object {
     const url = /** @type {string} */ (event.data);
     const callback = this._saveCallbacks.get(url);
     this._saveCallbacks.delete(url);
-    if (callback)
+    if (callback) {
       callback(null);
+    }
   }
 
   /**

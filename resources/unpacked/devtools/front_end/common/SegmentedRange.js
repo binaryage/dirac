@@ -4,15 +4,16 @@
 /**
  * @unrestricted
  */
-Common.Segment = class {
+export class Segment {
   /**
    * @param {number} begin
    * @param {number} end
    * @param {*} data
    */
   constructor(begin, end, data) {
-    if (begin > end)
+    if (begin > end) {
       console.assert(false, 'Invalid segment');
+    }
     this.begin = begin;
     this.end = end;
     this.data = data;
@@ -25,12 +26,12 @@ Common.Segment = class {
   intersects(that) {
     return this.begin < that.end && that.begin < this.end;
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Common.SegmentedRange = class {
+export default class SegmentedRange {
   /**
    * @param {(function(!Common.Segment, !Common.Segment): ?Common.Segment)=} mergeCallback
    */
@@ -66,8 +67,9 @@ Common.SegmentedRange = class {
       }
     }
     // 3. Consume all segments that are entirely covered by the new one.
-    while (endIndex < this._segments.length && this._segments[endIndex].end <= newSegment.end)
+    while (endIndex < this._segments.length && this._segments[endIndex].end <= newSegment.end) {
       ++endIndex;
+    }
     // 4. Merge or adjust the succeeding segment if it overlaps.
     if (endIndex < this._segments.length) {
       merged = this._tryMerge(newSegment, this._segments[endIndex]);
@@ -102,10 +104,25 @@ Common.SegmentedRange = class {
    */
   _tryMerge(first, second) {
     const merged = this._mergeCallback && this._mergeCallback(first, second);
-    if (!merged)
+    if (!merged) {
       return null;
+    }
     merged.begin = first.begin;
     merged.end = Math.max(first.end, second.end);
     return merged;
   }
-};
+}
+
+/* Legacy exported object */
+self.Common = self.Common || {};
+Common = Common || {};
+
+/**
+ * @constructor
+ */
+Common.Segment = Segment;
+
+/**
+ * @constructor
+ */
+Common.SegmentedRange = SegmentedRange;

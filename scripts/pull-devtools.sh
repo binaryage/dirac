@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
-pushd "$DEVTOOLS_WORKTREE"
+cd "$DEVTOOLS_WORKTREE"
 
 git pull
-
-popd

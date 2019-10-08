@@ -33,7 +33,8 @@
                "(set! js/a 30)"
                ["DF.warning> js/a is shadowed" "info> 30"])
           (<!* a/go-simulate-global-action! "F8")                                                                             ; resume paused debugger
-          (<!* a/go-wait-for-devtools-match "info> 60"))
+          (<!* a/go-wait-for-devtools-match "info> 60")
+          (<!* a/go-wait-for-devtools-ui))                                                                                    ; fight flaky test like https://travis-ci.org/binaryage/dirac/builds/588271424
 
         (testing "break on js-debugger in async fn should not affect us"
           (<!* a/go-exec-and-match-in-console!

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-ColorPicker.ContrastDetails = class {
+ColorPicker.ContrastDetails = class extends Common.Object {
   /**
    * @param {!ColorPicker.ContrastInfo} contrastInfo
    * @param {!Element} contentElement
@@ -10,6 +10,7 @@ ColorPicker.ContrastDetails = class {
    * @param {function()} expandedChangedCallback
    */
   constructor(contrastInfo, contentElement, toggleMainColorPickerCallback, expandedChangedCallback) {
+    super();
     /** @type {!ColorPicker.ContrastInfo} */
     this._contrastInfo = contrastInfo;
 
@@ -80,7 +81,7 @@ ColorPicker.ContrastDetails = class {
     this._bgColorPickerButton =
         new UI.ToolbarToggle(Common.UIString('Toggle background color picker'), 'largeicon-eyedropper');
     this._bgColorPickerButton.addEventListener(
-        UI.ToolbarButton.Events.Click, this._toggleBackgroundColorPicker.bind(this, undefined));
+        UI.ToolbarButton.Events.Click, this._toggleBackgroundColorPicker.bind(this, undefined, true));
     pickerToolbar.appendToolbarItem(this._bgColorPickerButton);
     this._bgColorPickedBound = this._bgColorPicked.bind(this);
 
@@ -123,10 +124,11 @@ ColorPicker.ContrastDetails = class {
     const labelAA = this._contrastPassFailAA.createChild('span', 'contrast-link-label');
     labelAA.textContent = Common.UIString('AA');
     this._contrastPassFailAA.createChild('span').textContent = Common.UIString(': %s', aa.toFixed(1));
-    if (this._passesAA)
+    if (this._passesAA) {
       this._contrastPassFailAA.appendChild(UI.Icon.create('smallicon-checkmark-square'));
-    else
+    } else {
       this._contrastPassFailAA.appendChild(UI.Icon.create('smallicon-no'));
+    }
 
     const aaa = this._contrastInfo.contrastRatioThreshold('aaa');
     const passesAAA = this._contrastInfo.contrastRatio() >= aaa;
@@ -134,10 +136,11 @@ ColorPicker.ContrastDetails = class {
     const labelAAA = this._contrastPassFailAAA.createChild('span', 'contrast-link-label');
     labelAAA.textContent = Common.UIString('AAA');
     this._contrastPassFailAAA.createChild('span').textContent = Common.UIString(': %s', aaa.toFixed(1));
-    if (passesAAA)
+    if (passesAAA) {
       this._contrastPassFailAAA.appendChild(UI.Icon.create('smallicon-checkmark-square'));
-    else
+    } else {
       this._contrastPassFailAAA.appendChild(UI.Icon.create('smallicon-no'));
+    }
 
     [labelAA, labelAAA].forEach(e => e.addEventListener('click', event => ColorPicker.ContrastDetails._showHelp()));
 
@@ -198,8 +201,9 @@ ColorPicker.ContrastDetails = class {
       this._toggleMainColorPicker(false);
       this._expandButton.setGlyph('smallicon-expand-less');
       this._expandButton.setTitle(Common.UIString('Show less'));
-      if (this._contrastUnknown)
+      if (this._contrastUnknown) {
         this._toggleBackgroundColorPicker(true);
+      }
     } else {
       this._toggleBackgroundColorPicker(false);
       this._expandButton.setGlyph('smallicon-expand-more');
@@ -222,19 +226,41 @@ ColorPicker.ContrastDetails = class {
   }
 
   /**
-   * @param {boolean=} enabled
+   * @returns {boolean}
    */
-  _toggleBackgroundColorPicker(enabled) {
-    if (enabled === undefined)
+  backgroundColorPickerEnabled() {
+    return this._bgColorPickerButton.toggled();
+  }
+
+  /**
+   * @param {boolean} enabled
+   */
+
+  toggleBackgroundColorPicker(enabled) {
+    this._toggleBackgroundColorPicker(enabled, false);
+  }
+
+  /**
+   * @param {boolean=} enabled
+   * @param {boolean=} shouldTriggerEvent
+   */
+  _toggleBackgroundColorPicker(enabled, shouldTriggerEvent = true) {
+    if (enabled === undefined) {
       enabled = !this._bgColorPickerButton.toggled();
+    }
     this._bgColorPickerButton.setToggled(enabled);
+
+    if (shouldTriggerEvent) {
+      this.dispatchEventToListeners(ColorPicker.ContrastDetails.Events.BackgroundColorPickerWillBeToggled, enabled);
+    }
+
     InspectorFrontendHost.setEyeDropperActive(enabled);
     if (enabled) {
       InspectorFrontendHost.events.addEventListener(
-          InspectorFrontendHostAPI.Events.EyeDropperPickedColor, this._bgColorPickedBound);
+          Host.InspectorFrontendHostAPI.Events.EyeDropperPickedColor, this._bgColorPickedBound);
     } else {
       InspectorFrontendHost.events.removeEventListener(
-          InspectorFrontendHostAPI.Events.EyeDropperPickedColor, this._bgColorPickedBound);
+          Host.InspectorFrontendHostAPI.Events.EyeDropperPickedColor, this._bgColorPickedBound);
     }
   }
 
@@ -249,6 +275,10 @@ ColorPicker.ContrastDetails = class {
     this._toggleBackgroundColorPicker(false);
     InspectorFrontendHost.bringToFront();
   }
+};
+
+ColorPicker.ContrastDetails.Events = {
+  BackgroundColorPickerWillBeToggled: Symbol('BackgroundColorPickerWillBeToggled')
 };
 
 ColorPicker.ContrastDetails.Swatch = class {

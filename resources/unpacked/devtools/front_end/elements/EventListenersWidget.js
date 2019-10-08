@@ -54,8 +54,8 @@ Elements.EventListenersWidget = class extends UI.ThrottledWidget {
     this._toolbarItems.push(new UI.ToolbarSettingCheckbox(
         this._showForAncestorsSetting, Common.UIString('Show listeners on the ancestors'),
         Common.UIString('Ancestors')));
-    const dispatchFilter = new UI.ToolbarComboBox(this._onDispatchFilterTypeChanged.bind(this));
-    dispatchFilter.setTitle(ls`Event listeners category`);
+    const dispatchFilter =
+        new UI.ToolbarComboBox(this._onDispatchFilterTypeChanged.bind(this), ls`Event listeners category`);
 
     /**
      * @param {string} name
@@ -63,9 +63,10 @@ Elements.EventListenersWidget = class extends UI.ThrottledWidget {
      * @this {Elements.EventListenersWidget}
      */
     function addDispatchFilterOption(name, value) {
-      const option = dispatchFilter.createOption(name, '', value);
-      if (value === this._dispatchFilterBySetting.get())
+      const option = dispatchFilter.createOption(name, value);
+      if (value === this._dispatchFilterBySetting.get()) {
         dispatchFilter.select(option);
+      }
     }
     addDispatchFilterOption.call(this, Common.UIString('All'), Elements.EventListenersWidget.DispatchFilterBy.All);
     addDispatchFilterOption.call(
@@ -150,8 +151,9 @@ Elements.EventListenersWidget = class extends UI.ThrottledWidget {
     if (node.frameId()) {
       for (let i = 0; i < executionContexts.length; ++i) {
         const executionContext = executionContexts[i];
-        if (executionContext.frameId === node.frameId() && executionContext.isDefault)
+        if (executionContext.frameId === node.frameId() && executionContext.isDefault) {
           context = executionContext;
+        }
       }
     } else {
       context = executionContexts[0];

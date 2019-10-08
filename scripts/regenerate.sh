@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
-pushd "$ROOT"
+cd "$ROOT"
 
 ./scripts/pull-chromium.sh
 ./scripts/generate-protocol-json.sh
@@ -12,5 +13,3 @@ pushd "$ROOT"
 ./scripts/generate-protocol-externs.sh
 ./scripts/generate-namespaces-externs.sh
 ./scripts/generate-aria-properties.sh
-
-popd

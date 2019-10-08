@@ -23,7 +23,8 @@ QuickOpen.QuickOpen = class {
     const filteredListWidget =
         new QuickOpen.FilteredListWidget(null, this._history, quickOpen._queryChanged.bind(quickOpen));
     quickOpen._filteredListWidget = filteredListWidget;
-    filteredListWidget.setPlaceholder(Common.UIString('Type \'?\' to see available commands'));
+    filteredListWidget.setPlaceholder(
+        ls`Type '?' to see available commands`, ls`Type question mark to see available commands`);
     filteredListWidget.showAsDialog();
     filteredListWidget.setQuery(query);
   }
@@ -44,15 +45,17 @@ QuickOpen.QuickOpen = class {
    */
   _queryChanged(query) {
     const prefix = this._prefixes.find(prefix => query.startsWith(prefix));
-    if (typeof prefix !== 'string' || this._prefix === prefix)
+    if (typeof prefix !== 'string' || this._prefix === prefix) {
       return;
+    }
 
     this._prefix = prefix;
     this._filteredListWidget.setPrefix(prefix);
     this._filteredListWidget.setProvider(null);
     this._providers.get(prefix)().then(provider => {
-      if (this._prefix !== prefix)
+      if (this._prefix !== prefix) {
         return;
+      }
       this._filteredListWidget.setProvider(provider);
       this._providerLoadedForTest(provider);
     });

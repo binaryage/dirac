@@ -6,8 +6,7 @@ Audits.ReportSelector = class {
   constructor(renderNewAuditView) {
     this._renderNewAuditView = renderNewAuditView;
     this._newAuditItem = createElement('option');
-    this._comboBox = new UI.ToolbarComboBox(this._handleChange.bind(this), 'audits-report');
-    this._comboBox.setTitle(ls`Reports`);
+    this._comboBox = new UI.ToolbarComboBox(this._handleChange.bind(this), ls`Reports`, 'audits-report');
     this._comboBox.setMaxWidth(180);
     this._comboBox.setMinWidth(140);
     this._itemByOptionElement = new Map();
@@ -29,10 +28,11 @@ Audits.ReportSelector = class {
    */
   _handleChange(event) {
     const item = this._selectedItem();
-    if (item)
+    if (item) {
       item.select();
-    else
+    } else {
       this._renderNewAuditView();
+    }
   }
 
   /**
@@ -80,8 +80,9 @@ Audits.ReportSelector = class {
 
   clearAll() {
     for (const elem of this._comboBox.options()) {
-      if (elem === this._newAuditItem)
+      if (elem === this._newAuditItem) {
         continue;
+      }
 
       this._itemByOptionElement.get(elem).delete();
       this._itemByOptionElement.delete(elem);
@@ -124,8 +125,9 @@ Audits.ReportSelector.Item = class {
   }
 
   delete() {
-    if (this._element)
+    if (this._element) {
       this._element.remove();
+    }
     this._showLandingCallback();
   }
 };

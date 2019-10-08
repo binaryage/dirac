@@ -15,10 +15,11 @@ module.exports = function(config) {
       type: 'module'
     }],
 
-    reporters: ["dots"],
+    reporters: ["dots", "coverage-istanbul"],
 
     preprocessors: {
-      './tests/**/*.ts': ['karma-typescript']
+      './tests/**/*.ts': ['karma-typescript'],
+      './front_end/common/*.js': ['karma-coverage-istanbul-instrumenter']
     },
 
     browsers: ["ChromeHeadless"],
@@ -29,16 +30,19 @@ module.exports = function(config) {
       compilerOptions: {
         target: "esnext",
         module: "esnext",
-        typeRoots: ["./third_party/devtools-node-modules/third_party/node_modules/@types"]
+        typeRoots: ["../../../../third_party/devtools-node-modules/third_party/node_modules/@types"]
       },
       coverageOptions: {
         instrumentation: false
       },
       bundlerOptions: {
         resolve: {
-          directories: ["./third_party/devtools-node-modules/third_party/node_modules"]
+          directories: ["../../../../third_party/devtools-node-modules/third_party/node_modules"]
         }
-      }
+      },
+      exclude: [
+        "scripts"
+      ]
     },
 
     proxies: {
@@ -49,8 +53,19 @@ module.exports = function(config) {
       "karma-chrome-launcher",
       "karma-mocha",
       "karma-chai",
-      "karma-typescript"
+      "karma-typescript",
+      require('../../../../third_party/devtools-node-modules/third_party/node_modules/karma-coverage-istanbul-instrumenter'),
+      require('../../../../third_party/devtools-node-modules/third_party/node_modules/karma-coverage-istanbul-reporter')
     ],
+
+    coverageIstanbulInstrumenter: {
+      esModules: true
+    },
+
+    coverageIstanbulReporter: {
+      reports: ["text", "html"],
+      dir: "karma-coverage"
+    },
 
     singleRun: true
   };

@@ -1,10 +1,9 @@
 #!/bin/bash
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
-pushd "$DOCKER_TESTS_DIR"
+cd "$DOCKER_TESTS_DIR"
 
 docker build -t "dirac" "$@" .
-
-popd

@@ -31,7 +31,7 @@
 /**
  * @unrestricted
  */
-Common.TextDictionary = class {
+export default class TextDictionary {
   constructor() {
     /** @type {!Map<string, number>} */
     this._words = new Map();
@@ -53,8 +53,9 @@ Common.TextDictionary = class {
    */
   removeWord(word) {
     let count = this._words.get(word) || 0;
-    if (!count)
+    if (!count) {
       return;
+    }
     if (count === 1) {
       this._words.delete(word);
       this._index.remove(word);
@@ -92,4 +93,10 @@ Common.TextDictionary = class {
     this._words.clear();
     this._index.clear();
   }
-};
+}
+
+/* Legacy exported object */
+self.Common = self.Common || {};
+Common = Common || {};
+
+Common.TextDictionary = TextDictionary;

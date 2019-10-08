@@ -16,7 +16,7 @@ Resources.StorageItemsView = class extends UI.VBox {
 
     this._mainToolbar = new UI.Toolbar('top-resources-toolbar', this.element);
 
-    this._filterItem = new UI.ToolbarInput(Common.UIString('Filter'), 0.4);
+    this._filterItem = new UI.ToolbarInput(Common.UIString('Filter'), '', 0.4);
     this._filterItem.addEventListener(UI.ToolbarInput.Event.TextChanged, this._filterChanged, this);
 
     const toolbarSeparator = new UI.ToolbarSeparator();
@@ -26,9 +26,9 @@ Resources.StorageItemsView = class extends UI.VBox {
 
     const toolbarItems =
         [this._refreshButton, this._filterItem, toolbarSeparator, this._deleteAllButton, this._deleteSelectedButton];
-    for (const item of toolbarItems)
+    for (const item of toolbarItems) {
       this._mainToolbar.appendToolbarItem(item);
-
+    }
   }
 
   /**
@@ -59,8 +59,9 @@ Resources.StorageItemsView = class extends UI.VBox {
    * @protected
    */
   filter(items, keyFunction) {
-    if (!this._filterRegex)
+    if (!this._filterRegex) {
       return items;
+    }
     return items.filter(item => this._filterRegex.test(keyFunction(item)));
   }
 

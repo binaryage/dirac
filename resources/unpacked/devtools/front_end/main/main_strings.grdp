@@ -9,9 +9,6 @@
   <message name="IDS_DEVTOOLS_0a0afb342478f201b92cbc89d19bf14d" desc="Title of a setting under the Appearance category that can be invoked through the Command Menu">
     Switch to dark theme
   </message>
-  <message name="IDS_DEVTOOLS_13348442cc6a27032d2b4aa28b75a5d3" desc="Text in the Shortcuts page in settings to explain a keyboard shortcut">
-    Search
-  </message>
   <message name="IDS_DEVTOOLS_15fa1acc2a998159c4ed2a950c5c231d" desc="Text in the Shortcuts page in settings to explain a keyboard shortcut">
     Toggle drawer
   </message>
@@ -21,8 +18,8 @@
   <message name="IDS_DEVTOOLS_1cf59b16fd253d6ff4bbee7c237cea0d" desc="Text in Main">
     Show console
   </message>
-  <message name="IDS_DEVTOOLS_2ab5656e27a0ed871c8de44368f807c6" desc="Text in Main">
-    Styles Pane
+  <message name="IDS_DEVTOOLS_2ac43aa43bf473f9a9c09b4b608619d3" desc="A tag of theme preference settings that can be searched in the command menu">
+    light
   </message>
   <message name="IDS_DEVTOOLS_2ad9d63b69c4a10a5cc9cad923133bc4" desc="A drop-down menu option to dock to bottom">
     Bottom
@@ -52,7 +49,7 @@
     Go to the panel to the left/right
   </message>
   <message name="IDS_DEVTOOLS_586740a88e6502850bc64f9f2d04d380" desc="Title element title in Main">
-    Placement of DevTools relative to the page. (<ph name="TOGGLEDOCKSIDESHORCUTS____NAME">$1s<ex>Ctrl+Shift+D</ex></ph> to restore last position)
+    Placement of <ph name="LOCKED_1">DevTools</ph> relative to the page. (<ph name="TOGGLEDOCKSIDESHORCUTS____NAME">$1s<ex>Ctrl+Shift+D</ex></ph> to restore last position)
   </message>
   <message name="IDS_DEVTOOLS_5bf4a92da989a6943e3fed84f18c3f0f" desc="Text in the Shortcuts page in settings to explain a keyboard shortcut">
     Search across all sources
@@ -68,9 +65,6 @@
   </message>
   <message name="IDS_DEVTOOLS_75def4784fa71c4ccde7762316ed0e3e" desc="Text in the Shortcuts page in settings to explain a keyboard shortcut in the Section">
     Find next/previous
-  </message>
-  <message name="IDS_DEVTOOLS_787ae37366b7a8c53f381abfd315c647" desc="Text in Main">
-    Elements Panel
   </message>
   <message name="IDS_DEVTOOLS_8645bf45e76c3f958ae99c114c419743" desc="Text in Main">
     Hide console drawer
@@ -99,6 +93,9 @@
   <message name="IDS_DEVTOOLS_a18366b217ebf811ad1886e4f4f865b2" desc="A drop-down menu option to switch to dark theme">
     Dark
   </message>
+  <message name="IDS_DEVTOOLS_a82fd95db10ff25dfad39f07372ebe37" desc="A tag of theme preference settings that can be searched in the command menu">
+    dark
+  </message>
   <message name="IDS_DEVTOOLS_a9e4402481bd9b8e36752bf731f67eb6" desc="Title of a setting under the Appearance category in Settings">
     Theme:
   </message>
@@ -110,9 +107,6 @@
   </message>
   <message name="IDS_DEVTOOLS_b8da6df14bf06283cbf588df6998722e" desc="A title of the 'Panel' @UI.ViewLocationResolver category">
     Panel
-  </message>
-  <message name="IDS_DEVTOOLS_b94d8a074eddd267702810179875737f" desc="Text in Main">
-    Debugger
   </message>
   <message name="IDS_DEVTOOLS_b9cd538a753713464d2ea17d7e975041" desc="A context menu item in the Main">
     More tools

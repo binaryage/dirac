@@ -79,6 +79,7 @@ DEVTOOLS_FRONTEND_PATH = path.join(DEVTOOLS_PATH, 'front_end')
 GLOBAL_EXTERNS_FILE = to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'externs.js'))
 DEFAULT_PROTOCOL_EXTERNS_FILE = path.join(DEVTOOLS_FRONTEND_PATH, 'protocol_externs.js')
 RUNTIME_FILE = to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'Runtime.js'))
+ROOT_MODULE_FILE = to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'root.js'))
 
 CLOSURE_COMPILER_JAR = to_platform_path(path.join(SCRIPTS_PATH, 'closure', 'compiler.jar'))
 CLOSURE_RUNNER_JAR = to_platform_path(path.join(SCRIPTS_PATH, 'closure', 'closure_runner', 'closure_runner.jar'))
@@ -250,7 +251,7 @@ common_closure_args = [
     'SIMPLE_OPTIMIZATIONS',
     '--warning_level',
     'VERBOSE',
-    '--language_in=ECMASCRIPT_2017',
+    '--language_in=ECMASCRIPT_NEXT',
     '--language_out=ES5_STRICT',
     '--extra_annotation_name',
     'suppressReceiverCheck',
@@ -283,6 +284,8 @@ def prepare_closure_frontend_compile(temp_devtools_path, descriptors, namespace_
         to_platform_path(GLOBAL_EXTERNS_FILE),
         '--externs',
         namespace_externs_path,
+        '--js',
+        ROOT_MODULE_FILE,
         '--js',
         RUNTIME_FILE,
     ]
@@ -321,7 +324,6 @@ def generate_namespace_externs(modules_by_name):
     namespace_externs_file = tempfile.NamedTemporaryFile(mode='wt', delete=False)
     try:
         for namespace in namespaces:
-            namespace_externs_file.write('/** @const */\n')
             namespace_externs_file.write('var %s = {};\n' % namespace)
     finally:
         namespace_externs_file.close()
@@ -369,9 +371,7 @@ def main():
 
     devtools_js_compile_command = closure_compiler_command + [
         '--externs',
-        to_platform_path(GLOBAL_EXTERNS_FILE), '--externs',
-        to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'host', 'InspectorFrontendHostAPI.js')),
-        '--jscomp_off=externsValidation', '--js',
+        to_platform_path(GLOBAL_EXTERNS_FILE), '--jscomp_off=externsValidation', '--js',
         to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'devtools_compatibility.js'))
     ]
     devtools_js_compile_proc = popen(devtools_js_compile_command)

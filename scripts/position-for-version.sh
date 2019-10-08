@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
-pushd "$ROOT"
+cd "$ROOT"
 
 VERSION=$1
 
-if [[ ! -z "$VERSION" ]]; then
+if [[ -n "$VERSION" ]]; then
   OMAHA_URL="https://omahaproxy.appspot.com/deps.json?version=$VERSION"
-  POSITION=`curl -s "$OMAHA_URL"| python -mjson.tool | grep chromium_base_position | cut -d ":" -f 2 | sed "s/[ ,\"]//g"`
+  POSITION=$(curl -s "$OMAHA_URL"| python -mjson.tool | grep chromium_base_position | cut -d ":" -f 2 | sed "s/[ ,\"]//g")
 
   if [[ "$POSITION" == "null" ]] || [[ -z "$POSITION" ]]; then
     echoerr "unable to determine chrome position for version '$VERSION', $OMAHA_URL returned null chromium_base_position"
@@ -24,5 +25,3 @@ else
   popd
   exit 1
 fi
-
-popd

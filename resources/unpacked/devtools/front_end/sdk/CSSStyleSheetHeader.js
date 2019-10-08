@@ -23,8 +23,9 @@ SDK.CSSStyleSheetHeader = class {
     this.startLine = payload.startLine;
     this.startColumn = payload.startColumn;
     this.contentLength = payload.length;
-    if (payload.ownerNode)
+    if (payload.ownerNode) {
       this.ownerNode = new SDK.DeferredDOMNode(cssModel.target(), payload.ownerNode);
+    }
     this.setSourceMapURL(payload.sourceMapURL);
   }
 
@@ -76,8 +77,9 @@ SDK.CSSStyleSheetHeader = class {
     console.assert(frame);
     const parsedURL = new Common.ParsedURL(frame.url);
     let fakeURL = 'inspector://' + parsedURL.host + parsedURL.folderPathComponents;
-    if (!fakeURL.endsWith('/'))
+    if (!fakeURL.endsWith('/')) {
       fakeURL += '/';
+    }
     fakeURL += 'inspector-stylesheet';
     return fakeURL;
   }
@@ -97,6 +99,25 @@ SDK.CSSStyleSheetHeader = class {
    */
   columnNumberInSource(lineNumberInStyleSheet, columnNumberInStyleSheet) {
     return (lineNumberInStyleSheet ? 0 : this.startColumn) + columnNumberInStyleSheet;
+  }
+
+  /**
+   * Checks whether the position is in this style sheet. Assumes that the
+   * position's columnNumber is consistent with line endings.
+   * TODO(chromium:1005708): Ensure that this object knows its end position,
+   * and remove {line,column}NumberOfCSSEnd parameters.
+   * @param {number} lineNumber
+   * @param {number} columnNumber
+   * @param {number} lineNumberOfCSSEnd
+   * @param {number} columnNumberOfCSSEnd
+   * @return {boolean}
+   */
+  containsLocation(lineNumber, columnNumber, lineNumberOfCSSEnd, columnNumberOfCSSEnd) {
+    const afterStart =
+        (lineNumber === this.startLine && columnNumber >= this.startColumn) || lineNumber > this.startLine;
+    const beforeEnd =
+        lineNumber < lineNumberOfCSSEnd || (lineNumber === lineNumberOfCSSEnd && columnNumber <= columnNumberOfCSSEnd);
+    return afterStart && beforeEnd;
   }
 
   /**

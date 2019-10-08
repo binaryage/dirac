@@ -31,7 +31,7 @@
 /**
  * @unrestricted
  */
-Common.Worker = class {
+export default class WorkerWrapper {
   /**
    * @param {string} appName
    */
@@ -64,8 +64,9 @@ Common.Worker = class {
    */
   postMessage(message) {
     this._workerPromise.then(worker => {
-      if (!this._disposed)
+      if (!this._disposed) {
         worker.postMessage(message);
+      }
     });
   }
 
@@ -91,4 +92,13 @@ Common.Worker = class {
   set onerror(listener) {
     this._workerPromise.then(worker => worker.onerror = listener);
   }
-};
+}
+
+/* Legacy exported object */
+self.Common = self.Common || {};
+Common = Common || {};
+
+/**
+ * @constructor
+ */
+Common.Worker = WorkerWrapper;

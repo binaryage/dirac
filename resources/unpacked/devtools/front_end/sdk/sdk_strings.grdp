@@ -30,6 +30,9 @@
   <message name="IDS_DEVTOOLS_1a4157cb54ce78ee862a88ecd1a66916" desc="Tooltip to explain why a cookie was blocked">
     This set-cookie used the &quot;__Secure-&quot; or &quot;__Host-&quot; prefix in its name and broke the additional rules applied to cookies with these prefixes as defined in https://tools.ietf.org/html/draft-west-cookie-prefixes-05.
   </message>
+  <message name="IDS_DEVTOOLS_1ee85f6c60017a7f0646ba8dc5824de6" desc="Service worker running status displayed in the Service Workers view in the Application panel">
+    starting
+  </message>
   <message name="IDS_DEVTOOLS_21070fd87b02611a5426d726a70a5502" desc="Text in Server Timing">
     No value found for parameter &quot;<ph name="PARAMNAME">$1s<ex>https</ex></ph>&quot;.
   </message>
@@ -72,6 +75,9 @@
   <message name="IDS_DEVTOOLS_38fe155e13d77298cfd5688c3378fa85" desc="Title of a setting under the Rendering category that can be invoked through the Command Menu">
     Emulate CSS screen media type
   </message>
+  <message name="IDS_DEVTOOLS_3b2a3c8ed19fc3647432e72885d633e7" desc="Service worker running status displayed in the Service Workers view in the Application panel">
+    stopping
+  </message>
   <message name="IDS_DEVTOOLS_3b563524fdb17b4a86590470d40bef74" desc="Text in DOMDebugger Model">
     Media
   </message>
@@ -85,7 +91,7 @@
     Hide frames per second (FPS) meter
   </message>
   <message name="IDS_DEVTOOLS_3ff9f750075f426831f71818a8f4ff12" desc="Text in Network Manager">
-    Request was blocked by DevTools: &quot;<ph name="NETWORKREQUEST_URL__">$1s<ex>https://example.com</ex></ph>&quot;.
+    Request was blocked by <ph name="LOCKED_1">DevTools</ph>: &quot;<ph name="NETWORKREQUEST_URL__">$1s<ex>https://example.com</ex></ph>&quot;.
   </message>
   <message name="IDS_DEVTOOLS_40dba446b661ae69dea3a8e026f76dfd" desc="Title of a setting under the Rendering category that can be invoked through the Command Menu">
     Hide paint flashing rectangles
@@ -151,7 +157,7 @@
     Show hit-test borders
   </message>
   <message name="IDS_DEVTOOLS_6948a469c79f7dd5426e4f291cba3db1" desc="Text in Network Log">
-    Chrome Data Saver
+    <ph name="LOCKED_1">Chrome Data Saver</ph>
   </message>
   <message name="IDS_DEVTOOLS_6ce4d85a628a88bbdb3ac24a8e5a9c2e" desc="Text in DOMDebugger Model">
     Keyboard
@@ -167,6 +173,9 @@
   </message>
   <message name="IDS_DEVTOOLS_7121afd196f5c52bef488d5a0f4c097b" desc="Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel">
     Script First Statement
+  </message>
+  <message name="IDS_DEVTOOLS_75101dcdfc88455bcafc9e53e0b06689" desc="Service worker running status displayed in the Service Workers view in the Application panel">
+    running
   </message>
   <message name="IDS_DEVTOOLS_77454122d17d16885c51c0d57f5c7bd3" desc="Tooltip to explain why a cookie was blocked">
     This cookie had the &quot;SameSite=Strict&quot; attribute and the request was made on on a different site. This includes navigation requests initiated by other sites.
@@ -201,9 +210,6 @@
   <message name="IDS_DEVTOOLS_9028784c589c0c809700c7fbc66a5d96" desc="Text in Network Manager">
     Resource interpreted as <ph name="NETWORKREQUEST_RESOURCETYPE___TITLE__">$1s<ex>application</ex></ph> but transferred with MIME type <ph name="NETWORKREQUEST_MIMETYPE">$2s<ex>image</ex></ph>: &quot;<ph name="NETWORKREQUEST_URL__">$3s<ex>https://example.com</ex></ph>&quot;.
   </message>
-  <message name="IDS_DEVTOOLS_90da6f38945a1c7e7ba11e3adcbe6919" desc="Title of a setting under the Debugger category that can be invoked through the Command Menu">
-    Pause on exceptions
-  </message>
   <message name="IDS_DEVTOOLS_9108ae673b7efa9620aec771edc9d4de" desc="Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel">
     setTimeout fired
   </message>
@@ -215,9 +221,6 @@
   </message>
   <message name="IDS_DEVTOOLS_93dee6366d66361f36985cf5c88346aa" desc="Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel">
     Create AudioContext
-  </message>
-  <message name="IDS_DEVTOOLS_95bbad55f11c237ed89546e748093ba7" desc="Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel">
-    Request Animation Frame
   </message>
   <message name="IDS_DEVTOOLS_96d008db67fc0b5551a926842bbb6a71" desc="Text in DOMDebugger Model">
     Notification
@@ -252,9 +255,6 @@
   <message name="IDS_DEVTOOLS_ae0d59f889c8a03301b9adb5ff1f5bd2" desc="Tooltip to explain why a cookie was blocked">
     This set-cookie had the &quot;SameSite=Strict&quot; attribute but came from a cross-origin response. This includes navigation requests intitiated by other origins.
   </message>
-  <message name="IDS_DEVTOOLS_af4bb376939e77df0e7c2332b837a866" desc="Text in Debugger Model">
-    Closure
-  </message>
   <message name="IDS_DEVTOOLS_b1d4660db82a3d7b85dca58e8635ce13" desc="Tooltip to explain why a cookie was blocked">
     This set-cookie had the &quot;SameSite=Lax&quot; attribute but came from a cross-origin response.
   </message>
@@ -276,12 +276,6 @@
   <message name="IDS_DEVTOOLS_ba50636875d999db0c9218b48b23027d" desc="Title of a setting under the Debugger category that can be invoked through the Command Menu">
     Do not capture async stack traces
   </message>
-  <message name="IDS_DEVTOOLS_ba5b676ccf658f863ef2e3df082ee262" desc="Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel">
-    Animation Frame Fired
-  </message>
-  <message name="IDS_DEVTOOLS_bc955333ff170762be4971a8fde558cf" desc="Text in DOMDebugger Model">
-    WebAudio
-  </message>
   <message name="IDS_DEVTOOLS_c432f4e5fdec5760a2f06b38f646168e" desc="Text in Console Model">
     Profile &apos;<ph name="DATA_TITLE">$1s<ex>title</ex></ph>&apos; started.
   </message>
@@ -294,9 +288,6 @@
   <message name="IDS_DEVTOOLS_c89686a387d2b12b3c729ce35a0bcb5b" desc="Text in DOMDebugger Model">
     Window
   </message>
-  <message name="IDS_DEVTOOLS_c9ad95228aa735bdda1aebf38da022af" desc="Text in DOMDebugger Model">
-    Parse
-  </message>
   <message name="IDS_DEVTOOLS_ccab918ce9f085b521a52ac13f653c0b" desc="Tooltip to explain why a cookie was blocked">
     An unknown error was encountered when trying to send this cookie.
   </message>
@@ -306,14 +297,8 @@
   <message name="IDS_DEVTOOLS_d24a22fef757966373800aa9795458dc" desc="Text in Source Map">
     ? [sm]
   </message>
-  <message name="IDS_DEVTOOLS_d31827f0a164d52b636bb1f71ca4a351" desc="Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel">
-    Cancel Animation Frame
-  </message>
   <message name="IDS_DEVTOOLS_d4fad802fc7bf0248d34c685533bd56f" desc="Title of a setting under the Network category that can be invoked through the Command Menu">
     Disable request blocking
-  </message>
-  <message name="IDS_DEVTOOLS_d6b6b668dbca9d4fe774bb654226ebe3" desc="Text in DOMDebugger Model">
-    Animation
   </message>
   <message name="IDS_DEVTOOLS_dcd9c13c4f8ae68ea7ae92edf9191264" desc="Text in Server Timing">
     Deprecated syntax found. Please use: &lt;name&gt;;dur=&lt;duration&gt;;desc=&lt;description&gt;
@@ -336,9 +321,6 @@
   <message name="IDS_DEVTOOLS_e485c975c1d6c17d9dfd81128b83f63a" desc="Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel">
     Set innerHTML
   </message>
-  <message name="IDS_DEVTOOLS_e55f75a29310d7b60f7ac1d390c8ae42" desc="Text in Debugger Model">
-    Module
-  </message>
   <message name="IDS_DEVTOOLS_e69d85cd1acdf030f0cede48b61d7720" desc="Title of a setting under the Rendering category that can be invoked through the Command Menu">
     Hide scroll performance bottlenecks
   </message>
@@ -354,6 +336,9 @@
   <message name="IDS_DEVTOOLS_eff8d530f562a22a45fbf1ee83299353" desc="Title of a setting under the Rendering category that can be invoked through the Command Menu">
     Show scroll performance bottlenecks
   </message>
+  <message name="IDS_DEVTOOLS_f0a0bfe6bc7d2c58d2989034f83183e0" desc="Service worker running status displayed in the Service Workers view in the Application panel">
+    stopped
+  </message>
   <message name="IDS_DEVTOOLS_f107ac919ab14339cdb22cd00fccd215" desc="Title of a setting under the Rendering category that can be invoked through the Command Menu">
     Show paint flashing rectangles
   </message>
@@ -361,7 +346,7 @@
     Mouse
   </message>
   <message name="IDS_DEVTOOLS_f6137609f4decf877ede5bd3a3125629" desc="Text in CPUProfile Data Model">
-    DevTools: CPU profile parser is fixing <ph name="COUNT">$1s<ex>2</ex></ph> missing samples.
+    <ph name="LOCKED_1">DevTools</ph>: CPU profile parser is fixing <ph name="COUNT">$1s<ex>2</ex></ph> missing samples.
   </message>
   <message name="IDS_DEVTOOLS_f7531e2d0ea27233ce00b5f01c5bf335" desc="A drop-down menu option to emulate css print media type">
     print
@@ -377,5 +362,8 @@
   </message>
   <message name="IDS_DEVTOOLS_ff92304ed0236a5f972fd90e9b47fae4" desc="Text in Server Timing">
     Unrecognized parameter &quot;<ph name="PARAMNAME">$1s<ex>https</ex></ph>&quot;.
+  </message>
+  <message name="IDS_DEVTOOLS_1b1cc7f086b3f074da452bc3129981eb" desc="A tag of Emulate CSS screen media type setting that can be searched in the command menu">
+    query
   </message>
 </grit-part>

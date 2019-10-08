@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
-pushd "$ROOT"
+cd "$ROOT"
 
 ./scripts/clean-dev-browser-tests.sh
 ./scripts/clean-notify.sh
@@ -24,5 +25,3 @@ export DIRAC_NREPL__WEASEL_PORT=9042
 export DIRAC_BROWSER_TESTS_LOG_LEVEL=TRACE
 
 lein with-profile +cooper,+dev-browser-tests cooper
-
-popd

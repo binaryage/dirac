@@ -42,7 +42,7 @@ UI.Dialog = class extends UI.GlassPane {
       this.hide();
       event.consume(true);
     });
-    UI.ARIAUtils.markAsDialog(this.contentElement, true);
+    UI.ARIAUtils.markAsModalDialog(this.contentElement);
     /** @type {!Map<!HTMLElement, number>} */
     this._tabIndexMap = new Map();
     /** @type {?UI.WidgetFocusRestorer} */
@@ -64,8 +64,9 @@ UI.Dialog = class extends UI.GlassPane {
   show(where) {
     const document = /** @type {!Document} */ (
         where instanceof Document ? where : (where || UI.inspectorView.element).ownerDocument);
-    if (UI.Dialog._instance)
+    if (UI.Dialog._instance) {
       UI.Dialog._instance.hide();
+    }
     UI.Dialog._instance = this;
     this._disableTabIndexOnElements(document);
     super.show(document);
@@ -113,8 +114,9 @@ UI.Dialog = class extends UI.GlassPane {
   }
 
   _restoreTabIndexOnElements() {
-    for (const element of this._tabIndexMap.keys())
+    for (const element of this._tabIndexMap.keys()) {
       element.tabIndex = /** @type {number} */ (this._tabIndexMap.get(element));
+    }
     this._tabIndexMap.clear();
   }
 

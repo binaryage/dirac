@@ -8,8 +8,6 @@ Coverage.CoverageView = class extends UI.VBox {
 
     /** @type {?Coverage.CoverageModel} */
     this._model = null;
-    /** @type {?number} */
-    this._pollTimer = null;
     /** @type {?Coverage.CoverageDecorationManager} */
     this._decorationManager = null;
     /** @type {?SDK.ResourceTreeModel} */
@@ -44,7 +42,7 @@ Coverage.CoverageView = class extends UI.VBox {
     /** @type {?RegExp} */
     this._textFilterRegExp = null;
     toolbar.appendSeparator();
-    this._filterInput = new UI.ToolbarInput(Common.UIString('URL filter'), 0.4, 1);
+    this._filterInput = new UI.ToolbarInput(Common.UIString('URL filter'), '', 0.4, 1);
     this._filterInput.setEnabled(false);
     this._filterInput.addEventListener(UI.ToolbarInput.Event.TextChanged, this._onFilterChanged, this);
     toolbar.appendToolbarItem(this._filterInput);
@@ -88,7 +86,9 @@ Coverage.CoverageView = class extends UI.VBox {
   }
 
   _clear() {
-    this._model = null;
+    if (this._model) {
+      this._model.reset();
+    }
     this._reset();
   }
 
@@ -107,10 +107,19 @@ Coverage.CoverageView = class extends UI.VBox {
   _toggleRecording() {
     const enable = !this._toggleRecordAction.toggled();
 
-    if (enable)
+    if (enable) {
       this._startRecording(false);
-    else
-      this._stopRecording();
+    } else {
+      this.stopRecording();
+    }
+  }
+
+  async ensureRecordingStarted() {
+    const enable = !this._toggleRecordAction.toggled();
+
+    if (enable) {
+      await this._startRecording(false);
+    }
   }
 
   /**
@@ -119,15 +128,19 @@ Coverage.CoverageView = class extends UI.VBox {
   async _startRecording(reload) {
     this._reset();
     const mainTarget = SDK.targetManager.mainTarget();
-    if (!mainTarget)
+    if (!mainTarget) {
       return;
+    }
 
-    if (!this._model || reload)
-      this._model = new Coverage.CoverageModel(/** @type {!SDK.Target} */ (mainTarget));
+    if (!this._model || reload) {
+      this._model = mainTarget.model(Coverage.CoverageModel);
+    }
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.CoverageStarted);
     const success = await this._model.start();
-    if (!success)
+    if (!success) {
       return;
+    }
+    this._model.addEventListener(Coverage.CoverageModel.Events.CoverageUpdated, this._onCoverageDataReceived, this);
     this._resourceTreeModel = /** @type {?SDK.ResourceTreeModel} */ (mainTarget.model(SDK.ResourceTreeModel));
     if (this._resourceTreeModel) {
       this._resourceTreeModel.addEventListener(
@@ -137,44 +150,38 @@ Coverage.CoverageView = class extends UI.VBox {
         new Coverage.CoverageDecorationManager(/** @type {!Coverage.CoverageModel} */ (this._model));
     this._toggleRecordAction.setToggled(true);
     this._clearButton.setEnabled(false);
-    if (this._startWithReloadButton)
+    if (this._startWithReloadButton) {
       this._startWithReloadButton.setEnabled(false);
+    }
     this._filterInput.setEnabled(true);
-    if (this._landingPage.isShowing())
+    if (this._landingPage.isShowing()) {
       this._landingPage.detach();
+    }
     this._listView.show(this._coverageResultsElement);
-    if (reload && this._resourceTreeModel)
+    if (reload && this._resourceTreeModel) {
       this._resourceTreeModel.reloadPage();
-    else
-      this._poll();
+    } else {
+      this._model.startPolling();
+    }
   }
 
-  async _poll() {
-    if (this._pollTimer) {
-      clearTimeout(this._pollTimer);
-      // Clear until this._model.poll() finishes.
-      this._pollTimer = null;
-    }
-    const updates = await this._model.poll();
-    this._updateViews(updates);
-    this._pollTimer = setTimeout(() => this._poll(), 700);
+  _onCoverageDataReceived(event) {
+    this._updateViews(event.data);
   }
 
-  async _stopRecording() {
-    if (this._pollTimer) {
-      clearTimeout(this._pollTimer);
-      this._pollTimer = null;
-    }
+  async stopRecording() {
     if (this._resourceTreeModel) {
       this._resourceTreeModel.removeEventListener(
           SDK.ResourceTreeModel.Events.MainFrameNavigated, this._onMainFrameNavigated, this);
       this._resourceTreeModel = null;
     }
-    const updatedEntries = await this._model.stop();
-    this._updateViews(updatedEntries);
+    // Stopping the model triggers one last poll to get the final data.
+    await this._model.stop();
+    this._model.removeEventListener(Coverage.CoverageModel.Events.CoverageUpdated, this._onCoverageDataReceived, this);
     this._toggleRecordAction.setToggled(false);
-    if (this._startWithReloadButton)
+    if (this._startWithReloadButton) {
       this._startWithReloadButton.setEnabled(true);
+    }
     this._clearButton.setEnabled(true);
   }
 
@@ -182,13 +189,13 @@ Coverage.CoverageView = class extends UI.VBox {
     this._model.reset();
     this._decorationManager.reset();
     this._listView.reset();
-    this._poll();
+    this._model.startPolling();
   }
 
   /**
    * @param {!Array<!Coverage.CoverageInfo>} updatedEntries
    */
-  async _updateViews(updatedEntries) {
+  _updateViews(updatedEntries) {
     this._updateStats();
     this._listView.update(this._model.entries());
     this._decorationManager.update(updatedEntries);
@@ -198,8 +205,9 @@ Coverage.CoverageView = class extends UI.VBox {
     let total = 0;
     let unused = 0;
     for (const info of this._model.entries()) {
-      if (!this._isVisible(true, info))
+      if (!this._isVisible(true, info)) {
         continue;
+      }
       total += info.size();
       unused += info.unusedSize();
     }
@@ -212,8 +220,9 @@ Coverage.CoverageView = class extends UI.VBox {
   }
 
   _onFilterChanged() {
-    if (!this._listView)
+    if (!this._listView) {
       return;
+    }
     const text = this._filterInput.value();
     this._textFilterRegExp = text ? createPlainTextSearchRegex(text, 'i') : null;
     this._listView.updateFilterAndHighlight(this._textFilterRegExp);
@@ -227,10 +236,12 @@ Coverage.CoverageView = class extends UI.VBox {
    */
   _isVisible(ignoreTextFilter, coverageInfo) {
     const url = coverageInfo.url();
-    if (url.startsWith(Coverage.CoverageView._extensionBindingsURLPrefix))
+    if (url.startsWith(Coverage.CoverageView._extensionBindingsURLPrefix)) {
       return false;
-    if (coverageInfo.isContentScript() && !this._showContentScriptsSetting.get())
+    }
+    if (coverageInfo.isContentScript() && !this._showContentScriptsSetting.get()) {
       return false;
+    }
     return ignoreTextFilter || !this._textFilterRegExp || this._textFilterRegExp.test(url);
   }
 
@@ -238,9 +249,14 @@ Coverage.CoverageView = class extends UI.VBox {
     const fos = new Bindings.FileOutputStream();
     const fileName = `Coverage-${new Date().toISO8601Compact()}.json`;
     const accepted = await fos.open(fileName);
-    if (!accepted)
+    if (!accepted) {
       return;
+    }
     this._model.exportReport(fos);
+  }
+
+  selectCoverageItemByUrl(url) {
+    this._listView.selectByUrl(url);
   }
 };
 

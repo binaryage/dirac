@@ -39,10 +39,11 @@ Formatter.Formatter = function() {};
  * @param {function(string, !Formatter.FormatterSourceMapping)} callback
  */
 Formatter.Formatter.format = function(contentType, mimeType, content, callback) {
-  if (contentType.isDocumentOrScriptOrStyleSheet())
+  if (contentType.isDocumentOrScriptOrStyleSheet()) {
     new Formatter.ScriptFormatter(mimeType, content, callback);
-  else
+  } else {
     new Formatter.ScriptIdentityFormatter(mimeType, content, callback);
+  }
 };
 
 /**
@@ -64,10 +65,11 @@ Formatter.Formatter.locationToPosition = function(lineEndings, lineNumber, colum
 Formatter.Formatter.positionToLocation = function(lineEndings, position) {
   const lineNumber = lineEndings.upperBound(position - 1);
   let columnNumber;
-  if (!lineNumber)
+  if (!lineNumber) {
     columnNumber = position;
-  else
+  } else {
     columnNumber = position - lineEndings[lineNumber - 1] - 1;
+  }
   return [lineNumber, columnNumber];
 };
 
@@ -130,11 +132,13 @@ Formatter.FormatterSourceMapping.prototype = {
   originalToFormatted(lineNumber, columnNumber) {},
 
   /**
+   * TODO(1005708): Remove the offset parameter once end positions of inline CSS is known.
    * @param {number} lineNumber
    * @param {number=} columnNumber
+   * @param {number=} offset
    * @return {!Array.<number>}
    */
-  formattedToOriginal(lineNumber, columnNumber) {}
+  formattedToOriginal(lineNumber, columnNumber, offset) {}
 };
 
 /**
@@ -153,12 +157,14 @@ Formatter.IdentityFormatterSourceMapping = class {
   }
 
   /**
+   * TODO(1005708): Remove the offset parameter once end positions of inline CSS is known.
    * @override
    * @param {number} lineNumber
    * @param {number=} columnNumber
+   * @param {number=} offset
    * @return {!Array.<number>}
    */
-  formattedToOriginal(lineNumber, columnNumber) {
+  formattedToOriginal(lineNumber, columnNumber, offset) {
     return [lineNumber, columnNumber || 0];
   }
 };
@@ -194,16 +200,18 @@ Formatter.FormatterSourceMappingImpl = class {
   }
 
   /**
+   * TODO(chromium:1005708): Remove the offset parameter once end positions of inline CSS is known.
    * @override
    * @param {number} lineNumber
    * @param {number=} columnNumber
+   * @param {number=} offset
    * @return {!Array.<number>}
    */
-  formattedToOriginal(lineNumber, columnNumber) {
+  formattedToOriginal(lineNumber, columnNumber, offset) {
     const formattedPosition =
         Formatter.Formatter.locationToPosition(this._formattedLineEndings, lineNumber, columnNumber || 0);
     const originalPosition = this._convertPosition(this._mapping.formatted, this._mapping.original, formattedPosition);
-    return Formatter.Formatter.positionToLocation(this._originalLineEndings, originalPosition || 0);
+    return Formatter.Formatter.positionToLocation(this._originalLineEndings, (originalPosition || 0) + (offset || 0));
   }
 
   /**
@@ -215,8 +223,9 @@ Formatter.FormatterSourceMappingImpl = class {
   _convertPosition(positions1, positions2, position) {
     const index = positions1.upperBound(position) - 1;
     let convertedPosition = positions2[index] + position - positions1[index];
-    if (index < positions2.length - 1 && convertedPosition > positions2[index + 1])
+    if (index < positions2.length - 1 && convertedPosition > positions2[index + 1]) {
       convertedPosition = positions2[index + 1];
+    }
     return convertedPosition;
   }
 };

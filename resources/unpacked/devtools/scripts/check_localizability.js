@@ -46,9 +46,10 @@ async function main() {
     if (process.argv[2] === '-a')
       filePathPromises.push(localizationUtils.getFilesFromDirectory(frontendPath, filePaths, ['.js']));
     else
-      filePaths = process.argv.slice(2);
+      filePaths = process.argv.slice(2).filter(localizationUtils.shouldParseDirectory);
     await Promise.all(filePathPromises);
 
+    filePaths.push(localizationUtils.SHARED_STRINGS_PATH);
     const auditFilePromises = filePaths.map(filePath => auditFileForLocalizability(filePath, errors));
     await Promise.all(auditFilePromises);
   } catch (err) {
@@ -284,7 +285,7 @@ async function auditFileForLocalizability(filePath, errors) {
   if (path.extname(filePath) === '.grdp')
     return auditGrdpFile(filePath, fileContent, errors);
 
-  const ast = esprima.parse(fileContent, {loc: true});
+  const ast = esprima.parseModule(fileContent, {loc: true});
 
   const relativeFilePath = localizationUtils.getRelativeFilePathFromSrc(filePath);
   for (const node of ast.body)

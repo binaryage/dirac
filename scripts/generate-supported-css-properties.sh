@@ -1,24 +1,23 @@
 #!/usr/bin/env bash
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 WORK_DIR="$TMP_DIR/peon/generate-supported-css-properties"
 mkdir -p "$WORK_DIR"
 
-pushd "$CHROMIUM_DEVTOOLS_DIR"
+cd "$CHROMIUM_DEVTOOLS_DIR"
 
-REV=`git rev-parse HEAD`
-TAG=`git tag -l "[0-9]*" | tail -1`
+REV=$(git rev-parse HEAD)
+TAG=$(git tag -l "[0-9]*" | tail -1)
 
-popd
-
-pushd "$DEVTOOLS_ROOT"
+cd "$DEVTOOLS_ROOT"
 
 if [[ -f "$CSS_PROPERTIES_SOURCE" ]]; then
   python scripts/build/generate_supported_css.py "$CSS_PROPERTIES_SOURCE" "$WORK_DIR/SupportedCSSProperties.js"
 
-  pushd "$PEON_DIR"
+  cd "$PEON_DIR"
 
   lein run -- gen-backend-css \
     --input="$WORK_DIR/SupportedCSSProperties.js" \
@@ -26,12 +25,8 @@ if [[ -f "$CSS_PROPERTIES_SOURCE" ]]; then
     --chrome-rev="$REV" \
     --chrome-tag="$TAG"
 
-  popd
-
   echo "Generated fresh $CSS_PROPERTIES_OUTPUT_FILE"
 else
   echo "Error: Properties source file not found in $CSS_PROPERTIES_SOURCE."
   exit 1
 fi
-
-popd

@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
-pushd "$ROOT"
+cd "$ROOT"
 
 if [[ ! -d "$DIRAC_USER_PROFILE" ]]; then
   mkdir -p "$DIRAC_USER_PROFILE"
@@ -22,5 +23,3 @@ fi
       --disable-default-apps \
       --user-data-dir="$DIRAC_USER_PROFILE" \
       localhost:9222/json
-
-popd

@@ -63,6 +63,9 @@
   <message name="IDS_DEVTOOLS_1f15646f60fc3c1dea747963f02d51ac" desc="Text in Sources Panel of the Sources panel">
     Group by folder
   </message>
+  <message name="IDS_DEVTOOLS_1fbbb6684f67ee895ff5dc2e429697ce" desc="Screen reader label for a select box that chooses the breakpoint type in the Sources panel when editing a breakpoint">
+    Breakpoint type
+  </message>
   <message name="IDS_DEVTOOLS_216a9080bf22a993b2d7f9331d34cc68" desc="Text in Sources Panel of the Sources panel">
     Don&apos;t pause on exceptions
   </message>
@@ -148,7 +151,7 @@
     Override page assets with files from a local folder
   </message>
   <message name="IDS_DEVTOOLS_49a4a1505587da9f4475db7ee9958853" desc="Text in Sources Navigator of the Sources panel">
-    Sync changes in DevTools with the local filesystem
+    Sync changes in <ph name="LOCKED_1">DevTools</ph> with the local filesystem
   </message>
   <message name="IDS_DEVTOOLS_4b3812a22a58f04fb5a0598658a3bd27" desc="Title of the Filtered List WidgetProvider of Quick Open">
     Go to symbol
@@ -165,17 +168,11 @@
   <message name="IDS_DEVTOOLS_520d0db389f362bf79ef56ca0af3dcab" desc="Tooltip text that appears when hovering over the largeicon pretty print button in the Inplace Formatter Editor Action of the Sources panel">
     Format
   </message>
-  <message name="IDS_DEVTOOLS_52b3bc5e77aa070243c36cd40a4d6b6d" desc="Title of a setting under the Sources category in Settings">
-    Autocompletion
-  </message>
   <message name="IDS_DEVTOOLS_58943fa26a94bc86f7f45106080e4496" desc="Title of an action under the Debugger category that can be invoked through the Command Menu">
     Resume script execution
   </message>
   <message name="IDS_DEVTOOLS_590d0b32e1139c6c3bcb0f99ed978dff" desc="Text in Debugger Paused Message of the Sources panel">
     subtree modifications
-  </message>
-  <message name="IDS_DEVTOOLS_5a0a64ecca63ba9a006b6397cbdc2b8c" desc="Title of the Filtered List WidgetProvider of Quick Open">
-    Go to line
   </message>
   <message name="IDS_DEVTOOLS_5a3bb6a64da384e59876cd0bc00a6eae" desc="Unblackbox link text content in Debugger Plugin of the Sources panel">
     Unblackbox this script
@@ -388,7 +385,7 @@
     Remove other breakpoints
   </message>
   <message name="IDS_DEVTOOLS_b9947e230aa5ac451e3b0649bdb1c7fc" desc="Event return value in Sources View of the Sources panel">
-    DevTools have unsaved changes that will be permanently lost.
+    <ph name="LOCKED_1">DevTools</ph> have unsaved changes that will be permanently lost.
   </message>
   <message name="IDS_DEVTOOLS_bb9f288b958ce8c8d250cb392e2f1309" desc="Text in Debugger Plugin of the Sources panel">
     You can click the <ph name="TOOLBAR_ELEMENT">$1s<ex>{}</ex></ph> button on the bottom status bar, and continue debugging with the new formatted source.

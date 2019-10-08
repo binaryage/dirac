@@ -69,6 +69,9 @@
   <message name="IDS_DEVTOOLS_08db5f30f625a406882862b8a29b1bc6" desc="Text in Timeline UIUtils of the Performance panel">
     Major GC
   </message>
+  <message name="IDS_DEVTOOLS_099ca81d7a70c42447d89e172198ba5d" desc="Aria-label for filter bar in Event Log view">
+    Filter event log
+  </message>
   <message name="IDS_DEVTOOLS_09d66464ad53e6080988ad30824ea023" desc="Text in Timeline Flame Chart Data Provider of the Performance panel">
     Frame — <ph name="TRACK_URL">$1s<ex>https://example.com</ex></ph>
   </message>
@@ -86,7 +89,7 @@
 Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <ph name="RELOADKEY">$4s<ex>Ctrl + R</ex></ph> to record the page load.
   </message>
   <message name="IDS_DEVTOOLS_0e8dfe937d359c7df31b16ea7e9cca81" desc="Title of a setting under the Performance category in Settings">
-    Hide chrome frame in Layers view
+    Hide <ph name="LOCKED_1">chrome</ph> frame in Layers view
   </message>
   <message name="IDS_DEVTOOLS_10aab9f12eca6bca3a6215914bab2745" desc="Text in Timeline UIUtils of the Performance panel">
     Allotted Time
@@ -120,9 +123,6 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   </message>
   <message name="IDS_DEVTOOLS_1b2c363066d5912ae8b27a1527f3d45e" desc="Text in Timeline Tree View of the Performance panel">
     Group by Domain
-  </message>
-  <message name="IDS_DEVTOOLS_1c481aa99d081c32182011a758f73d33" desc="Duration text in the Performance panel">
-    <ph name="DURATIONTEXT">$1s<ex>100ms (at 200ms)</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_1e3eaaac8d3c9cffea8ee7f03a8a6121" desc="Text in Timeline UIUtils of the Performance panel">
     DOMContentLoaded Event
@@ -283,9 +283,6 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_44ff4e8748811d0661f820aeb28ecaf4" desc="Text in Timeline UIUtils of the Performance panel">
     XHR Ready State Change
   </message>
-  <message name="IDS_DEVTOOLS_46a2a41cc6e552044816a2d04634545d" desc="Text in Timeline UIUtils of the Performance panel">
-    State
-  </message>
   <message name="IDS_DEVTOOLS_46fa564bb1eed5cd3992cac85e8f094b" desc="Title of show screenshots setting in timeline panel of the performance panel">
     Screenshots
   </message>
@@ -427,6 +424,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_66f1aed235ade25269a561e81cbbb43a" desc="Text in Timeline UIUtils of the Performance panel">
     Scripting
   </message>
+  <message name="IDS_DEVTOOLS_6734ebb8322bff404034f6ebbcc0d2fb" desc="Aria-label for filter bar in Call Tree view">
+    Filter call tree
+  </message>
   <message name="IDS_DEVTOOLS_67eed98f4bc75c4ab261b79a0e2c52cd" desc="Text in Timeline UIUtils of the Performance panel">
     Cache Rejected
   </message>
@@ -438,9 +438,6 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   </message>
   <message name="IDS_DEVTOOLS_6a389f626da11df07508bf251de59c23" desc="Text in Timeline UIUtils of the Performance panel">
     Frame Start
-  </message>
-  <message name="IDS_DEVTOOLS_6aafe894685594a908a8996d68e88028" desc="Text in Events Timeline Tree View of the Performance panel">
-    Hide records shorter than <ph name="DURATIONMS">$1d<ex>2</ex></ph> ms
   </message>
   <message name="IDS_DEVTOOLS_6c906c5f560faeb38f51683bc22fb212" desc="Text in Timeline Tree View of the Performance panel">
     Group by Subdomain
@@ -482,7 +479,7 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
     Decrypt
   </message>
   <message name="IDS_DEVTOOLS_76e815d5323a5f3c80a3d186c416e92b" desc="Text in Timeline Tree View of the Performance panel">
-    [Chrome extensions overhead]
+    [<ph name="LOCKED_1">Chrome</ph> extensions overhead]
   </message>
   <message name="IDS_DEVTOOLS_76ecb02d1f339c2dd6f14c41ead368c1" desc="Span text content in Timeline UIUtils of the Performance panel">
     Handler took <ph name="NUMBER_MILLISTOSTRING_EVENT_DURATION__TRUE_">$1s<ex>10ms</ex></ph>
@@ -501,9 +498,6 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   </message>
   <message name="IDS_DEVTOOLS_7ac6c415cd08c0ba2c0a1f54c0a62a52" desc="Text in Timeline UIUtils of the Performance panel">
     ''' (from push)
-  </message>
-  <message name="IDS_DEVTOOLS_7b3a6b02f467b95f2b5267aa94708c07" desc="Text in Timeline Flame Chart Data Provider of the Performance panel">
-    Thread <ph name="__THREADINDEX">$1s<ex>2</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_80a4b8755d836d50c19e6eefb976bc2e" desc="Text in Timeline UIUtils of the Performance panel">
     <ph name="SELFCATEGORY_TITLE">$1s<ex>blink.console</ex></ph> (self)
@@ -612,9 +606,6 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   <message name="IDS_DEVTOOLS_97c091732895087b8900d81105e54446" desc="Text in Timeline UIUtils of the Performance panel">
     Frame Start (main thread)
   </message>
-  <message name="IDS_DEVTOOLS_997a8c473db4f81c5fb3d5900030d44d" desc="Text in Timeline History Manager of the Performance panel">
-    (no recordings)
-  </message>
   <message name="IDS_DEVTOOLS_9a2837081f4b4cd67f625bd8e7567383" desc="Text in Timeline UIUtils of the Performance panel">
     Compile Script
   </message>
@@ -645,6 +636,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   <message name="IDS_DEVTOOLS_a580a76abe8b0912889d80f5c4cb9559" desc="Text in Timeline Tree View of the Performance panel">
     Group by Product
   </message>
+  <message name="IDS_DEVTOOLS_a5d91e1697b7c75863fb9c6163a3446e" desc="Text in Timeline Event Overview of the Performance panel">
+    COVERAGE
+  </message>
   <message name="IDS_DEVTOOLS_a6f22a2373839a1d417d7a4078f0383a" desc="Text in Timeline Panel of the Performance panel">
     - CPU throttling is enabled
   </message>
@@ -669,6 +663,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   <message name="IDS_DEVTOOLS_aed0e2bd848c2ac9dddb03d8c21c67b6" desc="Text in Timeline UIUtils of the Performance panel">
     Touch Cancel
   </message>
+  <message name="IDS_DEVTOOLS_af812f467030e02c8bc8a81b4db8e562" desc="Text in Timeline Panel of the Performance panel">
+    Record coverage with performance trace
+  </message>
   <message name="IDS_DEVTOOLS_b030f7d30297555390c6d2d23af55fa1" desc="Text in Timeline History Manager of the Performance panel">
     moments
   </message>
@@ -691,7 +688,7 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
     Layout root
   </message>
   <message name="IDS_DEVTOOLS_b3bfefedfa27aa11e79f637b22b16d09" desc="Text in Timeline Tree View of the Performance panel">
-    [V8 Runtime]
+    [<ph name="LOCKED_1">V8</ph> Runtime]
   </message>
   <message name="IDS_DEVTOOLS_b49fe3f49a656887d446c2da3851a88a" desc="Text in Timeline UIUtils of the Performance panel">
     Network request
@@ -728,6 +725,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_be85f6b3661854c85ddbde4c1429b2a2" desc="Text in Timeline UIUtils of the Performance panel">
     (<ph name="CLIP___">$1s<ex>2</ex></ph>, <ph name="CLIP___">$2s<ex>2</ex></ph>)
+  </message>
+  <message name="IDS_DEVTOOLS_be87d8c3de2675bbc53f9442af9d8feb" desc="Aria-label for grouping combo box in Timeline Details View">
+    Group by
   </message>
   <message name="IDS_DEVTOOLS_be97c5beb33f5316b2c221bfbb95852b" desc="Text in Timeline UIUtils of the Performance panel">
     MIME Type
@@ -822,6 +822,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   <message name="IDS_DEVTOOLS_d5f967961bccf06a9eb7989d69d94a15" desc="Text in Timeline UIUtils of the Performance panel">
     network transfer
   </message>
+  <message name="IDS_DEVTOOLS_d6ef31f5b235ec815c3b62fc6f236804" desc="Aria-label for the filter bar in Bottom-Up view">
+    Filter bottom-up
+  </message>
   <message name="IDS_DEVTOOLS_d84fe3f1d290e4855cc0487b5ea18a4a" desc="Text in Timeline UIUtils of the Performance panel">
     Pinch Begin
   </message>
@@ -851,9 +854,6 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_dc16531c312e4d4c024ffd577d123887" desc="Text in Counters Graph of the Performance panel">
     Listeners
-  </message>
-  <message name="IDS_DEVTOOLS_dc63e2b8b0f6f66d3dd2dc5d49483eec" desc="Text in Events Timeline Tree View of the Performance panel">
-    Show all records
   </message>
   <message name="IDS_DEVTOOLS_dd694dc279a5fbefed6a8323c15f4e67" desc="Text in Timeline UIUtils of the Performance panel">
     Cancel Idle Callback

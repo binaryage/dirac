@@ -64,16 +64,16 @@ Network.ResourceWebSocketFrameView = class extends UI.VBox {
     this._clearAllButton.addEventListener(UI.ToolbarButton.Events.Click, this._clearFrames, this);
     this._mainToolbar.appendToolbarItem(this._clearAllButton);
 
-    this._filterTypeCombobox = new UI.ToolbarComboBox(this._updateFilterSetting.bind(this));
+    this._filterTypeCombobox = new UI.ToolbarComboBox(this._updateFilterSetting.bind(this), ls`Filter`);
     for (const filterItem of Network.ResourceWebSocketFrameView._filterTypes) {
-      const option = this._filterTypeCombobox.createOption(filterItem.label, filterItem.label, filterItem.name);
+      const option = this._filterTypeCombobox.createOption(filterItem.label, filterItem.name);
       this._filterTypeCombobox.addOption(option);
     }
     this._mainToolbar.appendToolbarItem(this._filterTypeCombobox);
     this._filterType = null;
 
     const placeholder = 'Enter regex, for example: (web)?socket';
-    this._filterTextInput = new UI.ToolbarInput(Common.UIString(placeholder), 0.4);
+    this._filterTextInput = new UI.ToolbarInput(Common.UIString(placeholder), '', 0.4);
     this._filterTextInput.addEventListener(UI.ToolbarInput.Event.TextChanged, this._updateFilterSetting, this);
     this._mainToolbar.appendToolbarItem(this._filterTextInput);
     this._filterRegex = null;
@@ -116,8 +116,9 @@ Network.ResourceWebSocketFrameView = class extends UI.VBox {
    */
   static opCodeDescription(opCode, mask) {
     const localizedDescription = Network.ResourceWebSocketFrameView.opCodeDescriptions[opCode] || '';
-    if (mask)
+    if (mask) {
       return ls`${localizedDescription} (Opcode ${opCode}, mask)`;
+    }
     return ls`${localizedDescription} (Opcode ${opCode})`;
   }
 
@@ -141,8 +142,9 @@ Network.ResourceWebSocketFrameView = class extends UI.VBox {
    */
   _frameAdded(event) {
     const frame = /** @type {!SDK.NetworkRequest.WebSocketFrame} */ (event.data);
-    if (!this._frameFilter(frame))
+    if (!this._frameFilter(frame)) {
       return;
+    }
     this._dataGrid.insertChild(new Network.ResourceWebSocketFrameNode(this._request.url(), frame));
   }
 
@@ -151,8 +153,9 @@ Network.ResourceWebSocketFrameView = class extends UI.VBox {
    * @return {boolean}
    */
   _frameFilter(frame) {
-    if (this._filterType && frame.type !== this._filterType)
+    if (this._filterType && frame.type !== this._filterType) {
       return false;
+    }
     return !this._filterRegex || this._filterRegex.test(frame.text);
   }
 
@@ -331,11 +334,13 @@ Network.ResourceWebSocketFrameNode = class extends DataGrid.SortableDataGridNode
    * @return {?Network.BinaryResourceView}
    */
   binaryView() {
-    if (this._isTextFrame || this._frame.type === SDK.NetworkRequest.WebSocketFrameType.Error)
+    if (this._isTextFrame || this._frame.type === SDK.NetworkRequest.WebSocketFrameType.Error) {
       return null;
+    }
 
-    if (!this._binaryView)
+    if (!this._binaryView) {
       this._binaryView = new Network.BinaryResourceView(this._dataText, /* url */ '', Common.resourceTypes.WebSocket);
+    }
     return this._binaryView;
   }
 };

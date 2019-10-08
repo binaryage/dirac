@@ -30,28 +30,30 @@
 /**
  * @interface
  */
-Common.ContentProvider = function() {};
-
-Common.ContentProvider.prototype = {
+export default class ContentProvider {
   /**
    * @return {string}
    */
-  contentURL() {},
+  contentURL() {
+  }
 
   /**
    * @return {!Common.ResourceType}
    */
-  contentType() {},
+  contentType() {
+  }
 
   /**
    * @return {!Promise<boolean>}
    */
-  contentEncoded() {},
+  contentEncoded() {
+  }
 
   /**
    * @return {!Promise<string>}
    */
-  requestContent() {},
+  requestContent() {
+  }
 
   /**
    * @param {string} query
@@ -60,12 +62,12 @@ Common.ContentProvider.prototype = {
    * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
    */
   searchInContent(query, caseSensitive, isRegex) {}
-};
+}
 
 /**
  * @unrestricted
  */
-Common.ContentProvider.SearchMatch = class {
+export class SearchMatch {
   /**
    * @param {number} lineNumber
    * @param {string} lineContent
@@ -74,7 +76,7 @@ Common.ContentProvider.SearchMatch = class {
     this.lineNumber = lineNumber;
     this.lineContent = lineContent;
   }
-};
+}
 
 /**
  * @param {string} content
@@ -83,7 +85,7 @@ Common.ContentProvider.SearchMatch = class {
  * @param {boolean} isRegex
  * @return {!Array.<!Common.ContentProvider.SearchMatch>}
  */
-Common.ContentProvider.performSearchInContent = function(content, query, caseSensitive, isRegex) {
+export const performSearchInContent = function(content, query, caseSensitive, isRegex) {
   const regex = createSearchRegex(query, caseSensitive, isRegex);
 
   const text = new TextUtils.Text(content);
@@ -91,8 +93,9 @@ Common.ContentProvider.performSearchInContent = function(content, query, caseSen
   for (let i = 0; i < text.lineCount(); ++i) {
     const lineContent = text.lineAt(i);
     regex.lastIndex = 0;
-    if (regex.exec(lineContent))
+    if (regex.exec(lineContent)) {
       result.push(new Common.ContentProvider.SearchMatch(i, lineContent));
+    }
   }
   return result;
 };
@@ -104,11 +107,28 @@ Common.ContentProvider.performSearchInContent = function(content, query, caseSen
  * @param {?string=} charset
  * @return {?string}
  */
-Common.ContentProvider.contentAsDataURL = function(content, mimeType, contentEncoded, charset) {
+export const contentAsDataURL = function(content, mimeType, contentEncoded, charset) {
   const maxDataUrlSize = 1024 * 1024;
-  if (content === null || content.length > maxDataUrlSize)
+  if (content === null || content.length > maxDataUrlSize) {
     return null;
+  }
 
   return 'data:' + mimeType + (charset ? ';charset=' + charset : '') + (contentEncoded ? ';base64' : '') + ',' +
       content;
 };
+
+/* Legacy exported object */
+self.Common = self.Common || {};
+Common = Common || {};
+
+/**
+ * @interface
+ */
+Common.ContentProvider = ContentProvider;
+
+/**
+ * @constructor
+ */
+Common.ContentProvider.SearchMatch = SearchMatch;
+Common.ContentProvider.performSearchInContent = performSearchInContent;
+Common.ContentProvider.contentAsDataURL = contentAsDataURL;

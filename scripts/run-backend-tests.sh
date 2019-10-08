@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
+set -e -o pipefail
+# shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
-false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
-pushd "$ROOT"
+cd "$ROOT"
 
 echo "Running backend tests..."
 lein run-backend-tests-110
 lein run-backend-tests-19
 lein run-backend-tests-18
-
-popd

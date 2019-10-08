@@ -133,7 +133,7 @@ class ReleaseBuilder(object):
         output = StringIO()
         with open(join(self.application_dir, html_name), 'r') as app_input_html:
             for line in app_input_html:
-                if '<script ' in line or '<link ' in line:
+                if ('<script ' in line and 'type="module"' not in line) or '<link ' in line:
                     continue
                 if '</head>' in line:
                     self._write_include_tags(self.descriptors, output)
@@ -141,7 +141,7 @@ class ReleaseBuilder(object):
                     if path.exists(js_file):
                         boot_js_file = self.app_file('boot.js')
                         minified_js = minify_js(read_file(js_file))
-                        output.write('    <script type="text/javascript" src="%s"></script>\n' % boot_js_file)
+                        output.write('    <script type="module" src="%s"></script>\n' % boot_js_file)
                         write_file(join(self.output_dir, boot_js_file), minified_js)
                 output.write(line)
 
@@ -157,7 +157,7 @@ class ReleaseBuilder(object):
 
     def _generate_include_tag(self, resource_path):
         if resource_path.endswith('.js'):
-            return '    <script type="text/javascript" src="%s"></script>\n' % resource_path
+            return '    <script defer src="%s"></script>\n' % resource_path
         else:
             assert resource_path
 

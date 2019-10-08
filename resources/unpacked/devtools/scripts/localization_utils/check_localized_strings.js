@@ -8,7 +8,11 @@
  * files and report error if present.
  */
 
+const fs = require('fs');
 const path = require('path');
+const {promisify} = require('util');
+const writeFileAsync = promisify(fs.writeFile);
+const renameFileAsync = promisify(fs.rename);
 const localizationUtils = require('./localization_utils');
 const escodegen = localizationUtils.escodegen;
 const esprimaTypes = localizationUtils.esprimaTypes;
@@ -19,6 +23,7 @@ const extensionStringKeys = ['category', 'destination', 'title', 'title-mac'];
 // { IDS_md5-hash => {
 //     string: string,
 //     code: string,
+//     isShared: boolean,
 //     filepath: string,
 //     grdpPath: string,
 //     location: {
@@ -56,13 +61,144 @@ const IDSkeys = new Map();
 const fileToGRDPMap = new Map();
 
 const devtoolsFrontendPath = path.resolve(__dirname, '..', '..', 'front_end');
+let devtoolsFrontendDirs;
 
+/**
+ * The following functions validate and update grd/grdp files.
+ */
+
+async function validateGrdAndGrdpFiles(shouldAutoFix) {
+  const grdError = await validateGrdFile(shouldAutoFix);
+  const grdpError = await validateGrdpFiles(shouldAutoFix);
+  if (grdError !== '' || grdpError !== '')
+    return `${grdError}\n${grdpError}`;
+  else
+    return '';
+}
+
+function expectedGrdpFilePath(dir) {
+  return path.resolve(dir, `${path.basename(dir)}_strings.grdp`);
+}
+
+async function validateGrdFile(shouldAutoFix) {
+  const fileContent = await localizationUtils.parseFileContent(localizationUtils.GRD_PATH);
+  const fileLines = fileContent.split('\n');
+  const newLines = [];
+  let errors = '';
+  fileLines.forEach(line => errors += validateGrdLine(line, newLines));
+  if (errors !== '' && shouldAutoFix)
+    await writeFileAsync(localizationUtils.GRD_PATH, newLines.join('\n'));
+  return errors;
+}
+
+function validateGrdLine(line, newLines) {
+  let error = '';
+  const match = line.match(/<part file="([^"]*)" \/>/);
+  if (!match) {
+    newLines.push(line);
+    return error;
+  }
+  // match[0]: full match
+  // match[1]: relative grdp file path
+  const grdpFilePath = localizationUtils.getAbsoluteGrdpPath(match[1]);
+  const expectedGrdpFile = expectedGrdpFilePath(path.dirname(grdpFilePath));
+  if (fs.existsSync(grdpFilePath) &&
+      (grdpFilePath === expectedGrdpFile || grdpFilePath === localizationUtils.SHARED_STRINGS_PATH)) {
+    newLines.push(line);
+    return error;
+  } else if (!fs.existsSync(grdpFilePath)) {
+    error += `${line.trim()} in ${
+                 localizationUtils.getRelativeFilePathFromSrc(
+                     localizationUtils.GRD_PATH)} refers to a grdp file that doesn't exist. ` +
+        `Please verify the grdp file and update the <part file="..."> entry to reference the correct grdp file. ` +
+        `Make sure the grdp file name is ${path.basename(expectedGrdpFile)}.`
+  } else {
+    error += `${line.trim()} in ${
+        localizationUtils.getRelativeFilePathFromSrc(localizationUtils.GRD_PATH)} should reference "${
+        localizationUtils.getRelativeGrdpPath(expectedGrdpFile)}".`;
+  }
+  return error;
+}
+
+async function validateGrdpFiles(shouldAutoFix) {
+  const frontendDirsToGrdpFiles = await mapFrontendDirsToGrdpFiles();
+  const grdFileContent = await localizationUtils.parseFileContent(localizationUtils.GRD_PATH);
+  let errors = '';
+  const renameFilePromises = [];
+  const grdpFilesToAddToGrd = [];
+  frontendDirsToGrdpFiles.forEach(
+      (grdpFiles, dir) => errors +=
+      validateGrdpFile(dir, grdpFiles, grdFileContent, shouldAutoFix, renameFilePromises, grdpFilesToAddToGrd));
+  if (grdpFilesToAddToGrd.length > 0)
+    await localizationUtils.addChildGRDPFilePathsToGRD(grdpFilesToAddToGrd.sort());
+  await Promise.all(renameFilePromises);
+  return errors;
+}
+
+async function mapFrontendDirsToGrdpFiles() {
+  devtoolsFrontendDirs =
+      devtoolsFrontendDirs || await localizationUtils.getChildDirectoriesFromDirectory(devtoolsFrontendPath);
+  const dirToGrdpFiles = new Map();
+  const getGrdpFilePromises = devtoolsFrontendDirs.map(dir => {
+    const files = [];
+    dirToGrdpFiles.set(dir, files);
+    return localizationUtils.getFilesFromDirectory(dir, files, ['.grdp']);
+  });
+  await Promise.all(getGrdpFilePromises);
+  return dirToGrdpFiles;
+}
+
+function validateGrdpFile(dir, grdpFiles, grdFileContent, shouldAutoFix, renameFilePromises, grdpFilesToAddToGrd) {
+  let error = '';
+  const expectedGrdpFile = expectedGrdpFilePath(dir);
+  if (grdpFiles.length === 0)
+    return error;
+  if (grdpFiles.length > 1) {
+    throw new Error(`${grdpFiles.length} GRDP files found under ${
+        localizationUtils.getRelativeFilePathFromSrc(dir)}. Please make sure there's only one GRDP file named ${
+        path.basename(expectedGrdpFile)} under this directory.`);
+  }
+
+  // Only one grdp file is under the directory
+  if (grdpFiles[0] !== expectedGrdpFile) {
+    // Rename grdp file and the reference in the grd file
+    if (shouldAutoFix) {
+      renameFilePromises.push(renameFileAsync(grdpFiles[0], expectedGrdpFile));
+      grdpFilesToAddToGrd.push(expectedGrdpFile);
+    } else {
+      error += `${localizationUtils.getRelativeFilePathFromSrc(grdpFiles[0])} should be renamed to ${
+          localizationUtils.getRelativeFilePathFromSrc(expectedGrdpFile)}.`;
+    }
+    return error;
+  }
+
+  // Only one grdp file and its name follows the naming convention
+  if (!grdFileContent.includes(localizationUtils.getRelativeGrdpPath(grdpFiles[0]))) {
+    if (shouldAutoFix) {
+      grdpFilesToAddToGrd.push(grdpFiles[0]);
+    } else {
+      error += `Please add ${localizationUtils.createPartFileEntry(grdpFiles[0]).trim()} to ${
+          localizationUtils.getRelativeFilePathFromSrc(grdpFiles[0])}.`;
+    }
+  }
+  return error;
+}
+
+/**
+ * Parse localizable resources.
+ */
 async function parseLocalizableResourceMaps() {
+  if (frontendStrings.size === 0 && IDSkeys.size === 0)
+    await parseLocalizableResourceMapsHelper();
+  return [frontendStrings, IDSkeys];
+}
+
+async function parseLocalizableResourceMapsHelper() {
   const grdpToFiles = new Map();
-  const dirs = await localizationUtils.getChildDirectoriesFromDirectory(devtoolsFrontendPath);
+  const dirs = devtoolsFrontendDirs || await localizationUtils.getChildDirectoriesFromDirectory(devtoolsFrontendPath);
   const grdpToFilesPromises = dirs.map(dir => {
     const files = [];
-    grdpToFiles.set(path.resolve(dir, `${path.basename(dir)}_strings.grdp`), files);
+    grdpToFiles.set(expectedGrdpFilePath(dir), files);
     return localizationUtils.getFilesFromDirectory(dir, files, ['.js', 'module.json']);
   });
   await Promise.all(grdpToFilesPromises);
@@ -75,7 +211,7 @@ async function parseLocalizableResourceMaps() {
   await Promise.all(promises);
   // Parse grd(p) files after frontend strings are processed so we know
   // what to add or remove based on frontend strings
-  await parseIDSKeys(localizationUtils.GRD_PATH);
+  await parseIDSKeys();
 }
 
 /**
@@ -93,9 +229,20 @@ async function parseLocalizableStringsFromFile(filePath) {
   if (path.basename(filePath) === 'module.json')
     return parseLocalizableStringFromModuleJson(fileContent, filePath);
 
-  const ast = esprima.parse(fileContent, {loc: true});
-  for (const node of ast.body)
+  let ast;
+  try {
+    ast = esprima.parseModule(fileContent, {loc: true});
+  } catch (e) {
+    throw new Error(
+        `DevTools localization parser failed:\n${localizationUtils.getRelativeFilePathFromSrc(filePath)}: ${
+            e.message}` +
+        `\nThis error is likely due to unsupported JavaScript features.` +
+        ` Such features are not supported by eslint either and will cause presubmit to fail.` +
+        ` Please update the code and use official JavaScript features.`);
+  }
+  for (const node of ast.body) {
     parseLocalizableStringFromNode(node, filePath);
+  }
 }
 
 function parseLocalizableStringFromModuleJson(fileContent, filePath) {
@@ -119,6 +266,12 @@ function parseLocalizableStringFromModuleJson(fileContent, filePath) {
         for (const defaultVal of extension[key]) {
           if (defaultVal.title)
             addString(defaultVal.title, defaultVal.title, filePath);
+        }
+      } else if (key === 'tags' && extension[key]) {
+        const tagsList = extension[key].split(',');
+        for (let tag of tagsList) {
+          tag = tag.trim();
+          addString(tag, tag, filePath);
         }
       }
     }
@@ -208,18 +361,27 @@ function handleTemplateLiteral(node, code, filePath, argumentNodes) {
 }
 
 function addString(str, code, filePath, location, argumentNodes) {
-  const currentString = {string: str, code: code, filepath: filePath, grdpPath: fileToGRDPMap.get(filePath)};
+  const ids = localizationUtils.getIDSKey(str);
+
+  // In the case of duplicates, the corresponding grdp message should be added
+  // to the shared strings file only if the duplicate strings span across different
+  // grdp files
+  const existingString = frontendStrings.get(ids);
+  if (existingString) {
+    if (!existingString.isShared && existingString.grdpPath !== fileToGRDPMap.get(filePath)) {
+      existingString.isShared = true;
+      existingString.grdpPath = localizationUtils.SHARED_STRINGS_PATH;
+    }
+    return;
+  }
+
+  const currentString =
+      {string: str, code: code, isShared: false, filepath: filePath, grdpPath: fileToGRDPMap.get(filePath)};
   if (location)
     currentString.location = location;
   if (argumentNodes && argumentNodes.length > 0)
     currentString.arguments = argumentNodes.map(argNode => escodegen.generate(argNode));
 
-  // In the case of duplicates, to enforce that entries are added to
-  // a consistent GRDP file, we use the file path that sorts lowest as
-  // the winning entry into frontendStrings.
-  const ids = localizationUtils.getIDSKey(str);
-  if (frontendStrings.has(ids) && frontendStrings.get(ids).filepath <= filePath)
-    return;
   frontendStrings.set(ids, currentString);
 }
 
@@ -228,15 +390,15 @@ function addString(str, code, filePath, location, argumentNodes) {
  * devtools frontend grdp files.
  */
 
-async function parseIDSKeys(grdFilePath) {
+async function parseIDSKeys() {
   // NOTE: this function assumes that no <message> tags are present in the parent
-  const grdpFilePaths = await parseGRDFile(grdFilePath);
+  const grdpFilePaths = await parseGRDFile();
   await parseGRDPFiles(grdpFilePaths);
 }
 
-async function parseGRDFile(grdFilePath) {
-  const fileContent = await localizationUtils.parseFileContent(grdFilePath);
-  const grdFileDir = path.dirname(grdFilePath);
+async function parseGRDFile() {
+  const fileContent = await localizationUtils.parseFileContent(localizationUtils.GRD_PATH);
+  const grdFileDir = path.dirname(localizationUtils.GRD_PATH);
   const partFileRegex = /<part file="(.*?)"/g;
 
   let match;
@@ -329,7 +491,7 @@ function addMessage(expectedIDSKey, actualIDSKey, grdpPath, line, description) {
  * with grdp <message>s and report error of resources to add,
  * remove or modify.
  */
-async function getAndReportResourcesToAdd() {
+function getAndReportResourcesToAdd() {
   const keysToAddToGRD = getMessagesToAdd();
   if (keysToAddToGRD.size === 0)
     return;
@@ -469,8 +631,6 @@ function getLongestDescription(messages) {
 }
 
 module.exports = {
-  frontendStrings,
-  IDSkeys,
   parseLocalizableResourceMaps,
   getAndReportIDSKeysToModify,
   getAndReportResourcesToAdd,
@@ -479,4 +639,5 @@ module.exports = {
   getLongestDescription,
   getMessagesToAdd,
   getMessagesToRemove,
+  validateGrdAndGrdpFiles,
 };

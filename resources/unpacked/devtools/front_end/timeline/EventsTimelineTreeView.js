@@ -45,6 +45,14 @@ Timeline.EventsTimelineTreeView = class extends Timeline.TimelineTreeView {
 
   /**
    * @override
+   * @return {string}
+   */
+  getToolbarInputAccessiblePlaceHolder() {
+    return ls`Filter event log`;
+  }
+
+  /**
+   * @override
    * @return {!TimelineModel.TimelineProfileTree.Node}
    */
   _buildTree() {
@@ -55,8 +63,9 @@ Timeline.EventsTimelineTreeView = class extends Timeline.TimelineTreeView {
   _onFilterChanged() {
     const selectedEvent = this.lastSelectedNode() && this.lastSelectedNode().event;
     this.refreshTree();
-    if (selectedEvent)
+    if (selectedEvent) {
       this._selectEvent(selectedEvent, false);
+    }
   }
 
   /**
@@ -73,8 +82,9 @@ Timeline.EventsTimelineTreeView = class extends Timeline.TimelineTreeView {
         continue;
       }
       const child = /** @type {!TimelineModel.TimelineProfileTree.Node} */ (iterator.value);
-      if (child.event === event)
+      if (child.event === event) {
         return child;
+      }
       iterators.push(child.children().values());
     }
     return null;
@@ -86,11 +96,13 @@ Timeline.EventsTimelineTreeView = class extends Timeline.TimelineTreeView {
    */
   _selectEvent(event, expand) {
     const node = this._findNodeWithEvent(event);
-    if (!node)
+    if (!node) {
       return;
+    }
     this.selectProfileNode(node, false);
-    if (expand)
+    if (expand) {
       this.dataGridNodeForTreeNode(node).expand();
+    }
   }
 
   /**
@@ -120,8 +132,9 @@ Timeline.EventsTimelineTreeView = class extends Timeline.TimelineTreeView {
    */
   _showDetailsForNode(node) {
     const traceEvent = node.event;
-    if (!traceEvent)
+    if (!traceEvent) {
       return false;
+    }
     Timeline.TimelineUIUtils
         .buildTraceEventDetails(traceEvent, this.model().timelineModel(), this._linkifier, this._badgePool, false)
         .then(fragment => this._detailsView.element.appendChild(fragment));
@@ -159,23 +172,21 @@ Timeline.EventsTimelineTreeView.Filters = class extends Common.Object {
    * @param {!UI.Toolbar} toolbar
    */
   populateToolbar(toolbar) {
-    const durationFilterUI = new UI.ToolbarComboBox(durationFilterChanged.bind(this));
+    const durationFilterUI = new UI.ToolbarComboBox(durationFilterChanged.bind(this), ls`Duration filter`);
     for (const durationMs of Timeline.EventsTimelineTreeView.Filters._durationFilterPresetsMs) {
       durationFilterUI.addOption(durationFilterUI.createOption(
           durationMs ? Common.UIString('\u2265 %d\xa0ms', durationMs) : Common.UIString('All'),
-          durationMs ? Common.UIString('Hide records shorter than %d\xa0ms', durationMs) :
-                       Common.UIString('Show all records'),
           String(durationMs)));
     }
-    UI.ARIAUtils.setAccessibleName(durationFilterUI.selectElement(), ls`Duration filter`);
     toolbar.appendToolbarItem(durationFilterUI);
 
     const categoryFiltersUI = {};
     const categories = Timeline.TimelineUIUtils.categories();
     for (const categoryName in categories) {
       const category = categories[categoryName];
-      if (!category.visible)
+      if (!category.visible) {
         continue;
+      }
       const checkbox =
           new UI.ToolbarCheckbox(category.title, undefined, categoriesFilterChanged.bind(this, categoryName));
       checkbox.setChecked(true);

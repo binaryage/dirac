@@ -1,10 +1,11 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 /**
  * @unrestricted
  */
-Common.Throttler = class {
+export default class Throttler {
   /**
    * @param {number} timeout
    */
@@ -24,8 +25,9 @@ Common.Throttler = class {
   _processCompleted() {
     this._lastCompleteTime = this._getTime();
     this._isRunningProcess = false;
-    if (this._process)
+    if (this._process) {
       this._innerSchedule(false);
+    }
     this._processCompletedForTests();
   }
 
@@ -75,12 +77,15 @@ Common.Throttler = class {
    * @param {boolean} forceTimerUpdate
    */
   _innerSchedule(forceTimerUpdate) {
-    if (this._isRunningProcess)
+    if (this._isRunningProcess) {
       return;
-    if (this._processTimeout && !forceTimerUpdate)
+    }
+    if (this._processTimeout && !forceTimerUpdate) {
       return;
-    if (this._processTimeout)
+    }
+    if (this._processTimeout) {
       this._clearTimeout(this._processTimeout);
+    }
 
     const timeout = this._asSoonAsPossible ? 0 : this._timeout;
     this._processTimeout = this._setTimeout(this._onTimeout.bind(this), timeout);
@@ -108,7 +113,13 @@ Common.Throttler = class {
   _getTime() {
     return window.performance.now();
   }
-};
+}
+
+/* Legacy exported object */
+self.Common = self.Common || {};
+Common = Common || {};
+
+Common.Throttler = Throttler;
 
 /** @typedef {function(!Error=)} */
 Common.Throttler.FinishCallback;

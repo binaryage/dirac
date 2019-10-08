@@ -4,7 +4,7 @@
     Port Forwarding:
   </message>
   <message name="IDS_DEVTOOLS_034fd013261994214d1e8cb42571d191" desc="Text in Devices View of the Remote Devices tab">
-    Need help? Read Chrome <ph name="DOCUMENTATIONLINK">$1s<ex>documentation link</ex></ph>.
+    Need help? Read <ph name="LOCKED_1">Chrome</ph> <ph name="DOCUMENTATIONLINK">$1s<ex>documentation link</ex></ph>.
   </message>
   <message name="IDS_DEVTOOLS_03fc5c0bd59679c442b86074c7a7cc3a" desc="Text in Devices View of the Remote Devices tab">
     Port forwarding
@@ -45,11 +45,17 @@
   <message name="IDS_DEVTOOLS_4d1c8263ba1036754f8db14a98f9f006" desc="A context menu item in the Devices View of the Remote Devices tab">
     Reload
   </message>
+  <message name="IDS_DEVTOOLS_532c28d5412dd75bf975fb951c740a30" desc="A tag of Remote Devices tool that can be searched in the command menu">
+    mobile
+  </message>
   <message name="IDS_DEVTOOLS_588c54a3158082418d50afdfce55f954" desc="Error message for device port input box when add port forwarding rule">
     Device port numbers can only be used once
   </message>
   <message name="IDS_DEVTOOLS_62e8d0a52dd33aa2b6548f7056739421" desc="Error message for device port input box when add port forwarding rule">
     Device port number field is required
+  </message>
+  <message name="IDS_DEVTOOLS_62ed973d963913bb55111a7b8116ace1" desc="A tag of Remote Devices tool that can be searched in the command menu">
+    usb
   </message>
   <message name="IDS_DEVTOOLS_67afa587522e088dedac9f252362d16a" desc="Text in Devices View of the Remote Devices tab">
     Discover USB devices
@@ -81,8 +87,8 @@
   <message name="IDS_DEVTOOLS_bcca96534b404f08faf65d76be6aa782" desc="Text in Devices View of the Remote Devices tab">
     1 device detected.
   </message>
-  <message name="IDS_DEVTOOLS_c03ca67dda321195d74c951097f240c6" desc="Text of a DOM element in Devices View of the Remote Devices tab">
-    Devices
+  <message name="IDS_DEVTOOLS_c31b32364ce19ca8fcd150a417ecce58" desc="A tag of Remote Devices tool that can be searched in the command menu">
+    <ph name="LOCKED_1">android</ph>
   </message>
   <message name="IDS_DEVTOOLS_c3bf447eabe632720a3aa1a7ce401274" desc="Text of the new tab button in Devices View of the Remote Devices tab">
     Open
@@ -105,17 +111,11 @@
   <message name="IDS_DEVTOOLS_e1f70f4a4265cb51c1b219aa60eaa441" desc="New tab input placeholder in Devices View of the Remote Devices tab">
     Enter URL
   </message>
-  <message name="IDS_DEVTOOLS_e24ee2487879116dcab772c0ac4fe341" desc="A context menu item in the Devices View of the Remote Devices tab">
-    Focus
-  </message>
   <message name="IDS_DEVTOOLS_ed725244eec042fa550990c608639b38" desc="Text in Devices View of the Remote Devices tab">
     Define the listening port on your device that maps to a port accessible from your development machine. Read <ph name="DOCUMENTATIONLINK">$1s<ex>documentation link</ex></ph> for more.
   </message>
   <message name="IDS_DEVTOOLS_f114563447e4786042d7e7ce05f1157c" desc="Text in Devices View of the Remote Devices tab">
     Device port (3333)
-  </message>
-  <message name="IDS_DEVTOOLS_f4f70727dc34561dfde1a3c529b6205c" desc="Discovery list item text content in Devices View of the Remote Devices tab">
-    Settings
   </message>
   <message name="IDS_DEVTOOLS_fa5ef75cf38d69be2973c570c1d47b29" desc="Error message for device port input box when add port forwarding rule">
     Device port must be a number

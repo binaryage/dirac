@@ -88,12 +88,13 @@ UI.InspectorView = class extends UI.VBox {
     // Store the initial selected panel for use in launch histograms
     Host.userMetrics.setLaunchPanel(this._tabbedPane.selectedTabId);
 
-    if (Host.isUnderTest())
+    if (Host.isUnderTest()) {
       this._tabbedPane.setAutoSelectFirstItemOnShow(false);
+    }
     this._drawerSplitWidget.setMainWidget(this._tabbedPane);
 
     this._keyDownBound = this._keyDown.bind(this);
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ShowPanel, showPanel.bind(this));
+    InspectorFrontendHost.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ShowPanel, showPanel.bind(this));
 
     /**
      * @this {UI.InspectorView}
@@ -132,12 +133,15 @@ UI.InspectorView = class extends UI.VBox {
    * @return {?UI.ViewLocation}
    */
   resolveLocation(locationName) {
-    if (locationName === 'drawer-view')
+    if (locationName === 'drawer-view') {
       return this._drawerTabbedLocation;
-    if (locationName === 'panel')
+    }
+    if (locationName === 'panel') {
       return this._tabbedLocation;
-    if (locationName === 'drawer-sidebar')
+    }
+    if (locationName === 'drawer-sidebar') {
       return this._drawerSidebarTabbedLocation;
+    }
     return null;
   }
 
@@ -215,13 +219,15 @@ UI.InspectorView = class extends UI.VBox {
    */
   _showDrawer(focus) {
     dirac.feedback("showDrawer");
-    if (this._drawerTabbedPane.isShowing())
+    if (this._drawerTabbedPane.isShowing()) {
       return;
+    }
     this._drawerSplitWidget.showBoth();
-    if (focus)
+    if (focus) {
       this._focusRestorer = new UI.WidgetFocusRestorer(this._drawerTabbedPane);
-    else
+    } else {
       this._focusRestorer = null;
+    }
   }
 
   /**
@@ -232,10 +238,12 @@ UI.InspectorView = class extends UI.VBox {
   }
 
   _closeDrawer() {
-    if (!this._drawerTabbedPane.isShowing())
+    if (!this._drawerTabbedPane.isShowing()) {
       return;
-    if (this._focusRestorer)
+    }
+    if (this._focusRestorer) {
       this._focusRestorer.restore();
+    }
     this._drawerSplitWidget.hideSidebar(true);
   }
 
@@ -267,24 +275,27 @@ UI.InspectorView = class extends UI.VBox {
    */
   _keyDown(event) {
     const keyboardEvent = /** @type {!KeyboardEvent} */ (event);
-    if (!UI.KeyboardShortcut.eventHasCtrlOrMeta(keyboardEvent) || event.altKey || event.shiftKey)
+    if (!UI.KeyboardShortcut.eventHasCtrlOrMeta(keyboardEvent) || event.altKey || event.shiftKey) {
       return;
+    }
 
     // Ctrl/Cmd + 1-9 should show corresponding panel.
     const panelShortcutEnabled = Common.moduleSetting('shortcutPanelSwitch').get();
     if (panelShortcutEnabled) {
       let panelIndex = -1;
-      if (event.keyCode > 0x30 && event.keyCode < 0x3A)
+      if (event.keyCode > 0x30 && event.keyCode < 0x3A) {
         panelIndex = event.keyCode - 0x31;
-      else if (
+      } else if (
           event.keyCode > 0x60 && event.keyCode < 0x6A &&
-          keyboardEvent.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD)
+          keyboardEvent.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
         panelIndex = event.keyCode - 0x61;
+      }
       if (panelIndex !== -1) {
         const panelName = this._tabbedPane.tabIds()[panelIndex];
         if (panelName) {
-          if (!UI.Dialog.hasInstance() && !this._currentPanelLocked)
+          if (!UI.Dialog.hasInstance() && !this._currentPanelLocked) {
             this.showPanel(panelName);
+          }
           event.consume(true);
         }
       }
@@ -334,13 +345,15 @@ UI.InspectorView = class extends UI.VBox {
   }
 
   minimize() {
-    if (this._ownerSplitWidget)
+    if (this._ownerSplitWidget) {
       this._ownerSplitWidget.setSidebarMinimized(true);
+    }
   }
 
   restore() {
-    if (this._ownerSplitWidget)
+    if (this._ownerSplitWidget) {
       this._ownerSplitWidget.setSidebarMinimized(false);
+    }
   }
 };
 
@@ -364,10 +377,11 @@ UI.InspectorView.ActionDelegate = class {
   handleAction(context, actionId) {
     switch (actionId) {
       case 'main.toggle-drawer':
-        if (UI.inspectorView.drawerVisible())
+        if (UI.inspectorView.drawerVisible()) {
           UI.inspectorView._closeDrawer();
-        else
+        } else {
           UI.inspectorView._showDrawer(true);
+        }
         return true;
       case 'main.next-tab':
         UI.inspectorView._tabbedPane.selectNextTab();
