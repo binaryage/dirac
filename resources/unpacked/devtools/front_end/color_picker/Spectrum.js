@@ -76,7 +76,11 @@ ColorPicker.Spectrum = class extends UI.VBox {
 
     const displaySwitcher = toolsContainer.createChild('div', 'spectrum-display-switcher spectrum-switcher');
     appendSwitcherIcon(displaySwitcher);
-    displaySwitcher.addEventListener('click', this._formatViewSwitch.bind(this));
+    displaySwitcher.tabIndex = 0;
+    self.onInvokeElement(displaySwitcher, event => {
+      this._formatViewSwitch();
+      event.consume(true);
+    });
 
     // RGBA/HSLA display.
     this._displayContainer = toolsContainer.createChild('div', 'spectrum-text source-code');
@@ -313,6 +317,7 @@ ColorPicker.Spectrum = class extends UI.VBox {
     for (let i = 0; i < palette.colors.length; i++) {
       const animationDelay = animate ? i * 100 / palette.colors.length : 0;
       const colorElement = this._createPaletteColor(palette.colors[i], palette.colorNames[i], animationDelay);
+      colorElement.tabIndex = -1;
       colorElement.addEventListener(
           'mousedown',
           this._paletteColorSelected.bind(this, palette.colors[i], palette.colorNames[i], palette.matchUserFormat));
@@ -623,6 +628,8 @@ ColorPicker.Spectrum = class extends UI.VBox {
     palette.colors.push(this.colorString());
     this._customPaletteSetting.set(palette);
     this._showPalette(this._customPaletteSetting.get(), false);
+    const colorElements = this._paletteContainer.querySelectorAll('.spectrum-palette-color');
+    colorElements[colorElements.length - 1].focus();
   }
 
   /**
@@ -930,12 +937,12 @@ ColorPicker.Spectrum = class extends UI.VBox {
       this._contrastDetails.toggleBackgroundColorPicker(false);
     }
 
-    InspectorFrontendHost.setEyeDropperActive(enabled);
+    Host.InspectorFrontendHost.setEyeDropperActive(enabled);
     if (enabled) {
-      InspectorFrontendHost.events.addEventListener(
+      Host.InspectorFrontendHost.events.addEventListener(
           Host.InspectorFrontendHostAPI.Events.EyeDropperPickedColor, this._colorPickedBound);
     } else {
-      InspectorFrontendHost.events.removeEventListener(
+      Host.InspectorFrontendHost.events.removeEventListener(
           Host.InspectorFrontendHostAPI.Events.EyeDropperPickedColor, this._colorPickedBound);
     }
   }
@@ -949,7 +956,7 @@ ColorPicker.Spectrum = class extends UI.VBox {
     const color = Common.Color.fromRGBA(rgba);
     this._innerSetColor(
         color.hsva(), '', undefined /* colorName */, undefined, ColorPicker.Spectrum._ChangeSource.Other);
-    InspectorFrontendHost.bringToFront();
+    Host.InspectorFrontendHost.bringToFront();
   }
 };
 
@@ -1054,7 +1061,7 @@ ColorPicker.Spectrum.PaletteGenerator = class {
    * @return {!Promise}
    */
   async _processStylesheet(stylesheet) {
-    let text = await stylesheet.requestContent() || '';
+    let text = (await stylesheet.requestContent()).content || '';
     text = text.toLowerCase();
     const regexResult = text.match(/((?:rgb|hsl)a?\([^)]+\)|#[0-9a-f]{6}|#[0-9a-f]{3})/g) || [];
     for (const c of regexResult) {
@@ -1125,11 +1132,16 @@ ColorPicker.Spectrum.Swatch = class {
     this._swatchInnerElement = swatchElement.createChild('span', 'swatch-inner');
 
     this._swatchOverlayElement = swatchElement.createChild('span', 'swatch-overlay');
-    this._swatchOverlayElement.addEventListener('click', this._onCopyIconClick.bind(this));
+    UI.ARIAUtils.markAsButton(this._swatchOverlayElement);
+    UI.ARIAUtils.setPressed(this._swatchOverlayElement, false);
+    this._swatchOverlayElement.tabIndex = 0;
+    self.onInvokeElement(this._swatchOverlayElement, this._onCopyText.bind(this));
     this._swatchOverlayElement.addEventListener('mouseout', this._onCopyIconMouseout.bind(this));
+    this._swatchOverlayElement.addEventListener('blur', this._onCopyIconMouseout.bind(this));
     this._swatchCopyIcon = UI.Icon.create('largeicon-copy', 'copy-color-icon');
-    this._swatchCopyIcon.title = Common.UIString('Copy color to clipboard');
+    this._swatchCopyIcon.title = ls`Copy color to clipboard`;
     this._swatchOverlayElement.appendChild(this._swatchCopyIcon);
+    UI.ARIAUtils.setAccessibleName(this._swatchOverlayElement, this._swatchCopyIcon.title);
   }
 
   /**
@@ -1149,12 +1161,18 @@ ColorPicker.Spectrum.Swatch = class {
     }
   }
 
-  _onCopyIconClick() {
+  /**
+   * @param {!Event} event
+   */
+  _onCopyText(event) {
     this._swatchCopyIcon.setIconType('largeicon-checkmark');
-    InspectorFrontendHost.copyText(this._colorString);
+    Host.InspectorFrontendHost.copyText(this._colorString);
+    UI.ARIAUtils.setPressed(this._swatchOverlayElement, true);
+    event.consume();
   }
 
   _onCopyIconMouseout() {
     this._swatchCopyIcon.setIconType('largeicon-copy');
+    UI.ARIAUtils.setPressed(this._swatchOverlayElement, false);
   }
 };

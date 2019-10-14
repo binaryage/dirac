@@ -259,7 +259,8 @@
     padding: 4px;
 }
 
-.swatch-overlay:hover {
+.swatch-overlay:hover,
+.swatch-overlay[data-keyboard-focus="true"]:focus {
     background-color: rgba(0, 0, 0, .3);
     opacity: 1;
 }
@@ -421,6 +422,11 @@
 
 .spectrum-palette > .spectrum-palette-color.empty-color {
     border-color: transparent;
+}
+
+.spectrum-palette-color:not(.has-material-shades):focus {
+  border: 1px solid var(--accent-color-hover);
+  transform: scale(1.4);
 }
 
 .spectrum-palette > .spectrum-palette-color:not(.empty-color):not(.has-material-shades):hover,

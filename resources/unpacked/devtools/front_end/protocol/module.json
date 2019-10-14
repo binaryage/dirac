@@ -4,7 +4,9 @@
     "dirac",
     "host"
   ],
-  "scripts": [
+  "scripts": [],
+  "modules": [
+    "protocol.js",
     "NodeURL.js",
     "InspectorBackend.js",
     "../InspectorBackendCommands.js",

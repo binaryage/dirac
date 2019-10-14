@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Persistence.PersistenceActions = {};
-
 /**
  * @implements {UI.ContextMenu.Provider}
  * @unrestricted
  */
-Persistence.PersistenceActions.ContextMenuProvider = class {
+export class ContextMenuProvider {
   /**
    * @override
    * @param {!Event} event
@@ -21,7 +19,7 @@ Persistence.PersistenceActions.ContextMenuProvider = class {
       if (contentProvider instanceof Workspace.UISourceCode) {
         /** @type {!Workspace.UISourceCode} */ (contentProvider).commitWorkingCopy();
       }
-      let content = await contentProvider.requestContent();
+      let content = (await contentProvider.requestContent()).content || '';
       if (await contentProvider.contentEncoded()) {
         content = window.atob(content);
       }
@@ -50,7 +48,18 @@ Persistence.PersistenceActions.ContextMenuProvider = class {
     if (fileURL.startsWith('file://')) {
       const path = Common.ParsedURL.urlToPlatformPath(fileURL, Host.isWin());
       contextMenu.revealSection().appendItem(
-          Common.UIString('Open in containing folder'), () => InspectorFrontendHost.showItemInFolder(path));
+          Common.UIString('Open in containing folder'), () => Host.InspectorFrontendHost.showItemInFolder(path));
     }
   }
-};
+}
+
+/* Legacy exported object */
+self.Persistence = self.Persistence || {};
+
+/* Legacy exported object */
+Persistence = Persistence || {};
+
+Persistence.PersistenceActions = {};
+
+/** @constructor */
+Persistence.PersistenceActions.ContextMenuProvider = ContextMenuProvider;

@@ -94,7 +94,7 @@ SourceFrame.ImageView = class extends UI.SimpleView {
   }
 
   async _updateContentIfNeeded() {
-    const content = await this._contentProvider.requestContent();
+    const {content} = await this._contentProvider.requestContent();
     if (this._cachedContent === content) {
       return;
     }
@@ -130,11 +130,11 @@ SourceFrame.ImageView = class extends UI.SimpleView {
   }
 
   _copyImageAsDataURL() {
-    InspectorFrontendHost.copyText(this._imagePreviewElement.src);
+    Host.InspectorFrontendHost.copyText(this._imagePreviewElement.src);
   }
 
   _copyImageURL() {
-    InspectorFrontendHost.copyText(this._url);
+    Host.InspectorFrontendHost.copyText(this._url);
   }
 
   _saveImage() {
@@ -145,7 +145,7 @@ SourceFrame.ImageView = class extends UI.SimpleView {
   }
 
   _openInNewTab() {
-    InspectorFrontendHost.openInNewTab(this._url);
+    Host.InspectorFrontendHost.openInNewTab(this._url);
   }
 
   /**

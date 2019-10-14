@@ -30,7 +30,7 @@
 /**
  * @unrestricted
  */
-Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
+export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
   /**
    * @param {!Persistence.IsolatedFileSystemManager} manager
    * @param {string} path
@@ -64,18 +64,18 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
    * @param {string} type
    * @param {string} name
    * @param {string} rootURL
-   * @return {!Promise<?Persistence.IsolatedFileSystem>}
+   * @return {!Promise<?IsolatedFileSystem>}
    */
   static create(manager, path, embedderPath, type, name, rootURL) {
-    const domFileSystem = InspectorFrontendHost.isolatedFileSystem(name, rootURL);
+    const domFileSystem = Host.InspectorFrontendHost.isolatedFileSystem(name, rootURL);
     if (!domFileSystem) {
-      return Promise.resolve(/** @type {?Persistence.IsolatedFileSystem} */ (null));
+      return Promise.resolve(/** @type {?IsolatedFileSystem} */ (null));
     }
 
-    const fileSystem = new Persistence.IsolatedFileSystem(manager, path, embedderPath, domFileSystem, type);
+    const fileSystem = new IsolatedFileSystem(manager, path, embedderPath, domFileSystem, type);
     return fileSystem._initializeFilePaths()
         .then(() => fileSystem)
-        .catchException(/** @type {?Persistence.IsolatedFileSystem} */ (null));
+        .catchException(/** @type {?IsolatedFileSystem} */ (null));
   }
 
   /**
@@ -120,7 +120,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
      * @param {!FileError} error
      */
     function errorHandler(error) {
-      const errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
+      const errorMessage = IsolatedFileSystem.errorMessage(error);
       console.error(errorMessage + ' when getting file metadata \'' + path);
       fulfill(null);
     }
@@ -163,7 +163,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
 
     /**
      * @param {!Array.<!FileEntry>} entries
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      */
     function innerCallback(entries) {
       for (let i = 0; i < entries.length; ++i) {
@@ -224,7 +224,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
   _innerCreateFolderIfNeeded(path) {
     return new Promise(resolve => {
       this._domFileSystem.root.getDirectory(path, {create: true}, dirEntry => resolve(dirEntry), error => {
-        const errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
+        const errorMessage = IsolatedFileSystem.errorMessage(error);
         console.error(errorMessage + ' trying to create directory \'' + path + '\'');
         resolve(null);
       });
@@ -252,7 +252,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
      * @param {string} name
      * @param {number=} newFileIndex
      * @return {!Promise<?FileEntry>}
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      */
     function createFileCandidate(name, newFileIndex) {
       return new Promise(resolve => {
@@ -262,7 +262,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
             resolve(createFileCandidate.call(this, name, (newFileIndex ? newFileIndex + 1 : 1)));
             return;
           }
-          const errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
+          const errorMessage = IsolatedFileSystem.errorMessage(error);
           console.error(
               errorMessage + ' when testing if file exists \'' + (this.path() + '/' + path + '/' + nameCandidate) +
               '\'');
@@ -285,7 +285,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
 
     /**
      * @param {!FileEntry} fileEntry
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      */
     function fileEntryLoaded(fileEntry) {
       fileEntry.remove(fileEntryRemoved, errorHandler.bind(this));
@@ -297,12 +297,12 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
 
     /**
      * @param {!FileError} error
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      * @suppress {checkTypes}
      * TODO(jsbell): Update externs replacing FileError with DOMException. https://crbug.com/496901
      */
     function errorHandler(error) {
-      const errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
+      const errorMessage = IsolatedFileSystem.errorMessage(error);
       console.error(errorMessage + ' when deleting file \'' + (this.path() + '/' + path) + '\'');
       resolveCallback(false);
     }
@@ -320,7 +320,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
       }, errorHandler.bind(this));
 
       /**
-       * @this {Persistence.IsolatedFileSystem}
+       * @this {IsolatedFileSystem}
        */
       function errorHandler(error) {
         if (error.name === 'NotFoundError') {
@@ -328,7 +328,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
           return;
         }
 
-        const errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
+        const errorMessage = IsolatedFileSystem.errorMessage(error);
         console.error(errorMessage + ' when getting content for file \'' + (this.path() + '/' + path) + '\'');
         resolve(null);
       }
@@ -338,46 +338,51 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
   /**
    * @override
    * @param {string} path
-   * @param {function(?string,boolean)} callback
+   * @returns {!Promise<!Common.DeferredContent>}
    */
-  requestFileContent(path, callback) {
-    const innerRequestFileContent = async () => {
-      const blob = await this.requestFileBlob(path);
-      if (!blob) {
-        callback(null, false);
-        return;
-      }
+  requestFileContent(path) {
+    return this._serializedFileOperation(path, () => this._innerRequestFileContent(path));
+  }
 
-      const reader = new FileReader();
-      const extension = Common.ParsedURL.extractExtension(path);
-      const encoded = Persistence.IsolatedFileSystem.BinaryExtensions.has(extension);
-      const readPromise = new Promise(x => reader.onloadend = x);
-      if (encoded) {
-        reader.readAsBinaryString(blob);
-      } else {
-        reader.readAsText(blob);
-      }
-      await readPromise;
-      if (reader.error) {
-        console.error('Can\'t read file: ' + path + ': ' + reader.error);
-        callback(null, false);
-        return;
-      }
-      let result;
-      try {
-        result = /** @type {string} */ (reader.result);
-      } catch (e) {
-        result = null;
-        console.error('Can\'t read file: ' + path + ': ' + e);
-      }
-      if (result === undefined || result === null) {
-        callback(null, false);
-        return;
-      }
-      callback(encoded ? btoa(result) : result, encoded);
-    };
+  /**
+   * @param {string} path
+   * @return {!Promise<!Common.DeferredContent>}
+   */
+  async _innerRequestFileContent(path) {
+    const blob = await this.requestFileBlob(path);
+    if (!blob) {
+      return {error: ls`Blob could not be loaded.`, isEncoded: false};
+    }
 
-    this._serializedFileOperation(path, innerRequestFileContent);
+    const reader = new FileReader();
+    const extension = Common.ParsedURL.extractExtension(path);
+    const encoded = Persistence.IsolatedFileSystem.BinaryExtensions.has(extension);
+    const readPromise = new Promise(x => reader.onloadend = x);
+    if (encoded) {
+      reader.readAsBinaryString(blob);
+    } else {
+      reader.readAsText(blob);
+    }
+    await readPromise;
+    if (reader.error) {
+      const error = ls`Can't read file: ${path}: ${reader.error}`;
+      console.error(error);
+      return {isEncoded: false, error};
+    }
+    let result = null;
+    let error = null;
+    try {
+      result = /** @type {string} */ (reader.result);
+    } catch (e) {
+      result = null;
+      error = ls`Can't read file: ${path}: ${e.message}`;
+    }
+    if (result === undefined || result === null) {
+      error = error || ls`Unknown error reading file: ${path}`;
+      console.error(error);
+      return {isEncoded: false, error};
+    }
+    return {isEncoded: encoded, content: encoded ? btoa(result) : result};
   }
 
   /**
@@ -399,7 +404,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
 
     /**
      * @param {!FileEntry} entry
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      */
     function fileEntryLoaded(entry) {
       entry.createWriter(fileWriterCreated.bind(this), errorHandler.bind(this));
@@ -407,7 +412,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
 
     /**
      * @param {!FileWriter} fileWriter
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      */
     async function fileWriterCreated(fileWriter) {
       fileWriter.onerror = errorHandler.bind(this);
@@ -427,10 +432,10 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
     }
 
     /**
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      */
     function errorHandler(error) {
-      const errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
+      const errorMessage = IsolatedFileSystem.errorMessage(error);
       console.error(errorMessage + ' when setting content for file \'' + (this.path() + '/' + path) + '\'');
       callback();
     }
@@ -455,7 +460,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
 
     /**
      * @param {!FileEntry} entry
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      */
     function fileEntryLoaded(entry) {
       if (entry.name === newName) {
@@ -469,7 +474,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
 
     /**
      * @param {!Entry} entry
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      */
     function dirEntryLoaded(entry) {
       dirEntry = entry;
@@ -484,7 +489,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
     }
 
     /**
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      */
     function newFileEntryLoadErrorHandler(error) {
       if (error.name !== 'NotFoundError') {
@@ -502,10 +507,10 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
     }
 
     /**
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      */
     function errorHandler(error) {
-      const errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
+      const errorMessage = IsolatedFileSystem.errorMessage(error);
       console.error(errorMessage + ' when renaming file \'' + (this.path() + '/' + path) + '\' to \'' + newName + '\'');
       callback(false);
     }
@@ -535,7 +540,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
     dirReader.readEntries(innerCallback, errorHandler);
 
     function errorHandler(error) {
-      const errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
+      const errorMessage = IsolatedFileSystem.errorMessage(error);
       console.error(errorMessage + ' when reading directory \'' + dirEntry.fullPath + '\'');
       callback([]);
     }
@@ -550,14 +555,14 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
 
     /**
      * @param {!DirectoryEntry} dirEntry
-     * @this {Persistence.IsolatedFileSystem}
+     * @this {IsolatedFileSystem}
      */
     function innerCallback(dirEntry) {
       this._readDirectory(dirEntry, callback);
     }
 
     function errorHandler(error) {
-      const errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
+      const errorMessage = IsolatedFileSystem.errorMessage(error);
       console.error(errorMessage + ' when requesting entry \'' + path + '\'');
       callback([]);
     }
@@ -628,7 +633,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
   searchInPath(query, progress) {
     return new Promise(resolve => {
       const requestId = this._manager.registerCallback(innerCallback);
-      InspectorFrontendHost.searchInPath(requestId, this._embedderPath, query);
+      Host.InspectorFrontendHost.searchInPath(requestId, this._embedderPath, query);
 
       /**
        * @param {!Array<string>} files
@@ -647,7 +652,7 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
   indexContent(progress) {
     progress.setTotalWork(1);
     const requestId = this._manager.registerProgress(progress);
-    InspectorFrontendHost.indexPath(requestId, this._embedderPath, JSON.stringify(this._excludedEmbedderFolders));
+    Host.InspectorFrontendHost.indexPath(requestId, this._embedderPath, JSON.stringify(this._excludedEmbedderFolders));
   }
 
   /**
@@ -675,20 +680,19 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
    */
   contentType(path) {
     const extension = Common.ParsedURL.extractExtension(path);
-    if (Persistence.IsolatedFileSystem._styleSheetExtensions.has(extension)) {
+    if (_styleSheetExtensions.has(extension)) {
       return Common.resourceTypes.Stylesheet;
     }
-    if (Persistence.IsolatedFileSystem._documentExtensions.has(extension)) {
+    if (_documentExtensions.has(extension)) {
       return Common.resourceTypes.Document;
     }
-    if (Persistence.IsolatedFileSystem.ImageExtensions.has(extension)) {
+    if (ImageExtensions.has(extension)) {
       return Common.resourceTypes.Image;
     }
-    if (Persistence.IsolatedFileSystem._scriptExtensions.has(extension)) {
+    if (_scriptExtensions.has(extension)) {
       return Common.resourceTypes.Script;
     }
-    return Persistence.IsolatedFileSystem.BinaryExtensions.has(extension) ? Common.resourceTypes.Other :
-                                                                            Common.resourceTypes.Document;
+    return BinaryExtensions.has(extension) ? Common.resourceTypes.Other : Common.resourceTypes.Document;
   }
 
   /**
@@ -708,19 +712,19 @@ Persistence.IsolatedFileSystem = class extends Persistence.PlatformFileSystem {
   supportsAutomapping() {
     return this.type() !== 'overrides';
   }
-};
+}
 
-Persistence.IsolatedFileSystem._styleSheetExtensions = new Set(['css', 'scss', 'sass', 'less']);
-Persistence.IsolatedFileSystem._documentExtensions = new Set(['htm', 'html', 'asp', 'aspx', 'phtml', 'jsp']);
-Persistence.IsolatedFileSystem._scriptExtensions = new Set([
+export const _styleSheetExtensions = new Set(['css', 'scss', 'sass', 'less']);
+export const _documentExtensions = new Set(['htm', 'html', 'asp', 'aspx', 'phtml', 'jsp']);
+
+export const _scriptExtensions = new Set([
   'asp', 'aspx', 'c', 'cc', 'cljs', 'coffee', 'cpp', 'cs', 'dart', 'java', 'js',
   'jsp', 'jsx',  'h', 'm',  'mjs',  'mm',     'py',  'sh', 'ts',   'tsx',  'ls'
 ]);
 
-Persistence.IsolatedFileSystem.ImageExtensions =
-    new Set(['jpeg', 'jpg', 'svg', 'gif', 'webp', 'png', 'ico', 'tiff', 'tif', 'bmp']);
+export const ImageExtensions = new Set(['jpeg', 'jpg', 'svg', 'gif', 'webp', 'png', 'ico', 'tiff', 'tif', 'bmp']);
 
-Persistence.IsolatedFileSystem.BinaryExtensions = new Set([
+export const BinaryExtensions = new Set([
   // Executable extensions, roughly taken from https://en.wikipedia.org/wiki/Comparison_of_executable_file_formats
   'cmd', 'com', 'exe',
   // Archive extensions, roughly taken from https://en.wikipedia.org/wiki/List_of_archive_formats
@@ -732,3 +736,18 @@ Persistence.IsolatedFileSystem.BinaryExtensions = new Set([
   // Image file extensions
   'jpeg', 'jpg', 'gif', 'webp', 'png', 'ico', 'tiff', 'tif', 'bmp'
 ]);
+
+/* Legacy exported object */
+self.Persistence = self.Persistence || {};
+
+/* Legacy exported object */
+Persistence = Persistence || {};
+
+/** @constructor */
+Persistence.IsolatedFileSystem = IsolatedFileSystem;
+
+Persistence.IsolatedFileSystem._styleSheetExtensions = _styleSheetExtensions;
+Persistence.IsolatedFileSystem._documentExtensions = _documentExtensions;
+Persistence.IsolatedFileSystem._scriptExtensions = _scriptExtensions;
+Persistence.IsolatedFileSystem.ImageExtensions = ImageExtensions;
+Persistence.IsolatedFileSystem.BinaryExtensions = BinaryExtensions;

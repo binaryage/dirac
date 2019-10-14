@@ -42,8 +42,8 @@ Sources.NavigatorView = class extends UI.VBox {
     this.contentElement.appendChild(this._scriptsTree.element);
     this.setDefaultFocusedElement(this._scriptsTree.element);
 
-    /** @type {!Multimap<!Workspace.UISourceCode, !Sources.NavigatorUISourceCodeTreeNode>} */
-    this._uiSourceCodeNodes = new Multimap();
+    /** @type {!Platform.Multimap<!Workspace.UISourceCode, !Sources.NavigatorUISourceCodeTreeNode>} */
+    this._uiSourceCodeNodes = new Platform.Multimap();
     /** @type {!Map.<string, !Sources.NavigatorFolderTreeNode>} */
     this._subfolderNodes = new Map();
 
@@ -808,7 +808,7 @@ Sources.NavigatorView = class extends UI.VBox {
       const folderPath = Common.ParsedURL.urlToPlatformPath(
           Persistence.FileSystemWorkspaceBinding.completeURL(project, path), Host.isWin());
       contextMenu.revealSection().appendItem(
-          Common.UIString('Open folder'), () => InspectorFrontendHost.showItemInFolder(folderPath));
+          Common.UIString('Open folder'), () => Host.InspectorFrontendHost.showItemInFolder(folderPath));
       if (project.canCreateFile()) {
         contextMenu.defaultSection().appendItem(
             Common.UIString('New file'), this._handleContextMenuCreate.bind(this, project, path));
@@ -870,7 +870,7 @@ Sources.NavigatorView = class extends UI.VBox {
   async create(project, path, uiSourceCodeToCopy) {
     let content = '';
     if (uiSourceCodeToCopy) {
-      content = (await uiSourceCodeToCopy.requestContent()) || '';
+      content = (await uiSourceCodeToCopy.requestContent()).content || '';
     }
     const uiSourceCode = await project.createFile(path, null, content);
     if (!uiSourceCode) {

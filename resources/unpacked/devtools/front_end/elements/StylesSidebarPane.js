@@ -249,6 +249,10 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
   }
 
   _sectionsContainerFocusChanged() {
+    this.resetFocus();
+  }
+
+  resetFocus() {
     // When a styles section is focused, shift+tab should leave the section.
     // Leaving tabIndex = 0 on the first element would cause it to be focused instead.
     if (this._sectionBlocks[0] && this._sectionBlocks[0].sections[0]) {
@@ -619,7 +623,8 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
     if (!styleSheetHeader) {
       return;
     }
-    const text = await styleSheetHeader.requestContent() || '';
+
+    const text = (await styleSheetHeader.requestContent()).content || '';
     const lines = text.split('\n');
     const range = TextUtils.TextRange.createFromLocation(lines.length - 1, lines[lines.length - 1].length);
     this._addBlankSection(this._sectionBlocks[0].sections[0], styleSheetHeader.id, range);
@@ -975,12 +980,7 @@ Elements.StylePropertiesSection = class {
       return createTextNode('');
     }
 
-    let ruleLocation;
-    if (rule instanceof SDK.CSSStyleRule) {
-      ruleLocation = rule.style.range;
-    } else if (rule instanceof SDK.CSSKeyframeRule) {
-      ruleLocation = rule.key().range;
-    }
+    const ruleLocation = this._getRuleLocationFromCSSRule(rule);
 
     const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
     if (ruleLocation && rule.styleSheetId && header && !header.isAnonymousInlineStyleSheet()) {
@@ -1008,6 +1008,39 @@ Elements.StylePropertiesSection = class {
   }
 
   /**
+   * @param {!SDK.CSSRule} rule
+   * @return {?TextUtils.TextRange}
+   */
+  static _getRuleLocationFromCSSRule(rule) {
+    let ruleLocation = null;
+    if (rule instanceof SDK.CSSStyleRule) {
+      ruleLocation = rule.style.range;
+    } else if (rule instanceof SDK.CSSKeyframeRule) {
+      ruleLocation = rule.key().range;
+    }
+    return ruleLocation;
+  }
+
+  /**
+   * @param {!SDK.CSSMatchedStyles} matchedStyles
+   * @param {?SDK.CSSRule} rule
+   */
+  static tryNavigateToRuleLocation(matchedStyles, rule) {
+    if (!rule) {
+      return;
+    }
+
+    const ruleLocation = this._getRuleLocationFromCSSRule(rule);
+    const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
+
+    if (ruleLocation && rule.styleSheetId && header && !header.isAnonymousInlineStyleSheet()) {
+      const matchingSelectorLocation =
+          this._getCSSSelectorLocation(matchedStyles.cssModel(), rule.styleSheetId, ruleLocation);
+      this._revealSelectorSource(matchingSelectorLocation, true);
+    }
+  }
+
+  /**
    * @param {!SDK.CSSModel} cssModel
    * @param {!Components.Linkifier} linkifier
    * @param {string} styleSheetId
@@ -1015,11 +1048,21 @@ Elements.StylePropertiesSection = class {
    * @return {!Node}
    */
   static _linkifyRuleLocation(cssModel, linkifier, styleSheetId, ruleLocation) {
+    const matchingSelectorLocation = this._getCSSSelectorLocation(cssModel, styleSheetId, ruleLocation);
+    return linkifier.linkifyCSSLocation(matchingSelectorLocation);
+  }
+
+  /**
+   * @param {!SDK.CSSModel} cssModel
+   * @param {string} styleSheetId
+   * @param {!TextUtils.TextRange} ruleLocation
+   * @return {!SDK.CSSLocation}
+   */
+  static _getCSSSelectorLocation(cssModel, styleSheetId, ruleLocation) {
     const styleSheetHeader = cssModel.styleSheetHeaderForId(styleSheetId);
     const lineNumber = styleSheetHeader.lineNumberInSource(ruleLocation.startLine);
     const columnNumber = styleSheetHeader.columnNumberInSource(ruleLocation.startLine, ruleLocation.startColumn);
-    const matchingSelectorLocation = new SDK.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
-    return linkifier.linkifyCSSLocation(matchingSelectorLocation);
+    return new SDK.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
   }
 
   /**
@@ -1824,6 +1867,14 @@ Elements.StylePropertiesSection = class {
       return;
     }
     const rawLocation = new SDK.CSSLocation(header, rule.lineNumberInSource(index), rule.columnNumberInSource(index));
+    Elements.StylePropertiesSection._revealSelectorSource(rawLocation, focus);
+  }
+
+  /**
+   * @param {!SDK.CSSLocation} rawLocation
+   * @param {boolean} focus
+   */
+  static _revealSelectorSource(rawLocation, focus) {
     const uiLocation = Bindings.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
     if (uiLocation) {
       Common.Revealer.reveal(uiLocation, !focus);

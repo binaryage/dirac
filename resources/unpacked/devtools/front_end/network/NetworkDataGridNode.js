@@ -817,7 +817,7 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
   }
 
   _openInNewTab() {
-    InspectorFrontendHost.openInNewTab(this._request.url());
+    Host.InspectorFrontendHost.openInNewTab(this._request.url());
   }
 
   /**
@@ -1075,10 +1075,11 @@ Network.NetworkGroupNode = class extends Network.NetworkNode {
    * @param {boolean=} supressSelectedEvent
    */
   select(supressSelectedEvent) {
-    if (this.expanded) {
-      this.collapse();
-      return;
+    super.select(supressSelectedEvent);
+    const firstChildNode = this.traverseNextNode(false, true);
+    if (firstChildNode && firstChildNode.request()) {
+      this.parentView().dispatchEventToListeners(
+          Network.NetworkLogView.Events.RequestSelected, firstChildNode.request());
     }
-    this.expand();
   }
 };

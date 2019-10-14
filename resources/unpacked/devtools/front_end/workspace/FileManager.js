@@ -31,15 +31,16 @@
 /**
  * @unrestricted
  */
-Workspace.FileManager = class extends Common.Object {
+export default class FileManager extends Common.Object {
   constructor() {
     super();
     /** @type {!Map<string, function(?{fileSystemPath: (string|undefined)})>} */
     this._saveCallbacks = new Map();
-    InspectorFrontendHost.events.addEventListener(Host.InspectorFrontendHostAPI.Events.SavedURL, this._savedURL, this);
-    InspectorFrontendHost.events.addEventListener(
+    Host.InspectorFrontendHost.events.addEventListener(
+        Host.InspectorFrontendHostAPI.Events.SavedURL, this._savedURL, this);
+    Host.InspectorFrontendHost.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.CanceledSaveURL, this._canceledSavedURL, this);
-    InspectorFrontendHost.events.addEventListener(
+    Host.InspectorFrontendHost.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.AppendedToURL, this._appendedToURL, this);
   }
 
@@ -52,7 +53,7 @@ Workspace.FileManager = class extends Common.Object {
   save(url, content, forceSaveAs) {
     // Remove this url from the saved URLs while it is being saved.
     const result = new Promise(resolve => this._saveCallbacks.set(url, resolve));
-    InspectorFrontendHost.save(url, content, forceSaveAs);
+    Host.InspectorFrontendHost.save(url, content, forceSaveAs);
     return result;
   }
 
@@ -85,14 +86,14 @@ Workspace.FileManager = class extends Common.Object {
    * @param {string} content
    */
   append(url, content) {
-    InspectorFrontendHost.append(url, content);
+    Host.InspectorFrontendHost.append(url, content);
   }
 
   /**
    * @param {string} url
    */
   close(url) {
-    InspectorFrontendHost.close(url);
+    Host.InspectorFrontendHost.close(url);
   }
 
   /**
@@ -100,16 +101,28 @@ Workspace.FileManager = class extends Common.Object {
    */
   _appendedToURL(event) {
     const url = /** @type {string} */ (event.data);
-    this.dispatchEventToListeners(Workspace.FileManager.Events.AppendedToURL, url);
+    this.dispatchEventToListeners(Events.AppendedToURL, url);
   }
-};
+}
 
 /** @enum {symbol} */
-Workspace.FileManager.Events = {
+export const Events = {
   AppendedToURL: Symbol('AppendedToURL')
 };
 
+/* Legacy exported object */
+self.Workspace = self.Workspace || {};
+
+/* Legacy exported object */
+Workspace = Workspace || {};
+
+/** @constructor */
+Workspace.FileManager = FileManager;
+
+/** @enum {symbol} */
+Workspace.FileManager.Events = Events;
+
 /**
- * @type {?Workspace.FileManager}
+ * @type {?FileManager}
  */
 Workspace.fileManager;

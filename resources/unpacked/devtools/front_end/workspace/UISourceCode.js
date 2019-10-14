@@ -31,7 +31,7 @@
  * @implements {Common.ContentProvider}
  * @unrestricted
  */
-Workspace.UISourceCode = class extends Common.Object {
+export default class UISourceCode extends Common.Object {
   /**
    * @param {!Workspace.Project} project
    * @param {string} url
@@ -57,18 +57,16 @@ Workspace.UISourceCode = class extends Common.Object {
     }
 
     this._contentType = contentType;
-    /** @type {?Promise<string>} */
+    /** @type {?Promise<!Common.DeferredContent>} */
     this._requestContentPromise = null;
-    /** @type {?Multimap<string, !Workspace.UISourceCode.LineMarker>} */
+    /** @type {?Platform.Multimap<string, !LineMarker>} */
     this._decorations = null;
     this._hasCommits = false;
-    /** @type {?Set<!Workspace.UISourceCode.Message>} */
+    /** @type {?Set<!Message>} */
     this._messages = null;
     this._contentLoaded = false;
-    /** @type {?string} */
+    /** @type {?Common.DeferredContent} */
     this._content = null;
-    /** @type {boolean|undefined} */
-    this._contentEncoded;
     this._forceLoadOnCheckContent = false;
     this._checkingContent = false;
     /** @type {?string} */
@@ -80,7 +78,7 @@ Workspace.UISourceCode = class extends Common.Object {
   }
 
   /**
-   * @return {!Promise<?Workspace.UISourceCodeMetadata>}
+   * @return {!Promise<?UISourceCodeMetadata>}
    */
   requestMetadata() {
     return this._project.requestMetadata(this);
@@ -182,7 +180,7 @@ Workspace.UISourceCode = class extends Common.Object {
      * @param {string=} newName
      * @param {string=} newURL
      * @param {!Common.ResourceType=} newContentType
-     * @this {Workspace.UISourceCode}
+     * @this {UISourceCode}
      */
     function innerCallback(success, newName, newURL, newContentType) {
       if (success) {
@@ -213,7 +211,7 @@ Workspace.UISourceCode = class extends Common.Object {
     if (contentType) {
       this._contentType = contentType;
     }
-    this.dispatchEventToListeners(Workspace.UISourceCode.Events.TitleChanged, this);
+    this.dispatchEventToListeners(Events.TitleChanged, this);
     this.project().workspace().dispatchEventToListeners(
         Workspace.Workspace.Events.UISourceCodeRenamed, {oldURL: oldURL, uiSourceCode: this});
   }
@@ -252,7 +250,7 @@ Workspace.UISourceCode = class extends Common.Object {
 
   /**
    * @override
-   * @return {!Promise<string>}
+   * @return {!Promise<!Common.DeferredContent>}
    */
   requestContent() {
     if (this._requestContentPromise) {
@@ -260,23 +258,34 @@ Workspace.UISourceCode = class extends Common.Object {
     }
 
     if (this._contentLoaded) {
-      this._requestContentPromise = Promise.resolve(this._content || '');
-    } else {
-      let fulfill;
-      this._requestContentPromise = new Promise(x => fulfill = x);
-      this._project.requestFileContent(this, (content, encoded) => {
-        if (!this._contentLoaded) {
-          this._contentLoaded = true;
-          this._content = content;
-          this._contentEncoded = encoded;
-        }
-        fulfill(this._content);
-      });
+      return Promise.resolve(/** @type {!Common.DeferredContent} */ (this._content));
     }
+
+
+    this._requestContentPromise = this._requestContentImpl();
     return this._requestContentPromise;
   }
 
-  checkContentUpdated() {
+  /**
+   * @returns {!Promise<!Common.DeferredContent>}
+   */
+  async _requestContentImpl() {
+    try {
+      const content = await this._project.requestFileContent(this);
+      if (!this._contentLoaded) {
+        this._contentLoaded = true;
+        this._content = content;
+        this._contentEncoded = content.isEncoded;
+      }
+    } catch (err) {
+      this._contentLoaded = true;
+      this._content = {error: err ? String(err) : '', isEncoded: false};
+    }
+
+    return /** @type {!Common.DeferredContent} */ (this._content);
+  }
+
+  async checkContentUpdated() {
     if (!this._contentLoaded && !this._forceLoadOnCheckContent) {
       return;
     }
@@ -286,47 +295,38 @@ Workspace.UISourceCode = class extends Common.Object {
     }
 
     this._checkingContent = true;
-    this._project.requestFileContent(this, contentLoaded.bind(this));
+    const updatedContent = await this._project.requestFileContent(this);
+    this._checkingContent = false;
+    if (updatedContent.content === null) {
+      const workingCopy = this.workingCopy();
+      this._contentCommitted('', false);
+      this.setWorkingCopy(workingCopy);
+      return;
+    }
+    if (this._lastAcceptedContent === updatedContent.content) {
+      return;
+    }
 
-    /**
-     * @param {?string} updatedContent
-     * @param {boolean} encoded
-     * @this {Workspace.UISourceCode}
-     */
-    async function contentLoaded(updatedContent, encoded) {
-      this._checkingContent = false;
-      if (updatedContent === null) {
-        const workingCopy = this.workingCopy();
-        this._contentCommitted('', false);
-        this.setWorkingCopy(workingCopy);
-        return;
-      }
-      if (this._lastAcceptedContent === updatedContent) {
-        return;
-      }
+    if (this._content && this._content.content === updatedContent.content) {
+      this._lastAcceptedContent = null;
+      return;
+    }
 
-      if (this._content === updatedContent) {
-        this._lastAcceptedContent = null;
-        return;
-      }
+    if (!this.isDirty() || this._workingCopy === updatedContent.content) {
+      this._contentCommitted(/** @type {string} */ (updatedContent.content), false);
+      return;
+    }
 
-      if (!this.isDirty() || this._workingCopy === updatedContent) {
-        this._contentCommitted(/** @type {string} */ (updatedContent), false);
-        return;
-      }
+    await Common.Revealer.reveal(this);
 
-      await Common.Revealer.reveal(this);
+    // Make sure we are in the next frame before stopping the world with confirm
+    await new Promise(resolve => setTimeout(resolve, 0));
 
-      // Make sure we are in the next frame before stopping the world with confirm
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      const shouldUpdate =
-          window.confirm(Common.UIString('This file was changed externally. Would you like to reload it?'));
-      if (shouldUpdate) {
-        this._contentCommitted(/** @type {string} */ (updatedContent), false);
-      } else {
-        this._lastAcceptedContent = updatedContent;
-      }
+    const shouldUpdate = window.confirm(ls`This file was changed externally. Would you like to reload it?`);
+    if (shouldUpdate) {
+      this._contentCommitted(/** @type {string} */ (updatedContent.content), false);
+    } else {
+      this._lastAcceptedContent = updatedContent.content;
     }
   }
 
@@ -350,7 +350,7 @@ Workspace.UISourceCode = class extends Common.Object {
    */
   _contentCommitted(content, committedByUser) {
     this._lastAcceptedContent = null;
-    this._content = content;
+    this._content = {content, isEncoded: false};
     this._contentLoaded = true;
     this._requestContentPromise = null;
 
@@ -358,7 +358,7 @@ Workspace.UISourceCode = class extends Common.Object {
 
     this._innerResetWorkingCopy();
     const data = {uiSourceCode: this, content, encoded: this._contentEncoded};
-    this.dispatchEventToListeners(Workspace.UISourceCode.Events.WorkingCopyCommitted, data);
+    this.dispatchEventToListeners(Events.WorkingCopyCommitted, data);
     this._project.workspace().dispatchEventToListeners(Workspace.Workspace.Events.WorkingCopyCommitted, data);
     if (committedByUser) {
       this._project.workspace().dispatchEventToListeners(Workspace.Workspace.Events.WorkingCopyCommittedByUser, data);
@@ -390,7 +390,7 @@ Workspace.UISourceCode = class extends Common.Object {
     if (this.isDirty()) {
       return /** @type {string} */ (this._workingCopy);
     }
-    return this._content || '';
+    return (this._content && this._content.content) || '';
   }
 
   resetWorkingCopy() {
@@ -434,7 +434,7 @@ Workspace.UISourceCode = class extends Common.Object {
 
   _workingCopyChanged() {
     this._removeAllMessages();
-    this.dispatchEventToListeners(Workspace.UISourceCode.Events.WorkingCopyChanged, this);
+    this.dispatchEventToListeners(Events.WorkingCopyChanged, this);
     this._project.workspace().dispatchEventToListeners(
         Workspace.Workspace.Events.WorkingCopyChanged, {uiSourceCode: this});
   }
@@ -468,10 +468,17 @@ Workspace.UISourceCode = class extends Common.Object {
   }
 
   /**
-   * @return {?string}
+   * @return {string}
    */
   content() {
-    return this._content;
+    return (this._content && this._content.content) || '';
+  }
+
+  /**
+   * @return {?string}
+   */
+  loadError() {
+    return (this._content && this._content.error);
   }
 
   /**
@@ -499,28 +506,28 @@ Workspace.UISourceCode = class extends Common.Object {
   /**
    * @param {number} lineNumber
    * @param {number=} columnNumber
-   * @return {!Workspace.UILocation}
+   * @return {!UILocation}
    */
   uiLocation(lineNumber, columnNumber) {
     if (typeof columnNumber === 'undefined') {
       columnNumber = 0;
     }
-    return new Workspace.UILocation(this, lineNumber, columnNumber);
+    return new UILocation(this, lineNumber, columnNumber);
   }
 
   /**
-   * @return {!Set<!Workspace.UISourceCode.Message>}
+   * @return {!Set<!Message>}
    */
   messages() {
     return this._messages ? new Set(this._messages) : new Set();
   }
 
   /**
-   * @param {!Workspace.UISourceCode.Message.Level} level
+   * @param {!Message.Level} level
    * @param {string} text
    * @param {number} lineNumber
    * @param {number=} columnNumber
-   * @return {!Workspace.UISourceCode.Message} message
+   * @return {!Message} message
    */
   addLineMessage(level, text, lineNumber, columnNumber) {
     return this.addMessage(
@@ -528,27 +535,27 @@ Workspace.UISourceCode = class extends Common.Object {
   }
 
   /**
-   * @param {!Workspace.UISourceCode.Message.Level} level
+   * @param {!Message.Level} level
    * @param {string} text
    * @param {!TextUtils.TextRange} range
-   * @return {!Workspace.UISourceCode.Message} message
+   * @return {!Message} message
    */
   addMessage(level, text, range) {
-    const message = new Workspace.UISourceCode.Message(this, level, text, range);
+    const message = new Message(this, level, text, range);
     if (!this._messages) {
       this._messages = new Set();
     }
     this._messages.add(message);
-    this.dispatchEventToListeners(Workspace.UISourceCode.Events.MessageAdded, message);
+    this.dispatchEventToListeners(Events.MessageAdded, message);
     return message;
   }
 
   /**
-   * @param {!Workspace.UISourceCode.Message} message
+   * @param {!Message} message
    */
   removeMessage(message) {
     if (this._messages && this._messages.delete(message)) {
-      this.dispatchEventToListeners(Workspace.UISourceCode.Events.MessageRemoved, message);
+      this.dispatchEventToListeners(Events.MessageRemoved, message);
     }
   }
 
@@ -557,7 +564,7 @@ Workspace.UISourceCode = class extends Common.Object {
       return;
     }
     for (const message of this._messages) {
-      this.dispatchEventToListeners(Workspace.UISourceCode.Events.MessageRemoved, message);
+      this.dispatchEventToListeners(Events.MessageRemoved, message);
     }
     this._messages = null;
   }
@@ -577,12 +584,12 @@ Workspace.UISourceCode = class extends Common.Object {
    * @param {?} data
    */
   addDecoration(range, type, data) {
-    const marker = new Workspace.UISourceCode.LineMarker(range, type, data);
+    const marker = new LineMarker(range, type, data);
     if (!this._decorations) {
-      this._decorations = new Multimap();
+      this._decorations = new Platform.Multimap();
     }
     this._decorations.set(type, marker);
-    this.dispatchEventToListeners(Workspace.UISourceCode.Events.LineDecorationAdded, marker);
+    this.dispatchEventToListeners(Events.LineDecorationAdded, marker);
   }
 
   /**
@@ -595,12 +602,12 @@ Workspace.UISourceCode = class extends Common.Object {
     const markers = this._decorations.get(type);
     this._decorations.deleteAll(type);
     markers.forEach(marker => {
-      this.dispatchEventToListeners(Workspace.UISourceCode.Events.LineDecorationRemoved, marker);
+      this.dispatchEventToListeners(Events.LineDecorationRemoved, marker);
     });
   }
 
   /**
-   * @return {!Array<!Workspace.UISourceCode.LineMarker>}
+   * @return {!Array<!LineMarker>}
    */
   allDecorations() {
     return this._decorations ? this._decorations.valuesArray() : [];
@@ -612,21 +619,20 @@ Workspace.UISourceCode = class extends Common.Object {
     }
     const decorationList = this._decorations.valuesArray();
     this._decorations.clear();
-    decorationList.forEach(
-        marker => this.dispatchEventToListeners(Workspace.UISourceCode.Events.LineDecorationRemoved, marker));
+    decorationList.forEach(marker => this.dispatchEventToListeners(Events.LineDecorationRemoved, marker));
   }
 
   /**
    * @param {string} type
-   * @return {?Set<!Workspace.UISourceCode.LineMarker>}
+   * @return {?Set<!LineMarker>}
    */
   decorationsForType(type) {
     return this._decorations ? this._decorations.get(type) : null;
   }
-};
+}
 
 /** @enum {symbol} */
-Workspace.UISourceCode.Events = {
+export const Events = {
   WorkingCopyChanged: Symbol('WorkingCopyChanged'),
   WorkingCopyCommitted: Symbol('WorkingCopyCommitted'),
   TitleChanged: Symbol('TitleChanged'),
@@ -639,9 +645,9 @@ Workspace.UISourceCode.Events = {
 /**
  * @unrestricted
  */
-Workspace.UILocation = class {
+export class UILocation {
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!UISourceCode} uiSourceCode
    * @param {number} lineNumber
    * @param {number} columnNumber
    */
@@ -679,8 +685,8 @@ Workspace.UILocation = class {
   }
 
   /**
-   * @param {!Workspace.UILocation} location1
-   * @param {!Workspace.UILocation} location2
+   * @param {!UILocation} location1
+   * @param {!UILocation} location2
    * @return {number}
    */
   static comparator(location1, location2) {
@@ -688,7 +694,7 @@ Workspace.UILocation = class {
   }
 
   /**
-   * @param {!Workspace.UILocation} other
+   * @param {!UILocation} other
    * @return {number}
    */
   compareTo(other) {
@@ -700,15 +706,15 @@ Workspace.UILocation = class {
     }
     return this.columnNumber - other.columnNumber;
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Workspace.UISourceCode.Message = class {
+export class Message {
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @param {!Workspace.UISourceCode.Message.Level} level
+   * @param {!UISourceCode} uiSourceCode
+   * @param {!Message.Level} level
    * @param {string} text
    * @param {!TextUtils.TextRange} range
    */
@@ -720,14 +726,14 @@ Workspace.UISourceCode.Message = class {
   }
 
   /**
-   * @return {!Workspace.UISourceCode}
+   * @return {!UISourceCode}
    */
   uiSourceCode() {
     return this._uiSourceCode;
   }
 
   /**
-   * @return {!Workspace.UISourceCode.Message.Level}
+   * @return {!Message.Level}
    */
   level() {
     return this._level;
@@ -762,7 +768,7 @@ Workspace.UISourceCode.Message = class {
   }
 
   /**
-   * @param {!Workspace.UISourceCode.Message} another
+   * @param {!Message} another
    * @return {boolean}
    */
   isEqual(another) {
@@ -773,12 +779,12 @@ Workspace.UISourceCode.Message = class {
   remove() {
     this._uiSourceCode.removeMessage(this);
   }
-};
+}
 
 /**
  * @enum {string}
  */
-Workspace.UISourceCode.Message.Level = {
+Message.Level = {
   Error: 'Error',
   Warning: 'Warning'
 };
@@ -786,7 +792,7 @@ Workspace.UISourceCode.Message.Level = {
 /**
  * @unrestricted
  */
-Workspace.UISourceCode.LineMarker = class {
+export class LineMarker {
   /**
    * @param {!TextUtils.TextRange} range
    * @param {string} type
@@ -818,12 +824,12 @@ Workspace.UISourceCode.LineMarker = class {
   data() {
     return this._data;
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Workspace.UISourceCodeMetadata = class {
+export class UISourceCodeMetadata {
   /**
    * @param {?Date} modificationTime
    * @param {?number} contentSize
@@ -832,4 +838,28 @@ Workspace.UISourceCodeMetadata = class {
     this.modificationTime = modificationTime;
     this.contentSize = contentSize;
   }
-};
+}
+
+/* Legacy exported object */
+self.Workspace = self.Workspace || {};
+
+/* Legacy exported object */
+Workspace = Workspace || {};
+
+/** @constructor */
+Workspace.UISourceCode = UISourceCode;
+
+/** @enum {symbol} */
+Workspace.UISourceCode.Events = Events;
+
+/** @constructor */
+Workspace.UISourceCode.Message = Message;
+
+/** @constructor */
+Workspace.UISourceCode.LineMarker = LineMarker;
+
+/** @constructor */
+Workspace.UILocation = UILocation;
+
+/** @constructor */
+Workspace.UISourceCodeMetadata = UISourceCodeMetadata;

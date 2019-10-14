@@ -31,7 +31,7 @@
  * @implements {UI.ViewLocationResolver}
  * @unrestricted
  */
-UI.InspectorView = class extends UI.VBox {
+export default class InspectorView extends UI.VBox {
   constructor() {
     super();
     UI.GlassPane.setContainer(this.element);
@@ -44,7 +44,7 @@ UI.InspectorView = class extends UI.VBox {
     this._drawerSplitWidget.enableShowModeSaving();
     this._drawerSplitWidget.show(this.element);
 
-    if (Runtime.experiments.isEnabled('splitInDrawer')) {
+    if (Root.Runtime.experiments.isEnabled('splitInDrawer')) {
       this._innerDrawerSplitWidget = new UI.SplitWidget(true, true, 'Inspector.drawerSidebarSplitViewState', 200, 200);
       this._drawerSplitWidget.setSidebarWidget(this._innerDrawerSplitWidget);
       this._drawerSidebarTabbedLocation =
@@ -77,8 +77,8 @@ UI.InspectorView = class extends UI.VBox {
 
     // Create main area tabbed pane.
     this._tabbedLocation = UI.viewManager.createTabbedLocation(
-        InspectorFrontendHost.bringToFront.bind(InspectorFrontendHost), 'panel', true, true,
-        Runtime.queryParam('panel'));
+        Host.InspectorFrontendHost.bringToFront.bind(Host.InspectorFrontendHost), 'panel', true, true,
+        Root.Runtime.queryParam('panel'));
 
     this._tabbedPane = this._tabbedLocation.tabbedPane();
     this._tabbedPane.registerRequiredCSS('ui/inspectorViewTabbedPane.css');
@@ -94,10 +94,11 @@ UI.InspectorView = class extends UI.VBox {
     this._drawerSplitWidget.setMainWidget(this._tabbedPane);
 
     this._keyDownBound = this._keyDown.bind(this);
-    InspectorFrontendHost.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ShowPanel, showPanel.bind(this));
+    Host.InspectorFrontendHost.events.addEventListener(
+        Host.InspectorFrontendHostAPI.Events.ShowPanel, showPanel.bind(this));
 
     /**
-     * @this {UI.InspectorView}
+     * @this {InspectorView}
      * @param {!Common.Event} event
      */
     function showPanel(event) {
@@ -107,10 +108,10 @@ UI.InspectorView = class extends UI.VBox {
   }
 
   /**
-   * @return {!UI.InspectorView}
+   * @return {!InspectorView}
    */
   static instance() {
-    return /** @type {!UI.InspectorView} */ (self.runtime.sharedInstance(UI.InspectorView));
+    return /** @type {!InspectorView} */ (self.runtime.sharedInstance(InspectorView));
   }
 
   /**
@@ -355,19 +356,13 @@ UI.InspectorView = class extends UI.VBox {
       this._ownerSplitWidget.setSidebarMinimized(false);
     }
   }
-};
-
-
-/**
- * @type {!UI.InspectorView}
- */
-UI.inspectorView;
+}
 
 /**
  * @implements {UI.ActionDelegate}
  * @unrestricted
  */
-UI.InspectorView.ActionDelegate = class {
+export class ActionDelegate {
   /**
    * @override
    * @param {!UI.Context} context
@@ -394,4 +389,24 @@ UI.InspectorView.ActionDelegate = class {
     }
     return false;
   }
-};
+}
+
+/* Legacy exported object*/
+self.UI = self.UI || {};
+
+/* Legacy exported object*/
+UI = UI || {};
+
+/** @constructor */
+UI.InspectorView = InspectorView;
+
+/**
+ * @implements {UI.ActionDelegate}
+ * @unrestricted
+ */
+UI.InspectorView.ActionDelegate = ActionDelegate;
+
+/**
+ * @type {!InspectorView}
+ */
+UI.inspectorView;
