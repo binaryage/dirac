@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='79.0.3935.1';
-Protocol.BakedInspectorBackendAPIChromeRev='4df0dcbc4b99a75edc3950a6d14631bff9927a5a';
+Protocol.BakedInspectorBackendAPIChromeTag='79.0.3941.4';
+Protocol.BakedInspectorBackendAPIChromeRev='aeb72b58782e83aa70b15cfbe227fd93c044eec0';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -451,6 +451,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Security.SecurityState", {Unknown: "unknown", Neutral: "neutral", Insecure: "insecure", Secure: "secure", Info: "info"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Security.CertificateErrorAction", {Continue: "continue", Cancel: "cancel"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Security.certificateError", ["eventId", "errorType", "requestURL"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Security.visibleSecurityStateChanged", ["visibleSecurityState"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Security.securityStateChanged", ["securityState", "schemeIsCryptographic", "explanations", "insecureContentStatus", "summary"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Security.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Security.enable", [], [], false);\n'
@@ -588,7 +589,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "isLiveEdit", "sourceMapURL", "hasSourceURL", "isModule", "length", "stackTrace"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.continueToLocation", [{"name": "location", "type": "object", "optional": false}, {"name": "targetCallFrames", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.disable", [], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Debugger.enable", [{"name": "maxScriptsCacheSize", "type": "number", "optional": true}, {"name": "supportsWasmDwarf", "type": "boolean", "optional": true}], ["debuggerId"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Debugger.enable", [{"name": "maxScriptsCacheSize", "type": "number", "optional": true}], ["debuggerId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "callFrameId", "type": "string", "optional": false}, {"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "silent", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "throwOnSideEffect", "type": "boolean", "optional": true}, {"name": "timeout", "type": "number", "optional": true}], ["result", "exceptionDetails"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.getPossibleBreakpoints", [{"name": "start", "type": "object", "optional": false}, {"name": "end", "type": "object", "optional": true}, {"name": "restrictToFunction", "type": "boolean", "optional": true}], ["locations"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.getScriptSource", [{"name": "scriptId", "type": "string", "optional": false}], ["scriptSource"], false);\n'
