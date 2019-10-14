@@ -10,6 +10,7 @@
     { "name": "browser_debugger" },
     { "name": "css_overview" },
     { "name": "cookie_table" },
+    { "name": "dagre_layout", "type": "remote" },
     { "name": "devices" },
     { "name": "elements" },
     { "name": "emulated_devices" , "type": "remote" },
@@ -24,7 +25,8 @@
     { "name": "security" },
     { "name": "timeline" },
     { "name": "timeline_model" },
-    { "name": "web_audio" }
+    { "name": "web_audio" },
+    { "name": "media" }
   ],
   "extends": "shell",
   "has_html": true

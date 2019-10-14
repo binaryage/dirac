@@ -12,6 +12,9 @@
   <message name="IDS_DEVTOOLS_030361ea56fa177ebcbefe708a45b0f2" desc="Text in Heap Snapshot Data Grids of a profiler tool">
     # Deleted
   </message>
+  <message name="IDS_DEVTOOLS_03301bd5f0d1517cf88b2f8348b82dfc" desc="Accessible text for the value in bytes of a Memory allocation.">
+    <ph name="VALUE">$1s<ex>12345</ex></ph> bytes
+  </message>
   <message name="IDS_DEVTOOLS_04042b5589b3d4fd4e1e7e44265ad247" desc="Total trend div title in Isolate Selector of a profiler tool">
     Total page JS heap size change trend over the last <ph name="TRENDINTERVALMINUTES">$1s<ex>3</ex></ph> minutes.
   </message>
@@ -62,6 +65,9 @@
   </message>
   <message name="IDS_DEVTOOLS_2def01e5dee6051b68f5b1e5e2fc8ad4" desc="Text in Heap Snapshot View of a profiler tool">
     System Objects
+  </message>
+  <message name="IDS_DEVTOOLS_2ebf8a926edeb0ca7de35c9b563ba797" desc="Filter label text in the Memory tool to filter class names for a heap snapshot">
+    Class filter
   </message>
   <message name="IDS_DEVTOOLS_2f318b400ebcb22420251535452efef0" desc="Text in Heap Snapshot View of a profiler tool">
     Containment

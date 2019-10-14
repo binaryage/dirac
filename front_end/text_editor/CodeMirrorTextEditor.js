@@ -179,8 +179,8 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
     this._codeMirrorElement.classList.add('source-code');
     this._codeMirrorElement.classList.add('fill');
 
-    /** @type {!Multimap<number, !TextEditor.CodeMirrorTextEditor.Decoration>} */
-    this._decorations = new Multimap();
+    /** @type {!Platform.Multimap<number, !TextEditor.CodeMirrorTextEditor.Decoration>} */
+    this._decorations = new Platform.Multimap();
 
     this.element.addEventListener('keydown', this._handleKeyDown.bind(this), true);
     this.element.addEventListener('keydown', this._handlePostKeyDown.bind(this), false);
@@ -288,7 +288,7 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
 
   /**
    * @param {string} mimeType
-   * @return {!Array<!Runtime.Extension>}}
+   * @return {!Array<!Root.Runtime.Extension>}}
    */
   static _collectUninstalledModes(mimeType) {
     const installed = TextEditor.CodeMirrorTextEditor._loadedMimeModeExtensions;
@@ -319,7 +319,7 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
   }
 
   /**
-   * @param {!Array<!Runtime.Extension>} extensions
+   * @param {!Array<!Root.Runtime.Extension>} extensions
    * @return {!Promise}
    */
   static _installMimeTypeModes(extensions) {
@@ -327,7 +327,7 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
     return Promise.all(promises);
 
     /**
-     * @param {!Runtime.Extension} extension
+     * @param {!Root.Runtime.Extension} extension
      * @param {!Object} instance
      */
     function installMode(extension, instance) {
@@ -1764,7 +1764,7 @@ TextEditor.CodeMirrorTextEditor._overrideModeWithPrefixedTokens('css', 'css-');
 TextEditor.CodeMirrorTextEditor._overrideModeWithPrefixedTokens('javascript', 'js-');
 TextEditor.CodeMirrorTextEditor._overrideModeWithPrefixedTokens('xml', 'xml-');
 
-/** @type {!Set<!Runtime.Extension>} */
+/** @type {!Set<!Root.Runtime.Extension>} */
 TextEditor.CodeMirrorTextEditor._loadedMimeModeExtensions = new Set();
 
 
@@ -1775,7 +1775,7 @@ TextEditor.CodeMirrorMimeMode = function() {};
 
 TextEditor.CodeMirrorMimeMode.prototype = {
   /**
-   * @param {!Runtime.Extension} extension
+   * @param {!Root.Runtime.Extension} extension
    */
   install(extension) {}
 };

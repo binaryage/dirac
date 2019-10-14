@@ -5,16 +5,16 @@
 /**
  * @implements {Protocol.Connection}
  */
-SDK.MainConnection = class {
+export class MainConnection {
   constructor() {
     this._onMessage = null;
     this._onDisconnect = null;
     this._messageBuffer = '';
     this._messageSize = 0;
     this._eventListeners = [
-      InspectorFrontendHost.events.addEventListener(
+      Host.InspectorFrontendHost.events.addEventListener(
           Host.InspectorFrontendHostAPI.Events.DispatchMessage, this._dispatchMessage, this),
-      InspectorFrontendHost.events.addEventListener(
+      Host.InspectorFrontendHost.events.addEventListener(
           Host.InspectorFrontendHostAPI.Events.DispatchMessageChunk, this._dispatchMessageChunk, this),
     ];
   }
@@ -41,7 +41,7 @@ SDK.MainConnection = class {
    */
   sendRawMessage(message) {
     if (this._onMessage) {
-      InspectorFrontendHost.sendMessageToBackend(message);
+      Host.InspectorFrontendHost.sendMessageToBackend(message);
     }
   }
 
@@ -87,12 +87,12 @@ SDK.MainConnection = class {
     }
     return Promise.resolve();
   }
-};
+}
 
 /**
  * @implements {Protocol.Connection}
  */
-SDK.WebSocketConnection = class {
+export class WebSocketConnection {
   /**
    * @param {string} url
    * @param {function()} onWebSocketDisconnect
@@ -193,12 +193,12 @@ SDK.WebSocketConnection = class {
     });
     return promise;
   }
-};
+}
 
 /**
  * @implements {Protocol.Connection}
  */
-SDK.StubConnection = class {
+export class StubConnection {
   constructor() {
     this._onMessage = null;
     this._onDisconnect = null;
@@ -255,12 +255,12 @@ SDK.StubConnection = class {
     this._onMessage = null;
     return Promise.resolve();
   }
-};
+}
 
 /**
  * @implements {Protocol.Connection}
  */
-SDK.ParallelConnection = class {
+export class ParallelConnection {
   /**
    * @param {!Protocol.Connection} connection
    * @param {string} sessionId
@@ -294,7 +294,10 @@ SDK.ParallelConnection = class {
    */
   sendRawMessage(message) {
     const messageObject = JSON.parse(message);
-    messageObject.sessionId = this._sessionId;
+    // If the message isn't for a specific session, it must be for the root session.
+    if (!messageObject.sessionId) {
+      messageObject.sessionId = this._sessionId;
+    }
     this._connection.sendRawMessage(JSON.stringify(messageObject));
   }
 
@@ -310,33 +313,58 @@ SDK.ParallelConnection = class {
     this._onMessage = null;
     return Promise.resolve();
   }
-};
+}
 
 /**
  * @param {function():!Promise<undefined>} createMainTarget
  * @param {function()} websocketConnectionLost
  * @return {!Promise}
  */
-SDK.initMainConnection = async function(createMainTarget, websocketConnectionLost) {
-  Protocol.Connection.setFactory(SDK._createMainConnection.bind(null, websocketConnectionLost));
+export async function initMainConnection(createMainTarget, websocketConnectionLost) {
+  Protocol.Connection.setFactory(_createMainConnection.bind(null, websocketConnectionLost));
   await createMainTarget();
-  InspectorFrontendHost.connectionReady();
+  Host.InspectorFrontendHost.connectionReady();
+  Host.InspectorFrontendHost.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ReattachMainTarget, () => {
+    SDK.targetManager.mainTarget().router().connection().disconnect();
+    createMainTarget();
+  });
   return Promise.resolve();
-};
+}
 
 /**
  * @param {function()} websocketConnectionLost
  * @return {!Protocol.Connection}
  */
-SDK._createMainConnection = function(websocketConnectionLost) {
-  const wsParam = Runtime.queryParam('ws');
-  const wssParam = Runtime.queryParam('wss');
+export function _createMainConnection(websocketConnectionLost) {
+  const wsParam = Root.Runtime.queryParam('ws');
+  const wssParam = Root.Runtime.queryParam('wss');
   if (wsParam || wssParam) {
     const ws = wsParam ? `ws://${wsParam}` : `wss://${wssParam}`;
-    return new SDK.WebSocketConnection(ws, websocketConnectionLost);
-  } else if (InspectorFrontendHost.isHostedMode()) {
-    return new SDK.StubConnection();
+    return new WebSocketConnection(ws, websocketConnectionLost);
+  } else if (Host.InspectorFrontendHost.isHostedMode()) {
+    return new StubConnection();
   }
 
-  return new SDK.MainConnection();
-};
+  return new MainConnection();
+}
+
+/* Legacy exported object */
+self.SDK = self.SDK || {};
+
+/* Legacy exported object */
+SDK = SDK || {};
+
+/** @constructor */
+SDK.MainConnection = MainConnection;
+
+/** @constructor */
+SDK.WebSocketConnection = WebSocketConnection;
+
+/** @constructor */
+SDK.StubConnection = StubConnection;
+
+/** @constructor */
+SDK.ParallelConnection = ParallelConnection;
+
+SDK.initMainConnection = initMainConnection;
+SDK._createMainConnection = _createMainConnection;

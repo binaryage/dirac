@@ -31,7 +31,7 @@ QuickOpen.CommandMenu = class {
   }
 
   /**
-   * @param {!Runtime.Extension} extension
+   * @param {!Root.Runtime.Extension} extension
    * @param {string} title
    * @param {V} value
    * @return {!QuickOpen.CommandMenu.Command}
@@ -63,7 +63,7 @@ QuickOpen.CommandMenu = class {
   }
 
   /**
-   * @param {!Runtime.Extension} extension
+   * @param {!Root.Runtime.Extension} extension
    * @param {string} category
    * @return {!QuickOpen.CommandMenu.Command}
    */
@@ -326,7 +326,7 @@ QuickOpen.CommandMenu.ShowActionDelegate = class {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    InspectorFrontendHost.bringToFront();
+    Host.InspectorFrontendHost.bringToFront();
     QuickOpen.QuickOpen.show('>');
     return true;
   }
