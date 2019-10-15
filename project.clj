@@ -20,7 +20,7 @@
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
    ['funcool/cuerdas "2.2.0"]
-   ['com.rpl/specter "1.1.2"]])
+   ['com.rpl/specter "1.1.3"]])
 
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
