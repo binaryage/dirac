@@ -38,18 +38,18 @@ Object.assign(window.dirac, (function() {
     if (featureIndex === -1) {
       return true;
     }
-    const activeFlags = Runtime.queryParam("dirac_flags") || "";
+    const activeFlags = Root.Runtime.queryParam("dirac_flags") || "";
     const result = activeFlags[featureIndex] !== '0';
     featureFlags[feature] = result;
     return result;
   }
 
   function hasDebugFlag(flagName) {
-    if (Runtime.queryParam("debug_all") === "1") {
+    if (Root.Runtime.queryParam("debug_all") === "1") {
       return true;
     }
     const paramName = "debug_" + flagName.toLowerCase();
-    return Runtime.queryParam(paramName) === "1";
+    return Root.Runtime.queryParam(paramName) === "1";
   }
 
   // taken from https://github.com/joliss/js-string-escape/blob/master/index.js
@@ -227,8 +227,6 @@ Object.assign(window.dirac, (function() {
     _DEBUG_FEEDBACK: hasDebugFlag("feedback"),
     _DEBUG_WATCHING: hasDebugFlag("watching"),
     _DEBUG_CACHES: hasDebugFlag("caches"),
-    _DEBUG_BACKEND_API: hasDebugFlag("backend_api"),
-    _DEBUG_BACKEND_CSS: hasDebugFlag("backend_css"),
 
     // -- feature toggles -----------------------------------------------------------------------------------------------
     hasREPL: hasFeature("enable-repl"),

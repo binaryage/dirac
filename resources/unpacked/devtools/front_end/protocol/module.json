@@ -9,8 +9,7 @@
     "protocol.js",
     "NodeURL.js",
     "InspectorBackend.js",
-    "../InspectorBackendCommands.js",
-    "InspectorBackendExtensionMode.js"
+    "../InspectorBackendCommands.js"
   ],
   "skip_compilation": [
     "../InspectorBackendCommands.js"

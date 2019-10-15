@@ -39,19 +39,6 @@ export const DevToolsStubErrorCode = -32015;
 const _GenericError = -32000;
 const _ConnectionClosedErrorCode = -32001;
 
-/** @type {string} */
-Protocol.BakedInspectorBackendAPIChromeTag;
-/** @type {string} */
-Protocol.BakedInspectorBackendAPIChromeRev;
-/** @type {string} */
-Protocol.BakedInspectorBackendAPI;
-/** @type {string} */
-Protocol.BakedSupportedCSSPropertiesChromeTag;
-/** @type {string} */
-Protocol.BakedSupportedCSSPropertiesChromeRev;
-/** @type {string} */
-Protocol.BakedSupportedCSSProperties;
-
 /**
  * @unrestricted
  */
@@ -892,3 +879,16 @@ Protocol.TargetBase = TargetBase;
  * @typedef {function(?Object, ?Object)}
  */
 Protocol._Callback;
+
+/** @type {string} */
+Protocol.BakedInspectorBackendAPIChromeTag;
+/** @type {string} */
+Protocol.BakedInspectorBackendAPIChromeRev;
+/** @type {string} */
+Protocol.BakedInspectorBackendAPI;
+/** @type {string} */
+Protocol.BakedSupportedCSSPropertiesChromeTag;
+/** @type {string} */
+Protocol.BakedSupportedCSSPropertiesChromeRev;
+/** @type {string} */
+Protocol.BakedSupportedCSSProperties;

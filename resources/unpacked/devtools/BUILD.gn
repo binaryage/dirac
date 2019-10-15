@@ -1205,8 +1205,7 @@ if (!external_devtools_frontend) {
     "front_end/worker_app.html",
   ]
 
-  # mark for conflicts -- darwin
-copied_devtools_modules = [ # -- darwin
+  copied_devtools_modules = [
     "$resources_out_dir/console_counters/console_counters.js",
     "$resources_out_dir/console_counters/WarningErrorCounter.js",
     "$resources_out_dir/extensions/extensions.js",
@@ -1321,10 +1320,10 @@ copied_devtools_modules = [ # -- darwin
     "$resources_out_dir/host/InspectorFrontendHost.js",
     "$resources_out_dir/host/InspectorFrontendHostAPI.js",
     "$resources_out_dir/dom_extension/DOMExtension.js",
-    "$resources_out_dir/root.js", # -- darwin
+    "$resources_out_dir/root.js",
     "$resources_out_dir/Runtime.js",
-    "$resources_out_dir/platform/utilities.js", # -- darwin
-  "$resources_out_dir/ui/ui.js", # -- darwin
+    "$resources_out_dir/platform/utilities.js",
+    "$resources_out_dir/ui/ui.js",
     "$resources_out_dir/common/common.js",
     "$resources_out_dir/ui/ZoomManager.js",
     "$resources_out_dir/ui/XWidget.js",
@@ -1384,52 +1383,51 @@ copied_devtools_modules = [ # -- darwin
     "$resources_out_dir/ui/Action.js",
     "$resources_out_dir/ui/ActionDelegate.js",
     "$resources_out_dir/ui/ContextFlavorListener.js",
-  "$resources_out_dir/common/App.js",
-  "$resources_out_dir/common/AppProvider.js",
-  "$resources_out_dir/common/CharacterIdMap.js",
-  "$resources_out_dir/common/Color.js",
-  "$resources_out_dir/common/ContentProvider.js",
-  "$resources_out_dir/common/EventTarget.js",
-  "$resources_out_dir/common/JavaScriptMetaData.js",
-  "$resources_out_dir/common/Linkifier.js",
-  "$resources_out_dir/common/Object.js",
-  "$resources_out_dir/common/Console.js",
-  "$resources_out_dir/common/ParsedURL.js",
-  "$resources_out_dir/common/Progress.js",
-  "$resources_out_dir/common/QueryParamHandler.js",
-  "$resources_out_dir/common/ResourceType.js",
-  "$resources_out_dir/common/Revealer.js",
-  "$resources_out_dir/common/Runnable.js",
-  "$resources_out_dir/common/SegmentedRange.js",
-  "$resources_out_dir/common/Settings.js",
-  "$resources_out_dir/common/StaticContentProvider.js",
-  "$resources_out_dir/common/StringOutputStream.js",
-  "$resources_out_dir/common/TextDictionary.js",
-  "$resources_out_dir/common/Throttler.js",
-  "$resources_out_dir/common/Trie.js",
-  "$resources_out_dir/common/UIString.js",
-  "$resources_out_dir/common/Worker.js",
-] # -- darwin
+    "$resources_out_dir/common/App.js",
+    "$resources_out_dir/common/AppProvider.js",
+    "$resources_out_dir/common/CharacterIdMap.js",
+    "$resources_out_dir/common/Color.js",
+    "$resources_out_dir/common/ContentProvider.js",
+    "$resources_out_dir/common/EventTarget.js",
+    "$resources_out_dir/common/JavaScriptMetaData.js",
+    "$resources_out_dir/common/Linkifier.js",
+    "$resources_out_dir/common/Object.js",
+    "$resources_out_dir/common/Console.js",
+    "$resources_out_dir/common/ParsedURL.js",
+    "$resources_out_dir/common/Progress.js",
+    "$resources_out_dir/common/QueryParamHandler.js",
+    "$resources_out_dir/common/ResourceType.js",
+    "$resources_out_dir/common/Revealer.js",
+    "$resources_out_dir/common/Runnable.js",
+    "$resources_out_dir/common/SegmentedRange.js",
+    "$resources_out_dir/common/Settings.js",
+    "$resources_out_dir/common/StaticContentProvider.js",
+    "$resources_out_dir/common/StringOutputStream.js",
+    "$resources_out_dir/common/TextDictionary.js",
+    "$resources_out_dir/common/Throttler.js",
+    "$resources_out_dir/common/Trie.js",
+    "$resources_out_dir/common/UIString.js",
+    "$resources_out_dir/common/Worker.js",
+  ]
 
-  # mark for conflicts -- darwin
-generated_applications = [ # -- darwin
-  "$resources_out_dir/audits_worker.js", # -- darwin
-  "$resources_out_dir/devtools_app.html", # -- darwin
-  "$resources_out_dir/devtools_app.js", # -- darwin
-  "$resources_out_dir/formatter_worker.js", # -- darwin
-  "$resources_out_dir/heap_snapshot_worker.js", # -- darwin
-  "$resources_out_dir/inspector.html", # -- darwin
-  "$resources_out_dir/inspector.js", # -- darwin
-  "$resources_out_dir/js_app.html", # -- darwin
-  "$resources_out_dir/js_app.js", # -- darwin
-  "$resources_out_dir/node_app.html", # -- darwin
-  "$resources_out_dir/node_app.js", # -- darwin
-  "$resources_out_dir/shell.js", # -- darwin
-  "$resources_out_dir/toolbox.html", # -- darwin
-  "$resources_out_dir/toolbox.js", # -- darwin
-  "$resources_out_dir/worker_app.html", # -- darwin
-  "$resources_out_dir/worker_app.js", # -- darwin
-] # -- darwin
+  generated_applications = [
+    "$resources_out_dir/audits_worker.js",
+    "$resources_out_dir/devtools_app.html",
+    "$resources_out_dir/devtools_app.js",
+    "$resources_out_dir/formatter_worker.js",
+    "$resources_out_dir/heap_snapshot_worker.js",
+    "$resources_out_dir/inspector.html",
+    "$resources_out_dir/inspector.js",
+    "$resources_out_dir/js_app.html",
+    "$resources_out_dir/js_app.js",
+    "$resources_out_dir/node_app.html",
+    "$resources_out_dir/node_app.js",
+    "$resources_out_dir/shell.js",
+    "$resources_out_dir/toolbox.html",
+    "$resources_out_dir/toolbox.js",
+    "$resources_out_dir/worker_app.html",
+    "$resources_out_dir/worker_app.js",
+  ]
 
   generated_non_autostart_non_remote_modules = [
     "$resources_out_dir/animation/animation_module.js",

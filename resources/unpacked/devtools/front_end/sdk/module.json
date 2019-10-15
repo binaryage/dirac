@@ -417,7 +417,6 @@
         "HeapProfilerModel.js",
         "PerformanceMetricsModel.js",
         "../SupportedCSSProperties.js",
-        "SupportedCSSPropertiesExtensionMode.js",
         "FilmStripModel.js",
         "ConsoleModel.js"
     ],
