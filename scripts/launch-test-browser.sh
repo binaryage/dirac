@@ -42,7 +42,7 @@ echo "waiting for compilation of clojurescript components..."
 ./scripts/wait-for-notify.sh "scenarios03"
 
 set -x
-"$EXE" \
+exec "$EXE" \
       --remote-debugging-port=${DIRAC_SETUP_CHROME_REMOTE_DEBUGGING_PORT:=9222} \
       --user-data-dir="$DIRAC_BROWSER_TESTS_USER_PROFILE" \
       --no-first-run \
@@ -58,4 +58,3 @@ set -x
       --disable-default-apps \
       --load-extension="$DEV_DIRAC_EXTENSION_PATH,$DEV_MARION_EXTENSION_PATH" \
       "http://localhost:$DEV_FIXTURES_SERVER_PORT?set-agent-port=$DIRAC_AGENT_PORT" 2> /dev/null
-set +x
