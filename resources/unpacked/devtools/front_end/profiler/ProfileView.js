@@ -32,6 +32,7 @@ Profiler.ProfileView = class extends UI.SimpleView {
     this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this._sortProfile, this);
     this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, this._nodeSelected.bind(this, true));
     this.dataGrid.addEventListener(DataGrid.DataGrid.Events.DeselectedNode, this._nodeSelected.bind(this, false));
+    this.dataGrid.setRowContextMenuCallback(this._populateContextMenu.bind(this));
 
     this.viewSelectComboBox = new UI.ToolbarComboBox(this._changeView.bind(this), ls`Profile view mode`);
 
@@ -175,6 +176,17 @@ Profiler.ProfileView = class extends UI.SimpleView {
   }
 
   /**
+   * @param {!UI.ContextMenu} contextMenu
+   * @param {!DataGrid.DataGridNode} gridNode
+   */
+  _populateContextMenu(contextMenu, gridNode) {
+    const node = /** @type {!Profiler.ProfileDataGridNode} */ (gridNode);
+    if (node.linkElement && !contextMenu.containsTarget(node.linkElement)) {
+      contextMenu.appendApplicableItems(node.linkElement);
+    }
+  }
+
+  /**
    * @override
    */
   willHide() {
@@ -298,13 +310,13 @@ Profiler.ProfileView = class extends UI.SimpleView {
     }
     this._dataProvider = this.createFlameChartDataProvider();
     this._flameChart = new Profiler.CPUProfileFlameChart(this._searchableView, this._dataProvider);
-    this._flameChart.addEventListener(PerfUI.FlameChart.Events.EntrySelected, this._onEntrySelected.bind(this));
+    this._flameChart.addEventListener(PerfUI.FlameChart.Events.EntryInvoked, this._onEntryInvoked.bind(this));
   }
 
   /**
    * @param {!Common.Event} event
    */
-  _onEntrySelected(event) {
+  _onEntryInvoked(event) {
     const entryIndex = event.data;
     const node = this._dataProvider._entryNodes[entryIndex];
     const debuggerModel = this._profileHeader._debuggerModel;
