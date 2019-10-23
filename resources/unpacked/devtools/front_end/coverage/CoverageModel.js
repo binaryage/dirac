@@ -445,7 +445,9 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
       return null;
     }
     let urlCoverage = this._coverageByURL.get(url);
+    let isNewUrlCoverage = false;
     if (!urlCoverage) {
+      isNewUrlCoverage = true;
       urlCoverage = new Coverage.URLCoverageInfo(url);
       this._coverageByURL.set(url, urlCoverage);
     }
@@ -458,7 +460,7 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
     }
     const oldUsedSize = coverageInfo._usedSize;
     coverageInfo.mergeCoverage(segments);
-    if (coverageInfo._usedSize === oldUsedSize) {
+    if (!isNewUrlCoverage && coverageInfo._usedSize === oldUsedSize) {
       return null;
     }
     urlCoverage._usedSize += coverageInfo._usedSize - oldUsedSize;
@@ -495,7 +497,8 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
       let fullText = null;
       if (useFullText) {
         const resource = SDK.ResourceTreeModel.resourceForURL(url);
-        fullText = resource ? new TextUtils.Text(await resource.requestContent()) : null;
+        const content = (await resource.requestContent()).content;
+        fullText = resource ? new TextUtils.Text(content || '') : null;
       }
 
       const coverageByLocationKeys = Array.from(urlInfo._coverageInfoByLocation.keys()).sort(locationCompare);
@@ -522,7 +525,7 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
       // Fall back to the per-script operation.
       for (const infoKey of coverageByLocationKeys) {
         const info = urlInfo._coverageInfoByLocation.get(infoKey);
-        const entry = {url, ranges: [], text: await info.contentProvider().requestContent()};
+        const entry = {url, ranges: [], text: (await info.contentProvider().requestContent()).content};
         let start = 0;
         for (const segment of info._segments) {
           if (segment.count) {

@@ -1107,7 +1107,8 @@ DataGrid.DataGrid = class extends Common.Object {
       }
     }
 
-    if (target.isSelfOrDescendant(this._headerTableBody)) {
+    const isContextMenuKey = (event.button === 0);
+    if (!isContextMenuKey && target.isSelfOrDescendant(this._headerTableBody)) {
       if (this._headerContextMenuCallback) {
         this._headerContextMenuCallback(contextMenu);
       } else {
@@ -1116,7 +1117,16 @@ DataGrid.DataGrid = class extends Common.Object {
       return;
     }
 
-    const gridNode = this.dataGridNodeFromNode(target);
+    const gridNode = isContextMenuKey ? this.selectedNode : this.dataGridNodeFromNode(target);
+    if (isContextMenuKey && this.selectedNode) {
+      const boundingRowRect = this.selectedNode.existingElement().getBoundingClientRect();
+      if (boundingRowRect) {
+        const x = (boundingRowRect.right + boundingRowRect.left) / 2;
+        const y = (boundingRowRect.bottom + boundingRowRect.top) / 2;
+        contextMenu.setX(x);
+        contextMenu.setY(y);
+      }
+    }
     if (this._refreshCallback && (!gridNode || gridNode !== this.creationNode)) {
       contextMenu.defaultSection().appendItem(Common.UIString('Refresh'), this._refreshCallback.bind(this));
     }
@@ -1125,6 +1135,16 @@ DataGrid.DataGrid = class extends Common.Object {
       if (this._editCallback) {
         if (gridNode === this.creationNode) {
           contextMenu.defaultSection().appendItem(Common.UIString('Add new'), this._startEditing.bind(this, target));
+        } else if (isContextMenuKey) {
+          const firstEditColumnIndex = this._nextEditableColumn(-1);
+          if (firstEditColumnIndex > -1) {
+            const firstColumn = this._visibleColumnsArray[firstEditColumnIndex];
+            if (firstColumn && firstColumn.editable) {
+              contextMenu.defaultSection().appendItem(
+                  ls`Edit "${firstColumn.title}"`,
+                  this._startEditingColumnOfDataGridNode.bind(this, gridNode, firstEditColumnIndex));
+            }
+          }
         } else {
           const columnId = this.columnIdFromNode(target);
           if (columnId && this._columns[columnId].editable) {

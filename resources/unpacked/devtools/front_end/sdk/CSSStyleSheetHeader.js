@@ -5,7 +5,7 @@
  * @implements {Common.ContentProvider}
  * @unrestricted
  */
-SDK.CSSStyleSheetHeader = class {
+export default class CSSStyleSheetHeader {
   /**
    * @param {!SDK.CSSModel} cssModel
    * @param {!Protocol.CSS.CSSStyleSheetHeader} payload
@@ -22,6 +22,8 @@ SDK.CSSStyleSheetHeader = class {
     this.isInline = payload.isInline;
     this.startLine = payload.startLine;
     this.startColumn = payload.startColumn;
+    this.endLine = payload.endLine;
+    this.endColumn = payload.endColumn;
     this.contentLength = payload.length;
     if (payload.ownerNode) {
       this.ownerNode = new SDK.DeferredDOMNode(cssModel.target(), payload.ownerNode);
@@ -34,9 +36,15 @@ SDK.CSSStyleSheetHeader = class {
    */
   originalContentProvider() {
     if (!this._originalContentProvider) {
-      const lazyContent = this._cssModel.originalStyleSheetText.bind(this._cssModel, this);
-      this._originalContentProvider = new Common.StaticContentProvider(
-          this.contentURL(), this.contentType(), /** @type {function():!Promise<string>} */ (lazyContent));
+      const lazyContent = /** @type {function():!Promise<!Common.DeferredContent>} */ (async () => {
+        const originalText = await this._cssModel.originalStyleSheetText(this);
+        if (!originalText) {
+          return {error: ls`Could not find the original style sheet.`, isEncoded: false};
+        }
+        return {content: originalText, isEncoded: false};
+      });
+      this._originalContentProvider =
+          new Common.StaticContentProvider(this.contentURL(), this.contentType(), lazyContent);
     }
     return this._originalContentProvider;
   }
@@ -104,19 +112,14 @@ SDK.CSSStyleSheetHeader = class {
   /**
    * Checks whether the position is in this style sheet. Assumes that the
    * position's columnNumber is consistent with line endings.
-   * TODO(chromium:1005708): Ensure that this object knows its end position,
-   * and remove {line,column}NumberOfCSSEnd parameters.
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @param {number} lineNumberOfCSSEnd
-   * @param {number} columnNumberOfCSSEnd
    * @return {boolean}
    */
-  containsLocation(lineNumber, columnNumber, lineNumberOfCSSEnd, columnNumberOfCSSEnd) {
+  containsLocation(lineNumber, columnNumber) {
     const afterStart =
         (lineNumber === this.startLine && columnNumber >= this.startColumn) || lineNumber > this.startLine;
-    const beforeEnd =
-        lineNumber < lineNumberOfCSSEnd || (lineNumber === lineNumberOfCSSEnd && columnNumber <= columnNumberOfCSSEnd);
+    const beforeEnd = lineNumber < this.endLine || (lineNumber === this.endLine && columnNumber <= this.endColumn);
     return afterStart && beforeEnd;
   }
 
@@ -146,10 +149,18 @@ SDK.CSSStyleSheetHeader = class {
 
   /**
    * @override
-   * @return {!Promise<string>}
+   * @return {!Promise<!Common.DeferredContent>}
    */
-  requestContent() {
-    return /** @type {!Promise<string>} */ (this._cssModel.getStyleSheetText(this.id));
+  async requestContent() {
+    try {
+      const cssText = await this._cssModel.getStyleSheetText(this.id);
+      return {content: /** @type{string} */ (cssText), isEncoded: false};
+    } catch (err) {
+      return {
+        error: ls`There was an error retrieving the source styles.`,
+        isEncoded: false,
+      };
+    }
   }
 
   /**
@@ -160,8 +171,8 @@ SDK.CSSStyleSheetHeader = class {
    * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
    */
   async searchInContent(query, caseSensitive, isRegex) {
-    const content = await this.requestContent();
-    return Common.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
+    const {content} = await this.requestContent();
+    return Common.ContentProvider.performSearchInContent(content || '', query, caseSensitive, isRegex);
   }
 
   /**
@@ -170,4 +181,13 @@ SDK.CSSStyleSheetHeader = class {
   isViaInspector() {
     return this.origin === 'inspector';
   }
-};
+}
+
+/* Legacy exported object */
+self.SDK = self.SDK || {};
+
+/* Legacy exported object */
+SDK = SDK || {};
+
+/** @constructor */
+SDK.CSSStyleSheetHeader = CSSStyleSheetHeader;

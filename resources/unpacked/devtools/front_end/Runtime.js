@@ -27,16 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// This gets all concatenated module descriptors in the release mode.
-const allDescriptors = [];
-let applicationDescriptor;
 const _loadedScripts = {};
-
-// FIXME: This is a workaround to force Closure compiler provide
-// the standard ES6 runtime for all modules. This should be removed
-// once Closure provides standard externs for Map et al.
-for (const k of []) {  // eslint-disable-line
-}
 
 (function() {
 const baseUrl = self.location ? self.location.origin + self.location.pathname : '';
@@ -48,20 +39,20 @@ const REMOTE_MODULE_FALLBACK_REVISION = '@010ddcfda246975d194964ccf20038ebbdec60
 /**
  * @unrestricted
  */
-var Runtime = class {  // eslint-disable-line
+class Runtime {
   /**
-   * @param {!Array.<!Runtime.ModuleDescriptor>} descriptors
+   * @param {!Array.<!ModuleDescriptor>} descriptors
    */
   constructor(descriptors) {
     /** @type {!Array<!Runtime.Module>} */
     this._modules = [];
     /** @type {!Object<string, !Runtime.Module>} */
     this._modulesMap = {};
-    /** @type {!Array<!Runtime.Extension>} */
+    /** @type {!Array<!Extension>} */
     this._extensions = [];
     /** @type {!Object<string, !function(new:Object)>} */
     this._cachedTypeClasses = {};
-    /** @type {!Object<string, !Runtime.ModuleDescriptor>} */
+    /** @type {!Object<string, !ModuleDescriptor>} */
     this._descriptorsMap = {};
 
     for (let i = 0; i < descriptors.length; ++i) {
@@ -268,26 +259,26 @@ var Runtime = class {  // eslint-disable-line
    * @return {!Promise.<undefined>}
    */
   static async startApplication(appName) {
-    console.timeStamp('Runtime.startApplication');
+    console.timeStamp('Root.Runtime.startApplication');
 
     const allDescriptorsByName = {};
-    for (let i = 0; i < allDescriptors.length; ++i) {
-      const d = allDescriptors[i];
+    for (let i = 0; i < Root.allDescriptors.length; ++i) {
+      const d = Root.allDescriptors[i];
       allDescriptorsByName[d['name']] = d;
     }
 
-    if (!applicationDescriptor) {
+    if (!Root.applicationDescriptor) {
       let data = await Runtime.loadResourcePromise(appName + '.json');
-      applicationDescriptor = JSON.parse(data);
-      let descriptor = applicationDescriptor;
+      Root.applicationDescriptor = JSON.parse(data);
+      let descriptor = Root.applicationDescriptor;
       while (descriptor.extends) {
         data = await Runtime.loadResourcePromise(descriptor.extends + '.json');
         descriptor = JSON.parse(data);
-        applicationDescriptor.modules = descriptor.modules.concat(applicationDescriptor.modules);
+        Root.applicationDescriptor.modules = descriptor.modules.concat(Root.applicationDescriptor.modules);
       }
     }
 
-    const configuration = applicationDescriptor.modules;
+    const configuration = Root.applicationDescriptor.modules;
     const moduleJSONPromises = [];
     const coreModuleNames = [];
     for (let i = 0; i < configuration.length; ++i) {
@@ -323,7 +314,7 @@ var Runtime = class {  // eslint-disable-line
    * @return {!Promise.<undefined>}
    */
   static startWorker(appName) {
-    return Runtime.startApplication(appName).then(sendWorkerReady);
+    return Root.Runtime.startApplication(appName).then(sendWorkerReady);
 
     function sendWorkerReady() {
       self.postMessage('workerReady');
@@ -435,7 +426,7 @@ var Runtime = class {  // eslint-disable-line
   }
 
   /**
-   * @param {!Runtime.ModuleDescriptor} descriptor
+   * @param {!ModuleDescriptor} descriptor
    */
   _registerModule(descriptor) {
     const module = new Runtime.Module(this, descriptor);
@@ -464,7 +455,7 @@ var Runtime = class {  // eslint-disable-line
   }
 
   /**
-   * @param {!Runtime.Extension} extension
+   * @param {!Extension} extension
    * @param {?function(function(new:Object)):boolean} predicate
    * @return {boolean}
    */
@@ -487,7 +478,7 @@ var Runtime = class {  // eslint-disable-line
   }
 
   /**
-   * @param {!Runtime.Extension} extension
+   * @param {!Extension} extension
    * @param {?Object} context
    * @return {boolean}
    */
@@ -507,7 +498,7 @@ var Runtime = class {  // eslint-disable-line
   }
 
   /**
-   * @param {!Runtime.Extension} extension
+   * @param {!Extension} extension
    * @param {!Set.<!Function>=} currentContextTypes
    * @return {boolean}
    */
@@ -531,13 +522,13 @@ var Runtime = class {  // eslint-disable-line
    * @param {*} type
    * @param {?Object=} context
    * @param {boolean=} sortByTitle
-   * @return {!Array.<!Runtime.Extension>}
+   * @return {!Array.<!Extension>}
    */
   extensions(type, context, sortByTitle) {
     return this._extensions.filter(filter).sort(sortByTitle ? titleComparator : orderComparator);
 
     /**
-     * @param {!Runtime.Extension} extension
+     * @param {!Extension} extension
      * @return {boolean}
      */
     function filter(extension) {
@@ -551,8 +542,8 @@ var Runtime = class {  // eslint-disable-line
     }
 
     /**
-     * @param {!Runtime.Extension} extension1
-     * @param {!Runtime.Extension} extension2
+     * @param {!Extension} extension1
+     * @param {!Extension} extension2
      * @return {number}
      */
     function orderComparator(extension1, extension2) {
@@ -562,8 +553,8 @@ var Runtime = class {  // eslint-disable-line
     }
 
     /**
-     * @param {!Runtime.Extension} extension1
-     * @param {!Runtime.Extension} extension2
+     * @param {!Extension} extension1
+     * @param {!Extension} extension2
      * @return {number}
      */
     function titleComparator(extension1, extension2) {
@@ -576,7 +567,7 @@ var Runtime = class {  // eslint-disable-line
   /**
    * @param {*} type
    * @param {?Object=} context
-   * @return {?Runtime.Extension}
+   * @return {?Extension}
    */
   extension(type, context) {
     return this.extensions(type, context)[0] || null;
@@ -623,7 +614,7 @@ var Runtime = class {  // eslint-disable-line
     constructorFunction[Runtime._instanceSymbol] = instance;
     return instance;
   }
-};
+}
 
 /** @type {!URLSearchParams} */
 Runtime._queryParamsObject = new URLSearchParams(Runtime.queryParamsString());
@@ -648,7 +639,7 @@ Runtime._platform = '';
 /**
  * @unrestricted
  */
-Runtime.ModuleDescriptor = class {
+class ModuleDescriptor {
   constructor() {
     /**
      * @type {string}
@@ -656,7 +647,7 @@ Runtime.ModuleDescriptor = class {
     this.name;
 
     /**
-     * @type {!Array.<!Runtime.ExtensionDescriptor>}
+     * @type {!Array.<!RuntimeExtensionDescriptor>}
      */
     this.extensions;
 
@@ -680,12 +671,14 @@ Runtime.ModuleDescriptor = class {
      */
     this.remote;
   }
-};
+}
 
+// This class is named like this, because we already have an "ExtensionDescriptor" in the externs
+// These two do not share the same structure
 /**
  * @unrestricted
  */
-Runtime.ExtensionDescriptor = class {
+class RuntimeExtensionDescriptor {
   constructor() {
     /**
      * @type {string}
@@ -707,28 +700,28 @@ Runtime.ExtensionDescriptor = class {
      */
     this.contextTypes;
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Runtime.Module = class {
+class Module {
   /**
    * @param {!Runtime} manager
-   * @param {!Runtime.ModuleDescriptor} descriptor
+   * @param {!ModuleDescriptor} descriptor
    */
   constructor(manager, descriptor) {
     this._manager = manager;
     this._descriptor = descriptor;
     this._name = descriptor.name;
-    /** @type {!Array<!Runtime.Extension>} */
+    /** @type {!Array<!Extension>} */
     this._extensions = [];
 
-    /** @type {!Map<string, !Array<!Runtime.Extension>>} */
+    /** @type {!Map<string, !Array<!Extension>>} */
     this._extensionsByClassName = new Map();
-    const extensions = /** @type {?Array.<!Runtime.ExtensionDescriptor>} */ (descriptor.extensions);
+    const extensions = /** @type {?Array.<!RuntimeExtensionDescriptor>} */ (descriptor.extensions);
     for (let i = 0; extensions && i < extensions.length; ++i) {
-      const extension = new Runtime.Extension(this, extensions[i]);
+      const extension = new Extension(this, extensions[i]);
       this._manager._extensions.push(extension);
       this._extensions.push(extension);
     }
@@ -872,16 +865,15 @@ Runtime.Module = class {
       return base + this._modularizeURL(url);
     }
   }
-};
+}
 
 
 /**
  * @unrestricted
  */
-Runtime.Extension = class {
-  /**
+class Extension { /**
    * @param {!Runtime.Module} module
-   * @param {!Runtime.ExtensionDescriptor} descriptor
+   * @param {!RuntimeExtensionDescriptor} descriptor
    */
   constructor(module, descriptor) {
     this._module = module;
@@ -995,12 +987,12 @@ Runtime.Extension = class {
     }
     return false;
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Runtime.ExperimentsSupport = class {
+class ExperimentsSupport {
   constructor() {
     this._supportEnabled = Runtime.queryParam('experiments') !== null;
     this._experiments = [];
@@ -1140,12 +1132,12 @@ Runtime.ExperimentsSupport = class {
   _checkExperiment(experimentName) {
     Runtime._assert(this._experimentNames[experimentName], 'Unknown experiment ' + experimentName);
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Runtime.Experiment = class {
+class Experiment {
   /**
    * @param {!Runtime.ExperimentsSupport} experiments
    * @param {string} name
@@ -1172,10 +1164,10 @@ Runtime.Experiment = class {
   setEnabled(enabled) {
     this._experiments.setEnabled(this.name, enabled);
   }
-};
+}
 
 // This must be constructed after the query parameters have been parsed.
-Runtime.experiments = new Runtime.ExperimentsSupport();
+Runtime.experiments = new ExperimentsSupport();
 
 /** @type {Function} */
 Runtime._appStartedPromiseCallback;
@@ -1197,31 +1189,34 @@ Runtime._remoteBase;
   }
 })();
 
+self.Root = self.Root || {};
+Root = Root || {};
 
-/**
- * @interface
- */
-function ServicePort() {
-}
+// This gets all concatenated module descriptors in the release mode.
+Root.allDescriptors = [];
 
-ServicePort.prototype = {
-  /**
-   * @param {function(string)} messageHandler
-   * @param {function(string)} closeHandler
-   */
-  setHandlers(messageHandler, closeHandler) {},
+Root.applicationDescriptor = undefined;
 
-  /**
-   * @param {string} message
-   * @return {!Promise<boolean>}
-   */
-  send(message) {},
-
-  /**
-   * @return {!Promise<boolean>}
-   */
-  close() {}
-};
+/** @constructor */
+Root.Runtime = Runtime;
 
 /** @type {!Runtime} */
-var runtime;  // eslint-disable-line
+Root.runtime;
+
+/** @constructor */
+Root.Runtime.ModuleDescriptor = ModuleDescriptor;
+
+/** @constructor */
+Root.Runtime.ExtensionDescriptor = RuntimeExtensionDescriptor;
+
+/** @constructor */
+Root.Runtime.Extension = Extension;
+
+/** @constructor */
+Root.Runtime.Module = Module;
+
+/** @constructor */
+Root.Runtime.ExperimentsSupport = ExperimentsSupport;
+
+/** @constructor */
+Root.Runtime.Experiment = Experiment;

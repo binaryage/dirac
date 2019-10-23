@@ -47,6 +47,13 @@ export function markAsCheckbox(element) {
 /**
  * @param {!Element} element
  */
+export function markAsCombobox(element) {
+  element.setAttribute('role', 'combobox');
+}
+
+/**
+ * @param {!Element} element
+ */
 export function markAsModalDialog(element) {
   element.setAttribute('role', 'dialog');
   element.setAttribute('aria-modal', 'true');
@@ -76,11 +83,13 @@ export function markAsMenuButton(element) {
 
 /**
  * @param {!Element} element
+ * @param {number=} min
+ * @param {number=} max
  */
-export function markAsProgressBar(element) {
+export function markAsProgressBar(element, min = 0, max = 100) {
   element.setAttribute('role', 'progressbar');
-  element.setAttribute('aria-valuemin', 0);
-  element.setAttribute('aria-valuemax', 100);
+  element.setAttribute('aria-valuemin', min);
+  element.setAttribute('aria-valuemax', max);
 }
 
 /**
@@ -131,6 +140,20 @@ export function markAsMenuItem(element) {
 export function markAsMenuItemSubMenu(element) {
   markAsMenuItem(element);
   element.setAttribute('aria-haspopup', true);
+}
+
+/**
+ * @param {!Element} element
+ */
+export function markAsList(element) {
+  element.setAttribute('role', 'list');
+}
+
+/**
+ * @param {!Element} element
+ */
+export function markAsListitem(element) {
+  element.setAttribute('role', 'listitem');
 }
 
 /**
@@ -263,6 +286,24 @@ export function setExpanded(element, value) {
  */
 export function unsetExpandable(element) {
   element.removeAttribute('aria-expanded');
+}
+
+/**
+ * @enum {string}
+ */
+export const AutocompleteInteractionModel = {
+  inline: 'inline',
+  list: 'list',
+  both: 'both',
+  none: 'none',
+};
+
+/**
+ * @param {!Element} element
+ * @param {!AutocompleteInteractionModel=} interactionModel
+ */
+export function setAutocomplete(element, interactionModel = AutocompleteInteractionModel.none) {
+  element.setAttribute('aria-autocomplete', interactionModel);
 }
 
 /**
@@ -448,14 +489,19 @@ export function alert(message, element) {
   document[AlertElementSymbol].textContent = message.trimEndWithMaxLength(10000);
 }
 
-/** Legacy exported object @suppress {const} */
+/** Legacy exported object */
 self.UI = self.UI || {};
+
+/* Legacy exported object*/
+UI = UI || {};
+
 self.UI.ARIAUtils = {
   nextId,
   bindLabelToControl,
   markAsAlert,
   markAsButton,
   markAsCheckbox,
+  markAsCombobox,
   markAsModalDialog,
   markAsGroup,
   markAsLink,
@@ -468,6 +514,8 @@ self.UI.ARIAUtils = {
   markAsMenu,
   markAsMenuItem,
   markAsMenuItemSubMenu,
+  markAsList,
+  markAsListitem,
   markAsListBox,
   markAsMultiSelectable,
   markAsOption,
@@ -484,6 +532,8 @@ self.UI.ARIAUtils = {
   setCheckboxAsIndeterminate,
   setExpanded,
   unsetExpandable,
+  AutocompleteInteractionModel,
+  setAutocomplete,
   setSelected,
   setInvalid,
   setPressed,

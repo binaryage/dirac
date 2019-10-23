@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Persistence.NetworkPersistenceManager = class extends Common.Object {
+export default class NetworkPersistenceManager extends Common.Object {
   /**
    * @param {!Workspace.Workspace} workspace
    */
@@ -162,7 +162,7 @@ Persistence.NetworkPersistenceManager = class extends Common.Object {
         // encodeURI() escapes all the unsafe filename characters except /:?*
         let encodedName = encodeURI(pathPart).replace(/[\/:\?\*]/g, match => '%' + match[0].charCodeAt(0).toString(16));
         // Windows does not allow a small set of filenames.
-        if (Persistence.NetworkPersistenceManager._reservedFileNames.has(encodedName.toLowerCase())) {
+        if (_reservedFileNames.has(encodedName.toLowerCase())) {
           encodedName = encodedName.split('').map(char => '%' + char.charCodeAt(0).toString(16)).join('');
         }
         // Windows does not allow the file to end in a space or dot (space should already be encoded).
@@ -237,7 +237,7 @@ Persistence.NetworkPersistenceManager = class extends Common.Object {
     fileSystemUISourceCode[this._bindingSymbol] = binding;
     Persistence.persistence.addBinding(binding);
     const uiSourceCodeOfTruth = networkUISourceCode[this._savingSymbol] ? networkUISourceCode : fileSystemUISourceCode;
-    const [content, encoded] =
+    const [{content}, encoded] =
         await Promise.all([uiSourceCodeOfTruth.requestContent(), uiSourceCodeOfTruth.contentEncoded()]);
     Persistence.persistence.syncContent(uiSourceCodeOfTruth, content, encoded);
   }
@@ -266,7 +266,7 @@ Persistence.NetworkPersistenceManager = class extends Common.Object {
     }
     uiSourceCode[this._savingSymbol] = true;
     let encodedPath = this._encodedPathFromUrl(uiSourceCode.url());
-    const content = await uiSourceCode.requestContent();
+    const content = (await uiSourceCode.requestContent()).content || '';
     const encoded = await uiSourceCode.contentEncoded();
     const lastIndexOfSlash = encodedPath.lastIndexOf('/');
     const encodedFileName = encodedPath.substr(lastIndexOfSlash + 1);
@@ -324,8 +324,9 @@ Persistence.NetworkPersistenceManager = class extends Common.Object {
     const url = Common.ParsedURL.urlWithoutHash(uiSourceCode.url());
     this._networkUISourceCodeForEncodedPath.set(this._encodedPathFromUrl(url), uiSourceCode);
 
-    const fileSystemUISourceCode =
-        this._project.uiSourceCodeForURL(this._project.fileSystemPath() + '/' + this._encodedPathFromUrl(url));
+    const fileSystemUISourceCode = this._project.uiSourceCodeForURL(
+        /** @type {!Persistence.FileSystemWorkspaceBinding.FileSystem} */ (this._project).fileSystemPath() + '/' +
+        this._encodedPathFromUrl(url));
     if (!fileSystemUISourceCode) {
       return;
     }
@@ -352,7 +353,7 @@ Persistence.NetworkPersistenceManager = class extends Common.Object {
     this._updateInterceptionThrottler.schedule(innerUpdateInterceptionPatterns.bind(this));
 
     /**
-     * @this {Persistence.NetworkPersistenceManager}
+     * @this {NetworkPersistenceManager}
      * @return {!Promise}
      */
     function innerUpdateInterceptionPatterns() {
@@ -424,7 +425,7 @@ Persistence.NetworkPersistenceManager = class extends Common.Object {
     }
 
     this._updateActiveProject();
-    this.dispatchEventToListeners(Persistence.NetworkPersistenceManager.Events.ProjectChanged, this._project);
+    this.dispatchEventToListeners(Events.ProjectChanged, this._project);
   }
 
   /**
@@ -465,7 +466,8 @@ Persistence.NetworkPersistenceManager = class extends Common.Object {
     if (!this._active || (method !== 'GET' && method !== 'POST')) {
       return;
     }
-    const path = this._project.fileSystemPath() + '/' + this._encodedPathFromUrl(interceptedRequest.request.url);
+    const path = /** @type {!Persistence.FileSystemWorkspaceBinding.FileSystem} */ (this._project).fileSystemPath() +
+        '/' + this._encodedPathFromUrl(interceptedRequest.request.url);
     const fileSystemUISourceCode = this._project.uiSourceCodeForURL(path);
     if (!fileSystemUISourceCode) {
       return;
@@ -498,16 +500,28 @@ Persistence.NetworkPersistenceManager = class extends Common.Object {
     const blob = await project.requestFileBlob(fileSystemUISourceCode);
     interceptedRequest.continueRequestWithContent(new Blob([blob], {type: mimeType}));
   }
-};
+}
 
-Persistence.NetworkPersistenceManager._reservedFileNames = new Set([
+export const _reservedFileNames = new Set([
   'con',  'prn',  'aux',  'nul',  'com1', 'com2', 'com3', 'com4', 'com5', 'com6', 'com7',
   'com8', 'com9', 'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9'
 ]);
 
-Persistence.NetworkPersistenceManager.Events = {
+export const Events = {
   ProjectChanged: Symbol('ProjectChanged')
 };
 
-/** @type {!Persistence.NetworkPersistenceManager} */
+/* Legacy exported object */
+self.Persistence = self.Persistence || {};
+
+/* Legacy exported object */
+Persistence = Persistence || {};
+
+/** @constructor */
+Persistence.NetworkPersistenceManager = NetworkPersistenceManager;
+
+Persistence.NetworkPersistenceManager._reservedFileNames = _reservedFileNames;
+Persistence.NetworkPersistenceManager.Events = Events;
+
+/** @type {!NetworkPersistenceManager} */
 Persistence.networkPersistenceManager;

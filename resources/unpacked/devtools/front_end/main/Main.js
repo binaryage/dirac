@@ -62,10 +62,10 @@ Main.Main = class {
 
   async _loaded() {
     console.timeStamp('Main._loaded');
-    await Runtime.appStarted();
-    Runtime.setPlatform(Host.platform());
-    Runtime.setL10nCallback(ls);
-    InspectorFrontendHost.getPreferences(this._gotPreferences.bind(this));
+    await Root.Runtime.appStarted();
+    Root.Runtime.setPlatform(Host.platform());
+    Root.Runtime.setL10nCallback(ls);
+    Host.InspectorFrontendHost.getPreferences(this._gotPreferences.bind(this));
   }
 
   /**
@@ -77,7 +77,7 @@ Main.Main = class {
       self.runtime.useTestBase();
     }
     // for dirac testing
-    if (Runtime.queryParam("reset_settings")) {
+    if (Root.Runtime.queryParam("reset_settings")) {
       console.info("DIRAC TESTING: clear devtools settings because reset_settings is present in url params");
       window.localStorage.clear(); // also wipe-out local storage to prevent tests flakiness
       prefs = {};
@@ -95,7 +95,8 @@ Main.Main = class {
     let storagePrefix = '';
     if (Host.isCustomDevtoolsFrontend()) {
       storagePrefix = '__custom__';
-    } else if (!Runtime.queryParam('can_dock') && !!Runtime.queryParam('debugFrontend') && !Host.isUnderTest()) {
+    } else if (
+        !Root.Runtime.queryParam('can_dock') && !!Root.Runtime.queryParam('debugFrontend') && !Host.isUnderTest()) {
       storagePrefix = '__bundled__';
     }
 
@@ -107,8 +108,8 @@ Main.Main = class {
       localStorage = new Common.SettingsStorage({}, undefined, undefined, undefined, storagePrefix);
     }
     const globalStorage = new Common.SettingsStorage(
-        prefs, InspectorFrontendHost.setPreference, InspectorFrontendHost.removePreference,
-        InspectorFrontendHost.clearPreferences, storagePrefix);
+        prefs, Host.InspectorFrontendHost.setPreference, Host.InspectorFrontendHost.removePreference,
+        Host.InspectorFrontendHost.clearPreferences, storagePrefix);
     Common.settings = new Common.Settings(globalStorage, localStorage);
     if (!Host.isUnderTest()) {
       new Common.VersionController().updateVersion();
@@ -117,51 +118,55 @@ Main.Main = class {
 
   _initializeExperiments() {
     // Keep this sorted alphabetically: both keys and values.
-    Runtime.experiments.register('applyCustomStylesheet', 'Allow custom UI themes');
-    Runtime.experiments.register('captureNodeCreationStacks', 'Capture node creation stacks');
-    Runtime.experiments.register('sourcesPrettyPrint', 'Automatically pretty print in the Sources Panel');
-    Runtime.experiments.register('backgroundServices', 'Background web platform feature events', true);
-    Runtime.experiments.register('backgroundServicesNotifications', 'Background services section for Notifications');
-    Runtime.experiments.register('backgroundServicesPaymentHandler', 'Background services section for Payment Handler');
-    Runtime.experiments.register('backgroundServicesPushMessaging', 'Background services section for Push Messaging');
-    Runtime.experiments.register(
+    Root.Runtime.experiments.register('applyCustomStylesheet', 'Allow custom UI themes');
+    Root.Runtime.experiments.register('captureNodeCreationStacks', 'Capture node creation stacks');
+    Root.Runtime.experiments.register('sourcesPrettyPrint', 'Automatically pretty print in the Sources Panel');
+    Root.Runtime.experiments.register('backgroundServices', 'Background web platform feature events', true);
+    Root.Runtime.experiments.register(
+        'backgroundServicesNotifications', 'Background services section for Notifications');
+    Root.Runtime.experiments.register(
+        'backgroundServicesPaymentHandler', 'Background services section for Payment Handler');
+    Root.Runtime.experiments.register(
+        'backgroundServicesPushMessaging', 'Background services section for Push Messaging');
+    Root.Runtime.experiments.register(
         'backgroundServicesPeriodicBackgroundSync', 'Background services section for Periodic Background Sync');
-    Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
-    Runtime.experiments.register('cssOverview', 'CSS Overview');
-    Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
-    Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
-    Runtime.experiments.register('liveHeapProfile', 'Live heap profile', true);
-    Runtime.experiments.register('nativeHeapProfiler', 'Native memory sampling heap profiler', true);
-    Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
-    Runtime.experiments.register('recordCoverageWithPerformanceTracing', 'Record coverage while performance tracing');
-    Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
-    Runtime.experiments.register('sourceDiff', 'Source diff');
-    Runtime.experiments.register('splitInDrawer', 'Split in drawer', true);
-    Runtime.experiments.register('spotlight', 'Spotlight', true);
-    Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
+    Root.Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
+    Root.Runtime.experiments.register('cssOverview', 'CSS Overview');
+    Root.Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
+    Root.Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
+    Root.Runtime.experiments.register('liveHeapProfile', 'Live heap profile', true);
+    Root.Runtime.experiments.register('mediaInspector', 'Media Element Inspection');
+    Root.Runtime.experiments.register('nativeHeapProfiler', 'Native memory sampling heap profiler', true);
+    Root.Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
+    Root.Runtime.experiments.register(
+        'recordCoverageWithPerformanceTracing', 'Record coverage while performance tracing');
+    Root.Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
+    Root.Runtime.experiments.register('sourceDiff', 'Source diff');
+    Root.Runtime.experiments.register('spotlight', 'Spotlight', true);
 
     // Timeline
-    Runtime.experiments.register('timelineEventInitiators', 'Timeline: event initiators');
-    Runtime.experiments.register('timelineFlowEvents', 'Timeline: flow events', true);
-    Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
-    Runtime.experiments.register('timelineShowAllEvents', 'Timeline: show all events', true);
-    Runtime.experiments.register('timelineV8RuntimeCallStats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
-    Runtime.experiments.register('timelineWebGL', 'Timeline: WebGL-based flamechart');
+    Root.Runtime.experiments.register('timelineEventInitiators', 'Timeline: event initiators');
+    Root.Runtime.experiments.register('timelineFlowEvents', 'Timeline: flow events', true);
+    Root.Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
+    Root.Runtime.experiments.register('timelineShowAllEvents', 'Timeline: show all events', true);
+    Root.Runtime.experiments.register(
+        'timelineV8RuntimeCallStats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
+    Root.Runtime.experiments.register('timelineWebGL', 'Timeline: WebGL-based flamechart');
 
-    Runtime.experiments.cleanUpStaleExperiments();
-    const enabledExperiments = Runtime.queryParam('enabledExperiments');
+    Root.Runtime.experiments.cleanUpStaleExperiments();
+    const enabledExperiments = Root.Runtime.queryParam('enabledExperiments');
     if (enabledExperiments) {
-      Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(';'));
+      Root.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(';'));
     }
-    Runtime.experiments.setDefaultExperiments([
+    Root.Runtime.experiments.setDefaultExperiments([
       'backgroundServices',
       'backgroundServicesNotifications',
       'backgroundServicesPushMessaging',
       'backgroundServicesPaymentHandler',
     ]);
 
-    if (Host.isUnderTest() && Runtime.queryParam('test').includes('live-line-level-heap-profile.js')) {
-      Runtime.experiments.enableForTest('liveHeapProfile');
+    if (Host.isUnderTest() && Root.Runtime.queryParam('test').includes('live-line-level-heap-profile.js')) {
+      Root.Runtime.experiments.enableForTest('liveHeapProfile');
     }
   }
 
@@ -186,8 +191,8 @@ Main.Main = class {
 
     this._addMainEventListeners(document);
 
-    const canDock = !!Runtime.queryParam('can_dock');
-    UI.zoomManager = new UI.ZoomManager(window, InspectorFrontendHost);
+    const canDock = !!Root.Runtime.queryParam('can_dock');
+    UI.zoomManager = new UI.ZoomManager(window, Host.InspectorFrontendHost);
     UI.inspectorView = UI.InspectorView.instance();
     UI.ContextMenu.initialize();
     UI.ContextMenu.installHandler(document);
@@ -251,19 +256,19 @@ Main.Main = class {
     const toggleSearchNodeAction = UI.actionRegistry.action('elements.toggle-element-search');
     // TODO: we should not access actions from other modules.
     if (toggleSearchNodeAction) {
-      InspectorFrontendHost.events.addEventListener(
+      Host.InspectorFrontendHost.events.addEventListener(
           Host.InspectorFrontendHostAPI.Events.EnterInspectElementMode,
           toggleSearchNodeAction.execute.bind(toggleSearchNodeAction), this);
     }
-    InspectorFrontendHost.events.addEventListener(
+    Host.InspectorFrontendHost.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.RevealSourceLine, this._revealSourceLine, this);
 
     UI.inspectorView.createToolbars();
-    InspectorFrontendHost.loadCompleted();
+    Host.InspectorFrontendHost.loadCompleted();
 
     const extensions = self.runtime.extensions(Common.QueryParamHandler);
     for (const extension of extensions) {
-      const value = Runtime.queryParam(extension.descriptor()['name']);
+      const value = Root.Runtime.queryParam(extension.descriptor()['name']);
       if (value !== null) {
         extension.instance().then(handleQueryParam.bind(null, value));
       }
@@ -291,7 +296,7 @@ Main.Main = class {
       await /** @type {!Common.Runnable} */ (instance).run();
     }
     // Used for browser tests.
-    InspectorFrontendHost.readyForTest();
+    Host.InspectorFrontendHost.readyForTest();
     // Asynchronously run the extensions.
     setTimeout(this._lateInitialization.bind(this), 100);
     Main.Main.timeEnd('Main._initializeTarget');
@@ -340,7 +345,7 @@ Main.Main = class {
     ];
     const actionKeys =
         UI.shortcutRegistry.keysForActions(forwardedActions).map(UI.KeyboardShortcut.keyCodeAndModifiersFromKey);
-    InspectorFrontendHost.setWhitelistedShortcuts(JSON.stringify(actionKeys));
+    Host.InspectorFrontendHost.setWhitelistedShortcuts(JSON.stringify(actionKeys));
   }
 
   _registerMessageSinkListener() {
@@ -489,19 +494,19 @@ Main.Main.ZoomActionDelegate = class {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    if (InspectorFrontendHost.isHostedMode()) {
+    if (Host.InspectorFrontendHost.isHostedMode()) {
       return false;
     }
 
     switch (actionId) {
       case 'main.zoom-in':
-        InspectorFrontendHost.zoomIn();
+        Host.InspectorFrontendHost.zoomIn();
         return true;
       case 'main.zoom-out':
-        InspectorFrontendHost.zoomOut();
+        Host.InspectorFrontendHost.zoomOut();
         return true;
       case 'main.zoom-reset':
-        InspectorFrontendHost.resetZoom();
+        Host.InspectorFrontendHost.resetZoom();
         return true;
     }
     return false;
@@ -618,10 +623,21 @@ Main.Main.MainMenuItem = class {
       contextMenu.headerSection().appendCustomItem(dockItemElement);
     }
 
+
+    const button = this._item.element;
+
     /**
      * @param {string} side
+     * @suppressGlobalPropertiesCheck
      */
     function setDockSide(side) {
+      const hadKeyboardFocus = document.deepActiveElement().hasAttribute('data-keyboard-focus');
+      Components.dockController.once(Components.DockController.Events.AfterDockSideChanged).then(() => {
+        button.focus();
+        if (hadKeyboardFocus) {
+          UI.markAsFocusedByKeyboard(button);
+        }
+      });
       Components.dockController.setDockSide(side);
       contextMenu.discard();
     }

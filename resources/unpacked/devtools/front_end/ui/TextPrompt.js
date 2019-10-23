@@ -30,7 +30,7 @@
  * @implements {UI.SuggestBoxDelegate}
  * @unrestricted
  */
-UI.TextPrompt = class extends Common.Object {
+export default class TextPrompt extends Common.Object {
   constructor() {
     super();
     /**
@@ -38,7 +38,7 @@ UI.TextPrompt = class extends Common.Object {
      */
     this._proxyElement;
     this._proxyElementDisplay = 'inline-block';
-    this._autocompletionTimeout = UI.TextPrompt.DefaultAutocompletionTimeout;
+    this._autocompletionTimeout = DefaultAutocompletionTimeout;
     this._title = '';
     this._queryRange = null;
     this._previousText = '';
@@ -366,7 +366,7 @@ UI.TextPrompt = class extends Common.Object {
     }
     this._refreshGhostText();
     this._previousText = text;
-    this.dispatchEventToListeners(UI.TextPrompt.Events.TextChanged);
+    this.dispatchEventToListeners(Events.TextChanged);
 
     this.autoCompleteSoon();
   }
@@ -397,7 +397,7 @@ UI.TextPrompt = class extends Common.Object {
     this._refreshGhostText();
 
     if (beforeText !== this.textWithCurrentSuggestion()) {
-      this.dispatchEventToListeners(UI.TextPrompt.Events.TextChanged);
+      this.dispatchEventToListeners(Events.TextChanged);
     }
   }
 
@@ -570,7 +570,7 @@ UI.TextPrompt = class extends Common.Object {
     this._currentSuggestion = suggestion;
     this._refreshGhostText();
     if (isIntermediateSuggestion) {
-      this.dispatchEventToListeners(UI.TextPrompt.Events.TextChanged);
+      this.dispatchEventToListeners(Events.TextChanged);
     }
   }
 
@@ -597,7 +597,7 @@ UI.TextPrompt = class extends Common.Object {
     this.setDOMSelection(this._queryRange.startColumn + startColumn, this._queryRange.startColumn + endColumn);
 
     this.clearAutocomplete();
-    this.dispatchEventToListeners(UI.TextPrompt.Events.TextChanged);
+    this.dispatchEventToListeners(Events.TextChanged);
 
     return true;
   }
@@ -727,11 +727,25 @@ UI.TextPrompt = class extends Common.Object {
   proxyElementForTests() {
     return this._proxyElement || null;
   }
-};
+}
 
-UI.TextPrompt.DefaultAutocompletionTimeout = 250;
+export const DefaultAutocompletionTimeout = 250;
 
 /** @enum {symbol} */
-UI.TextPrompt.Events = {
+export const Events = {
   TextChanged: Symbol('TextChanged')
 };
+
+/* Legacy exported object*/
+self.UI = self.UI || {};
+
+/* Legacy exported object*/
+UI = UI || {};
+
+/** @constructor */
+UI.TextPrompt = TextPrompt;
+
+UI.TextPrompt.DefaultAutocompletionTimeout = DefaultAutocompletionTimeout;
+
+/** @enum {symbol} */
+UI.TextPrompt.Events = Events;

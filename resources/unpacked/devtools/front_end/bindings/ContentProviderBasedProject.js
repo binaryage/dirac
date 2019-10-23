@@ -32,7 +32,7 @@
  * @implements {Workspace.Project}
  * @unrestricted
  */
-Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
+export default class ContentProviderBasedProject extends Workspace.ProjectStore {
   /**
    * @param {!Workspace.Workspace} workspace
    * @param {string} id
@@ -51,13 +51,18 @@ Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
   /**
    * @override
    * @param {!Workspace.UISourceCode} uiSourceCode
-   * @param {function(?string,boolean)} callback
+   * @returns {!Promise<!Common.DeferredContent>}
    */
-  requestFileContent(uiSourceCode, callback) {
+  async requestFileContent(uiSourceCode) {
     const contentProvider = this._contentProviders[uiSourceCode.url()];
-    (async () => {
-      callback(await contentProvider.requestContent(), await contentProvider.contentEncoded());
-    })();
+    try {
+      const [content, isEncoded] =
+          await Promise.all([contentProvider.requestContent(), contentProvider.contentEncoded()]);
+      return {content: content.content, isEncoded, error: content.error};
+    } catch (err) {
+      // TODO(rob.paveza): CRBug 1013683 - Consider propagating exceptions full-stack
+      return {isEncoded: false, error: err ? String(err) : ls`Unknown error loading file`};
+    }
   }
 
   /**
@@ -74,7 +79,7 @@ Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
    * @return {!Promise<?Workspace.UISourceCodeMetadata>}
    */
   requestMetadata(uiSourceCode) {
-    return Promise.resolve(uiSourceCode[Bindings.ContentProviderBasedProject._metadata]);
+    return Promise.resolve(uiSourceCode[_metadata]);
   }
 
   /**
@@ -115,7 +120,7 @@ Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
    * @return {string}
    */
   mimeType(uiSourceCode) {
-    return /** @type {string} */ (uiSourceCode[Bindings.ContentProviderBasedProject._mimeType]);
+    return /** @type {string} */ (uiSourceCode[_mimeType]);
   }
 
   /**
@@ -139,7 +144,7 @@ Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
     /**
      * @param {boolean} success
      * @param {string=} newName
-     * @this {Bindings.ContentProviderBasedProject}
+     * @this {ContentProviderBasedProject}
      */
     function innerCallback(success, newName) {
       if (success && newName) {
@@ -240,7 +245,7 @@ Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
 
     /**
      * @param {string} path
-     * @this {Bindings.ContentProviderBasedProject}
+     * @this {ContentProviderBasedProject}
      */
     async function searchInContent(path) {
       const provider = this._contentProviders[path];
@@ -274,9 +279,9 @@ Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
    * @param {string} mimeType
    */
   addUISourceCodeWithProvider(uiSourceCode, contentProvider, metadata, mimeType) {
-    uiSourceCode[Bindings.ContentProviderBasedProject._mimeType] = mimeType;
+    uiSourceCode[_mimeType] = mimeType;
     this._contentProviders[uiSourceCode.url()] = contentProvider;
-    uiSourceCode[Bindings.ContentProviderBasedProject._metadata] = metadata;
+    uiSourceCode[_metadata] = metadata;
     this.addUISourceCode(uiSourceCode);
   }
 
@@ -310,7 +315,19 @@ Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
     this._contentProviders = {};
     this.removeProject();
   }
-};
+}
 
-Bindings.ContentProviderBasedProject._metadata = Symbol('ContentProviderBasedProject.Metadata');
-Bindings.ContentProviderBasedProject._mimeType = Symbol('Bindings.ContentProviderBasedProject._mimeType');
+export const _metadata = Symbol('ContentProviderBasedProject.Metadata');
+export const _mimeType = Symbol('ContentProviderBasedProject.MimeType');
+
+/* Legacy exported object */
+self.Bindings = self.Bindings || {};
+
+/* Legacy exported object */
+Bindings = Bindings || {};
+
+/** @constructor */
+Bindings.ContentProviderBasedProject = ContentProviderBasedProject;
+
+Bindings.ContentProviderBasedProject._metadata = _metadata;
+Bindings.ContentProviderBasedProject._mimeType = _mimeType;

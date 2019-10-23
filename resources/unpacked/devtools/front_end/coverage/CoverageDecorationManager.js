@@ -20,8 +20,8 @@ Coverage.CoverageDecorationManager = class {
     this._coverageModel = coverageModel;
     /** @type {!Map<!Common.ContentProvider, ?TextUtils.Text>} */
     this._textByProvider = new Map();
-    /** @type {!Multimap<!Common.ContentProvider, !Workspace.UISourceCode>} */
-    this._uiSourceCodeByContentProvider = new Multimap();
+    /** @type {!Platform.Multimap<!Common.ContentProvider, !Workspace.UISourceCode>} */
+    this._uiSourceCodeByContentProvider = new Platform.Multimap();
 
     for (const uiSourceCode of Workspace.workspace.uiSourceCodes()) {
       uiSourceCode.addLineDecoration(0, Coverage.CoverageDecorationManager._decoratorType, this);
@@ -59,7 +59,7 @@ Coverage.CoverageDecorationManager = class {
    */
   async usageByLine(uiSourceCode) {
     const result = [];
-    const content = await uiSourceCode.requestContent();
+    const {content} = await uiSourceCode.requestContent();
     if (!content) {
       return [];
     }
@@ -135,8 +135,8 @@ Coverage.CoverageDecorationManager = class {
    * @return {!Promise}
    */
   async _updateTextForProvider(contentProvider) {
-    const content = await contentProvider.requestContent();
-    this._textByProvider.set(contentProvider, new TextUtils.Text(content));
+    const {content} = await contentProvider.requestContent();
+    this._textByProvider.set(contentProvider, new TextUtils.Text(content || ''));
   }
 
   /**

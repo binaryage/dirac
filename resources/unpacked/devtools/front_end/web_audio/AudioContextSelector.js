@@ -6,19 +6,22 @@
  * @implements {UI.SoftDropDown.Delegate<!Protocol.WebAudio.BaseAudioContext>}
  */
 WebAudio.AudioContextSelector = class extends Common.Object {
-  constructor(title) {
+  constructor() {
     super();
+
+    /** @type {string} */
+    this._placeholderText = ls`(no recordings)`;
 
     /** @type {!UI.ListModel<!Protocol.WebAudio.BaseAudioContext>} */
     this._items = new UI.ListModel();
 
     /** @type {!UI.SoftDropDown<!Protocol.WebAudio.BaseAudioContext>} */
     this._dropDown = new UI.SoftDropDown(this._items, this);
-    this._dropDown.setPlaceholderText(ls`(no recordings)`);
+    this._dropDown.setPlaceholderText(this._placeholderText);
 
     this._toolbarItem = new UI.ToolbarItem(this._dropDown.element);
     this._toolbarItem.setEnabled(false);
-    this._toolbarItem.setTitle(title);
+    this._toolbarItem.setTitle(ls`Audio context: ${this._placeholderText}`);
     this._items.addEventListener(UI.ListModel.Events.ItemsReplaced, this._onListItemReplaced, this);
     this._toolbarItem.element.classList.add('toolbar-has-dropdown');
 
@@ -27,7 +30,11 @@ WebAudio.AudioContextSelector = class extends Common.Object {
   }
 
   _onListItemReplaced() {
-    this._toolbarItem.setEnabled(!!this._items.length);
+    const hasItems = !!this._items.length;
+    this._toolbarItem.setEnabled(hasItems);
+    if (!hasItems) {
+      this._toolbarItem.setTitle(ls`Audio context: ${this._placeholderText}`);
+    }
   }
 
   /**
@@ -61,8 +68,7 @@ WebAudio.AudioContextSelector = class extends Common.Object {
     const changedContext = /** @type {!Protocol.WebAudio.BaseAudioContext} */ (event.data);
     const contextIndex = this._items.findIndex(context => context.contextId === changedContext.contextId);
     if (contextIndex > -1) {
-      this._items.remove(contextIndex);
-      this._items.insert(contextIndex, changedContext);
+      this._items.replace(contextIndex, changedContext);
 
       // If the changed context is currently selected by user. Re-select it
       // because the actual element is replaced with a new one.
@@ -133,6 +139,7 @@ WebAudio.AudioContextSelector = class extends Common.Object {
     // It's possible that no context is selected yet.
     if (!this._selectedContext || this._selectedContext.contextId !== item.contextId) {
       this._selectedContext = item;
+      this._toolbarItem.setTitle(ls`Audio context: ${this.titleFor(item)}`);
     }
 
     this.dispatchEventToListeners(WebAudio.AudioContextSelector.Events.ContextSelected, item);

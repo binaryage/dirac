@@ -19,6 +19,7 @@
       <part file="../browser_sdk/browser_sdk_strings.grdp" />
       <part file="../changes/changes_strings.grdp" />
       <part file="../color_picker/color_picker_strings.grdp" />
+      <part file="../common/common_strings.grdp" />
       <part file="../components/components_strings.grdp" />
       <part file="../console/console_strings.grdp" />
       <part file="../console_counters/console_counters_strings.grdp" />
@@ -40,6 +41,7 @@
       <part file="../layer_viewer/layer_viewer_strings.grdp" />
       <part file="../layers/layers_strings.grdp" />
       <part file="../main/main_strings.grdp" />
+      <part file="../media/media_strings.grdp" />
       <part file="../mobile_throttling/mobile_throttling_strings.grdp" />
       <part file="../network/network_strings.grdp" />
       <part file="../node_debugger/node_debugger_strings.grdp" />
@@ -61,7 +63,6 @@
       <part file="../snippets/snippets_strings.grdp" />
       <part file="../source_frame/source_frame_strings.grdp" />
       <part file="../sources/sources_strings.grdp" />
-      <part file="../terminal/terminal_strings.grdp" />
       <part file="../text_editor/text_editor_strings.grdp" />
       <part file="../timeline/timeline_strings.grdp" />
       <part file="../timeline_model/timeline_model_strings.grdp" />

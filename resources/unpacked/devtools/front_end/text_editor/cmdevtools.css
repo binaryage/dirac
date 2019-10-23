@@ -462,8 +462,9 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
     position: absolute;
     top: -14px; /* we have to use top here for decoration widget to expand down */
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* see https://github.com/binaryage/dirac/commit/eda4dc29a69dbdb4992639f3834025a92fe8be3c#commitcomment-35607061
+    /* overflow: hidden; */
+    /* text-overflow: ellipsis; */
     max-width: 1000px;
     /* opacity: 0.8; */ /* opacity does not play well with expandable widgets */
     background-color: #FFE3C7;

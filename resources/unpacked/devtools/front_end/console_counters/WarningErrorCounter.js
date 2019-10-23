@@ -6,9 +6,9 @@
  * @implements {UI.ToolbarItem.Provider}
  * @unrestricted
  */
-ConsoleCounters.WarningErrorCounter = class {
+export default class WarningErrorCounter {
   constructor() {
-    ConsoleCounters.WarningErrorCounter._instanceForTest = this;
+    WarningErrorCounter._instanceForTest = this;
 
     const countersWrapper = createElement('div');
     this._toolbarItem = new UI.ToolbarItem(countersWrapper);
@@ -24,14 +24,14 @@ ConsoleCounters.WarningErrorCounter = class {
     });
     const violationShadowRoot =
         UI.createShadowRootWithCoreStyles(this._violationCounter, 'console_counters/errorWarningCounter.css');
-    if (Runtime.experiments.isEnabled('spotlight')) {
+    if (Root.Runtime.experiments.isEnabled('spotlight')) {
       countersWrapper.appendChild(this._violationCounter);
     }
 
 
     this._errors = this._createItem(shadowRoot, 'smallicon-error');
     this._warnings = this._createItem(shadowRoot, 'smallicon-warning');
-    if (Runtime.experiments.isEnabled('spotlight')) {
+    if (Root.Runtime.experiments.isEnabled('spotlight')) {
       this._violations = this._createItem(violationShadowRoot, 'smallicon-info');
     }
     this._titles = [];
@@ -57,6 +57,7 @@ ConsoleCounters.WarningErrorCounter = class {
    */
   _createItem(shadowRoot, iconType) {
     const item = createElementWithClass('span', 'counter-item');
+    UI.ARIAUtils.markAsHidden(item);
     const icon = item.createChild('span', '', 'dt-icon-label');
     icon.type = iconType;
     const text = icon.createChild('span');
@@ -121,7 +122,7 @@ ConsoleCounters.WarningErrorCounter = class {
       this._titles.push(warningCountTitle);
     }
 
-    if (Runtime.experiments.isEnabled('spotlight')) {
+    if (Root.Runtime.experiments.isEnabled('spotlight')) {
       let violationCountTitle = '';
       if (violations === 1) {
         violationCountTitle = ls`${violations} violation`;
@@ -132,7 +133,9 @@ ConsoleCounters.WarningErrorCounter = class {
       this._violationCounter.title = violationCountTitle;
     }
 
-    this._counter.title = this._titles.join(', ');
+    const titles = this._titles.join(', ');
+    this._counter.title = titles;
+    UI.ARIAUtils.setAccessibleName(this._counter, titles);
     UI.inspectorView.toolbarItemResized();
     this._updatingForTest = false;
     this._updatedForTest();
@@ -146,4 +149,13 @@ ConsoleCounters.WarningErrorCounter = class {
   item() {
     return this._toolbarItem;
   }
-};
+}
+
+/* Legacy exported object */
+self.ConsoleCounters = self.ConsoleCounters || {};
+
+/* Legacy exported object */
+ConsoleCounters = ConsoleCounters || {};
+
+/** @constructor */
+ConsoleCounters.WarningErrorCounter = WarningErrorCounter;

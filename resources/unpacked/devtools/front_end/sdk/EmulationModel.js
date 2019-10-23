@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-SDK.EmulationModel = class extends SDK.SDKModel {
+export default class EmulationModel extends SDK.SDKModel {
   /**
    * @param {!SDK.Target} target
    */
@@ -24,11 +24,31 @@ SDK.EmulationModel = class extends SDK.SDKModel {
       this._emulationAgent.setScriptExecutionDisabled(true);
     }
 
-    const mediaSetting = Common.moduleSetting('emulatedCSSMedia');
-    mediaSetting.addChangeListener(() => this._emulateCSSMedia(mediaSetting.get()));
-    if (mediaSetting.get()) {
-      this._emulateCSSMedia(mediaSetting.get());
-    }
+    const mediaTypeSetting = Common.moduleSetting('emulatedCSSMedia');
+    const mediaFeaturePrefersColorSchemeSetting = Common.moduleSetting('emulatedCSSMediaFeaturePrefersColorScheme');
+    const mediaFeaturePrefersReducedMotionSetting = Common.moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion');
+    // Note: this uses a different format than what the CDP API expects,
+    // because we want to update these values per media type/feature
+    // without having to search the `features` array (inefficient) or
+    // hardcoding the indices (not readable/maintainable).
+    this._mediaConfiguration = new Map([
+      ['type', mediaTypeSetting.get()],
+      ['prefers-color-scheme', mediaFeaturePrefersColorSchemeSetting.get()],
+      ['prefers-reduced-motion', mediaFeaturePrefersReducedMotionSetting.get()],
+    ]);
+    mediaTypeSetting.addChangeListener(() => {
+      this._mediaConfiguration.set('type', mediaTypeSetting.get());
+      this._updateCssMedia();
+    });
+    mediaFeaturePrefersColorSchemeSetting.addChangeListener(() => {
+      this._mediaConfiguration.set('prefers-color-scheme', mediaFeaturePrefersColorSchemeSetting.get());
+      this._updateCssMedia();
+    });
+    mediaFeaturePrefersReducedMotionSetting.addChangeListener(() => {
+      this._mediaConfiguration.set('prefers-reduced-motion', mediaFeaturePrefersReducedMotionSetting.get());
+      this._updateCssMedia();
+    });
+    this._updateCssMedia();
 
     this._touchEnabled = false;
     this._touchMobile = false;
@@ -70,24 +90,27 @@ SDK.EmulationModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {?SDK.EmulationModel.Geolocation} geolocation
+   * @param {?Geolocation} geolocation
    */
   emulateGeolocation(geolocation) {
     if (!geolocation) {
       this._emulationAgent.clearGeolocationOverride();
+      this._emulationAgent.setTimezoneOverride('');
       return;
     }
 
     if (geolocation.error) {
       this._emulationAgent.setGeolocationOverride();
+      this._emulationAgent.setTimezoneOverride('');
     } else {
       this._emulationAgent.setGeolocationOverride(
-          geolocation.latitude, geolocation.longitude, SDK.EmulationModel.Geolocation.DefaultMockAccuracy);
+          geolocation.latitude, geolocation.longitude, Geolocation.DefaultMockAccuracy);
+      this._emulationAgent.setTimezoneOverride(geolocation.timezoneId);
     }
   }
 
   /**
-   * @param {?SDK.EmulationModel.DeviceOrientation} deviceOrientation
+   * @param {?DeviceOrientation} deviceOrientation
    */
   emulateDeviceOrientation(deviceOrientation) {
     if (deviceOrientation) {
@@ -99,10 +122,11 @@ SDK.EmulationModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {string} media
+   * @param {string} type
+   * @param {!Array<{name: string, value: string}>} features
    */
-  _emulateCSSMedia(media) {
-    this._emulationAgent.setEmulatedMedia(media);
+  _emulateCSSMedia(type, features) {
+    this._emulationAgent.setEmulatedMedia(type, features);
     if (this._cssModel) {
       this._cssModel.mediaQueryResultChanged();
     }
@@ -158,52 +182,63 @@ SDK.EmulationModel = class extends SDK.SDKModel {
     this._emulationAgent.setTouchEmulationEnabled(configuration.enabled, 1);
     this._emulationAgent.setEmitTouchEventsForMouse(configuration.enabled, configuration.configuration);
   }
-};
 
-SDK.SDKModel.register(SDK.EmulationModel, SDK.Target.Capability.Emulation, true);
+  _updateCssMedia() {
+    // See the note above, where this._mediaConfiguration is defined.
+    const type = this._mediaConfiguration.get('type');
+    const features = [
+      {
+        name: 'prefers-color-scheme',
+        value: this._mediaConfiguration.get('prefers-color-scheme'),
+      },
+      {
+        name: 'prefers-reduced-motion',
+        value: this._mediaConfiguration.get('prefers-reduced-motion'),
+      },
+    ];
+    this._emulateCSSMedia(type, features);
+  }
+}
 
-SDK.EmulationModel.Geolocation = class {
+export class Geolocation {
   /**
    * @param {number} latitude
    * @param {number} longitude
+   * @param {string} timezoneId
    * @param {boolean} error
    */
-  constructor(latitude, longitude, error) {
+  constructor(latitude, longitude, timezoneId, error) {
     this.latitude = latitude;
     this.longitude = longitude;
+    this.timezoneId = timezoneId;
     this.error = error;
   }
 
   /**
-   * @return {!SDK.EmulationModel.Geolocation}
+   * @return {!Geolocation}
    */
   static parseSetting(value) {
     if (value) {
-      const splitError = value.split(':');
-      if (splitError.length === 2) {
-        const splitPosition = splitError[0].split('@');
-        if (splitPosition.length === 2) {
-          return new SDK.EmulationModel.Geolocation(
-              parseFloat(splitPosition[0]), parseFloat(splitPosition[1]), !!splitError[1]);
-        }
-      }
+      const [position, timezoneId, error] = value.split(':');
+      const [latitude, longitude] = position.split('@');
+      return new Geolocation(parseFloat(latitude), parseFloat(longitude), timezoneId, Boolean(error));
     }
-    return new SDK.EmulationModel.Geolocation(0, 0, false);
+    return new Geolocation(0, 0, '', false);
   }
 
   /**
    * @param {string} latitudeString
    * @param {string} longitudeString
-   * @param {string} errorStatus
-   * @return {?SDK.EmulationModel.Geolocation}
+   * @param {string} timezoneId
+   * @return {?Geolocation}
    */
-  static parseUserInput(latitudeString, longitudeString, errorStatus) {
+  static parseUserInput(latitudeString, longitudeString, timezoneId) {
     if (!latitudeString && !longitudeString) {
       return null;
     }
 
-    const {valid: isLatitudeValid} = SDK.EmulationModel.Geolocation.latitudeValidator(latitudeString);
-    const {valid: isLongitudeValid} = SDK.EmulationModel.Geolocation.longitudeValidator(longitudeString);
+    const {valid: isLatitudeValid} = Geolocation.latitudeValidator(latitudeString);
+    const {valid: isLongitudeValid} = Geolocation.longitudeValidator(longitudeString);
 
     if (!isLatitudeValid && !isLongitudeValid) {
       return null;
@@ -211,7 +246,7 @@ SDK.EmulationModel.Geolocation = class {
 
     const latitude = isLatitudeValid ? parseFloat(latitudeString) : -1;
     const longitude = isLongitudeValid ? parseFloat(longitudeString) : -1;
-    return new SDK.EmulationModel.Geolocation(latitude, longitude, !!errorStatus);
+    return new Geolocation(latitude, longitude, timezoneId, false);
   }
 
   /**
@@ -235,16 +270,31 @@ SDK.EmulationModel.Geolocation = class {
   }
 
   /**
+   * @param {string} value
+   * @return {{valid: boolean, errorMessage: (string|undefined)}}
+   */
+  static timezoneIdValidator(value) {
+    // Chromium uses ICU's timezone implementation, which is very
+    // liberal in what it accepts. ICU does not simply use an allowlist
+    // but instead tries to make sense of the input, even for
+    // weird-looking timezone IDs. There's not much point in validating
+    // the input other than checking if it contains at least one slash.
+    // The empty string resets the override, and is accepted as well.
+    const valid = value === '' || value.includes('/');
+    return {valid};
+  }
+
+  /**
    * @return {string}
    */
   toSetting() {
-    return this.latitude + '@' + this.longitude + ':' + (this.error || '');
+    return `${this.latitude}@${this.longitude}:${this.timezoneId}:${this.error || ''}`;
   }
-};
+}
 
-SDK.EmulationModel.Geolocation.DefaultMockAccuracy = 150;
+Geolocation.DefaultMockAccuracy = 150;
 
-SDK.EmulationModel.DeviceOrientation = class {
+export class DeviceOrientation {
   /**
    * @param {number} alpha
    * @param {number} beta
@@ -257,27 +307,27 @@ SDK.EmulationModel.DeviceOrientation = class {
   }
 
   /**
-   * @return {!SDK.EmulationModel.DeviceOrientation}
+   * @return {!DeviceOrientation}
    */
   static parseSetting(value) {
     if (value) {
       const jsonObject = JSON.parse(value);
-      return new SDK.EmulationModel.DeviceOrientation(jsonObject.alpha, jsonObject.beta, jsonObject.gamma);
+      return new DeviceOrientation(jsonObject.alpha, jsonObject.beta, jsonObject.gamma);
     }
-    return new SDK.EmulationModel.DeviceOrientation(0, 0, 0);
+    return new DeviceOrientation(0, 0, 0);
   }
 
   /**
-   * @return {?SDK.EmulationModel.DeviceOrientation}
+   * @return {?DeviceOrientation}
    */
   static parseUserInput(alphaString, betaString, gammaString) {
     if (!alphaString && !betaString && !gammaString) {
       return null;
     }
 
-    const {valid: isAlphaValid} = SDK.EmulationModel.DeviceOrientation.validator(alphaString);
-    const {valid: isBetaValid} = SDK.EmulationModel.DeviceOrientation.validator(betaString);
-    const {valid: isGammaValid} = SDK.EmulationModel.DeviceOrientation.validator(gammaString);
+    const {valid: isAlphaValid} = DeviceOrientation.validator(alphaString);
+    const {valid: isBetaValid} = DeviceOrientation.validator(betaString);
+    const {valid: isGammaValid} = DeviceOrientation.validator(gammaString);
 
     if (!isAlphaValid && !isBetaValid && !isGammaValid) {
       return null;
@@ -287,7 +337,7 @@ SDK.EmulationModel.DeviceOrientation = class {
     const beta = isBetaValid ? parseFloat(betaString) : -1;
     const gamma = isGammaValid ? parseFloat(gammaString) : -1;
 
-    return new SDK.EmulationModel.DeviceOrientation(alpha, beta, gamma);
+    return new DeviceOrientation(alpha, beta, gamma);
   }
 
   /**
@@ -305,4 +355,21 @@ SDK.EmulationModel.DeviceOrientation = class {
   toSetting() {
     return JSON.stringify(this);
   }
-};
+}
+
+/* Legacy exported object */
+self.SDK = self.SDK || {};
+
+/* Legacy exported object */
+SDK = SDK || {};
+
+/** @constructor */
+SDK.EmulationModel = EmulationModel;
+
+/** @constructor */
+SDK.EmulationModel.Geolocation = Geolocation;
+
+/** @constructor */
+SDK.EmulationModel.DeviceOrientation = DeviceOrientation;
+
+SDK.SDKModel.register(EmulationModel, SDK.Target.Capability.Emulation, true);

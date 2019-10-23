@@ -8,5 +8,6 @@ cd "$ROOT"
 
 SHA=${1:-HEAD}
 
-set +e # for some reason the next line started returning with error (probably git regression/change of behaviour)
+# for some reason the next line started returning with error (probably git regression/change of behaviour)
+set +e +o pipefail
 git show "${SHA}:resources/unpacked/devtools/front_end/InspectorBackendCommands.js" | head -n 1 | cut -d "=" -f 2 | sed -e "s/[';]//g"

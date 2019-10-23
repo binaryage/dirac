@@ -259,7 +259,8 @@
     padding: 4px;
 }
 
-.swatch-overlay:hover {
+.swatch-overlay:hover,
+.swatch-overlay[data-keyboard-focus="true"]:focus {
     background-color: rgba(0, 0, 0, .3);
     opacity: 1;
 }
@@ -372,11 +373,13 @@
     z-index: 14;
 }
 
-.spectrum-palette-color:hover:not(.spectrum-shades-shown) > .spectrum-palette-color-shadow {
+.spectrum-palette-color:hover:not(.spectrum-shades-shown) > .spectrum-palette-color-shadow,
+.spectrum-palette-color:focus:not(.spectrum-shades-shown) > .spectrum-palette-color-shadow {
     opacity: 0.2;
 }
 
-.spectrum-palette-color:hover:not(.spectrum-shades-shown) > .spectrum-palette-color-shadow:first-child {
+.spectrum-palette-color:hover:not(.spectrum-shades-shown) > .spectrum-palette-color-shadow:first-child,
+.spectrum-palette-color:focus:not(.spectrum-shades-shown) > .spectrum-palette-color-shadow:first-child {
     opacity: 0.6;
     top: -3px;
     left: 1px;
@@ -421,6 +424,11 @@
 
 .spectrum-palette > .spectrum-palette-color.empty-color {
     border-color: transparent;
+}
+
+.spectrum-palette-color:not(.has-material-shades):focus {
+  border: 1px solid var(--accent-color-hover);
+  transform: scale(1.4);
 }
 
 .spectrum-palette > .spectrum-palette-color:not(.empty-color):not(.has-material-shades):hover,

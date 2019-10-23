@@ -50,20 +50,19 @@ Luckily enough leiningen offers nREPL server by simply running (in a new termina
 
 The terminal should print something similar to this:
 
-    Compiling ClojureScript...
     nREPL server started on port 8230 on host 127.0.0.1 - nrepl://127.0.0.1:8230
-    REPL-y 0.3.7, nREPL 0.2.12
-    Clojure 1.8.0
-    Java HotSpot(TM) 64-Bit Server VM 1.8.0_60-b27
+    REPL-y 0.4.3, nREPL 0.6.0
+    Clojure 1.10.1
+    OpenJDK 64-Bit Server VM 1.8.0_222-b10
         Docs: (doc function-name-here)
               (find-doc "part-of-name-here")
       Source: (source function-name-here)
      Javadoc: (javadoc java-object-or-class-here)
         Exit: Control+D or (exit) or (quit)
      Results: Stored in vars *1, *2, *3, an exception in *e
-
+    
     user=>
-    Dirac Agent v0.5.0
+    Dirac Agent v1.4.3
     Connected to nREPL server at nrepl://localhost:8230.
     Agent is accepting connections at ws://localhost:8231.
 

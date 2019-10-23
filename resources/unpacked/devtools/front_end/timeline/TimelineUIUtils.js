@@ -86,7 +86,8 @@ Timeline.TimelineUIUtils = class {
     eventStyles[type.EvaluateScript] = new Timeline.TimelineRecordStyle(ls`Evaluate Script`, scripting);
     eventStyles[type.CompileModule] = new Timeline.TimelineRecordStyle(ls`Compile Module`, scripting);
     eventStyles[type.EvaluateModule] = new Timeline.TimelineRecordStyle(ls`Evaluate Module`, scripting);
-    eventStyles[type.ParseScriptOnBackground] = new Timeline.TimelineRecordStyle(ls`Parse Script`, scripting);
+    eventStyles[type.StreamingCompileScript] =
+        new Timeline.TimelineRecordStyle(ls`Streaming Compile Script`, scripting);
     eventStyles[type.WasmStreamFromResponseCallback] =
         new Timeline.TimelineRecordStyle(ls`Streaming Wasm Response`, scripting);
     eventStyles[type.WasmCompiledModule] = new Timeline.TimelineRecordStyle(ls`Compiled Wasm Module`, scripting);
@@ -151,6 +152,10 @@ Timeline.TimelineUIUtils = class {
 
     Timeline.TimelineUIUtils._eventStylesMap = eventStyles;
     return eventStyles;
+  }
+
+  static setEventStylesMap(eventStyles) {
+    Timeline.TimelineUIUtils._eventStylesMap = eventStyles;
   }
 
   /**
@@ -268,13 +273,13 @@ Timeline.TimelineUIUtils = class {
 
   /**
    * @param {!SDK.TracingModel.Event} event
-   * @return {!{title: string, category: !Timeline.TimelineCategory}}
+   * @return {!Timeline.TimelineRecordStyle}
    */
   static eventStyle(event) {
     const eventStyles = Timeline.TimelineUIUtils._initEventStyles();
     if (event.hasCategory(TimelineModel.TimelineModel.Category.Console) ||
         event.hasCategory(TimelineModel.TimelineModel.Category.UserTiming)) {
-      return {title: event.name, category: Timeline.TimelineUIUtils.categories()['scripting']};
+      return new Timeline.TimelineRecordStyle(event.name, Timeline.TimelineUIUtils.categories()['scripting']);
     }
 
     if (event.hasCategory(TimelineModel.TimelineModel.Category.LatencyInfo)) {
@@ -283,7 +288,8 @@ Timeline.TimelineUIUtils = class {
       const inputEventType = event.name.startsWith(prefix) ? event.name.substr(prefix.length) : event.name;
       const displayName = Timeline.TimelineUIUtils.inputEventDisplayName(
           /** @type {!TimelineModel.TimelineIRModel.InputEvents} */ (inputEventType));
-      return {title: displayName || inputEventType, category: Timeline.TimelineUIUtils.categories()['scripting']};
+      return new Timeline.TimelineRecordStyle(
+          displayName || inputEventType, Timeline.TimelineUIUtils.categories()['scripting']);
     }
     let result = eventStyles[event.name];
     if (!result) {
@@ -529,7 +535,7 @@ Timeline.TimelineUIUtils = class {
         break;
       }
 
-      case recordType.ParseScriptOnBackground:
+      case recordType.StreamingCompileScript:
       case recordType.XHRReadyStateChange:
       case recordType.XHRLoad: {
         const url = eventData['url'];
@@ -693,7 +699,7 @@ Timeline.TimelineUIUtils = class {
         }
         break;
       }
-      case recordType.ParseScriptOnBackground: {
+      case recordType.StreamingCompileScript: {
         const url = eventData['url'];
         if (url) {
           details = linkifyLocation('', url, 0, 0);
@@ -1667,6 +1673,31 @@ Timeline.TimelineUIUtils = class {
   }
 
   /**
+   * @param {!Object.<string, !Timeline.TimelineCategory>} categories
+   */
+  static setCategories(categories) {
+    Timeline.TimelineUIUtils._categories = categories;
+  }
+
+  /**
+   * @return {!Array}
+   */
+  static getTimelineMainEventCategories() {
+    if (Timeline.TimelineUIUtils._eventCategories) {
+      return Timeline.TimelineUIUtils._eventCategories;
+    }
+    Timeline.TimelineUIUtils._eventCategories = ['idle', 'loading', 'painting', 'rendering', 'scripting', 'other'];
+    return Timeline.TimelineUIUtils._eventCategories;
+  }
+
+  /**
+   * @param {!Array} categories
+   */
+  static setTimelineMainEventCategories(categories) {
+    Timeline.TimelineUIUtils._eventCategories = categories;
+  }
+
+  /**
    * @param {!Object} aggregatedStats
    * @param {!Timeline.TimelineCategory=} selfCategory
    * @param {number=} selfTime
@@ -2021,19 +2052,16 @@ Timeline.TimelineUIUtils = class {
   }
 };
 
-/**
- * @unrestricted
- */
 Timeline.TimelineRecordStyle = class {
   /**
    * @param {string} title
    * @param {!Timeline.TimelineCategory} category
    * @param {boolean=} hidden
    */
-  constructor(title, category, hidden) {
+  constructor(title, category, hidden = false) {
     this.title = title;
     this.category = category;
-    this.hidden = !!hidden;
+    this.hidden = hidden;
   }
 };
 

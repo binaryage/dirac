@@ -3,7 +3,7 @@
             [oops.core :refer [gcall gget oapply oget]]))
 
 (defn get-query-param [name]
-  (gcall "Runtime.queryParam" name))
+  (gcall "Root.Runtime.queryParam" name))
 
 ; -- url param access -------------------------------------------------------------------------------------------------------
 

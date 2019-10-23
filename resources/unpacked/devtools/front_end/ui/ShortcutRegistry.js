@@ -4,17 +4,17 @@
 /**
  * @unrestricted
  */
-UI.ShortcutRegistry = class {
+export default class ShortcutRegistry {
   /**
    * @param {!UI.ActionRegistry} actionRegistry
    * @param {!Document} document
    */
   constructor(actionRegistry, document) {
     this._actionRegistry = actionRegistry;
-    /** @type {!Multimap.<string, string>} */
-    this._defaultKeyToActions = new Multimap();
-    /** @type {!Multimap.<string, !UI.KeyboardShortcut.Descriptor>} */
-    this._defaultActionToShortcut = new Multimap();
+    /** @type {!Platform.Multimap.<string, string>} */
+    this._defaultKeyToActions = new Platform.Multimap();
+    /** @type {!Platform.Multimap.<string, !UI.KeyboardShortcut.Descriptor>} */
+    this._defaultActionToShortcut = new Platform.Multimap();
     this._registerBindings(document);
   }
 
@@ -210,8 +210,8 @@ UI.ShortcutRegistry = class {
     extensions.forEach(registerExtension, this);
 
     /**
-     * @param {!Runtime.Extension} extension
-     * @this {UI.ShortcutRegistry}
+     * @param {!Root.Runtime.Extension} extension
+     * @this {ShortcutRegistry}
      */
     function registerExtension(extension) {
       const descriptor = extension.descriptor();
@@ -242,14 +242,28 @@ UI.ShortcutRegistry = class {
       return isMatch;
     }
   }
-};
+}
 
 /**
  * @unrestricted
  */
-UI.ShortcutRegistry.ForwardedShortcut = class {};
+export class ForwardedShortcut {}
 
-UI.ShortcutRegistry.ForwardedShortcut.instance = new UI.ShortcutRegistry.ForwardedShortcut();
+ForwardedShortcut.instance = new ForwardedShortcut();
 
-/** @type {!UI.ShortcutRegistry} */
+/** @type {!ShortcutRegistry} */
 UI.shortcutRegistry;
+
+/* Legacy exported object*/
+self.UI = self.UI || {};
+
+/* Legacy exported object*/
+UI = UI || {};
+
+/** @constructor */
+UI.ShortcutRegistry = ShortcutRegistry;
+
+/**
+ * @unrestricted
+ */
+UI.ShortcutRegistry.ForwardedShortcut = ForwardedShortcut;

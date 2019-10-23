@@ -20,7 +20,7 @@
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
    ['funcool/cuerdas "2.2.0"]
-   ['com.rpl/specter "1.1.2"]])
+   ['com.rpl/specter "1.1.3"]])
 
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
@@ -59,7 +59,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.4.3"
+(defproject binaryage/dirac "1.4.4"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

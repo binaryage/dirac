@@ -331,7 +331,11 @@ Object.assign(window.dirac, (function() {
    * @return {!Array<dirac.NamespaceDescriptor>}
    */
   function parseClojureScriptNamespaces(url, cljsSourceCode) {
+    if (dirac._DEBUG_CACHES) {
+      console.log("parseClojureScriptNamespaces ", url, cljsSourceCode);
+    }
     if (!cljsSourceCode) {
+      console.warn("unexpected empty source from " + url);
       return [];
     }
     const descriptor = dirac.parseNsFromSource(cljsSourceCode);
@@ -349,7 +353,11 @@ Object.assign(window.dirac, (function() {
    * @return {!Array<dirac.NamespaceDescriptor>}
    */
   function parsePseudoNamespaces(url, jsSourceCode) {
+    if (dirac._DEBUG_CACHES) {
+      console.log("parsePseudoNamespaces ", url, jsSourceCode);
+    }
     if (!jsSourceCode) {
+      console.warn("unexpected empty source from " + url);
       return [];
     }
 
@@ -421,7 +429,7 @@ Object.assign(window.dirac, (function() {
           parser.href = url;
           if (parser.pathname.match(/\.clj.$/)) {
             const contentProvider = sourceMap.sourceContentProvider(url, Common.resourceTypes.SourceMapScript);
-            const namespaceDescriptorsPromise = contentProvider.requestContent().then(cljsSourceCode => parseClojureScriptNamespaces(scriptUrl, cljsSourceCode));
+            const namespaceDescriptorsPromise = contentProvider.requestContent().then(cljsSourceCode => parseClojureScriptNamespaces(scriptUrl, cljsSourceCode.content));
             promises.push(namespaceDescriptorsPromise);
             realNamespace = true;
           }
@@ -433,7 +441,7 @@ Object.assign(window.dirac, (function() {
         const parser = document.createElement('a');
         parser.href = scriptUrl;
         if (parser.pathname.match(/\.js$/)) {
-          const namespaceDescriptorsPromise = script.requestContent().then(jsSourceCode => parsePseudoNamespaces(scriptUrl, jsSourceCode));
+          const namespaceDescriptorsPromise = script.requestContent().then(jsSourceCode => parsePseudoNamespaces(scriptUrl, jsSourceCode.content));
           promises.push(namespaceDescriptorsPromise);
         }
       }

@@ -99,7 +99,7 @@ TimelineModel.TracingLayerTree = class extends SDK.LayerTreeBase {
       Common.console.error(`Tile ${tileId} is missing`);
       return /** @type {!Promise<?SDK.SnapshotWithRect>} */ (Promise.resolve(null));
     }
-    const layer = this.layerById(tile.layer_id);
+    const layer = /** @type {?TimelineModel.TracingLayer} */ (this.layerById(tile.layer_id));
     if (!layer) {
       Common.console.error(`Layer ${tile.layer_id} for tile ${tileId} is not found`);
       return /** @type {!Promise<?SDK.SnapshotWithRect>} */ (Promise.resolve(null));
@@ -190,7 +190,12 @@ TimelineModel.TracingLayer = class {
     this._parent = null;
     this._quad = payload.layer_quad || [];
     this._createScrollRects(payload);
-    this._compositingReasons = payload.compositing_reasons || [];
+
+    // Keep payload.compositing_reasons as a default
+    // but use the newer payload.debug_info.compositing_reasons
+    // if the first one is not set.
+    this._compositingReasons =
+        payload.compositing_reasons || (payload.debug_info && payload.debug_info.compositing_reasons) || [];
     this._drawsContent = !!payload.draws_content;
     this._gpuMemoryUsage = payload.gpu_memory_usage;
     this._paints = [];
@@ -238,9 +243,10 @@ TimelineModel.TracingLayer = class {
 
   /**
    * @override
-   * @param {!SDK.Layer} child
+   * @param {!SDK.Layer} childParam
    */
-  addChild(child) {
+  addChild(childParam) {
+    const child = /** @type {!TimelineModel.TracingLayer} */ (childParam);
     if (child._parent) {
       console.assert(false, 'Child already has a parent');
     }

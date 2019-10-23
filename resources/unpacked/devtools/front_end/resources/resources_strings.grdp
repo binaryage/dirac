@@ -52,6 +52,9 @@ table is empty.
   <message name="IDS_DEVTOOLS_29104d3ede0231043a4b92a90b9c2873" desc="Title of needs refresh in indexed dbviews of the application panel">
     Some entries may have been modified
   </message>
+  <message name="IDS_DEVTOOLS_2b31634e3cfef1bfdd7d0d2cdfdc3f9d" desc="Text in Context menu for collapsing objects in IndexedDB tables">
+    Collapse
+  </message>
   <message name="IDS_DEVTOOLS_2bf0a735c3ff964861a2b55319edd355" desc="Text in Clear Storage View of the Application panel">
     Unregister service workers
   </message>
@@ -69,6 +72,9 @@ table is empty.
   </message>
   <message name="IDS_DEVTOOLS_368d9ac76af05f714092bc808a426bfc" desc="Text in App Manifest View of the Application panel">
     Background color
+  </message>
+  <message name="IDS_DEVTOOLS_36e256f915286539621b57d8c80f0105" desc="Text in Context menu for expanding objects in IndexedDB tables">
+    Expand Recursively
   </message>
   <message name="IDS_DEVTOOLS_37acadd70183e7ed00222ff38248a6ff" desc="Quota row text content in Clear Storage View of the Application panel">
     <ph name="NUMBER_BYTESTOSTRING_RESPONSE_USAGE_">$1s<ex>30 MB</ex></ph> used out of <ph name="NUMBER_BYTESTOSTRING_RESPONSE_QUOTA_">$2s<ex>100 MB</ex></ph> storage quota. '''
@@ -135,9 +141,6 @@ table is empty.
   </message>
   <message name="IDS_DEVTOOLS_76c18f2b1e4155961e10434e3d83317f" desc="Text in Indexed DBViews of the Application panel">
     Key generator value: <ph name="STRING_METADATA_KEYGENERATORVALUE_">$1s<ex>2</ex></ph>
-  </message>
-  <message name="IDS_DEVTOOLS_76c3e002d3c052bd6a909366a8dc3845" desc="Text in Application Panel Sidebar of the Application panel">
-    Manifest
   </message>
   <message name="IDS_DEVTOOLS_795a813f20a4d4b04f85ddb86287fce4" desc="Quota row title in Clear Storage View of the Application panel">
     Storage quota is limited in Incognito mode
@@ -206,6 +209,9 @@ read the &quot;<ph name="THIS_TABLENAME">$1s<ex>database</ex></ph>&quot; table.
   <message name="IDS_DEVTOOLS_9999106349673567ecaf1c32c07301a5" desc="Text in Service Workers View of the Application panel">
     #<ph name="WAITING_ID">$1s<ex>2</ex></ph> waiting to activate
   </message>
+  <message name="IDS_DEVTOOLS_99ccbbe2741019f0bbc87f4eb83dbc1d" desc="Screen reader title for a section of the Service Workers view of the Application panel">
+    Service worker for <ph name="TITLE"><ex>https://example.com</ex>$1s</ph>
+  </message>
   <message name="IDS_DEVTOOLS_9b2a7456cec10d8b5ab8ce656598320b" desc="Text in Indexed DBViews of the Application panel">
     Key path: '''
   </message>
@@ -217,9 +223,6 @@ read the &quot;<ph name="THIS_TABLENAME">$1s<ex>database</ex></ph>&quot; table.
   </message>
   <message name="IDS_DEVTOOLS_9dce9dd0f39a17c2e029174f5bc86ef9" desc="Text in Background Service View of the Application panel">
     Background Sync
-  </message>
-  <message name="IDS_DEVTOOLS_9ea4dd36a0094fc33b5ea341a1f909ee" desc="Text in Cookie Items View of the Application panel">
-    Select a cookie to preview it value
   </message>
   <message name="IDS_DEVTOOLS_9ff9f5649294f7200b671d6389d17d9a" desc="Text in Application Panel Sidebar of the Application panel">
     multiEntry
@@ -397,6 +400,9 @@ read the &quot;<ph name="THIS_TABLENAME">$1s<ex>database</ex></ph>&quot; table.
   </message>
   <message name="IDS_DEVTOOLS_ef399b2d446bb37b7c32ad2cc1b6045b" desc="Text in Service Workers View of the Application panel">
     stop
+  </message>
+  <message name="IDS_DEVTOOLS_f75623bb4626a57e8a7a3c0e1c092463" desc="Text in Cookie Items View of the Application panel">
+    Select a cookie to preview its value
   </message>
   <message name="IDS_DEVTOOLS_fb1508747fe448fd8b006e923ba1c3ef" desc="Text in Background Service View of the Application panel">
     Payment Handler

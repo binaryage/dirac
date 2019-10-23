@@ -1158,7 +1158,7 @@ Protocol.CSS.Value;
 /** @typedef {!{selectors:(!Array<Protocol.CSS.Value>), text:(string)}} */
 Protocol.CSS.SelectorList;
 
-/** @typedef {!{styleSheetId:(Protocol.CSS.StyleSheetId), frameId:(Protocol.Page.FrameId), sourceURL:(string), sourceMapURL:(string|undefined), origin:(Protocol.CSS.StyleSheetOrigin), title:(string), ownerNode:(Protocol.DOM.BackendNodeId|undefined), disabled:(boolean), hasSourceURL:(boolean|undefined), isInline:(boolean), startLine:(number), startColumn:(number), length:(number)}} */
+/** @typedef {!{styleSheetId:(Protocol.CSS.StyleSheetId), frameId:(Protocol.Page.FrameId), sourceURL:(string), sourceMapURL:(string|undefined), origin:(Protocol.CSS.StyleSheetOrigin), title:(string), ownerNode:(Protocol.DOM.BackendNodeId|undefined), disabled:(boolean), hasSourceURL:(boolean|undefined), isInline:(boolean), startLine:(number), startColumn:(number), length:(number), endLine:(number), endColumn:(number)}} */
 Protocol.CSS.CSSStyleSheetHeader;
 
 /** @typedef {!{styleSheetId:(Protocol.CSS.StyleSheetId|undefined), selectorList:(Protocol.CSS.SelectorList), origin:(Protocol.CSS.StyleSheetOrigin), style:(Protocol.CSS.CSSStyle), media:(!Array<Protocol.CSS.CSSMedia>|undefined)}} */
@@ -6320,6 +6320,12 @@ Protocol.Security.SecurityState = {
     Info: "info"
 };
 
+/** @typedef {!{protocol:(string), keyExchange:(string), keyExchangeGroup:(string|undefined), cipher:(string), mac:(string|undefined), certificate:(!Array<string>), subjectName:(string), issuer:(string), validFrom:(Protocol.Network.TimeSinceEpoch), validTo:(Protocol.Network.TimeSinceEpoch), certifcateHasWeakSignature:(boolean), modernSSL:(boolean), obsoleteSslProtocol:(boolean), obsoleteSslKeyExchange:(boolean), obsoleteSslCipher:(boolean), obsoleteSslSignature:(boolean)}} */
+Protocol.Security.CertificateSecurityState;
+
+/** @typedef {!{securityState:(Protocol.Security.SecurityState), certificateSecurityState:(Protocol.Security.CertificateSecurityState|undefined), securityStateIssueIds:(!Array<string>)}} */
+Protocol.Security.VisibleSecurityState;
+
 /** @typedef {!{securityState:(Protocol.Security.SecurityState), title:(string), summary:(string), description:(string), mixedContentType:(Protocol.Security.MixedContentType), certificate:(!Array<string>), recommendations:(!Array<string>|undefined)}} */
 Protocol.Security.SecurityStateExplanation;
 
@@ -6339,6 +6345,10 @@ Protocol.SecurityDispatcher = function() {};
  * @param {string} requestURL
  */
 Protocol.SecurityDispatcher.prototype.certificateError = function(eventId, errorType, requestURL) {};
+/**
+ * @param {Protocol.Security.VisibleSecurityState} visibleSecurityState
+ */
+Protocol.SecurityDispatcher.prototype.visibleSecurityStateChanged = function(visibleSecurityState) {};
 /**
  * @param {Protocol.Security.SecurityState} securityState
  * @param {boolean} schemeIsCryptographic
@@ -7966,11 +7976,10 @@ Protocol.DebuggerAgent.prototype.invoke_disable = function(obj) {};
 
 /**
  * @param {number=} opt_maxScriptsCacheSize
- * @param {boolean=} opt_supportsWasmDwarf
  * @return {!Promise<?Protocol.Runtime.UniqueDebuggerId>}
  */
-Protocol.DebuggerAgent.prototype.enable = function(opt_maxScriptsCacheSize, opt_supportsWasmDwarf) {};
-/** @typedef {!{maxScriptsCacheSize: (number|undefined), supportsWasmDwarf: (boolean|undefined)}} */
+Protocol.DebuggerAgent.prototype.enable = function(opt_maxScriptsCacheSize) {};
+/** @typedef {!{maxScriptsCacheSize: (number|undefined)}} */
 Protocol.DebuggerAgent.EnableRequest;
 /** @typedef {!{debuggerId: Protocol.Runtime.UniqueDebuggerId}} */
 Protocol.DebuggerAgent.EnableResponse;

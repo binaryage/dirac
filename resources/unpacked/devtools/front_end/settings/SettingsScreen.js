@@ -36,7 +36,6 @@ Settings.SettingsScreen = class extends UI.VBox {
     super(true);
     this.registerRequiredCSS('settings/settingsScreen.css');
 
-    this.contentElement.tabIndex = 0;
     this.contentElement.classList.add('settings-window-main');
     this.contentElement.classList.add('vbox');
 
@@ -73,7 +72,14 @@ Settings.SettingsScreen = class extends UI.VBox {
       return;
     }
     const dialog = new UI.Dialog();
+    dialog.contentElement.tabIndex = -1;
     dialog.addCloseButton();
+
+    // Prevent clicks outside the Settings dialog from dismissing the dialog
+    // Settings screen is fullscreen and has its own close button, unlike other dialogs
+    // This also prevents screen readers (NVDA) from dismissing the dialog on Enter keypresses
+    dialog.setOutsideClickCallback(event => event.consume());
+
     settingsScreen.show(dialog.contentElement);
     dialog.show();
     settingsScreen._selectTab(name || 'preferences');
@@ -172,7 +178,7 @@ Settings.GenericSettingsTab = class extends Settings.SettingsTab {
   }
 
   /**
-   * @param {!Runtime.Extension} extension
+   * @param {!Root.Runtime.Extension} extension
    * @return {boolean}
    */
   static isSettingVisible(extension) {
@@ -187,7 +193,7 @@ Settings.GenericSettingsTab = class extends Settings.SettingsTab {
   }
 
   /**
-   * @param {!Runtime.Extension} extension
+   * @param {!Root.Runtime.Extension} extension
    */
   _addSetting(extension) {
     if (!Settings.GenericSettingsTab.isSettingVisible(extension)) {
@@ -202,7 +208,7 @@ Settings.GenericSettingsTab = class extends Settings.SettingsTab {
   }
 
   /**
-   * @param {!Runtime.Extension} extension
+   * @param {!Root.Runtime.Extension} extension
    */
   _addSettingUI(extension) {
     const descriptor = extension.descriptor();
@@ -244,7 +250,7 @@ Settings.ExperimentsSettingsTab = class extends Settings.SettingsTab {
   constructor() {
     super(Common.UIString('Experiments'), 'experiments-tab-content');
 
-    const experiments = Runtime.experiments.allConfigurableExperiments();
+    const experiments = Root.Runtime.experiments.allConfigurableExperiments();
     if (experiments.length) {
       const experimentsSection = this._appendSection();
       experimentsSection.appendChild(this._createExperimentsWarningSubsection());
@@ -300,7 +306,7 @@ Settings.SettingsScreen.ActionDelegate = class {
         Settings.SettingsScreen._showSettingsScreen();
         return true;
       case 'settings.documentation':
-        InspectorFrontendHost.openInNewTab('https://developers.google.com/web/tools/chrome-devtools/');
+        Host.InspectorFrontendHost.openInNewTab('https://developers.google.com/web/tools/chrome-devtools/');
         return true;
       case 'settings.shortcuts':
         Settings.SettingsScreen._showSettingsScreen(Common.UIString('Shortcuts'));
@@ -332,33 +338,33 @@ Settings.SettingsScreen.Revealer = class {
     return success ? Promise.resolve() : Promise.reject();
 
     /**
-     * @param {!Runtime.Extension} extension
+     * @param {!Root.Runtime.Extension} extension
      */
     function revealModuleSetting(extension) {
       if (!Settings.GenericSettingsTab.isSettingVisible(extension)) {
         return;
       }
       if (extension.descriptor()['settingName'] === setting.name) {
-        InspectorFrontendHost.bringToFront();
+        Host.InspectorFrontendHost.bringToFront();
         Settings.SettingsScreen._showSettingsScreen();
         success = true;
       }
     }
 
     /**
-     * @param {!Runtime.Extension} extension
+     * @param {!Root.Runtime.Extension} extension
      */
     function revealSettingUI(extension) {
       const settings = extension.descriptor()['settings'];
       if (settings && settings.indexOf(setting.name) !== -1) {
-        InspectorFrontendHost.bringToFront();
+        Host.InspectorFrontendHost.bringToFront();
         Settings.SettingsScreen._showSettingsScreen();
         success = true;
       }
     }
 
     /**
-     * @param {!Runtime.Extension} extension
+     * @param {!Root.Runtime.Extension} extension
      */
     function revealSettingsView(extension) {
       const location = extension.descriptor()['location'];
@@ -367,7 +373,7 @@ Settings.SettingsScreen.Revealer = class {
       }
       const settings = extension.descriptor()['settings'];
       if (settings && settings.indexOf(setting.name) !== -1) {
-        InspectorFrontendHost.bringToFront();
+        Host.InspectorFrontendHost.bringToFront();
         Settings.SettingsScreen._showSettingsScreen(extension.descriptor()['id']);
         success = true;
       }

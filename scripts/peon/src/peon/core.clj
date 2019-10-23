@@ -8,7 +8,7 @@
 (def cli-options
   [["-i" "--input " "Input InspectorBackendCommands.js"]
    ["-o" "--output " "Output InspectorBackendCommands.js"]
-   ["-r" "--chrome-rev " "Chrome revison"]
+   ["-r" "--chrome-rev " "Chrome revision"]
    ["-t" "--chrome-tag " "Chrome tag"]
    ["-h" "--help"]])
 

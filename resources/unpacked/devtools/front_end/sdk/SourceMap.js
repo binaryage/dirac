@@ -29,34 +29,80 @@
  */
 
 /**
+ * @interface
+ */
+export default class SourceMap {
+  /**
+   * @return {string}
+   */
+  compiledURL() {
+  }
+
+  /**
+   * @return {string}
+   */
+  url() {
+  }
+
+  /**
+   * @return {!Array<string>}
+   */
+  sourceURLs() {
+  }
+
+  /**
+   * @param {string} sourceURL
+   * @param {!Common.ResourceType} contentType
+   * @return {!Common.ContentProvider}
+   */
+  sourceContentProvider(sourceURL, contentType) {
+  }
+
+  /**
+   * @param {string} sourceURL
+   * @return {?string}
+   */
+  embeddedContentByURL(sourceURL) {
+  }
+
+  /**
+   * @param {number} lineNumber in compiled resource
+   * @param {number} columnNumber in compiled resource
+   * @return {?SourceMapEntry}
+   */
+  findEntry(lineNumber, columnNumber) {
+  }
+}
+
+/**
  * @unrestricted
  */
-SDK.SourceMapV3 = class {
+export class SourceMapV3 {
   constructor() {
     /** @type {number} */ this.version;
     /** @type {string|undefined} */ this.file;
     /** @type {!Array.<string>} */ this.sources;
-    /** @type {!Array.<!SDK.SourceMapV3.Section>|undefined} */ this.sections;
+    /** @type {!Array.<!SourceMapV3.Section>|undefined} */ this.sections;
     /** @type {string} */ this.mappings;
     /** @type {string|undefined} */ this.sourceRoot;
     /** @type {!Array.<string>|undefined} */ this.names;
   }
-};
+}
 
 /**
  * @unrestricted
  */
-SDK.SourceMapV3.Section = class {
+SourceMapV3.Section = class {
   constructor() {
-    /** @type {!SDK.SourceMapV3} */ this.map;
-    /** @type {!SDK.SourceMapV3.Offset} */ this.offset;
+    /** @type {!SourceMapV3} */ this.map;
+    /** @type {!SourceMapV3.Offset} */ this.offset;
   }
 };
 
 /**
  * @unrestricted
  */
-SDK.SourceMapV3.Offset = class {
+SourceMapV3.Offset = class {
   constructor() {
     /** @type {number} */ this.line;
     /** @type {number} */ this.column;
@@ -66,7 +112,7 @@ SDK.SourceMapV3.Offset = class {
 /**
  * @unrestricted
  */
-SDK.SourceMapEntry = class {
+export class SourceMapEntry {
   /**
    * @param {number} lineNumber
    * @param {number} columnNumber
@@ -85,8 +131,8 @@ SDK.SourceMapEntry = class {
   }
 
   /**
-   * @param {!SDK.SourceMapEntry} entry1
-   * @param {!SDK.SourceMapEntry} entry2
+   * @param {!SourceMapEntry} entry1
+   * @param {!SourceMapEntry} entry2
    * @return {number}
    */
   static compare(entry1, entry2) {
@@ -95,61 +141,14 @@ SDK.SourceMapEntry = class {
     }
     return entry1.columnNumber - entry2.columnNumber;
   }
-};
-
-/**
- * @interface
- */
-SDK.SourceMap = function() {};
-
-SDK.SourceMap.prototype = {
-  /**
-   * @return {string}
-   */
-  compiledURL() {},
-
-  /**
-   * @return {string}
-   */
-  url() {},
-
-  /**
-   * @return {?SDK.SourceMapV3}
-   */
-  payload: function() {},
-
-  /**
-   * @return {!Array<string>}
-   */
-  sourceURLs() {},
-
-  /**
-   * @param {string} sourceURL
-   * @param {!Common.ResourceType} contentType
-   * @return {!Common.ContentProvider}
-   */
-  sourceContentProvider(sourceURL, contentType) {},
-
-  /**
-   * @param {string} sourceURL
-   * @return {?string}
-   */
-  embeddedContentByURL(sourceURL) {},
-
-  /**
-   * @param {number} lineNumber in compiled resource
-   * @param {number} columnNumber in compiled resource
-   * @return {?SDK.SourceMapEntry}
-   */
-  findEntry(lineNumber, columnNumber) {},
-};
+}
 
 /**
  * @unrestricted
  */
-SDK.SourceMap.EditResult = class {
+export class EditResult {
   /**
-   * @param {!SDK.SourceMap} map
+   * @param {!SourceMap} map
    * @param {!Array<!TextUtils.SourceEdit>} compiledEdits
    * @param {!Map<string, string>} newSources
    */
@@ -158,26 +157,26 @@ SDK.SourceMap.EditResult = class {
     this.compiledEdits = compiledEdits;
     this.newSources = newSources;
   }
-};
+}
 
 /**
- * @implements {SDK.SourceMap}
+ * @implements {SourceMap}
  * @unrestricted
  */
-SDK.TextSourceMap = class {
+export class TextSourceMap {
   /**
    * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
    * for format description.
    * @param {string} compiledURL
    * @param {string} sourceMappingURL
-   * @param {!SDK.SourceMapV3} payload
+   * @param {!SourceMapV3} payload
    */
   constructor(compiledURL, sourceMappingURL, payload) {
-    if (!SDK.TextSourceMap._base64Map) {
+    if (!TextSourceMap._base64Map) {
       const base64Digits = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-      SDK.TextSourceMap._base64Map = {};
+      TextSourceMap._base64Map = {};
       for (let i = 0; i < base64Digits.length; ++i) {
-        SDK.TextSourceMap._base64Map[base64Digits.charAt(i)] = i;
+        TextSourceMap._base64Map[base64Digits.charAt(i)] = i;
       }
     }
 
@@ -187,9 +186,9 @@ SDK.TextSourceMap = class {
     this._sourceMappingURL = sourceMappingURL;
     this._baseURL = sourceMappingURL.startsWith('data:') ? compiledURL : sourceMappingURL;
 
-    /** @type {?Array<!SDK.SourceMapEntry>} */
+    /** @type {?Array<!SourceMapEntry>} */
     this._mappings = null;
-    /** @type {!Map<string, !SDK.TextSourceMap.SourceInfo>} */
+    /** @type {!Map<string, !TextSourceMap.SourceInfo>} */
     this._sourceInfos = new Map();
     if (this._json.sections) {
       const sectionWithURL = !!this._json.sections.find(section => !!section.url);
@@ -203,8 +202,8 @@ SDK.TextSourceMap = class {
   /**
    * @param {string} sourceMapURL
    * @param {string} compiledURL
-   * @return {!Promise<?SDK.TextSourceMap>}
-   * @this {SDK.TextSourceMap}
+   * @return {!Promise<?TextSourceMap>}
+   * @this {TextSourceMap}
    */
   static load(sourceMapURL, compiledURL) {
     let callback;
@@ -227,8 +226,8 @@ SDK.TextSourceMap = class {
         content = content.substring(content.indexOf('\n'));
       }
       try {
-        const payload = /** @type {!SDK.SourceMapV3} */ (JSON.parse(content));
-        callback(new SDK.TextSourceMap(compiledURL, sourceMapURL, payload));
+        const payload = /** @type {!SourceMapV3} */ (JSON.parse(content));
+        callback(new TextSourceMap(compiledURL, sourceMapURL, payload));
       } catch (e) {
         console.error(e);
         Common.console.warn('DevTools failed to parse SourceMap: ' + sourceMapURL);
@@ -299,7 +298,7 @@ SDK.TextSourceMap = class {
    * @override
    * @param {number} lineNumber in compiled resource
    * @param {number} columnNumber in compiled resource
-   * @return {?SDK.SourceMapEntry}
+   * @return {?SourceMapEntry}
    */
   findEntry(lineNumber, columnNumber) {
     const mappings = this.mappings();
@@ -312,7 +311,7 @@ SDK.TextSourceMap = class {
    * @param {string} sourceURL
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {?SDK.SourceMapEntry}
+   * @return {?SourceMapEntry}
    */
   sourceLineMapping(sourceURL, lineNumber, columnNumber) {
     const mappings = this._reversedMappings(sourceURL);
@@ -331,7 +330,7 @@ SDK.TextSourceMap = class {
 
     /**
      * @param {number} lineNumber
-     * @param {!SDK.SourceMapEntry} mapping
+     * @param {!SourceMapEntry} mapping
      * @return {number}
      */
     function lineComparator(lineNumber, mapping) {
@@ -343,7 +342,7 @@ SDK.TextSourceMap = class {
    * @param {string} sourceURL
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {!Array<!SDK.SourceMapEntry>}
+   * @return {!Array<!SourceMapEntry>}
    */
   findReverseEntries(sourceURL, lineNumber, columnNumber) {
     const mappings = this._reversedMappings(sourceURL);
@@ -359,7 +358,7 @@ SDK.TextSourceMap = class {
   }
 
   /**
-   * @return {!Array<!SDK.SourceMapEntry>}
+   * @return {!Array<!SourceMapEntry>}
    */
   mappings() {
     if (this._mappings === null) {
@@ -367,12 +366,12 @@ SDK.TextSourceMap = class {
       this._eachSection(this._parseMap.bind(this));
       this._json = null;
     }
-    return /** @type {!Array<!SDK.SourceMapEntry>} */ (this._mappings);
+    return /** @type {!Array<!SourceMapEntry>} */ (this._mappings);
   }
 
   /**
    * @param {string} sourceURL
-   * @return {!Array.<!SDK.SourceMapEntry>}
+   * @return {!Array.<!SourceMapEntry>}
    */
   _reversedMappings(sourceURL) {
     if (!this._sourceInfos.has(sourceURL)) {
@@ -387,8 +386,8 @@ SDK.TextSourceMap = class {
     return info.reverseMappings;
 
     /**
-     * @param {!SDK.SourceMapEntry} a
-     * @param {!SDK.SourceMapEntry} b
+     * @param {!SourceMapEntry} a
+     * @param {!SourceMapEntry} b
      * @return {number}
      */
     function sourceMappingComparator(a, b) {
@@ -408,7 +407,7 @@ SDK.TextSourceMap = class {
   }
 
   /**
-   * @param {function(!SDK.SourceMapV3, number, number)} callback
+   * @param {function(!SourceMapV3, number, number)} callback
    */
   _eachSection(callback) {
     if (!this._json.sections) {
@@ -421,7 +420,7 @@ SDK.TextSourceMap = class {
   }
 
   /**
-   * @param {!SDK.SourceMapV3} sourceMap
+   * @param {!SourceMapV3} sourceMap
    */
   _parseSources(sourceMap) {
     const sourcesList = [];
@@ -436,14 +435,14 @@ SDK.TextSourceMap = class {
       if (url === this._compiledURL && source) {
         url += Common.UIString('? [sm]');
       }
-      this._sourceInfos.set(url, new SDK.TextSourceMap.SourceInfo(source, null));
+      this._sourceInfos.set(url, new TextSourceMap.SourceInfo(source, null));
       sourcesList.push(url);
     }
-    sourceMap[SDK.TextSourceMap._sourcesListSymbol] = sourcesList;
+    sourceMap[TextSourceMap._sourcesListSymbol] = sourcesList;
   }
 
   /**
-   * @param {!SDK.SourceMapV3} map
+   * @param {!SourceMapV3} map
    * @param {number} lineNumber
    * @param {number} columnNumber
    */
@@ -452,9 +451,9 @@ SDK.TextSourceMap = class {
     let sourceLineNumber = 0;
     let sourceColumnNumber = 0;
     let nameIndex = 0;
-    const sources = map[SDK.TextSourceMap._sourcesListSymbol];
+    const sources = map[TextSourceMap._sourcesListSymbol];
     const names = map.names || [];
-    const stringCharIterator = new SDK.TextSourceMap.StringCharIterator(map.mappings);
+    const stringCharIterator = new TextSourceMap.StringCharIterator(map.mappings);
     let sourceURL = sources[sourceIndex];
 
     while (true) {
@@ -473,7 +472,7 @@ SDK.TextSourceMap = class {
 
       columnNumber += this._decodeVLQ(stringCharIterator);
       if (!stringCharIterator.hasNext() || this._isSeparator(stringCharIterator.peek())) {
-        this._mappings.push(new SDK.SourceMapEntry(lineNumber, columnNumber));
+        this._mappings.push(new SourceMapEntry(lineNumber, columnNumber));
         continue;
       }
 
@@ -487,17 +486,17 @@ SDK.TextSourceMap = class {
 
       if (!stringCharIterator.hasNext() || this._isSeparator(stringCharIterator.peek())) {
         this._mappings.push(
-            new SDK.SourceMapEntry(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber));
+            new SourceMapEntry(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber));
         continue;
       }
 
       nameIndex += this._decodeVLQ(stringCharIterator);
-      this._mappings.push(new SDK.SourceMapEntry(
+      this._mappings.push(new SourceMapEntry(
           lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
     }
 
     // As per spec, mappings are not necessarily sorted.
-    this._mappings.sort(SDK.SourceMapEntry.compare);
+    this._mappings.sort(SourceMapEntry.compare);
   }
 
   /**
@@ -509,7 +508,7 @@ SDK.TextSourceMap = class {
   }
 
   /**
-   * @param {!SDK.TextSourceMap.StringCharIterator} stringCharIterator
+   * @param {!TextSourceMap.StringCharIterator} stringCharIterator
    * @return {number}
    */
   _decodeVLQ(stringCharIterator) {
@@ -518,10 +517,10 @@ SDK.TextSourceMap = class {
     let shift = 0;
     let digit;
     do {
-      digit = SDK.TextSourceMap._base64Map[stringCharIterator.next()];
-      result += (digit & SDK.TextSourceMap._VLQ_BASE_MASK) << shift;
-      shift += SDK.TextSourceMap._VLQ_BASE_SHIFT;
-    } while (digit & SDK.TextSourceMap._VLQ_CONTINUATION_MASK);
+      digit = TextSourceMap._base64Map[stringCharIterator.next()];
+      result += (digit & TextSourceMap._VLQ_BASE_MASK) << shift;
+      shift += TextSourceMap._VLQ_BASE_SHIFT;
+    } while (digit & TextSourceMap._VLQ_CONTINUATION_MASK);
 
     // Fix the sign.
     const negative = result & 1;
@@ -537,7 +536,7 @@ SDK.TextSourceMap = class {
   reverseMapTextRange(url, textRange) {
     /**
      * @param {!{lineNumber: number, columnNumber: number}} position
-     * @param {!SDK.SourceMapEntry} mapping
+     * @param {!SourceMapEntry} mapping
      * @return {number}
      */
     function comparator(position, mapping) {
@@ -559,17 +558,16 @@ SDK.TextSourceMap = class {
     return new TextUtils.TextRange(
         startMapping.lineNumber, startMapping.columnNumber, endMapping.lineNumber, endMapping.columnNumber);
   }
-};
+}
 
-SDK.TextSourceMap._VLQ_BASE_SHIFT = 5;
-SDK.TextSourceMap._VLQ_BASE_MASK = (1 << 5) - 1;
-SDK.TextSourceMap._VLQ_CONTINUATION_MASK = 1 << 5;
-
+TextSourceMap._VLQ_BASE_SHIFT = 5;
+TextSourceMap._VLQ_BASE_MASK = (1 << 5) - 1;
+TextSourceMap._VLQ_CONTINUATION_MASK = 1 << 5;
 
 /**
  * @unrestricted
  */
-SDK.TextSourceMap.StringCharIterator = class {
+TextSourceMap.StringCharIterator = class {
   /**
    * @param {string} string
    */
@@ -603,10 +601,10 @@ SDK.TextSourceMap.StringCharIterator = class {
 /**
  * @unrestricted
  */
-SDK.TextSourceMap.SourceInfo = class {
+TextSourceMap.SourceInfo = class {
   /**
    * @param {?string} content
-   * @param {?Array<!SDK.SourceMapEntry>} reverseMappings
+   * @param {?Array<!SourceMapEntry>} reverseMappings
    */
   constructor(content, reverseMappings) {
     this.content = content;
@@ -614,4 +612,25 @@ SDK.TextSourceMap.SourceInfo = class {
   }
 };
 
-SDK.TextSourceMap._sourcesListSymbol = Symbol('sourcesList');
+TextSourceMap._sourcesListSymbol = Symbol('sourcesList');
+
+/* Legacy exported object */
+self.SDK = self.SDK || {};
+
+/* Legacy exported object */
+SDK = SDK || {};
+
+/** @interface */
+SDK.SourceMap = SourceMap;
+
+/** @constructor */
+SDK.SourceMapV3 = SourceMapV3;
+
+/** @constructor */
+SDK.SourceMapEntry = SourceMapEntry;
+
+/** @constructor */
+SDK.TextSourceMap = TextSourceMap;
+
+/** @constructor */
+SDK.SourceMap.EditResult = EditResult;
