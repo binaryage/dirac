@@ -87,8 +87,5 @@
 (defmacro get-current-ns []
   `(do analyzer/*cljs-ns*))
 
-(defmacro get-ns [ns]
-  `(analyzer/get-namespace ~ns))
-
 (defmacro generate-js [repl-env compiler-env filename form compiler-opts]
   `(generate-js-and-load-dependencies-if-needed! ~repl-env ~compiler-env ~filename ~form ~compiler-opts))

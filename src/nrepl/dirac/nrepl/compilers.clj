@@ -4,6 +4,7 @@
             [dirac.lib.utils :as utils]
             [dirac.nrepl.figwheel :as figwheel]
             [dirac.nrepl.figwheel2 :as figwheel2]
+            [dirac.nrepl.shadow :as shadow]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.state :as state])
   (:import (java.util.regex Pattern)))
@@ -90,9 +91,10 @@
   (let [session-compilers (state/get-session-compiler-descriptors session)
         other-sessions-descriptors (sessions/get-other-sessions-descriptors session)
         other-sessions-compilers (mapcat extract-session-compiler-descriptors other-sessions-descriptors)
-        figwheel-compilers (figwheel/collect-available-compiler-descriptors)
-        figwheel2-compilers (figwheel2/collect-available-compiler-descriptors)]
-    (concat session-compilers other-sessions-compilers figwheel2-compilers figwheel-compilers)))                              ; order is important here, we are matching compilers in this order
+        shadow-compilers (shadow/collect-available-compiler-descriptors)
+        figwheel2-compilers (figwheel2/collect-available-compiler-descriptors)
+        figwheel-compilers (figwheel/collect-available-compiler-descriptors)]
+    (concat session-compilers other-sessions-compilers shadow-compilers figwheel2-compilers figwheel-compilers)))             ; order is important here, we are matching compilers in this order
 
 (defn filter-available-matching-compiler-descriptors [session match]
   (let [descriptors (collect-all-available-compiler-descriptors session)]

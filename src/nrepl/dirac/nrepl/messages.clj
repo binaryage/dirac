@@ -127,6 +127,16 @@
        "Please make sure you are loading the latest/expected Figwheel version in your nREPL server to prevent any mismatch:\n"
        "  => https://github.com/binaryage/dirac/tree/master/examples/figwheel-main"))
 
+(defn ^:dynamic make-shadow-api-not-found-msg [api-name]
+  (str "Shadow API '" api-name "' was not found.\n"
+       "Please make sure you have shadow-cljs properly installed in your nREPL server:\n"
+       "  => https://github.com/binaryage/dirac/tree/master/examples/shadow-cljs"))
+
+(defn ^:dynamic make-shadow-bad-api-msg [api-name]
+  (str "Shadow API '" api-name "' is not a function.\n"
+       "Please make sure you are loading the latest/expected Shadow version in your nREPL server to prevent any mismatch:\n"
+       "  => https://github.com/binaryage/dirac/tree/master/examples/shadow-cljs"))
+
 ; -- joined session ---------------------------------------------------------------------------------------------------------
 
 (defn ^:dynamic make-missing-nrepl-message-msg []

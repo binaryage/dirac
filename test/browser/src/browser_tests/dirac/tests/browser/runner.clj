@@ -2,25 +2,30 @@
   (:require [clansi :refer [style]]
             [clojure.test :refer :all]
             [dirac.logging :as logging]
-            [dirac.test-lib.agent :as test-agent]
             [dirac.test-lib.agent :refer [with-dirac-agent]]
             [dirac.test-lib.chrome-browser :refer [with-browser]]
             [dirac.test-lib.fixtures-web-server :refer [with-fixtures-web-server]]
             [dirac.test-lib.nrepl-server :refer [with-nrepl-server]]
-            [dirac.test-lib.nrepl-server :as test-nrepl-server]
+            [dirac.test-lib.shadow-cljs :refer [with-shadow-server]]
             [dirac.test-lib.taxi :refer [with-taxi-setup]]
             [dirac.tests.browser.tasks.transcript-streamer-server :refer [with-transcript-streamer-server]]
-            [environ.core :refer [env]])
+            [environ.core :refer [env]]
+            [clojure.tools.logging :as log])
   (:import (java.util.logging Level Logger)))
 
 ; this test runner runs tests against real chrome browser using chrome driver
 
 (def setup-fixtures! (join-fixtures [with-transcript-streamer-server
                                      with-fixtures-web-server
+                                     with-shadow-server
                                      with-nrepl-server
                                      with-dirac-agent
                                      with-browser
                                      with-taxi-setup]))
+
+(def setup-dev-fixtures! (join-fixtures [with-shadow-server
+                                         with-nrepl-server
+                                         with-dirac-agent]))
 
 (def log-level (or (env :dirac-log-level)
                    (env :dirac-browser-tests-log-level) "INFO"))                                                              ; INFO, DEBUG, TRACE, ALL
@@ -91,4 +96,6 @@
 
 (defn run-agent []
   (setup-logging!)
-  (test-nrepl-server/with-nrepl-server #(test-agent/with-dirac-agent agent-loop)))
+  (log/debug (str "run-agent called in dir '" (System/getProperty "user.dir") "'"))
+  (log/debug "CLASSPATH" (clojure.string/join "\n" (seq (.getURLs (ClassLoader/getSystemClassLoader)))))
+  (setup-dev-fixtures! agent-loop))

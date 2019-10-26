@@ -25,6 +25,7 @@
    ""
    "  `:fig`        Figwheel REPL API bridge"
    "  `:fig2`       Figwheel Main REPL API bridge"
+   "  `:shadow`     Shadow-CLJS API bridge"
    ""
    "  `:version`    print version info"
    "  `:help`       print usage help"
@@ -203,6 +204,25 @@
    ""
    "Please refer to Figwheel docs for full list of control functions:"
    "  => https://figwheel.org/docs"])
+
+(def ^:dynamic shadow-usage
+  ["Call Shadow-CLJS API (if present)."
+   ""
+   "  1. `(dirac :shadow)`"
+   "  2. `(dirac :shadow api-fn & args)`"
+   ""
+   "This is a bridge provided for convenience to allow controlling shadow-cljs directly from Dirac REPL."
+   ""
+   "You may provide api-fn as a string, a keyword or a symbol. Shadow-CLJS API function is resolved dynamically."
+   "Function arguments must be specified precisely as expected by Shadow-CLJS API."
+   ""
+   "  Examples:"
+   "    `(dirac :shadow :help)`  ; <= this is equivalent to `(dirac :shadow)`"
+   "    `(dirac :shadow :get-build-config :some-build-id)`"
+   "    `(dirac :shadow :compile :some-build-id {:some :opts})`"
+   ""
+   "Please refer to Shadow-CLJS docs for full list of control functions:"
+   "  => https://shadow-cljs.github.io/docs/UsersGuide.html#_clojure_repl"])
 
 ; -- public docs map --------------------------------------------------------------------------------------------------------
 

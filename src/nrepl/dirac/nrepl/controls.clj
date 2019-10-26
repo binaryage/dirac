@@ -7,7 +7,8 @@
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.usage :as usage]
-            [dirac.nrepl.utils :as utils])
+            [dirac.nrepl.utils :as utils]
+            [dirac.nrepl.shadow :as shadow])
   (:import (java.util.regex Pattern)))
 
 ; note: this namespace defines the context where special dirac commands are eval'd
@@ -224,6 +225,20 @@
     (let [response (case result
                      ::figwheel2/not-found (error-println (messages/make-figwheel2-api-not-found-msg (str full-api-name)))
                      ::figwheel2/not-callable (error-println (messages/make-figwheel2-bad-api-msg (str full-api-name)))
+                     result)]
+      (state/send-response! (utils/prepare-current-env-info-response))
+      response)))
+
+; -- (dirac! :shadow) -------------------------------------------------------------------------------------------------------
+
+(defmethod dirac! :shadow [_ & [fn-name & args]]
+  ; must not use with-coalesced-output, because builds can take longer time and user would not have feedback
+  (let [effective-fn-name (symbol (name (or fn-name :help)))
+        result (apply shadow/call-api! effective-fn-name args)
+        api-name (str shadow/shadow-api-ns-sym "/" effective-fn-name)]
+    (let [response (case result
+                     ::shadow/not-found (error-println (messages/make-shadow-api-not-found-msg api-name))
+                     ::shadow/not-fn (error-println (messages/make-shadow-bad-api-msg api-name))
                      result)]
       (state/send-response! (utils/prepare-current-env-info-response))
       response)))

@@ -1,6 +1,7 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.28")
 (def figwheel-version "0.5.19")
+(def shadow-cljs-version "2.8.67")
 (def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.520"))
 (def selected-clojure-version "1.10.1")
 (def selenium-version "3.141.59")
@@ -8,7 +9,10 @@
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
-   ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
+   ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"
+    ; exclusions are here to prevent clash with shadow-cljs
+    :exclusions ['com.google.javascript/closure-compiler-unshaded
+                 'org.clojure/google-closure-library]]])
 
 (def required-deps
   [['org.clojure/core.async "0.4.500"]
@@ -31,6 +35,7 @@
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.46" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
+   ['thheller/shadow-cljs shadow-cljs-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
    ['rum "0.11.3" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
@@ -99,6 +104,7 @@
                  "test/browser/fixtures/src/scenarios01"
                  "test/browser/fixtures/src/scenarios02"
                  "test/browser/fixtures/src/scenarios03"
+                 "test/browser/fixtures/src/scenarios04"
                  "test/browser/fixtures/src/tasks"
                  "test/browser/src/browser_tests"]
   :resource-paths ["resources"]
@@ -182,6 +188,8 @@
                                        "src/nrepl"
                                        "src/shared"
                                        "src/logging"
+                                       "src/automation"
+                                       "src/runtime"
                                        "test/src/test_lib"
                                        "test/src/webdriver"
                                        "test/browser/src/browser_tests"
@@ -189,7 +197,10 @@
                                        "test/browser/fixtures/src/tasks"
                                        "test/browser/fixtures/src/scenarios01"
                                        "test/browser/fixtures/src/scenarios02"
-                                       "test/browser/fixtures/src/scenarios03"]}
+                                       "test/browser/fixtures/src/scenarios03"
+                                       "test/browser/fixtures/src/scenarios04"]
+              :resource-paths ^:replace []
+              :test-paths     ^:replace []}
 
              :browser-tests
              {:cljsbuild {:builds
@@ -258,6 +269,23 @@
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios03/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/scenarios03"
                                              :asset-path           "../.compiled/scenarios03"
+                                             :optimizations        :none
+                                             :source-map           true
+                                             :source-map-timestamp true}}
+
+                           ; note this si actually not used, we use shadow-cljs compiler programmatically to build this
+                           :scenarios04
+                           {:notify-command ["scripts/cljsbuild-notify.sh" "scenarios04"]
+                            :source-paths   ["src/settings"
+                                             "src/project"
+                                             "src/automation"
+                                             "src/runtime"
+                                             "src/shared"
+                                             "src/logging"
+                                             "test/browser/fixtures/src/scenarios04"]
+                            :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios04/main.js"
+                                             :output-dir           "test/browser/fixtures/resources/.compiled/scenarios04"
+                                             :asset-path           "../.compiled/scenarios04"
                                              :optimizations        :none
                                              :source-map           true
                                              :source-map-timestamp true}}}}}
@@ -421,6 +449,8 @@
                            :scenarios02
                            {:source-paths ["src/empty"]}
                            :scenarios03
+                           {:source-paths ["src/empty"]}
+                           :scenarios04
                            {:source-paths ["src/empty"]}}}}
 
              :pseudo-names
@@ -453,6 +483,8 @@
                             :scenarios02
                             {:compiler {:parallel-build true}}
                             :scenarios03
+                            {:compiler {:parallel-build true}}
+                            :scenarios04
                             {:compiler {:parallel-build true}}}}}]
 
              :dirac-whitespace

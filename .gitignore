@@ -1,6 +1,7 @@
 /test/browser/transcripts/_actual_
 /test/marion/resources/unpacked/.compiled
 /test/browser/fixtures/resources/.compiled
+/test/browser/fixtures/resources/.compiled-shadow
 /.nrepl-port
 /resources/unpacked/devtools/front_end/dirac/.compiled
 /resources/unpacked/devtools/CSSProperties.in
@@ -33,3 +34,5 @@ chromium-latest-linux/
 !/.lein-fast-trampoline
 .cpcache/
 .test-dirac-chrome-profile
+.shadow-cljs
+node_modules

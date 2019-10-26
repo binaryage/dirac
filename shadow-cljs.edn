@@ -1,0 +1,10 @@
+; to debug by hand run
+; 1. shadow-cljs watch scenarios04
+;
+{:lein   {:profile "+cljs,+test-runner"}
+ :nrepl  {:port       19444
+          :middleware []}
+ :builds {:scenarios04 {:target     :browser
+                        :output-dir "test/browser/fixtures/resources/.compiled-shadow/scenarios04"
+                        :asset-path "../.compiled-shadow/scenarios04"
+                        :modules    {:main {:entries [dirac.tests.scenarios.repl-shadow]}}}}}

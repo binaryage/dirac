@@ -15,7 +15,7 @@
   (:import java.io.StringReader))
 
 (defn prepare-current-env-info-response
-  ([] (prepare-current-env-info-response "cljs.user"))                                                                        ; TODO: we should not hardcode it here
+  ([] (prepare-current-env-info-response 'cljs.user))                                                                         ; TODO: we should not hardcode it here, we should query compilation engine for current ns
   ([ns]
    (let [session (state/get-current-session)
          current-ns (str ns)
@@ -41,7 +41,7 @@
     (with-meta (gen-form-eval job-id (if (special-form? form) "special" "captured") dirac-mode form) (meta form))))
 
 (defn set-env-namespace [env]
-  (assoc env :ns (compilation/get-ns (compilation/get-current-ns))))
+  (assoc env :ns (compilation/get-current-ns)))
 
 (defn extract-scope-locals [scope-info]
   (mapcat :props (:frames scope-info)))
@@ -122,14 +122,14 @@
       :exception (throw (ex-info value (prepare-error-data :js-eval-exception result repl-env form generated-js)))
       :success value)))
 
-(defn repl-eval! [job-id counter-volatile scope-info dirac-mode repl-env env form opts]
+(defn repl-eval! [job-id counter-volatile scope-info dirac-mode repl-env compiler-env form opts]
   (let [filename (get-current-repl-filename job-id @counter-volatile)
         set-env-locals-with-scope (partial set-env-locals scope-info)
-        effective-env (-> env set-env-namespace set-env-locals-with-scope)
+        effective-compiler-env (-> compiler-env set-env-namespace set-env-locals-with-scope)
         form-wrapper-fn (or (:wrap opts) (partial wrap-form job-id dirac-mode))
         wrapped-form (form-wrapper-fn form)]
-    (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (utils/pp effective-env 7))
-    (let [generated-js (compilation/generate-js repl-env effective-env filename wrapped-form opts)]
+    (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (utils/pp effective-compiler-env 7))
+    (let [generated-js (compilation/generate-js repl-env effective-compiler-env filename wrapped-form opts)]
       (evaluate-generated-js repl-env filename wrapped-form generated-js))))
 
 (defn repl-flush! []
@@ -152,7 +152,7 @@
       (response-fn response))))                                                                                               ; printed value enhanced with current env info
 
 (defn shadow-cljs-env? [compiler-env]
-  false)                                                                                                                      ; TODO: implement this
+  (true? (:dirac.nrepl.shadow/tag compiler-env)))
 
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
@@ -160,6 +160,7 @@
   {:pre [(some? job-id)]}
   (log/trace "eval-in-cljs-repl! " ns "\n" code)
   (compilation/setup-compilation-mode (shadow-cljs-env? compiler-env)
+    (log/debug (str "eval-in-cljs-repl! running in " (compilation/get-compilation-mode) " mode..."))
     (let [final-ns-volatile (volatile! nil)
           counter-volatile (volatile! 0)
           ; MAJOR TRICK HERE!
@@ -190,7 +191,7 @@
                             (log/trace "calling cljs.repl/repl* with:\n"
                                        (utils/pp repl-env)
                                        (utils/pp final-repl-options))
-                            (cljs.repl/repl* repl-env final-repl-options)))]
+                            (compilation/launch-repl repl-env final-repl-options)))]
       (binding [*out* (state/get-session-binding-value #'*out*)
                 *err* (state/get-session-binding-value #'*err*)]
         (compilation/setup-current-ns initial-ns
