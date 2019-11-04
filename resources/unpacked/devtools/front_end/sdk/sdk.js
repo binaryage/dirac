@@ -5,7 +5,6 @@
 import './SDKModel.js';
 import './CSSMetadata.js';
 import '../SupportedCSSProperties.js';
-import './SupportedCSSPropertiesExtensionMode.js'
 import './Target.js';
 import './TargetManager.js';
 import './ProfileTreeModel.js';
