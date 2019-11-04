@@ -27,6 +27,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {ls} from './UIString.js';
+
 /**
  * @unrestricted
  */
@@ -45,10 +47,13 @@ export default class ResourceType {
   }
 
   /**
-   * @param {string} mimeType
+   * @param {?string} mimeType
    * @return {!ResourceType}
    */
   static fromMimeType(mimeType) {
+    if (!mimeType) {
+      return resourceTypes.Other;
+    }
     if (mimeType.startsWith('text/html')) {
       return resourceTypes.Document;
     }

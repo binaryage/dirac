@@ -168,7 +168,7 @@
   <message name="IDS_DEVTOOLS_383fc50a38f1666adc3f06d0bdf71467" desc="Text in Network Log View of the Network panel">
     Are you sure you want to clear browser cookies?
   </message>
-  <message name="IDS_DEVTOOLS_39b8414d89adf80e97ec0024e13e3b86" desc="Text in Request Initiator view of the Network Panel">
+  <message name="IDS_DEVTOOLS_39b8414d89adf80e97ec0024e13e3b86" desc="Title of a section in Request Initiator view of the Network Panel">
     Request call stack
   </message>
   <message name="IDS_DEVTOOLS_3b5904efd4efd03d09ee9a8f964f39d6" desc="Text in Network Log View of the Network panel">
@@ -353,6 +353,24 @@
   </message>
   <message name="IDS_DEVTOOLS_722e6ea747a62b7f93bb017d3dd04cbd" desc="Op codes continuation frame of map in Resource Web Socket Frame View of the Network panel">
     Continuation Frame
+  </message>
+  <message name="IDS_DEVTOOLS_ca092ce554360617d7bb503ff16dcb7c" desc="Text for toggling the view of header data (e.g. query string parameters) from parsed to source in the headers tab">
+    View source
+  </message>
+  <message name="IDS_DEVTOOLS_d07d8b2f741d82961c330af95e739d27" desc="Text for toggling header data (e.g. query string parameters) from encoded to decoded in the headers tab">
+    View decoded
+  </message>
+  <message name="IDS_DEVTOOLS_d55df13c735b6066e930b3e66c4588ab" desc="Text for toggling header data (e.g. query string parameters) from decoded to encoded in the headers tab">
+    View URL encoded
+  </message>
+  <message name="IDS_DEVTOOLS_e4217cfa8bdee0baaa2249db59b8671b" desc="Text for toggling the view of header data (e.g. query string parameters) from source to parsed in the headers tab">
+    View parsed
+  </message>
+  <message name="IDS_DEVTOOLS_77c8e233afa7c0ba6ef75afef97bcb0a" desc="Title of a section in Request Initiator view of the Network Panel">
+    Request initiator chain
+  </message>
+  <message name="IDS_DEVTOOLS_842ad9796db643e88bd614ac51a99734" desc="Text in Request Initiator View of the Network panel">
+    This request has no initiator data.
   </message>
   <message name="IDS_DEVTOOLS_f5a6d40aab4d260009df79b7dab7e6a0" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Microsoft Edge — iPhone</ph>
@@ -764,6 +782,9 @@
   </message>
   <message name="IDS_DEVTOOLS_dc5d60b066d9a30e68dd648dcabf8579" desc="Text in Request Cookies View of the Network panel">
     This request has no cookies.
+  </message>
+  <message name="IDS_DEVTOOLS_dc60edf1e84f3d9f68244037711fc3fe" desc="Error message for empty custom user agent input">
+    Custom user agent field is required
   </message>
   <message name="IDS_DEVTOOLS_dc66e209093fbef0daa224f2b6401b39" desc="Text in Request Timing View of the Network panel">
     Request/Response

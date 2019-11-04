@@ -108,6 +108,9 @@ DataGrid.DataGrid = class extends Common.Object {
     /** @type {boolean} */
     this.expandNodesWhenArrowing = false;
     this.setRootNode(/** @type {!NODE_TYPE} */ (new DataGrid.DataGridNode()));
+
+    this.setHasSelection(false);
+
     /** @type {number} */
     this.indentWidth = 15;
     /** @type {!Array.<!Element|{__index: number, __position: number}>} */
@@ -123,6 +126,32 @@ DataGrid.DataGrid = class extends Common.Object {
     this._headerContextMenuCallback = null;
     /** @type {?function(!UI.ContextMenu, !NODE_TYPE)} */
     this._rowContextMenuCallback = null;
+  }
+
+  /**
+   * @return {!NODE_TYPE}
+   */
+  _firstSelectableNode() {
+    let firstSelectableNode = this._rootNode;
+    while (firstSelectableNode && !firstSelectableNode.selectable) {
+      firstSelectableNode = firstSelectableNode.traverseNextNode(true);
+    }
+    return firstSelectableNode;
+  }
+
+  /**
+   * @return {!NODE_TYPE}
+   */
+  _lastSelectableNode() {
+    let lastSelectableNode = this._rootNode;
+    let iterator = this._rootNode;
+    while (iterator) {
+      if (iterator.selectable) {
+        lastSelectableNode = iterator;
+      }
+      iterator = iterator.traverseNextNode(true);
+    }
+    return lastSelectableNode;
   }
 
   /**
@@ -147,6 +176,21 @@ DataGrid.DataGrid = class extends Common.Object {
    */
   setStriped(isStriped) {
     this.element.classList.toggle('striped-data-grid', isStriped);
+  }
+
+  /**
+   * @param {boolean} focusable
+   */
+  setFocusable(focusable) {
+    this.element.tabIndex = focusable ? 0 : -1;
+  }
+
+  /**
+   * @param {boolean} hasSelected
+   */
+  setHasSelection(hasSelected) {
+    // 'no-selection' class causes datagrid to have a focus-indicator border
+    this.element.classList.toggle('no-selection', !hasSelected);
   }
 
   /**
@@ -698,6 +742,14 @@ DataGrid.DataGrid = class extends Common.Object {
   }
 
   /**
+   * @param {string} columnId
+   * @returns {number}
+   */
+  indexOfVisibleColumn(columnId) {
+    return this._visibleColumnsArray.findIndex(column => column.id === columnId);
+  }
+
+  /**
    * @param {string} name
    */
   setName(name) {
@@ -858,13 +910,21 @@ DataGrid.DataGrid = class extends Common.Object {
    * @param {!Event} event
    */
   _keyDown(event) {
-    if (!this.selectedNode || event.shiftKey || event.metaKey || event.ctrlKey || this._editing || UI.isEditing()) {
+    if (event.shiftKey || event.metaKey || event.ctrlKey || this._editing || UI.isEditing()) {
       return;
     }
 
     let handled = false;
     let nextSelectedNode;
-    if (event.key === 'ArrowUp' && !event.altKey) {
+    if (!this.selectedNode) {
+      // Select the first or last node based on the arrow key direction
+      if (event.key === 'ArrowUp' && !event.altKey) {
+        nextSelectedNode = this._lastSelectableNode();
+      } else if (event.key === 'ArrowDown' && !event.altKey) {
+        nextSelectedNode = this._firstSelectableNode();
+      }
+      handled = nextSelectedNode ? true : false;
+    } else if (event.key === 'ArrowUp' && !event.altKey) {
       nextSelectedNode = this.selectedNode.traversePreviousNode(true);
       while (nextSelectedNode && !nextSelectedNode.selectable) {
         nextSelectedNode = nextSelectedNode.traversePreviousNode(true);
@@ -1098,9 +1158,14 @@ DataGrid.DataGrid = class extends Common.Object {
     const sortableVisibleColumns = this._visibleColumnsArray.filter(column => {
       return (column.sortable && column.title);
     });
-    if (sortableVisibleColumns.length > 0) {
+
+    const sortableHiddenColumns = this._columnsArray.filter(
+        column => sortableVisibleColumns.indexOf(column) === -1 && column.allowInSortByEvenWhenHidden);
+
+    const sortableColumns = [...sortableVisibleColumns, ...sortableHiddenColumns];
+    if (sortableColumns.length > 0) {
       const sortMenu = contextMenu.defaultSection().appendSubMenuItem(ls`Sort By`);
-      for (const column of sortableVisibleColumns) {
+      for (const column of sortableColumns) {
         const headerCell = this._headerTableHeaders[column.id];
         sortMenu.defaultSection().appendItem(
             /** @type {string} */ (column.title), this._sortByColumnHeaderCell.bind(this, headerCell));
@@ -1331,7 +1396,8 @@ DataGrid.DataGrid.CornerWidth = 14;
  *   nonSelectable: (boolean|undefined),
  *   longText: (boolean|undefined),
  *   disclosure: (boolean|undefined),
- *   weight: (number|undefined)
+ *   weight: (number|undefined),
+ *   allowInSortByEvenWhenHidden: (boolean|undefined)
  * }}
  */
 DataGrid.DataGrid.ColumnDescriptor;
@@ -2023,6 +2089,7 @@ DataGrid.DataGridNode = class extends Common.Object {
 
     if (this._element) {
       this._element.classList.add('selected');
+      this.dataGrid.setHasSelection(true);
     }
 
     if (!supressSelectedEvent) {
@@ -2051,6 +2118,7 @@ DataGrid.DataGridNode = class extends Common.Object {
 
     if (this._element) {
       this._element.classList.remove('selected');
+      this.dataGrid.setHasSelection(false);
     }
 
     if (!supressDeselectedEvent) {

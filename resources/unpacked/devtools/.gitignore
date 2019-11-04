@@ -7,7 +7,6 @@
 *.vcproj*
 *.vcxproj*
 *.xcodeproj*
-node_modules
 config.gypi
 npm-debug.log
 /.dev_profile
@@ -15,12 +14,19 @@ npm-debug.log
 /release
 /scripts/visualize_deps/out
 /front_end/protocol_externs.js
-package-lock.json
 .vscode
 /front_end/*/jsconfig.json
 karma-coverage
 
 # These are generated for build and would be put in the symlinked folder (thus this folder)
-front_end/InspectorBackendCommands.js
-front_end/SupportedCSSProperties.js
-front_end/accessibility/ARIAProperties.js
+/front_end/InspectorBackendCommands.js
+/front_end/SupportedCSSProperties.js
+/front_end/accessibility/ARIAProperties.js
+
+/build
+/out
+/third_party/*
+!/third_party/axe-core
+!/third_party/blink
+!/third_party/pyjson5
+.DS_Store

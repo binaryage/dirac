@@ -69,8 +69,12 @@ ColorPicker.Spectrum = class extends UI.VBox {
     this._swatch = new ColorPicker.Spectrum.Swatch(toolsContainer);
 
     this._hueElement = toolsContainer.createChild('div', 'spectrum-hue');
+    this._hueElement.tabIndex = 0;
+    this._hueElement.addEventListener('keydown', this._onSliderKeydown.bind(this, positionHue.bind(this)));
     this._hueSlider = this._hueElement.createChild('div', 'spectrum-slider');
     this._alphaElement = toolsContainer.createChild('div', 'spectrum-alpha');
+    this._alphaElement.tabIndex = 0;
+    this._alphaElement.addEventListener('keydown', this._onSliderKeydown.bind(this, positionAlpha.bind(this)));
     this._alphaElementBackground = this._alphaElement.createChild('div', 'spectrum-alpha-background');
     this._alphaSlider = this._alphaElement.createChild('div', 'spectrum-slider');
 
@@ -81,6 +85,8 @@ ColorPicker.Spectrum = class extends UI.VBox {
       this._formatViewSwitch();
       event.consume(true);
     });
+    UI.ARIAUtils.setAccessibleName(displaySwitcher, ls`Change color format`);
+    UI.ARIAUtils.markAsButton(displaySwitcher);
 
     // RGBA/HSLA display.
     this._displayContainer = toolsContainer.createChild('div', 'spectrum-text source-code');
@@ -107,7 +113,8 @@ ColorPicker.Spectrum = class extends UI.VBox {
     this._hexValue.addEventListener('mousewheel', this._inputChanged.bind(this), false);
 
     const label = this._hexContainer.createChild('div', 'spectrum-text-label');
-    label.textContent = 'HEX';
+    label.textContent = ls`HEX`;
+    UI.ARIAUtils.setAccessibleName(this._hexValue, label.textContent);
 
     UI.installDragHandle(
         this._hueElement, dragStart.bind(this, positionHue.bind(this)), positionHue.bind(this), null, 'pointer',
@@ -184,10 +191,28 @@ ColorPicker.Spectrum = class extends UI.VBox {
      * @this {ColorPicker.Spectrum}
      */
     function dragStart(callback, event) {
-      this._hueAlphaLeft = this._hueElement.totalOffsetLeft();
       this._colorOffset = this._colorElement.totalOffset();
       callback(event);
       return true;
+    }
+
+    /**
+     * @param {!Element} element
+     * @param {!Event} event
+     * @return {number};
+     */
+    function getUpdatedSliderPosition(element, event) {
+      const elementPosition = element.getBoundingClientRect();
+      switch (event.key) {
+        case 'ArrowLeft':
+        case 'ArrowDown':
+          return elementPosition.left - 1;
+        case 'ArrowRight':
+        case 'ArrowUp':
+          return elementPosition.right + 1;
+        default:
+          return event.x;
+      }
     }
 
     /**
@@ -196,7 +221,11 @@ ColorPicker.Spectrum = class extends UI.VBox {
      */
     function positionHue(event) {
       const hsva = this._hsv.slice();
-      hsva[0] = Number.constrain(1 - (event.x - this._hueAlphaLeft) / this._hueAlphaWidth, 0, 1);
+      const sliderPosition = getUpdatedSliderPosition(this._hueSlider, event);
+      const hueAlphaLeft = this._hueElement.getBoundingClientRect().left;
+      const positionFraction = (sliderPosition - hueAlphaLeft) / this._hueAlphaWidth;
+      const newHue = 1 - positionFraction;
+      hsva[0] = Number.constrain(newHue, 0, 1);
       this._innerSetColor(hsva, '', undefined /* colorName */, undefined, ColorPicker.Spectrum._ChangeSource.Other);
     }
 
@@ -205,8 +234,11 @@ ColorPicker.Spectrum = class extends UI.VBox {
      * @this {ColorPicker.Spectrum}
      */
     function positionAlpha(event) {
-      const newAlpha = Math.round((event.x - this._hueAlphaLeft) / this._hueAlphaWidth * 100) / 100;
       const hsva = this._hsv.slice();
+      const sliderPosition = getUpdatedSliderPosition(this._alphaSlider, event);
+      const hueAlphaLeft = this._hueElement.getBoundingClientRect().left;
+      const positionFraction = (sliderPosition - hueAlphaLeft) / this._hueAlphaWidth;
+      const newAlpha = Math.round(positionFraction * 100) / 100;
       hsva[3] = Number.constrain(newAlpha, 0, 1);
       this._innerSetColor(hsva, '', undefined /* colorName */, undefined, ColorPicker.Spectrum._ChangeSource.Other);
     }
@@ -271,6 +303,21 @@ ColorPicker.Spectrum = class extends UI.VBox {
     if (isEscKey(event) || isEnterOrSpaceKey(event)) {
       this._togglePalettePanel(false);
       event.consume(true);
+    }
+  }
+
+  /**
+   * @param {function(!Event)} sliderNewPosition
+   * @param {!Event} event
+   */
+  _onSliderKeydown(sliderNewPosition, event) {
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowRight':
+      case 'ArrowDown':
+      case 'ArrowUp':
+        sliderNewPosition(event);
+        event.consume(true);
     }
   }
 
@@ -398,11 +445,16 @@ ColorPicker.Spectrum = class extends UI.VBox {
           this._createPaletteColor(shades[i], undefined /* colorName */, i * 200 / shades.length + 100);
       UI.ARIAUtils.markAsButton(shadeElement);
       UI.ARIAUtils.setAccessibleName(shadeElement, ls`Color ${shades[i]}`);
+      shadeElement.tabIndex = -1;
       shadeElement.addEventListener('mousedown', this._paletteColorSelected.bind(this, shades[i], shades[i], false));
+      shadeElement.addEventListener(
+          'keydown', this._onShadeColorKeydown.bind(this, shades[i], shades[i], false, colorElement));
       this._shadesContainer.appendChild(shadeElement);
     }
 
-    this._shadesContainer.focus();
+    if (this._shadesContainer.childNodes.length > 0) {
+      this._shadesContainer.childNodes[this._shadesContainer.childNodes.length - 1].focus();
+    }
     this._shadesCloseHandler = closeLightnessShades.bind(this, colorElement);
     this._shadesContainer.ownerDocument.addEventListener('mousedown', this._shadesCloseHandler, true);
   }
@@ -651,6 +703,30 @@ ColorPicker.Spectrum = class extends UI.VBox {
   }
 
   /**
+   * @param {string} colorText
+   * @param {(string|undefined)} colorName
+   * @param {boolean} matchUserFormat
+   * @param {!Element} colorElement
+   * @param {!Event} event
+   */
+  _onShadeColorKeydown(colorText, colorName, matchUserFormat, colorElement, event) {
+    if (isEnterOrSpaceKey(event)) {
+      this._paletteColorSelected(colorText, colorName, matchUserFormat);
+      event.consume(true);
+    } else if (isEscKey(event) || event.key === 'Tab') {
+      colorElement.focus();
+      this._shadesCloseHandler();
+      event.consume(true);
+    } else if (event.key === 'ArrowUp' && event.target.previousElementSibling) {
+      event.target.previousElementSibling.focus();
+      event.consume(true);
+    } else if (event.key === 'ArrowDown' && event.target.nextElementSibling) {
+      event.target.nextElementSibling.focus();
+      event.consume(true);
+    }
+  }
+
+  /**
    * @param {!Common.Event} event
    */
   _addColorToCustomPalette(event) {
@@ -840,11 +916,17 @@ ColorPicker.Spectrum = class extends UI.VBox {
       this._textLabels.textContent = isRgb ? 'RGBA' : 'HSLA';
       const colorValues = isRgb ? this._color().canonicalRGBA() : this._color().canonicalHSLA();
       for (let i = 0; i < 3; ++i) {
+        UI.ARIAUtils.setAccessibleName(
+            this._textValues[i],
+            /** R in RGBA */ ls`${this._textLabels.textContent.charAt(i)} in ${this._textLabels.textContent}`);
         this._textValues[i].value = colorValues[i];
         if (!isRgb && (i === 1 || i === 2)) {
           this._textValues[i].value += '%';
         }
       }
+      UI.ARIAUtils.setAccessibleName(
+          this._textValues[3],
+          /** A in RGBA */ ls`${this._textLabels.textContent.charAt(3)} in ${this._textLabels.textContent}`);
       this._textValues[3].value = Math.round(colorValues[3] * 100) / 100;
     }
   }

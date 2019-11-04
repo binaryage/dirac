@@ -12,21 +12,38 @@ CssOverview.CSSOverviewCompletedView = class extends UI.PanelWithSidebar {
 
     this._controller = controller;
     this._formatter = new Intl.NumberFormat('en-US');
-    this._mainContainer = new UI.VBox();
+
+    this._mainContainer = new UI.SplitWidget(true, true);
+    this._resultsContainer = new UI.VBox();
+    this._elementContainer = new UI.VBox();
+
+    // Dupe the styles into the main container because of the shadow root will prevent outer styles.
+    this._mainContainer.registerRequiredCSS('css_overview/cssOverviewCompletedView.css');
+
+    this._mainContainer.setMainWidget(this._resultsContainer);
+    this._mainContainer.setSidebarWidget(this._elementContainer);
+    this._mainContainer.setVertical(false);
+    this._mainContainer.setSecondIsSidebar(true);
+    this._mainContainer.setSidebarMinimized(true);
 
     this._sideBar = new CssOverview.CSSOverviewSidebarPanel();
     this.splitWidget().setSidebarWidget(this._sideBar);
     this.splitWidget().setMainWidget(this._mainContainer);
 
     this._cssModel = target.model(SDK.CSSModel);
+    this._domModel = target.model(SDK.DOMModel);
+    this._domAgent = target.domAgent();
     this._linkifier = new Components.Linkifier(/* maxLinkLength */ 20, /* useLinkDecorator */ true);
 
-    this._columns = [
+    this._relatedNodesMap = new Map();
+    this._unusedRulesNodesMap = new Map();
+
+    this._mediaQueryColumns = [
       {id: 'text', title: ls`Text`, visible: true, sortable: true, weight: 60},
       {id: 'sourceURL', title: ls`Source`, visible: true, sortable: true, weight: 40}
     ];
 
-    this._mediaQueryGrid = new DataGrid.SortableDataGrid(this._columns);
+    this._mediaQueryGrid = new DataGrid.SortableDataGrid(this._mediaQueryColumns);
     this._mediaQueryGrid.element.classList.add('media-query-grid');
     this._mediaQueryGrid.setStriped(true);
     this._mediaQueryGrid.addEventListener(
@@ -34,13 +51,36 @@ CssOverview.CSSOverviewCompletedView = class extends UI.PanelWithSidebar {
 
     this._sideBar.addItem(ls`Overview summary`, 'summary');
     this._sideBar.addItem(ls`Colors`, 'colors');
+    this._sideBar.addItem(ls`Unused rules`, 'unused-rules');
     this._sideBar.addItem(ls`Media queries`, 'media-queries');
     this._sideBar.select('summary');
+
+    this._unusedRulesColumns = [
+      {id: 'nodeId', title: ls`Element`, visible: true, sortable: true, weight: 20},
+      {id: 'rule', title: ls`Rule`, visible: true, sortable: true, weight: 20},
+      {id: 'reason', title: ls`Reason`, visible: true, sortable: true, weight: 55}
+    ];
+
+    this._unusedRulesGrid = new DataGrid.SortableDataGrid(this._unusedRulesColumns);
+    this._unusedRulesGrid.element.classList.add('unused-rules-grid');
+    this._unusedRulesGrid.setStriped(true);
+    this._unusedRulesGrid.addEventListener(
+        DataGrid.DataGrid.Events.SortingChanged, this._sortUnusedRulesDataGrid.bind(this));
+
+    this._elementGridColumns = [{id: 'nodeId', title: ls`Element`, visible: true, sortable: true, weight: 100}];
+
+    this._elementGrid = new DataGrid.SortableDataGrid(this._elementGridColumns);
+    this._elementGrid.element.classList.add('element-grid');
+    this._elementGrid.element.addEventListener('mouseover', this._onMouseOver.bind(this));
+    this._elementGrid.setStriped(true);
 
     this._sideBar.addEventListener(CssOverview.SidebarEvents.ItemSelected, this._sideBarItemSelected, this);
     this._sideBar.addEventListener(CssOverview.SidebarEvents.Reset, this._sideBarReset, this);
     this._controller.addEventListener(CssOverview.Events.Reset, this._reset, this);
-    this._render({});
+    this._controller.addEventListener(CssOverview.Events.PopulateNodes, this._populateNodes, this);
+    this._resultsContainer.element.addEventListener('click', this._onClick.bind(this));
+
+    this._data = null;
   }
 
   _sortMediaQueryDataGrid() {
@@ -51,6 +91,16 @@ CssOverview.CSSOverviewCompletedView = class extends UI.PanelWithSidebar {
 
     const comparator = DataGrid.SortableDataGrid.StringComparator.bind(null, sortColumnId);
     this._mediaQueryGrid.sortNodes(comparator, !this._mediaQueryGrid.isSortOrderAscending());
+  }
+
+  _sortUnusedRulesDataGrid() {
+    const sortColumnId = this._unusedRulesGrid.sortColumnId();
+    if (!sortColumnId) {
+      return;
+    }
+
+    const comparator = DataGrid.SortableDataGrid.StringComparator.bind(null, sortColumnId);
+    this._unusedRulesGrid.sortNodes(comparator, !this._unusedRulesGrid.isSortOrderAscending());
   }
 
   _sideBarItemSelected(event) {
@@ -67,24 +117,88 @@ CssOverview.CSSOverviewCompletedView = class extends UI.PanelWithSidebar {
   }
 
   _reset() {
-    this._mainContainer.element.removeChildren();
+    this._resultsContainer.element.removeChildren();
     this._mediaQueryGrid.rootNode().removeChildren();
+    this._elementGrid.rootNode().removeChildren();
+    this._unusedRulesGrid.rootNode().removeChildren();
+    this._mainContainer.setSidebarMinimized(true);
+
+    this._relatedNodesMap = new Map();
+    this._unusedRulesNodesMap = new Map();
   }
 
-  _render(data) {
-    if (!(data && ('textColors' in data) && ('backgroundColors' in data))) {
+  _onClick(evt) {
+    const color = evt.target.dataset.color;
+    const section = evt.target.dataset.section;
+    if (!color) {
       return;
     }
 
-    const {elementStyleStats, elementCount, backgroundColors, textColors, globalStyleStats, mediaQueries} = data;
+    let colorNodes;
+    switch (section) {
+      case 'text':
+        colorNodes = this._data.textColors.get(color);
+        break;
+
+      case 'background':
+        colorNodes = this._data.backgroundColors.get(color);
+        break;
+
+      case 'fill':
+        colorNodes = this._data.fillColors.get(color);
+        break;
+
+      case 'border':
+        colorNodes = this._data.borderColors.get(color);
+        break;
+    }
+
+    if (!colorNodes) {
+      return;
+    }
+
+    evt.consume();
+    this._controller.dispatchEventToListeners(CssOverview.Events.PopulateNodes, {color, colorNodes});
+  }
+
+  _onMouseOver(evt) {
+    // Traverse the event path on the grid to find the nearest element with a backend node ID attached. Use
+    // that for the highlighting.
+    const node = evt.path.find(el => el.dataset && el.dataset.backendNodeId);
+    if (!node) {
+      return;
+    }
+
+    const backendNodeId = Number(node.dataset.backendNodeId);
+    this._controller.dispatchEventToListeners(CssOverview.Events.RequestNodeHighlight, backendNodeId);
+  }
+
+  async _render(data) {
+    if (!data || !('backgroundColors' in data) || !('textColors' in data)) {
+      return;
+    }
+
+    this._data = data;
+    const {
+      elementCount,
+      backgroundColors,
+      textColors,
+      fillColors,
+      borderColors,
+      globalStyleStats,
+      mediaQueries,
+      unusedRules
+    } = this._data;
 
     // Convert rgb values from the computed styles to either undefined or HEX(A) strings.
-    const nonTransparentBackgroundColors = this._getNonTransparentColorStrings(backgroundColors);
-    const nonTransparentTextColors = this._getNonTransparentColorStrings(textColors);
+    const sortedBackgroundColors = this._sortColorsByLuminance(backgroundColors);
+    const sortedTextColors = this._sortColorsByLuminance(textColors);
+    const sortedFillColors = this._sortColorsByLuminance(fillColors);
+    const sortedBorderColors = this._sortColorsByLuminance(borderColors);
 
     this._fragment = UI.Fragment.build`
     <div class="vbox overview-completed-view">
-      <div $="summary" class="results-section summary">
+      <div $="summary" class="results-section horizontally-padded summary">
         <h1>${ls`Overview summary`}</h1>
 
         <ul>
@@ -110,47 +224,70 @@ CssOverview.CSSOverviewCompletedView = class extends UI.PanelWithSidebar {
           </li>
           <li>
             <div class="label">${ls`Type selectors`}</div>
-            <div class="value">${this._formatter.format(elementStyleStats.type.size)}</div>
+            <div class="value">${this._formatter.format(globalStyleStats.stats.type)}</div>
           </li>
           <li>
             <div class="label">${ls`ID selectors`}</div>
-            <div class="value">${this._formatter.format(elementStyleStats.id.size)}</div>
+            <div class="value">${this._formatter.format(globalStyleStats.stats.id)}</div>
           </li>
           <li>
             <div class="label">${ls`Class selectors`}</div>
-            <div class="value">${this._formatter.format(elementStyleStats.class.size)}</div>
+            <div class="value">${this._formatter.format(globalStyleStats.stats.class)}</div>
           </li>
           <li>
             <div class="label">${ls`Universal selectors`}</div>
-            <div class="value">${this._formatter.format(elementStyleStats.universal.size)}</div>
+            <div class="value">${this._formatter.format(globalStyleStats.stats.universal)}</div>
           </li>
           <li>
             <div class="label">${ls`Attribute selectors`}</div>
-            <div class="value">${this._formatter.format(elementStyleStats.attribute.size)}</div>
+            <div class="value">${this._formatter.format(globalStyleStats.stats.attribute)}</div>
           </li>
           <li>
             <div class="label">${ls`Non-simple selectors`}</div>
-            <div class="value">${this._formatter.format(elementStyleStats.nonSimple.size)}</div>
+            <div class="value">${this._formatter.format(globalStyleStats.stats.nonSimple)}</div>
           </li>
         </ul>
       </div>
 
-      <div $="colors" class="results-section colors">
+      <div $="colors" class="results-section horizontally-padded colors">
         <h1>${ls`Colors`}</h1>
-        <h2>${ls`Unique background colors: ${nonTransparentBackgroundColors.length}`}</h2>
+        <h2>${ls`Unique background colors: ${sortedBackgroundColors.length}`}</h2>
         <ul>
-          ${nonTransparentBackgroundColors.map(this._colorsToFragment)}
+          ${sortedBackgroundColors.map(this._colorsToFragment.bind(this, 'background'))}
         </ul>
 
-        <h2>${ls`Unique text colors: ${nonTransparentTextColors.length}`}</h2>
+        <h2>${ls`Unique text colors: ${sortedTextColors.length}`}</h2>
         <ul>
-          ${nonTransparentTextColors.map(this._colorsToFragment)}
+          ${sortedTextColors.map(this._colorsToFragment.bind(this, 'text'))}
+        </ul>
+
+        <h2>${ls`Unique fill colors: ${sortedFillColors.length}`}</h2>
+        <ul>
+          ${sortedFillColors.map(this._colorsToFragment.bind(this, 'fill'))}
+        </ul>
+
+        <h2>${ls`Unique border colors: ${sortedBorderColors.length}`}</h2>
+        <ul>
+          ${sortedBorderColors.map(this._colorsToFragment.bind(this, 'border'))}
         </ul>
       </div>
 
+      <div $="unused-rules" class="results-section unused-rules">
+        <h1>${ls`Unused rules`}</h1>
+        ${
+        unusedRules.length > 0 ?
+            this._unusedRulesGrid.element :
+            UI.Fragment.build`<div class="horizontally-padded">${ls`There are no unused rules.`}</div>`}
+      </div>
+
+      <!-- TODO: Fonts -->
+
       <div $="media-queries" class="results-section media-queries">
         <h1>${ls`Media queries`}</h1>
-        ${this._mediaQueryGrid.element}
+        ${
+        mediaQueries.length > 0 ?
+            this._mediaQueryGrid.element :
+            UI.Fragment.build`<div class="horizontally-padded">${ls`There are no media queries.`}</div>`}
       </div>
     </div>`;
 
@@ -162,23 +299,77 @@ CssOverview.CSSOverviewCompletedView = class extends UI.PanelWithSidebar {
       this._mediaQueryGrid.insertChild(mediaQueryNode);
     }
 
-    this._mainContainer.element.appendChild(this._fragment.element());
+    // Unused Rules.
+    const unusedRulesNodeIds = unusedRules.reduce((prev, curr) => {
+      // Only request nodes from the backend that have not already been requested.
+      if (this._unusedRulesNodesMap.has(curr.nodeId)) {
+        return prev;
+      }
+
+      return prev.add(curr.nodeId);
+    }, new Set());
+
+
+    // Merge the existing nodes map and the new.
+    const unusedRulesNodeMap = await this._domModel.pushNodesByBackendIdsToFrontend(unusedRulesNodeIds);
+    this._unusedRulesNodesMap = new Map([...this._unusedRulesNodesMap.entries(), ...unusedRulesNodeMap.entries()]);
+
+    for (const unusedRule of unusedRules) {
+      const node = this._unusedRulesNodesMap.get(unusedRule.nodeId);
+      if (!node) {
+        continue;
+      }
+
+      const unusedRuleNode =
+          new CssOverview.CSSOverviewCompletedView.UnusedRuleNode(this._unusedRulesGrid, unusedRule, node);
+      unusedRuleNode.selectable = false;
+      this._unusedRulesGrid.insertChild(unusedRuleNode);
+    }
+
+    this._resultsContainer.element.appendChild(this._fragment.element());
+    this._elementContainer.element.appendChild(this._elementGrid.element);
+
     this._mediaQueryGrid.renderInline();
     this._mediaQueryGrid.wasShown();
+
+    this._unusedRulesGrid.renderInline();
+    this._unusedRulesGrid.wasShown();
   }
 
-  _colorsToFragment(color) {
-    const colorFormatted =
-        color.hasAlpha() ? color.asString(Common.Color.Format.HEXA) : color.asString(Common.Color.Format.HEX);
+  async _populateNodes(evt) {
+    this._elementGrid.rootNode().removeChildren();
+
+    const {color, colorNodes} = evt.data;
+    let relatedNodesMap = this._relatedNodesMap.get(color);
+    if (!relatedNodesMap) {
+      // This process can't be repeated so we need to now capture the Nodes and hold them in case we need to revisit
+      // the same set again.
+      relatedNodesMap = await this._domModel.pushNodesByBackendIdsToFrontend(colorNodes);
+      this._relatedNodesMap.set(color, relatedNodesMap);
+    }
+
+    for (const domNode of relatedNodesMap.values()) {
+      const colorNode = new CssOverview.CSSOverviewCompletedView.ColorNode(this._elementGrid, domNode, this._linkifier);
+      colorNode.selectable = false;
+      this._elementGrid.insertChild(colorNode);
+    }
+
+    this._mainContainer.setSidebarMinimized(false);
+    this._elementGrid.renderInline();
+    this._elementGrid.wasShown();
+  }
+
+  _colorsToFragment(section, color) {
     const blockFragment = UI.Fragment.build`<li>
-      <div class="block" $="color"></div>
-      <div class="block-title">${colorFormatted}</div>
+      <button data-color="${color}" data-section="${section}" class="block" $="color"></button>
+      <div class="block-title">${color}</div>
     </li>`;
 
     const block = blockFragment.$('color');
-    block.style.backgroundColor = colorFormatted;
+    block.style.backgroundColor = color;
 
-    let [h, s, l] = color.hsla();
+    const borderColor = Common.Color.parse(color);
+    let [h, s, l] = borderColor.hsla();
     h = Math.round(h * 360);
     s = Math.round(s * 100);
     l = Math.round(l * 100);
@@ -192,18 +383,10 @@ CssOverview.CSSOverviewCompletedView = class extends UI.PanelWithSidebar {
     return blockFragment;
   }
 
-  _getNonTransparentColorStrings(srcColors) {
-    const colors = [];
-    for (const colorText of Array.from(srcColors)) {
-      const color = Common.Color.parse(colorText);
-      if (color.rgba()[3] === 0) {
-        continue;
-      }
-
-      colors.push(color);
-    }
-
-    return colors.sort((colorA, colorB) => {
+  _sortColorsByLuminance(srcColors) {
+    return Array.from(srcColors.keys()).sort((colA, colB) => {
+      const colorA = Common.Color.parse(colA);
+      const colorB = Common.Color.parse(colB);
       return Common.Color.luminance(colorB.rgba()) - Common.Color.luminance(colorA.rgba());
     });
   }
@@ -242,7 +425,7 @@ CssOverview.CSSOverviewCompletedView.MediaQueryNode = class extends DataGrid.Sor
       if (link.textContent !== '') {
         cell.appendChild(link);
       } else {
-        cell.textContent = `${this.data.sourceURL} (not available)`;
+        cell.textContent = `(unable to link)`;
       }
       return cell;
     }
@@ -256,5 +439,74 @@ CssOverview.CSSOverviewCompletedView.MediaQueryNode = class extends DataGrid.Sor
     const columnNumber = styleSheetHeader.columnNumberInSource(ruleLocation.startLine, ruleLocation.startColumn);
     const matchingSelectorLocation = new SDK.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
     return linkifier.linkifyCSSLocation(matchingSelectorLocation);
+  }
+};
+
+CssOverview.CSSOverviewCompletedView.ColorNode = class extends DataGrid.SortableDataGridNode {
+  /**
+   * @param {!DataGrid.SortableDataGrid} dataGrid
+   * @param {!Object<string,*>} colorData
+   * @param {!Components.Linkifier} linkifier
+   */
+  constructor(dataGrid, colorData, linkifier) {
+    super(dataGrid, colorData.hasChildren);
+
+    this.data = colorData;
+    this._linkifier = linkifier;
+  }
+
+  /**
+   * @override
+   * @param {string} columnId
+   * @return {!Element}
+   */
+  createCell(columnId) {
+    if (columnId === 'nodeId') {
+      const cell = this.createTD(columnId);
+      cell.textContent = '...';
+      Common.Linkifier.linkify(this.data).then(link => {
+        cell.textContent = '';
+        link.dataset.backendNodeId = this.data.backendNodeId();
+        cell.appendChild(link);
+      });
+      return cell;
+    }
+
+    return super.createCell(columnId);
+  }
+};
+
+CssOverview.CSSOverviewCompletedView.UnusedRuleNode = class extends DataGrid.SortableDataGridNode {
+  /**
+   * @param {!DataGrid.SortableDataGrid} dataGrid
+   * @param {!Object<string,*>} unusedRuleData
+   * @param {!SDK.DOMNode} node
+   */
+  constructor(dataGrid, unusedRuleData, node) {
+    super(dataGrid, unusedRuleData.hasChildren);
+
+    this.data = unusedRuleData;
+    this.node = node;
+  }
+
+  /**
+   * @override
+   * @param {string} columnId
+   * @return {!Element}
+   */
+  createCell(columnId) {
+    if (columnId === 'nodeId' && this.node) {
+      const cell = this.createTD(columnId);
+      cell.textContent = '...';
+
+      Common.Linkifier.linkify(this.node).then(link => {
+        cell.textContent = '';
+        link.dataset.backendNodeId = this.node.backendNodeId();
+        cell.appendChild(link);
+      });
+      return cell;
+    }
+
+    return super.createCell(columnId);
   }
 };

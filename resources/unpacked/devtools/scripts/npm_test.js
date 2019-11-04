@@ -74,7 +74,7 @@ var CHROMIUM_SRC_PATH = fetchDiracChromiumSrcPath();
 
 var RELEASE_PATH = path.resolve(CHROMIUM_SRC_PATH, 'out', TARGET);
 var BLINK_TEST_PATH = path.resolve(CHROMIUM_SRC_PATH, 'third_party', 'blink', 'tools', 'run_web_tests.py');
-var DEVTOOLS_PATH = path.resolve(CHROMIUM_SRC_PATH, 'third_party', 'blink', 'renderer', 'devtools');
+var DEVTOOLS_PATH = path.resolve(CHROMIUM_SRC_PATH, 'third_party', 'devtools-frontend', 'src');
 var CACHE_PATH = path.resolve(DEVTOOLS_PATH, '.test_cache');
 var SOURCE_PATH = path.resolve(DEVTOOLS_PATH, 'front_end');
 

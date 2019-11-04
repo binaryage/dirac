@@ -13,8 +13,8 @@ Coverage.CoverageSegment;
  */
 Coverage.CoverageType = {
   CSS: (1 << 0),
-  JavaScript: (1 << 1),
-  JavaScriptCoarse: (1 << 2),
+  JavaScriptPerBlock: (1 << 1),
+  JavaScriptPerFunction: (1 << 2),
 };
 
 /** @enum {symbol} */
@@ -38,8 +38,6 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
     this._coverageByURL = new Map();
     /** @type {!Map<!Common.ContentProvider, !Coverage.CoverageInfo>} */
     this._coverageByContentProvider = new Map();
-    /** @type {?Promise<!Array<!Protocol.Profiler.ScriptCoverage>>} */
-    this._bestEffortCoveragePromise = null;
 
     /** @type {!Coverage.SuspensionState} */
     this._suspensionState = Coverage.SuspensionState.Active;
@@ -58,9 +56,10 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
   }
 
   /**
+   * @param {boolean} jsCoveragePerBlock - Collect per Block coverage if `true`, per function coverage otherwise.
    * @return {!Promise<boolean>}
    */
-  async start() {
+  async start(jsCoveragePerBlock) {
     if (this._suspensionState !== Coverage.SuspensionState.Active) {
       throw Error('Cannot start CoverageModel while it is not active.');
     }
@@ -72,9 +71,9 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
       promises.push(this._cssModel.startCoverage());
     }
     if (this._cpuProfilerModel) {
-      this._bestEffortCoveragePromise = this._cpuProfilerModel.bestEffortCoverage();
-      promises.push(this._cpuProfilerModel.startPreciseCoverage());
+      promises.push(this._cpuProfilerModel.startPreciseCoverage(jsCoveragePerBlock));
     }
+
     await Promise.all(promises);
     return !!(this._cssModel || this._cpuProfilerModel);
   }
@@ -262,12 +261,7 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
       return [];
     }
     const now = Date.now();
-    let freshRawCoverageData = await this._cpuProfilerModel.takePreciseCoverage();
-    if (this._bestEffortCoveragePromise) {
-      const bestEffortCoverage = await this._bestEffortCoveragePromise;
-      this._bestEffortCoveragePromise = null;
-      freshRawCoverageData = bestEffortCoverage.concat(freshRawCoverageData);
-    }
+    const freshRawCoverageData = await this._cpuProfilerModel.takePreciseCoverage();
     if (this._suspensionState !== Coverage.SuspensionState.Active) {
       if (freshRawCoverageData.length > 0) {
         this._jsBacklog.push({rawCoverageData: freshRawCoverageData, stamp: now});
@@ -300,14 +294,14 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
       }
 
       const ranges = [];
-      let type = Coverage.CoverageType.JavaScript;
+      let type = Coverage.CoverageType.JavaScriptPerBlock;
       for (const func of entry.functions) {
         // Do not coerce undefined to false, i.e. only consider blockLevel to be false
         // if back-end explicitly provides blockLevel field, otherwise presume blockLevel
         // coverage is not available. Also, ignore non-block level functions that weren't
         // ever called.
         if (func.isBlockCoverage === false && !(func.ranges.length === 1 && !func.ranges[0].count)) {
-          type |= Coverage.CoverageType.JavaScriptCoarse;
+          type |= Coverage.CoverageType.JavaScriptPerFunction;
         }
         for (const range of func.ranges) {
           ranges.push(range);
@@ -625,7 +619,7 @@ Coverage.URLCoverageInfo = class {
     const key = `${lineOffset}:${columnOffset}`;
     let entry = this._coverageInfoByLocation.get(key);
 
-    if ((type & Coverage.CoverageType.JavaScript) && !this._coverageInfoByLocation.size) {
+    if ((type & Coverage.CoverageType.JavaScriptPerBlock) && !this._coverageInfoByLocation.size) {
       this._isContentScript = /** @type {!SDK.Script} */ (contentProvider).isContentScript();
     }
     this._type |= type;
@@ -635,7 +629,7 @@ Coverage.URLCoverageInfo = class {
       return entry;
     }
 
-    if ((type & Coverage.CoverageType.JavaScript) && !this._coverageInfoByLocation.size) {
+    if ((type & Coverage.CoverageType.JavaScriptPerBlock) && !this._coverageInfoByLocation.size) {
       this._isContentScript = /** @type {!SDK.Script} */ (contentProvider).isContentScript();
     }
 

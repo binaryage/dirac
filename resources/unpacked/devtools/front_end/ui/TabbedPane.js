@@ -46,7 +46,6 @@ export default class TabbedPane extends UI.VBox {
     this._tabsElement.setAttribute('role', 'tablist');
     this._tabsElement.addEventListener('keydown', this._keyDown.bind(this), false);
     this._contentElement = this.contentElement.createChild('div', 'tabbed-pane-content');
-    this._contentElement.setAttribute('role', 'tabpanel');
     this._contentElement.createChild('slot');
     /** @type {!Array.<!TabbedPaneTab>} */
     this._tabs = [];
@@ -621,13 +620,16 @@ export default class TabbedPane extends UI.VBox {
     }
     const rect = this._dropDownButton.getBoundingClientRect();
     const menu = new UI.ContextMenu(event, false, rect.left, rect.bottom);
-    for (let i = 0; i < this._tabs.length; ++i) {
-      const tab = this._tabs[i];
+    for (const tab of this._tabs) {
       if (tab._shown) {
         continue;
       }
-      menu.defaultSection().appendCheckboxItem(
-          tab.title, this._dropDownMenuItemSelected.bind(this, tab), this._tabsHistory[0] === tab);
+      if (this._numberOfTabsShown() === 0 && this._tabsHistory[0] === tab) {
+        menu.defaultSection().appendCheckboxItem(
+            tab.title, this._dropDownMenuItemSelected.bind(this, tab), /* checked */ true);
+      } else {
+        menu.defaultSection().appendItem(tab.title, this._dropDownMenuItemSelected.bind(this, tab));
+      }
     }
     menu.show();
   }
