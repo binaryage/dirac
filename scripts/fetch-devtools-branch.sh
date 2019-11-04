@@ -52,7 +52,7 @@ git fetch --tags
 if ! git rev-parse --verify tracker1; then
   echo "tracker1 branch does not exist => filter it"
   git branch -f tracker1 "$SPLIT_SHA_PARENT"
-  git filter-branch -f --state-branch refs/heads/tracker1-state --prune-empty --subdirectory-filter third_party/WebKit/Source/devtools tracker1
+  git filter-branch -f --prune-empty --subdirectory-filter third_party/WebKit/Source/devtools tracker1
 else
   echo "tracker1 branch exists => using it as-is"
   git log -1 tracker1
@@ -61,7 +61,7 @@ fi
 if ! git rev-parse --verify tracker2; then
   echo "tracker2 branch does not exist => filter it"
   git branch -f tracker2 "$SPLIT2_SHA_PARENT"
-  git filter-branch -f --state-branch refs/heads/tracker2-state --prune-empty --subdirectory-filter third_party/blink/renderer/devtools tracker2
+  git filter-branch -f --prune-empty --subdirectory-filter third_party/blink/renderer/devtools tracker2
 else
   echo "tracker2 branch exists => using it as-is"
   git log -1 tracker2
@@ -73,7 +73,7 @@ if ! git rev-parse --verify tracker3; then
   # this will effectively replay all commits from tracker2 on top of last commit in tracker1
   echo "tracker3 branch does not exist => preparing it"
   git branch -f tracker3 tracker2
-  git filter-branch -f --state-branch refs/heads/tracker3-state --parent-filter '
+  git filter-branch -f --parent-filter '
       read parents
       if [ "$parents" = "" ]; then
           echo "-p tracker1"
@@ -91,17 +91,22 @@ git fetch dirac-devtools-frontend
 POST_SPLIT2_SHA="4fd355cc40e2392987a17339663fa86d3c472a8d" # https://chromium.googlesource.com/devtools/devtools-frontend/+/4fd355cc40e2392987a17339663fa86d3c472a8d
 POST_SPLIT2_SHA_PARENT=$(git rev-parse "$POST_SPLIT2_SHA^") # d638d21ae7e6d2ec9d06122ebe18cdbac6cb30f2
 
+if [[ "$POST_SPLIT2_SHA_PARENT" != "d638d21ae7e6d2ec9d06122ebe18cdbac6cb30f2" ]]; then
+  echo "unexpected state of devtools-frontend repo, expected '$POST_SPLIT2_SHA_PARENT' to be parent of '$POST_SPLIT2_SHA'"
+  exit 2
+fi
+
 git branch -f tracker4 dirac-devtools-frontend/master
 
 # this will reparent $POST_SPLIT2_SHA to point to our syntetised tracker3 branch
 # note we cannot use git rebase, that would rewrite committer metadata
-git filter-branch -f --state-branch refs/heads/tracker4-state --parent-filter "
+git filter-branch -f --parent-filter "
     read parents
-    if [ \"\$parents\" = \"$POST_SPLIT2_SHA_PARENT\" ]; then
+    if [ \"\$parents\" = \"-p $POST_SPLIT2_SHA_PARENT\" ]; then
         echo \"-p tracker3\"
     else
         echo \"\$parents\"
-    fi" tracker4
+    fi" -- "$POST_SPLIT2_SHA_PARENT..tracker4"
 
 git branch -f devtools tracker4
 
