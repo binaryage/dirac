@@ -14,9 +14,8 @@ mkdir -p "$DEPOT_DIR"
 
 cd "$DEPOT_DIR"
 
-# "$SCRIPTS/depot-update.sh"
-
 ln -s "$ROOT" dirac
-ln -s "dirac/resources/unpacked/devtools" devtools-frontend
+
+"$SCRIPTS/depot-update.sh"
 
 gclient config https://github.com/binaryage/dirac.git --unmanaged --deps-file="$ROOT/resources/unpacked/devtools/DEPS"

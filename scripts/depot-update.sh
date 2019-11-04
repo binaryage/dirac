@@ -7,7 +7,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 cd "$ROOT"
 cd "$DEPOT_DIR"
 
-TARGET_DIR="dirac"
+TARGET_DIR="devtools-frontend"
+SOURCE_DIR="dirac/resources/unpacked/devtools/"
 
-echo "Syncing sources from '$ROOT' to '$(portable_realpath "$TARGET_DIR")'..."
-exec rsync -a --info=progress2 --delete --exclude-from="$DIRAC_TEST_STAGE_RSYNC_EXCLUDE_FILE" "$ROOT/" "$TARGET_DIR"
+echo "Syncing sources from '$SOURCE_DIR' to '$(portable_realpath "$TARGET_DIR")'..."
+exec rsync -a --info=progress2 --delete "$SOURCE_DIR" "$TARGET_DIR"
