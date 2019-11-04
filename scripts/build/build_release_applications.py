@@ -23,14 +23,12 @@ import sys
 from modular_build import read_file, write_file, bail_error
 import modular_build
 import rjsmin
+import special_case_namespaces
 
 try:
     import simplejson as json
 except ImportError:
     import json
-
-special_case_namespaces_path = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'special_case_namespaces.json')
-
 
 def main(argv):
     try:
@@ -95,8 +93,7 @@ class ReleaseBuilder(object):
         self.descriptors = descriptors
         self.application_dir = application_dir
         self.output_dir = output_dir
-        with open(special_case_namespaces_path) as json_file:
-            self._special_case_namespaces = json.load(json_file)
+        self._special_case_namespaces = special_case_namespaces.special_case_namespaces
 
     def app_file(self, extension):
         return self.application_name + '.' + extension
@@ -126,7 +123,6 @@ class ReleaseBuilder(object):
         if descriptors.extends:
             self._write_include_tags(descriptors.extends, output)
         output.write(self._generate_include_tag(descriptors.application_name + '.js'))
-
 
     def _build_html(self):
         html_name = self.app_file('html')
@@ -203,8 +199,8 @@ class ReleaseBuilder(object):
                 deps = set(desc.get('dependencies', []))
                 non_autostart_deps = deps & non_autostart
                 if len(non_autostart_deps):
-                    bail_error('Non-autostart dependencies specified for the autostarted module "%s": %s' %
-                               (name, non_autostart_deps))
+                    bail_error(
+                        'Non-autostart dependencies specified for the autostarted module "%s": %s' % (name, non_autostart_deps))
                 namespace = self._map_module_to_namespace(name)
                 output.write('\n/* Module %s */\n' % name)
                 output.write('\nself[\'%s\'] = self[\'%s\'] || {};\n' % (namespace, namespace))

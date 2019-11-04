@@ -630,9 +630,14 @@ Security.SecurityMainView = class extends UI.VBox {
     UI.ARIAUtils.markAsHeading(summaryDiv, 1);
 
     const lockSpectrum = this._summarySection.createChild('div', 'lock-spectrum');
-    lockSpectrum.createChild('div', 'lock-icon lock-icon-secure').title = Common.UIString('Secure');
-    lockSpectrum.createChild('div', 'lock-icon lock-icon-neutral').title = Common.UIString('Not secure');
-    lockSpectrum.createChild('div', 'lock-icon lock-icon-insecure').title = Common.UIString('Not secure (broken)');
+    this._lockSpectrum = new Map([
+      [Protocol.Security.SecurityState.Secure, lockSpectrum.createChild('div', 'lock-icon lock-icon-secure')],
+      [Protocol.Security.SecurityState.Neutral, lockSpectrum.createChild('div', 'lock-icon lock-icon-neutral')],
+      [Protocol.Security.SecurityState.Insecure, lockSpectrum.createChild('div', 'lock-icon lock-icon-insecure')],
+    ]);
+    this._lockSpectrum.get(Protocol.Security.SecurityState.Secure).title = Common.UIString('Secure');
+    this._lockSpectrum.get(Protocol.Security.SecurityState.Neutral).title = Common.UIString('Info');
+    this._lockSpectrum.get(Protocol.Security.SecurityState.Insecure).title = Common.UIString('Not secure');
 
     this._summarySection.createChild('div', 'triangle-pointer-container')
         .createChild('div', 'triangle-pointer-wrapper')
@@ -693,13 +698,27 @@ Security.SecurityMainView = class extends UI.VBox {
 
     // Add new state.
     this._securityState = newSecurityState;
+
     this._summarySection.classList.add('security-summary-' + this._securityState);
     const summaryExplanationStrings = {
       'unknown': ls`The security of this page is unknown.`,
-      'insecure': ls`This page is not secure (broken HTTPS).`,
+      'insecure': ls`This page is not secure.`,
       'neutral': ls`This page is not secure.`,
-      'secure': ls`This page is secure (valid HTTPS).`
+      'secure': ls`This page is secure (valid HTTPS).`,
+      'insecure-broken': ls`This page is not secure (broken HTTPS).`
     };
+
+    // Update the color and title of the triangle icon in the lock spectrum to
+    // match the security state.
+    if (this._securityState === Protocol.Security.SecurityState.Insecure) {
+      this._lockSpectrum.get(Protocol.Security.SecurityState.Insecure).classList.add('lock-icon-insecure');
+      this._lockSpectrum.get(Protocol.Security.SecurityState.Insecure).classList.remove('lock-icon-insecure-broken');
+      this._lockSpectrum.get(Protocol.Security.SecurityState.Insecure).title = Common.UIString('Not secure');
+    } else if (this._securityState === Protocol.Security.SecurityState.InsecureBroken) {
+      this._lockSpectrum.get(Protocol.Security.SecurityState.Insecure).classList.add('lock-icon-insecure-broken');
+      this._lockSpectrum.get(Protocol.Security.SecurityState.Insecure).classList.remove('lock-icon-insecure');
+      this._lockSpectrum.get(Protocol.Security.SecurityState.Insecure).title = Common.UIString('Not secure (broken)');
+    }
 
     // Use override summary if present, otherwise use base explanation
     this._summaryText.textContent = summary || summaryExplanationStrings[this._securityState];
@@ -924,12 +943,16 @@ Security.SecurityOriginView = class extends UI.VBox {
       // Add link to toggle between displaying of the summary of the SCT(s) and the detailed SCT(s).
       if (sctListLength) {
         function toggleSctDetailsDisplay() {
+          let buttonText;
           const isDetailsShown = !sctTableWrapper.classList.contains('hidden');
           if (isDetailsShown) {
-            toggleSctsDetailsLink.textContent = ls`Show full details`;
+            buttonText = ls`Show full details`;
           } else {
-            toggleSctsDetailsLink.textContent = ls`Hide full details`;
+            buttonText = ls`Hide full details`;
           }
+          toggleSctsDetailsLink.textContent = buttonText;
+          UI.ARIAUtils.setAccessibleName(toggleSctsDetailsLink, buttonText);
+          UI.ARIAUtils.setExpanded(toggleSctsDetailsLink, !isDetailsShown);
           sctSummaryTable.element().classList.toggle('hidden');
           sctTableWrapper.classList.toggle('hidden');
         }
@@ -1005,21 +1028,20 @@ Security.SecurityOriginView = class extends UI.VBox {
       }
       if (listIsTruncated) {
         function toggleSANTruncation() {
-          if (sanDiv.classList.contains('truncated-san')) {
+          const isTruncated = sanDiv.classList.contains('truncated-san');
+          let buttonText;
+          if (isTruncated) {
             sanDiv.classList.remove('truncated-san');
-            truncatedSANToggle.classList.remove('show-more');
-            truncatedSANToggle.classList.add('show-less');
-            truncatedSANToggle.textContent = ls`Show less`;
+            buttonText = ls`Show less`;
           } else {
             sanDiv.classList.add('truncated-san');
-            truncatedSANToggle.classList.add('show-more');
-            truncatedSANToggle.classList.remove('show-less');
-            truncatedSANToggle.textContent = ls`Show more (${sanList.length} total)`;
+            buttonText = ls`Show more (${sanList.length} total)`;
           }
+          truncatedSANToggle.textContent = buttonText;
+          UI.ARIAUtils.setAccessibleName(truncatedSANToggle, buttonText);
+          UI.ARIAUtils.setExpanded(truncatedSANToggle, isTruncated);
         }
-
-        const truncatedSANToggle = sanDiv.createChild('span', 'devtools-link');
-        truncatedSANToggle.addEventListener('click', toggleSANTruncation);
+        const truncatedSANToggle = UI.createTextButton(ls`Show more (${sanList.length} total)`, toggleSANTruncation);
         sanDiv.appendChild(truncatedSANToggle);
         toggleSANTruncation();
       }

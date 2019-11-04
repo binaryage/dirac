@@ -95,8 +95,22 @@ export function markAsProgressBar(element, min = 0, max = 100) {
 /**
  * @param {!Element} element
  */
+export function markAsSlider(element) {
+  element.setAttribute('role', 'slider');
+}
+
+/**
+ * @param {!Element} element
+ */
 export function markAsTab(element) {
   element.setAttribute('role', 'tab');
+}
+
+/**
+ * @param {!Element} element
+ */
+export function markAsTabpanel(element) {
+  element.setAttribute('role', 'tabpanel');
 }
 
 /**
@@ -242,6 +256,33 @@ export function ensureId(element) {
   if (!element.id) {
     element.id = nextId('ariaElement');
   }
+}
+
+/**
+ * @param {!Element} element
+ * @param {string} valueText
+ */
+export function setAriaValueText(element, valueText) {
+  element.setAttribute('aria-valuetext', valueText);
+}
+
+/**
+ * @param {!Element} element
+ * @param {string} value
+ */
+export function setAriaValueNow(element, value) {
+  element.setAttribute('aria-valuenow', value);
+}
+
+
+/**
+ * @param {!Element} element
+ * @param {string} min
+ * @param {string} max
+ */
+export function setAriaValueMinMax(element, min, max) {
+  element.setAttribute('aria-valuemin', min);
+  element.setAttribute('aria-valuemax', max);
 }
 
 /**
@@ -507,7 +548,9 @@ self.UI.ARIAUtils = {
   markAsLink,
   markAsMenuButton,
   markAsProgressBar,
+  markAsSlider,
   markAsTab,
+  markAsTabpanel,
   markAsTree,
   markAsTreeitem,
   markAsTextBox,
@@ -527,6 +570,9 @@ self.UI.ARIAUtils = {
   markAsPresentation,
   markAsStatus,
   ensureId,
+  setAriaValueText,
+  setAriaValueNow,
+  setAriaValueMinMax,
   setControls,
   setChecked,
   setCheckboxAsIndeterminate,
