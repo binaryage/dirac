@@ -23,11 +23,14 @@ Protocol.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function() {
     Protocol.BakedInspectorBackendMode = "external";
     Protocol.BakedInspectorBackendModeInfo = lines.length;
     evalAPI(lines);
-  } else {
+  } else if (Protocol.BakedInspectorBackendAPI) {
     const lines = Protocol.BakedInspectorBackendAPI.split("\n").filter(s => s.length);
     Protocol.BakedInspectorBackendMode = "internal";
     Protocol.BakedInspectorBackendModeInfo = lines.length;
     evalAPI(lines);
+  } else {
+    Protocol.BakedInspectorBackendMode = "embedded";
+    Protocol.BakedInspectorBackendModeInfo = "";
   }
 };
 

@@ -15,12 +15,15 @@ SDK.SupportedCSSPropertiesExtensionMode.loadFromExtensionIfNeeded = function() {
     Protocol.BakedSupportedCSSPropertiesMode = "external";
     Protocol.BakedSupportedCSSPropertiesModeInfo = lines.length;
     evalCSS(backendCSS);
-  } else {
+  } else if (Protocol.BakedSupportedCSSProperties) {
     const backendCSS = Protocol.BakedSupportedCSSProperties;
     const lines = backendCSS.split("\n").filter(s => s.length);
     Protocol.BakedSupportedCSSPropertiesMode = "internal";
     Protocol.BakedSupportedCSSPropertiesModeInfo = lines.length;
     evalCSS(backendCSS);
+  } else {
+    Protocol.BakedSupportedCSSPropertiesMode = "embedded";
+    Protocol.BakedSupportedCSSPropertiesModeInfo = "";
   }
 };
 
