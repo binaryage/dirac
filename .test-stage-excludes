@@ -3,10 +3,12 @@
 /.idea
 /.notify
 /.profiles
+/.cpcache
+/.test-dirac-chrome-profile
+/.tmp
 /releases
 /target
 /out
-/.*
 /dirac.iml
 /pom.xml*
 /resources/release/.compiled
