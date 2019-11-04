@@ -87,7 +87,7 @@ else
   git log -1 tracker3
 fi
 
-git remote add dirac-devtools-frontend third_party/devtools-frontend/src/.git || true
+git remote add dirac-devtools-frontend https://chromium.googlesource.com/devtools/devtools-frontend || true
 git fetch dirac-devtools-frontend
 
 POST_SPLIT2_SHA="4fd355cc40e2392987a17339663fa86d3c472a8d" # https://chromium.googlesource.com/devtools/devtools-frontend/+/4fd355cc40e2392987a17339663fa86d3c472a8d
