@@ -29,6 +29,8 @@ fi
 # beware! major git lobotomy incoming
 cd "$CHROMIUM_MIRROR_DIR"
 
+python --version
+
 # chrome devs renamed Webkit subfolder to blink in commit 0aee4434a4dba42a42abaea9bfbc0cd196a63bc1
 # see commit SPLIT_SHA crbug.com/768828
 # split1: third_party/WebKit/Source/devtools -> third_party/blink/renderer/devtools
@@ -96,7 +98,11 @@ if [[ "$POST_SPLIT2_SHA_PARENT" != "d638d21ae7e6d2ec9d06122ebe18cdbac6cb30f2" ]]
   exit 2
 fi
 
-git branch -f tracker4 dirac-devtools-frontend/master
+pushd third_party/devtools-frontend/src
+DEVTOOLS_SHA=$(git rev-parse HEAD)
+popd
+
+git branch -f tracker4 "$DEVTOOLS_SHA"
 
 # this will reparent $POST_SPLIT2_SHA to point to our syntetised tracker3 branch
 # note we cannot use git rebase, that would rewrite committer metadata
