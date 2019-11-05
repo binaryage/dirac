@@ -13,6 +13,13 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 export DIRAC_CHROME_DRIVER_VERBOSE=1
 export LEIN_FAST_TRAMPOLINE=1
 
+if [[ -z "${TRAVIS_SKIP_DEPOT_TOOLS_INSTALL}" ]]; then
+  # see https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
+  git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+  DEPOT_TOOLS_PATH="$(pwd -P)/depot_tools"
+  export PATH=$DEPOT_TOOLS_PATH:$PATH
+fi
+
 if [[ -z "${TRAVIS_SKIP_NSS3_UPGRADE}" ]]; then
   # this is needed for recent chrome
   # they require patched version of this lib or refuse to run:
