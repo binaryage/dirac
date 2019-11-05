@@ -79,7 +79,6 @@
 (def ^:const BACKEND_URL_RESOLUTION_TRIALS 5)
 (def ^:const FAILED_BACKEND_URL_RESOLUTION_DELAY (seconds 1))
 
-(def ^:const FRONTEND_HANDSHAKE_TIMEOUT (seconds 3))
 (def ^:const FRONTEND_LOADING_TIMEOUT (seconds 5))
 (def ^:const INTERCOM_INIT_TIMEOUT (seconds 3))
 
@@ -304,9 +303,6 @@
 (defmacro get-transcript-streamer-server-url []
   (let [port (get-transcript-streamer-server-port)]
     (str "ws://" (get-transcript-streamer-server-host) (if (some? port) (str ":" port)))))
-
-(defmacro get-frontend-handshake-timeout []
-  FRONTEND_HANDSHAKE_TIMEOUT)
 
 (defmacro get-frontend-loading-timeout []
   FRONTEND_LOADING_TIMEOUT)

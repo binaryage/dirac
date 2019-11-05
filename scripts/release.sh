@@ -7,7 +7,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 TASK=${1:-compile-dirac-pseudo-names}
 
 TMP_RELEASE_BUILD="$DEPOT_DIR/out/Default/resources/inspector"
-FRONTEND="resources/unpacked/devtools/front_end"
 
 cd "$ROOT"
 
@@ -22,10 +21,6 @@ set -x
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 mkdir -p "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 cp -rc "$TMP_RELEASE_BUILD/" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
-
-# copy handshake files
-cp "$FRONTEND/handshake.html" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
-cp "$FRONTEND/handshake.js" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 
 # copy compiled extension code (produced by `lein compile-dirac`)
 cp "$ROOT/target/resources/release/.compiled/background.js" "$RELEASE_BUILD/background.js"
