@@ -5,6 +5,7 @@ set -e -o pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$ROOT"
+
 cd "$DEPOT_DIR"
 
 gclient sync

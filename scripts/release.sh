@@ -15,7 +15,6 @@ set -x
 "$SCRIPTS/check-versions.sh"
 "$SCRIPTS/depot-sync.sh"
 "$SCRIPTS/depot-clean.sh"
-"$SCRIPTS/depot-update.sh"
 "$SCRIPTS/depot-build-devtools.sh" "$TASK"
 
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
