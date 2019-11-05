@@ -65,7 +65,7 @@ git merge --no-edit --no-verify-signatures -Xtheirs -m "merge tag $TAG into heal
 
 # commit an empty commit to trigger travis build
 # note that CHROMIUM_DOWNLOAD_URL will be used by travis
-git commit --allow-empty -F- --author="BinaryAge Bot <bot@binaryage.com>" << EOF
+git -c "user.name=BinaryAge Bot" -c "user.email=bot@binaryage.com" commit --allow-empty -F- << EOF
 check Dirac ${TAG} under ${CHROMIUM_VERSION}
 
 CHROMIUM_REVISION=${CHROMIUM_REVISION}

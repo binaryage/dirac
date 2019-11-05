@@ -91,6 +91,7 @@ cp -R "$OURS/$DEVTOOLS_DIRAC_PREFIX/." .
 # see https://stackoverflow.com/a/50950870/84283
 echo "* -text" > .git/info/attributes
 git -c core.autocrlf=input add -A
+git -c "user.name=BinaryAge Bot" -c "user.email=bot@binaryage.com" commit -m "devtools -> dirac as of $FULL_SHA"
 
 if [[ -n "$FORCE_PUSH" ]] || confirm "Do you want to force push new $DIFF_BRANCH of github's Dirac repo? [y/N]" ; then
   git push -f git@github.com:binaryage/dirac.git "$DIFF_BRANCH"
