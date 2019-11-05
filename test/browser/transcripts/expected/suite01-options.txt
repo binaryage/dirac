@@ -21,7 +21,7 @@ extension        unregister devtools #1
 automate         restore-options!
 extension        reset extension options:{:enable-clustered-locals true, :inline-custom-formatters true, :enable-parinfer true, :beautify-function-names true, :enable-friendly-locals true, :user-frontend-url-params nil, :clean-urls true, :enable-repl true, :welcome-message true, :open-as "window", :target-url "http://localhost:<port>", :link-actions true}
 ∎
-testing          use baked-in api and css
+testing          internal error presentation
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #2
@@ -50,5 +50,5 @@ extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 ∎
 automate         close-scenario! ["scenario-tab#1"]
-summary          Automated 14 actions with 0 check-points containing 6 assertions.
+summary          Automated 14 actions with 0 check-points containing 2 assertions.
                  0 failures, 0 errors.
