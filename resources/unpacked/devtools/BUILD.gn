@@ -753,6 +753,26 @@ if (external_devtools_frontend) {
     "front_end/workspace/module.json",
     "front_end/workspace_diff/WorkspaceDiff.js",
     "front_end/workspace_diff/module.json",
+    # dirac
+    "front_end/console/clojure-parinfer.js",
+    "front_end/console/DiracPrompt.js",
+    "front_end/console/dirac-hacks.css",
+    "front_end/console/dirac-codemirror.css",
+    "front_end/console/dirac-theme.css",
+    "front_end/console/dirac-prompt.css",
+    "front_end/dirac/module.json",
+    "front_end/dirac/parinfer.js",
+    "front_end/dirac/parinfer-codemirror.js",
+    "front_end/dirac/keysim.js",
+    "front_end/dirac/dirac.js",
+    "front_end/dirac/.compiled/implant/implant.js",
+    "front_end/dirac/require-implant.js",
+    "front_end/dirac_lazy/module.json",
+    "front_end/dirac_lazy/dirac_lazy.js",
+    "front_end/cm_web_modes/runmode.js",
+    "front_end/cm_web_modes/placeholder.js",
+    "front_end/ui/suggestBox-dirac.css",
+    "front_end/ui/treeoutline-dirac.css",
   ]
 
   lighthouse_locale_files = [
@@ -1437,6 +1457,7 @@ if (external_devtools_frontend) {
   ]
 
   generated_non_autostart_non_remote_modules = [
+    "$resources_out_dir/dirac_lazy/dirac_lazy_module.js",
     "$resources_out_dir/animation/animation_module.js",
     "$resources_out_dir/audits/audits_module.js",
     "$resources_out_dir/browser_debugger/browser_debugger_module.js",
