@@ -11,8 +11,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 redirect_to_test_stage_if_needed
 
-export LEIN_FAST_TRAMPOLINE=  # lein trampoline caches might get confused in test stage
-
 cd "$ROOT"
 
 ./scripts/test-backend.sh

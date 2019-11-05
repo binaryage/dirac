@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 # we assume current working directory is set by our caller
-# in case of travis it should be TRAVIS_BUILD_DIR
-# in case of docker it should be /root
+# it should be a checkout of dirac repo (TRAVIS_BUILD_DIR)
 
 # read config
 set -e -o pipefail
@@ -11,7 +10,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 #export DIRAC_LOG_LEVEL=debug
 export DIRAC_CHROME_DRIVER_VERBOSE=1
-export LEIN_FAST_TRAMPOLINE=1
 
 if [[ -z "${TRAVIS_SKIP_DEPOT_TOOLS_INSTALL}" ]]; then
   # see https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
@@ -59,9 +57,9 @@ fi
 # install latest chromium
 pushd "$TRAVIS_BUILD_DIR"
 
-if [[ -z "${TRAVIS_SKIP_DEPOT_NUKE}" ]]; then
-  if [[ ! -d ".depot" ]]; then
-    ./scripts/depot-nuke.sh
+if [[ -z "${TRAVIS_SKIP_DEPOT_BOOTSTRAP}" ]]; then
+  if [[ ! -d "$DEPOT_DIR" ]]; then
+    "$SCRIPTS/depot-bootstrap.sh"
   fi
 fi
 

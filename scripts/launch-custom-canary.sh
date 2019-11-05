@@ -21,4 +21,4 @@ fi
       --disable-infobars \
       --disable-default-apps \
       --user-data-dir="$DIRAC_USER_PROFILE2" \
-      "--custom-devtools-frontend=file://$ROOT/$DEPOT_DIR/out/Default/resources/inspector"
+      "--custom-devtools-frontend=file://$DEPOT_DIR/out/Default/resources/inspector"
