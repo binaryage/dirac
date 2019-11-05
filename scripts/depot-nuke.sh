@@ -17,4 +17,4 @@ cd "$DEPOT_DIR"
 ln -s ".." dirac
 ln -s "../resources/unpacked/devtools" "devtools-frontend"
 
-gclient config https://github.com/binaryage/dirac.git --unmanaged --deps-file="$ROOT/resources/unpacked/devtools/DEPS"
+gclient config https://github.com/binaryage/dirac.git --unmanaged --deps-file="devtools-frontend/DEPS"

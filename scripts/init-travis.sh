@@ -60,7 +60,9 @@ fi
 pushd "$TRAVIS_BUILD_DIR"
 
 if [[ -z "${TRAVIS_SKIP_DEPOT_NUKE}" ]]; then
-  ./scripts/depot-nuke.sh
+  if [[ ! -d ".depot" ]]; then
+    ./scripts/depot-nuke.sh
+  fi
 fi
 
 # HACK: we rely on the fact that the tmp dir is mapped to host and persists
