@@ -537,8 +537,7 @@ export default class Linkifier {
   static invokeFirstAction(link) {
     const actions = Components.Linkifier._linkActions(link);
     if (actions.length) {
-      const handler = /** @type { function(?Event=) } */(actions[0].handler);
-      handler.call(null, event);
+      actions[0].handler.call(null);
       return true;
     }
     return false;
