@@ -15,9 +15,16 @@ export LEIN_FAST_TRAMPOLINE=1
 
 if [[ -z "${TRAVIS_SKIP_DEPOT_TOOLS_INSTALL}" ]]; then
   # see https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
-  git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+  if [[ -d depot_tools ]]; then
+    cd depot_tools
+    git pull origin
+    cd ..
+  else
+    git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+  fi
   DEPOT_TOOLS_PATH="$(pwd -P)/depot_tools"
   export PATH=$DEPOT_TOOLS_PATH:$PATH
+  gclient --version
 fi
 
 if [[ -z "${TRAVIS_SKIP_NSS3_UPGRADE}" ]]; then
@@ -45,8 +52,17 @@ if [[ -z "${TRAVIS_SKIP_COLORDIFF_INSTALL}" ]]; then
   sudo apt-get install -y colordiff
 fi
 
+if [[ -z "${TRAVIS_SKIP_ADDITIONAL_DEPS_INSTALL}" ]]; then
+  sudo apt-get install -y rsync xz-utils
+fi
+
 # install latest chromium
 pushd "$TRAVIS_BUILD_DIR"
+
+if [[ -z "${TRAVIS_SKIP_DEPOT_NUKE}" ]]; then
+  ./scripts/depot-nuke.sh
+fi
+
 # HACK: we rely on the fact that the tmp dir is mapped to host and persists
 mkdir -p "$ROOT_TMP_DIR_RELATIVE"
 cd "$ROOT_TMP_DIR_RELATIVE"

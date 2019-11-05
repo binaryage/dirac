@@ -19,7 +19,7 @@ set -x
 
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 mkdir -p "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
-cp -rc "$TMP_RELEASE_BUILD/" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
+cp -r "$TMP_RELEASE_BUILD/" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 
 # copy compiled extension code (produced by `lein compile-dirac`)
 cp "$ROOT/target/resources/release/.compiled/background.js" "$RELEASE_BUILD/background.js"
