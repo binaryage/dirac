@@ -15,4 +15,4 @@ yarn check-gn
 #yarn check-json
 yarn check-loc
 
-#yarn closure
+yarn closure
