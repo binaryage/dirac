@@ -86,9 +86,11 @@ pushd "$THEIRS"
 git checkout -b "$DIFF_BRANCH"
 git reset --hard "$LAST_MERGED_DEVTOOLS_SHA"
 git rm -rf *
-cp -R "$OURS/$DEVTOOLS_DIRAC_PREFIX"/* .
-git add -A
-git commit -m "devtools -> dirac as of $FULL_SHA" --author="BinaryAge Bot <bot@binaryage.com>"
+cp -R "$OURS/$DEVTOOLS_DIRAC_PREFIX/." .
+# we forcibly disable autocrlf because that could cause false positives when comparing auto-corrected files
+# see https://stackoverflow.com/a/50950870/84283
+echo "* -text" > .git/info/attributes
+git -c core.autocrlf=input add -A
 
 if [[ -n "$FORCE_PUSH" ]] || confirm "Do you want to force push new $DIFF_BRANCH of github's Dirac repo? [y/N]" ; then
   git push -f git@github.com:binaryage/dirac.git "$DIFF_BRANCH"
