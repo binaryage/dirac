@@ -884,16 +884,3 @@ Protocol.TargetBase = TargetBase;
  * @typedef {function(?Object, ?Object)}
  */
 Protocol._Callback;
-
-/** @type {string} */
-Protocol.BakedInspectorBackendAPIChromeTag;
-/** @type {string} */
-Protocol.BakedInspectorBackendAPIChromeRev;
-/** @type {string} */
-Protocol.BakedInspectorBackendAPI;
-/** @type {string} */
-Protocol.BakedSupportedCSSPropertiesChromeTag;
-/** @type {string} */
-Protocol.BakedSupportedCSSPropertiesChromeRev;
-/** @type {string} */
-Protocol.BakedSupportedCSSProperties;
