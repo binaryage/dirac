@@ -90,6 +90,12 @@ export default class SourceMap {
 
   dispose() {
   }
+
+  /**
+   * @return {?SDK.SourceMapV3}
+   */
+  payload() {
+  }
 }
 
 /**
@@ -681,6 +687,14 @@ export class WasmSourceMap {
    */
   url() {
     return WasmSourceMap.FAKE_URL;
+  }
+
+  /**
+   * @override
+   * @return {?SDK.SourceMapV3}
+   */
+  payload() {
+    return null;
   }
 
   /**

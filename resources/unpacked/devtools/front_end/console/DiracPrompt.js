@@ -216,9 +216,8 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
   /**
    * @override
    * @param {boolean=} force
-   * @param {boolean=} reverse
    */
-  complete(force, reverse) {
+  async complete(force) {
     // override with empty implementation to disable TextPrompt's autocomplete implementation
     // we use CodeMirror's changes modelled after TextEditorAutocompleteController.js in DiracPrompt
     if (dirac._DEBUG_COMPLETIONS) {

@@ -1177,9 +1177,9 @@ Console.ConsoleView = class extends UI.VBox {
         return new Console.ConsoleCommand(
             message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.DiracCommand:
-        return new Console.ConsoleDiracCommand(message, this._linkifier, this._badgePool, nestingLevel);
+        return new Console.ConsoleDiracCommand(message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.DiracMarkup:
-        return new Console.ConsoleDiracMarkup(message, this._linkifier, this._badgePool, nestingLevel);
+        return new Console.ConsoleDiracMarkup(message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.Result:
         return new Console.ConsoleCommandResult(
             message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);

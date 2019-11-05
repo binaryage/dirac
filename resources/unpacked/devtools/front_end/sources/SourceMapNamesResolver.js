@@ -202,7 +202,7 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
 
     return uiSourceCode.requestContent().then(deferredContent => {
       const content = deferredContent.content;
-      return onSourceContent(sourceTextRange, startEntry.sourceLineNumber, startEntry.sourceColumnNumber, content);
+      return onSourceContent(sourceTextRange, startEntry.sourceLineNumber || 1, startEntry.sourceColumnNumber || 1, content);
     });
   }
 
