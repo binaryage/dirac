@@ -134,7 +134,7 @@ git -c "user.name=BinaryAge Bot" -c "user.email=bot@binaryage.com" commit -m "up
 
 # push to dirac's devtools branch
 # see https://github.com/binaryage/dirac/tree/devtools
-git push dirac devtools
+git push -f dirac devtools
 
 # (optional) return back to chromium master branch
 git checkout -f master
