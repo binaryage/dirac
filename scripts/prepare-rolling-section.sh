@@ -31,7 +31,7 @@ echo "MERGED_DEVTOOLS_RANGE=$MERGED_DEVTOOLS_RANGE"
 FROM_OFFICIAL_DEVTOOLS="from [official DevTools](https://developers.google.com/web/tools/chrome-devtools)"
 
 if [[ -z "$OVERRIDE_CHROME_VERSION" ]]; then
-  CHROME_VERSION=$("${SCRIPTS}/extract-backend-protocol-chrome-version.sh" "$END_TAG")
+  CHROME_VERSION=$("${SCRIPTS}/extract-chrome-version.sh" "$END_TAG")
 else
   CHROME_VERSION="$OVERRIDE_CHROME_VERSION"
 fi
