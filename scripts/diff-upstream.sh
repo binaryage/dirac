@@ -83,9 +83,9 @@ git clone "$ROOT" "$THEIRS" --branch "$DEVTOOLS_BRANCH"
 popd
 
 pushd "$THEIRS"
-git checkout -b "$DIFF_BRANCH"
-git reset --hard "$LAST_MERGED_DEVTOOLS_SHA"
-git rm -rf *
+git checkout --quiet -b "$DIFF_BRANCH"
+git reset --quiet --hard "$LAST_MERGED_DEVTOOLS_SHA"
+git rm --quiet -rf *
 cp -R "$OURS/$DEVTOOLS_DIRAC_PREFIX/." .
 # we forcibly disable autocrlf because that could cause false positives when comparing auto-corrected files
 # see https://stackoverflow.com/a/50950870/84283
