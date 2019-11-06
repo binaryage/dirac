@@ -51,6 +51,9 @@ git status
 gclient sync --with_branch_heads --reset --delete_unversioned_trees
 git fetch --tags
 
+CHROME_REV=$(git rev-parse HEAD)
+CHROME_TAG=$(git tag -l "[0-9]*" | tail -1)
+
 if ! git rev-parse --verify tracker1; then
   echo "tracker1 branch does not exist => filter it"
   git branch -f tracker1 "$SPLIT_SHA_PARENT"
@@ -116,4 +119,22 @@ git filter-branch -f --parent-filter "
 
 git branch -f devtools tracker4
 
+# now we add one extra commit on top
+# this commit will add .chrome-rev.txt and .chrome-tag.txt files with source chrome revision/version
+
+git checkout -f devtools
+
+echo "$CHROME_REV" > .chrome-rev.txt
+echo "$CHROME_TAG" > .chrome-tag.txt
+
+git add .chrome-rev.txt
+git add .chrome-tag.txt
+
+git -c "user.name=BinaryAge Bot" -c "user.email=bot@binaryage.com" commit -m "update source chrome version"
+
+# push to dirac's devtools branch
+# see https://github.com/binaryage/dirac/tree/devtools
 git push dirac devtools
+
+# (optional) return back to chromium master branch
+git checkout -f master
