@@ -6,4 +6,5 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$DEVTOOLS_WORKTREE"
 
-git pull
+git fetch origin
+git reset --hard "origin/$DEVTOOLS_BRANCH"
