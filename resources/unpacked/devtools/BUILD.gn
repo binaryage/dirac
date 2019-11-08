@@ -8,16 +8,9 @@ import("//third_party/blink/renderer/core/core.gni")
 
 if (external_devtools_frontend) {
   all_devtools_files = [
-    "front_end/accessibility/AccessibilityModel.js",
     "front_end/accessibility/accessibilityNode.css",
-    "front_end/accessibility/AccessibilityNodeView.js",
     "front_end/accessibility/accessibilityProperties.css",
-    "front_end/accessibility/AccessibilitySidebarView.js",
-    "front_end/accessibility/AccessibilityStrings.js",
-    "front_end/accessibility/ARIAAttributesView.js",
-    "front_end/accessibility/ARIAMetadata.js",
     "front_end/accessibility/axBreadcrumbs.css",
-    "front_end/accessibility/AXBreadcrumbsPane.js",
     "front_end/accessibility/module.json",
     "front_end/accessibility_test_runner/AccessibilityPaneTestRunner.js",
     "front_end/accessibility_test_runner/module.json",
@@ -111,7 +104,6 @@ if (external_devtools_frontend) {
     "front_end/cm/module.json",
     "front_end/cm/multiplex.js",
     "front_end/cm/overlay.js",
-    "front_end/cm_headless/headlesscodemirror.js",
     "front_end/cm_headless/module.json",
     "front_end/cm_modes/clike.js",
     "front_end/cm_modes/clojure.js",
@@ -175,11 +167,7 @@ if (external_devtools_frontend) {
     "front_end/dagre_layout/dagre.js",
     "front_end/dagre_layout/module.json",
     "front_end/data_grid/dataGrid.css",
-    "front_end/data_grid/DataGrid.js",
     "front_end/data_grid/module.json",
-    "front_end/data_grid/ShowMoreDataGridNode.js",
-    "front_end/data_grid/SortableDataGrid.js",
-    "front_end/data_grid/ViewportDataGrid.js",
     "front_end/data_grid_test_runner/DataGridTestRunner.js",
     "front_end/data_grid_test_runner/module.json",
     "front_end/device_mode_test_runner/DeviceModeTestRunner.js",
@@ -266,19 +254,7 @@ if (external_devtools_frontend) {
     "front_end/formatter/FormatterWorkerPool.js",
     "front_end/formatter/module.json",
     "front_end/formatter/ScriptFormatter.js",
-    "front_end/formatter_worker.js",
     "front_end/formatter_worker.json",
-    "front_end/formatter_worker/AcornTokenizer.js",
-    "front_end/formatter_worker/CSSFormatter.js",
-    "front_end/formatter_worker/CSSRuleParser.js",
-    "front_end/formatter_worker/ESTreeWalker.js",
-    "front_end/formatter_worker/FormattedContentBuilder.js",
-    "front_end/formatter_worker/FormatterWorker.js",
-    "front_end/formatter_worker/HTMLFormatter.js",
-    "front_end/formatter_worker/IdentityFormatter.js",
-    "front_end/formatter_worker/JavaScriptFormatter.js",
-    "front_end/formatter_worker/JavaScriptOutline.js",
-    "front_end/formatter_worker/RelaxedJSONParser.js",
     "front_end/formatter_worker/acorn/acorn.js",
     "front_end/formatter_worker/acorn/acorn_loose.js",
     "front_end/formatter_worker/module.json",
@@ -287,15 +263,8 @@ if (external_devtools_frontend) {
     "front_end/har_importer/module.json",
     "front_end/heap_profiler_test_runner/HeapProfilerTestRunner.js",
     "front_end/heap_profiler_test_runner/module.json",
-    "front_end/heap_snapshot_model/HeapSnapshotModel.js",
     "front_end/heap_snapshot_model/module.json",
-    "front_end/heap_snapshot_worker.js",
     "front_end/heap_snapshot_worker.json",
-    "front_end/heap_snapshot_worker/AllocationProfile.js",
-    "front_end/heap_snapshot_worker/HeapSnapshot.js",
-    "front_end/heap_snapshot_worker/HeapSnapshotLoader.js",
-    "front_end/heap_snapshot_worker/HeapSnapshotWorker.js",
-    "front_end/heap_snapshot_worker/HeapSnapshotWorkerDispatcher.js",
     "front_end/heap_snapshot_worker/module.json",
     "front_end/help/Help.js",
     "front_end/help/module.json",
@@ -639,9 +608,6 @@ if (external_devtools_frontend) {
     "front_end/text_editor/module.json",
     "front_end/text_editor/TextEditorAutocompleteController.js",
     "front_end/text_utils/module.json",
-    "front_end/text_utils/Text.js",
-    "front_end/text_utils/TextRange.js",
-    "front_end/text_utils/TextUtils.js",
     "front_end/timeline_model/module.json",
     "front_end/timeline_model/TimelineFrameModel.js",
     "front_end/timeline_model/TimelineIRModel.js",
@@ -819,6 +785,47 @@ if (external_devtools_frontend) {
   all_devtools_files += lighthouse_locale_files
 
   all_devtools_modules = [
+    "front_end/formatter_worker.unbundled.js",
+    "front_end/heap_snapshot_worker.unbundled.js",
+    "front_end/heap_snapshot_model/heap_snapshot_model.js",
+    "front_end/heap_snapshot_model/HeapSnapshotModel.js",
+    "front_end/heap_snapshot_worker/heap_snapshot_worker.js",
+    "front_end/heap_snapshot_worker/AllocationProfile.js",
+    "front_end/heap_snapshot_worker/HeapSnapshot.js",
+    "front_end/heap_snapshot_worker/HeapSnapshotLoader.js",
+    "front_end/heap_snapshot_worker/HeapSnapshotWorker.js",
+    "front_end/heap_snapshot_worker/HeapSnapshotWorkerDispatcher.js",
+    "front_end/text_utils/text_utils.js",
+    "front_end/text_utils/TextUtils.js",
+    "front_end/text_utils/TextRange.js",
+    "front_end/text_utils/Text.js",
+    "front_end/formatter_worker/formatter_worker.js",
+    "front_end/formatter_worker/RelaxedJSONParser.js",
+    "front_end/formatter_worker/JavaScriptOutline.js",
+    "front_end/formatter_worker/JavaScriptFormatter.js",
+    "front_end/formatter_worker/IdentityFormatter.js",
+    "front_end/formatter_worker/HTMLFormatter.js",
+    "front_end/formatter_worker/FormatterWorker.js",
+    "front_end/formatter_worker/FormattedContentBuilder.js",
+    "front_end/formatter_worker/ESTreeWalker.js",
+    "front_end/formatter_worker/CSSRuleParser.js",
+    "front_end/formatter_worker/CSSFormatter.js",
+    "front_end/formatter_worker/AcornTokenizer.js",
+    "front_end/cm_headless/cm_headless.js",
+    "front_end/cm_headless/headlesscodemirror.js",
+    "front_end/data_grid/data_grid.js",
+    "front_end/data_grid/ViewportDataGrid.js",
+    "front_end/data_grid/SortableDataGrid.js",
+    "front_end/data_grid/ShowMoreDataGridNode.js",
+    "front_end/data_grid/DataGrid.js",
+    "front_end/accessibility/accessibility.js",
+    "front_end/accessibility/AccessibilityStrings.js",
+    "front_end/accessibility/AccessibilitySidebarView.js",
+    "front_end/accessibility/AccessibilityNodeView.js",
+    "front_end/accessibility/AccessibilityModel.js",
+    "front_end/accessibility/AXBreadcrumbsPane.js",
+    "front_end/accessibility/ARIAMetadata.js",
+    "front_end/accessibility/ARIAAttributesView.js",
     "front_end/console_counters/console_counters.js",
     "front_end/console_counters/WarningErrorCounter.js",
     "front_end/extensions/extensions.js",
@@ -1001,6 +1008,7 @@ if (external_devtools_frontend) {
     "front_end/ui/ContextFlavorListener.js",
     "front_end/root.js",
     "front_end/common/common.js",
+    "front_end/common/common-legacy.js",
     "front_end/common/App.js",
     "front_end/common/AppProvider.js",
     "front_end/common/CharacterIdMap.js",
@@ -1159,6 +1167,7 @@ if (external_devtools_frontend) {
     "front_end/Images/chromeRight.png",
     "front_end/Images/chromeSelect.png",
     "front_end/Images/chromeSelect_2x.png",
+    "front_end/Images/cssoverview_icons_2x.png",
     "front_end/Images/errorWave.svg",
     "front_end/Images/ic_info_black_18dp.svg",
     "front_end/Images/ic_warning_black_18dp.svg",
@@ -1219,6 +1228,33 @@ if (external_devtools_frontend) {
   ]
 
   copied_devtools_modules = [
+    "$resources_out_dir/heap_snapshot_model/heap_snapshot_model.js",
+    "$resources_out_dir/heap_snapshot_model/HeapSnapshotModel.js",
+    "$resources_out_dir/heap_snapshot_worker/heap_snapshot_worker.js",
+    "$resources_out_dir/heap_snapshot_worker/AllocationProfile.js",
+    "$resources_out_dir/heap_snapshot_worker/HeapSnapshot.js",
+    "$resources_out_dir/heap_snapshot_worker/HeapSnapshotLoader.js",
+    "$resources_out_dir/heap_snapshot_worker/HeapSnapshotWorker.js",
+    "$resources_out_dir/heap_snapshot_worker/HeapSnapshotWorkerDispatcher.js",
+    "$resources_out_dir/text_utils/text_utils.js",
+    "$resources_out_dir/text_utils/TextUtils.js",
+    "$resources_out_dir/text_utils/TextRange.js",
+    "$resources_out_dir/text_utils/Text.js",
+    "$resources_out_dir/cm_headless/cm_headless.js",
+    "$resources_out_dir/cm_headless/headlesscodemirror.js",
+    "$resources_out_dir/data_grid/data_grid.js",
+    "$resources_out_dir/data_grid/ViewportDataGrid.js",
+    "$resources_out_dir/data_grid/SortableDataGrid.js",
+    "$resources_out_dir/data_grid/ShowMoreDataGridNode.js",
+    "$resources_out_dir/data_grid/DataGrid.js",
+    "$resources_out_dir/accessibility/accessibility.js",
+    "$resources_out_dir/accessibility/AccessibilityStrings.js",
+    "$resources_out_dir/accessibility/AccessibilitySidebarView.js",
+    "$resources_out_dir/accessibility/AccessibilityNodeView.js",
+    "$resources_out_dir/accessibility/AccessibilityModel.js",
+    "$resources_out_dir/accessibility/AXBreadcrumbsPane.js",
+    "$resources_out_dir/accessibility/ARIAMetadata.js",
+    "$resources_out_dir/accessibility/ARIAAttributesView.js",
     "$resources_out_dir/console_counters/console_counters.js",
     "$resources_out_dir/console_counters/WarningErrorCounter.js",
     "$resources_out_dir/extensions/extensions.js",
@@ -1340,7 +1376,6 @@ if (external_devtools_frontend) {
     "$resources_out_dir/platform/utilities.js",
     "$resources_out_dir/platform/platform.js",
     "$resources_out_dir/ui/ui.js",
-    "$resources_out_dir/common/common.js",
     "$resources_out_dir/ui/ZoomManager.js",
     "$resources_out_dir/ui/XWidget.js",
     "$resources_out_dir/ui/XLink.js",
@@ -1399,6 +1434,8 @@ if (external_devtools_frontend) {
     "$resources_out_dir/ui/Action.js",
     "$resources_out_dir/ui/ActionDelegate.js",
     "$resources_out_dir/ui/ContextFlavorListener.js",
+    "$resources_out_dir/common/common.js",
+    "$resources_out_dir/common/common-legacy.js",
     "$resources_out_dir/common/App.js",
     "$resources_out_dir/common/AppProvider.js",
     "$resources_out_dir/common/CharacterIdMap.js",
@@ -1430,8 +1467,6 @@ if (external_devtools_frontend) {
     "$resources_out_dir/audits_worker.js",
     "$resources_out_dir/devtools_app.html",
     "$resources_out_dir/devtools_app.js",
-    "$resources_out_dir/formatter_worker.js",
-    "$resources_out_dir/heap_snapshot_worker.js",
     "$resources_out_dir/inspector.html",
     "$resources_out_dir/inspector.js",
     "$resources_out_dir/js_app.html",
@@ -1525,6 +1560,11 @@ if (external_devtools_frontend) {
     "$resources_out_dir/sdk_test_runner/sdk_test_runner_module.js",
     "$resources_out_dir/security_test_runner/security_test_runner_module.js",
     "$resources_out_dir/sources_test_runner/sources_test_runner_module.js",
+  ]
+
+  generated_worker_bundles = [
+    "$resources_out_dir/formatter_worker.js",
+    "$resources_out_dir/heap_snapshot_worker.js",
   ]
 
   devtools_applications = [
@@ -1643,7 +1683,7 @@ if (external_devtools_frontend) {
     grd_files =
         copied_devtools_modules + generated_applications +
         generated_non_autostart_non_remote_modules + devtools_embedder_scripts +
-        generated_scripts +
+        generated_scripts + generated_worker_bundles +
         [
           "$resources_out_dir/devtools_extension_api.js",
           "$resources_out_dir/sdk/wasm_source_map/pkg/wasm_source_map_bg.wasm",
@@ -1753,7 +1793,8 @@ if (external_devtools_frontend) {
         [ "front_end/Runtime.js" ]
     outputs =
         generated_applications + generated_non_autostart_non_remote_modules +
-        generated_remote_modules + generated_test_modules
+        generated_remote_modules + generated_test_modules +
+        generated_worker_bundles
 
     args = devtools_applications + [
              "--input_path",
@@ -1810,10 +1851,11 @@ if (external_devtools_frontend) {
     copy("copy_generated_scripts") {
       deps = [
         ":build_debug_devtools",
+        ":build_release_devtools",
         ":frontend_protocol_sources",
         ":supported_css_properties",
       ]
-      sources = generated_scripts
+      sources = generated_scripts + generated_worker_bundles
       outputs = [
         "$resources_out_debug_dir/{{source_file_part}}",
       ]
