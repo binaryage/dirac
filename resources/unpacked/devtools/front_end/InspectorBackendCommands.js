@@ -735,6 +735,9 @@ Protocol.inspectorBackend.registerCommand("Profiler.stopPreciseCoverage", [], []
 Protocol.inspectorBackend.registerCommand("Profiler.stopTypeProfile", [], [], false);
 Protocol.inspectorBackend.registerCommand("Profiler.takePreciseCoverage", [], ["result"], false);
 Protocol.inspectorBackend.registerCommand("Profiler.takeTypeProfile", [], ["result"], false);
+Protocol.inspectorBackend.registerCommand("Profiler.enableRuntimeCallStats", [], [], false);
+Protocol.inspectorBackend.registerCommand("Profiler.disableRuntimeCallStats", [], [], false);
+Protocol.inspectorBackend.registerCommand("Profiler.getRuntimeCallStats", [], ["result"], false);
 
 // Runtime.
 Protocol.inspectorBackend.registerEnum("Runtime.RemoteObjectType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol", Bigint: "bigint"});
