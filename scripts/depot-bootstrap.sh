@@ -15,8 +15,8 @@ cd "$DEPOT_DIR"
 
 ln -s "../dirac" dirac
 ln -s "../dirac/resources/unpacked/devtools" "devtools-frontend"
-# this is a workaround for https://github.com/binaryage/dirac/commit/655b5b89c95529c611dc180da7bc9ab21bf8015d
-ln -s "../dirac/resources/unpacked/devtools/buildtools" buildtools
+## this is a workaround for https://github.com/binaryage/dirac/commit/655b5b89c95529c611dc180da7bc9ab21bf8015d
+#ln -s "../dirac/resources/unpacked/devtools/buildtools" buildtools
 
 gclient config https://github.com/binaryage/dirac.git --unmanaged --deps-file="resources/unpacked/devtools/DEPS"
 
