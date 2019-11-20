@@ -1,7 +1,7 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.29")
 (def figwheel-version "0.5.19")
-(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.520"))
+(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.597"))
 (def selected-clojure-version "1.10.1")
 (def selenium-version "3.141.59")
 (def lein-cljsbuild-version "1.1.7")
@@ -11,7 +11,7 @@
    ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "0.4.500"]
+  [['org.clojure/core.async "0.5.527"]
    ['org.clojure/tools.logging "0.5.0"]
    ['org.clojure/tools.cli "0.4.2"]
    ['nrepl/nrepl "0.6.0"]
@@ -19,7 +19,7 @@
    ['http-kit "2.3.0"]
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
-   ['funcool/cuerdas "2.2.0"]
+   ['funcool/cuerdas "2.2.1"]
    ['com.rpl/specter "1.1.3"]])
 
 (def test-deps
@@ -27,7 +27,7 @@
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.7.0" :scope "test"]
    ['binaryage/chromex "0.8.3" :scope "test"]
-   ['binaryage/devtools "0.9.10" :scope "test"]
+   ['binaryage/devtools "0.9.11" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.46" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
@@ -44,8 +44,8 @@
 
    ['http.async.client "1.3.1" :scope "test"]
 
-   ['ring/ring-core "1.7.1" :scope "test"]
-   ['ring/ring-devel "1.7.1" :scope "test"]
+   ['ring/ring-core "1.8.0" :scope "test"]
+   ['ring/ring-devel "1.8.0" :scope "test"]
    ['clj-time "0.15.2" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
