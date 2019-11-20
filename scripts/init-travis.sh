@@ -54,6 +54,10 @@ if [[ -z "${TRAVIS_SKIP_ADDITIONAL_DEPS_INSTALL}" ]]; then
   sudo apt-get install -y rsync xz-utils
 fi
 
+if [[ -z "${TRAVIS_SKIP_JSBEAUTIFY_INSTALL}" ]]; then
+  sudo apt-get install -y jsbeautifier
+fi
+
 # install latest chromium
 pushd "$TRAVIS_BUILD_DIR"
 

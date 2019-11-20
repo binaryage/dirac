@@ -9,3 +9,5 @@ cd "$DEPOT_DIR"
 gn --root=devtools-frontend gen out/Default
 
 autoninja -C out/Default
+
+"$SCRIPTS/beautify-generated-files.sh"
