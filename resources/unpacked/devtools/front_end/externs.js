@@ -1445,6 +1445,15 @@ DetailsRenderer.DetailsJSON;
  */
 DetailsRenderer.NodeDetailsJSON;
 
+/**
+ * @typedef {{
+ *     sourceUrl: (string|undefined),
+ *     sourceLine: (string|undefined),
+ *     sourceColumn: (string|undefined),
+ * }}
+ */
+DetailsRenderer.SourceLocationDetailsJSON;
+
 /** @typedef {{
  *     wastedMs: (number|undefined),
  *     wastedBytes: (number|undefined),
