@@ -3707,7 +3707,7 @@ Protocol.inspectorBackend.registerCommand("Debugger.getScriptSource", [{
     "name": "scriptId",
     "type": "string",
     "optional": false
-}], ["scriptSource"], false);
+}], ["scriptSource", "bytecode"], false);
 Protocol.inspectorBackend.registerCommand("Debugger.getWasmBytecode", [{
     "name": "scriptId",
     "type": "string",

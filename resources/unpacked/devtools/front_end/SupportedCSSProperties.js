@@ -961,6 +961,8 @@ SDK.CSSMetadata._generatedProperties = [{
     "svg": true,
     "name": "r"
 }, {
+    "name": "render-subtree"
+}, {
     "name": "resize"
 }, {
     "name": "right"
