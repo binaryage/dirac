@@ -1,18 +1,27 @@
-(ns dirac.tests.backend.runner
+(ns dirac.test-runner
   (:require [clansi :refer [style]]
             [clojure.test :refer :all]
             [cuerdas.core :as cuerdas]
             [dirac.logging :as logging]
             [dirac.shared.travis :as travis]
-            [dirac.tests.backend.agent.tests]
-            [environ.core :refer [env]]))
+            [environ.core :refer [env]]
+            [dirac.main.cli-test]
+            [dirac.home.locations-test]
+            [dirac.home.chromium-test]
+            [dirac.home.chromium.scout-test]
+            [dirac.home.chromium.version-test]
+            ))
 
 ; this is the default dirac test runner
 
 (def log-level (or (env :dirac-log-level) (env :dirac-backend-tests-log-level) "INFO"))                                       ; INFO, DEBUG, TRACE, ALL
 
 (def default-test-namespaces
-  ['dirac.tests.backend.agent.tests])
+  ['dirac.main.cli-test
+   'dirac.home.locations-test
+   'dirac.home.chromium-test
+   'dirac.home.chromium.scout-test
+   'dirac.home.chromium.version-test])
 
 (defn setup-logging! []
   (logging/setup! {:log-out   :console
@@ -63,6 +72,6 @@
 
 (defn -main []
   (setup-logging!)
-  (println (style (str "Running backend tests against Clojure " (clojure-version)) :blue))
+  (println (style (str "Running Dirac tests against Clojure " (clojure-version)) :blue))
   (let [summary (apply run-tests default-test-namespaces)]
     (System/exit (if (successful? summary) 0 1))))

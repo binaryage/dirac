@@ -45,16 +45,16 @@
           server-url (get-backend-tests-nrepl-server-url)
           tunnel-host (get-backend-tests-nrepl-tunnel-host)
           tunnel-port (get-backend-tests-nrepl-tunnel-port)
-          tunner-url (get-backend-tests-nrepl-tunnel-url)
+          tunnel-url (get-backend-tests-nrepl-tunnel-url)
           agent-output (with-out-str
                          @(agent/boot! {:nrepl-server {:host server-host
                                                        :port server-port}
                                         :nrepl-tunnel {:host tunnel-host
                                                        :port tunnel-port}}))]
       (is (.contains agent-output (str "Connected to nREPL server at " server-url)))
-      (is (.contains agent-output (str "Agent is accepting connections at " tunner-url)))
+      (is (.contains agent-output (str "Agent is accepting connections at " tunnel-url)))
       (log/info "dirac agent started on" tunnel-port)
-      (let [tunnel (tunnel-client/create! tunner-url)]
+      (let [tunnel (tunnel-client/create! tunnel-url)]
         (expect-event! tunnel :open)
         (tunnel-client/send! tunnel {:op      :ready
                                      :version version})
