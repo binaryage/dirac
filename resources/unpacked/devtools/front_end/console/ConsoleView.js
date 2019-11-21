@@ -994,7 +994,7 @@ export default class ConsoleView extends UI.VBox {
     SDK.consoleModel.addMessage(commandMessage);
 
     this._prompt.history().pushHistoryItem(text);
-    this._diracHistorySetting.set(this._prompt.history().historyData().slice(-Console.ConsoleView.persistedHistorySize));
+    this._diracHistorySetting.set(this._prompt.history().historyData().slice(-persistedHistorySize));
 
     const debuggerModel = executionContext.debuggerModel;
     let scopeInfoPromise = Promise.resolve(null);
@@ -2043,7 +2043,7 @@ export class ConsoleCommand extends Console.ConsoleViewMessage {
 /**
  * @unrestricted
  */
-export class ConsoleDiracCommand extends Console.ConsoleCommand {
+export class ConsoleDiracCommand extends ConsoleCommand {
   /**
    * @override
    * @return {!Element}
@@ -2070,7 +2070,7 @@ export class ConsoleDiracCommand extends Console.ConsoleCommand {
 /**
  * @unrestricted
  */
-export class ConsoleDiracMarkup extends Console.ConsoleCommand {
+export class ConsoleDiracMarkup extends ConsoleCommand {
   /**
    * @override
    * @return {!Element}
@@ -2234,7 +2234,7 @@ Console.ConsoleCommand.MaxLengthToIgnoreHighlighter = 10000;
 /**
  * @constructor
  */
-Console.ConsoleDiracResult = ConsoleDiracResult;
+Console.ConsoleDiracCommand = ConsoleDiracCommand;
 
 /**
  * @constructor

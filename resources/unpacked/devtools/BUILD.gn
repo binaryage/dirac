@@ -1045,6 +1045,8 @@ if (external_devtools_frontend) {
     "front_end/common/Trie.js",
     "front_end/common/UIString.js",
     "front_end/common/Worker.js",
+    # dirac
+    "front_end/console/DiracPrompt.js",
   ]
 
   devtools_test_files = [
