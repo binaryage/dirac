@@ -29,7 +29,7 @@ stdout           displayed 36 items:
                   * marion$content-script$page$send-message! / marion$content-script$page$send-message!
                   * marion$content-script$background$relay-message-to-page! / marion$content-script$background$relay-message-to-page!
                   * marion$content-script$background$process-message! / marion$content-script$background$process-message!
-                  * λ
+                  * switch__*gen-num*__auto__ / switch__*gen-num*__auto__
                   * λ
                   * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
                   * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto--
@@ -86,7 +86,7 @@ stdout           displayed 36 items:
                   * marion$content_script$page$send_message_BANG_
                   * marion$content_script$background$relay_message_to_page_BANG_
                   * marion$content_script$background$process_message_BANG_
-                  * (anonymous)
+                  * switch__*gen-num*__auto__
                   * (anonymous)
                   * marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto____*gen-num*
                   * marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto__
@@ -169,7 +169,7 @@ stdout           displayed 44 items:
                   * marion$content-script$page$send-message!
                   * marion$content-script$background$relay-message-to-page!
                   * marion$content-script$background$process-message!
-                  * λ
+                  * switch__*gen-num*__auto__
                   * λ
                   * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
                   * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto--
@@ -198,7 +198,7 @@ devtools #4      setCurrentPanel: sources
 automate #4      scrape! [:callstack-pane-functions]
 stdout           displayed 71 items:
                   * break-here! / dirac.tests.scenarios.core-async/break-here!
-                  * λ
+                  * switch__*gen-num*__auto__ / switch__*gen-num*__auto__
                   * λ
                   * break-async-$-state-machine--*gen-num*--auto----*gen-num* / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto----*gen-num*
                   * break-async-$-state-machine--*gen-num*--auto-- / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto--
@@ -219,7 +219,7 @@ stdout           displayed 71 items:
                   * queue-delay / cljs.core.async.impl.dispatch/queue-delay
                   * timeout / cljs.core.async.impl.timers/timeout
                   * timeout / cljs.core.async/timeout
-                  * λ
+                  * switch__*gen-num*__auto__ / switch__*gen-num*__auto__
                   * λ
                   * break-async-$-state-machine--*gen-num*--auto----*gen-num* / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto----*gen-num*
                   * break-async-$-state-machine--*gen-num*--auto-- / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto--
@@ -246,7 +246,7 @@ stdout           displayed 71 items:
                   * marion$content-script$page$send-message! / marion$content-script$page$send-message!
                   * marion$content-script$background$relay-message-to-page! / marion$content-script$background$relay-message-to-page!
                   * marion$content-script$background$process-message! / marion$content-script$background$process-message!
-                  * λ
+                  * switch__*gen-num*__auto__ / switch__*gen-num*__auto__
                   * λ
                   * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
                   * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto--
