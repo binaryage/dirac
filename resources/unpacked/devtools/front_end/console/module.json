@@ -216,8 +216,10 @@
         "formatter"
     ],
     "scripts": [
-        "clojure-parinfer.js",
-        "DiracPrompt.js",
+      "clojure-parinfer.js",
+      "DiracPrompt.js"
+    ],
+    "modules": [
         "ConsoleContextSelector.js",
         "ConsoleFilter.js",
         "ConsolePinPane.js",
