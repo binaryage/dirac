@@ -2990,6 +2990,10 @@ Protocol.inspectorBackend.registerEnum("Security.SecurityState", {
     Info: "info",
     InsecureBroken: "insecure-broken"
 });
+Protocol.inspectorBackend.registerEnum("Security.SafetyTipStatus", {
+    BadReputation: "badReputation",
+    Lookalike: "lookalike"
+});
 Protocol.inspectorBackend.registerEnum("Security.CertificateErrorAction", {
     Continue: "continue",
     Cancel: "cancel"
@@ -3145,6 +3149,25 @@ Protocol.inspectorBackend.registerCommand("Storage.clearDataForOrigin", [{
     "name": "storageTypes",
     "type": "string",
     "optional": false
+}], [], false);
+Protocol.inspectorBackend.registerCommand("Storage.getCookies", [{
+    "name": "browserContextId",
+    "type": "string",
+    "optional": true
+}], ["cookies"], false);
+Protocol.inspectorBackend.registerCommand("Storage.setCookies", [{
+    "name": "cookies",
+    "type": "object",
+    "optional": false
+}, {
+    "name": "browserContextId",
+    "type": "string",
+    "optional": true
+}], [], false);
+Protocol.inspectorBackend.registerCommand("Storage.clearCookies", [{
+    "name": "browserContextId",
+    "type": "string",
+    "optional": true
 }], [], false);
 Protocol.inspectorBackend.registerCommand("Storage.getUsageAndQuota", [{
     "name": "origin",
