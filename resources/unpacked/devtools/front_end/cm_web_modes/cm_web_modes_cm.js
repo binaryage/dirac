@@ -9,3 +9,5 @@ import './javascript.js';
 import './xml.js';
 import './htmlmixed.js';
 import './htmlembedded.js';
+import './runmode.js';
+import './placeholder.js';
