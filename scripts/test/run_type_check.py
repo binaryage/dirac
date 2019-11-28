@@ -76,7 +76,7 @@ def to_platform_path_exact(filepath):
 DEVTOOLS_PATH = devtools_paths.devtools_root_path()
 SCRIPTS_PATH = path.join(DEVTOOLS_PATH, 'scripts')
 ROOT_PATH = devtools_paths.root_path()
-BROWSER_PROTOCOL_PATH = path.join(ROOT_PATH, 'third_party', 'blink', 'renderer', 'core', 'inspector', 'browser_protocol.pdl')
+BROWSER_PROTOCOL_PATH = devtools_paths.browser_protocol_path()
 # TODO(dgozman): move these checks to v8.
 JS_PROTOCOL_PATH = path.join(ROOT_PATH, 'v8', 'include', 'js_protocol.pdl')
 DEVTOOLS_FRONTEND_PATH = path.join(DEVTOOLS_PATH, 'front_end')
@@ -267,8 +267,8 @@ GENERATED_SKIP_COMPILATION_FILES = [
     'sdk/wasm_source_map/pkg/wasm_source_map.js',
     'formatter_worker/acorn/acorn.js',
     'formatter_worker/acorn/acorn_loose.js',
-    'cm_web_modes/css.js',
-    'cm_web_modes/xml.js',
+    'cm_web_modes/css.js', 'cm_web_modes/xml.js', 'cm_web_modes/javascript.js', 'cm_web_modes/htmlmixed.js',
+    'cm_web_modes/htmlembedded.js',
     'cm_headless/headlesscodemirror.js',
     'diff/diff_match_patch.js',
     'cm/codemirror.js',
@@ -283,7 +283,8 @@ GENERATED_SKIP_COMPILATION_FILES = [
     'cm/foldgutter.js',
     'cm/brace-fold.js',
     'audits/lighthouse/report.js',
-    'audits/lighthouse/report-generator.js'
+    'audits/lighthouse/report-generator.js',
+    'javascript_metadata/NativeFunction.js'
 ]
 
 
