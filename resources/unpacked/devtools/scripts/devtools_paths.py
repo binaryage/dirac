@@ -57,6 +57,14 @@ def eslint_path():
     return path.join(node_modules_path(), 'eslint', 'bin', 'eslint.js')
 
 
+def check_localizable_resources_path():
+    return path.join(devtools_root_path(), 'scripts', 'check_localizable_resources.js')
+
+
+def check_localized_strings_path():
+    return path.join(devtools_root_path(), 'scripts', 'check_localizability.js')
+
+
 def karma_path():
     return path.join(node_modules_path(), 'karma', 'bin', 'karma')
 
@@ -73,3 +81,6 @@ def rollup_path():
 
 def package_json_path():
     return path.join(devtools_root_path(), 'package.json')
+
+def browser_protocol_path():
+    return path.join(third_party_path(), 'blink', 'public', 'devtools_protocol', 'browser_protocol.pdl')

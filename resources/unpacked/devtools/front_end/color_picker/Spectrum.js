@@ -78,16 +78,6 @@ export class Spectrum extends UI.VBox {
     this._alphaElementBackground = this._alphaElement.createChild('div', 'spectrum-alpha-background');
     this._alphaSlider = this._alphaElement.createChild('div', 'spectrum-slider');
 
-    const displaySwitcher = toolsContainer.createChild('div', 'spectrum-display-switcher spectrum-switcher');
-    appendSwitcherIcon(displaySwitcher);
-    displaySwitcher.tabIndex = 0;
-    self.onInvokeElement(displaySwitcher, event => {
-      this._formatViewSwitch();
-      event.consume(true);
-    });
-    UI.ARIAUtils.setAccessibleName(displaySwitcher, ls`Change color format`);
-    UI.ARIAUtils.markAsButton(displaySwitcher);
-
     // RGBA/HSLA display.
     this._displayContainer = toolsContainer.createChild('div', 'spectrum-text source-code');
     this._textValues = [];
@@ -115,6 +105,16 @@ export class Spectrum extends UI.VBox {
     const label = this._hexContainer.createChild('div', 'spectrum-text-label');
     label.textContent = ls`HEX`;
     UI.ARIAUtils.setAccessibleName(this._hexValue, label.textContent);
+
+    const displaySwitcher = toolsContainer.createChild('div', 'spectrum-display-switcher spectrum-switcher');
+    appendSwitcherIcon(displaySwitcher);
+    displaySwitcher.tabIndex = 0;
+    self.onInvokeElement(displaySwitcher, event => {
+      this._formatViewSwitch();
+      event.consume(true);
+    });
+    UI.ARIAUtils.setAccessibleName(displaySwitcher, ls`Change color format`);
+    UI.ARIAUtils.markAsButton(displaySwitcher);
 
     UI.installDragHandle(
         this._hueElement, dragStart.bind(this, positionHue.bind(this)), positionHue.bind(this), null, 'pointer',
@@ -170,7 +170,8 @@ export class Spectrum extends UI.VBox {
 
     this._addColorToolbar = new UI.Toolbar('add-color-toolbar');
     const addColorButton = new UI.ToolbarButton(Common.UIString('Add to palette'), 'largeicon-add');
-    addColorButton.addEventListener(UI.ToolbarButton.Events.Click, this._addColorToCustomPalette, this);
+    addColorButton.addEventListener(UI.ToolbarButton.Events.Click, this._onAddColorMousedown.bind(this));
+    addColorButton.element.addEventListener('keydown', this._onAddColorKeydown.bind(this));
     this._addColorToolbar.appendToolbarItem(addColorButton);
 
     this._colorPickedBound = this._colorPicked.bind(this);
@@ -365,6 +366,7 @@ export class Spectrum extends UI.VBox {
       const colorElement = this._createPaletteColor(palette.colors[i], palette.colorNames[i], animationDelay);
       UI.ARIAUtils.markAsButton(colorElement);
       UI.ARIAUtils.setAccessibleName(colorElement, ls`Color ${palette.colors[i]}`);
+      colorElement.tabIndex = -1;
       colorElement.addEventListener(
           'mousedown',
           this._paletteColorSelected.bind(this, palette.colors[i], palette.colorNames[i], palette.matchUserFormat));
@@ -717,14 +719,27 @@ export class Spectrum extends UI.VBox {
     }
   }
 
+  _onAddColorMousedown() {
+    this._addColorToCustomPalette();
+  }
+
   /**
-   * @param {!Common.Event} event
+   * @param {!Event} event
    */
-  _addColorToCustomPalette(event) {
+  _onAddColorKeydown(event) {
+    if (isEnterOrSpaceKey(event)) {
+      this._addColorToCustomPalette();
+      event.consume(true);
+    }
+  }
+
+  _addColorToCustomPalette() {
     const palette = this._customPaletteSetting.get();
     palette.colors.push(this.colorString());
     this._customPaletteSetting.set(palette);
     this._showPalette(this._customPaletteSetting.get(), false);
+    const colorElements = this._paletteContainer.querySelectorAll('.spectrum-palette-color');
+    colorElements[colorElements.length - 1].focus();
   }
 
   /**
