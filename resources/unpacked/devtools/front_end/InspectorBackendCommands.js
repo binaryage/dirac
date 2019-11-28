@@ -2524,7 +2524,7 @@ Protocol.inspectorBackend.registerEnum("Page.ClientNavigationReason", {
     Reload: "reload"
 });
 Protocol.inspectorBackend.registerEvent("Page.domContentEventFired", ["timestamp"]);
-Protocol.inspectorBackend.registerEvent("Page.fileChooserOpened", ["mode"]);
+Protocol.inspectorBackend.registerEvent("Page.fileChooserOpened", ["frameId", "backendNodeId", "mode"]);
 Protocol.inspectorBackend.registerEvent("Page.frameAttached", ["frameId", "parentFrameId", "stack"]);
 Protocol.inspectorBackend.registerEvent("Page.frameClearedScheduledNavigation", ["frameId"]);
 Protocol.inspectorBackend.registerEvent("Page.frameDetached", ["frameId"]);
@@ -2954,15 +2954,6 @@ Protocol.inspectorBackend.registerCommand("Page.setInterceptFileChooserDialog", 
     "name": "enabled",
     "type": "boolean",
     "optional": false
-}], [], false);
-Protocol.inspectorBackend.registerCommand("Page.handleFileChooser", [{
-    "name": "action",
-    "type": "string",
-    "optional": false
-}, {
-    "name": "files",
-    "type": "object",
-    "optional": true
 }], [], false);
 
 // Performance.
