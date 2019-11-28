@@ -1063,8 +1063,8 @@ if (external_devtools_frontend) {
     "front_end/common/Worker.js",
     # dirac
     "front_end/console/DiracPrompt.js",
-    "front_end/cm_web_modes/placeholder.js",
-    "front_end/cm_web_modes/runmode.js",
+    "front_end/cm/placeholder.js",
+    "front_end/cm/runmode.js",
   ]
 
   devtools_test_files = [

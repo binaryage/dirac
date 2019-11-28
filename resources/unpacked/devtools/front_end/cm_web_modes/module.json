@@ -9,17 +9,13 @@
     "javascript.js",
     "xml.js",
     "htmlmixed.js",
-    "htmlembedded.js",
-    "runmode.js",
-    "placeholder.js"
+    "htmlembedded.js"
   ],
   "skip_compilation": [
     "css.js",
     "javascript.js",
     "xml.js",
     "htmlmixed.js",
-    "htmlembedded.js",
-    "runmode.js",
-    "placeholder.js"
+    "htmlembedded.js"
   ]
 }
