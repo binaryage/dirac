@@ -1,10 +1,12 @@
-#!/bin/bash
-script_full_path=$(dirname "$0")
+#!/usr/bin/env bash
 
-directories=$(find "$script_full_path/../../front_end/" -type d -maxdepth 1 -mindepth 1 -printf '%f\n')
+set -e -o pipefail
+scripts_migration_dir=$(dirname "${BASH_SOURCE[0]}")
 
-cd $script_full_path
+directories=$(find "$scripts_migration_dir/../../front_end/" -type d -maxdepth 1 -mindepth 1 -exec basename {} \;)
+
+cd "$scripts_migration_dir"
 
 for file in $directories; do
-  npm run remove-unused $file
+  npm run remove-unused "$file"
 done
