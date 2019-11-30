@@ -31,7 +31,7 @@
  * @implements {InspectorFrontendHostAPI}
  * @unrestricted
  */
-export class InspectorFrontendHostStub {
+class InspectorFrontendHostStub {
   /**
    * @suppressGlobalPropertiesCheck
    */
@@ -526,7 +526,7 @@ let _InspectorFrontendHost = window.InspectorFrontendHost;
 /**
  * @unrestricted
  */
-export class InspectorFrontendAPIImpl {
+class InspectorFrontendAPIImpl {
   constructor() {
     this._debugFrontend =
         !!Root.Runtime.queryParam('debugFrontend') || (window['InspectorTest'] && window['InspectorTest']['debugTest']);
@@ -638,11 +638,5 @@ Host = Host || {};
 
 /** @type {!InspectorFrontendHostStub} */
 Host.InspectorFrontendHost = _InspectorFrontendHost;
-
-/** @constructor */
-Host.InspectorFrontendHostStub = InspectorFrontendHostStub;
-
-/** @constructor */
-Host.InspectorFrontendAPIImpl = InspectorFrontendAPIImpl;
 
 Host.isUnderTest = isUnderTest;

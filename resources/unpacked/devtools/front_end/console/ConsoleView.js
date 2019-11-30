@@ -1801,7 +1801,7 @@ export default class ConsoleView extends UI.VBox {
   }
 }
 
-export const persistedHistorySize = 300;
+const persistedHistorySize = 300;
 
 /**
  * @unrestricted
@@ -2023,7 +2023,7 @@ export class ConsoleCommand extends Console.ConsoleViewMessage {
       this._formattedCommand.textContent = this.text.replaceControlCharacters();
       this._contentElement.appendChild(this._formattedCommand);
 
-      if (this._formattedCommand.textContent.length < ConsoleCommand.MaxLengthToIgnoreHighlighter) {
+      if (this._formattedCommand.textContent.length < MaxLengthToIgnoreHighlighter) {
         const javascriptSyntaxHighlighter = new UI.SyntaxHighlighter('text/javascript', true);
         javascriptSyntaxHighlighter.syntaxHighlightNode(this._formattedCommand).then(this._updateSearch.bind(this));
       } else {
@@ -2093,7 +2093,7 @@ export class ConsoleDiracMarkup extends ConsoleCommand {
 /**
  * @unrestricted
  */
-export class ConsoleCommandResult extends Console.ConsoleViewMessage {
+class ConsoleCommandResult extends Console.ConsoleViewMessage {
   /**
    * @override
    * @return {!Element}
@@ -2187,7 +2187,14 @@ export class ActionDelegate {
 }
 
 /** @type {symbol} */
-export const _messageSortingTimeSymbol = Symbol('messageSortingTime');
+const _messageSortingTimeSymbol = Symbol('messageSortingTime');
+
+/**
+ * The maximum length before strings are considered too long for syntax highlighting.
+ * @const
+ * @type {number}
+ */
+const MaxLengthToIgnoreHighlighter = 10000;
 
 /* Legacy exported object */
 self.Console = self.Console || {};
@@ -2199,7 +2206,9 @@ Console = Console || {};
  * @constructor
  */
 Console.ConsoleView = ConsoleView;
-Console.ConsoleView.persistedHistorySize = persistedHistorySize;
+
+/** @constructor */
+Console.ConsoleViewFilter = ConsoleViewFilter;
 
 /**
  * @typedef {{messageIndex: number, matchIndex: number}}
@@ -2211,25 +2220,15 @@ Console.ConsoleView.RegexMatchRange;
  */
 Console.ConsoleView.ActionDelegate = ActionDelegate;
 
-/** @type {symbol} */
-Console.ConsoleView._messageSortingTimeSymbol = _messageSortingTimeSymbol;
-
-/**
- * @constructor
- */
-Console.ConsoleViewFilter = ConsoleViewFilter;
-
 /**
  * @constructor
  */
 Console.ConsoleCommand = ConsoleCommand;
 
 /**
- * The maximum length before strings are considered too long for syntax highlighting.
- * @const
- * @type {number}
+ * @constructor
  */
-Console.ConsoleCommand.MaxLengthToIgnoreHighlighter = 10000;
+Console.ConsoleGroup = ConsoleGroup;
 
 /**
  * @constructor
@@ -2240,13 +2239,3 @@ Console.ConsoleDiracCommand = ConsoleDiracCommand;
  * @constructor
  */
 Console.ConsoleDiracMarkup = ConsoleDiracMarkup;
-
-/**
- * @constructor
- */
-Console.ConsoleCommandResult = ConsoleCommandResult;
-
-/**
- * @constructor
- */
-Console.ConsoleGroup = ConsoleGroup;
