@@ -157,14 +157,14 @@ function findPreviousUploadedPosition(commitPosition) {
   const previousPosition = commitPosition - 100;
   const positionsListURL =
       `http://commondatastorage.googleapis.com/chromium-browser-snapshots/?delimiter=/&prefix=${PLATFORM
-      }/&marker=${PLATFORM}/${previousPosition}/`;
+  }/&marker=${PLATFORM}/${previousPosition}/`;
   return utils.fetch(positionsListURL).then(onPositionsList).catch(onError);
 
   function onPositionsList(buffer) {
     const positions = buffer.toString('binary')
-        .match(/([^<>]+)(?=<\/Prefix><\/CommonPrefixes>)/g)
-        .map(prefixedPosition => prefixedPosition.split('/')[1])
-        .map(positionString => parseInt(positionString, 10));
+                        .match(/([^<>]+)(?=<\/Prefix><\/CommonPrefixes>)/g)
+                        .map(prefixedPosition => prefixedPosition.split('/')[1])
+                        .map(positionString => parseInt(positionString, 10));
     const positionSet = new Set(positions);
     let previousUploadedPosition = commitPosition;
     while (commitPosition - previousUploadedPosition < 100) {
@@ -260,8 +260,8 @@ function runTests(buildDirectoryPath, useDebugDevtools) {
       const unitTestPath = `http://localhost:8080/${unitTest.slice('http/tests/'.length)}`;
       const link =
           `http://localhost:8080/inspector-sources/debug/integration_test_runner.html?experiments=true&test=${
-              unitTestPath
-          }`;
+                                                                                                              unitTestPath
+                                                                                                            }`;
       console.log('1) Go to: ', link);
       console.log('2) Go to: http://localhost:9222/, click on "inspected-page.html", and copy the ws query parameter');
       console.log('3) Open DevTools on DevTools and you can refresh to re-run the test')
