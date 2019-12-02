@@ -69,6 +69,10 @@ def karma_path():
     return path.join(node_modules_path(), 'karma', 'bin', 'karma')
 
 
+def license_checker_path():
+    return path.join(node_modules_path(), 'license-checker', 'bin', 'license-checker')
+
+
 def rollup_path():
     return path.join(
         node_modules_path(),
@@ -79,8 +83,13 @@ def rollup_path():
     )
 
 
+def package_lock_json_path():
+    return path.join(devtools_root_path(), 'package-lock.json')
+
+
 def package_json_path():
     return path.join(devtools_root_path(), 'package.json')
+
 
 def browser_protocol_path():
     return path.join(third_party_path(), 'blink', 'public', 'devtools_protocol', 'browser_protocol.pdl')
