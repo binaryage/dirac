@@ -4,19 +4,19 @@
 
 vars = {
   'build_url': 'https://chromium.googlesource.com/chromium/src/build.git',
-  'build_revision': '61ec5dc258b9fbc17504d1276e0c3eaf4656e372',
+  'build_revision': 'a7f71a7572e28ad835a128f01f9252341c71d5a3',
 
   'buildtools_url': 'https://chromium.googlesource.com/chromium/src/buildtools.git',
-  'buildtools_revision': '140e4d7c45ffb55ce5dc4d11a0c3938363cd8257',
+  'buildtools_revision': '6b3e658d6fe8cd9c2588796d296f07312b776054',
 
   'depot_tools_url': 'https://chromium.googlesource.com/chromium/tools/depot_tools.git',
-  'depot_tools_revision': '512f92b73181c8e1d99d38cd9b73fbf41151636a',
+  'depot_tools_revision': '6aa0bcb82820f0c22ac982941de6bba2d1554729',
 
   'inspector_protocol_url': 'https://chromium.googlesource.com/deps/inspector_protocol',
-  'inspector_protocol_revision': 'd2fc9b958e1eeb1e956f3e2208afa9923bdc9b67',
+  'inspector_protocol_revision': 'd2983fdc34c8558e817af97e8f166b4e3f5d3849',
 
   'clang_format_url': 'https://chromium.googlesource.com/chromium/llvm-project/cfe/tools/clang-format.git',
-  'clang_format_revision': 'bb994c6f067340c1135eb43eed84f4b33cfa7397',
+  'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
 
   # GN CIPD package version.
   'gn_version': 'git_revision:ad9e442d92dcd9ee73a557428cfc336b55cbd533',
