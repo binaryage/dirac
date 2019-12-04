@@ -376,6 +376,7 @@
         "CookieModel.js",
         "CookieParser.js",
         "ProfileTreeModel.js",
+        "IssuesModel.js",
         "ServerTiming.js",
         "CPUProfileDataModel.js",
         "CPUProfilerModel.js",
