@@ -326,6 +326,13 @@ export default class InspectorView extends UI.VBox {
     this._ownerSplitWidget = splitWidget;
   }
 
+  /**
+   * @return {?UI.SplitWidget}
+   */
+  ownerSplit() {
+    return this._ownerSplitWidget;
+  }
+
   minimize() {
     if (this._ownerSplitWidget) {
       this._ownerSplitWidget.setSidebarMinimized(true);
