@@ -24,3 +24,5 @@ cp -R "$TMP_RELEASE_BUILD/." "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 # copy compiled extension code (produced by `lein compile-dirac`)
 cp "$ROOT/target/resources/release/.compiled/background.js" "$RELEASE_BUILD/background.js"
 cp "$ROOT/target/resources/release/.compiled/options.js" "$RELEASE_BUILD/options.js"
+
+"$SCRIPTS/prune-release.sh"
