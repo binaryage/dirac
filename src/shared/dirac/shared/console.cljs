@@ -1,5 +1,5 @@
 (ns dirac.shared.console
-  (:require [goog.debug :as goog-debug]
+  (:require [goog.debug.Console]
             [goog.debug.Logger.Level :as level]
             [goog.log :as goog-log]
             [oops.core :refer [gcall oapply ocall ocall! oget oset!]]))
@@ -18,7 +18,7 @@
    :finest  level/FINEST})
 
 (defn make-console []
-  (goog-debug/Console.))
+  (js/goog.debug.Console.))
 
 (defn log-to-console! []
   (ocall! (make-console) "setCapturing" true))
