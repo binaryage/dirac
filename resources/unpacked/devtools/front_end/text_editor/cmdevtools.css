@@ -471,7 +471,7 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
     margin-left: 10px;
     padding-left: 5px;
     color: #222;
-    -webkit-user-select: text;
+    user-select: text;
     border-radius: 2px;
     cursor: default;
 }
@@ -606,7 +606,7 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
 .CodeMirror-foldgutter-open::before,
 .CodeMirror-foldgutter-folded::before {
     background-color: #727272;
-    -webkit-user-select: none;
+    user-select: none;
     -webkit-mask-image: url(Images/treeoutlineTriangles.svg);
     -webkit-mask-size: 32px 24px;
     content: "";
