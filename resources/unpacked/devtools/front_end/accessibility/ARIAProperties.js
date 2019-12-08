@@ -41,6 +41,9 @@ Accessibility.ARIAMetadata._config = {
         "type": "IDREF_list",
         "name": "aria-describedby"
     }, {
+        "type": "string",
+        "name": "aria-description"
+    }, {
         "type": "IDREF",
         "name": "aria-details"
     }, {

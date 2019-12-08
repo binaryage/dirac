@@ -33,3 +33,5 @@ chromium-latest-linux/
 !/.lein-fast-trampoline
 .cpcache/
 .test-dirac-chrome-profile
+.depot
+*.pyc

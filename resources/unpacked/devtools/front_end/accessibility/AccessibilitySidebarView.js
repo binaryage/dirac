@@ -4,7 +4,7 @@
 /**
  * @unrestricted
  */
-Accessibility.AccessibilitySidebarView = class extends UI.ThrottledWidget {
+export default class AccessibilitySidebarView extends UI.ThrottledWidget {
   constructor() {
     super();
     this._node = null;
@@ -96,11 +96,8 @@ Accessibility.AccessibilitySidebarView = class extends UI.ThrottledWidget {
   wasShown() {
     super.wasShown();
 
-    this._breadcrumbsSubPane.setNode(this.node());
-    this._breadcrumbsSubPane.setAXNode(this.axNode());
-    this._axNodeSubPane.setNode(this.node());
-    this._axNodeSubPane.setAXNode(this.axNode());
-    this._ariaSubPane.setNode(this.node());
+    // Pull down the latest date for this node.
+    this.doUpdate();
 
     SDK.targetManager.addModelListener(SDK.DOMModel, SDK.DOMModel.Events.AttrModified, this._onAttrChange, this);
     SDK.targetManager.addModelListener(SDK.DOMModel, SDK.DOMModel.Events.AttrRemoved, this._onAttrChange, this);
@@ -157,12 +154,12 @@ Accessibility.AccessibilitySidebarView = class extends UI.ThrottledWidget {
     }
     this.update();
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Accessibility.AccessibilitySubPane = class extends UI.SimpleView {
+export class AccessibilitySubPane extends UI.SimpleView {
   /**
    * @param {string} name
    */
@@ -220,4 +217,20 @@ Accessibility.AccessibilitySubPane = class extends UI.SimpleView {
     this.element.appendChild(treeOutline.element);
     return treeOutline;
   }
-};
+}
+
+/* Legacy exported object */
+self.Accessibility = self.Accessibility || {};
+
+/* Legacy exported object */
+Accessibility = Accessibility || {};
+
+/**
+ * @constructor
+ */
+Accessibility.AccessibilitySidebarView = AccessibilitySidebarView;
+
+/**
+ * @constructor
+ */
+Accessibility.AccessibilitySubPane = AccessibilitySubPane;

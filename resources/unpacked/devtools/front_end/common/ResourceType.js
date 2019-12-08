@@ -27,10 +27,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {ParsedURL} from './ParsedURL.js';
+import {ls} from './UIString.js';
+
 /**
  * @unrestricted
  */
-export default class ResourceType {
+export class ResourceType {
   /**
    * @param {string} name
    * @param {string} title
@@ -45,10 +48,13 @@ export default class ResourceType {
   }
 
   /**
-   * @param {string} mimeType
+   * @param {?string} mimeType
    * @return {!ResourceType}
    */
   static fromMimeType(mimeType) {
+    if (!mimeType) {
+      return resourceTypes.Other;
+    }
     if (mimeType.startsWith('text/html')) {
       return resourceTypes.Document;
     }
@@ -83,7 +89,7 @@ export default class ResourceType {
    * @return {?ResourceType}
    */
   static fromURL(url) {
-    return ResourceType._resourceTypeByExtension.get(Common.ParsedURL.extractExtension(url)) || null;
+    return ResourceType._resourceTypeByExtension.get(ParsedURL.extractExtension(url)) || null;
   }
 
   /**
@@ -105,12 +111,12 @@ export default class ResourceType {
    * @return {string|undefined}
    */
   static mimeFromURL(url) {
-    const name = Common.ParsedURL.extractName(url);
+    const name = ParsedURL.extractName(url);
     if (ResourceType._mimeTypeByName.has(name)) {
       return ResourceType._mimeTypeByName.get(name);
     }
 
-    const ext = Common.ParsedURL.extractExtension(url).toLowerCase();
+    const ext = ParsedURL.extractExtension(url).toLowerCase();
     return ResourceType._mimeTypeByExtension.get(ext);
   }
 

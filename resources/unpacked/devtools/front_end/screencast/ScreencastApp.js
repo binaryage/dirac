@@ -6,7 +6,7 @@
  * @implements {SDK.SDKModelObserver<!SDK.ScreenCaptureModel>}
  * @unrestricted
  */
-Screencast.ScreencastApp = class {
+export default class ScreencastApp {
   constructor() {
     this._enabledSetting = Common.settings.createSetting('screencastEnabled', false);
     this._toggleButton = new UI.ToolbarToggle(Common.UIString('Toggle screencast'), 'largeicon-phone');
@@ -40,6 +40,7 @@ Screencast.ScreencastApp = class {
     this._rootSplitWidget.hideMain();
 
     this._rootSplitWidget.setSidebarWidget(UI.inspectorView);
+    UI.inspectorView.setOwnerSplit(this._rootSplitWidget);
     rootView.attachToDocument(document);
     rootView.focus();
   }
@@ -93,17 +94,13 @@ Screencast.ScreencastApp = class {
       this._rootSplitWidget.hideMain();
     }
   }
-};
-
-/** @type {!Screencast.ScreencastApp} */
-Screencast.ScreencastApp._appInstance;
-
+}
 
 /**
  * @implements {UI.ToolbarItem.Provider}
  * @unrestricted
  */
-Screencast.ScreencastApp.ToolbarButtonProvider = class {
+export class ToolbarButtonProvider {
   /**
    * @override
    * @return {?UI.ToolbarItem}
@@ -111,13 +108,13 @@ Screencast.ScreencastApp.ToolbarButtonProvider = class {
   item() {
     return Screencast.ScreencastApp._instance()._toggleButton;
   }
-};
+}
 
 /**
  * @implements {Common.AppProvider}
  * @unrestricted
  */
-Screencast.ScreencastAppProvider = class {
+export class ScreencastAppProvider {
   /**
    * @override
    * @return {!Common.App}
@@ -125,4 +122,28 @@ Screencast.ScreencastAppProvider = class {
   createApp() {
     return Screencast.ScreencastApp._instance();
   }
-};
+}
+
+/* Legacy exported object */
+self.Screencast = self.Screencast || {};
+
+/* Legacy exported object */
+Screencast = Screencast || {};
+
+/**
+ * @constructor
+ */
+Screencast.ScreencastApp = ScreencastApp;
+
+/**
+ * @constructor
+ */
+Screencast.ScreencastApp.ToolbarButtonProvider = ToolbarButtonProvider;
+
+/** @type {!Screencast.ScreencastApp} */
+Screencast.ScreencastApp._appInstance;
+
+/**
+ * @constructor
+ */
+Screencast.ScreencastAppProvider = ScreencastAppProvider;

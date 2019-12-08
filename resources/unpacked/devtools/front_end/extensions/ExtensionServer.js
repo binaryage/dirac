@@ -82,6 +82,13 @@ export default class ExtensionServer extends Common.Object {
     this._registerHandler(commands.UpdateButton, this._onUpdateButton.bind(this));
     window.addEventListener('message', this._onWindowMessage.bind(this), false);  // Only for main window.
 
+    /** @suppress {checkTypes} */
+    const existingTabId =
+        window.DevToolsAPI && window.DevToolsAPI.getInspectedTabId && window.DevToolsAPI.getInspectedTabId();
+
+    if (existingTabId) {
+      this._setInspectedTabId({data: existingTabId});
+    }
     Host.InspectorFrontendHost.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.SetInspectedTabId, this._setInspectedTabId, this);
 
@@ -957,7 +964,7 @@ export const Events = {
 /**
  * @unrestricted
  */
-export class ExtensionServerPanelView extends UI.SimpleView {
+class ExtensionServerPanelView extends UI.SimpleView {
   /**
    * @param {string} name
    * @param {string} title
@@ -1028,9 +1035,6 @@ Extensions.ExtensionServer = ExtensionServer;
 
 /** @enum {symbol} */
 Extensions.ExtensionServer.Events = Events;
-
-/** @constructor */
-Extensions.ExtensionServerPanelView = ExtensionServerPanelView;
 
 /** @constructor */
 Extensions.ExtensionStatus = ExtensionStatus;

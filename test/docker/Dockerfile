@@ -1,5 +1,5 @@
 # keep this in sync with travis: https://docs.travis-ci.com/user/ci-environment
-FROM ubuntu:disco
+FROM ubuntu:bionic
 
 WORKDIR /root
 
@@ -7,13 +7,13 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # install basic deps
 RUN apt-get update && apt-get -y install --no-install-recommends \
-  software-properties-common wget curl git xvfb sudo unzip python libxss1 net-tools libgtk-3-0
+  software-properties-common wget curl git xvfb sudo unzip python libxss1 net-tools libgtk-3-0 rsync xz-utils
 
-# install Java 11
+# install Java
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update && \
     apt install -y --no-install-recommends \
-    openjdk-11-jdk ca-certificates-java && \
+    openjdk-13-jdk ca-certificates-java && \
     java -version
 
 # dependencies needed by chromedriver

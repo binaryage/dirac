@@ -213,12 +213,12 @@
         "data_grid",
         "object_ui",
         "sdk",
-        "product_registry",
         "formatter"
     ],
     "scripts": [
-        "clojure-parinfer.js",
-        "DiracPrompt.js",
+      "clojure-parinfer.js"
+    ],
+    "modules": [
         "ConsoleContextSelector.js",
         "ConsoleFilter.js",
         "ConsolePinPane.js",
@@ -226,6 +226,7 @@
         "ConsoleViewport.js",
         "ConsoleViewMessage.js",
         "ConsolePrompt.js",
+        "DiracPrompt.js",
         "ConsoleView.js",
         "ConsolePanel.js"
     ],

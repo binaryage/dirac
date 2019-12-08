@@ -34,7 +34,7 @@
  * @implements {UI.ViewLocationResolver}
  * @unrestricted
  */
-Elements.ElementsPanel = class extends UI.Panel {
+export default class ElementsPanel extends UI.Panel {
   constructor() {
     super('elements');
     this.registerRequiredCSS('elements/elementsPanel.css');
@@ -55,7 +55,7 @@ Elements.ElementsPanel = class extends UI.Panel {
     stackElement.appendChild(crumbsContainer);
 
     this._splitWidget.setMainWidget(this._searchableView);
-    /** @type {?Elements.ElementsPanel._splitMode} */
+    /** @type {?_splitMode} */
     this._splitMode = null;
 
     this._contentElement.id = 'elements-content';
@@ -90,13 +90,18 @@ Elements.ElementsPanel = class extends UI.Panel {
         SDK.DOMModel, SDK.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
     Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
+
+    /**
+     * @type {!Array.<{domModel: !SDK.DOMModel, index: number, node: (?SDK.DOMNode|undefined)}>|undefined}
+     */
+    this._searchResults;
   }
 
   /**
-   * @return {!Elements.ElementsPanel}
+   * @return {!ElementsPanel}
    */
   static instance() {
-    return /** @type {!Elements.ElementsPanel} */ (self.runtime.sharedInstance(Elements.ElementsPanel));
+    return /** @type {!ElementsPanel} */ (self.runtime.sharedInstance(ElementsPanel));
   }
 
   /**
@@ -232,7 +237,7 @@ Elements.ElementsPanel = class extends UI.Panel {
    * @override
    */
   wasShown() {
-    UI.context.setFlavor(Elements.ElementsPanel, this);
+    UI.context.setFlavor(ElementsPanel, this);
 
     for (let i = 0; i < this._treeOutlines.length; ++i) {
       const treeOutline = this._treeOutlines[i];
@@ -286,7 +291,7 @@ Elements.ElementsPanel = class extends UI.Panel {
       this._popoverHelper.hidePopover();
     }
     super.willHide();
-    UI.context.setFlavor(Elements.ElementsPanel, null);
+    UI.context.setFlavor(ElementsPanel, null);
   }
 
   /**
@@ -365,7 +370,7 @@ Elements.ElementsPanel = class extends UI.Panel {
     /**
      * @param {!SDK.DOMModel} domModel
      * @param {?SDK.DOMNode} staleNode
-     * @this {Elements.ElementsPanel}
+     * @this {ElementsPanel}
      */
     async function restoreNode(domModel, staleNode) {
       const nodePath = staleNode ? staleNode.path() : null;
@@ -449,12 +454,9 @@ Elements.ElementsPanel = class extends UI.Panel {
 
     /**
      * @param {!Array.<number>} resultCounts
-     * @this {Elements.ElementsPanel}
+     * @this {ElementsPanel}
      */
     function resultCountCallback(resultCounts) {
-      /**
-       * @type {!Array.<{domModel: !SDK.DOMModel, index: number, node: (?SDK.DOMNode|undefined)}>}
-       */
       this._searchResults = [];
       for (let i = 0; i < resultCounts.length; ++i) {
         const resultCount = resultCounts[i];
@@ -528,6 +530,10 @@ Elements.ElementsPanel = class extends UI.Panel {
   }
 
   _jumpToSearchResult(index) {
+    if (!this._searchResults) {
+      return;
+    }
+
     this._currentSearchResultIndex = (index + this._searchResults.length) % this._searchResults.length;
     this._highlightCurrentSearchResult();
   }
@@ -571,6 +577,9 @@ Elements.ElementsPanel = class extends UI.Panel {
   _highlightCurrentSearchResult() {
     const index = this._currentSearchResultIndex;
     const searchResults = this._searchResults;
+    if (!searchResults) {
+      return;
+    }
     const searchResult = searchResults[index];
 
     this._searchableView.updateCurrentMatchIndex(index);
@@ -759,7 +768,7 @@ Elements.ElementsPanel = class extends UI.Panel {
     }, true);
 
     /**
-     * @this {!Elements.ElementsPanel}
+     * @this {!ElementsPanel}
      */
     function uninstallHack() {
       this._splitWidget.element.classList.remove('disable-resizer-for-elements-hack');
@@ -785,11 +794,11 @@ Elements.ElementsPanel = class extends UI.Panel {
     let splitMode;
     const position = Common.moduleSetting('sidebarPosition').get();
     if (position === 'right' || (position === 'auto' && UI.inspectorView.element.offsetWidth > 680)) {
-      splitMode = Elements.ElementsPanel._splitMode.Vertical;
+      splitMode = _splitMode.Vertical;
     } else if (UI.inspectorView.element.offsetWidth > 415) {
-      splitMode = Elements.ElementsPanel._splitMode.Horizontal;
+      splitMode = _splitMode.Horizontal;
     } else {
-      splitMode = Elements.ElementsPanel._splitMode.Slim;
+      splitMode = _splitMode.Slim;
     }
 
     if (this.sidebarPaneView && splitMode === this._splitMode) {
@@ -805,7 +814,7 @@ Elements.ElementsPanel = class extends UI.Panel {
       this._splitWidget.uninstallResizer(this.sidebarPaneView.tabbedPane().headerElement());
     }
 
-    this._splitWidget.setVertical(this._splitMode === Elements.ElementsPanel._splitMode.Vertical);
+    this._splitWidget.setVertical(this._splitMode === _splitMode.Vertical);
     this.showToolbarPane(null /* widget */, null /* toggle */);
 
     const matchedStylePanesWrapper = new UI.VBox();
@@ -819,7 +828,7 @@ Elements.ElementsPanel = class extends UI.Panel {
 
     /**
      * @param {boolean} inComputedStyle
-     * @this {Elements.ElementsPanel}
+     * @this {ElementsPanel}
      */
     function showMetrics(inComputedStyle) {
       if (inComputedStyle) {
@@ -831,7 +840,7 @@ Elements.ElementsPanel = class extends UI.Panel {
 
     /**
      * @param {!Common.Event} event
-     * @this {Elements.ElementsPanel}
+     * @this {ElementsPanel}
      */
     function tabSelected(event) {
       const tabId = /** @type {string} */ (event.data.tabId);
@@ -851,13 +860,13 @@ Elements.ElementsPanel = class extends UI.Panel {
     this._popoverHelper.setHasPadding(true);
     this._popoverHelper.setTimeout(0);
 
-    if (this._splitMode !== Elements.ElementsPanel._splitMode.Vertical) {
+    if (this._splitMode !== _splitMode.Vertical) {
       this._splitWidget.installResizer(tabbedPane.headerElement());
     }
 
     const stylesView = new UI.SimpleView(Common.UIString('Styles'));
     this.sidebarPaneView.appendView(stylesView);
-    if (splitMode === Elements.ElementsPanel._splitMode.Horizontal) {
+    if (splitMode === _splitMode.Horizontal) {
       // Styles and computed are merged into a single tab.
       stylesView.element.classList.add('flex-auto');
 
@@ -879,7 +888,7 @@ Elements.ElementsPanel = class extends UI.Panel {
     }
     this._stylesViewToReveal = stylesView;
 
-    showMetrics.call(this, this._splitMode === Elements.ElementsPanel._splitMode.Horizontal);
+    showMetrics.call(this, this._splitMode === _splitMode.Horizontal);
 
     this.sidebarPaneView.appendApplicableItems('elements-sidebar');
     for (let i = 0; i < extensionSidebarPanes.length; ++i) {
@@ -909,25 +918,20 @@ Elements.ElementsPanel = class extends UI.Panel {
       this.sidebarPaneView.appendView(pane);
     }
   }
-};
-
-Elements.ElementsPanel._elementsSidebarViewTitleSymbol = Symbol('title');
+}
 
 /** @enum {symbol} */
-Elements.ElementsPanel._splitMode = {
+export const _splitMode = {
   Vertical: Symbol('Vertical'),
   Horizontal: Symbol('Horizontal'),
   Slim: Symbol('Slim'),
 };
 
-// Sniffed in tests.
-Elements.ElementsPanel._firstInspectElementCompletedForTest = function() {};
-
 /**
  * @implements {UI.ContextMenu.Provider}
  * @unrestricted
  */
-Elements.ElementsPanel.ContextMenuProvider = class {
+export class ContextMenuProvider {
   /**
    * @override
    * @param {!Event} event
@@ -941,19 +945,19 @@ Elements.ElementsPanel.ContextMenuProvider = class {
     }
 
     // Skip adding "Reveal..." menu item for our own tree outline.
-    if (Elements.ElementsPanel.instance().element.isAncestor(/** @type {!Node} */ (event.target))) {
+    if (ElementsPanel.instance().element.isAncestor(/** @type {!Node} */ (event.target))) {
       return;
     }
     const commandCallback = Common.Revealer.reveal.bind(Common.Revealer, object);
     contextMenu.revealSection().appendItem(Common.UIString('Reveal in Elements panel'), commandCallback);
   }
-};
+}
 
 /**
  * @implements {Common.Revealer}
  * @unrestricted
  */
-Elements.ElementsPanel.DOMNodeRevealer = class {
+export class DOMNodeRevealer {
   /**
    * @override
    * @param {!Object} node
@@ -961,7 +965,7 @@ Elements.ElementsPanel.DOMNodeRevealer = class {
    * @return {!Promise}
    */
   reveal(node, omitFocus) {
-    const panel = Elements.ElementsPanel.instance();
+    const panel = ElementsPanel.instance();
     panel._pendingNodeReveal = true;
 
     return new Promise(revealPromise);
@@ -1019,30 +1023,30 @@ Elements.ElementsPanel.DOMNodeRevealer = class {
       }
     }
   }
-};
+}
 
 /**
  * @implements {Common.Revealer}
  * @unrestricted
  */
-Elements.ElementsPanel.CSSPropertyRevealer = class {
+export class CSSPropertyRevealer {
   /**
    * @override
    * @param {!Object} property
    * @return {!Promise}
    */
   reveal(property) {
-    const panel = Elements.ElementsPanel.instance();
+    const panel = ElementsPanel.instance();
     return panel._revealProperty(/** @type {!SDK.CSSProperty} */ (property));
   }
-};
+}
 
 
 /**
  * @implements {UI.ActionDelegate}
  * @unrestricted
  */
-Elements.ElementsActionDelegate = class {
+export class ElementsActionDelegate {
   /**
    * @override
    * @param {!UI.Context} context
@@ -1068,22 +1072,22 @@ Elements.ElementsActionDelegate = class {
         return true;
       case 'elements.undo':
         SDK.domModelUndoStack.undo();
-        Elements.ElementsPanel.instance()._stylesWidget.forceUpdate();
+        ElementsPanel.instance()._stylesWidget.forceUpdate();
         return true;
       case 'elements.redo':
         SDK.domModelUndoStack.redo();
-        Elements.ElementsPanel.instance()._stylesWidget.forceUpdate();
+        ElementsPanel.instance()._stylesWidget.forceUpdate();
         return true;
     }
     return false;
   }
-};
+}
 
 /**
  * @implements {Elements.MarkerDecorator}
  * @unrestricted
  */
-Elements.ElementsPanel.PseudoStateMarkerDecorator = class {
+export class PseudoStateMarkerDecorator {
   /**
    * @override
    * @param {!SDK.DOMNode} node
@@ -1095,4 +1099,34 @@ Elements.ElementsPanel.PseudoStateMarkerDecorator = class {
       title: Common.UIString('Element state: %s', ':' + node.domModel().cssModel().pseudoState(node).join(', :'))
     };
   }
-};
+}
+
+/* Legacy exported object */
+self.Elements = self.Elements || {};
+
+/* Legacy exported object */
+Elements = Elements || {};
+
+/** @constructor */
+Elements.ElementsPanel = ElementsPanel;
+
+// Sniffed in tests.
+Elements.ElementsPanel._firstInspectElementCompletedForTest = function() {};
+
+/** @enum {symbol} */
+Elements.ElementsPanel._splitMode = _splitMode;
+
+/** @constructor */
+Elements.ElementsPanel.ContextMenuProvider = ContextMenuProvider;
+
+/** @constructor */
+Elements.ElementsPanel.DOMNodeRevealer = DOMNodeRevealer;
+
+/** @constructor */
+Elements.ElementsPanel.CSSPropertyRevealer = CSSPropertyRevealer;
+
+/** @constructor */
+Elements.ElementsActionDelegate = ElementsActionDelegate;
+
+/** @constructor */
+Elements.ElementsPanel.PseudoStateMarkerDecorator = PseudoStateMarkerDecorator;

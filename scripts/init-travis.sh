@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 # we assume current working directory is set by our caller
-# in case of travis it should be TRAVIS_BUILD_DIR
-# in case of docker it should be /root
+# it should be a checkout of dirac repo (TRAVIS_BUILD_DIR)
 
 # read config
 set -e -o pipefail
@@ -11,7 +10,20 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 #export DIRAC_LOG_LEVEL=debug
 export DIRAC_CHROME_DRIVER_VERBOSE=1
-export LEIN_FAST_TRAMPOLINE=1
+
+if [[ -z "${TRAVIS_SKIP_DEPOT_TOOLS_INSTALL}" ]]; then
+  # see https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
+  if [[ -d depot_tools ]]; then
+    cd depot_tools
+    git pull origin
+    cd ..
+  else
+    git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+  fi
+  DEPOT_TOOLS_PATH="$(pwd -P)/depot_tools"
+  export PATH=$DEPOT_TOOLS_PATH:$PATH
+  gclient --version
+fi
 
 if [[ -z "${TRAVIS_SKIP_NSS3_UPGRADE}" ]]; then
   # this is needed for recent chrome
@@ -38,8 +50,23 @@ if [[ -z "${TRAVIS_SKIP_COLORDIFF_INSTALL}" ]]; then
   sudo apt-get install -y colordiff
 fi
 
+if [[ -z "${TRAVIS_SKIP_ADDITIONAL_DEPS_INSTALL}" ]]; then
+  sudo apt-get install -y rsync xz-utils
+fi
+
+if [[ -z "${TRAVIS_SKIP_JSBEAUTIFY_INSTALL}" ]]; then
+  sudo apt-get install -y jsbeautifier
+fi
+
 # install latest chromium
 pushd "$TRAVIS_BUILD_DIR"
+
+if [[ -z "${TRAVIS_SKIP_DEPOT_BOOTSTRAP}" ]]; then
+  if [[ ! -d "$DEPOT_DIR" ]]; then
+    "$SCRIPTS/depot-bootstrap.sh"
+  fi
+fi
+
 # HACK: we rely on the fact that the tmp dir is mapped to host and persists
 mkdir -p "$ROOT_TMP_DIR_RELATIVE"
 cd "$ROOT_TMP_DIR_RELATIVE"

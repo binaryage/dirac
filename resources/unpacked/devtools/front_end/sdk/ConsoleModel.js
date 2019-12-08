@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-export const _events = Symbol('SDK.ConsoleModel.events');
+const _events = Symbol('SDK.ConsoleModel.events');
 
 /**
  * @implements {SDK.TargetManager.Observer}
@@ -126,6 +126,7 @@ export default class ConsoleModel extends Common.Object {
    * @param {boolean} awaitPromise
    */
   async evaluateCommandInConsole(executionContext, originatingMessage, expression, useCommandLineAPI, awaitPromise) {
+    // TODO(crbug/1021921): Remove {awaitPromise} argument. {awaitPromise} is hard-coded to false by all call-sites.
     const result = await executionContext.evaluate(
         {
           expression: expression,
@@ -133,7 +134,8 @@ export default class ConsoleModel extends Common.Object {
           includeCommandLineAPI: useCommandLineAPI,
           silent: false,
           returnByValue: false,
-          generatePreview: true
+          generatePreview: true,
+          replMode: true
         },
         Common.settings.moduleSetting('consoleUserActivationEval').get(), awaitPromise);
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConsoleEvaluated);
@@ -779,7 +781,6 @@ SDK.ConsoleMessage.MessageType = MessageType;
 SDK.ConsoleMessage.MessageLevel = MessageLevel;
 
 SDK.ConsoleMessage.MessageSourceDisplayName = MessageSourceDisplayName;
-SDK.ConsoleModel._events = _events;
 
 /**
  * @type {!SDK.ConsoleModel}

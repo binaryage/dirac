@@ -320,6 +320,16 @@ export class DOMNode {
   }
 
   /**
+   * @return {?SDK.DOMNode}
+   */
+  markerPseudoElement() {
+    if (!this._pseudoElements) {
+      return null;
+    }
+    return this._pseudoElements.get(SDK.DOMNode.PseudoElementNames.Marker);
+  }
+
+  /**
    * @return {boolean}
    */
   isInsertionPoint() {
@@ -1002,6 +1012,9 @@ export class DOMNode {
 
   async scrollIntoView() {
     const node = this.enclosingElementOrSelf();
+    if (!node) {
+      return;
+    }
     const object = await node.resolveToObject();
     if (!object) {
       return;
@@ -1067,7 +1080,8 @@ export class DOMNode {
  */
 DOMNode.PseudoElementNames = {
   Before: 'before',
-  After: 'after'
+  After: 'after',
+  Marker: 'marker'
 };
 
 /**
@@ -1773,7 +1787,7 @@ export const Events = {
  * @implements {Protocol.DOMDispatcher}
  * @unrestricted
  */
-export class DOMDispatcher {
+class DOMDispatcher {
   /**
    * @param {!DOMModel} domModel
    */
@@ -1907,7 +1921,7 @@ export class DOMDispatcher {
   }
 }
 
-export class DOMModelUndoStack {
+class DOMModelUndoStack {
   constructor() {
     /** @type {!Array<!DOMModel>} */
     this._stack = [];
@@ -2009,12 +2023,6 @@ SDK.DOMNodeShortcut = DOMNodeShortcut;
 
 /** @constructor */
 SDK.DOMDocument = DOMDocument;
-
-/** @constructor */
-SDK.DOMDispatcher = DOMDispatcher;
-
-/** @constructor */
-SDK.DOMModelUndoStack = DOMModelUndoStack;
 
 /** @constructor */
 SDK.DOMNode = DOMNode;

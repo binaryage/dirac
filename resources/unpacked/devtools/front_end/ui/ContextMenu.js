@@ -146,6 +146,15 @@ export class Section {
   }
 
   /**
+   * @return {!UI.ContextMenuItem}
+   */
+  appendSeparator() {
+    const item = new UI.ContextMenuItem(this._contextMenu, 'separator');
+    this._items.push(item);
+    return item;
+  }
+
+  /**
    * @param {string} actionId
    * @param {string=} label
    * @param {boolean=} optional
@@ -198,7 +207,7 @@ export class Section {
 /**
  * @unrestricted
  */
-export class SubMenu extends Item {
+class SubMenu extends Item {
   /**
    * @param {?ContextMenu} contextMenu
    * @param {string=} label
@@ -579,9 +588,6 @@ UI.ContextMenuItem = Item;
  * @constructor
  */
 UI.ContextMenuSection = Section;
-
-/** @constructor */
-UI.ContextSubMenu = SubMenu;
 
 /**
  * @interface

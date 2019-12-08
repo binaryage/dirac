@@ -290,7 +290,7 @@ export const Events = {
  * @implements {Protocol.ServiceWorkerDispatcher}
  * @unrestricted
  */
-export class ServiceWorkerDispatcher {
+class ServiceWorkerDispatcher {
   /**
    * @param {!ServiceWorkerManager} manager
    */
@@ -466,6 +466,18 @@ ServiceWorkerVersion.RunningStatus = {
 };
 
 /**
+ * @type {!Object<string, string>}
+ */
+ServiceWorkerVersion.Status = {
+  [Protocol.ServiceWorker.ServiceWorkerVersionStatus.Activated]: ls`activated`,
+  [Protocol.ServiceWorker.ServiceWorkerVersionStatus.Activating]: ls`activating`,
+  [Protocol.ServiceWorker.ServiceWorkerVersionStatus.Installed]: ls`installed`,
+  [Protocol.ServiceWorker.ServiceWorkerVersionStatus.Installing]: ls`installing`,
+  [Protocol.ServiceWorker.ServiceWorkerVersionStatus.New]: ls`new`,
+  [Protocol.ServiceWorker.ServiceWorkerVersionStatus.Redundant]: ls`redundant`,
+};
+
+/**
  * @enum {string}
  */
 ServiceWorkerVersion.Modes = {
@@ -575,7 +587,7 @@ export class ServiceWorkerRegistration {
 /**
  * @unrestricted
  */
-export class ServiceWorkerContextNamer {
+class ServiceWorkerContextNamer {
   /**
    * @param {!SDK.Target} target
    * @param {!ServiceWorkerManager} serviceWorkerManager
@@ -657,7 +669,8 @@ export class ServiceWorkerContextNamer {
     }
     const parsedUrl = context.origin.asParsedURL();
     const label = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : context.name;
-    context.setLabel(label + ' #' + version.id + ' (' + version.status + ')');
+    const localizedStatus = ServiceWorkerVersion.Status[version.status];
+    context.setLabel(ls`${label} #${version.id} (${localizedStatus})`);
   }
 }
 
@@ -674,15 +687,9 @@ SDK.ServiceWorkerManager = ServiceWorkerManager;
 SDK.ServiceWorkerManager.Events = Events;
 
 /** @constructor */
-SDK.ServiceWorkerDispatcher = ServiceWorkerDispatcher;
-
-/** @constructor */
 SDK.ServiceWorkerVersion = ServiceWorkerVersion;
 
 /** @constructor */
 SDK.ServiceWorkerRegistration = ServiceWorkerRegistration;
-
-/** @constructor */
-SDK.ServiceWorkerContextNamer = ServiceWorkerContextNamer;
 
 SDK.SDKModel.register(ServiceWorkerManager, SDK.Target.Capability.ServiceWorker, true);

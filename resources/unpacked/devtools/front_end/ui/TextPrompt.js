@@ -729,7 +729,7 @@ export default class TextPrompt extends Common.Object {
   }
 }
 
-export const DefaultAutocompletionTimeout = 250;
+const DefaultAutocompletionTimeout = 250;
 
 /** @enum {symbol} */
 export const Events = {
@@ -744,8 +744,6 @@ UI = UI || {};
 
 /** @constructor */
 UI.TextPrompt = TextPrompt;
-
-UI.TextPrompt.DefaultAutocompletionTimeout = DefaultAutocompletionTimeout;
 
 /** @enum {symbol} */
 UI.TextPrompt.Events = Events;

@@ -57,7 +57,8 @@ Network.NetworkLogViewColumns = class {
       sortable: columnConfig.sortable,
       align: columnConfig.align,
       nonSelectable: columnConfig.nonSelectable,
-      weight: columnConfig.weight
+      weight: columnConfig.weight,
+      allowInSortByEvenWhenHidden: columnConfig.allowInSortByEvenWhenHidden,
     });
   }
 
@@ -225,8 +226,9 @@ Network.NetworkLogViewColumns = class {
      */
     function waterfallHeaderClicked() {
       const sortOrders = DataGrid.DataGrid.Order;
-      const sortOrder =
-          this._dataGrid.sortOrder() === sortOrders.Ascending ? sortOrders.Descending : sortOrders.Ascending;
+      const wasSortedByWaterfall = this._dataGrid.sortColumnId() === 'waterfall';
+      const wasSortedAscending = this._dataGrid.isSortOrderAscending();
+      const sortOrder = wasSortedByWaterfall && wasSortedAscending ? sortOrders.Descending : sortOrders.Ascending;
       this._dataGrid.markColumnAsSortedBy('waterfall', sortOrder);
       this._sortHandler();
     }
@@ -261,6 +263,13 @@ Network.NetworkLogViewColumns = class {
    */
   show(element) {
     this._splitWidget.show(element);
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  setHidden(value) {
+    UI.ARIAUtils.setHidden(this._splitWidget.element, value);
   }
 
   /**
@@ -314,7 +323,16 @@ Network.NetworkLogViewColumns = class {
         visibleColumns[columnConfig.id] = columnConfig.visible;
       }
     } else {
-      visibleColumns.name = true;
+      // Find the first visible column from the path group
+      const visibleColumn = this._columns.find(c => c.hideableGroup === 'path' && c.visible);
+      if (visibleColumn) {
+        visibleColumns[visibleColumn.id] = true;
+      } else {
+        // This should not happen because inside a hideableGroup
+        // there should always be at least one column visible
+        // This is just in case.
+        visibleColumns.name = true;
+      }
     }
     this._dataGrid.setColumnsVisiblity(visibleColumns);
   }
@@ -329,9 +347,6 @@ Network.NetworkLogViewColumns = class {
     this._gridMode = gridMode;
 
     if (gridMode) {
-      if (this._dataGrid.selectedNode) {
-        this._dataGrid.selectedNode.selected = false;
-      }
       this._splitWidget.showBoth();
       this._activeScroller = this._waterfallScroller;
       this._waterfallScroller.scrollTop = this._dataGridScroller.scrollTop;
@@ -403,7 +418,44 @@ Network.NetworkLogViewColumns = class {
   _innerHeaderContextMenu(contextMenu) {
     const columnConfigs = this._columns.filter(columnConfig => columnConfig.hideable);
     const nonResponseHeaders = columnConfigs.filter(columnConfig => !columnConfig.isResponseHeader);
+
+    /** @type {!Map<string, !Array<!Network.NetworkLogViewColumns.Descriptor>>} */
+    const hideableGroups = new Map();
+    /** @type {!Array.<!Network.NetworkLogViewColumns.Descriptor>} */
+    const nonResponseHeadersWithoutGroup = [];
+
+    // Sort columns into their groups
     for (const columnConfig of nonResponseHeaders) {
+      if (!columnConfig.hideableGroup) {
+        nonResponseHeadersWithoutGroup.push(columnConfig);
+      } else {
+        const name = columnConfig.hideableGroup;
+        if (!hideableGroups.has(name)) {
+          hideableGroups.set(name, []);
+        }
+
+        hideableGroups.get(name).push(columnConfig);
+      }
+    }
+
+    // Add all the groups first
+    for (const group of hideableGroups.values()) {
+      const visibleColumns = group.filter(columnConfig => columnConfig.visible);
+
+      for (const columnConfig of group) {
+        // Make sure that at least one item in every group is enabled
+        const isDisabled = visibleColumns.length === 1 && visibleColumns[0] === columnConfig;
+
+        contextMenu.headerSection().appendCheckboxItem(
+            columnConfig.title, this._toggleColumnVisibility.bind(this, columnConfig), columnConfig.visible,
+            isDisabled);
+      }
+
+      contextMenu.headerSection().appendSeparator();
+    }
+
+    // Add normal columns not belonging to any group
+    for (const columnConfig of nonResponseHeadersWithoutGroup) {
       contextMenu.headerSection().appendCheckboxItem(
           columnConfig.title, this._toggleColumnVisibility.bind(this, columnConfig), columnConfig.visible);
     }
@@ -641,12 +693,14 @@ Network.NetworkLogViewColumns._initialSortColumn = 'waterfall';
  *     visible: boolean,
  *     weight: number,
  *     hideable: boolean,
+ *     hideableGroup: ?string,
  *     nonSelectable: boolean,
  *     sortable: boolean,
  *     align: (?DataGrid.DataGrid.Align|undefined),
  *     isResponseHeader: boolean,
  *     sortingFunction: (!function(!Network.NetworkNode, !Network.NetworkNode):number|undefined),
- *     isCustomHeader: boolean
+ *     isCustomHeader: boolean,
+ *     allowInSortByEvenWhenHidden: boolean
  * }}
  */
 Network.NetworkLogViewColumns.Descriptor;
@@ -666,10 +720,11 @@ Network.NetworkLogViewColumns._defaultColumnConfig = {
   weight: 6,
   sortable: true,
   hideable: true,
-  nonSelectable: true,
+  hideableGroup: null,
+  nonSelectable: false,
   isResponseHeader: false,
-  alwaysVisible: false,
-  isCustomHeader: false
+  isCustomHeader: false,
+  allowInSortByEvenWhenHidden: false
 };
 
 /**
@@ -682,10 +737,23 @@ Network.NetworkLogViewColumns._defaultColumns = [
     subtitle: Common.UIString('Path'),
     visible: true,
     weight: 20,
-    hideable: false,
-    nonSelectable: false,
-    alwaysVisible: true,
+    hideable: true,
+    hideableGroup: 'path',
     sortingFunction: Network.NetworkRequestNode.NameComparator
+  },
+  {
+    id: 'path',
+    title: ls`Path`,
+    hideable: true,
+    hideableGroup: 'path',
+    sortingFunction: Network.NetworkRequestNode.RequestPropertyComparator.bind(null, 'path')
+  },
+  {
+    id: 'url',
+    title: ls`Url`,
+    hideable: true,
+    hideableGroup: 'path',
+    sortingFunction: Network.NetworkRequestNode.RequestPropertyComparator.bind(null, 'url')
   },
   {
     id: 'method',
@@ -826,7 +894,7 @@ Network.NetworkLogViewColumns._defaultColumns = [
     sortingFunction: Network.NetworkRequestNode.ResponseHeaderStringComparator.bind(null, 'vary')
   },
   // This header is a placeholder to let datagrid know that it can be sorted by this column, but never shown.
-  {id: 'waterfall', title: '', visible: false, hideable: false}
+  {id: 'waterfall', title: ls`Waterfall`, visible: false, hideable: false, allowInSortByEvenWhenHidden: true}
 ];
 
 Network.NetworkLogViewColumns._filmStripDividerColor = '#fccc49';

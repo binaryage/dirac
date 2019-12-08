@@ -19,17 +19,26 @@ import os
 import re
 import shutil
 import sys
+import subprocess
 
 from modular_build import read_file, write_file, bail_error
 import modular_build
 import rjsmin
+import special_case_namespaces
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-special_case_namespaces_path = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'special_case_namespaces.json')
+try:
+    original_sys_path = sys.path
+    sys.path = sys.path + [path.join(os.path.dirname(os.path.realpath(__file__)), '..')]
+    import devtools_paths
+finally:
+    sys.path = original_sys_path
+
+ROLLUP_ARGS = ['--no-treeshake', '--format', 'iife', '--context', 'self']
 
 
 def main(argv):
@@ -95,8 +104,7 @@ class ReleaseBuilder(object):
         self.descriptors = descriptors
         self.application_dir = application_dir
         self.output_dir = output_dir
-        with open(special_case_namespaces_path) as json_file:
-            self._special_case_namespaces = json.load(json_file)
+        self._special_case_namespaces = special_case_namespaces.special_case_namespaces
 
     def app_file(self, extension):
         return self.application_name + '.' + extension
@@ -126,7 +134,6 @@ class ReleaseBuilder(object):
         if descriptors.extends:
             self._write_include_tags(descriptors.extends, output)
         output.write(self._generate_include_tag(descriptors.application_name + '.js'))
-
 
     def _build_html(self):
         html_name = self.app_file('html')
@@ -177,6 +184,7 @@ class ReleaseBuilder(object):
                 else:
                     # Non-autostart modules are vulcanized.
                     module['scripts'] = [name + '_module.js']
+                    module['modules'] = module.get('modules', [])
             # Resources are already baked into scripts.
             if resources is not None:
                 del module['resources']
@@ -206,8 +214,8 @@ class ReleaseBuilder(object):
                 deps = set(desc.get('dependencies', []))
                 non_autostart_deps = deps & non_autostart
                 if len(non_autostart_deps):
-                    bail_error('Non-autostart dependencies specified for the autostarted module "%s": %s' %
-                               (name, non_autostart_deps))
+                    bail_error(
+                        'Non-autostart dependencies specified for the autostarted module "%s": %s' % (name, non_autostart_deps))
                 namespace = self._map_module_to_namespace(name)
                 output.write('\n/* Module %s */\n' % name)
                 output.write('\nself[\'%s\'] = self[\'%s\'] || {};\n' % (namespace, namespace))
@@ -226,23 +234,40 @@ class ReleaseBuilder(object):
             output.write(runtime_contents)
             output.write('Root.allDescriptors.push(...%s);' % self._release_module_descriptors())
             output.write('/* Application descriptor %s */\n' % self.app_file('json'))
-            output.write('Root.applicationDescriptor = ')
-            output.write(self.descriptors.application_json())
+            output.write('Root.applicationDescriptor = %s;' % self.descriptors.application_json())
         else:
             output.write('/* Additional descriptors */\n')
             output.write('Root.allDescriptors.push(...%s);' % self._release_module_descriptors())
             output.write('/* Additional descriptors %s */\n' % self.app_file('json'))
-            output.write('Root.applicationDescriptor.modules.push(...%s)' % json.dumps(self.descriptors.application.values()))
+            output.write('Root.applicationDescriptor.modules.push(...%s);' % json.dumps(self.descriptors.application.values()))
 
         output.write('\n/* Autostart modules */\n')
-        self._concatenate_autostart_modules(output)
+        if (self.descriptors.worker):
+            self._rollup_worker(output)
+        else:
+            self._concatenate_autostart_modules(output)
         output.write(';\n/* Autostart resources */\n')
         self._write_module_resources(self.autorun_resource_names(), output)
-        if not self.descriptors.has_html:
+        if not self.descriptors.has_html and not self.descriptors.worker:
             js_file = join(self.application_dir, self.app_file('js'))
             if path.exists(js_file):
                 output.write(';\n/* Autostart script for worker */\n')
                 output.write(read_file(js_file))
+
+    def _rollup_worker(self, output):
+        js_entrypoint = join(self.application_dir, self.app_file('unbundled.js'))
+        rollup_process = subprocess.Popen(
+            [devtools_paths.node_path(), devtools_paths.rollup_path()] + ROLLUP_ARGS + ['--input', js_entrypoint],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        out, error = rollup_process.communicate()
+
+        if rollup_process.returncode != 0:
+            print('Error while running rollup:')
+            print(error)
+            sys.exit(1)
+
+        output.write(minify_js(out))
 
     def _concatenate_dynamic_module(self, module_name):
         module = self.descriptors.modules[module_name]

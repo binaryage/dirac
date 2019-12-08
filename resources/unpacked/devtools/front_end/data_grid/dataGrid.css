@@ -1,6 +1,6 @@
 .data-grid {
     position: relative;
-    border: 1px solid #aaa;
+    border: 1px solid rgb(204, 204, 204) !important;
     line-height: 120%;
 }
 
@@ -105,7 +105,7 @@
 
 .data-grid td {
     vertical-align: top;
-    -webkit-user-select: text;
+    user-select: text;
 }
 
 .data-grid th {
@@ -184,7 +184,7 @@
 }
 
 .data-grid td.disclosure::before {
-    -webkit-user-select: none;
+    user-select: none;
     -webkit-mask-image: url(Images/treeoutlineTriangles.svg);
     -webkit-mask-position: 0 0;
     -webkit-mask-size: 32px 24px;
@@ -210,6 +210,10 @@
 .data-grid table.data tr.revealed.selected {
     background-color: rgb(212, 212, 212);
     color: inherit;
+}
+
+.data-grid.no-selection[data-keyboard-focus="true"]:focus {
+    border: 1px solid var(--accent-color) !important;
 }
 
 .data-grid:focus table.data tr.selected {

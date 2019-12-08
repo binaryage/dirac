@@ -20,18 +20,18 @@ export default class ViewManager {
   }
 
   /**
-   * @param {!Element} element
    * @param {!Array<!UI.ToolbarItem>} toolbarItems
+   * @return {?Element}
    */
-  static _populateToolbar(element, toolbarItems) {
+  static _createToolbar(toolbarItems) {
     if (!toolbarItems.length) {
-      return;
+      return null;
     }
     const toolbar = new UI.Toolbar('');
-    element.insertBefore(toolbar.element, element.firstChild);
     for (const item of toolbarItems) {
       toolbar.appendToolbarItem(item);
     }
+    return toolbar.element;
   }
 
   /**
@@ -171,6 +171,8 @@ export class _ContainerWidget extends UI.VBox {
     this.element.classList.add('flex-auto', 'view-container', 'overflow-auto');
     this._view = view;
     this.element.tabIndex = -1;
+    UI.ARIAUtils.markAsTabpanel(this.element);
+    UI.ARIAUtils.setAccessibleName(this.element, ls`${view.title()} panel`);
     this.setDefaultFocusedElement(this.element);
   }
 
@@ -183,7 +185,12 @@ export class _ContainerWidget extends UI.VBox {
     }
     const promises = [];
     // TODO(crbug.com/1006759): Transform to async-await
-    promises.push(this._view.toolbarItems().then(UI.ViewManager._populateToolbar.bind(UI.ViewManager, this.element)));
+    promises.push(this._view.toolbarItems().then(toolbarItems => {
+      const toolbarElement = UI.ViewManager._createToolbar(toolbarItems);
+      if (toolbarElement) {
+        this.element.insertBefore(toolbarElement, this.element.firstChild);
+      }
+    }));
     promises.push(this._view.widget().then(widget => {
       // Move focus from |this| to loaded |widget| if any.
       const shouldFocus = this.element.hasFocus();
@@ -225,18 +232,18 @@ export class _ExpandableContainerWidget extends UI.VBox {
     this.registerRequiredCSS('ui/viewContainers.css');
 
     this._titleElement = createElementWithClass('div', 'expandable-view-title');
-    UI.ARIAUtils.markAsLink(this._titleElement);
+    UI.ARIAUtils.markAsButton(this._titleElement);
     this._titleExpandIcon = UI.Icon.create('smallicon-triangle-right', 'title-expand-icon');
     this._titleElement.appendChild(this._titleExpandIcon);
     const titleText = view.title();
     this._titleElement.createTextChild(titleText);
     UI.ARIAUtils.setAccessibleName(this._titleElement, titleText);
     this._titleElement.tabIndex = 0;
-    this._titleElement.addEventListener('click', this._toggleExpanded.bind(this), false);
+    self.onInvokeElement(this._titleElement, this._toggleExpanded.bind(this));
     this._titleElement.addEventListener('keydown', this._onTitleKeyDown.bind(this), false);
     this.contentElement.insertBefore(this._titleElement, this.contentElement.firstChild);
 
-    this.contentElement.createChild('slot');
+    UI.ARIAUtils.setControls(this._titleElement, this.contentElement.createChild('slot'));
     this._view = view;
     view[UI.ViewManager._ExpandableContainerWidget._symbol] = this;
   }
@@ -250,8 +257,12 @@ export class _ExpandableContainerWidget extends UI.VBox {
     }
     // TODO(crbug.com/1006759): Transform to async-await
     const promises = [];
-    promises.push(
-        this._view.toolbarItems().then(UI.ViewManager._populateToolbar.bind(UI.ViewManager, this._titleElement)));
+    promises.push(this._view.toolbarItems().then(toolbarItems => {
+      const toolbarElement = UI.ViewManager._createToolbar(toolbarItems);
+      if (toolbarElement) {
+        this._titleElement.appendChild(toolbarElement);
+      }
+    }));
     promises.push(this._view.widget().then(widget => {
       this._widget = widget;
       this._view[UI.View.widgetSymbol] = widget;
@@ -284,7 +295,13 @@ export class _ExpandableContainerWidget extends UI.VBox {
     this._materialize().then(() => this._widget.detach());
   }
 
-  _toggleExpanded() {
+  /**
+   * @param {!Event} event
+   */
+  _toggleExpanded(event) {
+    if (event.type === 'keydown' && event.target !== this._titleElement) {
+      return;
+    }
     if (this._titleElement.classList.contains('expanded')) {
       this._collapse();
     } else {
@@ -296,9 +313,10 @@ export class _ExpandableContainerWidget extends UI.VBox {
    * @param {!Event} event
    */
   _onTitleKeyDown(event) {
-    if (isEnterOrSpaceKey(event)) {
-      this._toggleExpanded();
-    } else if (event.key === 'ArrowLeft') {
+    if (event.target !== this._titleElement) {
+      return;
+    }
+    if (event.key === 'ArrowLeft') {
       this._collapse();
     } else if (event.key === 'ArrowRight') {
       if (!this._titleElement.classList.contains('expanded')) {
@@ -315,7 +333,7 @@ _ExpandableContainerWidget._symbol = Symbol('container');
 /**
  * @unrestricted
  */
-export class _Location {
+class _Location {
   /**
    * @param {!UI.ViewManager} manager
    * @param {!UI.Widget} widget
@@ -601,7 +619,7 @@ _TabbedLocation.orderStep = 10;  // Keep in sync with descriptors.
  * @implements {UI.ViewLocation}
  * @unrestricted
  */
-export class _StackLocation extends _Location {
+class _StackLocation extends _Location {
   /**
    * @param {!UI.ViewManager} manager
    * @param {function()=} revealCallback
@@ -706,10 +724,4 @@ UI.ViewManager._ContainerWidget = _ContainerWidget;
 UI.ViewManager._ExpandableContainerWidget = _ExpandableContainerWidget;
 
 /** @constructor */
-UI.ViewManager._Location = _Location;
-
-/** @constructor */
 UI.ViewManager._TabbedLocation = _TabbedLocation;
-
-/** @constructor */
-UI.ViewManager._StackLocation = _StackLocation;

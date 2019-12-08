@@ -1,28 +1,10 @@
 {
-  "name": "chrome-devtools-frontend",
+  "author": "The Chromium Authors",
+  "bugs": {
+    "url": "https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component:Platform%3EDevTools%20&sort=-opened&colspec=ID%20Stars%20Owner%20Summary%20Modified%20Opened"
+  },
   "description": "Chrome DevTools UI",
-  "scripts": {
-    "start": "node scripts/start_chrome_and_server.js",
-    "chrome": "node scripts/chrome_debug_launcher/launch_chrome.js",
-    "server": "node scripts/hosted_mode/server.js",
-    "test": "node scripts/npm_test.js",
-    "debug-test": "node scripts/npm_test.js --debug-devtools",
-    "lint": "eslint front_end",
-    "closure": "python scripts/compile_frontend.py",
-    "setup-dtrun": "cd scripts/devtools_run && npm link",
-    "format-py": "yapf --exclude scripts/build/rjsmin.py -i --recursive scripts PRESUBMIT.py",
-    "extract": "node scripts/extract_module/extract_module.js",
-    "check-gn": "node scripts/check_gn.js",
-    "check-json": "node scripts/json_validator/validate_module_json.js",
-    "check-loc": "node scripts/check_localizability.js -a",
-    "check-grdp": "node scripts/check_localizable_resources.js",
-    "generate-jsconfig": "node scripts/generate_jsconfig.js",
-    "optimize-svg-images": "python scripts/optimize_svg_images.py"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ChromeDevTools/devtools-frontend.git"
-  },
+  "homepage": "https://devtools.chrome.com",
   "keywords": [
     "devtools",
     "chrome",
@@ -30,13 +12,28 @@
     "blink",
     "debugger"
   ],
-  "author": "The Chromium Authors",
   "license": "SEE LICENSE IN https://chromium.googlesource.com/chromium/src/+/master/LICENSE",
-  "bugs": {
-    "url": "https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component:Platform%3EDevTools%20&sort=-opened&colspec=ID%20Stars%20Owner%20Summary%20Modified%20Opened"
+  "name": "chrome-devtools-frontend",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChromeDevTools/devtools-frontend.git"
   },
-  "homepage": "https://devtools.chrome.com",
-  "devDependencies": {
-    "ajv": "^5.1.5"
+  "scripts": {
+    "check-gn": "node scripts/check_gn.js",
+    "check-json": "node scripts/json_validator/validate_module_json.js",
+    "check-grdp": "node scripts/localization/check_localizable_resources.js",
+    "chrome": "node scripts/hosted_mode/launch_chrome.js",
+    "debug-test": "node scripts/npm_test.js --debug-devtools",
+    "format-py": "yapf --exclude scripts/build/rjsmin.py -i --recursive scripts PRESUBMIT.py",
+    "generate-jsconfig": "node scripts/generate_jsconfig.js",
+    "optimize-svg-images": "python scripts/optimize_svg_images.py",
+    "server": "node scripts/hosted_mode/server.js",
+    "setup-dtrun": "cd scripts/devtools_run && npm link",
+    "start": "node scripts/hosted_mode/start_chrome_and_server.js",
+    "test": "node scripts/npm_test.js",
+
+    "check-lint": "python scripts/test/run_lint_check.py",
+    "check-loc": "python scripts/test/run_localization_check.py",
+    "check-type": "python scripts/test/run_type_check.py"
   }
 }

@@ -531,7 +531,7 @@ export default class RuntimeModel extends SDK.SDKModel {
  * @const
  * @type {string}
  */
-export const _sideEffectTestExpression = '(async function(){ await 1; })()';
+const _sideEffectTestExpression = '(async function(){ await 1; })()';
 
 /** @enum {symbol} */
 export const Events = {
@@ -549,7 +549,7 @@ export const Events = {
  * @extends {Protocol.RuntimeDispatcher}
  * @unrestricted
  */
-export class RuntimeDispatcher {
+class RuntimeDispatcher {
   /**
    * @param {!RuntimeModel} runtimeModel
    */
@@ -801,7 +801,8 @@ export class ExecutionContext {
       awaitPromise: awaitPromise,
       throwOnSideEffect: options.throwOnSideEffect,
       timeout: options.timeout,
-      disableBreaks: options.disableBreaks
+      disableBreaks: options.disableBreaks,
+      replMode: options.replMode
     });
 
     const error = response[Protocol.Error];
@@ -861,13 +862,8 @@ SDK = SDK || {};
 /** @constructor */
 SDK.RuntimeModel = RuntimeModel;
 
-SDK.RuntimeModel._sideEffectTestExpression = _sideEffectTestExpression;
-
 /** @enum {symbol} */
 SDK.RuntimeModel.Events = Events;
-
-/** @constructor */
-SDK.RuntimeDispatcher = RuntimeDispatcher;
 
 /** @constructor */
 SDK.ExecutionContext = ExecutionContext;
@@ -888,7 +884,8 @@ SDK.RuntimeModel.CompileScriptResult;
  *    generatePreview: (boolean|undefined),
  *    throwOnSideEffect: (boolean|undefined),
  *    timeout: (number|undefined),
- *    disableBreaks: (boolean|undefined)
+ *    disableBreaks: (boolean|undefined),
+ *    replMode: (boolean|undefined)
  *  }}
  */
 SDK.RuntimeModel.EvaluationOptions;

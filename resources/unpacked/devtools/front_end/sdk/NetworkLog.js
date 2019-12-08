@@ -237,13 +237,14 @@ export default class NetworkLog extends Common.Object {
    * @return {!SDK.NetworkLog.InitiatorGraph}
    */
   initiatorGraphForRequest(request) {
-    /** @type {!Set<!SDK.NetworkRequest>} */
-    const initiated = new Set();
+    /** @type {!Map<!SDK.NetworkRequest>} */
+    const initiated = new Map();
     const networkManager = SDK.NetworkManager.forRequest(request);
     for (const otherRequest of this._requests) {
       const otherRequestManager = SDK.NetworkManager.forRequest(otherRequest);
       if (networkManager === otherRequestManager && this._initiatorChain(otherRequest).has(request)) {
-        initiated.add(otherRequest);
+        // save parent request of otherRequst in order to build the initiator chain table later
+        initiated.set(otherRequest, this._initiatorRequest(otherRequest));
       }
     }
     return {initiators: this._initiatorChain(request), initiated: initiated};
@@ -562,7 +563,7 @@ PageLoad._lastIdentifier = 0;
 PageLoad._pageLoadForRequestSymbol = Symbol('PageLoadForRequest');
 PageLoad._dataSaverMessageWasShown = false;
 
-export const _requestSymbol = Symbol('_request');
+const _requestSymbol = Symbol('_request');
 
 export const Events = {
   Reset: Symbol('Reset'),
@@ -570,8 +571,8 @@ export const Events = {
   RequestUpdated: Symbol('RequestUpdated')
 };
 
-export const _initiatorDataSymbol = Symbol('InitiatorData');
-export const _events = Symbol('SDK.NetworkLog.events');
+const _initiatorDataSymbol = Symbol('InitiatorData');
+const _events = Symbol('SDK.NetworkLog.events');
 
 /* Legacy exported object */
 self.SDK = self.SDK || {};
@@ -585,15 +586,12 @@ SDK.NetworkLog = NetworkLog;
 /** @constructor */
 SDK.NetworkLog.PageLoad = PageLoad;
 
-SDK.NetworkLog._requestSymbol = _requestSymbol;
 SDK.NetworkLog.Events = Events;
-SDK.NetworkLog._initiatorDataSymbol = _initiatorDataSymbol;
-SDK.NetworkLog._events = _events;
 
 /** @type {!NetworkLog} */
 SDK.networkLog = new NetworkLog();
 
-/** @typedef {!{initiators: !Set<!SDK.NetworkRequest>, initiated: !Set<!SDK.NetworkRequest>}} */
+/** @typedef {!{initiators: !Set<!SDK.NetworkRequest>, initiated: !Map<!SDK.NetworkRequest, !SDK.NetworkRequest>}} */
 SDK.NetworkLog.InitiatorGraph;
 
 /** @typedef {!{type: !SDK.NetworkRequest.InitiatorType, url: string, lineNumber: number, columnNumber: number, scriptId: ?string, stack: ?Protocol.Runtime.StackTrace}} */

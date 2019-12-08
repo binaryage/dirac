@@ -7,7 +7,7 @@
 /**
  * @unrestricted
  */
-LayerViewer.TransformController = class extends Common.Object {
+export class TransformController extends Common.Object {
   /**
    * @param {!Element} element
    * @param {boolean=} disableRotate
@@ -16,14 +16,10 @@ LayerViewer.TransformController = class extends Common.Object {
     super();
     this._shortcuts = {};
     this.element = element;
-    if (this.element.tabIndex < 0) {
-      this.element.tabIndex = 0;
-    }
     this._registerShortcuts();
     UI.installDragHandle(
         element, this._onDragStart.bind(this), this._onDrag.bind(this), this._onDragEnd.bind(this), 'move', null);
     element.addEventListener('keydown', this._onKeyDown.bind(this), false);
-    element.addEventListener('keyup', this._onKeyUp.bind(this), false);
     element.addEventListener('mousewheel', this._onMouseWheel.bind(this), false);
     this._minScale = 0;
     this._maxScale = Infinity;
@@ -34,17 +30,15 @@ LayerViewer.TransformController = class extends Common.Object {
     this._modeButtons = {};
     if (!disableRotate) {
       const panModeButton = new UI.ToolbarToggle(Common.UIString('Pan mode (X)'), 'largeicon-pan');
-      panModeButton.addEventListener(
-          UI.ToolbarButton.Events.Click, this._setMode.bind(this, LayerViewer.TransformController.Modes.Pan));
-      this._modeButtons[LayerViewer.TransformController.Modes.Pan] = panModeButton;
+      panModeButton.addEventListener(UI.ToolbarButton.Events.Click, this._setMode.bind(this, Modes.Pan));
+      this._modeButtons[Modes.Pan] = panModeButton;
       this._controlPanelToolbar.appendToolbarItem(panModeButton);
       const rotateModeButton = new UI.ToolbarToggle(Common.UIString('Rotate mode (V)'), 'largeicon-rotate');
-      rotateModeButton.addEventListener(
-          UI.ToolbarButton.Events.Click, this._setMode.bind(this, LayerViewer.TransformController.Modes.Rotate));
-      this._modeButtons[LayerViewer.TransformController.Modes.Rotate] = rotateModeButton;
+      rotateModeButton.addEventListener(UI.ToolbarButton.Events.Click, this._setMode.bind(this, Modes.Rotate));
+      this._modeButtons[Modes.Rotate] = rotateModeButton;
       this._controlPanelToolbar.appendToolbarItem(rotateModeButton);
     }
-    this._setMode(LayerViewer.TransformController.Modes.Pan);
+    this._setMode(Modes.Pan);
 
     const resetButton = new UI.ToolbarButton(Common.UIString('Reset transform (0)'), 'largeicon-center');
     resetButton.addEventListener(UI.ToolbarButton.Events.Click, this.resetAndNotify.bind(this, undefined));
@@ -61,21 +55,10 @@ LayerViewer.TransformController = class extends Common.Object {
   }
 
   _onKeyDown(event) {
-    if (event.keyCode === UI.KeyboardShortcut.Keys.Shift.code) {
-      this._toggleMode();
-      return;
-    }
-
     const shortcutKey = UI.KeyboardShortcut.makeKeyFromEventIgnoringModifiers(event);
     const handler = this._shortcuts[shortcutKey];
     if (handler && handler(event)) {
       event.consume();
-    }
-  }
-
-  _onKeyUp(event) {
-    if (event.keyCode === UI.KeyboardShortcut.Keys.Shift.code) {
-      this._toggleMode();
     }
   }
 
@@ -87,12 +70,8 @@ LayerViewer.TransformController = class extends Common.Object {
 
   _registerShortcuts() {
     this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.ResetView, this.resetAndNotify.bind(this));
-    this._addShortcuts(
-        UI.ShortcutsScreen.LayersPanelShortcuts.PanMode,
-        this._setMode.bind(this, LayerViewer.TransformController.Modes.Pan));
-    this._addShortcuts(
-        UI.ShortcutsScreen.LayersPanelShortcuts.RotateMode,
-        this._setMode.bind(this, LayerViewer.TransformController.Modes.Rotate));
+    this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.PanMode, this._setMode.bind(this, Modes.Pan));
+    this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.RotateMode, this._setMode.bind(this, Modes.Rotate));
     const zoomFactor = 1.1;
     this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.ZoomIn, this._onKeyboardZoom.bind(this, zoomFactor));
     this._addShortcuts(
@@ -104,7 +83,7 @@ LayerViewer.TransformController = class extends Common.Object {
   }
 
   _postChangeEvent() {
-    this.dispatchEventToListeners(LayerViewer.TransformController.Events.TransformChanged);
+    this.dispatchEventToListeners(Events.TransformChanged);
   }
 
   _reset() {
@@ -113,12 +92,6 @@ LayerViewer.TransformController = class extends Common.Object {
     this._offsetY = 0;
     this._rotateX = 0;
     this._rotateY = 0;
-  }
-
-  _toggleMode() {
-    this._setMode(
-        this._mode === LayerViewer.TransformController.Modes.Pan ? LayerViewer.TransformController.Modes.Rotate :
-                                                                   LayerViewer.TransformController.Modes.Pan);
   }
 
   /**
@@ -130,7 +103,6 @@ LayerViewer.TransformController = class extends Common.Object {
     }
     this._mode = mode;
     this._updateModeButtons();
-    this.element.focus();
   }
 
   _updateModeButtons() {
@@ -255,7 +227,7 @@ LayerViewer.TransformController = class extends Common.Object {
     const panStepInPixels = 6;
     const rotateStepInDegrees = 5;
 
-    if (this._mode === LayerViewer.TransformController.Modes.Rotate) {
+    if (this._mode === Modes.Rotate) {
       // Sic! _onRotate treats X and Y as "rotate around X" and "rotate around Y", so swap X/Y multiplers.
       this._onRotate(
           this._rotateX + yMultiplier * rotateStepInDegrees, this._rotateY + xMultiplier * rotateStepInDegrees);
@@ -281,7 +253,7 @@ LayerViewer.TransformController = class extends Common.Object {
    * @param {!Event} event
    */
   _onDrag(event) {
-    if (this._mode === LayerViewer.TransformController.Modes.Rotate) {
+    if (this._mode === Modes.Rotate) {
       this._onRotate(
           this._oldRotateX + (this._originY - event.clientY) / this.element.clientHeight * 180,
           this._oldRotateY - (this._originX - event.clientX) / this.element.clientWidth * 180);
@@ -310,17 +282,38 @@ LayerViewer.TransformController = class extends Common.Object {
     delete this._oldRotateX;
     delete this._oldRotateY;
   }
-};
+}
 
 /** @enum {symbol} */
-LayerViewer.TransformController.Events = {
+export const Events = {
   TransformChanged: Symbol('TransformChanged')
 };
 
 /**
  * @enum {string}
  */
-LayerViewer.TransformController.Modes = {
+export const Modes = {
   Pan: 'Pan',
   Rotate: 'Rotate',
 };
+
+/* Legacy exported object */
+self.LayerViewer = self.LayerViewer || {};
+
+/* Legacy exported object */
+LayerViewer = LayerViewer || {};
+
+/**
+ * @constructor
+ */
+LayerViewer.TransformController = TransformController;
+
+/**
+ * @enum {symbol}
+ */
+LayerViewer.TransformController.Events = Events;
+
+/**
+ * @enum {string}
+ */
+LayerViewer.TransformController.Modes = Modes;

@@ -2,11 +2,12 @@
     "dependencies": [
         "platform",
         "text_utils",
-        "cm_headless"
+        "cm_headless",
+        "cm_web_modes"
     ],
-    "scripts": [
-        "../cm_web_modes/css.js",
-        "../cm_web_modes/xml.js",
+    "scripts": [],
+    "modules": [
+        "formatter_worker.js",
         "ESTreeWalker.js",
         "FormatterWorker.js",
         "acorn/acorn.js",
@@ -23,8 +24,6 @@
     ],
     "skip_compilation": [
         "acorn/acorn.js",
-        "acorn/acorn_loose.js",
-        "../cm_web_modes/css.js",
-        "../cm_web_modes/xml.js"
+        "acorn/acorn_loose.js"
     ]
 }

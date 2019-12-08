@@ -5,7 +5,7 @@
 /**
  * @unrestricted
  */
-CssOverview.CSSOverviewProcessingView = class extends UI.Widget {
+export default class CSSOverviewProcessingView extends UI.Widget {
   constructor(controller) {
     super();
     this.registerRequiredCSS('css_overview/cssOverviewProcessingView.css');
@@ -25,20 +25,21 @@ CssOverview.CSSOverviewProcessingView = class extends UI.Widget {
       <div class="vbox overview-processing-view">
         <h1>Processing page</h1>
         <div>${cancelButton}</div>
-
-        <h2 $="processed"></h2>
       </div>
     `;
 
     this.contentElement.appendChild(this.fragment.element());
     this.contentElement.style.overflow = 'auto';
   }
+}
 
-  setElementsHandled(handled = 0, total = 0) {
-    // TODO(aerotwist): We might want to switch this to using Intl.PluralRules in the future
-    // @see https://v8.dev/features/intl-pluralrules
-    const elementsTotal = total > 0 ? ls`document elements` : ls`document element`;
-    this.fragment.$('processed').textContent =
-        ls`Processed ${this._formatter.format(handled)} of ${this._formatter.format(total)} ${elementsTotal}.`;
-  }
-};
+/* Legacy exported object */
+self.CssOverview = self.CssOverview || {};
+
+/* Legacy exported object */
+CssOverview = CssOverview || {};
+
+/**
+ * @constructor
+ */
+CssOverview.CSSOverviewProcessingView = CSSOverviewProcessingView;

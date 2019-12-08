@@ -1,9 +1,5 @@
 (ns dirac.nrepl.eval
-  (:require [cljs.analyzer :as analyzer]
-            [cljs.compiler :as compiler]
-            [cljs.repl]
-            [cljs.source-map :as sm]
-            [clojure.data.json :as json]
+  (:require [cljs.repl]
             [clojure.string :as string]
             [clojure.tools.logging :as log]
             [clojure.tools.reader]
@@ -14,23 +10,24 @@
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.state :as state]
-            [dirac.nrepl.version :refer [version]])
-  (:import java.io.StringReader
-           (java.util.concurrent.atomic AtomicLong)
-           (java.util Base64)))
+            [dirac.nrepl.version :refer [version]]
+            [dirac.nrepl.compilation :as compilation])
+  (:import java.io.StringReader))
 
-(defn prepare-current-env-info-response []
-  (let [session (state/get-current-session)
-        current-ns (str analyzer/*cljs-ns*)
-        selected-compiler-id (compilers/get-selected-compiler-id session)
-        default-compiler-id (compilers/get-default-compiler-id session)]
-    (protocol/prepare-current-env-info-response current-ns selected-compiler-id default-compiler-id)))
+(defn prepare-current-env-info-response
+  ([] (prepare-current-env-info-response "cljs.user"))                                                                        ; TODO: we should not hardcode it here
+  ([ns]
+   (let [session (state/get-current-session)
+         current-ns (str ns)
+         selected-compiler-id (compilers/get-selected-compiler-id session)
+         default-compiler-id (compilers/get-default-compiler-id session)]
+     (protocol/prepare-current-env-info-response current-ns selected-compiler-id default-compiler-id))))
 
 ; -- dirac-specific wrapper for evaluated forms -----------------------------------------------------------------------------
 
 (defn gen-form-eval [job-id eval-mode dirac-mode form]
   (let [job-fn-display-name (symbol (str "repl-job-" job-id))]                                                                ; this is just for better stack-traces
-    `(js/dirac.runtime.repl.eval ~job-id ~eval-mode ~dirac-mode (fn ~job-fn-display-name [] ~form))))
+    `(~'js/dirac.runtime.repl.eval ~job-id ~eval-mode ~dirac-mode (fn ~job-fn-display-name [] ~form))))
 
 (defn special-form? [form]
   (contains? '#{*1 *2 *3 *e} form))
@@ -41,16 +38,16 @@
 (defn wrap-form [job-id dirac-mode form]
   (if (ns-related-form? form)
     form                                                                                                                      ; ns or require rely on cljs.analyzer/*allow-ns*, so we must not wrap them
-    (gen-form-eval job-id (if (special-form? form) "special" "captured") dirac-mode form)))
+    (with-meta (gen-form-eval job-id (if (special-form? form) "special" "captured") dirac-mode form) (meta form))))
 
 (defn set-env-namespace [env]
-  (assoc env :ns (analyzer/get-namespace analyzer/*cljs-ns*)))
+  (assoc env :ns (compilation/get-ns (compilation/get-current-ns))))
 
 (defn extract-scope-locals [scope-info]
   (mapcat :props (:frames scope-info)))
 
 ; extract locals from scope-info (as provided by Dirac) and put it into :locals env map for analyzer
-; note that in case of duplicit names we won't break, resulting locals is a flat list: "last name wins"
+; note that in case of duplicate names we won't break, resulting locals is a flat list: "last name wins"
 (defn set-env-locals [scope-info env]
   (let [all-scope-locals (extract-scope-locals scope-info)
         build-env-local (fn [local]
@@ -100,7 +97,7 @@
                     ((:reader opts))
                     *in*)]
      (or ({:line-start request-prompt :stream-end request-exit}
-           (cljs.repl/skip-whitespace *in*))
+          (cljs.repl/skip-whitespace *in*))
          (let [input (clojure.tools.reader/read {:read-cond :allow :features #{:cljs}} *in*)]
            (cljs.repl/skip-if-eol *in*)
            input)))))
@@ -110,53 +107,6 @@
     (log/trace (str "repl-read! (" job-id ")\n") (utils/pp result))
     result))
 
-; unfortunately I had to copy&paste bunch of code from cljs.repl
-
-; ------ evaluate-form --------> cut here
-
-(defn load-dependencies [repl-env requires opts]
-  (doseq [ns (distinct requires)]
-    (cljs.repl/load-namespace repl-env ns opts)))
-
-(defn gen-source-map [filename js-filename form]
-  (sm/encode*
-    {filename (:source-map @compiler/*source-map-data*)}
-    {:lines           (+ (:gen-line @compiler/*source-map-data*) 3)
-     :file            js-filename
-     :sources-content [(or (:source (meta form))
-                           ;; handle strings / primitives without metadata
-                           (with-out-str (pr form)))]}))
-
-(defmacro bind-compiler-source-map-data-gen-col-optionally [& body]
-  (if (some? (ns-resolve 'cljs.compiler '*source-map-data-gen-col*))
-    `(binding [cljs.compiler/*source-map-data-gen-col* (AtomicLong.)]
-       ~@body)
-    `(do
-       ~@body)))
-
-(defmacro bind-compiler-source-map-data [& body]
-  `(binding [cljs.compiler/*source-map-data* (atom {:source-map (sorted-map)
-                                                    :gen-col    0
-                                                    :gen-line   0})]
-     ~@body))
-
-(defn generate-js-with-source-maps! [ast filename form]
-  (bind-compiler-source-map-data
-    (bind-compiler-source-map-data-gen-col-optionally                                                                         ; see https://github.com/binaryage/dirac/issues/81
-      (let [js-filename (string/replace filename #"\.cljs$" ".js")
-            generated-js (compiler/emit-str ast)
-            source-map-json (json/write-str (gen-source-map filename js-filename form))]
-        (str generated-js
-             "\n//# sourceURL=" js-filename
-             "\n//# sourceMappingURL=data:application/json;base64,"
-             (.encodeToString (Base64/getEncoder) (.getBytes source-map-json "UTF-8")))))))
-
-(defn load-dependencies-if-needed! [ast form env repl-env opts]
-  (when (#{:ns :ns*} (:op ast))
-    (let [ast (analyzer/no-warn (analyzer/analyze env form nil opts))
-          requires (into (vals (:requires ast)) (distinct (vals (:uses ast))))]
-      (load-dependencies repl-env requires opts))))
-
 (defn prepare-error-data [type error repl-env form generated-js]
   {:type     type
    :error    error
@@ -164,36 +114,23 @@
    :form     form
    :js       generated-js})
 
-(defn evaluate-form [repl-env env filename form wrap opts]
-  (binding [analyzer/*cljs-file* filename]
-    (let [wrapped-form (wrap form)
-          _ (log/trace "wrapped-form:\n" (utils/pp wrapped-form 100))
-          env-with-source-info (assoc env :root-source-info {:source-type :fragment
-                                                             :source-form form})
-          env-with-source-info-and-repl-env (assoc env-with-source-info
-                                              :repl-env repl-env
-                                              :def-emits-var (:def-emits-var opts))
-          generated-ast (analyzer/analyze env-with-source-info-and-repl-env wrapped-form nil opts)
-          generated-js (generate-js-with-source-maps! generated-ast filename form)]
-      (log/trace "generated-js:\n" generated-js)
-      ;; NOTE: means macros which expand to ns aren't supported for now
-      ;; when eval'ing individual forms at the REPL - David
-      (load-dependencies-if-needed! generated-ast form env-with-source-info repl-env opts)
-      (let [result (cljs.repl/-evaluate repl-env filename (:line (meta form)) generated-js)]
-        (case (:status result)
-          :error (throw (ex-info (:value result) (prepare-error-data :js-eval-error result repl-env form generated-js)))
-          :exception (throw (ex-info (:value result) (prepare-error-data :js-eval-exception result repl-env form generated-js)))
-          :success (:value result))))))
-
-; <----- evaluate-form -------- cut-here
+(defn evaluate-generated-js [repl-env filename form generated-js]
+  (let [result (cljs.repl/-evaluate repl-env filename (:line (meta form)) generated-js)
+        value (:value result)]
+    (case (:status result)
+      :error (throw (ex-info value (prepare-error-data :js-eval-error result repl-env form generated-js)))
+      :exception (throw (ex-info value (prepare-error-data :js-eval-exception result repl-env form generated-js)))
+      :success value)))
 
 (defn repl-eval! [job-id counter-volatile scope-info dirac-mode repl-env env form opts]
-  (let [form-wrapper-fn (or (:wrap opts) (partial wrap-form job-id dirac-mode))
+  (let [filename (get-current-repl-filename job-id @counter-volatile)
         set-env-locals-with-scope (partial set-env-locals scope-info)
         effective-env (-> env set-env-namespace set-env-locals-with-scope)
-        filename (get-current-repl-filename job-id @counter-volatile)]
+        form-wrapper-fn (or (:wrap opts) (partial wrap-form job-id dirac-mode))
+        wrapped-form (form-wrapper-fn form)]
     (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (utils/pp effective-env 7))
-    (evaluate-form repl-env effective-env filename form form-wrapper-fn opts)))
+    (let [generated-js (compilation/generate-js repl-env effective-env filename wrapped-form opts)]
+      (evaluate-generated-js repl-env filename wrapped-form generated-js))))
 
 (defn repl-flush! []
   (log/trace "flush-repl!")
@@ -208,52 +145,56 @@
   ; this also explanation why piggieback did it there:
   ; https://github.com/cemerick/piggieback/blob/440b2d03f944f6418844c2fab1e0361387eed543/src/cemerick/piggieback.clj#L183
   ; also see https://github.com/binaryage/dirac/issues/47
-  (vreset! final-ns-volatile analyzer/*cljs-ns*)
+  (vreset! final-ns-volatile (compilation/get-current-ns))
   (when (some? response-fn)
     (let [response (-> (protocol/prepare-printed-value-response result)
-                       (merge (prepare-current-env-info-response)))]
+                       (merge (prepare-current-env-info-response @final-ns-volatile)))]
       (response-fn response))))                                                                                               ; printed value enhanced with current env info
+
+(defn shadow-cljs-env? [compiler-env]
+  false)                                                                                                                      ; TODO: implement this
 
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
 (defn eval-in-cljs-repl! [code ns repl-env compiler-env repl-options job-id & [response-fn scope-info dirac-mode]]
   {:pre [(some? job-id)]}
   (log/trace "eval-in-cljs-repl! " ns "\n" code)
-  (let [final-ns-volatile (volatile! nil)
-        counter-volatile (volatile! 0)
-        ; MAJOR TRICK HERE!
-        ; we append :cljs/quit to our code which should be evaluated
-        ; this will cause cljs.repl loop to exit after the first eval
-        code-reader-with-quit (-> (str code " :cljs/quit")
-                                  (StringReader.))
-        default-repl-options {:need-prompt  (constantly false)
-                              :bind-err     false
-                              :quit-prompt  (fn [])
-                              :prompt       (fn [])
-                              :init         (fn [])
-                              :read         (partial repl-read! job-id)
-                              :reader       (partial repl-prepare-reader! job-id counter-volatile code-reader-with-quit)
-                              :print        (partial repl-print! final-ns-volatile response-fn)
-                              :eval         (partial repl-eval! job-id counter-volatile scope-info dirac-mode)
-                              :compiler-env compiler-env}
-        effective-repl-options (merge default-repl-options repl-options)
-        initial-ns (if (some? ns)
-                     (symbol ns)
-                     (state/get-session-cljs-ns))
-        start-repl-fn (fn [_driver caught-fn flush-fn]
-                        (let [final-repl-options (assoc effective-repl-options
-                                                   :flush (fn []
-                                                            (repl-flush!)
-                                                            (flush-fn))
-                                                   :caught caught-fn)]
-                          (log/trace "calling cljs.repl/repl* with:\n"
-                                     (utils/pp repl-env)
-                                     (utils/pp final-repl-options))
-                          (cljs.repl/repl* repl-env final-repl-options)))]
-    (binding [*out* (state/get-session-binding-value #'*out*)
-              *err* (state/get-session-binding-value #'*err*)
-              analyzer/*cljs-ns* initial-ns]
-      (driver/wrap-with-driver job-id start-repl-fn response-fn "plain-text")
-      (when-some [final-ns @final-ns-volatile]                                                                                ; we want analyzer/*cljs-ns* to be sticky between evaluations
-        (when-not (= final-ns initial-ns)
-          (state/set-session-cljs-ns! final-ns))))))
+  (compilation/setup-compilation-mode (shadow-cljs-env? compiler-env)
+    (let [final-ns-volatile (volatile! nil)
+          counter-volatile (volatile! 0)
+          ; MAJOR TRICK HERE!
+          ; we append :cljs/quit to our code which should be evaluated
+          ; this will cause cljs.repl loop to exit after the first eval
+          code-reader-with-quit (-> (str code " :cljs/quit")
+                                    (StringReader.))
+          default-repl-options {:need-prompt  (constantly false)
+                                :bind-err     false
+                                :quit-prompt  (fn [])
+                                :prompt       (fn [])
+                                :init         (fn [])
+                                :read         (partial repl-read! job-id)
+                                :reader       (partial repl-prepare-reader! job-id counter-volatile code-reader-with-quit)
+                                :print        (partial repl-print! final-ns-volatile response-fn)
+                                :eval         (partial repl-eval! job-id counter-volatile scope-info dirac-mode)
+                                :compiler-env compiler-env}
+          effective-repl-options (merge default-repl-options repl-options)
+          initial-ns (if (some? ns)
+                       (symbol ns)
+                       (state/get-session-cljs-ns))
+          start-repl-fn (fn [_driver caught-fn flush-fn]
+                          (let [final-repl-options (assoc effective-repl-options
+                                                     :flush (fn []
+                                                              (repl-flush!)
+                                                              (flush-fn))
+                                                     :caught caught-fn)]
+                            (log/trace "calling cljs.repl/repl* with:\n"
+                                       (utils/pp repl-env)
+                                       (utils/pp final-repl-options))
+                            (cljs.repl/repl* repl-env final-repl-options)))]
+      (binding [*out* (state/get-session-binding-value #'*out*)
+                *err* (state/get-session-binding-value #'*err*)]
+        (compilation/setup-current-ns initial-ns
+          (driver/wrap-with-driver job-id start-repl-fn response-fn "plain-text")
+          (when-some [final-ns @final-ns-volatile]                                                                            ; we want ns to be sticky between evaluations
+            (when-not (= final-ns initial-ns)
+              (state/set-session-cljs-ns! final-ns))))))))

@@ -7,6 +7,7 @@ Helper to find the path to the correct third_party directory
 
 from os import path
 import sys
+import platform
 
 
 # Find the root path of the checkout.
@@ -21,9 +22,9 @@ def root_path():
     if path.basename(PARENT_PATH) == 'renderer':
         # Chromium repository
         return path.dirname(path.dirname(path.dirname(PARENT_PATH)))
-    elif path.basename(PARENT_PATH) == 'third_party':
+    elif path.basename(PARENT_PATH) == 'devtools-frontend':
         # External repository, integrated build
-        return path.dirname(PARENT_PATH)
+        return path.dirname(path.dirname(PARENT_PATH))
     else:
         # External repository, standalone build
         return ABS_DEVTOOLS_PATH
@@ -45,29 +46,68 @@ def node_path():
     return node.GetBinaryPath()
 
 
-DEVTOOLS_ROOT_PATH = path.join(path.dirname(__file__), '..')
+def devtools_root_path():
+    return path.dirname((path.dirname(path.abspath(__file__))))
 
 
 def node_modules_path():
-    SCRIPTS_PATH = path.dirname(path.abspath(__file__))
-    ABS_DEVTOOLS_PATH = path.dirname(SCRIPTS_PATH)
-    PARENT_PATH = path.dirname(ABS_DEVTOOLS_PATH)
-    # TODO(1011259): remove Chromium repository handling
-    if path.basename(PARENT_PATH) == 'renderer':
-        # While in Chromium repo, node modules are hosted in //third_party/devtools-node-modules.
-        return path.join(root_path(), 'third_party', 'devtools-node-modules', 'third_party', 'node_modules')
-    else:
-        # In the external repo, node modules are hosted in root.
-        return path.join(root_path(), 'node_modules')
+    return path.join(devtools_root_path(), 'node_modules')
 
 
 def eslint_path():
     return path.join(node_modules_path(), 'eslint', 'bin', 'eslint.js')
 
 
+def check_localizable_resources_path():
+    return path.join(devtools_root_path(), 'scripts', 'localization', 'check_localizable_resources.js')
+
+
+def check_localized_strings_path():
+    return path.join(devtools_root_path(), 'scripts', 'localization', 'check_localizability.js')
+
+
 def karma_path():
     return path.join(node_modules_path(), 'karma', 'bin', 'karma')
 
 
+def boot_perf_test_path():
+    return path.join(devtools_root_path(), 'test', 'perf', 'bootperf.js')
+
+
+def hosted_mode_script_path():
+    return path.join(devtools_root_path(), 'scripts', 'hosted_mode', 'server.js')
+
+
+def downloaded_chrome_binary_path():
+    return path.abspath(path.join(
+    *{
+        'Linux': (devtools_root_path(), 'third_party', 'chrome', 'chrome-linux', 'chrome'),
+        'Darwin': (devtools_root_path(), 'third_party', 'chrome', 'chrome-mac', 'Chromium.app', 'Contents', 'MacOS', 'Chromium'),
+        'Windows': (devtools_root_path(), 'third_party', 'chrome', 'chrome-win', 'chrome.exe'),
+    }[platform.system()]))
+
+
+def license_checker_path():
+    return path.join(node_modules_path(), 'license-checker', 'bin', 'license-checker')
+
+
+def rollup_path():
+    return path.join(
+        node_modules_path(),
+        'rollup',
+        'dist',
+        'bin',
+        'rollup',
+    )
+
+
+def package_lock_json_path():
+    return path.join(devtools_root_path(), 'package-lock.json')
+
+
 def package_json_path():
-    return path.join(DEVTOOLS_ROOT_PATH, 'package.json')
+    return path.join(devtools_root_path(), 'package.json')
+
+
+def browser_protocol_path():
+    return path.join(third_party_path(), 'blink', 'public', 'devtools_protocol', 'browser_protocol.pdl')

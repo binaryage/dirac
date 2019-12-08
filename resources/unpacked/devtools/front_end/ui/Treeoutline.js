@@ -45,11 +45,7 @@ export class TreeOutline extends Common.Object {
 
     this._preventTabOrder = false;
     this._showSelectionOnKeyboardFocus = false;
-    this._focusable = true;
-    this.setFocusable(this._focusable);
-    if (this._focusable) {
-      this.contentElement.setAttribute('tabIndex', -1);
-    }
+    this.setFocusable(true);
     this.element = this.contentElement;
     UI.ARIAUtils.markAsTree(this.element);
   }
@@ -61,6 +57,9 @@ export class TreeOutline extends Common.Object {
   setShowSelectionOnKeyboardFocus(show, preventTabOrder) {
     this.contentElement.classList.toggle('hide-selection-when-blurred', show);
     this._preventTabOrder = !!preventTabOrder;
+    if (this._focusable) {
+      this.contentElement.tabIndex = !!preventTabOrder ? -1 : 0;
+    }
     this._showSelectionOnKeyboardFocus = show;
   }
 
@@ -161,14 +160,17 @@ export class TreeOutline extends Common.Object {
    * @param {boolean} focusable
    */
   setFocusable(focusable) {
-    if (focusable) {
-      this._focusable = true;
-      this.contentElement.setAttribute('tabIndex', -1);
+    this._focusable = focusable;
+    this.updateFocusable();
+  }
+
+  updateFocusable() {
+    if (this._focusable) {
+      this.contentElement.tabIndex = (this._preventTabOrder || !!this.selectedTreeElement) ? -1 : 0;
       if (this.selectedTreeElement) {
         this.selectedTreeElement._setFocusable(true);
       }
     } else {
-      this._focusable = false;
       this.contentElement.removeAttribute('tabIndex');
       if (this.selectedTreeElement) {
         this.selectedTreeElement._setFocusable(false);
@@ -242,17 +244,23 @@ export class TreeOutline extends Common.Object {
     return true;
   }
 
-  forceSelect() {
+  /**
+   * @param {boolean=} omitFocus
+   * @param {boolean=} selectedByUser
+   */
+  forceSelect(omitFocus = false, selectedByUser = true) {
     if (this.selectedTreeElement) {
       this.selectedTreeElement.deselect();
     }
-    this._selectFirst();
+    this._selectFirst(omitFocus, selectedByUser);
   }
 
   /**
+   * @param {boolean=} omitFocus
+   * @param {boolean=} selectedByUser
    * @return {boolean}
    */
-  _selectFirst() {
+  _selectFirst(omitFocus = false, selectedByUser = true) {
     let first = this.firstChild();
     while (first && !first.selectable) {
       first = first.traverseNextTreeElement(true);
@@ -260,7 +268,7 @@ export class TreeOutline extends Common.Object {
     if (!first) {
       return false;
     }
-    first.select(false, true);
+    first.select(omitFocus, selectedByUser);
     return true;
   }
 
@@ -283,12 +291,18 @@ export class TreeOutline extends Common.Object {
    * @param {!Event} event
    */
   _treeKeyDown(event) {
-    if (!this.selectedTreeElement || event.shiftKey || event.metaKey || event.ctrlKey || UI.isEditing()) {
+    if (event.shiftKey || event.metaKey || event.ctrlKey || UI.isEditing()) {
       return;
     }
 
     let handled = false;
-    if (event.key === 'ArrowUp' && !event.altKey) {
+    if (!this.selectedTreeElement) {
+      if (event.key === 'ArrowUp' && !event.altKey) {
+        handled = this._selectLast();
+      } else if (event.key === 'ArrowDown' && !event.altKey) {
+        handled = this._selectFirst();
+      }
+    } else if (event.key === 'ArrowUp' && !event.altKey) {
       handled = this.selectPrevious();
     } else if (event.key === 'ArrowDown' && !event.altKey) {
       handled = this.selectNext();
@@ -449,6 +463,25 @@ export class TreeElement {
    */
   hasAncestorOrSelf(ancestor) {
     return this === ancestor || this.hasAncestor(ancestor);
+  }
+
+  /**
+   * @return {boolean}
+   */
+  isHidden() {
+    if (this.hidden) {
+      return true;
+    }
+
+    let currentNode = this.parent;
+    while (currentNode) {
+      if (currentNode.hidden) {
+        return true;
+      }
+      currentNode = currentNode.parent;
+    }
+
+    return false;
   }
 
   /**
@@ -664,7 +697,7 @@ export class TreeElement {
   }
 
   get selectable() {
-    if (this._hidden) {
+    if (this.isHidden()) {
       return false;
     }
     return this._selectable;
@@ -850,6 +883,12 @@ export class TreeElement {
 
     this._listItemNode.classList.toggle('hidden', x);
     this._childrenListNode.classList.toggle('hidden', x);
+
+    if (x && this.treeOutline && this.treeOutline.selectedTreeElement &&
+        this.treeOutline.selectedTreeElement.hasAncestorOrSelf(this)) {
+      const hadFocus = this.treeOutline.selectedTreeElement.listItemElement.hasFocus();
+      this.treeOutline.forceSelect(!hadFocus, /* selectedByUser */ false);
+    }
   }
 
   invalidateChildren() {
@@ -959,6 +998,11 @@ export class TreeElement {
     this.oncollapse();
     if (this.treeOutline) {
       this.treeOutline.dispatchEventToListeners(Events.ElementCollapsed, this);
+    }
+
+    const selectedTreeElement = this.treeOutline.selectedTreeElement;
+    if (selectedTreeElement && selectedTreeElement.hasAncestor(this)) {
+      this.select(/* omitFocus */ true, /* selectedByUser */ true);
     }
   }
 
@@ -1169,9 +1213,7 @@ export class TreeElement {
     this.selected = true;
 
     this.treeOutline.selectedTreeElement = this;
-    if (this.treeOutline._focusable) {
-      this._setFocusable(true);
-    }
+    this.treeOutline.updateFocusable();
     if (!omitFocus || this.treeOutline.contentElement.hasFocus()) {
       this.listItemElement.focus();
     }
@@ -1233,6 +1275,7 @@ export class TreeElement {
 
     if (this.treeOutline && this.treeOutline.selectedTreeElement === this) {
       this.treeOutline.selectedTreeElement = null;
+      this.treeOutline.updateFocusable();
       if (hadFocus) {
         this.treeOutline.focus();
       }

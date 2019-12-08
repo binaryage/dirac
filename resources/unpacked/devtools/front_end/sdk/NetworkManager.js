@@ -209,9 +209,10 @@ export const Events = {
   ResponseReceived: Symbol('ResponseReceived'),
   MessageGenerated: Symbol('MessageGenerated'),
   RequestRedirected: Symbol('RequestRedirected'),
+  LoadingFinished: Symbol('LoadingFinished'),
 };
 
-export const _MIMETypes = {
+const _MIMETypes = {
   'text/html': {'document': true},
   'text/xml': {'document': true},
   'text/plain': {'document': true},
@@ -220,6 +221,7 @@ export const _MIMETypes = {
   'text/css': {'stylesheet': true},
   'text/xsl': {'stylesheet': true},
   'text/vtt': {'texttrack': true},
+  'application/pdf': {'document': true},
 };
 
 /** @type {!SDK.NetworkManager.Conditions} */
@@ -254,8 +256,8 @@ export const Fast3GConditions = {
   latency: 150 * 3.75,
 };
 
-export const _networkManagerForRequestSymbol = Symbol('NetworkManager');
-export const MAX_EAGER_POST_REQUEST_BODY_LENGTH = 64 * 1024;  // bytes
+const _networkManagerForRequestSymbol = Symbol('NetworkManager');
+const MAX_EAGER_POST_REQUEST_BODY_LENGTH = 64 * 1024;  // bytes
 
 /**
  * @implements {Protocol.NetworkDispatcher}
@@ -599,6 +601,7 @@ export class NetworkDispatcher {
     }
     this._getExtraInfoBuilder(requestId).finished();
     this._finishNetworkRequest(networkRequest, finishTime, encodedDataLength, shouldReportCorbBlocking);
+    this._manager.dispatchEventToListeners(Events.LoadingFinished, networkRequest);
   }
 
   /**
@@ -1557,8 +1560,6 @@ SDK.NetworkManager = NetworkManager;
 /** @enum {symbol} */
 SDK.NetworkManager.Events = Events;
 
-SDK.NetworkManager._MIMETypes = _MIMETypes;
-
 /** @type {!SDK.NetworkManager.Conditions} */
 SDK.NetworkManager.NoThrottlingConditions = NoThrottlingConditions;
 
@@ -1570,9 +1571,6 @@ SDK.NetworkManager.Slow3GConditions = Slow3GConditions;
 
 /** @type {!SDK.NetworkManager.Conditions} */
 SDK.NetworkManager.Fast3GConditions = Fast3GConditions;
-
-SDK.NetworkManager._networkManagerForRequestSymbol = _networkManagerForRequestSymbol;
-SDK.NetworkManager.MAX_EAGER_POST_REQUEST_BODY_LENGTH = MAX_EAGER_POST_REQUEST_BODY_LENGTH;
 
 /** @constructor */
 SDK.NetworkDispatcher = NetworkDispatcher;

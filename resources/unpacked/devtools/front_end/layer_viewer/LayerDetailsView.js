@@ -31,7 +31,7 @@
  * @implements {LayerViewer.LayerView}
  * @unrestricted
  */
-LayerViewer.LayerDetailsView = class extends UI.Widget {
+export class LayerDetailsView extends UI.Widget {
   /**
    * @param {!LayerViewer.LayerViewHost} layerViewHost
    */
@@ -41,6 +41,7 @@ LayerViewer.LayerDetailsView = class extends UI.Widget {
     this._layerViewHost = layerViewHost;
     this._layerViewHost.registerView(this);
     this._emptyWidget = new UI.EmptyWidget(Common.UIString('Select a layer to see its details'));
+    this._layerSnapshotMap = this._layerViewHost.getLayerSnapshotMap();
     this._buildContent();
   }
 
@@ -88,9 +89,12 @@ LayerViewer.LayerDetailsView = class extends UI.Widget {
     this._layerViewHost.selectObject(new LayerViewer.LayerView.ScrollRectSelection(this._selection.layer(), index));
   }
 
-  _onPaintProfilerButtonClicked() {
-    if (this._selection.type() === LayerViewer.LayerView.Selection.Type.Snapshot || this._selection.layer()) {
-      this.dispatchEventToListeners(LayerViewer.LayerDetailsView.Events.PaintProfilerRequested, this._selection);
+  _invokeProfilerLink() {
+    const snapshotSelection = this._selection.type() === LayerViewer.LayerView.Selection.Type.Snapshot ?
+        this._selection :
+        this._layerSnapshotMap.get(this._selection.layer());
+    if (snapshotSelection) {
+      this.dispatchEventToListeners(Events.PaintProfilerRequested, snapshotSelection);
     }
   }
 
@@ -107,8 +111,8 @@ LayerViewer.LayerDetailsView = class extends UI.Widget {
       element.classList.add('active');
     }
     element.textContent = Common.UIString(
-        '%s %d × %d (at %d, %d)', LayerViewer.LayerDetailsView._slowScrollRectNames.get(scrollRect.type),
-        scrollRect.rect.x, scrollRect.rect.y, scrollRect.rect.width, scrollRect.rect.height);
+        '%s %d × %d (at %d, %d)', _slowScrollRectNames.get(scrollRect.type), scrollRect.rect.width,
+        scrollRect.rect.height, scrollRect.rect.x, scrollRect.rect.y);
     element.addEventListener('click', this._onScrollRectClicked.bind(this, index), false);
   }
 
@@ -173,13 +177,13 @@ LayerViewer.LayerDetailsView = class extends UI.Widget {
     const layer = this._selection && this._selection.layer();
     if (!layer) {
       this._tableElement.remove();
-      this._paintProfilerButton.remove();
+      this._paintProfilerLink.remove();
       this._emptyWidget.show(this.contentElement);
       return;
     }
     this._emptyWidget.detach();
     this.contentElement.appendChild(this._tableElement);
-    this.contentElement.appendChild(this._paintProfilerButton);
+    this.contentElement.appendChild(this._paintProfilerLink);
     this._sizeCell.textContent =
         Common.UIString('%d × %d (at %d,%d)', layer.width(), layer.height(), layer.offsetX(), layer.offsetY());
     this._paintCountCell.parentElement.classList.toggle('hidden', !layer.paintCount());
@@ -192,7 +196,8 @@ LayerViewer.LayerDetailsView = class extends UI.Widget {
     const snapshot = this._selection.type() === LayerViewer.LayerView.Selection.Type.Snapshot ?
         /** @type {!LayerViewer.LayerView.SnapshotSelection} */ (this._selection).snapshot() :
         null;
-    this._paintProfilerButton.classList.toggle('hidden', !snapshot);
+
+    this._paintProfilerLink.classList.toggle('hidden', !(this._layerSnapshotMap.has(layer) || snapshot));
   }
 
   _buildContent() {
@@ -204,9 +209,20 @@ LayerViewer.LayerDetailsView = class extends UI.Widget {
     this._paintCountCell = this._createRow(Common.UIString('Paint count'));
     this._scrollRectsCell = this._createRow(Common.UIString('Slow scroll regions'));
     this._stickyPositionConstraintCell = this._createRow(Common.UIString('Sticky position constraint'));
-    this._paintProfilerButton = this.contentElement.createChild('a', 'hidden link');
-    this._paintProfilerButton.textContent = Common.UIString('Paint Profiler');
-    this._paintProfilerButton.addEventListener('click', this._onPaintProfilerButtonClicked.bind(this));
+    this._paintProfilerLink = this.contentElement.createChild('span', 'hidden devtools-link link-margin');
+    UI.ARIAUtils.markAsLink(this._paintProfilerLink);
+    this._paintProfilerLink.textContent = ls`Paint Profiler`;
+    this._paintProfilerLink.tabIndex = 0;
+    this._paintProfilerLink.addEventListener('click', e => {
+      e.consume(true);
+      this._invokeProfilerLink();
+    });
+    this._paintProfilerLink.addEventListener('keydown', event => {
+      if (isEnterKey(event)) {
+        event.consume();
+        this._invokeProfilerLink();
+      }
+    });
   }
 
   /**
@@ -239,19 +255,33 @@ LayerViewer.LayerDetailsView = class extends UI.Widget {
       list.createChild('li').textContent = text;
     }
   }
-};
+}
 
-/**
- * @enum {string}
- */
 /** @enum {symbol} */
-LayerViewer.LayerDetailsView.Events = {
+export const Events = {
   PaintProfilerRequested: Symbol('PaintProfilerRequested')
 };
 
-LayerViewer.LayerDetailsView._slowScrollRectNames = new Map([
+export const _slowScrollRectNames = new Map([
   [SDK.Layer.ScrollRectType.NonFastScrollable, Common.UIString('Non fast scrollable')],
   [SDK.Layer.ScrollRectType.TouchEventHandler, Common.UIString('Touch event handler')],
   [SDK.Layer.ScrollRectType.WheelEventHandler, Common.UIString('Wheel event handler')],
-  [SDK.Layer.ScrollRectType.RepaintsOnScroll, Common.UIString('Repaints on scroll')]
+  [SDK.Layer.ScrollRectType.RepaintsOnScroll, Common.UIString('Repaints on scroll')],
+  [SDK.Layer.ScrollRectType.MainThreadScrollingReason, Common.UIString('Main thread scrolling reason')]
 ]);
+
+/* Legacy exported object */
+self.LayerViewer = self.LayerViewer || {};
+
+/* Legacy exported object */
+LayerViewer = LayerViewer || {};
+
+/**
+ * @constructor
+ */
+LayerViewer.LayerDetailsView = LayerDetailsView;
+
+/** @enum {symbol} */
+LayerViewer.LayerDetailsView.Events = Events;
+
+LayerViewer.LayerDetailsView._slowScrollRectNames = _slowScrollRectNames;

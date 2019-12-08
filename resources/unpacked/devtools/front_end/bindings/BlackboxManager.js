@@ -150,7 +150,7 @@ export default class BlackboxManager {
       return;
     }
 
-    const mappings = /** @type {!SDK.TextSourceMap} */ (sourceMap).mappings();
+    const mappings = sourceMap.mappings();
     const newRanges = [];
     let currentBlackboxed = false;
     if (mappings[0].lineNumber !== 0 || mappings[0].columnNumber !== 0) {
@@ -346,7 +346,7 @@ export default class BlackboxManager {
   }
 }
 
-export const _blackboxedRanges = Symbol('blackboxedRanged');
+const _blackboxedRanges = Symbol('blackboxedRanged');
 
 /* Legacy exported object */
 self.Bindings = self.Bindings || {};
@@ -356,8 +356,6 @@ Bindings = Bindings || {};
 
 /** @constructor */
 Bindings.BlackboxManager = BlackboxManager;
-
-Bindings.BlackboxManager._blackboxedRanges = _blackboxedRanges;
 
 /** @type {!BlackboxManager} */
 Bindings.blackboxManager;

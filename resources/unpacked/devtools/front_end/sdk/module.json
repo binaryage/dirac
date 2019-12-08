@@ -376,6 +376,7 @@
         "CookieModel.js",
         "CookieParser.js",
         "ProfileTreeModel.js",
+        "IssuesModel.js",
         "ServerTiming.js",
         "CPUProfileDataModel.js",
         "CPUProfilerModel.js",
@@ -418,9 +419,12 @@
         "PerformanceMetricsModel.js",
         "../SupportedCSSProperties.js",
         "FilmStripModel.js",
-        "ConsoleModel.js"
+        "ConsoleModel.js",
+        "wasm_source_map/pkg/wasm_source_map.js",
+        "wasm_source_map/types.js"
     ],
     "skip_compilation": [
-        "../SupportedCSSProperties.js"
+        "../SupportedCSSProperties.js",
+        "wasm_source_map/pkg/wasm_source_map.js"
     ]
 }

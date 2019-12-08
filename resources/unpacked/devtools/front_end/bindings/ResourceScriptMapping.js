@@ -455,7 +455,7 @@ export class ResourceScriptFile extends Common.Object {
   }
 }
 
-export const _frameIdSymbol = Symbol('frameid');
+const _frameIdSymbol = Symbol('frameid');
 
 /** @enum {symbol} */
 ResourceScriptFile.Events = {
@@ -471,8 +471,6 @@ Bindings = Bindings || {};
 
 /** @constructor */
 Bindings.ResourceScriptMapping = ResourceScriptMapping;
-
-Bindings.ResourceScriptMapping._frameIdSymbol = _frameIdSymbol;
 
 /** @constructor */
 Bindings.ResourceScriptFile = ResourceScriptFile;

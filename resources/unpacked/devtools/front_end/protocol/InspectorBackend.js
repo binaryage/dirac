@@ -277,7 +277,7 @@ const test = {
   onMessageReceived: null,
 };
 
-export class SessionRouter {
+class SessionRouter {
   /**
    * @param {!Connection} connection
    */
@@ -616,7 +616,7 @@ export class TargetBase {
 /**
  * @unrestricted
  */
-export class _AgentPrototype {
+class _AgentPrototype {
   /**
    * @param {string} domain
    */
@@ -731,18 +731,20 @@ export class _AgentPrototype {
       return Promise.resolve(null);
     }
 
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const callback = (error, result) => {
-        if (error && !test.suppressRequestErrors && error.code !== Protocol.DevToolsStubErrorCode &&
-            error.code !== _GenericError && error.code !== _ConnectionClosedErrorCode) {
-          console.error('Request ' + method + ' failed. ' + JSON.stringify(error));
-        }
-
-
         if (error) {
-          resolve(null);
+          if (!test.suppressRequestErrors && error.code !== Protocol.DevToolsStubErrorCode &&
+              error.code !== _GenericError && error.code !== _ConnectionClosedErrorCode) {
+            console.error('Request ' + method + ' failed. ' + JSON.stringify(error));
+            reject(error);
+          } else {
+            resolve(null);
+          }
+
           return;
         }
+
         const args = this._replyArgs[method];
         resolve(result && args.length ? result[args[0]] : undefined);
       };
@@ -790,7 +792,7 @@ export class _AgentPrototype {
 /**
  * @unrestricted
  */
-export class _DispatcherPrototype {
+class _DispatcherPrototype {
   constructor() {
     this._eventArgs = {};
   }
@@ -849,21 +851,11 @@ self.Protocol = self.Protocol || {};
 Protocol = Protocol || {};
 
 Protocol.DevToolsStubErrorCode = DevToolsStubErrorCode;
-/** @typedef {string} */
-Protocol.Error = ProtocolError;
+
+Protocol.SessionRouter = SessionRouter;
 
 /** @constructor */
 Protocol.InspectorBackend = InspectorBackend;
-
-/**
- * @unrestricted
- */
-Protocol.InspectorBackend._AgentPrototype = _AgentPrototype;
-
-/**
- * @unrestricted
- */
-Protocol.InspectorBackend._DispatcherPrototype = _DispatcherPrototype;
 
 /** @interface */
 Protocol.Connection = Connection;
@@ -874,9 +866,6 @@ Protocol.inspectorBackend = new InspectorBackend();
 Protocol.test = test;
 
 /** @constructor */
-Protocol.SessionRouter = SessionRouter;
-
-/** @constructor */
 Protocol.TargetBase = TargetBase;
 
 /**
@@ -885,15 +874,5 @@ Protocol.TargetBase = TargetBase;
  */
 Protocol._Callback;
 
-/** @type {string} */
-Protocol.BakedInspectorBackendAPIChromeTag;
-/** @type {string} */
-Protocol.BakedInspectorBackendAPIChromeRev;
-/** @type {string} */
-Protocol.BakedInspectorBackendAPI;
-/** @type {string} */
-Protocol.BakedSupportedCSSPropertiesChromeTag;
-/** @type {string} */
-Protocol.BakedSupportedCSSPropertiesChromeRev;
-/** @type {string} */
-Protocol.BakedSupportedCSSProperties;
+/** @typedef {string} */
+Protocol.Error = ProtocolError;

@@ -50,7 +50,7 @@ print_env() {
 portable_realpath() {
   case "$OSTYPE" in
     darwin*)
-      if [ -z "$(which grealpath)" ]; then
+      if [ -z "$(command -v grealpath)" ]; then
         echo "grealpath needed under OSX, please \`brew install coreutils\`"
         exit 1
       fi
@@ -63,7 +63,7 @@ portable_realpath() {
 portable_stdbuf() {
   case "$OSTYPE" in
     darwin*)
-      if [ -z "$(which gstdbuf)" ]; then
+      if [ -z "$(command -v gstdbuf)" ]; then
         echo "gstdbuf needed under OSX, please \`brew install coreutils\`"
         exit 1
       fi

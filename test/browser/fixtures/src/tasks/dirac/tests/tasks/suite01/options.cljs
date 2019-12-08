@@ -21,14 +21,9 @@
         (with-options {:user-frontend-url-params user-params}
           (with-devtools
             (is (string/includes? (<!* a/go-get-frontend-url-params) user-params))))))
-    (testing "use baked-in api and css"
+    (testing "internal error presentation"
       (with-devtools
         (<!* a/go-switch-to-console-panel!)
         (<!* a/go-trigger-internal-error-as-error-log!)
         (is (= (count (<!* a/go-scrape :find-logs "a fake error log")) 1))
-        (let [error-content (second (first (<!* a/go-scrape :find-logs-in-groups "a fake error log")))
-              info-line (first (utils/lines error-content))]
-          (is (string/includes? info-line "Backend API/internal"))
-          (is (string/includes? info-line "Backend CSS/internal"))
-          (is (> (get-registrations info-line) 400))
-          (is (> (get-definitions info-line) 400)))))))
+        (let [error-content (second (first (<!* a/go-scrape :find-logs-in-groups "a fake error log")))])))))

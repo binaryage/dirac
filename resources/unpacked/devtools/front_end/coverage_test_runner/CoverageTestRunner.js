@@ -7,10 +7,14 @@
  * @suppress {accessControls}
  */
 
-CoverageTestRunner.startCoverage = async function() {
+/**
+ * @param jsCoveragePerBlock - Collect per Block coverage if `true`, per function coverage otherwise.
+ * @return {!Promise}
+ */
+CoverageTestRunner.startCoverage = async function(jsCoveragePerBlock) {
   UI.viewManager.showView('coverage');
   const coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
-  await coverageView._startRecording();
+  await coverageView._startRecording({reload: false, jsCoveragePerBlock});
 };
 
 /**
@@ -39,13 +43,22 @@ CoverageTestRunner.resumeCoverageModel = async function() {
   await coverageView._model.postResumeModel();
 };
 
-
 /**
  * @return {!Promise}
  */
-CoverageTestRunner.pollCoverage = function() {
+CoverageTestRunner.pollCoverage = async function() {
   const coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
-  return coverageView._model._takeAllCoverage();
+  // Make sure not to have two instances of _pollAndCallback running at the same time.
+  await coverageView._model._currentPollPromise;
+  return coverageView._model._pollAndCallback();
+};
+
+/**
+ * @return {!Promise<Coverage.CoverageModel>}
+ */
+CoverageTestRunner.getCoverageModel = function() {
+  const coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
+  return coverageView._model;
 };
 
 /**

@@ -23,7 +23,7 @@
                "(inc a)"
                "info> 43")
           (<!* a/go-simulate-global-action! "F8")                                                                             ; resume paused debugger
-          (<!* a/go-wait-for-devtools-match "info> 84"))
+          (<!* a/go-wait-for-repl-job-match-in-console! "info> 84"))
 
         (testing "break on js-debugger, change var in scope, resume"
           (<!* a/go-type-in-console! "(fn-with-breakpoint)")
@@ -33,8 +33,7 @@
                "(set! js/a 30)"
                ["DF.warning> js/a is shadowed" "info> 30"])
           (<!* a/go-simulate-global-action! "F8")                                                                             ; resume paused debugger
-          (<!* a/go-wait-for-devtools-match "info> 60")
-          (<!* a/go-wait-for-devtools-ui))                                                                                    ; fight flaky test like https://travis-ci.org/binaryage/dirac/builds/588271424
+          (<!* a/go-wait-for-repl-job-match-in-console! "info> 60"))
 
         (testing "break on js-debugger in async fn should not affect us"
           (<!* a/go-exec-and-match-in-console!

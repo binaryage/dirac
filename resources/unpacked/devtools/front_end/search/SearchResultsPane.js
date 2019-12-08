@@ -1,7 +1,7 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-Search.SearchResultsPane = class extends UI.VBox {
+export default class SearchResultsPane extends UI.VBox {
   /**
    * @param {!Search.SearchConfig} searchConfig
    */
@@ -33,18 +33,21 @@ Search.SearchResultsPane = class extends UI.VBox {
   _addTreeElement(searchResult) {
     const treeElement = new Search.SearchResultsPane.SearchResultsTreeElement(this._searchConfig, searchResult);
     this._treeOutline.appendChild(treeElement);
+    if (!this._treeOutline.selectedTreeElement) {
+      treeElement.select(/* omitFocus */ true, /* selectedByUser */ true);
+    }
     // Expand until at least a certain number of matches is expanded.
     if (this._matchesExpandedCount < Search.SearchResultsPane._matchesExpandedByDefault) {
       treeElement.expand();
     }
     this._matchesExpandedCount += searchResult.matchesCount();
   }
-};
+}
 
-Search.SearchResultsPane._matchesExpandedByDefault = 20;
-Search.SearchResultsPane._matchesShownAtOnce = 20;
+export const _matchesExpandedByDefault = 20;
+export const _matchesShownAtOnce = 20;
 
-Search.SearchResultsPane.SearchResultsTreeElement = class extends UI.TreeElement {
+export class SearchResultsTreeElement extends UI.TreeElement {
   /**
    * @param {!Search.SearchConfig} searchConfig
    * @param {!Search.SearchResult} searchResult
@@ -54,9 +57,7 @@ Search.SearchResultsPane.SearchResultsTreeElement = class extends UI.TreeElement
     this._searchConfig = searchConfig;
     this._searchResult = searchResult;
     this._initialized = false;
-
     this.toggleOnClick = true;
-    this.selectable = false;
   }
 
   /**
@@ -159,10 +160,15 @@ Search.SearchResultsPane.SearchResultsTreeElement = class extends UI.TreeElement
       anchor.appendChild(contentSpan);
 
       const searchMatchElement = new UI.TreeElement();
-      searchMatchElement.selectable = false;
       this.appendChild(searchMatchElement);
       searchMatchElement.listItemElement.className = 'search-match';
       searchMatchElement.listItemElement.appendChild(anchor);
+      searchMatchElement.listItemElement.addEventListener('keydown', event => {
+        if (isEnterKey(event)) {
+          event.consume(true);
+          Common.Revealer.reveal(searchResult.matchRevealable(i));
+        }
+      });
       searchMatchElement.tooltip = lineContent;
     }
   }
@@ -229,4 +235,22 @@ Search.SearchResultsPane.SearchResultsTreeElement = class extends UI.TreeElement
     this._appendSearchMatches(startMatchIndex, this._searchResult.matchesCount());
     return false;
   }
-};
+}
+
+/* Legacy exported object */
+self.Search = self.Search || {};
+
+/* Legacy exported object */
+Search = Search || {};
+
+/**
+ * @constructor
+ */
+Search.SearchResultsPane = SearchResultsPane;
+Search.SearchResultsPane._matchesExpandedByDefault = _matchesExpandedByDefault;
+Search.SearchResultsPane._matchesShownAtOnce = _matchesShownAtOnce;
+
+/**
+ * @constructor
+ */
+Search.SearchResultsPane.SearchResultsTreeElement = SearchResultsTreeElement;

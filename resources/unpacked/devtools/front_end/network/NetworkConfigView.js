@@ -17,7 +17,7 @@ Network.NetworkConfigView = class extends UI.VBox {
 
   /**
    * @param {string} title
-   * @return {{select: !Element, input: !Element}}
+   * @return {{select: !Element, input: !Element, error: !Element}}
    */
   static createUserAgentSelectAndInput(title) {
     const userAgentSetting = Common.settings.createSetting('customUserAgent', '');
@@ -46,6 +46,12 @@ Network.NetworkConfigView = class extends UI.VBox {
     otherUserAgentElement.required = true;
     UI.ARIAUtils.setAccessibleName(otherUserAgentElement, otherUserAgentElement.placeholder);
 
+    const errorElement = createElementWithClass('div', 'network-config-input-validation-error');
+    UI.ARIAUtils.markAsAlert(errorElement);
+    if (!otherUserAgentElement.value) {
+      errorElement.textContent = ls`Custom user agent field is required`;
+    }
+
     settingChanged();
     userAgentSelectElement.addEventListener('change', userAgentSelected, false);
     otherUserAgentElement.addEventListener('input', applyOtherUserAgent, false);
@@ -59,6 +65,7 @@ Network.NetworkConfigView = class extends UI.VBox {
       } else {
         otherUserAgentElement.select();
       }
+      errorElement.textContent = '';
     }
 
     function settingChanged() {
@@ -80,13 +87,18 @@ Network.NetworkConfigView = class extends UI.VBox {
 
     function applyOtherUserAgent() {
       if (userAgentSetting.get() !== otherUserAgentElement.value) {
+        if (!otherUserAgentElement.value) {
+          errorElement.textContent = ls`Custom user agent field is required`;
+        } else {
+          errorElement.textContent = '';
+        }
         userAgentSetting.set(otherUserAgentElement.value);
         otherUserAgentElement.title = otherUserAgentElement.value;
         settingChanged();
       }
     }
 
-    return {select: userAgentSelectElement, input: otherUserAgentElement};
+    return {select: userAgentSelectElement, input: otherUserAgentElement, error: errorElement};
   }
 
   /**
@@ -138,6 +150,7 @@ Network.NetworkConfigView = class extends UI.VBox {
     customSelectAndInput.select.classList.add('chrome-select');
     customUserAgentSelectBox.appendChild(customSelectAndInput.select);
     customUserAgentSelectBox.appendChild(customSelectAndInput.input);
+    customUserAgentSelectBox.appendChild(customSelectAndInput.error);
     userAgentSelectBoxChanged();
 
     function userAgentSelectBoxChanged() {
@@ -145,6 +158,7 @@ Network.NetworkConfigView = class extends UI.VBox {
       customUserAgentSelectBox.classList.toggle('checked', useCustomUA);
       customSelectAndInput.select.disabled = !useCustomUA;
       customSelectAndInput.input.disabled = !useCustomUA;
+      customSelectAndInput.error.hidden = !useCustomUA;
       const customUA = useCustomUA ? customUserAgentSetting.get() : '';
       SDK.multitargetNetworkManager.setCustomUserAgentOverride(customUA);
     }
@@ -197,6 +211,11 @@ Network.NetworkConfigView._userAgentGroups = [
             'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36'
       },
       {
+        title: ls`Chrome \u2014 Android Mobile (high-end)`,
+        value:
+            'Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36'
+      },
+      {
         title: ls`Chrome \u2014 Android Tablet`,
         value:
             'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JSS15Q) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36'
@@ -204,12 +223,12 @@ Network.NetworkConfigView._userAgentGroups = [
       {
         title: ls`Chrome \u2014 iPhone`,
         value:
-            'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/%s Mobile/13B143 Safari/601.1.46'
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/%s Mobile/15E148 Safari/604.1'
       },
       {
         title: ls`Chrome \u2014 iPad`,
         value:
-            'Mozilla/5.0 (iPad; CPU OS 9_1 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/%s Mobile/13B143 Safari/601.1.46'
+            'Mozilla/5.0 (iPad; CPU OS 13_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/%s Mobile/15E148 Safari/604.1'
       },
       {
         title: ls`Chrome \u2014 Chrome OS`,
@@ -218,7 +237,7 @@ Network.NetworkConfigView._userAgentGroups = [
       {
         title: ls`Chrome \u2014 Mac`,
         value:
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36'
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36'
       },
       {
         title: ls`Chrome \u2014 Windows`,
@@ -231,11 +250,11 @@ Network.NetworkConfigView._userAgentGroups = [
     values: [
       {
         title: ls`Firefox \u2014 Android Mobile`,
-        value: 'Mozilla/5.0 (Android 4.4; Mobile; rv:46.0) Gecko/46.0 Firefox/46.0'
+        value: 'Mozilla/5.0 (Android 4.4; Mobile; rv:70.0) Gecko/70.0 Firefox/70.0'
       },
       {
         title: ls`Firefox \u2014 Android Tablet`,
-        value: 'Mozilla/5.0 (Android 4.4; Tablet; rv:46.0) Gecko/46.0 Firefox/46.0'
+        value: 'Mozilla/5.0 (Android 4.4; Tablet; rv:70.0) Gecko/70.0 Firefox/70.0'
       },
       {
         title: ls`Firefox \u2014 iPhone`,
@@ -249,11 +268,11 @@ Network.NetworkConfigView._userAgentGroups = [
       },
       {
         title: ls`Firefox \u2014 Mac`,
-        value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0'
+        value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0'
       },
       {
         title: ls`Firefox \u2014 Windows`,
-        value: 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0'
+        value: 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:70.0) Gecko/20100101 Firefox/70.0'
       }
     ]
   },
@@ -261,9 +280,14 @@ Network.NetworkConfigView._userAgentGroups = [
     title: ls`Googlebot`,
     values: [
       {title: ls`Googlebot`, value: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}, {
+        title: ls`Googlebot Desktop`,
+        value:
+            'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/%s Safari/537.36'
+      },
+      {
         title: ls`Googlebot Smartphone`,
         value:
-            'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+            'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
       }
     ]
   },
@@ -291,7 +315,7 @@ Network.NetworkConfigView._userAgentGroups = [
       {
         title: ls`Microsoft Edge (Chromium) \u2014 Mac`,
         value:
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36 Edg/%s'
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Chrome/%s Safari/604.1 Edg/%s'
       },
       {
         title: ls`Microsoft Edge \u2014 iPhone`,
@@ -331,12 +355,12 @@ Network.NetworkConfigView._userAgentGroups = [
       {
         title: ls`Opera \u2014 Mac`,
         value:
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36 OPR/37.0.2178.31'
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36 OPR/65.0.3467.48'
       },
       {
         title: ls`Opera \u2014 Windows`,
         value:
-            'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36 OPR/37.0.2178.31'
+            'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36 OPR/65.0.3467.48'
       },
       {
         title: ls`Opera (Presto) \u2014 Mac`,
@@ -356,19 +380,19 @@ Network.NetworkConfigView._userAgentGroups = [
     title: ls`Safari`,
     values: [
       {
-        title: ls`Safari \u2014 iPad iOS 9`,
+        title: ls`Safari \u2014 iPad iOS 13.2`,
         value:
-            'Mozilla/5.0 (iPad; CPU OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1'
+            'Mozilla/5.0 (iPad; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'
       },
       {
-        title: ls`Safari \u2014 iPhone iOS 9`,
+        title: ls`Safari \u2014 iPhone iOS 13.2`,
         value:
-            'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1'
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'
       },
       {
         title: ls`Safari \u2014 Mac`,
         value:
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A'
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Safari/605.1.15'
       }
     ]
   },

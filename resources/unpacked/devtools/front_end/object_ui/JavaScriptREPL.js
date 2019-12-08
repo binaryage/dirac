@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-ObjectUI.JavaScriptREPL = class {
+export default class JavaScriptREPL {
   /**
    * @param {string} code
    * @return {string}
@@ -30,17 +30,10 @@ ObjectUI.JavaScriptREPL = class {
 
   /**
    * @param {string} text
-   * @return {!Promise<!{text: string, preprocessed: boolean}>}
+   * @return {string}
    */
-  static async preprocessExpression(text) {
-    text = ObjectUI.JavaScriptREPL.wrapObjectLiteral(text);
-    let preprocessed = false;
-    if (text.indexOf('await') !== -1) {
-      const preprocessedText = await Formatter.formatterWorkerPool().preprocessTopLevelAwaitExpressions(text);
-      preprocessed = !!preprocessedText;
-      text = preprocessedText || text;
-    }
-    return {text, preprocessed};
+  static preprocessExpression(text) {
+    return JavaScriptREPL.wrapObjectLiteral(text);
   }
 
   /**
@@ -58,9 +51,9 @@ ObjectUI.JavaScriptREPL = class {
       return {preview: createDocumentFragment(), result: null};
     }
 
-    const wrappedResult = await ObjectUI.JavaScriptREPL.preprocessExpression(text);
+    const expression = JavaScriptREPL.preprocessExpression(text);
     const options = {
-      expression: wrappedResult.text,
+      expression: expression,
       generatePreview: true,
       includeCommandLineAPI: true,
       throwOnSideEffect: throwOnSideEffect,
@@ -68,9 +61,8 @@ ObjectUI.JavaScriptREPL = class {
       objectGroup: objectGroup,
       disableBreaks: true
     };
-    const result = await executionContext.evaluate(
-        options, false /* userGesture */, wrappedResult.preprocessed /* awaitPromise */);
-    const preview = ObjectUI.JavaScriptREPL._buildEvaluationPreview(result, allowErrors);
+    const result = await executionContext.evaluate(options, false /* userGesture */, false /* awaitPromise */);
+    const preview = JavaScriptREPL._buildEvaluationPreview(result, allowErrors);
     return {preview, result};
   }
 
@@ -103,10 +95,21 @@ ObjectUI.JavaScriptREPL = class {
     }
     return fragment;
   }
-};
+}
 
 /**
  * @const
  * @type {number}
  */
-ObjectUI.JavaScriptREPL._MaxLengthForEvaluation = 2000;
+export const _MaxLengthForEvaluation = 2000;
+
+/* Legacy exported object */
+self.ObjectUI = self.ObjectUI || {};
+
+/* Legacy exported object */
+ObjectUI = ObjectUI || {};
+
+/** @constructor */
+ObjectUI.JavaScriptREPL = JavaScriptREPL;
+
+ObjectUI.JavaScriptREPL._MaxLengthForEvaluation = _MaxLengthForEvaluation;

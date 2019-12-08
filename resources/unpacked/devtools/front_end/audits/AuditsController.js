@@ -6,7 +6,7 @@
  * @implements {SDK.SDKModelObserver<!SDK.ServiceWorkerManager>}
  * @unrestricted
  */
-Audits.AuditController = class extends Common.Object {
+class AuditController extends Common.Object {
   constructor(protocolService) {
     super();
 
@@ -153,7 +153,7 @@ Audits.AuditController = class extends Common.Object {
   getFlags() {
     const flags = {
       // DevTools handles all the emulation. This tells Lighthouse to not bother with emulation.
-      deviceScreenEmulationMethod: 'provided'
+      internalDisableDeviceScreenEmulation: true
     };
     for (const runtimeSetting of Audits.RuntimeSettings) {
       runtimeSetting.setFlags(flags, runtimeSetting.setting.get());
@@ -202,14 +202,10 @@ Audits.AuditController = class extends Common.Object {
 
     this.dispatchEventToListeners(Audits.Events.PageAuditabilityChanged, {helpText});
   }
-};
-
-
-/** @typedef {{setting: !Common.Setting, configID: string, title: string, description: string}} */
-Audits.Preset;
+}
 
 /** @type {!Array.<!Audits.Preset>} */
-Audits.Presets = [
+export const Presets = [
   // configID maps to Lighthouse's Object.keys(config.categories)[0] value
   {
     setting: Common.settings.createSetting('audits.cat_perf', true),
@@ -241,13 +237,17 @@ Audits.Presets = [
     title: ls`SEO`,
     description: ls`Is this page optimized for search engine results ranking`
   },
+  {
+    setting: Common.settings.createSetting('audits.cat_pubads', false),
+    plugin: true,
+    configID: 'lighthouse-plugin-publisher-ads',
+    title: ls`Publisher Ads`,
+    description: ls`Is this page optimized for ad speed and quality`
+  },
 ];
 
-/** @typedef {{setting: !Common.Setting, description: string, setFlags: function(!Object, string), options: (!Array|undefined), title: (string|undefined)}} */
-Audits.RuntimeSetting;
-
 /** @type {!Array.<!Audits.RuntimeSetting>} */
-Audits.RuntimeSettings = [
+export const RuntimeSettings = [
   {
     setting: Common.settings.createSetting('audits.device_type', 'mobile'),
     description: ls`Apply mobile emulation during auditing`,
@@ -261,36 +261,15 @@ Audits.RuntimeSettings = [
     ],
   },
   {
-    setting: Common.settings.createSetting('audits.throttling', 'default'),
+    // This setting is disabled, but we keep it around to show in the UI.
+    setting: Common.settings.createSetting('audits.throttling', true),
+    title: ls`Simulated throttling`,
+    // We will disable this when we have a Lantern trace viewer within DevTools.
+    learnMore:
+        'https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#devtools-audits-panel-throttling',
     setFlags: (flags, value) => {
-      switch (value) {
-        case 'devtools':
-          flags.throttlingMethod = 'devtools';
-          break;
-        case 'off':
-          flags.throttlingMethod = 'provided';
-          break;
-        default:
-          flags.throttlingMethod = 'simulate';
-      }
+      flags.throttlingMethod = value ? 'simulate' : 'devtools';
     },
-    options: [
-      {
-        label: ls`Simulated Slow 4G, 4x CPU Slowdown`,
-        value: 'default',
-        title: ls`Throttling is simulated, resulting in faster audit runs with similar measurement accuracy`
-      },
-      {
-        label: ls`Applied Slow 4G, 4x CPU Slowdown`,
-        value: 'devtools',
-        title: ls`Typical DevTools throttling, with actual traffic shaping and CPU slowdown applied`
-      },
-      {
-        label: ls`No throttling`,
-        value: 'off',
-        title: ls`No network or CPU throttling used. (Useful when not evaluating performance)`
-      },
-    ],
   },
   {
     setting: Common.settings.createSetting('audits.clear_storage', true),
@@ -302,9 +281,34 @@ Audits.RuntimeSettings = [
   },
 ];
 
-Audits.Events = {
+export const Events = {
   PageAuditabilityChanged: Symbol('PageAuditabilityChanged'),
   AuditProgressChanged: Symbol('AuditProgressChanged'),
   RequestAuditStart: Symbol('RequestAuditStart'),
   RequestAuditCancel: Symbol('RequestAuditCancel'),
 };
+
+/* Legacy exported object */
+self.Audits = self.Audits || {};
+
+/* Legacy exported object */
+Audits = Audits || {};
+
+/**
+ * @constructor
+ */
+Audits.AuditController = AuditController;
+
+/** @typedef {{setting: !Common.Setting, configID: string, title: string, description: string}} */
+Audits.Preset;
+
+Audits.Events = Events;
+
+/** @typedef {{setting: !Common.Setting, description: string, setFlags: function(!Object, string), options: (!Array|undefined), title: (string|undefined)}} */
+Audits.RuntimeSetting;
+
+/** @type {!Array.<!Audits.RuntimeSetting>} */
+Audits.RuntimeSettings = RuntimeSettings;
+
+/** @type {!Array.<!Audits.Preset>} */
+Audits.Presets = Presets;

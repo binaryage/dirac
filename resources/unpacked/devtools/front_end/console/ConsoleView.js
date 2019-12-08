@@ -31,7 +31,7 @@
  * @implements {Console.ConsoleViewportProvider}
  * @unrestricted
  */
-Console.ConsoleView = class extends UI.VBox {
+export default class ConsoleView extends UI.VBox {
   constructor() {
     super();
     this.setMinimumSize(0, 35);
@@ -47,11 +47,10 @@ Console.ConsoleView = class extends UI.VBox {
     this._searchableView.element.classList.add('console-searchable-view');
     this._searchableView.setPlaceholder(Common.UIString('Find string in logs'));
     this._searchableView.setMinimalSearchQuerySize(0);
-    this._badgePool = new ProductRegistry.BadgePool();
-    this._sidebar = new Console.ConsoleSidebar(this._badgePool);
+    this._sidebar = new Console.ConsoleSidebar();
     this._sidebar.addEventListener(Console.ConsoleSidebar.Events.FilterSelected, this._onFilterChanged.bind(this));
     this._isSidebarOpen = false;
-    this._filter = new Console.ConsoleViewFilter(this._onFilterChanged.bind(this));
+    this._filter = new ConsoleViewFilter(this._onFilterChanged.bind(this));
 
     const consoleToolbarContainer = this.element.createChild('div', 'console-toolbar-container');
     this._splitWidget =
@@ -110,8 +109,9 @@ Console.ConsoleView = class extends UI.VBox {
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._consoleContextSelector.toolbarItem());
     toolbar.appendSeparator();
-    toolbar.appendToolbarItem(UI.Toolbar.createActionButton(
-        /** @type {!UI.Action }*/ (UI.actionRegistry.action('console.create-pin'))));
+    const liveExpressionButton =
+        UI.Toolbar.createActionButton(/** @type {!UI.Action }*/ (UI.actionRegistry.action('console.create-pin')));
+    toolbar.appendToolbarItem(liveExpressionButton);
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._filter._textFilterUI);
     toolbar.appendToolbarItem(this._filter._levelMenuButton);
@@ -163,7 +163,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._showSettingsPaneSetting.addChangeListener(
         () => settingsPane.element.classList.toggle('hidden', !this._showSettingsPaneSetting.get()));
 
-    this._pinPane = new Console.ConsolePinPane();
+    this._pinPane = new Console.ConsolePinPane(liveExpressionButton);
     this._pinPane.element.classList.add('console-view-pinpane');
     this._pinPane.show(this._contentsElement);
     this._pinPane.element.addEventListener('keydown', event => {
@@ -189,7 +189,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._pendingBatchResize = false;
     this._onMessageResizedBound = this._onMessageResized.bind(this);
 
-    this._topGroup = Console.ConsoleGroup.createTopGroup();
+    this._topGroup = ConsoleGroup.createTopGroup();
     this._currentGroup = this._topGroup;
 
     this._promptElement = this._messagesElement.createChild('div', 'source-code');
@@ -323,10 +323,10 @@ Console.ConsoleView = class extends UI.VBox {
    * @return {!Console.ConsoleView}
    */
   static instance() {
-    if (!Console.ConsoleView._instance) {
-      Console.ConsoleView._instance = new Console.ConsoleView();
+    if (!ConsoleView._instance) {
+      ConsoleView._instance = new ConsoleView();
     }
-    return Console.ConsoleView._instance;
+    return ConsoleView._instance;
   }
 
   static clearConsole() {
@@ -994,7 +994,7 @@ Console.ConsoleView = class extends UI.VBox {
     SDK.consoleModel.addMessage(commandMessage);
 
     this._prompt.history().pushHistoryItem(text);
-    this._diracHistorySetting.set(this._prompt.history().historyData().slice(-Console.ConsoleView.persistedHistorySize));
+    this._diracHistorySetting.set(this._prompt.history().historyData().slice(-persistedHistorySize));
 
     const debuggerModel = executionContext.debuggerModel;
     let scopeInfoPromise = Promise.resolve(null);
@@ -1029,10 +1029,9 @@ Console.ConsoleView = class extends UI.VBox {
     if (message.type === SDK.ConsoleMessage.MessageType.Command ||
         message.type === SDK.ConsoleMessage.MessageType.Result) {
       const lastMessage = this._consoleMessages.peekLast();
-      viewMessage[Console.ConsoleView._messageSortingTimeSymbol] =
-          lastMessage ? lastMessage[Console.ConsoleView._messageSortingTimeSymbol] : 0;
+      viewMessage[_messageSortingTimeSymbol] = lastMessage ? lastMessage[_messageSortingTimeSymbol] : 0;
     } else {
-      viewMessage[Console.ConsoleView._messageSortingTimeSymbol] = viewMessage.consoleMessage().timestamp;
+      viewMessage[_messageSortingTimeSymbol] = viewMessage.consoleMessage().timestamp;
     }
 
     let insertAt;
@@ -1078,8 +1077,7 @@ Console.ConsoleView = class extends UI.VBox {
      * @param {!Console.ConsoleViewMessage} viewMessage2
      */
     function timeComparator(viewMessage1, viewMessage2) {
-      return viewMessage1[Console.ConsoleView._messageSortingTimeSymbol] -
-          viewMessage2[Console.ConsoleView._messageSortingTimeSymbol];
+      return viewMessage1[_messageSortingTimeSymbol] - viewMessage2[_messageSortingTimeSymbol];
     }
   }
 
@@ -1155,7 +1153,7 @@ Console.ConsoleView = class extends UI.VBox {
     }
 
     if (viewMessage.consoleMessage().isGroupStartMessage()) {
-      this._currentGroup = new Console.ConsoleGroup(this._currentGroup, viewMessage);
+      this._currentGroup = new ConsoleGroup(this._currentGroup, viewMessage);
     }
 
     this._messageAppendedForTests();
@@ -1173,23 +1171,19 @@ Console.ConsoleView = class extends UI.VBox {
     const nestingLevel = this._currentGroup.nestingLevel();
     switch (message.type) {
       case SDK.ConsoleMessage.MessageType.Command:
-        return new Console.ConsoleCommand(
-            message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
+        return new ConsoleCommand(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.DiracCommand:
-        return new Console.ConsoleDiracCommand(message, this._linkifier, this._badgePool, nestingLevel);
+        return new Console.ConsoleDiracCommand(message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.DiracMarkup:
-        return new Console.ConsoleDiracMarkup(message, this._linkifier, this._badgePool, nestingLevel);
+        return new Console.ConsoleDiracMarkup(message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.Result:
-        return new Console.ConsoleCommandResult(
-            message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
+        return new ConsoleCommandResult(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.StartGroupCollapsed:
       case SDK.ConsoleMessage.MessageType.StartGroup:
         return new Console.ConsoleGroupViewMessage(
-            message, this._linkifier, this._badgePool, nestingLevel, this._updateMessageList.bind(this),
-            this._onMessageResizedBound);
+            message, this._linkifier, nestingLevel, this._updateMessageList.bind(this), this._onMessageResizedBound);
       default:
-        return new Console.ConsoleViewMessage(
-            message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
+        return new Console.ConsoleViewMessage(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
     }
   }
 
@@ -1226,7 +1220,6 @@ Console.ConsoleView = class extends UI.VBox {
     this._hidePromptSuggestBox();
     this._viewport.setStickToBottom(true);
     this._linkifier.reset();
-    this._badgePool.reset();
     this._filter.clear();
     if (hadFocus) {
       this._prompt.focus();
@@ -1290,7 +1283,7 @@ Console.ConsoleView = class extends UI.VBox {
       const messageContents = [];
       let i;
       for (i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i) {
-        const message = this.itemElement(messageIndex + i);
+        const message = /** @type {!Console.ConsoleViewMessage} */ (this.itemElement(messageIndex + i));
         messageContents.push(message.toExportString());
       }
       messageIndex += i;
@@ -1354,7 +1347,7 @@ Console.ConsoleView = class extends UI.VBox {
   }
 
   _updateMessageList() {
-    this._topGroup = Console.ConsoleGroup.createTopGroup();
+    this._topGroup = ConsoleGroup.createTopGroup();
     this._currentGroup = this._topGroup;
     this._regexMatchRanges = [];
     this._hiddenByFilterCount = 0;
@@ -1568,8 +1561,7 @@ Console.ConsoleView = class extends UI.VBox {
         /** @type {{result: ?SDK.RemoteObject, commandMessage: !SDK.ConsoleMessage, exceptionDetails: (!Protocol.Runtime.ExceptionDetails|undefined)}} */
         (event.data);
     this._prompt.history().pushHistoryItem(data.commandMessage.messageText);
-    this._consoleHistorySetting.set(
-        this._prompt.history().historyData().slice(-Console.ConsoleView.persistedHistorySize));
+    this._consoleHistorySetting.set(this._prompt.history().historyData().slice(-persistedHistorySize));
     this._printResult(data.result, data.commandMessage, data.exceptionDetails);
   }
 
@@ -1807,18 +1799,21 @@ Console.ConsoleView = class extends UI.VBox {
         this._messagesElement.clientHeight - this._prompt.belowEditorElement().offsetHeight;
     return distanceToPromptEditorBottom <= 2;
   }
-};
+}
 
-Console.ConsoleView.persistedHistorySize = 300;
+const persistedHistorySize = 300;
 
-Console.ConsoleViewFilter = class {
+/**
+ * @unrestricted
+ */
+export class ConsoleViewFilter {
   /**
    * @param {function()} filterChangedCallback
    */
   constructor(filterChangedCallback) {
     this._filterChanged = filterChangedCallback;
 
-    this._messageLevelFiltersSetting = Console.ConsoleViewFilter.levelFilterSetting();
+    this._messageLevelFiltersSetting = ConsoleViewFilter.levelFilterSetting();
     this._hideNetworkMessagesSetting = Common.moduleSetting('hideNetworkMessages');
     this._filterByExecutionContextSetting = Common.moduleSetting('selectedContextFilterEnabled');
 
@@ -1993,12 +1988,12 @@ Console.ConsoleViewFilter = class {
     this._textFilterUI.setValue('');
     this._onFilterChanged();
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Console.ConsoleCommand = class extends Console.ConsoleViewMessage {
+export class ConsoleCommand extends Console.ConsoleViewMessage {
 
   /**
    * @param {!SDK.ConsoleMessage} consoleMessage
@@ -2012,7 +2007,6 @@ Console.ConsoleCommand = class extends Console.ConsoleViewMessage {
     this._contentElement = null;
     this._formattedCommand = null;
   }
-
   /**
    * @override
    * @return {!Element}
@@ -2029,7 +2023,7 @@ Console.ConsoleCommand = class extends Console.ConsoleViewMessage {
       this._formattedCommand.textContent = this.text.replaceControlCharacters();
       this._contentElement.appendChild(this._formattedCommand);
 
-      if (this._formattedCommand.textContent.length < Console.ConsoleCommand.MaxLengthToIgnoreHighlighter) {
+      if (this._formattedCommand.textContent.length < MaxLengthToIgnoreHighlighter) {
         const javascriptSyntaxHighlighter = new UI.SyntaxHighlighter('text/javascript', true);
         javascriptSyntaxHighlighter.syntaxHighlightNode(this._formattedCommand).then(this._updateSearch.bind(this));
       } else {
@@ -2044,16 +2038,12 @@ Console.ConsoleCommand = class extends Console.ConsoleViewMessage {
   _updateSearch() {
     this.setSearchRegex(this.searchRegex());
   }
-};
+}
 
 /**
- * The maximum length before strings are considered too long for syntax highlighting.
- * @const
- * @type {number}
+ * @unrestricted
  */
-Console.ConsoleCommand.MaxLengthToIgnoreHighlighter = 10000;
-
-Console.ConsoleDiracCommand = class extends Console.ConsoleCommand {
+export class ConsoleDiracCommand extends ConsoleCommand {
   /**
    * @override
    * @return {!Element}
@@ -2075,9 +2065,12 @@ Console.ConsoleDiracCommand = class extends Console.ConsoleCommand {
     }
     return this._contentElement;
   }
-};
+}
 
-Console.ConsoleDiracMarkup = class extends Console.ConsoleCommand {
+/**
+ * @unrestricted
+ */
+export class ConsoleDiracMarkup extends ConsoleCommand {
   /**
    * @override
    * @return {!Element}
@@ -2095,9 +2088,12 @@ Console.ConsoleDiracMarkup = class extends Console.ConsoleCommand {
     }
     return this._contentElement;
   }
-};
+}
 
-Console.ConsoleCommandResult = class extends Console.ConsoleViewMessage {
+/**
+ * @unrestricted
+ */
+class ConsoleCommandResult extends Console.ConsoleViewMessage {
   /**
    * @override
    * @return {!Element}
@@ -2113,9 +2109,12 @@ Console.ConsoleCommandResult = class extends Console.ConsoleViewMessage {
     }
     return element;
   }
-};
+}
 
-Console.ConsoleGroup = class {
+/**
+ * @unrestricted
+ */
+export class ConsoleGroup {
   /**
    * @param {?Console.ConsoleGroup} parentGroup
    * @param {?Console.ConsoleViewMessage} groupMessage
@@ -2131,7 +2130,7 @@ Console.ConsoleGroup = class {
    * @return {!Console.ConsoleGroup}
    */
   static createTopGroup() {
-    return new Console.ConsoleGroup(null, null);
+    return new ConsoleGroup(null, null);
   }
 
   /**
@@ -2154,12 +2153,12 @@ Console.ConsoleGroup = class {
   parentGroup() {
     return this._parentGroup;
   }
-};
+}
 
 /**
  * @implements {UI.ActionDelegate}
  */
-Console.ConsoleView.ActionDelegate = class {
+export class ActionDelegate {
   /**
    * @override
    * @param {!UI.Context} context
@@ -2171,26 +2170,72 @@ Console.ConsoleView.ActionDelegate = class {
       case 'console.show':
         Host.InspectorFrontendHost.bringToFront();
         Common.console.show();
-        Console.ConsoleView.instance()._focusPrompt();
+        ConsoleView.instance()._focusPrompt();
         return true;
       case 'console.clear':
-        Console.ConsoleView.clearConsole();
+        ConsoleView.clearConsole();
         return true;
       case 'console.clear.history':
-        Console.ConsoleView.instance()._clearHistory();
+        ConsoleView.instance()._clearHistory();
         return true;
       case 'console.create-pin':
-        Console.ConsoleView.instance()._pinPane.addPin('', true /* userGesture */);
+        ConsoleView.instance()._pinPane.addPin('', true /* userGesture */);
         return true;
     }
     return false;
   }
-};
+}
+
+/** @type {symbol} */
+const _messageSortingTimeSymbol = Symbol('messageSortingTime');
+
+/**
+ * The maximum length before strings are considered too long for syntax highlighting.
+ * @const
+ * @type {number}
+ */
+const MaxLengthToIgnoreHighlighter = 10000;
+
+/* Legacy exported object */
+self.Console = self.Console || {};
+
+/* Legacy exported object */
+Console = Console || {};
+
+/**
+ * @constructor
+ */
+Console.ConsoleView = ConsoleView;
+
+/** @constructor */
+Console.ConsoleViewFilter = ConsoleViewFilter;
 
 /**
  * @typedef {{messageIndex: number, matchIndex: number}}
  */
 Console.ConsoleView.RegexMatchRange;
 
-/** @type {symbol} */
-Console.ConsoleView._messageSortingTimeSymbol = Symbol('messageSortingTime');
+/**
+ * @implements {UI.ActionDelegate}
+ */
+Console.ConsoleView.ActionDelegate = ActionDelegate;
+
+/**
+ * @constructor
+ */
+Console.ConsoleCommand = ConsoleCommand;
+
+/**
+ * @constructor
+ */
+Console.ConsoleGroup = ConsoleGroup;
+
+/**
+ * @constructor
+ */
+Console.ConsoleDiracCommand = ConsoleDiracCommand;
+
+/**
+ * @constructor
+ */
+Console.ConsoleDiracMarkup = ConsoleDiracMarkup;

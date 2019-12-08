@@ -6,7 +6,13 @@ set -e -o pipefail
 # shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
+set -x
+
 cd "$DEVTOOLS_ROOT"
 
-# http://stackoverflow.com/questions/107705/disable-output-buffering
-python -u scripts/compile_frontend.py
+yarn check-gn
+#yarn check-grdp
+#yarn check-json
+yarn check-loc
+
+yarn closure

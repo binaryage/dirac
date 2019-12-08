@@ -5,21 +5,43 @@
 /**
  * @unrestricted
  */
-CssOverview.OverviewController = class extends Common.Object {
+export class OverviewController extends Common.Object {
   constructor() {
     super();
 
-    SDK.targetManager.addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this._reset, this);
+    this.currentUrl = SDK.targetManager.inspectedURL();
+    SDK.targetManager.addEventListener(
+        SDK.TargetManager.Events.InspectedURLChanged, this._checkUrlAndResetIfChanged, this);
   }
 
-  _reset() {
-    this.dispatchEventToListeners(CssOverview.Events.Reset);
-  }
-};
+  _checkUrlAndResetIfChanged() {
+    if (this.currentUrl === SDK.targetManager.inspectedURL()) {
+      return;
+    }
 
-CssOverview.Events = {
+    this.currentUrl = SDK.targetManager.inspectedURL();
+    this.dispatchEventToListeners(Events.Reset);
+  }
+}
+
+export const Events = {
   RequestOverviewStart: Symbol('RequestOverviewStart'),
+  RequestNodeHighlight: Symbol('RequestNodeHighlight'),
+  PopulateNodes: Symbol('PopulateNodes'),
   RequestOverviewCancel: Symbol('RequestOverviewCancel'),
   OverviewCompleted: Symbol('OverviewCompleted'),
   Reset: Symbol('Reset'),
 };
+
+/* Legacy exported object */
+self.CssOverview = self.CssOverview || {};
+
+/* Legacy exported object */
+CssOverview = CssOverview || {};
+
+/**
+ * @constructor
+ */
+CssOverview.OverviewController = OverviewController;
+
+CssOverview.Events = Events;

@@ -61,10 +61,13 @@ class Runtime {
   }
 
   /**
+   * @private
    * @param {string} url
-   * @return {!Promise.<string>}
+   * @param {boolean} asBinary
+   * @template T
+   * @return {!Promise.<T>}
    */
-  static loadResourcePromise(url) {
+  static _loadResourcePromise(url, asBinary) {
     return new Promise(load);
 
     /**
@@ -74,6 +77,9 @@ class Runtime {
     function load(fulfill, reject) {
       const xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
+      if (asBinary) {
+        xhr.responseType = 'arraybuffer';
+      }
       xhr.onreadystatechange = onreadystatechange;
 
       /**
@@ -84,18 +90,38 @@ class Runtime {
           return;
         }
 
+        const {response} = e.target;
+
+        const text = asBinary ? new TextDecoder().decode(response) : response;
+
         // DevTools Proxy server can mask 404s as 200s, check the body to be sure
-        const status = /^HTTP\/1.1 404/.test(e.target.response) ? 404 : xhr.status;
+        const status = /^HTTP\/1.1 404/.test(text) ? 404 : xhr.status;
 
         if ([0, 200, 304].indexOf(status) === -1)  // Testing harness file:/// results in 0.
         {
           reject(new Error('While loading from url ' + url + ' server responded with a status of ' + status));
         } else {
-          fulfill(e.target.response);
+          fulfill(response);
         }
       }
       xhr.send(null);
     }
+  }
+
+  /**
+   * @param {string} url
+   * @return {!Promise.<string>}
+   */
+  static loadResourcePromise(url) {
+    return Runtime._loadResourcePromise(url, false);
+  }
+
+  /**
+   * @param {string} url
+   * @return {!Promise.<!ArrayBuffer>}
+   */
+  static loadBinaryResourcePromise(url) {
+    return Runtime._loadResourcePromise(url, true);
   }
 
   /**
@@ -662,6 +688,11 @@ class ModuleDescriptor {
     this.scripts;
 
     /**
+     * @type {!Array.<string>}
+     */
+    this.modules;
+
+    /**
      * @type {string|undefined}
      */
     this.condition;
@@ -701,6 +732,21 @@ class RuntimeExtensionDescriptor {
     this.contextTypes;
   }
 }
+
+// Module namespaces.
+// NOTE: Update scripts/build/special_case_namespaces.json if you add a special cased namespace.
+const specialCases = {
+  'sdk': 'SDK',
+  'js_sdk': 'JSSDK',
+  'browser_sdk': 'BrowserSDK',
+  'ui': 'UI',
+  'object_ui': 'ObjectUI',
+  'javascript_metadata': 'JavaScriptMetadata',
+  'perf_ui': 'PerfUI',
+  'har_importer': 'HARImporter',
+  'sdk_test_runner': 'SDKTestRunner',
+  'cpu_profiler_test_runner': 'CPUProfilerTestRunner'
+};
 
 /**
  * @unrestricted
@@ -775,6 +821,7 @@ class Module {
 
     this._pendingLoadPromise = Promise.all(dependencyPromises)
                                    .then(this._loadResources.bind(this))
+                                   .then(this._loadModules.bind(this))
                                    .then(this._loadScripts.bind(this))
                                    .then(() => this._loadedForTest = true);
 
@@ -799,6 +846,23 @@ class Module {
     return Promise.all(promises).then(undefined);
   }
 
+  _loadModules() {
+    if (!this._descriptor.modules || !this._descriptor.modules.length) {
+      return Promise.resolve();
+    }
+
+    const namespace = this._computeNamespace();
+    self[namespace] = self[namespace] || {};
+
+    // TODO(crbug.com/680046): We are in a worker and we dont support modules yet
+    if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
+      return Promise.resolve();
+    }
+
+    // TODO(crbug.com/1011811): Remove eval when we use TypeScript which does support dynamic imports
+    return eval(`import('./${this._name}/${this._name}.js')`);
+  }
+
   /**
    * @return {!Promise.<undefined>}
    */
@@ -807,26 +871,17 @@ class Module {
       return Promise.resolve();
     }
 
-    // Module namespaces.
-    // NOTE: Update scripts/special_case_namespaces.json if you add a special cased namespace.
-    // The namespace keyword confuses clang-format.
-    // clang-format off
-    const specialCases = {
-      'sdk': 'SDK',
-      'js_sdk': 'JSSDK',
-      'browser_sdk': 'BrowserSDK',
-      'ui': 'UI',
-      'object_ui': 'ObjectUI',
-      'javascript_metadata': 'JavaScriptMetadata',
-      'perf_ui': 'PerfUI',
-      'har_importer': 'HARImporter',
-      'sdk_test_runner': 'SDKTestRunner',
-      'cpu_profiler_test_runner': 'CPUProfilerTestRunner'
-    };
-    const namespace = specialCases[this._name] || this._name.split('_').map(a => a.substring(0, 1).toUpperCase() + a.substring(1)).join('');
+    const namespace = this._computeNamespace();
     self[namespace] = self[namespace] || {};
-    // clang-format on
     return Runtime._loadScriptsPromise(this._descriptor.scripts.map(this._modularizeURL, this), this._remoteBase());
+  }
+
+  /**
+   * @return {string}
+   */
+  _computeNamespace() {
+    return specialCases[this._name] ||
+        this._name.split('_').map(a => a.substring(0, 1).toUpperCase() + a.substring(1)).join('');
   }
 
   /**

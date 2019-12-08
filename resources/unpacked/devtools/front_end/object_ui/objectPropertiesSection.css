@@ -30,7 +30,7 @@
 }
 
 .object-properties-section li {
-    -webkit-user-select: text;
+    user-select: text;
     align-items: flex-start;
 }
 

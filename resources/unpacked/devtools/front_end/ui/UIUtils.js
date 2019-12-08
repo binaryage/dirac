@@ -89,7 +89,7 @@ export function elementDragStart(targetElement, elementDragStart, elementDrag, e
 /**
  * @unrestricted
  */
-export class DragHandler {
+class DragHandler {
   constructor() {
     this._elementDragMove = this._elementDragMove.bind(this);
     this._elementDragEnd = this._elementDragEnd.bind(this);
@@ -314,7 +314,7 @@ export function markBeingEdited(element, value) {
 }
 
 // Avoids Infinity, NaN, and scientific notation (e.g. 1e20), see crbug.com/81165.
-export const _numberRegex = /^(-?(?:\d+(?:\.\d+)?|\.\d+))$/;
+const _numberRegex = /^(-?(?:\d+(?:\.\d+)?|\.\d+))$/;
 
 export const StyleValueDelimiters = ' \xA0\t\n"\':;,/()';
 
@@ -322,7 +322,7 @@ export const StyleValueDelimiters = ' \xA0\t\n"\':;,/()';
  * @param {!Event} event
  * @return {?string}
  */
-export function _valueModificationDirection(event) {
+function _valueModificationDirection(event) {
   let direction = null;
   if (event.type === 'mousewheel') {
     // When shift is pressed while spinning mousewheel, delta comes as wheelDeltaX.
@@ -346,7 +346,7 @@ export function _valueModificationDirection(event) {
  * @param {!Event} event
  * @return {?string}
  */
-export function _modifiedHexValue(hexString, event) {
+function _modifiedHexValue(hexString, event) {
   const direction = _valueModificationDirection(event);
   if (!direction) {
     return null;
@@ -407,7 +407,7 @@ export function _modifiedHexValue(hexString, event) {
  * @param {number=} modifierMultiplier
  * @return {?number}
  */
-export function _modifiedFloatNumber(number, event, modifierMultiplier) {
+function _modifiedFloatNumber(number, event, modifierMultiplier) {
   const direction = _valueModificationDirection(event);
   if (!direction) {
     return null;
@@ -785,7 +785,7 @@ export function createShadowRootWithCoreStyles(element, cssFile, delegatesFocus)
 /**
  * @param {!Element|!ShadowRoot} root
  */
-export function _injectCoreStyles(root) {
+function _injectCoreStyles(root) {
   appendStyle(root, 'ui/inspectorCommon.css');
   appendStyle(root, 'ui/textButton.css');
   UI.themeSupport.injectHighlightStyleSheets(root);
@@ -796,7 +796,7 @@ export function _injectCoreStyles(root) {
  * @param {!Document} document
  * @param {!Event} event
  */
-export function _windowFocused(document, event) {
+function _windowFocused(document, event) {
   if (event.target.document.nodeType === Node.DOCUMENT_NODE) {
     document.body.classList.remove('inactive');
   }
@@ -819,7 +819,7 @@ export function _windowFocused(document, event) {
  * @param {!Document} document
  * @param {!Event} event
  */
-export function _windowBlurred(document, event) {
+function _windowBlurred(document, event) {
   if (event.target.document.nodeType === Node.DOCUMENT_NODE) {
     document.body.classList.add('inactive');
   }
@@ -828,7 +828,7 @@ export function _windowBlurred(document, event) {
 /**
  * @param {!Event} event
  */
-export function _focusChanged(event) {
+function _focusChanged(event) {
   const document = event.target && event.target.ownerDocument;
   const element = document ? document.deepActiveElement() : null;
   UI.Widget.focusWidgetForNode(element);
@@ -1057,7 +1057,7 @@ export function measurePreferredSize(element, containerElement) {
 /**
  * @unrestricted
  */
-export class InvokeOnceHandlers {
+class InvokeOnceHandlers {
   /**
    * @param {boolean} autoInvoke
    */
@@ -1108,8 +1108,8 @@ export class InvokeOnceHandlers {
   }
 }
 
-export let _coalescingLevel = 0;
-export let _postUpdateHandlers = null;
+let _coalescingLevel = 0;
+let _postUpdateHandlers = null;
 
 export function startBatchUpdate() {
   if (!_coalescingLevel++) {
@@ -1168,11 +1168,13 @@ export class LongClickController extends Common.Object {
   /**
    * @param {!Element} element
    * @param {function(!Event)} callback
+   * @param {function(!Event)} isEditKeyFunc
    */
-  constructor(element, callback) {
+  constructor(element, callback, isEditKeyFunc = event => isEnterOrSpaceKey(event)) {
     super();
     this._element = element;
     this._callback = callback;
+    this._editKey = isEditKeyFunc;
     this._enable();
   }
 
@@ -1187,10 +1189,15 @@ export class LongClickController extends Common.Object {
     if (this._longClickData) {
       return;
     }
+    const boundKeyDown = keyDown.bind(this);
+    const boundKeyUp = keyUp.bind(this);
     const boundMouseDown = mouseDown.bind(this);
     const boundMouseUp = mouseUp.bind(this);
     const boundReset = this.reset.bind(this);
 
+
+    this._element.addEventListener('keydown', boundKeyDown, false);
+    this._element.addEventListener('keyup', boundKeyUp, false);
     this._element.addEventListener('mousedown', boundMouseDown, false);
     this._element.addEventListener('mouseout', boundReset, false);
     this._element.addEventListener('mouseup', boundMouseUp, false);
@@ -1202,12 +1209,35 @@ export class LongClickController extends Common.Object {
      * @param {!Event} e
      * @this {LongClickController}
      */
+    function keyDown(e) {
+      if (this._editKey(e)) {
+        e.consume(true);
+        const callback = this._callback;
+        this._longClickInterval = setTimeout(callback.bind(null, e), LongClickController.TIME_MS);
+      }
+    }
+
+    /**
+     * @param {!Event} e
+     * @this {UI.LongClickController}
+     */
+    function keyUp(e) {
+      if (this._editKey(e)) {
+        e.consume(true);
+        this.reset();
+      }
+    }
+
+    /**
+     * @param {!Event} e
+     * @this {UI.LongClickController}
+     */
     function mouseDown(e) {
       if (e.which !== 1) {
         return;
       }
       const callback = this._callback;
-      this._longClickInterval = setTimeout(callback.bind(null, e), 200);
+      this._longClickInterval = setTimeout(callback.bind(null, e), LongClickController.TIME_MS);
     }
 
     /**
@@ -1233,6 +1263,8 @@ export class LongClickController extends Common.Object {
     delete this._longClickData;
   }
 }
+
+LongClickController.TIME_MS = 200;
 
 /**
  * @param {!Document} document
@@ -2270,20 +2302,11 @@ UI.themeSupport;
 
 UI.highlightedSearchResultClassName = highlightedSearchResultClassName;
 UI.highlightedCurrentSearchResultClassName = highlightedCurrentSearchResultClassName;
-UI._numberRegex = _numberRegex;
 UI.StyleValueDelimiters = StyleValueDelimiters;
-UI._coalescingLevel = _coalescingLevel;
-UI._postUpdateHandlers = _postUpdateHandlers;
 UI.MaxLengthForDisplayedURLs = MaxLengthForDisplayedURLs;
 
 /** @constructor */
 UI.ElementFocusRestorer = ElementFocusRestorer;
-
-/** @constructor */
-UI.DragHandler = DragHandler;
-
-/** @constructor */
-UI.InvokeOnceHandlers = InvokeOnceHandlers;
 
 /** @constructor */
 UI.LongClickController = LongClickController;
@@ -2311,9 +2334,6 @@ UI.elementDragStart = elementDragStart;
 UI.isBeingEdited = isBeingEdited;
 UI.isEditing = isEditing;
 UI.markBeingEdited = markBeingEdited;
-UI._valueModificationDirection = _valueModificationDirection;
-UI._modifiedHexValue = _modifiedHexValue;
-UI._modifiedFloatNumber = _modifiedFloatNumber;
 UI.createReplacementString = createReplacementString;
 UI.handleElementValueModifications = handleElementValueModifications;
 UI.formatLocalized = formatLocalized;
@@ -2324,10 +2344,6 @@ UI.asyncStackTraceLabel = asyncStackTraceLabel;
 UI.installComponentRootStyles = installComponentRootStyles;
 UI.measuredScrollbarWidth = measuredScrollbarWidth;
 UI.createShadowRootWithCoreStyles = createShadowRootWithCoreStyles;
-UI._injectCoreStyles = _injectCoreStyles;
-UI._windowFocused = _windowFocused;
-UI._windowBlurred = _windowBlurred;
-UI._focusChanged = _focusChanged;
 UI.highlightSearchResult = highlightSearchResult;
 UI.highlightSearchResults = highlightSearchResults;
 UI.runCSSAnimationOnce = runCSSAnimationOnce;

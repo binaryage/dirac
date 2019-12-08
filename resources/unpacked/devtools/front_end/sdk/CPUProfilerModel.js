@@ -131,12 +131,12 @@ export default class CPUProfilerModel extends SDK.SDKModel {
   }
 
   /**
+   * @param {boolean} jsCoveragePerBlock - Collect per Block coverage if `true`, per function coverage otherwise.
    * @return {!Promise}
    */
-  startPreciseCoverage() {
+  startPreciseCoverage(jsCoveragePerBlock) {
     const callCount = false;
-    const detailed = true;
-    return this._profilerAgent.startPreciseCoverage(callCount, detailed);
+    return this._profilerAgent.startPreciseCoverage(callCount, jsCoveragePerBlock);
   }
 
   /**
@@ -151,13 +151,6 @@ export default class CPUProfilerModel extends SDK.SDKModel {
    */
   stopPreciseCoverage() {
     return this._profilerAgent.stopPreciseCoverage();
-  }
-
-  /**
-   * @return {!Promise<!Array<!Protocol.Profiler.ScriptCoverage>>}
-   */
-  bestEffortCoverage() {
-    return this._profilerAgent.getBestEffortCoverage().then(result => result || []);
   }
 }
 

@@ -39,27 +39,9 @@ Network.NetworkNode = class extends DataGrid.SortableDataGridNode {
     super({});
     this._parentView = parentView;
     this._isHovered = false;
-    this._isProduct = false;
     this._showingInitiatorChain = false;
     /** @type {?SDK.NetworkRequest} */
     this._requestOrFirstKnownChildRequest = null;
-  }
-
-  /**
-   * @return {!Network.NetworkNode._SupportedBackgroundColors}
-   */
-  static _themedBackgroundColors() {
-    if (Network.NetworkNode._themedBackgroundColorsCache) {
-      return Network.NetworkNode._themedBackgroundColorsCache;
-    }
-    const themedColors = {};
-    for (const name in Network.NetworkNode._backgroundColors) {
-      const color = Common.Color.fromRGBA(Network.NetworkNode._backgroundColors[name]);
-      themedColors[name] = UI.themeSupport.patchColor(color, UI.ThemeSupport.ColorUsage.Background);
-    }
-    Network.NetworkNode._themedBackgroundColorsCache =
-        /** @type {!Network.NetworkNode._SupportedBackgroundColors} */ (themedColors);
-    return Network.NetworkNode._themedBackgroundColorsCache;
   }
 
   /**
@@ -90,35 +72,39 @@ Network.NetworkNode = class extends DataGrid.SortableDataGridNode {
 
   /**
    * @return {string}
+   * @suppressGlobalPropertiesCheck
    */
   backgroundColor() {
-    const bgColors = Network.NetworkNode._themedBackgroundColors();
-    if (this.selected) {
-      return /** @type {string} */ (bgColors.Selected.asString(Common.Color.Format.HEX));
-    }
-    let color = this.isStriped() ? bgColors.Stripe : bgColors.Default;
-    if (this.isNavigationRequest()) {
-      color = color.blendWith(bgColors.Navigation);
-    }
-    if (this.hovered()) {
-      color = color.blendWith(bgColors.Hovered);
-    }
-    if (this.isOnInitiatorPath()) {
-      color = color.blendWith(bgColors.InitiatorPath);
-    }
-    if (this.isOnInitiatedPath()) {
-      color = color.blendWith(bgColors.InitiatedPath);
-    }
+    const bgColors = Network.NetworkNode._backgroundColors;
+    const hasFocus = document.hasFocus();
+    const isSelected = this.dataGrid.element === document.activeElement;
+    const isFailed = this._isFailed();
 
-    return /** @type {string} */ (color.asString(Common.Color.Format.HEX));
+    if (this.selected && hasFocus && isSelected && isFailed) {
+      return bgColors.FocusSelectedHasError;
+    } else if (this.selected && hasFocus && isSelected) {
+      return bgColors.FocusSelected;
+    } else if (this.selected) {
+      return bgColors.Selected;
+    } else if (this.hovered()) {
+      return bgColors.Hovered;
+    } else if (this.isOnInitiatorPath()) {
+      return bgColors.InitiatorPath;
+    } else if (this.isOnInitiatedPath()) {
+      return bgColors.InitiatedPath;
+    } else if (this.isStriped()) {
+      return bgColors.Stripe;
+    } else {
+      return bgColors.Default;
+    }
   }
 
-  _updateBackgroundColor() {
+  updateBackgroundColor() {
     const element = this.existingElement();
     if (!element) {
       return;
     }
-    element.style.backgroundColor = this.backgroundColor();
+    element.style.backgroundColor = `var(${this.backgroundColor()})`;
     this._parentView.stylesChanged();
   }
 
@@ -128,7 +114,27 @@ Network.NetworkNode = class extends DataGrid.SortableDataGridNode {
    */
   setStriped(isStriped) {
     super.setStriped(isStriped);
-    this._updateBackgroundColor();
+    this.updateBackgroundColor();
+  }
+
+  /**
+   * @override
+   * @param {boolean=} supressSelectedEvent
+   */
+  select(supressSelectedEvent) {
+    super.select(supressSelectedEvent);
+    this.updateBackgroundColor();
+    this._parentView.updateNodeSelectedClass(/* isSelected */ true);
+  }
+
+  /**
+   * @override
+   * @param {boolean=} supressSelectedEvent
+   */
+  deselect(supressSelectedEvent) {
+    super.deselect(supressSelectedEvent);
+    this.updateBackgroundColor();
+    this._parentView.updateNodeSelectedClass(/* isSelected */ false);
   }
 
   /**
@@ -179,7 +185,7 @@ Network.NetworkNode = class extends DataGrid.SortableDataGridNode {
       this.showingInitiatorChainChanged();
     }
     this._parentView.stylesChanged();
-    this._updateBackgroundColor();
+    this.updateBackgroundColor();
   }
 
   /**
@@ -251,37 +257,31 @@ Network.NetworkNode = class extends DataGrid.SortableDataGridNode {
   }
 };
 
-/** @type {!Object<string, !Array<number>>} */
+/** @type {!Object<string, string>} */
 Network.NetworkNode._backgroundColors = {
-  Default: [255, 255, 255, 1.0],
-  Stripe: [245, 245, 245, 1.0],
-  Navigation: [221, 238, 255, 1.0],
-  Hovered: [235, 242, 252, 0.7],
-  InitiatorPath: [58, 217, 58, 0.4],
-  InitiatedPath: [217, 58, 58, 0.4],
-  Selected: [63, 81, 181, .6],
-  FromFrame: [224, 247, 250, .4],
-  IsProduct: [255, 252, 225, .6],
+  Default: '--network-grid-default-color',
+  Stripe: '--network-grid-stripe-color',
+  Navigation: '--network-grid-navigation-color',
+  Hovered: '--network-grid-hovered-color',
+  InitiatorPath: '--network-grid-initiator-path-color',
+  InitiatedPath: '--network-grid-initiated-path-color',
+  Selected: '--network-grid-selected-color',
+  FocusSelected: '--network-grid-focus-selected-color',
+  FocusSelectedHasError: '--network-grid-focus-selected-color-has-error',
+  FromFrame: '--network-grid-from-frame-color',
 };
 
 /** @typedef {!{
-  Default: !Common.Color,
-  Stripe: !Common.Color,
-  Navigation: !Common.Color,
-  Hovered: !Common.Color,
-  InitiatorPath: !Common.Color,
-  InitiatedPath: !Common.Color,
-  Selected: !Common.Color,
-  FromFrame: !Common.Color,
-  IsProduct: !Common.Color
+  Default: string,
+  Stripe: string,
+  Navigation: string,
+  Hovered: string,
+  InitiatorPath: string,
+  InitiatedPath: string,
+  Selected: string,
+  FromFrame: string
 }} */
 Network.NetworkNode._SupportedBackgroundColors;
-
-/** @type {!Network.NetworkNode._SupportedBackgroundColors} */
-Network.NetworkNode._themedBackgroundColorsCache;
-
-/** @typedef {!{entry: !ProductRegistry.Registry.ProductEntry, matchedURL: !Common.ParsedURL}} */
-Network.NetworkNode._ProductEntryInfo;
 
 /**
  * @unrestricted
@@ -295,8 +295,6 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     super(parentView);
     /** @type {?Element} */
     this._nameCell = null;
-    /** @type {?Element} */
-    this._nameBadgeElement = null;
     /** @type {?Element} */
     this._initiatorCell = null;
     this._request = request;
@@ -347,23 +345,6 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
       return -1;
     }
     return aRequest.indentityCompare(bRequest);
-  }
-
-  /**
-   * @param {!ProductRegistry.Registry} productRegistry
-   * @param {!Network.NetworkNode} a
-   * @param {!Network.NetworkNode} b
-   * @return {number}
-   */
-  static ProductComparator(productRegistry, a, b) {
-    const aRequest = a.request();
-    const bRequest = b.request();
-    if (!aRequest || !bRequest) {
-      return !aRequest ? -1 : 1;
-    }
-    const aName = productRegistry.nameForUrl(aRequest.parsedURL) || '';
-    const bName = productRegistry.nameForUrl(bRequest.parsedURL) || '';
-    return aName.localeCompare(bName) || aRequest.indentityCompare(bRequest);
   }
 
   /**
@@ -592,7 +573,7 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
       }
       node._setIsOnInitiatorPath(showInitiatorChain);
     }
-    for (const request of initiatorGraph.initiated) {
+    for (const request of initiatorGraph.initiated.keys()) {
       if (request === this._request) {
         continue;
       }
@@ -612,7 +593,7 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
       return;
     }
     this._isOnInitiatorPath = isOnInitiatorPath;
-    this._updateBackgroundColor();
+    this.updateBackgroundColor();
   }
 
   /**
@@ -631,7 +612,7 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
       return;
     }
     this._isOnInitiatedPath = isOnInitiatedPath;
-    this._updateBackgroundColor();
+    this.updateBackgroundColor();
   }
 
   /**
@@ -701,13 +682,7 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     element.classList.toggle('network-error-row', this._isFailed());
     element.classList.toggle('network-navigation-row', this._isNavigationRequest);
     super.createCells(element);
-    this._updateBackgroundColor();
-    ProductRegistry.instance().then(productRegistry => {
-      if (productRegistry.entryForUrl(this._request.parsedURL)) {
-        this._isProduct = true;
-        this._updateBackgroundColor();
-      }
-    });
+    this.updateBackgroundColor();
   }
 
   /**
@@ -727,7 +702,13 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
   renderCell(cell, columnId) {
     switch (columnId) {
       case 'name':
-        this._renderNameCell(cell);
+        this._renderPrimaryCell(cell, columnId);
+        break;
+      case 'path':
+        this._renderPrimaryCell(cell, columnId, this._request.pathname);
+        break;
+      case 'url':
+        this._renderPrimaryCell(cell, columnId, this._request.url());
         break;
       case 'method':
         this._setTextAndTitle(cell, this._request.requestMethod);
@@ -830,37 +811,47 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
 
   /**
    * @param {!Element} cell
+   * @param {string} columnId
+   * @param {string=} text
    */
-  _renderNameCell(cell) {
-    const leftPadding = this.leftPadding ? this.leftPadding + 'px' : '';
-    cell.style.setProperty('padding-left', leftPadding);
-    this._nameCell = cell;
-    cell.addEventListener('dblclick', this._openInNewTab.bind(this), false);
-    let iconElement;
-    if (this._request.resourceType() === Common.resourceTypes.Image) {
-      const previewImage = createElementWithClass('img', 'image-network-icon-preview');
-      previewImage.alt = this._request.resourceType().title();
-      this._request.populateImageSource(previewImage);
+  _renderPrimaryCell(cell, columnId, text) {
+    const columnIndex = this.dataGrid.indexOfVisibleColumn(columnId);
+    if (columnIndex === 0) {
+      const leftPadding = this.leftPadding ? this.leftPadding + 'px' : '';
+      cell.style.setProperty('padding-left', leftPadding);
+      this._nameCell = cell;
+      cell.addEventListener('dblclick', this._openInNewTab.bind(this), false);
+      cell.addEventListener('click', () => {
+        this.parentView().dispatchEventToListeners(
+            Network.NetworkLogView.Events.RequestActivated, /* showPanel */ true);
+      });
+      let iconElement;
+      if (this._request.resourceType() === Common.resourceTypes.Image) {
+        const previewImage = createElementWithClass('img', 'image-network-icon-preview');
+        previewImage.alt = this._request.resourceType().title();
+        this._request.populateImageSource(previewImage);
 
-      iconElement = createElementWithClass('div', 'icon');
-      iconElement.appendChild(previewImage);
-    } else {
-      iconElement = createElementWithClass('img', 'icon');
-      iconElement.alt = this._request.resourceType().title();
-    }
-    iconElement.classList.add(this._request.resourceType().name());
+        iconElement = createElementWithClass('div', 'icon');
+        iconElement.appendChild(previewImage);
+      } else {
+        iconElement = createElementWithClass('img', 'icon');
+        iconElement.alt = this._request.resourceType().title();
+      }
+      iconElement.classList.add(this._request.resourceType().name());
 
-    cell.appendChild(iconElement);
-    if (!this._nameBadgeElement) {
-      this._nameBadgeElement = this.parentView().badgePool.badgeForURL(this._request.parsedURL);
-      this._nameBadgeElement.classList.add('network-badge');
+      cell.appendChild(iconElement);
     }
-    cell.appendChild(this._nameBadgeElement);
-    const name = this._request.name().trimMiddle(100);
-    const networkManager = SDK.NetworkManager.forRequest(this._request);
-    cell.createTextChild(networkManager ? networkManager.target().decorateLabel(name) : name);
-    this._appendSubtitle(cell, this._request.path());
-    cell.title = this._request.url();
+
+    if (columnId === 'name') {
+      const name = this._request.name().trimMiddle(100);
+      const networkManager = SDK.NetworkManager.forRequest(this._request);
+      cell.createTextChild(networkManager ? networkManager.target().decorateLabel(name) : name);
+      this._appendSubtitle(cell, this._request.path());
+      cell.title = this._request.url();
+    } else if (text) {
+      cell.createTextChild(text);
+      cell.title = text;
+    }
   }
 
   /**
@@ -1063,7 +1054,8 @@ Network.NetworkGroupNode = class extends Network.NetworkNode {
    * @param {string} columnId
    */
   renderCell(cell, columnId) {
-    if (columnId === 'name') {
+    const columnIndex = this.dataGrid.indexOfVisibleColumn(columnId);
+    if (columnIndex === 0) {
       const leftPadding = this.leftPadding ? this.leftPadding + 'px' : '';
       cell.style.setProperty('padding-left', leftPadding);
       cell.classList.add('disclosure');

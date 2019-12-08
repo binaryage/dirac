@@ -48,6 +48,7 @@ Timeline.TimelineUIUtils = class {
     const loading = categories['loading'];
     const painting = categories['painting'];
     const other = categories['other'];
+    const idle = categories['idle'];
 
     const eventStyles = {};
     eventStyles[type.Task] = new Timeline.TimelineRecordStyle(ls`Task`, other);
@@ -86,8 +87,10 @@ Timeline.TimelineUIUtils = class {
     eventStyles[type.EvaluateScript] = new Timeline.TimelineRecordStyle(ls`Evaluate Script`, scripting);
     eventStyles[type.CompileModule] = new Timeline.TimelineRecordStyle(ls`Compile Module`, scripting);
     eventStyles[type.EvaluateModule] = new Timeline.TimelineRecordStyle(ls`Evaluate Module`, scripting);
-    eventStyles[type.StreamingCompileScript] =
-        new Timeline.TimelineRecordStyle(ls`Streaming Compile Script`, scripting);
+    eventStyles[type.StreamingCompileScript] = new Timeline.TimelineRecordStyle(ls`Streaming Compile Task`, other);
+    eventStyles[type.StreamingCompileScriptWaiting] = new Timeline.TimelineRecordStyle(ls`Waiting for Network`, idle);
+    eventStyles[type.StreamingCompileScriptParsing] =
+        new Timeline.TimelineRecordStyle(ls`Parse and Compile`, scripting);
     eventStyles[type.WasmStreamFromResponseCallback] =
         new Timeline.TimelineRecordStyle(ls`Streaming Wasm Response`, scripting);
     eventStyles[type.WasmCompiledModule] = new Timeline.TimelineRecordStyle(ls`Compiled Wasm Module`, scripting);
@@ -310,17 +313,25 @@ Timeline.TimelineUIUtils = class {
         return Timeline.TimelineUIUtils.colorForId(frame.url);
       }
     }
-    return Timeline.TimelineUIUtils.eventStyle(event).category.color;
+    const color = Timeline.TimelineUIUtils.eventStyle(event).category.color;
+
+    // This event is considered idle time but still rendered as a scripting event here
+    // to connect the StreamingCompileScriptParsing events it belongs to.
+    if (event.name === TimelineModel.TimelineModel.RecordType.StreamingCompileScriptWaiting) {
+      return /** @type string */ (
+          Common.Color.parse(Timeline.TimelineUIUtils.categories().scripting.color).setAlpha(0.3).asString(null));
+    }
+
+    return color;
   }
 
   /**
-   * @param {!ProductRegistry.Registry} productRegistry
    * @param {!TimelineModel.TimelineModel} model
    * @param {!Map<string, string>} urlToColorCache
    * @param {!SDK.TracingModel.Event} event
    * @return {string}
    */
-  static eventColorByProduct(productRegistry, model, urlToColorCache, event) {
+  static eventColorByProduct(model, urlToColorCache, event) {
     const url = Timeline.TimelineUIUtils.eventURL(event) || '';
     let color = urlToColorCache.get(url);
     if (color) {
@@ -331,16 +342,13 @@ Timeline.TimelineUIUtils = class {
     if (!parsedURL) {
       return defaultColor;
     }
-    let name = productRegistry && productRegistry.nameForUrl(parsedURL);
-    if (!name) {
-      name = parsedURL.host;
-      const rootFrames = model.rootFrames();
-      if (rootFrames.some(pageFrame => new Common.ParsedURL(pageFrame.url).host === name)) {
-        color = defaultColor;
-      }
+    const name = parsedURL.host;
+    const rootFrames = model.rootFrames();
+    if (rootFrames.some(pageFrame => new Common.ParsedURL(pageFrame.url).host === name)) {
+      color = defaultColor;
     }
     if (!color) {
-      color = name ? ProductRegistry.BadgePool.colorForEntryName(name) : defaultColor;
+      color = defaultColor;
     }
     urlToColorCache.set(url, color);
     return color;
@@ -774,11 +782,10 @@ Timeline.TimelineUIUtils = class {
    * @param {!SDK.TracingModel.Event} event
    * @param {!TimelineModel.TimelineModel} model
    * @param {!Components.Linkifier} linkifier
-   * @param {!ProductRegistry.BadgePool} badgePool
    * @param {boolean} detailed
    * @return {!Promise<!DocumentFragment>}
    */
-  static async buildTraceEventDetails(event, model, linkifier, badgePool, detailed) {
+  static async buildTraceEventDetails(event, model, linkifier, detailed) {
     const maybeTarget = model.targetByEvent(event);
     /** @type {?Map<number, ?SDK.DOMNode>} */
     let relatedNodesMap = null;
@@ -1068,9 +1075,6 @@ Timeline.TimelineUIUtils = class {
       }
     }
 
-    Timeline.TimelineUIUtils._maybeAppendProductToDetails(
-        contentHelper, badgePool, url || eventData && eventData['url']);
-
     if (timelineData.timeWaitingForMainThread) {
       contentHelper.appendTextRow(
           ls`Time Waiting for Main Thread`, Number.millisToString(timelineData.timeWaitingForMainThread, true));
@@ -1102,18 +1106,6 @@ Timeline.TimelineUIUtils = class {
     }
 
     return contentHelper.fragment;
-  }
-
-  /**
-   * @param {!Timeline.TimelineDetailsContentHelper} contentHelper
-   * @param {!ProductRegistry.BadgePool} badgePool
-   * @param {?string} url
-   */
-  static _maybeAppendProductToDetails(contentHelper, badgePool, url) {
-    const parsedURL = url ? url.asParsedURL() : null;
-    if (parsedURL) {
-      contentHelper.appendElementRow('', badgePool.badgeForURL(parsedURL));
-    }
   }
 
   /**
@@ -1262,10 +1254,9 @@ Timeline.TimelineUIUtils = class {
    * @param {!TimelineModel.TimelineModel.NetworkRequest} request
    * @param {!TimelineModel.TimelineModel} model
    * @param {!Components.Linkifier} linkifier
-   * @param {!ProductRegistry.BadgePool} badgePool
    * @return {!Promise<!DocumentFragment>}
    */
-  static async buildNetworkRequestDetails(request, model, linkifier, badgePool) {
+  static async buildNetworkRequestDetails(request, model, linkifier) {
     const target = model.targetByEvent(request.children[0]);
     const contentHelper = new Timeline.TimelineDetailsContentHelper(target, linkifier);
     const category = Timeline.TimelineUIUtils.networkRequestCategory(request);
@@ -1275,7 +1266,6 @@ Timeline.TimelineUIUtils = class {
     if (request.url) {
       contentHelper.appendElementRow(ls`URL`, Components.Linkifier.linkifyURL(request.url));
     }
-    Timeline.TimelineUIUtils._maybeAppendProductToDetails(contentHelper, badgePool, request.url);
 
     // The time from queueing the request until resource processing is finished.
     const fullDuration = request.endTime - (request.getStartTime() || -Infinity);

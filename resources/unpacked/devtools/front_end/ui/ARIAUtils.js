@@ -102,6 +102,13 @@ export function markAsTab(element) {
 /**
  * @param {!Element} element
  */
+export function markAsTabpanel(element) {
+  element.setAttribute('role', 'tabpanel');
+}
+
+/**
+ * @param {!Element} element
+ */
 export function markAsTree(element) {
   element.setAttribute('role', 'tree');
 }
@@ -195,6 +202,17 @@ export function markAsHidden(element) {
 
 /**
  * @param {!Element} element
+ * @param {number=} min
+ * @param {number=} max
+ */
+export function markAsSlider(element, min = 0, max = 100) {
+  element.setAttribute('role', 'slider');
+  element.setAttribute('aria-valuemin', String(min));
+  element.setAttribute('aria-valuemax', String(max));
+}
+
+/**
+ * @param {!Element} element
  * @param {number} level
  */
 export function markAsHeading(element, level) {
@@ -246,6 +264,33 @@ export function ensureId(element) {
 
 /**
  * @param {!Element} element
+ * @param {string} valueText
+ */
+export function setAriaValueText(element, valueText) {
+  element.setAttribute('aria-valuetext', valueText);
+}
+
+/**
+ * @param {!Element} element
+ * @param {string} value
+ */
+export function setAriaValueNow(element, value) {
+  element.setAttribute('aria-valuenow', value);
+}
+
+
+/**
+ * @param {!Element} element
+ * @param {string} min
+ * @param {string} max
+ */
+export function setAriaValueMinMax(element, min, max) {
+  element.setAttribute('aria-valuemin', min);
+  element.setAttribute('aria-valuemax', max);
+}
+
+/**
+ * @param {!Element} element
  * @param {?Element} controlledElement
  */
 export function setControls(element, controlledElement) {
@@ -286,6 +331,14 @@ export function setExpanded(element, value) {
  */
 export function unsetExpandable(element) {
   element.removeAttribute('aria-expanded');
+}
+
+/**
+ * @param {!Element} element
+ * @param {boolean} value
+ */
+export function setHidden(element, value) {
+  element.setAttribute('aria-hidden', !!value);
 }
 
 /**
@@ -344,8 +397,25 @@ export function setPressed(element, value) {
  * @param {!Element} element
  * @param {number} value
  */
-export function setProgressBarCurrentPercentage(element, value) {
+export function setValueNow(element, value) {
   element.setAttribute('aria-valuenow', value);
+}
+
+export function setValueText(element, value) {
+  element.setAttribute('aria-valuetext', value);
+}
+
+/**
+ * @param {!Element} element
+ * @param {number} valueNow
+ * @param {string=} valueText
+ */
+export function setProgressBarValue(element, valueNow, valueText) {
+  element.setAttribute('aria-valuenow', valueNow);
+
+  if (valueText) {
+    element.setAttribute('aria-valuetext', valueText);
+  }
 }
 
 /**
@@ -508,6 +578,7 @@ self.UI.ARIAUtils = {
   markAsMenuButton,
   markAsProgressBar,
   markAsTab,
+  markAsTabpanel,
   markAsTree,
   markAsTreeitem,
   markAsTextBox,
@@ -521,23 +592,30 @@ self.UI.ARIAUtils = {
   markAsOption,
   markAsRadioGroup,
   markAsHidden,
+  markAsSlider,
   markAsHeading,
   markAsPoliteLiveRegion,
   setPlaceholder,
   markAsPresentation,
   markAsStatus,
   ensureId,
+  setAriaValueText,
+  setAriaValueNow,
+  setAriaValueMinMax,
   setControls,
   setChecked,
   setCheckboxAsIndeterminate,
   setExpanded,
   unsetExpandable,
+  setHidden,
   AutocompleteInteractionModel,
   setAutocomplete,
   setSelected,
   setInvalid,
   setPressed,
-  setProgressBarCurrentPercentage,
+  setProgressBarValue,
+  setValueNow,
+  setValueText,
   setAccessibleName,
   setDescription,
   setActiveDescendant,

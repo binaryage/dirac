@@ -59,6 +59,9 @@ export default class DebuggerModel extends SDK.SDKModel {
     /** @type {!Common.Object} */
     this._breakpointResolvedEventTarget = new Common.Object();
 
+    /** @type {boolean} */
+    this._autoStepOver = false;
+
     this._isPausing = false;
     Common.moduleSetting('pauseOnExceptionEnabled').addChangeListener(this._pauseOnExceptionStateChanged, this);
     Common.moduleSetting('pauseOnCaughtException').addChangeListener(this._pauseOnExceptionStateChanged, this);
@@ -233,6 +236,9 @@ export default class DebuggerModel extends SDK.SDKModel {
   }
 
   stepOver() {
+    // Mark that in case of auto-stepping, we should be doing
+    // step-over instead of step-in.
+    this._autoStepOver = true;
     this._agent.stepOver();
   }
 
@@ -414,6 +420,7 @@ export default class DebuggerModel extends SDK.SDKModel {
     this._scriptsBySourceURL.clear();
     this._stringMap.clear();
     this._discardableScripts = [];
+    this._autoStepOver = false;
   }
 
   /**
@@ -514,11 +521,14 @@ export default class DebuggerModel extends SDK.SDKModel {
     this._isPausing = false;
     this._debuggerPausedDetails = debuggerPausedDetails;
     if (this._debuggerPausedDetails) {
-      if (Root.Runtime.experiments.isEnabled('emptySourceMapAutoStepping') && this._beforePausedCallback) {
+      if (this._beforePausedCallback) {
         if (!this._beforePausedCallback.call(null, this._debuggerPausedDetails)) {
           return false;
         }
       }
+      // If we resolved a location in auto-stepping callback, reset the
+      // step-over marker.
+      this._autoStepOver = false;
       this.dispatchEventToListeners(Events.DebuggerPaused, this);
     }
     if (debuggerPausedDetails) {
@@ -571,7 +581,11 @@ export default class DebuggerModel extends SDK.SDKModel {
     }
 
     if (!this._setDebuggerPausedDetails(pausedDetails)) {
-      this._agent.stepInto();
+      if (this._autoStepOver) {
+        this._agent.stepOver();
+      } else {
+        this._agent.stepInto();
+      }
     }
 
     SDK.DebuggerModel._scheduledPauseOnAsyncCall = null;
@@ -997,20 +1011,7 @@ export const BreakReason = {
   Other: 'other'
 };
 
-/** @enum {string} */
-export const BreakLocationType = {
-  Return: 'return',
-  Call: 'call',
-  DebuggerStatement: 'debuggerStatement'
-};
-
-export const DebuggerEventTypes = {
-  JavaScriptPause: 0,
-  JavaScriptBreakpoint: 1,
-  NativeBreakpoint: 2
-};
-
-export const ContinueToLocationTargetCallFrames = {
+const ContinueToLocationTargetCallFrames = {
   Any: 'any',
   Current: 'current'
 };
@@ -1019,7 +1020,7 @@ export const ContinueToLocationTargetCallFrames = {
  * @extends {Protocol.DebuggerDispatcher}
  * @unrestricted
  */
-export class DebuggerDispatcher {
+class DebuggerDispatcher {
   /**
    * @param {!DebuggerModel} debuggerModel
    */
@@ -1573,11 +1574,6 @@ SDK.DebuggerModel.Events = Events;
 /** @enum {string} */
 SDK.DebuggerModel.BreakReason = BreakReason;
 
-/** @enum {string} */
-SDK.DebuggerModel.BreakLocationType = BreakLocationType;
-
-SDK.DebuggerModel.ContinueToLocationTargetCallFrames = ContinueToLocationTargetCallFrames;
-
 /** @constructor */
 SDK.DebuggerModel.Location = Location;
 
@@ -1592,11 +1588,6 @@ SDK.DebuggerModel.Scope = Scope;
 
 /** @constructor */
 SDK.DebuggerPausedDetails = DebuggerPausedDetails;
-
-/** @constructor */
-SDK.DebuggerDispatcher = DebuggerDispatcher;
-
-SDK.DebuggerEventTypes = DebuggerEventTypes;
 
 SDK.SDKModel.register(SDK.DebuggerModel, SDK.Target.Capability.JS, true);
 

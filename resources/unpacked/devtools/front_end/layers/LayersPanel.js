@@ -31,7 +31,7 @@
  * @implements {SDK.TargetManager.Observer}
  * @unrestricted
  */
-Layers.LayersPanel = class extends UI.PanelWithSidebar {
+export default class LayersPanel extends UI.PanelWithSidebar {
   constructor() {
     super('layers', 225);
 
@@ -41,6 +41,8 @@ Layers.LayersPanel = class extends UI.PanelWithSidebar {
     SDK.targetManager.observeTargets(this);
     this._layerViewHost = new LayerViewer.LayerViewHost();
     this._layerTreeOutline = new LayerViewer.LayerTreeOutline(this._layerViewHost);
+    this._layerTreeOutline.addEventListener(
+        LayerViewer.LayerTreeOutline.Events.PaintProfilerRequested, this._onPaintProfileRequested, this);
     this.panelSidebarElement().appendChild(this._layerTreeOutline.element);
     this.setDefaultFocusedElement(this._layerTreeOutline.element);
 
@@ -200,9 +202,22 @@ Layers.LayersPanel = class extends UI.PanelWithSidebar {
   _onScaleChanged(event) {
     this._paintProfilerView.setScale(/** @type {number} */ (event.data));
   }
-};
+}
 
-Layers.LayersPanel.DetailsViewTabs = {
+export const DetailsViewTabs = {
   Details: 'details',
   Profiler: 'profiler'
 };
+
+/* Legacy exported object */
+self.Layers = self.Layers || {};
+
+/* Legacy exported object */
+Layers = Layers || {};
+
+/**
+ * @constructor
+ */
+Layers.LayersPanel = LayersPanel;
+
+Layers.LayersPanel.DetailsViewTabs = DetailsViewTabs;

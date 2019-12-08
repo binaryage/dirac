@@ -43,8 +43,10 @@ Network.NetworkLogView = class extends UI.VBox {
     this.registerRequiredCSS('network/networkLogView.css');
 
     this.element.id = 'network-container';
+    this.element.classList.add('no-node-selected');
 
     this._networkHideDataURLSetting = Common.settings.createSetting('networkHideDataURL', false);
+    this._networkShowIssuesOnlySetting = Common.settings.createSetting('networkShowIssuesOnly', false);
     this._networkResourceTypeFiltersSetting = Common.settings.createSetting('networkResourceTypeFilters', {});
 
     this._rawRowHeight = 0;
@@ -95,7 +97,6 @@ Network.NetworkLogView = class extends UI.VBox {
     this._highlightedNode = null;
 
     this.linkifier = new Components.Linkifier();
-    this.badgePool = new ProductRegistry.BadgePool();
 
     this._recording = false;
     this._needsRefresh = false;
@@ -127,6 +128,13 @@ Network.NetworkLogView = class extends UI.VBox {
     this._resourceCategoryFilterUI.addEventListener(
         UI.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
     filterBar.addFilter(this._resourceCategoryFilterUI);
+
+    this._onlyIssuesFilterUI = new UI.CheckboxFilterUI(
+        'only-show-issues', ls`Only show requests with SameSite issues`, true, this._networkShowIssuesOnlySetting);
+    this._onlyIssuesFilterUI.addEventListener(UI.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+    this._onlyIssuesFilterUI.element().title = ls`Only show requests with SameSite issues`;
+    filterBar.addFilter(this._onlyIssuesFilterUI);
+
 
     this._filterParser = new TextUtils.FilterParser(Network.NetworkLogView._searchKeys);
     this._suggestionBuilder =
@@ -585,10 +593,8 @@ Network.NetworkLogView = class extends UI.VBox {
     this._filterRequests();
   }
 
-  clearSelection() {
-    if (this._dataGrid.selectedNode) {
-      this._dataGrid.selectedNode.deselect();
-    }
+  resetFocus() {
+    this._dataGrid.element.focus();
   }
 
   _resetSuggestionBuilder() {
@@ -649,13 +655,24 @@ Network.NetworkLogView = class extends UI.VBox {
     hintText.appendChild(UI.XLink.create(
         'https://developers.google.com/web/tools/chrome-devtools/network/?utm_source=devtools&utm_campaign=2019Q1',
         'Learn more'));
+
+    this._setHidden(true);
   }
 
   _hideRecordingHint() {
+    this._setHidden(false);
     if (this._recordingHint) {
       this._recordingHint.remove();
     }
     this._recordingHint = null;
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  _setHidden(value) {
+    this._columns.setHidden(value);
+    UI.ARIAUtils.setHidden(this._summaryToolbar.element, value);
   }
 
   /**
@@ -688,6 +705,14 @@ Network.NetworkLogView = class extends UI.VBox {
     this._dataGrid.element.addEventListener('mousedown', this._dataGridMouseDown.bind(this), true);
     this._dataGrid.element.addEventListener('mousemove', this._dataGridMouseMove.bind(this), true);
     this._dataGrid.element.addEventListener('mouseleave', () => this._setHoveredNode(null), true);
+    this._dataGrid.element.addEventListener('keydown', event => {
+      if (isEnterOrSpaceKey(event)) {
+        this.dispatchEventToListeners(Network.NetworkLogView.Events.RequestActivated, /* showPanel */ true);
+        event.consume(true);
+      }
+    });
+    this._dataGrid.element.addEventListener('focus', this.updateNodeBackground.bind(this), true);
+    this._dataGrid.element.addEventListener('blur', this.updateNodeBackground.bind(this), true);
     return this._dataGrid;
   }
 
@@ -792,17 +817,19 @@ Network.NetworkLogView = class extends UI.VBox {
       this._summaryToolbar.appendSeparator();
       appendChunk(
           ls`${Number.bytesToString(selectedTransferSize)} / ${Number.bytesToString(transferSize)} transferred`,
-          ls`${selectedTransferSize} B / ${transferSize} B transferred`);
+          ls`${selectedTransferSize} B / ${transferSize} B transferred over network`);
       this._summaryToolbar.appendSeparator();
       appendChunk(
           ls`${Number.bytesToString(selectedResourceSize)} / ${Number.bytesToString(resourceSize)} resources`,
-          ls`${selectedResourceSize} B / ${resourceSize} B resources`);
+          ls`${selectedResourceSize} B / ${resourceSize} B resources loaded by the page`);
     } else {
       appendChunk(ls`${nodeCount} requests`);
       this._summaryToolbar.appendSeparator();
-      appendChunk(ls`${Number.bytesToString(transferSize)} transferred`, ls`${transferSize} B transferred`);
+      appendChunk(
+          ls`${Number.bytesToString(transferSize)} transferred`, ls`${transferSize} B transferred over network`);
       this._summaryToolbar.appendSeparator();
-      appendChunk(ls`${Number.bytesToString(resourceSize)} resources`, ls`${resourceSize} B resources`);
+      appendChunk(
+          ls`${Number.bytesToString(resourceSize)} resources`, ls`${resourceSize} B resources loaded by the page`);
     }
 
     if (baseTime !== -1 && maxTime !== -1) {
@@ -965,6 +992,23 @@ Network.NetworkLogView = class extends UI.VBox {
     return this._dataGrid.rootNode().flatChildren();
   }
 
+  updateNodeBackground() {
+    if (this._dataGrid.selectedNode) {
+      this._dataGrid.selectedNode.updateBackgroundColor();
+    }
+  }
+
+  /**
+   * @param {boolean} isSelected
+   */
+  updateNodeSelectedClass(isSelected) {
+    if (isSelected) {
+      this.element.classList.remove('no-node-selected');
+    } else {
+      this.element.classList.add('no-node-selected');
+    }
+  }
+
   stylesChanged() {
     this._columns.scheduleRefresh();
   }
@@ -1081,7 +1125,7 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   _reset() {
-    this.dispatchEventToListeners(Network.NetworkLogView.Events.RequestSelected, null);
+    this.dispatchEventToListeners(Network.NetworkLogView.Events.RequestActivated, /* showPanel */ false);
 
     this._setHoveredNode(null);
     this._columns.reset();
@@ -1091,7 +1135,6 @@ Network.NetworkLogView = class extends UI.VBox {
 
     this._timeCalculator.setWindow(null);
     this.linkifier.reset();
-    this.badgePool.reset();
 
     if (this._activeGroupLookup) {
       this._activeGroupLookup.reset();
@@ -1114,6 +1157,7 @@ Network.NetworkLogView = class extends UI.VBox {
   setTextFilterValue(filterString) {
     this._textFilterUI.setValue(filterString);
     this._dataURLFilterUI.setChecked(false);
+    this._onlyIssuesFilterUI.setChecked(false);
     this._resourceCategoryFilterUI.reset();
   }
 
@@ -1422,6 +1466,9 @@ Network.NetworkLogView = class extends UI.VBox {
       return false;
     }
     if (this._dataURLFilterUI.checked() && (request.parsedURL.isDataURL() || request.parsedURL.isBlobURL())) {
+      return false;
+    }
+    if (this._onlyIssuesFilterUI.checked() && !SDK.IssuesModel.hasIssues(request)) {
       return false;
     }
     if (request.statusText === 'Service Worker Fallback Required') {
@@ -1943,7 +1990,8 @@ Network.NetworkLogView.HTTPSchemas = {
 
 /** @enum {symbol} */
 Network.NetworkLogView.Events = {
-  RequestSelected: Symbol('RequestSelected')
+  RequestSelected: Symbol('RequestSelected'),
+  RequestActivated: Symbol('RequestActivated')
 };
 
 /** @enum {string} */

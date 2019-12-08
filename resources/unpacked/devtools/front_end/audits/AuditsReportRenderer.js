@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const MaxLengthForLinks = 40;
+
 /**
  * @override
  */
-Audits.ReportRenderer = class extends ReportRenderer {
+export class AuditsReportRenderer extends ReportRenderer {
   /**
    * @param {!Element} el Parent element to render the report into.
    * @param {!ReportRenderer.RunnerResultArtifacts=} artifacts
@@ -67,17 +69,38 @@ Audits.ReportRenderer = class extends ReportRenderer {
   /**
    * @param {!Element} el
    */
+  static async linkifySourceLocationDetails(el) {
+    for (const origElement of el.getElementsByClassName('lh-source-location')) {
+      /** @type {!DetailsRenderer.SourceLocationDetailsJSON} */
+      const detailsItem = origElement.dataset;
+      if (!detailsItem.sourceUrl || !detailsItem.sourceLine || !detailsItem.sourceColumn) {
+        continue;
+      }
+      const url = detailsItem.sourceUrl;
+      const line = Number(detailsItem.sourceLine);
+      const column = Number(detailsItem.sourceColumn);
+      const element =
+          await Components.Linkifier.linkifyURL(url, {lineNumber: line, column, maxLength: MaxLengthForLinks});
+      origElement.title = '';
+      origElement.textContent = '';
+      origElement.appendChild(element);
+    }
+  }
+
+  /**
+   * @param {!Element} el
+   */
   static handleDarkMode(el) {
     if (UI.themeSupport.themeName() === 'dark') {
       el.classList.add('dark');
     }
   }
-};
+}
 
 /**
  * @override
  */
-Audits.ReportUIFeatures = class extends ReportUIFeatures {
+export class AuditsReportUIFeatures extends ReportUIFeatures {
   /**
    * @param {!DOM} dom
    */
@@ -161,4 +184,21 @@ Audits.ReportUIFeatures = class extends ReportUIFeatures {
   resetUIState() {
     this._resetUIState();
   }
-};
+}
+
+
+/* Legacy exported object */
+self.Audits = self.Audits || {};
+
+/* Legacy exported object */
+Audits = Audits || {};
+
+/**
+ * @constructor
+ */
+Audits.ReportRenderer = AuditsReportRenderer;
+
+/**
+ * @constructor
+ */
+Audits.ReportUIFeatures = AuditsReportUIFeatures;

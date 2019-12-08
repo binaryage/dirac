@@ -12,9 +12,6 @@
   <message name="IDS_DEVTOOLS_03bfaee27b3b5cfb28deef84a0f416e5" desc="Title of the sources threads">
     Threads
   </message>
-  <message name="IDS_DEVTOOLS_03c2e7e41ffc181a4e84080b4710e81e" desc="A context menu item in the Sources Navigator of the Sources panel">
-    New
-  </message>
   <message name="IDS_DEVTOOLS_05184fe2fb6c76214bc56796837f1c9b" desc="Title of an action in the debugger tool to next call frame">
     Next call frame
   </message>
@@ -252,6 +249,9 @@
   <message name="IDS_DEVTOOLS_77898d40c8a26a07d05eedb991359804" desc="Text in Script Origin Plugin of the Sources panel">
     (source mapped from <ph name="COMPONENTS_LINKIFIER_LINKIFYURL_ORIGINURL_">$1s<ex>example.com</ex></ph>)
   </message>
+  <message name="IDS_DEVTOOLS_7a6364731fbe9e4571bd0cf4078a8344" desc="Accessible label for Sources placeholder view actions list">
+    Source View Actions
+  </message>
   <message name="IDS_DEVTOOLS_7b4181bd55aaaf857e8ac861019fb530" desc="Text in Sources Navigator of the Sources panel">
     Content scripts served by extensions appear here
   </message>
@@ -396,8 +396,8 @@
   <message name="IDS_DEVTOOLS_c081841ffd8efaef2ee0c7bf0507758a" desc="Title of a setting under the Sources category that can be invoked through the Command Menu">
     Enable bracket matching
   </message>
-  <message name="IDS_DEVTOOLS_c12de9f9edb401ca79a3291f1831ae6f" desc="Title in Scope Chain Sidebar Pane of the Sources panel">
-    Closure (<ph name="UI_BEAUTIFYFUNCTIONNAME_SCOPENAME_">$1s<ex>Scope.funtionName</ex></ph>)
+  <message name="IDS_DEVTOOLS_c12de9f9edb401ca79a3291f1831ae6f" desc="Text in the Sources panel Scope pane describing a closure scope.">
+    Closure (<ph name="UI_BEAUTIFYFUNCTIONNAME_SCOPENAME_">$1s<ex>func</ex></ph>)
   </message>
   <message name="IDS_DEVTOOLS_c2e59ab4f410655458110ae524bdc9be" desc="Text of a DOM element in Debugger Plugin of the Sources panel">
     Go to &quot;<ph name="COMMON_UISTRING__BLACKBOXING__">$1s<ex>Blackboxing</ex></ph>&quot; tab in settings
@@ -422,9 +422,6 @@
   </message>
   <message name="IDS_DEVTOOLS_cd26a6a87959e99fdf99f5ccccef0464" desc="Text in Debugger Plugin of the Sources panel">
     Disable breakpoint
-  </message>
-  <message name="IDS_DEVTOOLS_d016c1bd981f59db972acf1b83201591" desc="Accessible label for Sources placeholder view actions list">
-    Empty Source View Actions
   </message>
   <message name="IDS_DEVTOOLS_d07d651006c823c6f008158f6eb63056" desc="Tooltip text that appears when hovering over the largeicon play button in the Sources Panel of the Sources panel">
     Resume with all pauses blocked for 500 ms

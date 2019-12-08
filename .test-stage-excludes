@@ -1,12 +1,13 @@
 .DS_Store
-/.git
 /.idea
 /.notify
 /.profiles
+/.cpcache
+/.test-dirac-chrome-profile
+/.tmp
 /releases
 /target
 /out
-/.*
 /dirac.iml
 /pom.xml*
 /resources/release/.compiled
@@ -18,4 +19,3 @@
 /test/browser/fixtures/resources/.compiled
 /test/marion/resources/unpacked/.compiled
 /test/browser/transcripts/_actual_
-/scripts/peon/target
