@@ -106,17 +106,6 @@ SDK.CSSMetadata._generatedProperties = [{
     "name": "-webkit-locale",
     "inherited": true
 }, {
-    "name": "-webkit-margin-after-collapse"
-}, {
-    "name": "-webkit-margin-before-collapse"
-}, {
-    "name": "-webkit-margin-bottom-collapse"
-}, {
-    "longhands": ["-webkit-margin-before-collapse", "-webkit-margin-after-collapse"],
-    "name": "-webkit-margin-collapse"
-}, {
-    "name": "-webkit-margin-top-collapse"
-}, {
     "longhands": ["-webkit-mask-image", "-webkit-mask-position-x", "-webkit-mask-position-y", "-webkit-mask-size", "-webkit-mask-repeat-x", "-webkit-mask-repeat-y", "-webkit-mask-origin", "-webkit-mask-clip"],
     "name": "-webkit-mask"
 }, {
