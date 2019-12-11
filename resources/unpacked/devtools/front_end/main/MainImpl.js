@@ -31,12 +31,12 @@
 /**
  * @unrestricted
  */
-Main.Main = class {
+export class MainImpl {
   /**
    * @suppressGlobalPropertiesCheck
    */
   constructor() {
-    Main.Main._instanceForTest = this;
+    MainImpl._instanceForTest = this;
     runOnWindowLoad(this._loaded.bind(this));
   }
 
@@ -176,7 +176,7 @@ Main.Main = class {
   async _createAppUI() {
     await dirac.getReadyPromise();
 
-    Main.Main.time('Main._createAppUI');
+    MainImpl.time('Main._createAppUI');
 
     UI.viewManager = new UI.ViewManager();
 
@@ -230,7 +230,7 @@ Main.Main = class {
     new Main.ExecutionContextSelector(SDK.targetManager, UI.context);
     Bindings.blackboxManager = new Bindings.BlackboxManager(Bindings.debuggerWorkspaceBinding);
 
-    new Main.Main.PauseListener();
+    new PauseListener();
 
     UI.actionRegistry = new UI.ActionRegistry();
     UI.shortcutRegistry = new UI.ShortcutRegistry(UI.actionRegistry, document);
@@ -238,7 +238,7 @@ Main.Main = class {
     this._registerForwardedShortcuts();
     this._registerMessageSinkListener();
 
-    Main.Main.timeEnd('Main._createAppUI');
+    MainImpl.timeEnd('Main._createAppUI');
     this._showAppUI(await self.runtime.extension(Common.AppProvider).instance());
   }
 
@@ -247,7 +247,7 @@ Main.Main = class {
    * @suppressGlobalPropertiesCheck
    */
   _showAppUI(appProvider) {
-    Main.Main.time('Main._showAppUI');
+    MainImpl.time('Main._showAppUI');
     const app = /** @type {!Common.AppProvider} */ (appProvider).createApp();
     // It is important to kick controller lifetime after apps are instantiated.
     Components.dockController.initialize();
@@ -284,12 +284,12 @@ Main.Main = class {
 
     // Allow UI cycles to repaint prior to creating connection.
     setTimeout(this._initializeTarget.bind(this), 0);
-    Main.Main.timeEnd('Main._showAppUI');
+    MainImpl.timeEnd('Main._showAppUI');
     dirac.feedback("devtools ready");
   }
 
   async _initializeTarget() {
-    Main.Main.time('Main._initializeTarget');
+    MainImpl.time('Main._initializeTarget');
     const instances =
         await Promise.all(self.runtime.extensions('early-initialization').map(extension => extension.instance()));
     for (const instance of instances) {
@@ -299,11 +299,11 @@ Main.Main = class {
     Host.InspectorFrontendHost.readyForTest();
     // Asynchronously run the extensions.
     setTimeout(this._lateInitialization.bind(this), 100);
-    Main.Main.timeEnd('Main._initializeTarget');
+    MainImpl.timeEnd('Main._initializeTarget');
   }
 
   _lateInitialization() {
-    Main.Main.time('Main._lateInitialization');
+    MainImpl.time('Main._lateInitialization');
     this._registerShortcuts();
     Extensions.extensionServer.initializeExtensions();
     const extensions = self.runtime.extensions('late-initialization');
@@ -327,7 +327,7 @@ Main.Main = class {
       Common.settings.moduleSetting(setting).addChangeListener(changeListener);
     }
     this._lateInitDonePromise = Promise.all(promises);
-    Main.Main.timeEnd('Main._lateInitialization');
+    MainImpl.timeEnd('Main._lateInitialization');
     dirac.notifyFrontendInitialized();
   }
 
@@ -480,13 +480,13 @@ Main.Main = class {
     const suspended = SDK.targetManager.allTargetsSuspended();
     UI.inspectorView.onSuspendStateChanged(suspended);
   }
-};
+}
 
 /**
  * @implements {UI.ActionDelegate}
  * @unrestricted
  */
-Main.Main.ZoomActionDelegate = class {
+export class ZoomActionDelegate {
   /**
    * @override
    * @param {!UI.Context} context
@@ -511,13 +511,13 @@ Main.Main.ZoomActionDelegate = class {
     }
     return false;
   }
-};
+}
 
 /**
  * @implements {UI.ActionDelegate}
  * @unrestricted
  */
-Main.Main.SearchActionDelegate = class {
+export class SearchActionDelegate {
   /**
    * @override
    * @param {!UI.Context} context
@@ -526,10 +526,15 @@ Main.Main.SearchActionDelegate = class {
    * @suppressGlobalPropertiesCheck
    */
   handleAction(context, actionId) {
-    const searchableView = UI.SearchableView.fromElement(document.deepActiveElement()) ||
-        UI.inspectorView.currentPanelDeprecated().searchableView();
+    let searchableView = UI.SearchableView.fromElement(document.deepActiveElement());
     if (!searchableView) {
-      return false;
+      const currentPanel = UI.inspectorView.currentPanelDeprecated();
+      if (currentPanel) {
+        searchableView = currentPanel.searchableView();
+      }
+      if (!searchableView) {
+        return false;
+      }
     }
     switch (actionId) {
       case 'main.search-in-panel.find':
@@ -543,12 +548,12 @@ Main.Main.SearchActionDelegate = class {
     }
     return false;
   }
-};
+}
 
 /**
  * @implements {UI.ToolbarItem.Provider}
  */
-Main.Main.MainMenuItem = class {
+export class MainMenuItem {
   constructor() {
     this._item = new UI.ToolbarMenuButton(this._handleContextMenu.bind(this), true);
     this._item.setTitle(Common.UIString('Customize and control DevTools'));
@@ -669,12 +674,12 @@ Main.Main.MainMenuItem = class {
     const helpSubMenu = contextMenu.footerSection().appendSubMenuItem(Common.UIString('Help'));
     helpSubMenu.appendItemsAtLocation('mainMenuHelp');
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Main.Main.PauseListener = class {
+export class PauseListener {
   constructor() {
     SDK.targetManager.addModelListener(
         SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
@@ -691,14 +696,14 @@ Main.Main.PauseListener = class {
     UI.context.setFlavor(SDK.Target, debuggerModel.target());
     Common.Revealer.reveal(debuggerPausedDetails);
   }
-};
+}
 
 /**
  * @param {string} method
  * @param {?Object} params
  * @return {!Promise}
  */
-Main.sendOverProtocol = function(method, params) {
+export function sendOverProtocol(method, params) {
   return new Promise((resolve, reject) => {
     Protocol.test.sendRawMessage(method, params, (err, ...results) => {
       if (err) {
@@ -707,13 +712,13 @@ Main.sendOverProtocol = function(method, params) {
       return resolve(results);
     });
   });
-};
+}
 
 /**
  * @implements {UI.ActionDelegate}
  * @unrestricted
  */
-Main.ReloadActionDelegate = class {
+export class ReloadActionDelegate {
   /**
    * @override
    * @param {!UI.Context} context
@@ -728,6 +733,43 @@ Main.ReloadActionDelegate = class {
     }
     return false;
   }
-};
+}
 
-new Main.Main();
+new MainImpl();
+
+/* Legacy exported object */
+self.Main = self.Main || {};
+
+/* Legacy exported object */
+Main = Main || {};
+
+/**
+ * @constructor
+ */
+Main.Main = MainImpl;
+
+/**
+ * @constructor
+ */
+Main.Main.ZoomActionDelegate = ZoomActionDelegate;
+
+/**
+ * @constructor
+ */
+Main.Main.SearchActionDelegate = SearchActionDelegate;
+
+/**
+ * @constructor
+ */
+Main.Main.MainMenuItem = MainMenuItem;
+
+/**
+ * @constructor
+ */
+Main.Main.PauseListener = PauseListener;
+
+/**
+ * @constructor
+ */
+Main.ReloadActionDelegate = ReloadActionDelegate;
+Main.sendOverProtocol = sendOverProtocol;
