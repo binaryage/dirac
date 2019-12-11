@@ -1,5 +1,5 @@
 # keep this in sync with travis: https://docs.travis-ci.com/user/ci-environment
-FROM ubuntu:bionic
+FROM ubuntu:eoan
 
 WORKDIR /root
 
