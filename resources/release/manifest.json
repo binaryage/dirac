@@ -41,7 +41,7 @@
     "storage",
     "webRequest",
     "http://*/json",
-    "tabs"
+    "activeTab"
   ],
   "manifest_version": 2
 }
