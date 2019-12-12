@@ -199,21 +199,3 @@
 
 (defn go-show-connecting-debugger-backend-status! [tab-id]
   (action/go-update-action-button! tab-id :connecting "Attempting to connect debugger backend..."))
-
-(defn go-wait-for-document-title! [tab-id wanted-title & [timeout-ms]]
-  (let [timeout-chan (if (some? timeout-ms)
-                       (go-wait timeout-ms))]
-    (go
-      (loop [iteration 1]
-        (let [tab-info-chan (tabs/get tab-id)
-              [[result] ch] (alts! (filterv some? [tab-info-chan timeout-chan]))]
-          (if (= ch timeout-chan)
-            (str "timeouted after " iteration " trials (" timeout-ms "ms)")
-            (if-not (some? result)
-              (str "invalid tab-id: " tab-id)
-              (let [title (oget result "?title")]
-                (if (= title wanted-title)
-                  true
-                  (do
-                    (<! (go-wait 100))
-                    (recur (inc iteration))))))))))))
