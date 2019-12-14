@@ -21,14 +21,23 @@
   <message name="IDS_DEVTOOLS_0f558243fbf45f1cd840fff01957f57b" desc="Text in Service Workers View of the Application panel">
     Clients
   </message>
+  <message name="IDS_DEVTOOLS_107417a6f25859ac157fae05c1386910" desc="Data grid name for Indexed DB data grids">
+    Indexed DB
+  </message>
   <message name="IDS_DEVTOOLS_10a77618ffc0466753fde85f9bec01fd" desc="Text for button in Service Workers View of the Application panel that dispatches a periodicsync event">
     Periodic Sync
+  </message>
+  <message name="IDS_DEVTOOLS_12229cc5cc9800582536a4542be4a33a" desc="Text for filter in Cookies Panel">
+    Only blocked
   </message>
   <message name="IDS_DEVTOOLS_1351a3eaa0f925dad980e83905bc1230" desc="Text of a DOM element in Service Workers View of the Application panel">
     Worker: <ph name="TARGETINFO_URL">$1s<ex>example.com</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_136e9c46f48bf8798df663c4e786c3e3" desc="Title of update on reload setting in service workers view of the application panel">
     Update on reload
+  </message>
+  <message name="IDS_DEVTOOLS_1484c5da7e524d160aa2b2d37e754479" desc="Tooltip in Application Panel Sidebar of the Application panel">
+    Cookies used by frames from <ph name="COOKIEDOMAIN">$1s<ex>https://example.com</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_15fa5e18dc110ac96ef35fd19abc78b3" desc="Text in Service Worker Cache Views of the Application panel">
     Time Cached
@@ -60,6 +69,9 @@ table is empty.
   </message>
   <message name="IDS_DEVTOOLS_2e9d8504b07d0bdf4887f27c070cbbb6" desc="Text in Application Panel Sidebar of the Application panel">
     autoIncrement
+  </message>
+  <message name="IDS_DEVTOOLS_2f46140dd3ce5e85a4d152a5e2f75a65" desc="Label for filter in Cookies Panel">
+    Only show blocked Cookies
   </message>
   <message name="IDS_DEVTOOLS_301addf2037879acf2a972b157d2f4a7" desc="Text in Application Panel Sidebar of the Application panel">
     Local Files
@@ -93,6 +105,9 @@ table is empty.
   </message>
   <message name="IDS_DEVTOOLS_3eab5d12656f2f4462f6594019e77355" desc="Text in Database Table View of the Application panel">
     Visible columns
+  </message>
+  <message name="IDS_DEVTOOLS_44323440df1f92dfd551c7efc0aece80" desc="Data grid name for DOM Storage Items data grids">
+    DOM Storage Items
   </message>
   <message name="IDS_DEVTOOLS_458efe6e41ed41835b8d84b28db3f394" desc="Filter label text content in Service Workers View of the Application panel">
     Service workers from other origins
@@ -192,9 +207,6 @@ table is empty.
   </message>
   <message name="IDS_DEVTOOLS_8f67973007158337346584551b093be8" desc="Text in App Manifest View of the Application panel">
     Icons
-  </message>
-  <message name="IDS_DEVTOOLS_9093b5a47841e196aeee81e9441eb23b" desc="Tooltip in Application Panel Sidebar of the Application panel">
-    cookies used by frames from <ph name="COOKIEDOMAIN">$1s<ex>https://example.com</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_90e4c7584668933aebe8cf1cbccfe82d" desc="Text in Indexed DBViews of the Application panel">
     Please confirm delete of &quot;<ph name="THIS__DATABASE_DATABASEID_NAME">$1s<ex>msb</ex></ph>&quot; database.
@@ -416,8 +428,14 @@ read the &quot;<ph name="THIS_TABLENAME">$1s<ex>database</ex></ph>&quot; table.
   <message name="IDS_DEVTOOLS_ef399b2d446bb37b7c32ad2cc1b6045b" desc="Text in Service Workers View of the Application panel">
     stop
   </message>
+  <message name="IDS_DEVTOOLS_f18cd4b9f925d85b3a669adc015a9797" desc="Data grid name for Service Worker Cache data grids">
+    Service Worker Cache
+  </message>
   <message name="IDS_DEVTOOLS_f75623bb4626a57e8a7a3c0e1c092463" desc="Text in Cookie Items View of the Application panel">
     Select a cookie to preview its value
+  </message>
+  <message name="IDS_DEVTOOLS_f81c0b53d55a586f8d69bfc0f482a530" desc="Data grid name for Database Query data grids">
+    Database Query
   </message>
   <message name="IDS_DEVTOOLS_fb1508747fe448fd8b006e923ba1c3ef" desc="Text in Background Service View of the Application panel">
     Payment Handler

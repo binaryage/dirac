@@ -29,18 +29,17 @@
  */
 export default class DataGridImpl extends Common.Object {
   /**
-   * @param {!Array.<!DataGrid.DataGrid.ColumnDescriptor>} columnsArray
-   * @param {function(!NODE_TYPE, string, string, string)=} editCallback
-   * @param {function(!NODE_TYPE)=} deleteCallback
-   * @param {function()=} refreshCallback
+   * @param {!DataGrid.DataGrid.Parameters} dataGridParameters
    */
-  constructor(columnsArray, editCallback, deleteCallback, refreshCallback) {
+  constructor(dataGridParameters) {
     super();
+    const {displayName, columns: columnsArray, editCallback, deleteCallback, refreshCallback} = dataGridParameters;
     this.element = createElementWithClass('div', 'data-grid');
     UI.appendStyle(this.element, 'data_grid/dataGrid.css');
     this.element.tabIndex = 0;
     this.element.addEventListener('keydown', this._keyDown.bind(this), false);
     this.element.addEventListener('contextmenu', this._contextMenu.bind(this), true);
+    UI.ARIAUtils.setAccessibleName(this.element, displayName);
 
     this._editCallback = editCallback;
     this._deleteCallback = deleteCallback;
@@ -49,6 +48,8 @@ export default class DataGridImpl extends Common.Object {
     const headerContainer = this.element.createChild('div', 'header-container');
     /** @type {!Element} */
     this._headerTable = headerContainer.createChild('table', 'header');
+    // Hide the header table from screen readers since titles are also added to data table.
+    UI.ARIAUtils.markAsHidden(this._headerTable);
     /** @type {!Object.<string, !Element>} */
     this._headerTableHeaders = {};
     /** @type {!Element} */
@@ -2349,6 +2350,17 @@ DataGrid = DataGrid || {};
 
 /**
  * @typedef {{
+ *   displayName: string,
+ *   columns: !Array.<!DataGrid.DataGrid.ColumnDescriptor>,
+ *   editCallback: (function(!Object, string, string, string)|undefined),
+ *   deleteCallback: (function(!Object)|undefined|function(string)),
+ *   refreshCallback: (function()|undefined)
+ * }}
+ */
+DataGrid.Parameters;
+
+/**
+ * @typedef {{
  *   id: string,
  *   title: (string|undefined),
  *   titleDOMFragment: (?DocumentFragment|undefined),
@@ -2401,6 +2413,17 @@ DataGrid.DataGrid.Align = Align;
 
 /** @enum {string} */
 DataGrid.DataGrid.ResizeMethod = ResizeMethod;
+
+/**
+ * @typedef {{
+  *   displayName: string,
+  *   columns: !Array.<!DataGrid.DataGrid.ColumnDescriptor>,
+  *   editCallback: (function(!Object, string, string, string)|undefined),
+  *   deleteCallback: (function(!Object)|undefined|function(string)),
+  *   refreshCallback: (function()|undefined)
+  * }}
+  */
+DataGrid.DataGrid.Parameters = DataGrid.Parameters;
 
 /**
  * @typedef {{
