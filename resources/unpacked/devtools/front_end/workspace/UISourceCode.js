@@ -267,14 +267,6 @@ export default class UISourceCode extends Common.Object {
   }
 
   /**
-   * @returns {!Promise<!UISourceCode>}
-   */
-  async getFormatted() {
-    const formatData = await Sources.sourceFormatter.format(this);
-    return formatData.formattedSourceCode;
-  }
-
-  /**
    * @returns {!Promise<!Common.DeferredContent>}
    */
   async _requestContentImpl() {
