@@ -605,6 +605,7 @@ Protocol.inspectorBackend.registerEnum("DOM.PseudoType", {
     FirstLetter: "first-letter",
     Before: "before",
     After: "after",
+    Marker: "marker",
     Backdrop: "backdrop",
     Selection: "selection",
     FirstLineInherited: "first-line-inherited",
@@ -1540,6 +1541,14 @@ Protocol.inspectorBackend.registerEnum("Input.GestureSourceType", {
     Touch: "touch",
     Mouse: "mouse"
 });
+Protocol.inspectorBackend.registerEnum("Input.MouseButton", {
+    None: "none",
+    Left: "left",
+    Middle: "middle",
+    Right: "right",
+    Back: "back",
+    Forward: "forward"
+});
 Protocol.inspectorBackend.registerCommand("Input.dispatchKeyEvent", [{
     "name": "type",
     "type": "string",
@@ -2000,6 +2009,11 @@ Protocol.inspectorBackend.registerEnum("Network.CookieSameSite", {
     Lax: "Lax",
     None: "None"
 });
+Protocol.inspectorBackend.registerEnum("Network.CookiePriority", {
+    Low: "Low",
+    Medium: "Medium",
+    High: "High"
+});
 Protocol.inspectorBackend.registerEnum("Network.ResourcePriority", {
     VeryLow: "VeryLow",
     Low: "Low",
@@ -2297,6 +2311,10 @@ Protocol.inspectorBackend.registerCommand("Network.setCookie", [{
 }, {
     "name": "expires",
     "type": "number",
+    "optional": true
+}, {
+    "name": "priority",
+    "type": "string",
     "optional": true
 }], ["success"], false);
 Protocol.inspectorBackend.registerCommand("Network.setCookies", [{
@@ -2610,8 +2628,9 @@ Protocol.inspectorBackend.registerCommand("Page.deleteCookie", [{
 }], [], false);
 Protocol.inspectorBackend.registerCommand("Page.disable", [], [], false);
 Protocol.inspectorBackend.registerCommand("Page.enable", [], [], false);
-Protocol.inspectorBackend.registerCommand("Page.getAppManifest", [], ["url", "errors", "data"], false);
+Protocol.inspectorBackend.registerCommand("Page.getAppManifest", [], ["url", "errors", "data", "parsed"], false);
 Protocol.inspectorBackend.registerCommand("Page.getInstallabilityErrors", [], ["errors"], false);
+Protocol.inspectorBackend.registerCommand("Page.getManifestIcons", [], ["primaryIcon"], false);
 Protocol.inspectorBackend.registerCommand("Page.getCookies", [], ["cookies"], false);
 Protocol.inspectorBackend.registerCommand("Page.getFrameTree", [], ["frameTree"], false);
 Protocol.inspectorBackend.registerCommand("Page.getLayoutMetrics", [], ["layoutViewport", "visualViewport", "contentSize"], false);
