@@ -33,6 +33,13 @@ export function markAsAlert(element) {
 /**
  * @param {!Element} element
  */
+export function markAsApplication(element) {
+  element.setAttribute('role', 'application');
+}
+
+/**
+ * @param {!Element} element
+ */
 export function markAsButton(element) {
   element.setAttribute('role', 'button');
 }
@@ -97,6 +104,13 @@ export function markAsProgressBar(element, min = 0, max = 100) {
  */
 export function markAsTab(element) {
   element.setAttribute('role', 'tab');
+}
+
+/**
+ * @param {!Element} element
+ */
+export function markAsTablist(element) {
+  element.setAttribute('role', 'tablist');
 }
 
 /**

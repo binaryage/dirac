@@ -1218,6 +1218,7 @@ devtools_image_files = [
   "front_end/Images/profileIcon.png",
   "front_end/Images/profileSmallIcon.png",
   "front_end/Images/radioDot.png",
+  "front_end/Images/radioDot-dark-theme.png",
   "front_end/Images/resizeDiagonal.png",
   "front_end/Images/resizeDiagonal_2x.png",
   "front_end/Images/resizeHorizontal.png",
@@ -1804,6 +1805,7 @@ generated_applications = [
 ]
 
 generated_non_autostart_non_remote_modules = [
+  "$resources_out_dir/accessibility/accessibility_module.js",
   "$resources_out_dir/animation/animation_module.js",
   "$resources_out_dir/audits/audits_module.js",
   "$resources_out_dir/browser_debugger/browser_debugger_module.js",
@@ -1854,7 +1856,6 @@ generated_non_autostart_non_remote_modules = [
 ]
 
 generated_remote_modules = [
-  "$resources_out_dir/accessibility/accessibility_module.js",
   "$resources_out_dir/audits_worker/audits_worker_module.js",
   "$resources_out_dir/dagre_layout/dagre_layout_module.js",
   "$resources_out_dir/emulated_devices/emulated_devices_module.js",
