@@ -33,7 +33,7 @@ module.exports = function(config) {
       './test/unittests/**/*.ts': ['karma-typescript'],
       './front_end/common/*.js': instrumenterPreprocessors,
       './front_end/workspace/*.js': instrumenterPreprocessors,
-      './front_end/ui/*.js': instrumenterPreprocessors
+      './front_end/ui/**/*.js': instrumenterPreprocessors
     },
 
     browsers,
@@ -45,7 +45,11 @@ module.exports = function(config) {
         target: 'esnext',
         module: 'esnext',
         typeRoots: external_devtools_frontend ? undefined : [node_modules_path + '@types'],
-        lib: ['esnext', 'dom']
+        lib: ['esnext', 'dom'],
+        baseUrl: '.',
+        paths: {
+          '/front_end/*': ['front_end/*']
+        }
       },
       coverageOptions: {instrumentation: false},
       bundlerOptions: {resolve: {directories: [node_modules_path]}},
