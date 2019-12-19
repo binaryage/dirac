@@ -373,6 +373,7 @@
         "TargetManager.js",
         "Connections.js",
         "CompilerSourceMappingContentProvider.js",
+        "Cookie.js",
         "CookieModel.js",
         "CookieParser.js",
         "ProfileTreeModel.js",

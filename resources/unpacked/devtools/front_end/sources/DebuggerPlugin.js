@@ -1100,8 +1100,9 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
         } else if (value.preview && propertyCount + entryCount < 10) {
           formatter.appendObjectPreview(nameValuePair, value.preview, false /* isEntry */);
         } else {
-          nameValuePair.appendChild(ObjectUI.ObjectPropertiesSection.createValueElement(
-            value, false /* wasThrown */, false /* showPreview */));
+          const propertyValue = ObjectUI.ObjectPropertiesSection.createPropertyValue(
+            value, /* wasThrown */ false, /* showPreview */ false);
+          nameValuePair.appendChild(propertyValue.element);
         }
         ++renderedNameCount;
       }
@@ -1666,21 +1667,6 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
     }
     const origin = this._transformer.editorToRawLocation(editorLineNumber, 0);
     await this._setBreakpoint(origin[0], origin[1], condition, enabled);
-  }
-
-  /**
-   * @param {boolean} onlyDisable
-   */
-  toggleBreakpointOnCurrentLine(onlyDisable) {
-    if (this._muted) {
-      return;
-    }
-
-    const selection = this._textEditor.selection();
-    if (!selection) {
-      return;
-    }
-    this._toggleBreakpoint(selection.startLine, onlyDisable);
   }
 
   /**
