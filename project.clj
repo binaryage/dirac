@@ -1,5 +1,5 @@
 (def clj-logging-config-version "1.9.12")
-(def slf4j-log4j12-version "1.7.29")
+(def slf4j-log4j12-version "1.7.30")
 (def figwheel-version "0.5.19")
 (def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.597"))
 (def selected-clojure-version "1.10.1")
