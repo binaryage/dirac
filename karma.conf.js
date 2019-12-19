@@ -18,7 +18,8 @@ module.exports = function(config) {
     basePath: '',
 
     files: [
-      {pattern: 'front_end/**/*.js', included: false, served: true}, {pattern: 'test/unittests/**/*.ts', type: 'module'}
+      {pattern: 'front_end/**/*.js', included: false, served: true}, {pattern: 'test/unittests/**/*.ts', type: 'module'},
+      {pattern: 'front_end/**/*.svg', included: false, served: true}, {pattern: 'front_end/**/*.png', included: false, served: true},
     ],
 
     // FIXME(https://crbug.com/1006759): Re-enable these tests when ESM work is completed.
@@ -33,7 +34,8 @@ module.exports = function(config) {
       './test/unittests/**/*.ts': ['karma-typescript'],
       './front_end/common/*.js': instrumenterPreprocessors,
       './front_end/workspace/*.js': instrumenterPreprocessors,
-      './front_end/ui/**/*.js': instrumenterPreprocessors
+      './front_end/ui/**/*.js': instrumenterPreprocessors,
+      './front_end/sdk/*.js':instrumenterPreprocessors,
     },
 
     browsers,
@@ -58,6 +60,7 @@ module.exports = function(config) {
 
     proxies: {
       '/front_end': '/base/front_end',
+      '/Images': '/base/front_end/Images',
     },
 
     plugins: [
