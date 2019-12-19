@@ -7,8 +7,8 @@
 (go-task
   (with-scenario "normal"
     (with-devtools
-      (testing "unhandled DevTools exceptions should be presented in target console as Internal Dirac Error"
-        (<!* a/go-switch-to-console-panel!)
+      (<!* a/go-switch-to-console-panel!)
+      #_(testing "unhandled DevTools exceptions should be presented in target console as Internal Dirac Error"
         (<!* a/go-trigger-internal-error!)
         (let [error-header (<!* a/go-scrape :last-log-item-content "info")]
           (is (= error-header "Internal Dirac Error Error: :keyword is not ISeqable"))))
