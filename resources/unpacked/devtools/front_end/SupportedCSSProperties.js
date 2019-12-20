@@ -2,6 +2,66 @@ SDK.CSSMetadata._generatedProperties = [{
     "name": "-internal-effective-zoom",
     "inherited": true
 }, {
+    "name": "-internal-ua-background-attachment"
+}, {
+    "name": "-internal-ua-background-blend-mode"
+}, {
+    "name": "-internal-ua-background-clip"
+}, {
+    "name": "-internal-ua-background-color"
+}, {
+    "name": "-internal-ua-background-image"
+}, {
+    "name": "-internal-ua-background-origin"
+}, {
+    "name": "-internal-ua-background-position-x"
+}, {
+    "name": "-internal-ua-background-position-y"
+}, {
+    "name": "-internal-ua-background-size"
+}, {
+    "name": "-internal-ua-border-bottom-color"
+}, {
+    "name": "-internal-ua-border-bottom-left-radius"
+}, {
+    "name": "-internal-ua-border-bottom-right-radius"
+}, {
+    "name": "-internal-ua-border-bottom-style"
+}, {
+    "name": "-internal-ua-border-bottom-width"
+}, {
+    "name": "-internal-ua-border-image-outset"
+}, {
+    "name": "-internal-ua-border-image-repeat"
+}, {
+    "name": "-internal-ua-border-image-slice"
+}, {
+    "name": "-internal-ua-border-image-source"
+}, {
+    "name": "-internal-ua-border-image-width"
+}, {
+    "name": "-internal-ua-border-left-color"
+}, {
+    "name": "-internal-ua-border-left-style"
+}, {
+    "name": "-internal-ua-border-left-width"
+}, {
+    "name": "-internal-ua-border-right-color"
+}, {
+    "name": "-internal-ua-border-right-style"
+}, {
+    "name": "-internal-ua-border-right-width"
+}, {
+    "name": "-internal-ua-border-top-color"
+}, {
+    "name": "-internal-ua-border-top-left-radius"
+}, {
+    "name": "-internal-ua-border-top-right-radius"
+}, {
+    "name": "-internal-ua-border-top-style"
+}, {
+    "name": "-internal-ua-border-top-width"
+}, {
     "name": "-internal-visited-background-color"
 }, {
     "name": "-internal-visited-border-block-end-color"

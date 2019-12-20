@@ -3954,9 +3954,17 @@ Protocol.inspectorBackend.registerCommand("HeapProfiler.stopTrackingHeapObjects"
     "name": "reportProgress",
     "type": "boolean",
     "optional": true
+}, {
+    "name": "treatGlobalObjectsAsRoots",
+    "type": "boolean",
+    "optional": true
 }], [], false);
 Protocol.inspectorBackend.registerCommand("HeapProfiler.takeHeapSnapshot", [{
     "name": "reportProgress",
+    "type": "boolean",
+    "optional": true
+}, {
+    "name": "treatGlobalObjectsAsRoots",
     "type": "boolean",
     "optional": true
 }], [], false);
