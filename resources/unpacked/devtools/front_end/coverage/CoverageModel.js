@@ -26,7 +26,8 @@ export const SuspensionState = {
 
 /** @enum {symbol} */
 export const Events = {
-  CoverageUpdated: Symbol('CoverageUpdated')
+  CoverageUpdated: Symbol('CoverageUpdated'),
+  CoverageReset: Symbol('CoverageReset'),
 };
 
 /** @type {number} */
@@ -107,6 +108,7 @@ export default class CoverageModel extends SDK.SDKModel {
   reset() {
     this._coverageByURL = new Map();
     this._coverageByContentProvider = new Map();
+    this.dispatchEventToListeners(CoverageModel.Events.CoverageReset);
   }
 
   /**
@@ -226,6 +228,15 @@ export default class CoverageModel extends SDK.SDKModel {
   }
 
   /**
+   *
+   * @param {string} url
+   * @return {?Coverage.URLCoverageInfo}
+   */
+  getCoverageForUrl(url) {
+    return this._coverageByURL.get(url);
+  }
+
+  /**
    * @param {!Common.ContentProvider} contentProvider
    * @param {number} startOffset
    * @param {number} endOffset
@@ -341,7 +352,8 @@ export default class CoverageModel extends SDK.SDKModel {
    * @return {!Promise<!Array<!Coverage.CoverageInfo>>}
    */
   async _takeCSSCoverage() {
-    if (!this._cssModel) {
+    // Don't poll if we have no model, or are suspended.
+    if (!this._cssModel || this._suspensionState !== SuspensionState.Active) {
       return [];
     }
     const now = Date.now();
@@ -570,11 +582,13 @@ SDK.SDKModel.register(CoverageModel, SDK.Target.Capability.None, false);
 /**
  * @unrestricted
  */
-export class URLCoverageInfo {
+export class URLCoverageInfo extends Common.Object {
   /**
    * @param {string} url
    */
   constructor(url) {
+    super();
+
     this._url = url;
     /** @type {!Map<string, !Coverage.CoverageInfo>} */
     this._coverageInfoByLocation = new Map();
@@ -656,6 +670,10 @@ export class URLCoverageInfo {
   _addToSizes(usedSize, size) {
     this._usedSize += usedSize;
     this._size += size;
+
+    if (usedSize !== 0 || size !== 0) {
+      this.dispatchEventToListeners(Coverage.URLCoverageInfo.Events.SizesChanged);
+    }
   }
 
   /**
@@ -691,6 +709,11 @@ export class URLCoverageInfo {
     return entry;
   }
 }
+
+/** @enum {symbol} */
+URLCoverageInfo.Events = {
+  SizesChanged: Symbol('SizesChanged')
+};
 
 /**
  * @unrestricted

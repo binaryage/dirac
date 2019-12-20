@@ -26,6 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {Icon} from './Icon.js';                            // eslint-disable-line no-unused-vars
+import {Config, InplaceEditor} from './InplaceEditor.js';  // eslint-disable-line no-unused-vars
+import {Keys} from './KeyboardShortcut.js';
+import {isEditing} from './UIUtils.js';
+import {appendStyle} from './utils/append-style.js';
+import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';
+
 /**
  * @unrestricted
  */
@@ -291,7 +298,7 @@ export class TreeOutline extends Common.Object {
    * @param {!Event} event
    */
   _treeKeyDown(event) {
-    if (event.shiftKey || event.metaKey || event.ctrlKey || UI.isEditing()) {
+    if (event.shiftKey || event.metaKey || event.ctrlKey || isEditing()) {
       return;
     }
 
@@ -319,7 +326,7 @@ export class TreeOutline extends Common.Object {
       handled = this.selectedTreeElement.ondelete();
     } else if (isEnterKey(event)) {
       handled = this.selectedTreeElement.onenter();
-    } else if (event.keyCode === UI.KeyboardShortcut.Keys.Space.code) {
+    } else if (event.keyCode === Keys.Space.code) {
       handled = this.selectedTreeElement.onspace();
     } else if (event.key === 'Home') {
       handled = this._selectFirst();
@@ -354,7 +361,7 @@ export class TreeOutline extends Common.Object {
 }
 
 /** @enum {symbol} */
-const Events = {
+export const Events = {
   ElementAttached: Symbol('ElementAttached'),
   ElementsDetached: Symbol('ElementsDetached'),
   ElementExpanded: Symbol('ElementExpanded'),
@@ -372,7 +379,7 @@ export class TreeOutlineInShadow extends TreeOutline {
 
     // Redefine element to the external one.
     this.element = createElement('div');
-    this._shadowRoot = UI.createShadowRootWithCoreStyles(this.element, 'ui/treeoutline.css');
+    this._shadowRoot = createShadowRootWithCoreStyles(this.element, 'ui/treeoutline.css');
     UI.appendStyle(this._shadowRoot, "ui/treeoutline-dirac.css");
     this._disclosureElement = this._shadowRoot.createChild('div', 'tree-outline-disclosure');
     this._disclosureElement.appendChild(this.contentElement);
@@ -383,7 +390,7 @@ export class TreeOutlineInShadow extends TreeOutline {
    * @param {string} cssFile
    */
   registerRequiredCSS(cssFile) {
-    UI.appendStyle(this._shadowRoot, cssFile);
+    appendStyle(this._shadowRoot, cssFile);
   }
 
   hideOverflow() {
@@ -764,15 +771,15 @@ export class TreeElement {
   }
 
   /**
-   * @param {!UI.InplaceEditor.Config} editingConfig
+   * @param {!Config} editingConfig
    */
   startEditingTitle(editingConfig) {
-    UI.InplaceEditor.startEditing(/** @type {!Element} */ (this.titleElement), editingConfig);
+    InplaceEditor.startEditing(/** @type {!Element} */ (this.titleElement), editingConfig);
     this.treeOutline._shadowRoot.getSelection().selectAllChildren(this.titleElement);
   }
 
   /**
-   * @param {!Array<!UI.Icon>} icons
+   * @param {!Array<!Icon>} icons
    */
   setLeadingIcons(icons) {
     if (!this._leadingIconsElement && !icons.length) {
@@ -791,7 +798,7 @@ export class TreeElement {
   }
 
   /**
-   * @param {!Array<!UI.Icon>} icons
+   * @param {!Array<!Icon>} icons
    */
   setTrailingIcons(icons) {
     if (!this._trailingIconsElement && !icons.length) {
@@ -1219,6 +1226,7 @@ export class TreeElement {
     }
 
     this._listItemNode.classList.add('selected');
+    UI.ARIAUtils.setSelected(this._listItemNode, true);
     this.treeOutline.dispatchEventToListeners(Events.ElementSelected, this);
     if (lastSelected) {
       lastSelected.deselect();
@@ -1271,6 +1279,7 @@ export class TreeElement {
     const hadFocus = this._listItemNode.hasFocus();
     this.selected = false;
     this._listItemNode.classList.remove('selected');
+    UI.ARIAUtils.clearSelected(this._listItemNode);
     this._setFocusable(false);
 
     if (this.treeOutline && this.treeOutline.selectedTreeElement === this) {
@@ -1455,20 +1464,3 @@ const img = new Image();
 img.src = 'Images/treeoutlineTriangles.svg';
 TreeElement._imagePreload = img;
 })();
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.TreeOutline = TreeOutline;
-
-UI.TreeOutline.Events = Events;
-
-/** @constructor */
-UI.TreeElement = TreeElement;
-
-/** @constructor */
-UI.TreeOutlineInShadow = TreeOutlineInShadow;

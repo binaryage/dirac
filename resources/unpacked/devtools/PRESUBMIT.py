@@ -40,6 +40,8 @@ EXCLUSIVE_CHANGE_DIRECTORIES = [
     [ 'OWNERS' ],
 ]
 
+AUTOROLL_ACCOUNT = "devtools-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com"
+
 def _CheckChangesAreExclusiveToDirectory(input_api, output_api):
     if input_api.change.DISABLE_THIRD_PARTY_CHECK != None:
         return []
@@ -78,6 +80,11 @@ def _CheckChangesAreExclusiveToDirectory(input_api, output_api):
 
 def _CheckBuildGN(input_api, output_api):
     script_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'check_gn.js')
+    return _checkWithNodeScript(input_api, output_api, script_path)
+
+
+def _CheckJSON(input_api, output_api):
+    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'json_validator', 'validate_module_json.js')
     return _checkWithNodeScript(input_api, output_api, script_path)
 
 
@@ -214,6 +221,9 @@ def _CheckCSSViolations(input_api, output_api):
 def _CommonChecks(input_api, output_api):
     """Checks common to both upload and commit."""
     results = []
+    results.extend(input_api.canned_checks.CheckAuthorizedAuthor(input_api, output_api,
+        bot_whitelist=[AUTOROLL_ACCOUNT]
+    ))
     results.extend(input_api.canned_checks.CheckOwnersFormat(input_api, output_api))
     results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
     results.extend(input_api.canned_checks.CheckChangeHasNoCrAndHasOnlyOneEol(input_api, output_api))
@@ -226,6 +236,7 @@ def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CommonChecks(input_api, output_api))
     results.extend(_CheckBuildGN(input_api, output_api))
+    results.extend(_CheckJSON(input_api, output_api))
     results.extend(_CheckFormat(input_api, output_api))
     results.extend(_CheckDevtoolsStyle(input_api, output_api))
     results.extend(_CheckOptimizeSVGHashes(input_api, output_api))

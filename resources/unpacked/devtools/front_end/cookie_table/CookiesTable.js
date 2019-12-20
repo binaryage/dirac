@@ -42,6 +42,10 @@ export class CookiesTable extends UI.VBox {
   constructor(renderInline, saveCallback, refreshCallback, selectedCallback, deleteCallback) {
     super();
 
+    this.registerRequiredCSS('cookie_table/cookiesTable.css');
+    this.element.classList.add('cookies-table');
+
+
     this._saveCallback = saveCallback;
     this._refreshCallback = refreshCallback;
     this._deleteCallback = deleteCallback;
@@ -91,18 +95,32 @@ export class CookiesTable extends UI.VBox {
         align: DataGrid.DataGrid.Align.Center,
         weight: 7
       },
-      {id: SDK.Cookie.Attributes.SameSite, title: ls`SameSite`, sortable: true, weight: 7}
+      {id: SDK.Cookie.Attributes.SameSite, title: ls`SameSite`, sortable: true, weight: 7},
+      {
+        id: SDK.Cookie.Attributes.Priority,
+        title: ls`Priority`,
+        sortable: true,
+        sort: DataGrid.DataGrid.Order.Descending,
+        weight: 7,
+        editable: editable,
+      },
     ]);
 
     if (editable) {
-      this._dataGrid = new DataGrid.DataGrid(
-          columns, this._onUpdateCookie.bind(this), this._onDeleteCookie.bind(this), refreshCallback);
+      this._dataGrid = new DataGrid.DataGrid({
+        displayName: ls`Editable Cookies`,
+        columns,
+        editCallback: this._onUpdateCookie.bind(this),
+        deleteCallback: this._onDeleteCookie.bind(this),
+        refreshCallback
+      });
     } else {
-      this._dataGrid = new DataGrid.DataGrid(columns);
+      this._dataGrid = new DataGrid.DataGrid({displayName: ls`Cookies`, columns});
     }
     this._dataGrid.setStriped(true);
     this._dataGrid.setName('cookiesTable');
     this._dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this._rebuildTable, this);
+    this._dataGrid.setRowContextMenuCallback(this._populateContextMenu.bind(this));
     if (renderInline) {
       this._dataGrid.renderInline();
     }
@@ -232,6 +250,7 @@ export class CookiesTable extends UI.VBox {
         groupData[SDK.Cookie.Attributes.HttpOnly] = '';
         groupData[SDK.Cookie.Attributes.Secure] = '';
         groupData[SDK.Cookie.Attributes.SameSite] = '';
+        groupData[SDK.Cookie.Attributes.Priority] = '';
 
         const groupNode = new DataGrid.DataGridNode(groupData);
         groupNode.selectable = true;
@@ -339,6 +358,23 @@ export class CookiesTable extends UI.VBox {
      * @param {!SDK.Cookie} cookie2
      * @return {number}
      */
+    function priorityCompare(cookie1, cookie2) {
+      const priorities = [
+        Protocol.Network.CookiePriority.Low,
+        Protocol.Network.CookiePriority.Medium,
+        Protocol.Network.CookiePriority.High,
+      ];
+
+      const priority1 = priorities.indexOf(cookie1.priority());
+      const priority2 = priorities.indexOf(cookie2.priority());
+      return sortDirection * (priority1 - priority2);
+    }
+
+    /**
+     * @param {!SDK.Cookie} cookie1
+     * @param {!SDK.Cookie} cookie2
+     * @return {number}
+     */
     function expiresCompare(cookie1, cookie2) {
       if (cookie1.session() !== cookie2.session()) {
         return sortDirection * (cookie1.session() ? 1 : -1);
@@ -363,6 +399,8 @@ export class CookiesTable extends UI.VBox {
       comparator = expiresCompare;
     } else if (columnId === 'size') {
       comparator = numberCompare;
+    } else if (columnId === 'priority') {
+      comparator = priorityCompare;
     } else {
       comparator = compareTo.bind(null, columnId);
     }
@@ -403,6 +441,7 @@ export class CookiesTable extends UI.VBox {
     data[SDK.Cookie.Attributes.HttpOnly] = (cookie.httpOnly() ? checkmark : '');
     data[SDK.Cookie.Attributes.Secure] = (cookie.secure() ? checkmark : '');
     data[SDK.Cookie.Attributes.SameSite] = cookie.sameSite() || '';
+    data[SDK.Cookie.Attributes.Priority] = cookie.priority() || '';
 
     const node =
         new DataGridNode(data, cookie, this._cookieToBlockedReasons ? this._cookieToBlockedReasons.get(cookie) : null);
@@ -477,7 +516,10 @@ export class CookiesTable extends UI.VBox {
    * @returns {!SDK.Cookie}
    */
   _createCookieFromData(data) {
-    const cookie = new SDK.Cookie(data[SDK.Cookie.Attributes.Name], data[SDK.Cookie.Attributes.Value], null);
+    const cookie = new SDK.Cookie(
+        data[SDK.Cookie.Attributes.Name], data[SDK.Cookie.Attributes.Value], null,
+        /** @type {!Protocol.Network.CookiePriority} */ (data[SDK.Cookie.Attributes.Priority]));
+
     cookie.addAttribute(SDK.Cookie.Attributes.Domain, data[SDK.Cookie.Attributes.Domain]);
     cookie.addAttribute(SDK.Cookie.Attributes.Path, data[SDK.Cookie.Attributes.Path]);
     if (data.expires && data.expires !== _expiresSessionValue) {
@@ -513,7 +555,7 @@ export class CookiesTable extends UI.VBox {
     if (!domain) {
       return true;
     }
-    const parsedURL = ('http://' + domain).asParsedURL();
+    const parsedURL = Common.ParsedURL.fromString('http://' + domain);
     return !!parsedURL && parsedURL.domain() === domain;
   }
 
@@ -522,7 +564,7 @@ export class CookiesTable extends UI.VBox {
    * @returns {boolean}
    */
   _isValidPath(path) {
-    const parsedURL = ('http://example.com' + path).asParsedURL();
+    const parsedURL = Common.ParsedURL.fromString('http://example.com' + path);
     return !!parsedURL && parsedURL.path === path;
   }
 
@@ -538,6 +580,27 @@ export class CookiesTable extends UI.VBox {
     if (this._refreshCallback) {
       this._refreshCallback();
     }
+  }
+
+  /**
+   * @param {!UI.ContextMenu} contextMenu
+   * @param {!DataGrid.DataGridNode} gridNode
+   */
+  _populateContextMenu(contextMenu, gridNode) {
+    const cookie = /** @type {!SDK.Cookie} */ (gridNode.cookie);
+
+    contextMenu.revealSection().appendItem(ls`Show Requests With This Cookie`, () => {
+      Network.NetworkPanel.revealAndFilter([
+        {
+          filterType: 'cookie-domain',
+          filterValue: cookie.domain(),
+        },
+        {
+          filterType: 'cookie-name',
+          filterValue: cookie.name(),
+        }
+      ]);
+    });
   }
 }
 

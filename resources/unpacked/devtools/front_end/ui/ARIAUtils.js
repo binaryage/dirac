@@ -33,6 +33,13 @@ export function markAsAlert(element) {
 /**
  * @param {!Element} element
  */
+export function markAsApplication(element) {
+  element.setAttribute('role', 'application');
+}
+
+/**
+ * @param {!Element} element
+ */
 export function markAsButton(element) {
   element.setAttribute('role', 'button');
 }
@@ -97,6 +104,13 @@ export function markAsProgressBar(element, min = 0, max = 100) {
  */
 export function markAsTab(element) {
   element.setAttribute('role', 'tab');
+}
+
+/**
+ * @param {!Element} element
+ */
+export function markAsTablist(element) {
+  element.setAttribute('role', 'tablist');
 }
 
 /**
@@ -225,6 +239,14 @@ export function markAsHeading(element, level) {
  */
 export function markAsPoliteLiveRegion(element) {
   element.setAttribute('aria-live', 'polite');
+}
+
+/**
+ * @param {!Element} element
+ * @return {boolean}
+ */
+export function hasRole(element) {
+  return element.hasAttribute('role');
 }
 
 /**
@@ -370,6 +392,10 @@ export function setSelected(element, value) {
   element.setAttribute('aria-selected', !!value);
 }
 
+export function clearSelected(element) {
+  element.removeAttribute('aria-selected');
+}
+
 /**
  * @param {!Element} element
  * @param {boolean} value
@@ -438,7 +464,7 @@ export function setDescription(element, description) {
   // triplet of "name", "value", "description"
   // The "description" field is taken from either
   // 1. The title html attribute
-  // 2. The value of the aria-help attribute
+  // 2. The value of the aria-description attribute.
   // 3. The textContent of an element specified by aria-describedby
   //
   // The title attribute has the side effect of causing tooltips
@@ -446,12 +472,8 @@ export function setDescription(element, description) {
   // This is usually fine, except that DevTools has its own styled
   // tooltips which would interfere with the browser tooltips.
   //
-  // aria-help does what we want with no side effects, but it
-  // is deprecated and may be removed in a future version of Blink.
-  // Current DevTools needs to be able to work in future browsers,
-  // to support debugging old mobile devices. So we can't rely on
-  // any APIs that might be removed. There is also no way to feature
-  // detect this API.
+  // In future, the aria-description attribute may be used once it
+  // is unflagged.
   //
   // aria-describedby requires that an extra element exist in DOM
   // that this element can point to. Both elements also have to
@@ -558,66 +580,3 @@ export function alert(message, element) {
 
   document[AlertElementSymbol].textContent = message.trimEndWithMaxLength(10000);
 }
-
-/** Legacy exported object */
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-self.UI.ARIAUtils = {
-  nextId,
-  bindLabelToControl,
-  markAsAlert,
-  markAsButton,
-  markAsCheckbox,
-  markAsCombobox,
-  markAsModalDialog,
-  markAsGroup,
-  markAsLink,
-  markAsMenuButton,
-  markAsProgressBar,
-  markAsTab,
-  markAsTabpanel,
-  markAsTree,
-  markAsTreeitem,
-  markAsTextBox,
-  markAsMenu,
-  markAsMenuItem,
-  markAsMenuItemSubMenu,
-  markAsList,
-  markAsListitem,
-  markAsListBox,
-  markAsMultiSelectable,
-  markAsOption,
-  markAsRadioGroup,
-  markAsHidden,
-  markAsSlider,
-  markAsHeading,
-  markAsPoliteLiveRegion,
-  setPlaceholder,
-  markAsPresentation,
-  markAsStatus,
-  ensureId,
-  setAriaValueText,
-  setAriaValueNow,
-  setAriaValueMinMax,
-  setControls,
-  setChecked,
-  setCheckboxAsIndeterminate,
-  setExpanded,
-  unsetExpandable,
-  setHidden,
-  AutocompleteInteractionModel,
-  setAutocomplete,
-  setSelected,
-  setInvalid,
-  setPressed,
-  setProgressBarValue,
-  setValueNow,
-  setValueText,
-  setAccessibleName,
-  setDescription,
-  setActiveDescendant,
-  alert,
-};

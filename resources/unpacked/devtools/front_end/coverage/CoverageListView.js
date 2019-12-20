@@ -35,7 +35,7 @@ export default class CoverageListView extends UI.VBox {
       },
       {id: 'bars', title: ls`Usage Visualization`, width: '250px', fixedWidth: false, sortable: true}
     ];
-    this._dataGrid = new DataGrid.SortableDataGrid(columns);
+    this._dataGrid = new DataGrid.SortableDataGrid({displayName: ls`Code Coverage`, columns});
     this._dataGrid.setResizeMethod(DataGrid.DataGrid.ResizeMethod.Last);
     this._dataGrid.element.classList.add('flex-auto');
     this._dataGrid.element.addEventListener('keydown', this._onKeyDown.bind(this), false);
@@ -139,11 +139,10 @@ export default class CoverageListView extends UI.VBox {
     if (!sourceCode) {
       return;
     }
-    const content = (await sourceCode.requestContent()).content || '';
-    if (TextUtils.isMinified(content)) {
-      const formatData = await Sources.sourceFormatter.format(sourceCode);
-      sourceCode = formatData.formattedSourceCode;
-    }
+
+    const formatData = await Formatter.sourceFormatter.format(sourceCode);
+    sourceCode = formatData.formattedSourceCode;
+
     if (this._dataGrid.selectedNode !== node) {
       return;
     }
@@ -294,6 +293,7 @@ export class GridNode extends DataGrid.SortableDataGridNode {
         if (this._highlightRegExp) {
           this._highlight(outer, this._url);
         }
+        this.setCellAccessibleName(this._url, cell, columnId);
         break;
       case 'type':
         cell.textContent = Coverage.CoverageListView._typeToString(this._coverageInfo.type());
@@ -308,8 +308,9 @@ export class GridNode extends DataGrid.SortableDataGridNode {
       case 'size':
         const sizeSpan = cell.createChild('span');
         sizeSpan.textContent = Number.withThousandsSeparator(this._coverageInfo.size() || 0);
-        UI.ARIAUtils.markAsHidden(sizeSpan);
-        UI.ARIAUtils.setAccessibleName(cell, ls`${this._coverageInfo.size() || 0} bytes`);
+        const sizeAccessibleName =
+            (this._coverageInfo.size() === 1) ? ls`1 byte` : ls`${this._coverageInfo.size() || 0} bytes`;
+        this.setCellAccessibleName(sizeAccessibleName, cell, columnId);
         break;
       case 'unusedSize':
         const unusedSize = this._coverageInfo.unusedSize() || 0;
@@ -318,9 +319,9 @@ export class GridNode extends DataGrid.SortableDataGridNode {
         unusedSizeSpan.textContent = Number.withThousandsSeparator(unusedSize);
         const unusedPercentFormatted = ls`${this._percentageString(this._coverageInfo.unusedPercentage())} %`;
         unusedPercentsSpan.textContent = unusedPercentFormatted;
-        UI.ARIAUtils.markAsHidden(unusedPercentsSpan);
-        UI.ARIAUtils.markAsHidden(unusedSizeSpan);
-        UI.ARIAUtils.setAccessibleName(cell, ls`${unusedSize} bytes, ${unusedPercentFormatted}`);
+        const unusedAccessibleName = (unusedSize === 1) ? ls`1 byte, ${unusedPercentFormatted}` :
+                                                          ls`${unusedSize} bytes, ${unusedPercentFormatted}`;
+        this.setCellAccessibleName(unusedAccessibleName, cell, columnId);
         break;
       case 'bars':
         const barContainer = cell.createChild('div', 'bar-container');
@@ -348,8 +349,8 @@ export class GridNode extends DataGrid.SortableDataGridNode {
                 usedPercent} %) belong to blocks of JavaScript that have executed at least once.`;
           }
         }
-        UI.ARIAUtils.setAccessibleName(
-            barContainer, ls`${unusedPercent} % of file unused, ${usedPercent} % of file used`);
+        this.setCellAccessibleName(
+            ls`${unusedPercent} % of file unused, ${usedPercent} % of file used`, cell, columnId);
     }
     return cell;
   }

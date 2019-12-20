@@ -502,38 +502,6 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
       }
     }
 
-    // The eager evaluation on works sort of reliably within the top-most scope of
-    // the selected call frame, so don't even try outside the top-most scope.
-    const [scope] = selectedCallFrame.scopeChain();
-    const scopeStartLocation = scope && scope.startLocation();
-    const scopeEndLocation = scope && scope.endLocation();
-
-    if (scopeStartLocation && scopeEndLocation) {
-      let {lineNumber: scopeStartLineNumber, columnNumber: scopeStartColNumber} = scopeStartLocation;
-      let {lineNumber: scopeEndLineNumber, columnNumber: scopeEndColNumber} = scopeEndLocation;
-
-      const scopeUIStartLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(scopeStartLocation);
-      const scopeUIEndLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(scopeEndLocation);
-
-      if (scopeUIStartLocation && scopeUIEndLocation) {
-        ({lineNumber: scopeStartLineNumber, columnNumber: scopeStartColNumber} = scopeUIStartLocation);
-        ({lineNumber: scopeEndLineNumber, columnNumber: scopeEndColNumber} = scopeUIEndLocation);
-      }
-
-      if (editorLineNumber < scopeStartLineNumber) {
-        return null;
-      }
-      if (editorLineNumber === scopeStartLineNumber && startHighlight < scopeStartColNumber) {
-        return null;
-      }
-      if (editorLineNumber > scopeEndLineNumber) {
-        return null;
-      }
-      if (editorLineNumber === scopeEndLineNumber && endHighlight > scopeEndColNumber) {
-        return null;
-      }
-    }
-
     let objectPopoverHelper;
     let highlightDescriptor;
 
@@ -1132,8 +1100,9 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
         } else if (value.preview && propertyCount + entryCount < 10) {
           formatter.appendObjectPreview(nameValuePair, value.preview, false /* isEntry */);
         } else {
-          nameValuePair.appendChild(ObjectUI.ObjectPropertiesSection.createValueElement(
-            value, false /* wasThrown */, false /* showPreview */));
+          const propertyValue = ObjectUI.ObjectPropertiesSection.createPropertyValue(
+            value, /* wasThrown */ false, /* showPreview */ false);
+          nameValuePair.appendChild(propertyValue.element);
         }
         ++renderedNameCount;
       }
@@ -1698,21 +1667,6 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
     }
     const origin = this._transformer.editorToRawLocation(editorLineNumber, 0);
     await this._setBreakpoint(origin[0], origin[1], condition, enabled);
-  }
-
-  /**
-   * @param {boolean} onlyDisable
-   */
-  toggleBreakpointOnCurrentLine(onlyDisable) {
-    if (this._muted) {
-      return;
-    }
-
-    const selection = this._textEditor.selection();
-    if (!selection) {
-      return;
-    }
-    this._toggleBreakpoint(selection.startLine, onlyDisable);
   }
 
   /**

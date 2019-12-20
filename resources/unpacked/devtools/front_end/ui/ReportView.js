@@ -1,10 +1,14 @@
 // Copyright (c) 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import {Toolbar} from './Toolbar.js';
+import {VBox} from './Widget.js';
+
 /**
  * @unrestricted
  */
-export default class ReportView extends UI.VBox {
+export class ReportView extends VBox {
   /**
    * @param {string=} title
    */
@@ -58,10 +62,10 @@ export default class ReportView extends UI.VBox {
   }
 
   /**
-   * @return {!UI.Toolbar}
+   * @return {!Toolbar}
    */
   createToolbar() {
-    const toolbar = new UI.Toolbar('');
+    const toolbar = new Toolbar('');
     this._headerElement.appendChild(toolbar.element);
     return toolbar;
   }
@@ -101,7 +105,6 @@ export default class ReportView extends UI.VBox {
     this._headerElement.classList.toggle('hidden', !visible);
   }
 
-
   /**
    * @param {boolean} scrollable
    */
@@ -113,7 +116,7 @@ export default class ReportView extends UI.VBox {
 /**
  * @unrestricted
  */
-export class Section extends UI.VBox {
+export class Section extends VBox {
   /**
    * @param {string} title
    * @param {string=} className
@@ -160,10 +163,10 @@ export class Section extends UI.VBox {
   }
 
   /**
-   * @return {!UI.Toolbar}
+   * @return {!Toolbar}
    */
   createToolbar() {
-    const toolbar = new UI.Toolbar('');
+    const toolbar = new Toolbar('');
     this._headerElement.appendChild(toolbar.element);
     return toolbar;
   }
@@ -252,18 +255,11 @@ export class Section extends UI.VBox {
     UI.ARIAUtils.markAsGroup(this._fieldList);
     UI.ARIAUtils.setAccessibleName(this._fieldList, this.title());
   }
+
+  /**
+   * @param {boolean} masked
+   */
+  setIconMasked(masked) {
+    this.element.classList.toggle('show-mask', masked);
+  }
 }
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.ReportView = ReportView;
-
-/**
- * @constructor
- */
-UI.ReportView.Section = Section;

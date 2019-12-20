@@ -103,19 +103,12 @@
       (automate-if-marion-present)
       (provide-user-url-params)))
 
-(defn go-wait-for-loading-completion! [frontend-tab-id timeout-ms]
-  (helpers/go-wait-for-document-title! frontend-tab-id "#" timeout-ms))
-
 (defn go-connect-and-navigate-dirac-devtools! [frontend-tab-id backend-tab-id options]
   (let [devtools-id (devtools/register! frontend-tab-id backend-tab-id)
         full-options (prepare-options options)
         dirac-frontend-url (helpers/make-dirac-frontend-url devtools-id full-options)]
     (go
       (<! (tabs/update frontend-tab-id #js {:url dirac-frontend-url}))
-      (let [loading-result (<! (go-wait-for-loading-completion! frontend-tab-id (get-frontend-loading-timeout)))]
-        (if-not (true? loading-result)
-          (let [error-msg (i18n/unable-to-complete-frontend-loading frontend-tab-id loading-result)]
-            (<! (go-report-error-in-tab! backend-tab-id error-msg)))))
       (let [intercom-result (<! (helpers/go-try-install-intercom! devtools-id intercom-handler (get-intercom-init-timeout)))]
         (if-not (true? intercom-result)
           (let [error-msg (i18n/unable-to-complete-intercom-initialization frontend-tab-id intercom-result)]

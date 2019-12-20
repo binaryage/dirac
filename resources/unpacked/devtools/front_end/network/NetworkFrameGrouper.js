@@ -5,13 +5,13 @@
 /**
  * @implements {Network.GroupLookupInterface}
  */
-Network.NetworkFrameGrouper = class {
+export default class NetworkFrameGrouper {
   /**
    * @param {!Network.NetworkLogView} parentView
    */
   constructor(parentView) {
     this._parentView = parentView;
-    /** @type {!Map<!SDK.ResourceTreeFrame, !Network.FrameGroupNode>} */
+    /** @type {!Map<!SDK.ResourceTreeFrame, !FrameGroupNode>} */
     this._activeGroups = new Map();
   }
 
@@ -29,7 +29,7 @@ Network.NetworkFrameGrouper = class {
     if (groupNode) {
       return groupNode;
     }
-    groupNode = new Network.FrameGroupNode(this._parentView, frame);
+    groupNode = new FrameGroupNode(this._parentView, frame);
     this._activeGroups.set(frame, groupNode);
     return groupNode;
   }
@@ -40,9 +40,9 @@ Network.NetworkFrameGrouper = class {
   reset() {
     this._activeGroups.clear();
   }
-};
+}
 
-Network.FrameGroupNode = class extends Network.NetworkGroupNode {
+export class FrameGroupNode extends Network.NetworkGroupNode {
   /**
    * @param {!Network.NetworkLogView} parentView
    * @param {!SDK.ResourceTreeFrame} frame
@@ -72,6 +72,23 @@ Network.FrameGroupNode = class extends Network.NetworkGroupNode {
       cell.appendChild(UI.Icon.create('largeicon-navigator-frame', 'network-frame-group-icon'));
       cell.createTextChild(name);
       cell.title = name;
+      this.setCellAccessibleName(cell.textContent, cell, columnId);
     }
   }
-};
+}
+
+/* Legacy exported object */
+self.Network = self.Network || {};
+
+/* Legacy exported object */
+Network = Network || {};
+
+/**
+ * @constructor
+ */
+Network.NetworkFrameGrouper = NetworkFrameGrouper;
+
+/**
+ * @constructor
+ */
+Network.FrameGroupNode = FrameGroupNode;

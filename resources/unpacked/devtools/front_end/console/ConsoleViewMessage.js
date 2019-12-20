@@ -190,7 +190,7 @@ export default class ConsoleViewMessage {
     const columnDisplayNames = columnNames.map(name => name === rawValueColumnSymbol ? Common.UIString('Value') : name);
 
     if (flatValues.length) {
-      this._dataGrid = DataGrid.SortableDataGrid.create(columnDisplayNames, flatValues);
+      this._dataGrid = DataGrid.SortableDataGrid.create(columnDisplayNames, flatValues, ls`Console`);
       this._dataGrid.setStriped(true);
       this._dataGrid.setFocusable(false);
 
@@ -376,9 +376,12 @@ export default class ConsoleViewMessage {
       this._selectableChildren.push({element: linkElement, forceSelect: () => linkElement.focus()});
     }
     stackTraceElement.classList.add('hidden');
+    UI.ARIAUtils.markAsTreeitem(this.element());
+    UI.ARIAUtils.setExpanded(this.element(), false);
     this._expandTrace = expand => {
       icon.setIconType(expand ? 'smallicon-triangle-down' : 'smallicon-triangle-right');
       stackTraceElement.classList.toggle('hidden', !expand);
+      UI.ARIAUtils.setExpanded(this.element(), expand);
       this._traceExpanded = expand;
     };
 
@@ -583,7 +586,9 @@ export default class ConsoleViewMessage {
     const result = createElement('span');
     const description = obj.description || '';
     if (description.length > Console.ConsoleViewMessage._MaxTokenizableStringLength) {
-      result.appendChild(UI.createExpandableText(description, Console.ConsoleViewMessage._LongStringVisibleLength));
+      const propertyValue = new ObjectUI.ExpandableTextPropertyValue(
+          createElement('span'), description, Console.ConsoleViewMessage._LongStringVisibleLength);
+      result.appendChild(propertyValue.element);
     } else {
       result.createTextChild(description);
     }
@@ -1564,7 +1569,7 @@ export default class ConsoleViewMessage {
       if (!url) {
         return null;
       }
-      const parsedURL = url.asParsedURL();
+      const parsedURL = Common.ParsedURL.fromString(url);
       if (parsedURL) {
         return parsedURL.url;
       }
@@ -1582,7 +1587,11 @@ export default class ConsoleViewMessage {
    */
   _linkifyWithCustomLinkifier(string, linkifier) {
     if (string.length > Console.ConsoleViewMessage._MaxTokenizableStringLength) {
-      return UI.createExpandableText(string, Console.ConsoleViewMessage._LongStringVisibleLength);
+      const propertyValue = new ObjectUI.ExpandableTextPropertyValue(
+          createElement('span'), string, Console.ConsoleViewMessage._LongStringVisibleLength);
+      const fragment = createDocumentFragment();
+      fragment.appendChild(propertyValue.element);
+      return fragment;
     }
     const container = createDocumentFragment();
     const tokens = Console.ConsoleViewMessage._tokenizeMessageText(string);

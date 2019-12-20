@@ -1975,7 +1975,7 @@
       runtime_flag: "ImageOrientation",
       field_group: "*",
       field_template: "primitive",
-      default_value: "false",
+      default_value: "true",
       name_for_methods: "RespectImageOrientation",
       type_name: "bool",
       converter: "ConvertImageOrientation",
@@ -3393,7 +3393,7 @@
       field_size: 6, // FIXME: Make this use "kTouchActionBits".
       field_template: "primitive",
       include_paths: ["third_party/blink/renderer/platform/graphics/touch_action.h"],
-      default_value: "TouchAction::kTouchActionAuto",
+      default_value: "TouchAction::kAuto",
       type_name: "TouchAction",
       converter: "ConvertFlags<blink::TouchAction>",
       keywords: ["auto", "none", "pan-x", "pan-left", "pan-right", "pan-y", "pan-up", "pan-down", "pinch-zoom", "manipulation"],
@@ -3820,36 +3820,6 @@
       field_template: "external",
       default_value: "0",
       type_name: "int",
-    },
-    {
-      name: "-webkit-margin-after-collapse",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
-      field_group: "*",
-      field_template: "keyword",
-      keywords: ["collapse", "separate", "discard"],
-      default_value: "collapse",
-      type_name: "EMarginCollapse",
-    },
-    {
-      name: "-webkit-margin-before-collapse",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
-      field_group: "*",
-      field_template: "keyword",
-      keywords: ["collapse", "separate", "discard"],
-      default_value: "collapse",
-      type_name: "EMarginCollapse",
-    },
-    {
-      name: "-webkit-margin-bottom-collapse",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
-      name_for_methods: "MarginAfterCollapse",
-      type_name: "EMarginCollapse",
-    },
-    {
-      name: "-webkit-margin-top-collapse",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
-      name_for_methods: "MarginBeforeCollapse",
-      type_name: "EMarginCollapse",
     },
     {
       name: "-webkit-mask-box-image-outset",
@@ -5213,13 +5183,6 @@
       name: "columns",
       longhands: ["column-width", "column-count"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-    },
-    {
-      name: "-webkit-margin-collapse",
-      longhands: [
-        "-webkit-margin-before-collapse", "-webkit-margin-after-collapse"
-      ],
-      property_methods: ["ParseShorthand"],
     },
     {
       name: "-webkit-mask",

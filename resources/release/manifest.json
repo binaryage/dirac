@@ -1,7 +1,7 @@
 {
   "short_name": "Dirac",
   "name": "Dirac DevTools",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "browser_action": {
     "default_title": "Open Dirac DevTools",
     "default_icon": {
@@ -41,7 +41,7 @@
     "storage",
     "webRequest",
     "http://*/json",
-    "tabs"
+    "activeTab"
   ],
   "manifest_version": 2
 }

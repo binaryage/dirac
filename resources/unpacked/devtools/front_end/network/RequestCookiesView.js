@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-Network.RequestCookiesView = class extends UI.Widget {
+export default class RequestCookiesView extends UI.Widget {
   /**
    * @param {!SDK.NetworkRequest} request
    */
@@ -92,7 +92,7 @@ Network.RequestCookiesView = class extends UI.Widget {
     /** @type {!Map<!SDK.Cookie, !Array<!CookieTable.BlockedReason>>} */
     const requestCookieToBlockedReasons = new Map();
 
-    if (this._request.requestCookies) {
+    if (this._request.requestCookies.length) {
       requestCookies = this._request.requestCookies.slice();
 
       // request.requestCookies are generated from headers which are missing
@@ -147,7 +147,7 @@ Network.RequestCookiesView = class extends UI.Widget {
     /** @type {!Array<!SDK.NetworkRequest.BlockedSetCookieWithReason>} */
     const malformedResponseCookies = [];
 
-    if (this._request.responseCookies) {
+    if (this._request.responseCookies.length) {
       const blockedCookieLines = this._request.blockedResponseCookies().map(blockedCookie => blockedCookie.cookieLine);
       responseCookies = this._request.responseCookies.filter(cookie => {
         // remove the regular cookies that would overlap with blocked cookies
@@ -166,14 +166,16 @@ Network.RequestCookiesView = class extends UI.Widget {
           continue;
         }
 
-        const cookie = parsedCookies[0];
-        responseCookieToBlockedReasons.set(cookie, blockedCookie.blockedReasons.map(blockedReason => {
-          return {
-            attribute: SDK.NetworkRequest.setCookieBlockedReasonToAttribute(blockedReason),
-            uiString: SDK.NetworkRequest.setCookieBlockedReasonToUiString(blockedReason)
-          };
-        }));
-        responseCookies.push(cookie);
+        const cookie = blockedCookie.cookie || parsedCookies[0];
+        if (cookie) {
+          responseCookieToBlockedReasons.set(cookie, blockedCookie.blockedReasons.map(blockedReason => {
+            return {
+              attribute: SDK.NetworkRequest.setCookieBlockedReasonToAttribute(blockedReason),
+              uiString: SDK.NetworkRequest.setCookieBlockedReasonToUiString(blockedReason)
+            };
+          }));
+          responseCookies.push(cookie);
+        }
       }
     }
 
@@ -260,8 +262,7 @@ Network.RequestCookiesView = class extends UI.Widget {
    * @return {boolean}
    */
   _gotCookies() {
-    return !!(this._request.requestCookies && this._request.requestCookies.length) ||
-        !!(this._request.responseCookies && this._request.responseCookies.length);
+    return !!this._request.requestCookies.length || !!this._request.responseCookies.length;
   }
 
   _cookiesUpdated() {
@@ -276,4 +277,15 @@ Network.RequestCookiesView = class extends UI.Widget {
       this._emptyWidget.showWidget();
     }
   }
-};
+}
+
+/* Legacy exported object */
+self.Network = self.Network || {};
+
+/* Legacy exported object */
+Network = Network || {};
+
+/**
+ * @constructor
+ */
+Network.RequestCookiesView = RequestCookiesView;

@@ -31,7 +31,7 @@
 /**
  * @unrestricted
  */
-Network.NetworkNode = class extends DataGrid.SortableDataGridNode {
+export class NetworkNode extends DataGrid.SortableDataGridNode {
   /**
    * @param {!Network.NetworkLogView} parentView
    */
@@ -71,11 +71,18 @@ Network.NetworkNode = class extends DataGrid.SortableDataGridNode {
   }
 
   /**
+   * @return {boolean}
+   */
+  _isFailed() {
+    return false;
+  }
+
+  /**
    * @return {string}
    * @suppressGlobalPropertiesCheck
    */
   backgroundColor() {
-    const bgColors = Network.NetworkNode._backgroundColors;
+    const bgColors = _backgroundColors;
     const hasFocus = document.hasFocus();
     const isSelected = this.dataGrid.element === document.activeElement;
     const isFailed = this._isFailed();
@@ -255,10 +262,10 @@ Network.NetworkNode = class extends DataGrid.SortableDataGridNode {
     this._requestOrFirstKnownChildRequest = firstChildRequest;
     return this._requestOrFirstKnownChildRequest;
   }
-};
+}
 
 /** @type {!Object<string, string>} */
-Network.NetworkNode._backgroundColors = {
+export const _backgroundColors = {
   Default: '--network-grid-default-color',
   Stripe: '--network-grid-stripe-color',
   Navigation: '--network-grid-navigation-color',
@@ -271,22 +278,10 @@ Network.NetworkNode._backgroundColors = {
   FromFrame: '--network-grid-from-frame-color',
 };
 
-/** @typedef {!{
-  Default: string,
-  Stripe: string,
-  Navigation: string,
-  Hovered: string,
-  InitiatorPath: string,
-  InitiatedPath: string,
-  Selected: string,
-  FromFrame: string
-}} */
-Network.NetworkNode._SupportedBackgroundColors;
-
 /**
  * @unrestricted
  */
-Network.NetworkRequestNode = class extends Network.NetworkNode {
+export class NetworkRequestNode extends NetworkNode {
   /**
    * @param {!Network.NetworkLogView} parentView
    * @param {!SDK.NetworkRequest} request
@@ -425,8 +420,8 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     if (!aRequest || !bRequest) {
       return !aRequest ? -1 : 1;
     }
-    const aScore = aRequest.requestCookies ? aRequest.requestCookies.length : 0;
-    const bScore = bRequest.requestCookies ? bRequest.requestCookies.length : 0;
+    const aScore = aRequest.requestCookies.length;
+    const bScore = bRequest.requestCookies.length;
     return (aScore - bScore) || aRequest.indentityCompare(bRequest);
   }
 
@@ -802,6 +797,7 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
   }
 
   /**
+   * @override
    * @return {boolean}
    */
   _isFailed() {
@@ -816,7 +812,8 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
    */
   _renderPrimaryCell(cell, columnId, text) {
     const columnIndex = this.dataGrid.indexOfVisibleColumn(columnId);
-    if (columnIndex === 0) {
+    const isFirstCell = (columnIndex === 0);
+    if (isFirstCell) {
       const leftPadding = this.leftPadding ? this.leftPadding + 'px' : '';
       cell.style.setProperty('padding-left', leftPadding);
       this._nameCell = cell;
@@ -865,7 +862,7 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
       const failText = Common.UIString('(failed)');
       if (this._request.localizedFailDescription) {
         cell.createTextChild(failText);
-        this._appendSubtitle(cell, this._request.localizedFailDescription);
+        this._appendSubtitle(cell, this._request.localizedFailDescription, true);
         cell.title = failText + ' ' + this._request.localizedFailDescription;
       } else {
         this._setTextAndTitle(cell, failText);
@@ -1038,16 +1035,34 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
   /**
    * @param {!Element} cellElement
    * @param {string} subtitleText
+   * @param {boolean=} showInlineWhenSelected
    */
-  _appendSubtitle(cellElement, subtitleText) {
+  _appendSubtitle(cellElement, subtitleText, showInlineWhenSelected = false) {
     const subtitleElement = createElement('div');
-    subtitleElement.className = 'network-cell-subtitle';
+    subtitleElement.classList.add('network-cell-subtitle');
+    if (showInlineWhenSelected) {
+      subtitleElement.classList.add('network-cell-subtitle-show-inline-when-selected');
+    }
     subtitleElement.textContent = subtitleText;
     cellElement.appendChild(subtitleElement);
   }
-};
+}
 
-Network.NetworkGroupNode = class extends Network.NetworkNode {
+export class NetworkGroupNode extends NetworkNode {
+  /**
+   * @override
+   * @param {!Element} element
+   * @protected
+   */
+  createCells(element) {
+    super.createCells(element);
+    const primaryColumn = this.dataGrid.visibleColumnsArray[0];
+    const localizedTitle = ls`${primaryColumn.title}`;
+    const localizedLevel = ls`level 1`;
+    this.nodeAccessibleText =
+        `${localizedLevel} ${localizedTitle}: ${this.cellAccessibleTextMap.get(primaryColumn.id)}`;
+  }
+
   /**
    * @override
    * @param {!Element} cell
@@ -1059,6 +1074,7 @@ Network.NetworkGroupNode = class extends Network.NetworkNode {
       const leftPadding = this.leftPadding ? this.leftPadding + 'px' : '';
       cell.style.setProperty('padding-left', leftPadding);
       cell.classList.add('disclosure');
+      this.setCellAccessibleName(cell.textContent, cell, columnId);
     }
   }
 
@@ -1074,4 +1090,40 @@ Network.NetworkGroupNode = class extends Network.NetworkNode {
           Network.NetworkLogView.Events.RequestSelected, firstChildNode.request());
     }
   }
-};
+}
+
+/* Legacy exported object */
+self.Network = self.Network || {};
+
+/* Legacy exported object */
+Network = Network || {};
+
+/**
+ * @constructor
+ */
+Network.NetworkNode = NetworkNode;
+
+/** @type {!Object<string, string>} */
+Network.NetworkNode._backgroundColors = _backgroundColors;
+
+/** @typedef {!{
+ Default: string,
+ Stripe: string,
+ Navigation: string,
+ Hovered: string,
+ InitiatorPath: string,
+ InitiatedPath: string,
+ Selected: string,
+ FromFrame: string
+}} */
+Network.NetworkNode._SupportedBackgroundColors;
+
+/**
+ * @constructor
+ */
+Network.NetworkRequestNode = NetworkRequestNode;
+
+/**
+ * @constructor
+ */
+Network.NetworkGroupNode = NetworkGroupNode;

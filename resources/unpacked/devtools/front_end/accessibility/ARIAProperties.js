@@ -77,9 +77,6 @@ Accessibility.ARIAMetadata._config = {
         "type": "token",
         "name": "aria-haspopup"
     }, {
-        "type": "string",
-        "name": "aria-help"
-    }, {
         "default": "undefined",
         "enum": ["true", "false", "undefined"],
         "type": "token",

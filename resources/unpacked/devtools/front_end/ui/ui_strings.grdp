@@ -30,9 +30,6 @@
   <message name="IDS_DEVTOOLS_103e6e056329361a5d169154f52771d0" desc="Text in UIUtils">
     <ph name="DESCRIPTION">$1s<ex>Promise</ex></ph> (async)
   </message>
-  <message name="IDS_DEVTOOLS_1299e7f10b9d0110e7fa5368d1307500" desc="Text of attribute value when text is too long">
-    long text was truncated (<ph name="TOTALBYTES">$1s<ex>30 MB</ex></ph>)
-  </message>
   <message name="IDS_DEVTOOLS_142329f312b9f9a97f9726342813dec2" desc="Text in the Shortcuts page in settings to explain a keyboard shortcut in the Console Section">
     Next/previous line
   </message>
@@ -63,9 +60,6 @@
   <message name="IDS_DEVTOOLS_2ea54663ae9e3a586132a34a98d85ccf" desc="Text for the title of asynchronous function calls group in Call Stack">
     Async Call
   </message>
-  <message name="IDS_DEVTOOLS_3793ea52a7be2d7deafd858fda50775c" desc="Accessibility label for checked items in the SoftContextMenu">
-    checked
-  </message>
   <message name="IDS_DEVTOOLS_3a39eb38e879f66d1c57dedd478272da" desc="label to open link externally">
     Open in new tab
   </message>
@@ -89,9 +83,6 @@
   </message>
   <message name="IDS_DEVTOOLS_45b471827af8ba9628e1914afbb13980" desc="Minutes format in UIUtils">
     <ph name="PH1">$1.1f<ex>2.2</ex></ph> min
-  </message>
-  <message name="IDS_DEVTOOLS_471566447bf928c469d32014791036cc" desc="Text in Remote Debugging Terminated Screen">
-    Debugging connection was closed. Reason: <ph name="REASONELEMENT">$1s<ex>connection lost</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_47df0ee8f6dc4f553c907c49e686216c" desc="Title of a shortcuts category for Memory panel in Shortcut page ">
     Memory Panel
@@ -240,9 +231,6 @@
   <message name="IDS_DEVTOOLS_a950da8e902568f9a6879abe4313efe7" desc="Text content of content element">
     Once page is reloaded, <ph name="LOCKED_1">DevTools</ph> will automatically reconnect.
   </message>
-  <message name="IDS_DEVTOOLS_ad91a1da588ce256d30b1af38f78f84e" desc="Accessibility label for unchecked items in the SoftContextMenu">
-    unchecked
-  </message>
   <message name="IDS_DEVTOOLS_addec426932e71323700afa1911f8f1c" desc="Text on a button to show more info in the infobar">
     more
   </message>
@@ -296,9 +284,6 @@
   </message>
   <message name="IDS_DEVTOOLS_d9f57fb1f634a4e047fd69b574434c7f" desc="Text in the Shortcuts page to explain a keyboard shortcut (evaluate the selected expression in console)">
     Evaluate selection in console
-  </message>
-  <message name="IDS_DEVTOOLS_dd73c24f4702950125e2fcb7d26ca5fe" desc="Text of attribute value when text is too long">
-    Show more (<ph name="TOTALBYTES">$1s<ex>30 MB</ex></ph>)
   </message>
   <message name="IDS_DEVTOOLS_dd92c3884d43902407a4c2f0d8cc0eb1" desc="Text in the Shortcuts page to explain a keyboard shortcut (toggle breakpoint in debugger)">
     Toggle breakpoint

@@ -846,6 +846,17 @@ export class NetworkDispatcher {
   }
 
   /**
+   * @unrestricted
+   * @param {boolean} isServiceWorker
+   * @param {string} url
+   * @param {string} firstPartyUrl
+   * @param {!Array<!Protocol.Network.BlockedCookieWithReason>} blockedCookies
+   */
+  cookiesBlocked(isServiceWorker, url, firstPartyUrl, blockedCookies) {
+    // TODO(chromium:1032063): Implement this protocol message handler.
+  }
+
+  /**
    * @param {string} requestId
    * @return {!RedirectExtraInfoBuilder}
    */
@@ -1322,7 +1333,7 @@ export class MultitargetNetworkManager extends Common.Object {
 
   /**
    * @param {string} url
-   * @param {function(number, !Object.<string, string>, string)} callback
+   * @param {function(number, !Object.<string, string>, string, number)} callback
    */
   loadResource(url, callback) {
     const headers = {};
