@@ -22,6 +22,10 @@ if [[ -z "${TRAVIS_SKIP_DEPOT_TOOLS_INSTALL}" ]]; then
   fi
   DEPOT_TOOLS_PATH="$(pwd -P)/depot_tools"
   export PATH=$DEPOT_TOOLS_PATH:$PATH
+
+  # this seems to be a missing dependency of depot tools under Travis CI
+  sudo apt-get install -y python-httplib2
+
   gclient --version
 
   # fake ninjalog.cfg to prevent depot tools failures
