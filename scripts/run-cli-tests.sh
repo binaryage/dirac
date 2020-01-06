@@ -11,6 +11,3 @@ export DIRAC_TEST_PLAYGROUND="$ROOT/test/playground"
 echo "Running CLI tests..."
 lein run-cli-tests-110
 lein run-cli-tests-19
-
-# because matcher-combinators.matchers uses some 1.9 apis
-#lein run-cli-tests-18

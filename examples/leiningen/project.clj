@@ -39,18 +39,6 @@
   :cljsbuild {:builds {}}                                                                                                     ; prevent https://github.com/emezeske/lein-cljsbuild/issues/413
 
   :profiles {; --------------------------------------------------------------------------------------------------------------
-             :clojure17
-             {:dependencies ^:replace [[org.clojure/clojure "1.7.0" :upgrade false]
-                                       [org.clojure/clojurescript "1.7.228" :upgrade false]
-                                       [binaryage/devtools ~devtools-version]
-                                       [binaryage/dirac ~dirac-version]]}
-
-             :clojure18
-             {:dependencies ^:replace [[org.clojure/clojure "1.8.0" :upgrade false]
-                                       [org.clojure/clojurescript "1.9.908" :upgrade false]
-                                       [binaryage/devtools ~devtools-version]
-                                       [binaryage/dirac ~dirac-version]]}
-
              :clojure19
              {:dependencies ^:replace [[org.clojure/clojure "1.9.0" :upgrade false]
                                        [org.clojure/clojurescript "1.10.339" :upgrade false]
@@ -256,14 +244,6 @@
                                         ["clean"]
                                         ["cljsbuild" "once"]
                                         ["shell" "scripts/dev-server.sh"]]
-            "demo18"                   ["with-profile" "+demo,+clojure18" "do"
-                                        ["clean"]
-                                        ["cljsbuild" "once"]
-                                        ["shell" "scripts/dev-server.sh"]]
-            "demo17"                   ["with-profile" "+demo,+clojure17" "do"
-                                        ["clean"]
-                                        ["cljsbuild" "once"]
-                                        ["shell" "scripts/dev-server.sh"]]
             "demo-advanced"            ["with-profile" "+demo-advanced" "do"
                                         ["cljsbuild" "once"]
                                         ["shell" "scripts/dev-server.sh"]]
@@ -277,14 +257,6 @@
                                         ["clean"]
                                         ["cljsbuild" "once"]
                                         ["shell" "scripts/run-node-demo.sh"]]
-            "demo-node18"              ["with-profile" "+demo-node,+clojure18" "do"
-                                        ["clean"]
-                                        ["cljsbuild" "once"]
-                                        ["shell" "scripts/run-node-demo.sh"]]
-            "demo-node17"              ["with-profile" "+demo-node,+clojure17" "do"
-                                        ["clean"]
-                                        ["cljsbuild" "once"]
-                                        ["shell" "scripts/run-node-demo.sh"]]
             "demo-node-dev"            ["with-profile" "+demo-node,+clojure-current,+checkouts" "do"
                                         ["cljsbuild" "once" "demo"]
                                         ["shell" "scripts/run-node-demo.sh"]]
@@ -292,8 +264,6 @@
                                         ["cljsbuild" "once" "demo"]
                                         ["shell" "scripts/run-node-demo.sh" "1"]]
 
-            "repl17"                   ["with-profile" "+repl,+clojure17" "repl"]
-            "repl18"                   ["with-profile" "+repl,+clojure18" "repl"]
             "repl19"                   ["with-profile" "+repl,+clojure19" "repl"]
             "repl110"                  ["with-profile" "+repl,+clojure110" "repl"]
             "repl-dev"                 ["with-profile" "+repl,+clojure-current,+checkouts,+dirac-logging,+debugger-5005" "repl"]

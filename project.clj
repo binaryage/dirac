@@ -161,9 +161,6 @@
              :suspended-debugger-5007
              {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5007"]}
 
-             :clojure18
-             {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
-
              :clojure19
              {:dependencies [[org.clojure/clojure "1.9.0" :scope "provided" :upgrade false]]}
 
@@ -503,11 +500,9 @@
             "test-browser"               ["shell" "scripts/test-browser.sh"]                                                  ; this will run browser tests against fully optimized dirac extension (release build)
             "test-browser-dev"           ["shell" "scripts/test-browser-dev.sh"]                                              ; this will run browser tests against unpacked dirac extension
 
-            "run-backend-tests-18"       ["with-profile" "+test-runner,+clojure18" "run" "-m" "dirac.tests.backend.runner"]
             "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19" "run" "-m" "dirac.tests.backend.runner"]
             "run-backend-tests-110"      ["with-profile" "+test-runner,+clojure110" "run" "-m" "dirac.tests.backend.runner"]
 
-            "run-cli-tests-18"           ["with-profile" "+test-runner,+clojure18" "run" "-m" "dirac.test-runner"]
             "run-cli-tests-19"           ["with-profile" "+test-runner,+clojure19" "run" "-m" "dirac.test-runner"]
             "run-cli-tests-110"          ["with-profile" "+test-runner,+clojure110" "run" "-m" "dirac.test-runner"]
 
