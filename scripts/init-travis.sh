@@ -171,3 +171,4 @@ popd # "$TRAVIS_BUILD_DIR"
 
 "$DIRAC_CHROME_BINARY_PATH" --version
 "$CHROME_DRIVER_PATH" --version
+python --version
