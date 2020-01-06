@@ -31,10 +31,10 @@
 
 ; -- public API -------------------------------------------------------------------------------------------------------------
 
-(defn setup! [config]
+(defn setup! [& [config]]
   (when-not @initialized?
     (vreset! initialized? true)
-    (let [options {}]
+    (let [options (convert-config-to-logging-options config)]
       (config/set-loggers!
         :root (merge-options root-options options {:level Level/INFO})                                                        ; root level should be always INFO, otherwise we would get very verbose logs from java libs
         ; test runners
