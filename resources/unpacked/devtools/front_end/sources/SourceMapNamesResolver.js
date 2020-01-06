@@ -21,7 +21,7 @@ export class Identifier {
   }
 }
 
-Sources.SourceMapNamesResolver.NameDescriptor = class {
+export class NameDescriptor {
   /**
    * @param {string} name
    * @param {number|undefined} lineNumber
@@ -32,24 +32,25 @@ Sources.SourceMapNamesResolver.NameDescriptor = class {
     this.lineNumber = lineNumber;
     this.columnNumber = columnNumber;
   }
-};
+}
 
 
-Sources.SourceMapNamesResolver.MappingRecord = class {
+export class MappingRecord {
   /**
-   * @param {!Sources.SourceMapNamesResolver.NameDescriptor} compiledNameDescriptor
-   * @param {!Sources.SourceMapNamesResolver.NameDescriptor} originalNameDescriptor
+   * @param {!NameDescriptor} compiledNameDescriptor
+   * @param {!NameDescriptor} originalNameDescriptor
    */
   constructor(compiledNameDescriptor, originalNameDescriptor) {
     this.compiledNameDescriptor = compiledNameDescriptor;
     this.originalNameDescriptor = originalNameDescriptor;
   }
-};
+}
 
 /**
- * @typedef {!Array<!Sources.SourceMapNamesResolver.MappingRecord>}
+ * @typedef {!Array<!MappingRecord>}
  */
-Sources.SourceMapNamesResolver.Mapping;
+export class Mapping {
+}
 
 /**
  * @param {!SDK.DebuggerModel.Scope} scope
@@ -114,7 +115,7 @@ export const _scopeIdentifiers = function(scope) {
 
 /**
  * @param {!SDK.DebuggerModel.Scope} scope
- * @return {!Promise.<!Sources.SourceMapNamesResolver.Mapping>}
+ * @return {!Promise<!Mapping>}
  */
 export const _resolveScope = function(scope) {
   let identifiersPromise = scope[_cachedIdentifiersSymbol];
@@ -136,51 +137,48 @@ export const _resolveScope = function(scope) {
 
   /**
    * @param {!Array<!Identifier>} identifiers
-   * @return {!Promise<!Sources.SourceMapNamesResolver.Mapping>}
+   * @return {!Promise<!Mapping>}
    */
   function onIdentifiers(identifiers) {
     const namesMapping = [];
-    var missingIdentifiers = [];
+    let missingIdentifiers = [];
     // Extract as much as possible from SourceMap.
     for (let i = 0; i < identifiers.length; ++i) {
       const id = identifiers[i];
       const entry = sourceMap.findEntry(id.lineNumber, id.columnNumber);
       if (entry && entry.name) {
-        const compiled = new Sources.SourceMapNamesResolver.NameDescriptor(
-          id.name, id.lineNumber, id.columnNumber);
-        const original = new Sources.SourceMapNamesResolver.NameDescriptor(
-          entry.name, entry.sourceLineNumber, entry.sourceColumnNumber);
-        namesMapping.push(new Sources.SourceMapNamesResolver.MappingRecord(compiled, original));
+        const compiled = new NameDescriptor(id.name, id.lineNumber, id.columnNumber);
+        const original = new NameDescriptor(entry.name, entry.sourceLineNumber, entry.sourceColumnNumber);
+        namesMapping.push(new MappingRecord(compiled, original));
       } else {
         missingIdentifiers.push(id);
       }
     }
 
     // Resolve missing identifier names from sourcemap ranges.
-    var promises = missingIdentifiers.map(id => {
+    let promises = missingIdentifiers.map(id => {
       return resolveSourceName(id).then(onSourceNameResolved.bind(null, namesMapping, id));
     });
     return Promise.all(promises)
-        .then(() => Sources.SourceMapNamesResolver._scopeResolvedForTest())
         .then(() => namesMapping);
   }
 
   /**
-   * @param {!Sources.SourceMapNamesResolver.Mapping} namesMapping
+   * @param {!Mapping} namesMapping
    * @param {!Identifier} id
-   * @param {?Sources.SourceMapNamesResolver.NameDescriptor} originalNameDescriptor
+   * @param {!NameDescriptor} originalNameDescriptor
    */
   function onSourceNameResolved(namesMapping, id, originalNameDescriptor) {
     if (!originalNameDescriptor) {
       return;
     }
-    const compiled = new Sources.SourceMapNamesResolver.NameDescriptor(id.name, id.lineNumber, id.columnNumber);
-    namesMapping.push(new Sources.SourceMapNamesResolver.MappingRecord(compiled, originalNameDescriptor));
+    const compiled = new NameDescriptor(id.name, id.lineNumber, id.columnNumber);
+    namesMapping.push(new MappingRecord(compiled, originalNameDescriptor));
   }
 
   /**
    * @param {!Identifier} id
-   * @return {!Promise<?Sources.SourceMapNamesResolver.NameDescriptor>}
+   * @return {!Promise<?NameDescriptor>}
    */
   function resolveSourceName(id) {
     const startEntry = sourceMap.findEntry(id.lineNumber, id.columnNumber);
@@ -188,7 +186,7 @@ export const _resolveScope = function(scope) {
     if (!startEntry || !endEntry || !startEntry.sourceURL || startEntry.sourceURL !== endEntry.sourceURL ||
         !startEntry.sourceLineNumber || !startEntry.sourceColumnNumber || !endEntry.sourceLineNumber ||
         !endEntry.sourceColumnNumber) {
-      return Promise.resolve(/** @type {?Sources.SourceMapNamesResolver.NameDescriptor} */(null));
+      return Promise.resolve(/** @type {?NameDescriptor} */null);
     }
     const sourceTextRange = new TextUtils.TextRange(
         startEntry.sourceLineNumber, startEntry.sourceColumnNumber, endEntry.sourceLineNumber,
@@ -196,7 +194,7 @@ export const _resolveScope = function(scope) {
     const uiSourceCode = Bindings.debuggerWorkspaceBinding.uiSourceCodeForSourceMapSourceURL(
         script.debuggerModel, startEntry.sourceURL, script.isContentScript());
     if (!uiSourceCode) {
-      return Promise.resolve(/** @type {?Sources.SourceMapNamesResolver.NameDescriptor} */(null));
+      return Promise.resolve(/** @type {?NameDescriptor} */null);
     }
 
     return uiSourceCode.requestContent().then(deferredContent => {
@@ -210,7 +208,7 @@ export const _resolveScope = function(scope) {
    * @param {number} line
    * @param {number} column
    * @param {?string} content
-   * @return {?Sources.SourceMapNamesResolver.NameDescriptor}
+   * @return {?NameDescriptor}
    */
   function onSourceContent(sourceTextRange, line, column, content) {
     if (!content) {
@@ -225,13 +223,13 @@ export const _resolveScope = function(scope) {
     if (!/[a-zA-Z0-9_$]+/.test(originalIdentifier)) {
       return null;
     }
-    return new Sources.SourceMapNamesResolver.NameDescriptor(originalIdentifier, line, column);
+    return new NameDescriptor(originalIdentifier, line, column);
   }
 };
 
 /**
  * @param {!SDK.DebuggerModel.CallFrame} callFrame
- * @return {!Promise.<!Sources.SourceMapNamesResolver.Mapping>}
+ * @return {!Promise<!Mapping>}
  */
 export const _allVariablesInCallFrame = function(callFrame) {
   const cached = callFrame[_cachedMapSymbol];
@@ -248,22 +246,22 @@ export const _allVariablesInCallFrame = function(callFrame) {
   return Promise.all(promises).then(mergeVariables);
 
   /**
-   * @param {!Array<!Sources.SourceMapNamesResolver.Mapping>} nameMappings
-   * @return {!Sources.SourceMapNamesResolver.Mapping}
+   * @param {!Array<!Mapping>} nameMappings
+   * @return {!Mapping}
    */
   function mergeVariables(nameMappings) {
-    const mapping = Array.prototype.concat.apply([], nameMappings);
-    callFrame[Sources.SourceMapNamesResolver._cachedMapSymbol] = mapping;
+    const mapping = /** @type {!Mapping} */Array.prototype.concat.apply([], nameMappings);
+    callFrame[_cachedMapSymbol] = mapping;
     return mapping;
   }
 };
 
 /**
- * @param {!Sources.SourceMapNamesResolver.Mapping} mapping
+ * @param {!Mapping} mapping
  * @param {string} name
  * @param {number} line
  * @param {number} column
- * @return {?Sources.SourceMapNamesResolver.MappingRecord}
+ * @return {?MappingRecord}
  */
 const lookupMappingRecordForOriginalName = function(mapping, name, line, column) {
   const res = mapping.filter(value => {
@@ -277,11 +275,11 @@ const lookupMappingRecordForOriginalName = function(mapping, name, line, column)
 };
 
 /**
- * @param {!Sources.SourceMapNamesResolver.Mapping} mapping
+ * @param {!Mapping} mapping
  * @param {string} name
- * @return {!Array<!Sources.SourceMapNamesResolver.MappingRecord>}
+ * @return {!Array<!MappingRecord>}
  */
-Sources.SourceMapNamesResolver.collectMappingRecordsForOriginalName = function(mapping, name) {
+const collectMappingRecordsForOriginalName = function(mapping, name) {
   return mapping.filter(value => {
     const desc = value.originalNameDescriptor;
     return desc.name === name;
@@ -289,11 +287,11 @@ Sources.SourceMapNamesResolver.collectMappingRecordsForOriginalName = function(m
 };
 
 /**
- * @param {!Sources.SourceMapNamesResolver.Mapping} mapping
+ * @param {!Mapping} mapping
  * @param {string} name
- * @return {!Array<!Sources.SourceMapNamesResolver.MappingRecord>}
+ * @return {!Array<!MappingRecord>}
  */
-Sources.SourceMapNamesResolver.collectMappingRecordsForCompiledName = function(mapping, name) {
+const collectMappingRecordsForCompiledName = function(mapping, name) {
   return mapping.filter(value => {
     const desc = value.compiledNameDescriptor;
     return desc.name === name;
@@ -320,7 +318,7 @@ export const resolveExpression = function(
 
   /**
    * @param {!SDK.DebuggerModel} debuggerModel
-   * @param {!Sources.SourceMapNamesResolver.Mapping} mapping
+   * @param {!Mapping} mapping
    * @return {!Promise<string>}
    */
   function findCompiledName(debuggerModel, mapping) {
@@ -389,7 +387,7 @@ export const _resolveExpression = function(
  */
 export const resolveThisObject = function(callFrame) {
   if (!callFrame) {
-    return Promise.resolve(/** @type {?SDK.RemoteObject} */ (null));
+    return Promise.resolve(/** @type {?SDK.RemoteObject} */ null);
   }
   if (!callFrame.scopeChain().length) {
     return Promise.resolve(callFrame.thisObject());
@@ -398,16 +396,16 @@ export const resolveThisObject = function(callFrame) {
   return _resolveScope(callFrame.scopeChain()[0]).then(onScopeResolved);
 
   /**
-   * @param {!Sources.SourceMapNamesResolver.Mapping} namesMapping
+   * @param {!Mapping} namesMapping
    * @return {!Promise<?SDK.RemoteObject>}
    */
   function onScopeResolved(namesMapping) {
-    const thisRecords = Sources.SourceMapNamesResolver.collectMappingRecordsForOriginalName(namesMapping, 'this');
+    const thisRecords = collectMappingRecordsForOriginalName(namesMapping, 'this');
     if (thisRecords.size !== 1) {
       return Promise.resolve(callFrame.thisObject());
     }
 
-    var compiledName = thisRecords[0].compiledNameDescriptor.name;
+    const compiledName = thisRecords[0].compiledNameDescriptor.name;
     return callFrame
         .evaluate({
           expression: compiledName,
@@ -556,7 +554,7 @@ export class RemoteObject extends SDK.RemoteObject {
       for (let i = 0; i < properties.length; ++i) {
         const property = properties[i];
         let name = property.name;
-        const propertyMapping = Sources.SourceMapNamesResolver.collectMappingRecordsForCompiledName(namesMapping, name);
+        const propertyMapping = collectMappingRecordsForCompiledName(namesMapping, name);
         if (propertyMapping.length>0) {
           // TODO: how to resolve the case when compiled name matches multiple original names?
           //       currently we don't have any information in property which would help us decide which one to take
@@ -593,8 +591,8 @@ export class RemoteObject extends SDK.RemoteObject {
       name = /** @type {string} */ (argumentName.value);
     }
 
-    var actualName = name;
-    let matchingRecords = Sources.SourceMapNamesResolver.collectMappingRecordsForOriginalName(namesMapping, name);
+    let actualName = name;
+    let matchingRecords = collectMappingRecordsForOriginalName(namesMapping, name);
     if (matchingRecords.length>0) {
       // TODO: how to resolve the case when original name matches multiple compiled names?
       actualName = matchingRecords[0].compiledNameDescriptor.name;
