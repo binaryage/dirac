@@ -23,6 +23,16 @@ if [[ -z "${TRAVIS_SKIP_DEPOT_TOOLS_INSTALL}" ]]; then
   DEPOT_TOOLS_PATH="$(pwd -P)/depot_tools"
   export PATH=$DEPOT_TOOLS_PATH:$PATH
   gclient --version
+
+  # fake ninjalog.cfg to prevent depot tools failures
+  cat << EOF > "${DEPOT_TOOLS_PATH}/ninjalog.cfg"
+{
+    "is-googler": false,
+    "countdown": 10,
+    "version": 2
+}
+EOF
+
 fi
 
 if [[ -z "${TRAVIS_SKIP_NSS3_UPGRADE}" ]]; then
