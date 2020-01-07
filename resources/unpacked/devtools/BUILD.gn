@@ -452,7 +452,6 @@ all_devtools_files = [
   "front_end/dirac/parinfer-codemirror.js",
   "front_end/dirac/keysim.js",
   "front_end/dirac/dirac.js",
-  "front_end/dirac/.compiled/implant/implant.js",
   "front_end/dirac/require-implant.js",
   "front_end/dirac_lazy/module.json",
   "front_end/dirac_lazy/dirac_lazy.js",

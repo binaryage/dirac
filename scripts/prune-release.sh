@@ -9,6 +9,7 @@ set -x
 cd "$RELEASE_BUILD"
 
 rm -f "devtools/front_end/debug"
+rm -f "devtools/front_end/dirac/.compiled"
 
 find . -name ".DS_Store" -print -exec rm -rf {} \;
 find . -name ".htaccess" -print -exec rm -rf {} \;

@@ -325,6 +325,7 @@
                                              :output-dir      "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
                                              :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :optimizations   :none
+                                             :main            dirac.implant
                                              :source-map      true}}
 
                            :dirac-background
