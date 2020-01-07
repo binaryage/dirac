@@ -3,7 +3,8 @@
             [dirac.main.terminal :as terminal]
             [dirac.main.utils :as utils]
             [clojure.string :as string]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [clojure.java.io :as io]))
 
 (defn should-ask? [config]
   (let [{:keys [quiet]} config]
@@ -25,12 +26,13 @@
   [config]
   (let [home-dir-path (locations/get-home-dir-path)
         question (str "I'm about to delete Dirac home dir '" (terminal/style-path home-dir-path) "'. Are you sure? [Y/n]")]
-    (if (= (maybe-ask-for-confirmation! config question "y") "y")
-      (do
-        (log/info (str "Deleting '" (terminal/style-path home-dir-path) "'..."))
-        (utils/delete-files-recursively! home-dir-path)
-        (log/info (str "Done")))
-      (log/info "Cancelled"))))
+    (when (.exists (io/file home-dir-path))
+      (if (= (maybe-ask-for-confirmation! config question "y") "y")
+        (do
+          (log/info (str "Deleting '" (terminal/style-path home-dir-path) "'..."))
+          (utils/delete-files-recursively! home-dir-path)
+          (log/info (str "Done")))
+        (log/info "Cancelled")))))
 
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
