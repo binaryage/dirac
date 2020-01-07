@@ -228,6 +228,9 @@ Object.assign(window.dirac, (function() {
     _DEBUG_WATCHING: hasDebugFlag("watching"),
     _DEBUG_CACHES: hasDebugFlag("caches"),
 
+    // we use can_dock url param indicator if we are launched as internal devtools
+    hostedInExtension: !Root.Runtime.queryParam('can_dock'),
+
     // -- feature toggles -----------------------------------------------------------------------------------------------
     hasREPL: hasFeature("enable-repl"),
     hasParinfer: hasFeature("enable-parinfer"),

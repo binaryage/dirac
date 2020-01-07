@@ -285,13 +285,13 @@ export default class ConsoleView extends UI.VBox {
 
     UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._executionContextChanged, this);
 
-    this._consolePromptIndexSetting = Common.settings.createLocalSetting("consolePromptIndex", 0);
+    const defaultPromptIndex = dirac.hostedInExtension?0:1;
+    this._consolePromptIndexSetting = Common.settings.createLocalSetting("consolePromptIndex", defaultPromptIndex);
 
     this._consoleFeedback = 0;
 
     if (dirac.hasREPL) {
       this.setDiracPromptMode("status");
-      setTimeout(() => this._switchToLastPrompt(), 200);
     } else {
       dirac.feedback("!dirac.hasREPL");
     }
@@ -318,6 +318,8 @@ export default class ConsoleView extends UI.VBox {
     SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
     SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
     SDK.consoleModel.messages().forEach(this._addConsoleMessage, this);
+
+    this._switchToLastPrompt();
   }
 
   /**
@@ -827,11 +829,12 @@ export default class ConsoleView extends UI.VBox {
       return "<b>" + text + "</b>";
     };
 
-    const markup = [
-      "Welcome to " + wrapBold("Dirac DevTools") + " hosted in " + wrapBold("Dirac Chrome Extension v" + dirac.getVersion()) + ".",
-      "Use " + wrapCode("CTRL+.") + " and " + wrapCode("CTRL+,") + " to cycle between Javascript and ClojureScript prompts.",
-      "In connected ClojureScript prompt, you can enter " + wrapCode("(dirac!)") + " for more info."];
-    if (!this.appendDiracMarkup(markup.join("\n"))) {
+    const welcomeMessage =
+      "Welcome to " + wrapBold("Dirac DevTools v" + dirac.getVersion()) + "." +
+      " Cycle CLJS/JS prompts with " + wrapCode("CTRL+,") + "." +
+      " Enter " + wrapCode("dirac") + " for additional info.";
+
+    if (!this.appendDiracMarkup(welcomeMessage)) {
       console.warn("displayWelcomeMessage: unable to add console message");
     }
   }
@@ -886,8 +889,8 @@ export default class ConsoleView extends UI.VBox {
   }
 
   _findPromptIndexById(id) {
-    for (var i=0; i<this._prompts.length; i++) {
-      var promptDescriptor = this._prompts[i];
+    for (let i=0; i<this._prompts.length; i++) {
+      const promptDescriptor = this._prompts[i];
       if (promptDescriptor.id === id) {
         return i;
       }
