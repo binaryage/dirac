@@ -54,11 +54,10 @@
   ([printer]
    (let [progress-bar-atom (atom (progrock/progress-bar 0))]
      (fn [progress & [total]]
-       (if (pos-int? total)
-         (cond
-           (= progress :done) (printer (swap! progress-bar-atom progrock/done))
-           :else (let [updated-progress-bar (swap! progress-bar-atom assoc :progress progress :total total)]
-                   (printer updated-progress-bar))))))))
+       (if (= progress :done)
+         (printer (swap! progress-bar-atom progrock/done))
+         (if (pos-int? total)
+           (printer (swap! progress-bar-atom assoc :progress progress :total total))))))))
 
 (defn prepare-dirac-release-dir! [config chromium-version]
   (let [{:keys [releases releases-url]} config
