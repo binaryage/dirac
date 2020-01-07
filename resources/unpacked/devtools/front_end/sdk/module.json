@@ -326,6 +326,78 @@
             "defaultValue": true
         },
         {
+          "type": "setting",
+          "category": "Dirac",
+          "title": "Enable REPL",
+          "settingName": "hasREPL",
+          "settingType": "boolean",
+          "defaultValue": true
+        },
+        {
+          "type": "setting",
+          "category": "Dirac",
+          "title": "Enable Parinfer",
+          "settingName": "hasParinfer",
+          "settingType": "boolean",
+          "defaultValue": true
+        },
+        {
+          "type": "setting",
+          "category": "Dirac",
+          "title": "Enable friendly locals",
+          "settingName": "hasFriendlyLocals",
+          "settingType": "boolean",
+          "defaultValue": true
+        },
+        {
+          "type": "setting",
+          "category": "Dirac",
+          "title": "Enable locals sorting/clustering",
+          "settingName": "hasClusteredLocals",
+          "settingType": "boolean",
+          "defaultValue": true
+        },
+        {
+          "type": "setting",
+          "category": "Dirac",
+          "title": "Display inlined custom formatters on Sources Panel",
+          "settingName": "hasInlineCFs",
+          "settingType": "boolean",
+          "defaultValue": true
+        },
+        {
+          "type": "setting",
+          "category": "Dirac",
+          "title": "Show welcome message in Console",
+          "settingName": "hasWelcomeMessage",
+          "settingType": "boolean",
+          "defaultValue": true
+        },
+        {
+          "type": "setting",
+          "category": "Dirac",
+          "title": "Clear urls from Figwheel cache busters",
+          "settingName": "hasCleanUrls",
+          "settingType": "boolean",
+          "defaultValue": true
+        },
+        {
+          "type": "setting",
+          "category": "Dirac",
+          "title": "Beautify mangled function names",
+          "settingName": "hasBeautifyFunctionNames",
+          "settingType": "boolean",
+          "defaultValue": true
+        },
+        {
+          "type": "setting",
+          "category": "Dirac",
+          "title": "Enable link actions",
+          "settingName": "hasLinkActions",
+          "settingType": "boolean",
+          "defaultValue": true
+        },
+        {
             "type": "setting",
             "category": "Network",
             "title": "Enable request blocking",
