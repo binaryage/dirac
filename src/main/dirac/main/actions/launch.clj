@@ -85,7 +85,9 @@
         releases-file (or (helpers/absolutize-path (locations/get-home-dir-path) releases)
                           (locations/get-releases-file-path))
         _ (log/debug (str "Using releases file from '" (terminal/style-path releases-file) "'"))
-        release-descriptor (chromium/resolve-dirac-release! chromium-version releases-url releases-file)]
+        release-descriptor (if (some? releases)
+                             (chromium/resolve-dirac-release! chromium-version releases-file)                                 ; do not check online for updates
+                             (chromium/resolve-dirac-release! chromium-version releases-url releases-file))]
     (case (:result release-descriptor)
       :release (retrieve-dirac-release! config (:version release-descriptor))
       :local (retrieve-local-dirac! config (:path release-descriptor)))))
@@ -142,10 +144,10 @@
   (binding [m/*mock-releases* {:chromium {"81.0.4010" "1.4.6"}}]
     (launch! {}))
   (binding [m/*mock-releases* {:chromium {"81.0.4010" {:result :local
-                                                       :path "/some/non/existent/path"}}}]
+                                                       :path   "/some/non/existent/path"}}}]
     (launch! {}))
   (binding [m/*mock-releases* {:chromium {"81.0.4010" {:result :local
-                                                       :path "/tmp"}}}]
+                                                       :path   "/tmp"}}}]
     (launch! {}))
 
   )
