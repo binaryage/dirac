@@ -9,7 +9,8 @@
             [me.raynes.conch.low-level :as conch]
             [progrock.core :as progrock]
             [dirac.home.defaults :as defaults]
-            [dirac.home.locations :as locations]))
+            [dirac.home.locations :as locations]
+            [clojure.java.io :as io]))
 
 (defn locate-chromium-via-link [config]
   (log/debug "Locating Chromium via a link...")
@@ -59,15 +60,8 @@
          (if (pos-int? total)
            (printer (swap! progress-bar-atom assoc :progress progress :total total))))))))
 
-(defn prepare-dirac-release-dir! [config chromium-version]
-  (let [{:keys [releases releases-url]} config
-        releases-url (or releases-url
-                         defaults/releases-file-url)
-        releases-file (or (helpers/absolutize-path (locations/get-home-dir-path) releases)
-                          (locations/get-releases-file-path))
-        _ (log/debug (str "Using releases file from '" (terminal/style-path releases-file) "'"))
-        dirac-version (chromium/resolve-dirac-release! chromium-version releases-url releases-file)
-        dirac-version-dir-path (releases/get-version-dir-path dirac-version)]
+(defn retrieve-dirac-release! [config dirac-version]
+  (let [dirac-version-dir-path (releases/get-version-dir-path dirac-version)]
     (log/info (str "Resolved matching Dirac release as '" (terminal/style-version dirac-version) "'"))
     (when-not (releases/release-downloaded? dirac-version)
       (let [release-url (releases/get-release-url dirac-version)
@@ -76,6 +70,25 @@
         (releases/retrieve-release! dirac-version progress-printer)))
     (log/info (str "Matching Dirac release is located at '" (terminal/style-path dirac-version-dir-path) "'"))
     dirac-version-dir-path))
+
+(defn retrieve-local-dirac! [_config path]
+  (if (.exists (io/file path))
+    (do
+      (log/info (str "Matching Dirac release is located at '" (terminal/style-path path) "'"))
+      path)
+    (throw (ex-info (str "Local Dirac release at '" path "' does not exist.") {:path path}))))
+
+(defn prepare-dirac-release-dir! [config chromium-version]
+  (let [{:keys [releases releases-url]} config
+        releases-url (or releases-url
+                         defaults/releases-file-url)
+        releases-file (or (helpers/absolutize-path (locations/get-home-dir-path) releases)
+                          (locations/get-releases-file-path))
+        _ (log/debug (str "Using releases file from '" (terminal/style-path releases-file) "'"))
+        release-descriptor (chromium/resolve-dirac-release! chromium-version releases-url releases-file)]
+    (case (:result release-descriptor)
+      :release (retrieve-dirac-release! config (:version release-descriptor))
+      :local (retrieve-local-dirac! config (:path release-descriptor)))))
 
 (defn launch-chromium! [config chromium-executable dirac-version-dir chromium-data-dir]
   (let [frontend-dir (releases/get-devtools-frontend-dir-path dirac-version-dir)
@@ -128,4 +141,11 @@
   (locate-chromium {})
   (binding [m/*mock-releases* {:chromium {"81.0.4010" "1.4.6"}}]
     (launch! {}))
+  (binding [m/*mock-releases* {:chromium {"81.0.4010" {:result :local
+                                                       :path "/some/non/existent/path"}}}]
+    (launch! {}))
+  (binding [m/*mock-releases* {:chromium {"81.0.4010" {:result :local
+                                                       :path "/tmp"}}}]
+    (launch! {}))
+
   )

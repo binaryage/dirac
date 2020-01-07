@@ -23,7 +23,9 @@
         resolved-version (last (filter match? sorted-version-keys))]
     (if (some? resolved-version)
       (get chromium-mapping resolved-version)
-      (get chromium-mapping :unsupported))))
+      (merge {:result  :no-match
+              :message "Unable to lookup matching Dirac release in releases.edn"}
+             (get chromium-mapping :unsupported)))))
 
 ; -- public API -------------------------------------------------------------------------------------------------------------
 
@@ -46,12 +48,21 @@
          chromium-mapping (:chromium releases)
          _ (assert chromium-mapping)
          release-descriptor (lookup-dirac-release chromium-mapping chromium-version)]
-     (if (string? release-descriptor)
-       release-descriptor
+     (cond
+       (string? release-descriptor)
+       {:result  :release
+        :version release-descriptor}
+
+       (= :no-match (:result release-descriptor))
        (throw (ex-info (str "Unable to retrieve Dirac release for Chromium " chromium-version ".\n"
                             "Reason: " (:message release-descriptor))
                        {:chromium-version   chromium-version
-                        :release-descriptor release-descriptor}))))))
+                        :release-descriptor release-descriptor}))
+
+       :default
+       (do
+         (assert (map? release-descriptor))
+         release-descriptor)))))
 
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -75,9 +86,9 @@
      (lookup-dirac-release mapping "81.0.4012.0")]                                                                            ; => :message
     )
   (binding [*mock-releases* {:chromium {"81.0.4014.0" "1.2.3"}}]
-    (resolve-dirac-release! "81.0.4014.1"))
+    (resolve-dirac-release! "81.0.4014.1" "fake/url" (get-releases-file-path)))
   (binding [*mock-releases* {:chromium {"81.0.4014.0" "1.2.3"
                                         :unsupported  {:message "NOT SUPPORTED"}}}]
-    (resolve-dirac-release! "81.0.4010.0"))
+    (resolve-dirac-release! "81.0.4010.0" "fake/url" (get-releases-file-path)))
 
   )

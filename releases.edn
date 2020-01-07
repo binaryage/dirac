@@ -8,4 +8,7 @@
   ; versions bellow have very experimental support
   "81.0.4001.1" "1.4.6"
   "80.0.3987.1" "1.4.5"
-  :unsupported  {:message "This Chromium version is too old and is not supported by Dirac 2.x"}}}
+  :unsupported  {:message "This Chromium version is too old and is not supported by Dirac 2.x"}
+  ; alternatively you can point to a local folder with something like this:
+  ; "80.0.4000" {:result :local :path "/Users/darwin/code/dirac-ws/dirac/resources/unpacked/devtools/front_end"}
+  }}
