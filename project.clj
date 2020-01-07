@@ -41,7 +41,7 @@
    ['org.clojure/tools.namespace "0.3.1" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
    ['fipp "0.6.22" :scope "test"]
-   ['nubank/matcher-combinators "1.2.5" :scope "test"]
+   ['nubank/matcher-combinators "1.2.7" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
