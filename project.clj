@@ -107,7 +107,7 @@
                  "test/browser/fixtures/src/scenarios03"
                  "test/browser/fixtures/src/tasks"
                  "test/browser/src/browser_tests"]
-  :resource-paths ["resources"]
+  :resource-paths ["resources/dev"]
   :test-paths ["test"]
 
   ; unfortunately this must be on root level because leiningen does not properly merge metadata
