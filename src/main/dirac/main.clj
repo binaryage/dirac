@@ -12,6 +12,13 @@
     (println message))
   (System/exit (or (:exit-status config) 0)))
 
+(defn dispatch! [config]
+  (case (:command config)
+    :exit (exit! config)
+    :launch (actions/launch! config)
+    :nuke (actions/nuke! config)
+    (throw (ex-info "Unexpected command" config))))
+
 ; -- main entry point -------------------------------------------------------------------------------------------------------
 
 (defn -main [& args]
@@ -20,10 +27,6 @@
     (logging/setup! config)
     (log/trace (str "Using ANSI:" (pr-str (terminal/using-ansi?))))
     (log/debug (str "CLI config:\n" (utils/pp config)))
-    (let [exit-code (case (:command config)
-                      :exit (exit! config)
-                      :launch (actions/launch! config)
-                      :nuke (actions/nuke! config)
-                      (throw (ex-info "Unexpected command" config)))]
+    (let [exit-code (dispatch! config)]
       (assert (or (nil? exit-code) (integer? exit-code)))
       (System/exit (or exit-code 0)))))
