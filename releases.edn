@@ -1,0 +1,11 @@
+; this file is used by dirac command-line tool
+; it describes mapping between Chromium versions and compatible Dirac releases
+{:chromium
+ {; we match most recent Chromium version from the list below
+  ; see https://github.com/binaryage/dirac/blob/master/src/home/dirac/home/chromium/mapping.clj
+  ; ...
+
+  ; versions bellow have very experimental support
+  "81.0.4001.1" "1.4.6"
+  "80.0.3987.1" "1.4.5"
+  :unsupported  {:message "This Chromium version is too old and is not supported by Dirac 2.x"}}}
