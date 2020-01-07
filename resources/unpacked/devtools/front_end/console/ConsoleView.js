@@ -196,10 +196,10 @@ export default class ConsoleView extends UI.VBox {
     this._promptElement = this._messagesElement.createChild('div', 'source-code');
     this._promptElement.id = 'console-prompt';
 
-    var diracPromptElement = this._messagesElement.createChild("div", "source-code");
+    const diracPromptElement = this._messagesElement.createChild("div", "source-code");
     diracPromptElement.id = "console-prompt-dirac";
     diracPromptElement.spellcheck = false;
-    var diracPromptCodeMirrorInstance = dirac.adoptPrompt(diracPromptElement, dirac.hasParinfer);
+    const diracPromptCodeMirrorInstance = dirac.adoptPrompt(diracPromptElement, dirac.hasParinfer);
 
     diracPromptElement.classList.add("inactive-prompt");
 
@@ -251,23 +251,23 @@ export default class ConsoleView extends UI.VBox {
     this._activePromptIndex = 0;
 
     if (dirac.hasREPL) {
-      var diracPrompt = new Console.DiracPromptWithHistory(diracPromptCodeMirrorInstance);
+      const diracPrompt = new Console.DiracPromptWithHistory(diracPromptCodeMirrorInstance);
       diracPrompt.setAutocompletionTimeout(0);
       diracPrompt.renderAsBlock();
-      var diracProxyElement = diracPrompt.attach(diracPromptElement);
+      const diracProxyElement = diracPrompt.attach(diracPromptElement);
       diracProxyElement.classList.add("console-prompt-dirac-wrapper");
       diracProxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), true);
 
       this._diracHistorySetting = Common.settings.createLocalSetting("diracHistory", []);
-      var diracHistoryData = this._diracHistorySetting.get();
+      const diracHistoryData = this._diracHistorySetting.get();
       diracPrompt.history().setHistoryData(diracHistoryData);
 
-      var statusElement = diracPromptElement.createChild("div");
+      const statusElement = diracPromptElement.createChild("div");
       statusElement.id = "console-status-dirac";
 
-      var statusBannerElement = statusElement.createChild("div", "status-banner");
+      const statusBannerElement = statusElement.createChild("div", "status-banner");
       statusBannerElement.addEventListener("click", this._diracStatusBannerClick.bind(this), true);
-      var statusContentElement = statusElement.createChild("div", "status-content");
+      const statusContentElement = statusElement.createChild("div", "status-content");
       statusContentElement.tabIndex = 0; // focusable for page-up/down
 
       this._diracPromptDescriptor = {id: "dirac",
@@ -593,27 +593,27 @@ export default class ConsoleView extends UI.VBox {
 
   setDiracPromptStatusStyle(style) {
     dirac.feedback("setDiracPromptStatusStyle('"+style+"')");
-    var knownStyles = ["error", "info"];
-    if (knownStyles.indexOf(style)==-1) {
+    const knownStyles = ["error", "info"];
+    if (knownStyles.indexOf(style)===-1) {
       console.warn("unknown style passed to setDiracPromptStatusStyle:", style);
     }
-    for (var i = 0; i < knownStyles.length; i++) {
-      var s = knownStyles[i];
-      this._diracPromptDescriptor.status.classList.toggle("dirac-prompt-status-"+s, style==s);
+    for (let i = 0; i < knownStyles.length; i++) {
+      let s = knownStyles[i];
+      this._diracPromptDescriptor.status.classList.toggle("dirac-prompt-status-"+s, style===s);
     }
   }
 
   setDiracPromptMode(mode) {
     dirac.feedback("setDiracPromptMode('"+mode+"')");
-    var knownModes = ["edit", "status"];
-    if (knownModes.indexOf(mode)==-1) {
+    const knownModes = ["edit", "status"];
+    if (knownModes.indexOf(mode)===-1) {
       console.warn("unknown mode passed to setDiracPromptMode:", mode);
     }
-    for (var i = 0; i < knownModes.length; i++) {
-      var m = knownModes[i];
-      this._diracPromptDescriptor.element.classList.toggle("dirac-prompt-mode-"+m, mode==m);
+    for (let i = 0; i < knownModes.length; i++) {
+      let m = knownModes[i];
+      this._diracPromptDescriptor.element.classList.toggle("dirac-prompt-mode-"+m, mode===m);
     }
-    if (mode=="edit") {
+    if (mode==="edit") {
       this.focus();
     }
   }
@@ -633,13 +633,13 @@ export default class ConsoleView extends UI.VBox {
   }
 
   _refreshPromptInfo() {
-    var promptDescriptor = this._prompts[this._activePromptIndex];
-    if (promptDescriptor.id != "dirac") {
+    const promptDescriptor = this._prompts[this._activePromptIndex];
+    if (promptDescriptor.id !== "dirac") {
       return;
     }
 
-    var namespace = this._currentNamespace || "";
-    var compiler = this._currentCompiler;
+    const namespace = this._currentNamespace || "";
+    const compiler = this._currentCompiler;
     const placeholderEl = this._buildPromptPlaceholder(namespace, compiler);
     promptDescriptor.codeMirror.setOption("placeholder", placeholderEl);
   }
@@ -672,7 +672,7 @@ export default class ConsoleView extends UI.VBox {
    * @return {string}
    */
   getSuggestBoxRepresentation() {
-    var promptDescriptor = this.getCurrentPromptDescriptor();
+    const promptDescriptor = this.getCurrentPromptDescriptor();
     return promptDescriptor.id + " prompt: " + promptDescriptor.prompt.getSuggestBoxRepresentation();
   }
 
@@ -701,8 +701,8 @@ export default class ConsoleView extends UI.VBox {
   }
 
   _onConsoleDiracMessage(event) {
-    var message = (event.data);
-    var command = message.parameters[1];
+    const message = (event.data);
+    let command = message.parameters[1];
     if (command)
       command = command.value;
 
@@ -729,8 +729,8 @@ export default class ConsoleView extends UI.VBox {
     message.url = undefined;
     message.stackTrace = undefined;
 
-    var requestId = null;
-    var kind = null;
+    let requestId = null;
+    let kind = "";
     try {
       requestId = message.parameters.shift().value; // request-id
       kind = message.parameters.shift().value;
@@ -741,7 +741,7 @@ export default class ConsoleView extends UI.VBox {
       message.type = SDK.ConsoleMessage.MessageType.Result;
     }
 
-    var originatingMessage = this._pendingDiracCommands[requestId];
+    const originatingMessage = this._pendingDiracCommands[requestId];
     if (originatingMessage) {
       message.setOriginatingMessage(originatingMessage);
       this._pendingDiracCommands[requestId] = message;
@@ -766,17 +766,17 @@ export default class ConsoleView extends UI.VBox {
 
   _createViewMessage(message) {
     // this is a HACK to treat REPL messages as Dirac results
-    var isDiracFlavoredMessage = message.messageText == "~~$DIRAC-LOG$~~";
-    var extraClass = null;
+    const isDiracFlavoredMessage = message.messageText === "~~$DIRAC-LOG$~~";
+    let extraClass = null;
 
     if (isDiracFlavoredMessage) {
       extraClass = this._alterDiracViewMessage(message);
     }
 
-    var result = this._createViewMessage2(message);
+    const result = this._createViewMessage2(message);
 
     if (isDiracFlavoredMessage) {
-      var wrapperElement = result.element();
+      const wrapperElement = result.element();
       wrapperElement.classList.add("dirac-flavor");
       if (extraClass) {
         wrapperElement.classList.add(extraClass);
@@ -785,10 +785,10 @@ export default class ConsoleView extends UI.VBox {
 
     if (this._consoleFeedback) {
       try {
-        var levelText = this._levelForFeedback(message.level);
-        var typeText = this._typeForFeedback(message.type, isDiracFlavoredMessage);
-        var messageText = result.contentElement().querySelector(".console-message-text").deepTextContent();
-        var glue = (messageText.indexOf("\n") === -1) ? "> " : ">\n"; // log multi-line log messages on a new line
+        const levelText = this._levelForFeedback(message.level);
+        const typeText = this._typeForFeedback(message.type, isDiracFlavoredMessage);
+        const messageText = result.contentElement().querySelector(".console-message-text").deepTextContent();
+        const glue = (messageText.indexOf("\n") === -1) ? "> " : ">\n"; // log multi-line log messages on a new line
         dirac.feedback(typeText + "." + levelText + glue + messageText);
       } catch (e) {
       }
@@ -827,7 +827,7 @@ export default class ConsoleView extends UI.VBox {
       return "<b>" + text + "</b>";
     };
 
-    var markup = [
+    const markup = [
       "Welcome to " + wrapBold("Dirac DevTools") + " hosted in " + wrapBold("Dirac Chrome Extension v" + dirac.getVersion()) + ".",
       "Use " + wrapCode("CTRL+.") + " and " + wrapCode("CTRL+,") + " to cycle between Javascript and ClojureScript prompts.",
       "In connected ClojureScript prompt, you can enter " + wrapCode("(dirac!)") + " for more info."];
@@ -837,7 +837,7 @@ export default class ConsoleView extends UI.VBox {
   }
 
   _normalizePromptIndex(index) {
-    var count = this._prompts.length;
+    const count = this._prompts.length;
     while (index<0) {
       index += count;
     }
@@ -845,9 +845,9 @@ export default class ConsoleView extends UI.VBox {
   }
 
   _switchPromptIfAvail(oldPromptIndex, newPromptIndex) {
-    var oldIndex = this._normalizePromptIndex(oldPromptIndex);
-    var newIndex = this._normalizePromptIndex(newPromptIndex);
-    if (oldIndex == newIndex) {
+    const oldIndex = this._normalizePromptIndex(oldPromptIndex);
+    const newIndex = this._normalizePromptIndex(newPromptIndex);
+    if (oldIndex === newIndex) {
       return; // nothing to do
     }
 
@@ -855,8 +855,8 @@ export default class ConsoleView extends UI.VBox {
   }
 
   _switchPrompt(oldPromptIndex, newPromptIndex) {
-    var oldPromptDescriptor = this._prompts[this._normalizePromptIndex(oldPromptIndex)];
-    var newPromptDescriptor = this._prompts[this._normalizePromptIndex(newPromptIndex)];
+    const oldPromptDescriptor = this._prompts[this._normalizePromptIndex(oldPromptIndex)];
+    const newPromptDescriptor = this._prompts[this._normalizePromptIndex(newPromptIndex)];
 
     newPromptDescriptor.element.classList.remove("inactive-prompt");
 
@@ -872,7 +872,7 @@ export default class ConsoleView extends UI.VBox {
     this._prompt.setText(""); // clear prompt when switching
     this.focus();
 
-    if (newPromptDescriptor.id == "dirac") {
+    if (newPromptDescriptor.id === "dirac") {
       dirac.initRepl();
     }
   }
@@ -896,7 +896,7 @@ export default class ConsoleView extends UI.VBox {
   }
 
   _getPromptDescriptor(promptId) {
-    var promptIndex = this._findPromptIndexById(promptId);
+    const promptIndex = this._findPromptIndexById(promptId);
     if (promptIndex === null) {
       return null;
     }
@@ -904,7 +904,7 @@ export default class ConsoleView extends UI.VBox {
   }
 
   switchPrompt(promptId) {
-    var selectedPromptIndex = this._findPromptIndexById(promptId);
+    const selectedPromptIndex = this._findPromptIndexById(promptId);
     if (selectedPromptIndex === null) {
       console.warn("switchPrompt: unknown prompt id ", promptId);
       return;
@@ -923,8 +923,8 @@ export default class ConsoleView extends UI.VBox {
    * @return {!Element}
    */
   getTargetForPromptEvents() {
-    var promptDescriptor = this.getCurrentPromptDescriptor();
-    var inputEl = promptDescriptor.proxy;
+    const promptDescriptor = this.getCurrentPromptDescriptor();
+    let inputEl = promptDescriptor.proxy;
     if (promptDescriptor.codeMirror) {
       inputEl = promptDescriptor.codeMirror.getInputField();
     }
@@ -1496,15 +1496,15 @@ export default class ConsoleView extends UI.VBox {
    * @param {!Event} event
    */
   _promptKeyDown(event) {
-    const keyboardEvent = /** @type {!KeyboardEvent} */ (event);
+    const keyboardEvent = /** @type {!KeyboardEvent} */ event;
     if (keyboardEvent.key === 'PageUp') {
       this._updateStickToBottomOnWheel();
       return;
     } else if (isEnterKey(keyboardEvent)) {
       // TODO: this should be eventually moved to DiracPrompt.js
       // let's wait for upstream to finish transition to ConsolePrompt.js
-      var promptDescriptor = this._prompts[this._activePromptIndex];
-      if (promptDescriptor.id == "dirac") {
+      const promptDescriptor = this._prompts[this._activePromptIndex];
+      if (promptDescriptor.id === "dirac") {
         if (event.altKey || event.ctrlKey || event.shiftKey)
           return;
 
@@ -1512,7 +1512,7 @@ export default class ConsoleView extends UI.VBox {
 
         this._prompt.clearAutocomplete();
 
-        var str = this._prompt.text();
+        const str = this._prompt.text();
         if (!str.length) {
           return;
         }
@@ -2052,7 +2052,7 @@ export class ConsoleDiracCommand extends ConsoleCommand {
   contentElement() {
     if (!this._contentElement) {
       this._contentElement = createElementWithClass("div", "console-user-command");
-      var icon = UI.Icon.create('smallicon-user-command', 'command-result-icon');
+      const icon = UI.Icon.create('smallicon-user-command', 'command-result-icon');
       this._contentElement.appendChild(icon);
 
       this._contentElement.message = this;
