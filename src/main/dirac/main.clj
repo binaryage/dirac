@@ -25,4 +25,5 @@
                       :launch (actions/launch! config)
                       :nuke (actions/nuke! config)
                       (throw (ex-info "Unexpected command" config)))]
+      (assert (or (nil? exit-code) (integer? exit-code)))
       (System/exit (or exit-code 0)))))
