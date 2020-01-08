@@ -6,11 +6,7 @@
 [![Examples](https://img.shields.io/badge/project-examples-ff69b4.svg)](https://github.com/binaryage/dirac/tree/master/examples) 
 [![Chrome Extension](https://img.shields.io/badge/chrome-extension-ebb338.svg)](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi)
 
-Dirac is a [Chrome DevTools][1] fork with extra features for ClojureScript developers.
-
-**TOC** 
-: **[Introduction](#introduction)**
-| **[Screenshots](#screenshots)**
+Dirac is a flavored [Chrome DevTools][1] with extra tweaks for ClojureScript developers.
 
 **DOC** 
 : **[Motivation](docs/motivation.md)**
@@ -24,22 +20,19 @@ Dirac is a [Chrome DevTools][1] fork with extra features for ClojureScript devel
 ### Introduction
 
 Dirac project maintains [a set of patches][2] rolling on top of official Chrome DevTools.
-That means you don't lose any functionality, you just add ClojureScript support on top.
-Additionally we provide [a Chrome Extension][3] which packages this enhanced DevTools version and hosts it within Chrome for convenient access.
-Dirac DevTools can be just a keystroke away enabling following features:
+That means you don't lose any functionality, you just sprinkle cljs enhancements on top. Additionally we 
+provide [a command-line tool][3] which allows you to launch Chrome with Dirac swapped in place of normal DevTools.
 
-  * ClojureScript-aware REPL integrated into DevTools Javascript console
-    * can eval ClojureScript in the context of currently selected stack frame (when paused on a breakpoint)
-    * ClojureScript [code completion suggestions][4] (like completions in Javascript console)
-    * [Parinfer][5] goodness
-    * adds a global keyboard shortcut for focusing the console prompt
   * enables [custom formatters][6] by default (for [cljs-devtools][7])
      * custom formatters are displayed inline on Source Panel (during debugging)
-  * better [display of ClojureScript function names][8]
-  * improved display of URLs
-  * better display of ClojureScript property names:
+  * better [display of cljs function names][8]
+  * better display of cljs property names:
     * macro-generated names are renamed to friendly names using sub-indexes
-    * properties are grouped, the most important properties go first
+    * properties are grouped, most important properties go first
+  * REPL integrated into DevTools Console
+    * eval cljs code in the context of currently selected stack frame (when paused on a breakpoint)
+    * cljs [code completion suggestions][4] (like completions in Javascript console)
+    * [Parinfer][5] goodness
 
 ### Screenshots
 
@@ -47,15 +40,15 @@ Dirac DevTools can be just a keystroke away enabling following features:
 
 <table>
 <tr>
-<td><a href="https://box.binaryage.com/dirac-general-completions.png"><img src="https://box.binaryage.com/dirac-general-completions.png"></a></td>
-<td><a href="https://box.binaryage.com/dirac-ns-completions.png"><img src="https://box.binaryage.com/dirac-ns-completions.png"></a></td>
-<td><a href="https://box.binaryage.com/dirac-js-completions.png"><img src="https://box.binaryage.com/dirac-js-completions.png"></a></td>
+<td><a href="https://box.binaryage.com/dirac-general-completions.png"><img src="https://box.binaryage.com/dirac-general-completions.png" alt="general completions"></a></td>
+<td><a href="https://box.binaryage.com/dirac-ns-completions.png"><img src="https://box.binaryage.com/dirac-ns-completions.png" alt="namespace completions"></a></td>
+<td><a href="https://box.binaryage.com/dirac-js-completions.png"><img src="https://box.binaryage.com/dirac-js-completions.png" alt="js completions"></a></td>
 </tr>
 </table>
 
 [1]: https://developer.chrome.com/devtools
 [2]: https://github.com/binaryage/dirac/commit/devtools-diff
-[3]: https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi
+[3]: https://github.com/binaryage/dirac/blob/master/docs/main.md
 [4]: https://github.com/binaryage/dirac/releases/tag/v0.4.0
 [5]: https://shaunlebron.github.io/parinfer
 [6]: https://docs.google.com/document/d/1FTascZXT9cxfetuPRT2eXPQKXui4nWFivUnS_335T3U
