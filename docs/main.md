@@ -18,7 +18,8 @@ drive.
 
 1. `dirac`
 2. in launched Chrome, open DevTools (CMD+OPT+I on Mac)
-3. in DevTools switch Console => Dirac prompt should enter `dirac.playground` and let you type in cljs code
+3. navigate away from "chrome://welcome" to some normal page, e.g. [clojurescript.org](https://clojurescript.org)
+4. in DevTools switch Console => Dirac prompt should enter `dirac.playground` and let you type in cljs code
 
 ---
 
