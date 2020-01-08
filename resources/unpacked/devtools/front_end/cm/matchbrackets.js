@@ -48,6 +48,8 @@
   // (we add style classes to closing brackets, so we ignore them here)
   function bracketStylesMatch(a, b) {
     var valid = function(x) { return x.indexOf("bracket") == 0; }
+    if (!a) {return false;}
+    if (!b) {return false;}
     return (a == b || valid(a) && valid(b));
   }
 
