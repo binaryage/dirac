@@ -129,7 +129,7 @@
       (log/info (str "Preparing playground environment at '" (terminal/style-path playground-dir-path) "'"))
       (playground/start-playground! playground-dir-path config))
     (catch Throwable e
-      (log/debug "launch-runtime! unexpectedly exited" e))))
+      (log/error "launch-playground! unexpectedly exited" e))))
 
 (defn launch!
   "Launch Chromium with matching Dirac release:
