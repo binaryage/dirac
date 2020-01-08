@@ -1,4 +1,5 @@
 (ns dirac.implant.eval
+  (:require-macros [dirac.implant.eval :refer [emit-install-playground-runtime-template]])
   (:require [cljs.core.async.impl.protocols :as core-async]
             [cljs.tools.reader.edn :as edn]
             [clojure.string :as string]
@@ -150,6 +151,14 @@
 
 (defn ^:dynamic console-log-template [method & args]
   (str "console." method "(" (string/join (interpose "," (map code-as-string args))) ")"))
+
+(defn ^:dynamic prepare-install-playground-runtime-template [before includes after]
+  (let [template (str before ";" (emit-install-playground-runtime-template))
+        js-quote (fn [url] (str "'" url "'"))
+        js-urls (interpose ",\n" (map js-quote includes))]
+    (-> template
+        (string/replace "/*<URLS>*/" (string/join js-urls))
+        (string/replace "/*<AFTER>*/" after))))
 
 ; -- message templates ------------------------------------------------------------------------------------------------------
 
@@ -431,3 +440,34 @@
   ; we want to eval it with silent=false so that "Pause on caught exceptions works" with commands entered into Dirac prompt
   ; see https://github.com/binaryage/dirac/issues/70
   (go-eval-in-context! :current code false))
+
+; -- playground runtime support ---------------------------------------------------------------------------------------------
+
+(def playground-prologue
+  ["console.info('No Dirac Runtime detected in the page. Entering playground...')"
+   "var CLOSURE_NO_DEPS = true;"])
+
+; see playground.js compiled by dirac.main.playground/compile-project!
+(def playground-includes
+  ["goog/base.js"
+   "goog/deps.js"
+   "cljs_deps.js"])
+
+(def playground-epilogue
+  ["goog.define('goog.ENABLE_CHROME_APP_SAFE_SCRIPT_LOADING', true);"
+   "goog.require('dirac.runtime.preload');"
+   "goog.require('devtools.preload');"
+   "goog.require('process.env');"
+   "goog.require('dirac.playground');"])
+
+(defn go-install-playground-runtime! []
+  ; TODO: do not hard-code playground HTTP server port here, make it configurable?
+  (let [includes (map (fn [url] (str "http://localhost:9112/" url)) playground-includes)
+        prologue (string/join \newline playground-prologue)
+        epilogue (string/join \newline playground-epilogue)
+        js-code (prepare-install-playground-runtime-template prologue includes epilogue)]
+    (go
+      (let [res (<! (go-call-eval-with-timeout! :default js-code 2000 true))]
+        (if-not (= (first res) ::ok)
+          (error "Failed to install playground runtime" res)
+          (second res))))))

@@ -3,6 +3,7 @@
             [dirac.home.chromium :as chromium]
             [dirac.main.terminal :as terminal]
             [dirac.home.helpers :as helpers]
+            [dirac.main.playground :as playground]
             [dirac.main.utils :as utils]
             [dirac.home.chromium.mapping :as m]
             [dirac.home.releases :as releases]
@@ -122,19 +123,30 @@
       (helpers/ensure-dir! profile-dir-path)
       profile-dir-path)))
 
+(defn launch-playground! [config]
+  (try
+    (let [playground-dir-path (locations/get-playground-dir-path)]
+      (log/info (str "Preparing playground environment at '" (terminal/style-path playground-dir-path) "'"))
+      (playground/start-playground! playground-dir-path config))
+    (catch Throwable e
+      (log/debug "launch-runtime! unexpectedly exited" e))))
+
 (defn launch!
   "Launch Chromium with matching Dirac release:
 
      1. locate Chromium binary on user's machine
      2. detect Chromium version
      3. download/prepare matching Dirac release
-     4. launch Chromium with proper commandline flags, most notably --custom-devtools-frontend
+     4. prepare playground REPL environment with Dirac runtime
+     5. launch Chromium with proper commandline flags, most notably --custom-devtools-frontend
   "
   [config]
   (let [chromium-executable (locate-chromium config)
         chromium-version (determine-chromium-version config chromium-executable)
         chromium-data-dir (prepare-chromium-data-dir! config)
         dirac-version-dir (prepare-dirac-release-dir! config chromium-version)]
+    (launch-playground! config)
+    (Thread/sleep 2000)                                                                                                       ; give Dirac Agent and nREPL server some time to boot up
     (launch-chromium! config chromium-executable dirac-version-dir chromium-data-dir)))
 
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

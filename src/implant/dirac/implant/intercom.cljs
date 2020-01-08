@@ -15,7 +15,7 @@
             [dirac.shared.async :refer [<! close! go go-channel go-wait put!]]
             [dirac.shared.utils :as utils]
             [goog.functions :as gfns]
-            [oops.core :refer [oapply ocall oget]])
+            [oops.core :refer [oapply ocall oget gget]])
   (:import goog.net.WebSocket.ErrorEvent))
 
 (def required-repl-api-version 9)
@@ -117,6 +117,23 @@
       (let [msg (runtime-version-mismatch-msg our-version runtime-version)]
         (warn msg)
         (eval/console-warn! msg)))))
+
+(defn hosted? []
+  (gget "dirac.hostedInExtension"))
+
+(def bootstrap-done-hooks-atom (atom []))
+
+(defn register-bootstrap-done-hook! [f]
+  (swap! bootstrap-done-hooks-atom conj f))
+
+(defn clear-bootstrap-done-hooks! []
+  (reset! bootstrap-done-hooks-atom []))
+
+(defn call-bootstrap-done-hooks! [& args]
+  (let [hooks @bootstrap-done-hooks-atom]
+    (clear-bootstrap-done-hooks!)
+    (doseq [hook hooks]
+      (apply hook args))))
 
 ; -- prompt status ----------------------------------------------------------------------------------------------------------
 
@@ -237,7 +254,9 @@
     (error "handler-status-banner-event! received unknown event type" type event)))
 
 (defn prepare-scope-info [scope-info-js]
-  (js->clj scope-info-js :keywordize-keys true))
+  (if (some? scope-info-js)
+    (js->clj scope-info-js :keywordize-keys true)
+    {}))
 
 (defn send-eval-request! [job-id code scope-info]
   (when (repl-ready?)
@@ -271,6 +290,22 @@
             (display-prompt-status (failed-to-retrieve-client-config-msg "in start-repl!")))
           (display-prompt-status (repl-api-mismatch-msg repl-api-version required-repl-api-version)))))))
 
+(declare go-init-repl!)
+
+(def enter-playground-code
+  "(in-ns 'dirac.playground)")
+
+(defn enter-playground! []
+  (feedback/post! "enter-playground!")
+  (send-eval-request! 0 enter-playground-code nil))
+
+(defn go-start-playground-repl! []
+  (feedback/post! "start-playground-repl!")
+  (go
+    (<! (eval/go-install-playground-runtime!))
+    (register-bootstrap-done-hook! enter-playground!)
+    (<! (go-init-repl! true))))
+
 (declare go-react-on-global-object-cleared!)
 
 (defn on-debugger-event [type & args]
@@ -285,7 +320,7 @@
     (set! *debugger-events-subscribed* true)
     (eval/subscribe-debugger-events! on-debugger-event)))
 
-(defn go-init-repl! []
+(defn go-init-repl! [& [no-playground?]]
   (feedback/post! "init-repl!")
   (go
     (subscribe-debugger-events!)
@@ -297,7 +332,9 @@
           (if (<! (eval/go-ask-is-runtime-repl-enabled?))
             (<! (go-start-repl!))
             (display-prompt-status (repl-support-not-enabled-msg)))
-          (display-prompt-status (missing-runtime-msg present?)))))))
+          (if (or no-playground? (hosted?))
+            (display-prompt-status (missing-runtime-msg present?))
+            (<! (go-start-playground-repl!))))))))
 
 (defn go-react-on-global-object-cleared! []
   (reset-repl-state!)
@@ -324,13 +361,13 @@
 
 (defn make-bootstrap-message [runtime-config runtime-tag]
   (let [nrepl-config (cond-> (:nrepl-config runtime-config)
-                       true (assoc :runtime-tag runtime-tag)
-                       (some? *last-session-id*) (assoc :parent-session *last-session-id*))]
-    {:op   "eval"
+                             true (assoc :runtime-tag runtime-tag)
+                             (some? *last-session-id*) (assoc :parent-session *last-session-id*))]
+    {:op                             "eval"
      :nrepl.middleware.caught/print? true
-     :code (pr-str `(~'do
-                      (~'require '~'dirac.nrepl)
-                      (~'dirac.nrepl/boot-dirac-repl! '~nrepl-config)))}))
+     :code                           (pr-str `(~'do
+                                                (~'require '~'dirac.nrepl)
+                                                (~'dirac.nrepl/boot-dirac-repl! '~nrepl-config)))}))
 
 (defmethod nrepl-tunnel-client/go-process-message :bootstrap [_client message]
   (check-agent-version! (:version message))
@@ -345,18 +382,21 @@
             (do
               (log "got bootstrap response" response)
               (case (first (:status response))
-              "done" (do
-                       (log "Bootstrap done" response)
-                       (set! *repl-bootstrapped* true)
-                       (set! *last-session-id* (:session response))
-                       (update-repl-mode!)
-                       {:op :bootstrap-done})
-              (do
-                (display-prompt-status (bootstrap-error-msg (:nrepl.middleware.caught/throwable response)))
-                {:op :bootstrap-error})))
+                "done" (do
+                         (log "Bootstrap done" response)
+                         (set! *repl-bootstrapped* true)
+                         (set! *last-session-id* (:session response))
+                         (update-repl-mode!)
+                         (call-bootstrap-done-hooks!)
+                         {:op :bootstrap-done})
+                (do
+                  (display-prompt-status (bootstrap-error-msg (:nrepl.middleware.caught/throwable response)))
+                  (clear-bootstrap-done-hooks!)
+                  {:op :bootstrap-error})))
             (recur))
           (do
             (display-prompt-status (unable-to-bootstrap-due-to-timeout-msg))
+            (clear-bootstrap-done-hooks!)
             {:op :bootstrap-timeout}))))))
 
 ; -- :bootstrap-info --------------------------------------------------------------------------------------------------------

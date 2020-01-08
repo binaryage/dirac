@@ -18,5 +18,7 @@
 (def silo-dir "silo")
 (def silo-versions-dir "v")
 
+(def playground-dir "playground")                                                                                             ; in dirac home
+
 ; https://github.com/binaryage/dirac/releases/download/v1.4.6/dirac-1.4.6.zip
 (def dirac-releases-url-prefix "https://github.com/binaryage/dirac/releases/download/")

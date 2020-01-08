@@ -21,12 +21,6 @@
 (defn outputln [config & args]
   (output* println config args))
 
-(defn delete-files-recursively! [dir & [silently]]
-  (when (.isDirectory (io/file dir))
-    (doseq [file (.listFiles (io/file dir))]
-      (delete-files-recursively! file silently)))
-  (io/delete-file dir silently))
-
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 (comment

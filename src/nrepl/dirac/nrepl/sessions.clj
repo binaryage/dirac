@@ -129,8 +129,8 @@
     (log/error "find-joined-session-descriptor called on a session without matcher-fn: " (debug/pprint-session session))))
 
 (defn list-matching-sessions-tags [matcher-fn]
-  (let [decriptors (find-matching-dirac-session-descriptors matcher-fn)]
-    (get-dirac-session-descriptors-tags decriptors)))
+  (let [descriptors (find-matching-dirac-session-descriptors matcher-fn)]
+    (get-dirac-session-descriptors-tags descriptors)))
 
 ; -- session matchers -------------------------------------------------------------------------------------------------------
 

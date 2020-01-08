@@ -27,6 +27,7 @@
 (def url-styles [:blue])
 (def path-styles [:yellow])
 (def version-styles [:cyan])
+(def port-styles [:green])
 
 (defn style-url [s & args]
   (apply style s (concat url-styles args)))
@@ -36,6 +37,9 @@
 
 (defn style-version [s & args]
   (apply style s (concat version-styles args)))
+
+(defn style-port [s & args]
+  (apply style s (concat port-styles args)))
 
 (defn ask-line! [question]
   (print question)

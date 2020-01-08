@@ -56,6 +56,9 @@
 (defn get-devtools-frontend-dir-path [version-dir]
   (canonical-path version-dir "devtools" "front_end"))
 
+(defn get-playground-dir-path []
+  (canonical-path (get-home-dir-path) defaults/playground-dir))
+
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 (comment
@@ -86,4 +89,5 @@
   (get-silo-dir-path)
   (get-versions-dir-path)
   (get-version-dir-path "1.2.3")
+  (get-playground-dir-path)
   )

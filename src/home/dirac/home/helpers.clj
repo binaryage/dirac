@@ -4,7 +4,7 @@
             [clojure.edn :as edn]
             [clojure.string :as string])
   [:import (java.util.zip ZipInputStream)
-           (java.io PushbackReader IOException)
+           (java.io PushbackReader IOException File)
            (javax.net.ssl SSLEngine SSLParameters SNIHostName)
            (java.net URI)
            (org.httpkit.client IFilter)
@@ -157,6 +157,33 @@
       (if (.isAbsolute file)
         (.getCanonicalPath file)
         (.getCanonicalPath (io/file root-dir file))))))
+
+(defn delete-files-recursively! [dir & [silently]]
+  (let [dir-file (io/file dir)]
+    (when (.exists dir-file)
+      (when (.isDirectory dir-file)
+        (doseq [file (.listFiles dir-file)]
+          (delete-files-recursively! file silently)))
+      (io/delete-file dir-file silently))))
+
+(defn list-resource [resource-dir]
+  (file-seq (io/file (io/resource resource-dir))))
+
+(defn relative-path [^File root-file ^File deep-file]
+  (let [root-uri (.toURI root-file)
+        deep-uri (.toURI deep-file)]
+    (.getPath (.relativize root-uri deep-uri))))
+
+(defn is-file? [^File file]
+  (.isFile file))
+
+(defn copy-resource-into-dir! [resource-dir target-dir]
+  (let [root (io/file (io/resource resource-dir))]
+    (doseq [resource (filter is-file? (list-resource resource-dir))]
+      (let [relative-path (relative-path root resource)
+            target-path (io/file target-dir relative-path)]
+        (io/make-parents target-path)
+        (io/copy resource target-path)))))
 
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

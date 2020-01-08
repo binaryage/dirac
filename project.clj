@@ -23,7 +23,9 @@
    ['com.rpl/specter "1.1.3"]
    ['progrock "0.1.2"]
    ['me.raynes/conch "0.8.0"]
-   ['clj-sub-command "0.5.1"]])
+   ['clj-sub-command "0.5.1"]
+   ['ring/ring-core "1.8.0"]
+   ['ring/ring-defaults "0.3.2"]])
 
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
@@ -48,7 +50,6 @@
 
    ['http.async.client "1.3.1" :scope "test"]
 
-   ['ring/ring-core "1.8.0" :scope "test"]
    ['ring/ring-devel "1.8.0" :scope "test"]
    ['clj-time "0.15.2" :scope "test"]
 
@@ -107,7 +108,8 @@
                  "test/browser/fixtures/src/scenarios03"
                  "test/browser/fixtures/src/tasks"
                  "test/browser/src/browser_tests"]
-  :resource-paths ["resources/dev"]
+  :resource-paths ["resources/dev"
+                   "resources/templates"]
   :test-paths ["test"]
 
   ; unfortunately this must be on root level because leiningen does not properly merge metadata
@@ -129,9 +131,11 @@
                                           "src/settings"
                                           "src/runtime"
                                           "src/lib"
+                                          "src/home"
+                                          "src/main"
                                           "src/agent"
                                           "src/nrepl"]
-               :resource-paths ^:replace []
+               :resource-paths ^:replace ["resources/templates"]
                :test-paths     ^:replace []}]
 
              :logging-support
