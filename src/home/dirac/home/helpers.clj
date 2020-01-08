@@ -24,8 +24,8 @@
     (*system-get-env-impl* name)
     (System/getenv name)))
 
-(defn ensure-dir! [file]
-  (let [file (io/file file)]
+(defn ensure-dir! [dir-path]
+  (let [file (io/file dir-path)]
     (if (.exists file)
       (if-not (.isDirectory file)
         (throw (ex-info (str "Unexpected file at '" file "'") {:file file})))
@@ -178,12 +178,14 @@
   (.isFile file))
 
 (defn copy-resource-into-dir! [resource-dir target-dir]
-  (let [root (io/file (io/resource resource-dir))]
-    (doseq [resource (filter is-file? (list-resource resource-dir))]
-      (let [relative-path (relative-path root resource)
-            target-path (io/file target-dir relative-path)]
-        (io/make-parents target-path)
-        (io/copy resource target-path)))))
+  (if (nil? (io/resource resource-dir))
+    (throw (ex-info (str "Resource not found: '" resource-dir "'"), {:resource resource-dir}))
+    (let [root (io/file (io/resource resource-dir))]
+      (doseq [resource (filter is-file? (list-resource resource-dir))]
+        (let [relative-path (relative-path root resource)
+              target-path (io/file target-dir relative-path)]
+          (io/make-parents target-path)
+          (io/copy resource target-path))))))
 
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

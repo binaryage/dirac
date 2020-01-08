@@ -98,11 +98,11 @@
   (helpers/ensure-dir! dir-path)
   (helpers/copy-resource-into-dir! "dirac/playground-template" dir-path))
 
-(defn start-playground! [target-dir opts]
-  (helpers/delete-files-recursively! target-dir)
-  (prepare-playground-dir! target-dir)
-  (let [out-dir (.getCanonicalPath (io/file target-dir ".compiled"))
-        src-dir (.getCanonicalPath (io/file target-dir "src"))]
+(defn start-playground! [dir-path opts]
+  (helpers/delete-files-recursively! dir-path)
+  (prepare-playground-dir! dir-path)
+  (let [out-dir (.getCanonicalPath (io/file dir-path ".compiled"))
+        src-dir (.getCanonicalPath (io/file dir-path "src"))]
     (compile-project! src-dir out-dir)
     (start-http-server! out-dir)
     (start-dirac-agent-in-background! opts)
