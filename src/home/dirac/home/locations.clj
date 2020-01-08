@@ -20,6 +20,20 @@
   (if-some [dirac-home (helpers/system-get-env defaults/dirac-home-env-var)]
     (canonical-path dirac-home)))
 
+(def min-home-dir-path-length 7)
+
+(defn validate-home-dir [path]
+  ; for safety reasons we validate home-dir path to satisfy some checks
+  (cond
+    (nil? path) (throw (ex-info "Unable to determine Dirac home directory" {:path path}))
+    (not (string? path)) (throw (ex-info "Unexpected: Dirac home directory must be a string" {:path path}))
+    (<= (count path) min-home-dir-path-length) (throw (ex-info "Unexpected: Dirac home directory path is too short"
+                                                               {:path  path
+                                                                :limit min-home-dir-path-length}))
+    (not (.isAbsolute (io/file path))) (throw (ex-info "Unexpected: Dirac home directory must be an absolute path"
+                                                       {:path path})))
+  path)
+
 (defn resolve-home-dir []
   (or (resolve-env-specified-home-dir)
       (resolve-default-home-dir)))
@@ -27,7 +41,7 @@
 ; -- paths ------------------------------------------------------------------------------------------------------------------
 
 (defn get-home-dir-path []
-  (or @cached-home-dir-atom (reset! cached-home-dir-atom (resolve-home-dir))))
+  (or @cached-home-dir-atom (reset! cached-home-dir-atom (validate-home-dir (resolve-home-dir)))))
 
 (defn get-chromium-dir-path []
   (canonical-path (get-home-dir-path) defaults/chromium-dir-name))
@@ -76,6 +90,13 @@
 
   (resolve-home-dir)
 
+  (validate-home-dir nil)
+  (validate-home-dir {})
+  (validate-home-dir "/")
+  (validate-home-dir "xxx/yyy")
+  (validate-home-dir "xxx/yyy/zzz")
+  (validate-home-dir "/xxx/yyy/zzz")
+
   (absolutize-path-to-home "test.txt")
   (absolutize-path-to-home "../test.txt")
 
@@ -90,4 +111,6 @@
   (get-versions-dir-path)
   (get-version-dir-path "1.2.3")
   (get-playground-dir-path)
+
+
   )
