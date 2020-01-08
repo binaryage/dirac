@@ -18,7 +18,10 @@ set -x
 
 SHELL_JS="$RELEASE_BUILD/devtools/front_end/shell.js"
 
-rm "$SHELL_JS" # make sure we rebuild shell.js from scratch
+# make sure we rebuild shell.js from scratch
+if [[ -f "$SHELL_JS" ]]; then
+  rm "$SHELL_JS"
+fi
 "$SCRIPTS/depot-build-devtools.sh" "$TASK"
 
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
