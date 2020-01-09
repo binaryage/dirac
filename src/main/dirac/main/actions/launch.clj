@@ -41,10 +41,13 @@
     (locate-chromium-via-link config)
     (locate-chromium-by-search config)))
 
-(defn determine-chromium-version [config chromium-executable]
+(defn determine-chromium-version [_config chromium-executable]
   (log/debug "Reading Chromium version...")
   (let [chromium-version (chromium/determine-chrome-version chromium-executable)]
     (log/trace (utils/pp chromium-version))
+    (when (some? (:error chromium-version))
+      (throw (ex-info (str "Failed to detect Chromium version\n" (:error-message chromium-version))
+                      {:chromium-executable chromium-executable})))
     (log/info (str "Detected Chromium version '" (terminal/style-version (:version chromium-version)) "'"))
     (:version chromium-version)))
 
@@ -131,7 +134,8 @@
       (log/info (str "Preparing playground environment at '" (terminal/style-path playground-dir-path) "'"))
       (playground/start-playground! playground-dir-path config))
     (catch Throwable e
-      (log/error "launch-playground! unexpectedly exited" e))))
+      (log/error "launch-playground! unexpectedly exited" e)
+      (throw e))))
 
 (defn launch!
   "Launch Chromium with matching Dirac release:

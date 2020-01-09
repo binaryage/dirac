@@ -103,8 +103,8 @@
       (if (zero? exit)
         (if-some [result (parse-chrome-version-string trimmed-out)]
           result
-          {:error   :version-parsing
-           :message "Unable to determine chrome version from '" trimmed-out "'."})
+          {:error         :version-parsing
+           :error-message "Unable to determine Chrome version from '" trimmed-out "'."})
         {:error         :exit-status
          :error-message (str "Unable to run ' " (pr-str command) "', exited with status " exit "."
                              (if-not (string/blank? trimmed-err) (str "\n" trimmed-err)))}))
