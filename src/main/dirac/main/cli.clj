@@ -22,9 +22,9 @@
 
 (def launch-options
   [[nil "--profile NAME" "Specify Chromium data dir" :default "default"]
-   [nil "--no-profile" "Don't specify custom Chromium data dir"]
-   [nil "--releases PATH" "Force using alternative releases.edn file, do not check for updates"]
-   [nil "--releases-url URL" "Force using alternative releases.edn url"]])
+   [nil "--no-profile" "Don't specify any Chromium data dir"]
+   [nil "--releases PATH" "Force alternative releases.edn file, do not check for updates"]
+   [nil "--releases-url URL" "Force alternative releases.edn url"]])
 
 (def nuke-options
   [[nil "--confirm" "Force require confirmation"]])

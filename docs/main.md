@@ -76,7 +76,6 @@ where there is no Dirac Runtime present in the page.
 
 ---
 
-
 ##### `> dirac help`
 ```
 Dirac Main 1.5.0
@@ -109,9 +108,9 @@ Usage: dirac [...] launch [options]
 
 Options:
       --profile NAME      default  Specify Chromium data dir
-      --no-profile                 Don't specify custom Chromium data dir
-      --releases PATH              Force using alternative releases.edn file, do not check for updates
-      --releases-url URL           Force using alternative releases.edn url
+      --no-profile                 Don't specify any Chromium data dir
+      --releases PATH              Force alternative releases.edn file, do not check for updates
+      --releases-url URL           Force alternative releases.edn url
 
 Launch Chromium with matching Dirac release:
   1. locate Chromium binary on user's machine
@@ -137,3 +136,4 @@ Reset Dirac into factory defaults:
 
 Run `dirac help` for general info.
 ```
+
