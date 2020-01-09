@@ -76,8 +76,9 @@ where there is no Dirac Runtime present in the page.
 
 ---
 
+
+##### `> dirac help`
 ```
-> dirac help
 Dirac Main 1.5.0
 A command-line tool for Dirac DevTools.
 
@@ -96,23 +97,43 @@ Commands:
   nuke    Reset Dirac into factory-defaults (delete home dir)
 
 Run `dirac help <command>` for further info.
-```
 
 ```
-> dirac launch
-Located Chromium executable at '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary'.
-Detected Chromium version '81.0.4020.0'
-Resolved matching Dirac release as '1.5.0'
-Matching Dirac release is located at '/Users/darwin/.dirac/silo/v/1.5.0'
-Preparing playground environment at '/Users/darwin/.dirac/playground'
-Compiling playground project...
-Starting playground HTTP server on port 9112
-Booting Dirac Agent...
-Starting nREPL server v0.6.0 on port 36180
 
-Dirac Agent v1.5.0
-Connected to nREPL server at nrepl://localhost:36180.
-Agent is accepting connections at ws://localhost:36181.
-Launching Chromium [with --user-data-dir='/Users/darwin/.dirac/chromium/profiles/default'] ...
-...
+##### `> dirac help launch`
+```
+Dirac Main 1.5.0
+A command-line tool for Dirac DevTools.
+
+Usage: dirac [...] launch [options]
+
+Options:
+      --profile NAME      default  Specify Chromium data dir
+      --no-profile                 Don't specify custom Chromium data dir
+      --releases PATH              Force using alternative releases.edn file, do not check for updates
+      --releases-url URL           Force using alternative releases.edn url
+
+Launch Chromium with matching Dirac release:
+  1. locate Chromium binary on user's machine
+  2. detect Chromium version
+  3. download/prepare matching Dirac release
+  4. launch Chromium with proper commandline flags, most notably --custom-devtools-frontend
+
+Run `dirac help` for general info.
+```
+
+##### `> dirac help nuke`
+```
+Dirac Main 1.5.0
+A command-line tool for Dirac DevTools.
+
+Usage: dirac [...] nuke [options]
+
+Options:
+      --confirm  Force require confirmation
+
+Reset Dirac into factory defaults:
+  1. delete Dirac HOME directory
+
+Run `dirac help` for general info.
 ```
