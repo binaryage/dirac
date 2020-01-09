@@ -14,6 +14,10 @@
 > DevTools frontend can adapt dynamically and does not fatally break when used with a slightly different Chrome version.
 > But you should not use "too old" DevTools with "too recent" Chrome and vice versa.
 > Such combinations are not tested and are likely to break because fundamental APIs could be missing / changed on either side.
+>
+> Good news is that since [Dirac 1.5.0](https://github.com/binaryage/dirac/releases/tag/v1.5.0) you can use 
+> [Dirac Main CLI](https://github.com/binaryage/dirac/blob/master/docs/main.md) tool to easily launch Chromium with 
+> a matching Dirac version. 
 
 #### How do I stick to a particular Dirac version?
 
