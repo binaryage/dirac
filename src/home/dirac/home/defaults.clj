@@ -22,3 +22,5 @@
 
 ; https://github.com/binaryage/dirac/releases/download/v1.4.6/dirac-1.4.6.zip
 (def dirac-releases-url-prefix "https://github.com/binaryage/dirac/releases/download/")
+
+(def chromium-location-faq-url "https://github.com/binaryage/dirac/blob/master/docs/main.md#how-does-dirac-locate-chromium-executable-on-my-machine")

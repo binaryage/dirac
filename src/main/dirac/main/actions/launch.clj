@@ -21,7 +21,8 @@
         (log/info (str "Located Chromium executable via link which resolved to '" (terminal/style-path executable) "'."))
         executable)
       (throw (ex-info (str "Unable to resolve Chromium link\n"
-                           "Reason: " failure)
+                           "Reason: " failure "\n"
+                           "=> " defaults/chromium-location-faq-url)
                       {:resolution resolution
                        :config     config})))))
 
@@ -31,7 +32,8 @@
     (do
       (log/info (str "Located Chromium executable at '" (terminal/style-path executable) "'."))
       executable)
-    (throw (ex-info (str "Unable to locate Chromium executable\n")
+    (throw (ex-info (str "Unable to locate Chromium executable\n"
+                         "=> " defaults/chromium-location-faq-url)
                     {:config config}))))
 
 (defn locate-chromium [config]
