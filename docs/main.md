@@ -69,7 +69,7 @@ where there is no Dirac Runtime present in the page.
 
 #### How do you know which Dirac version is compatible with my particular Chrome version?
 
-> Dirac checks Chrome version and then it downloads and consults `https://github.com/binaryage/dirac/blob/master/releases.edn`. 
+> Dirac checks Chrome version and then it downloads and consults [binaryage/dirac/releases.edn](https://github.com/binaryage/dirac/blob/master/releases.edn). 
 > This file maintains a mapping between Dirac releases and Chrome versions. It is cached in `$DIRAC_HOME/releases.edn`.
 >
 > If required, you can provide alternative version of this file via `dirac launch --releases /path/to/releases.edn`.
@@ -136,4 +136,3 @@ Reset Dirac into factory defaults:
 
 Run `dirac help` for general info.
 ```
-
