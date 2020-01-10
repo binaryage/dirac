@@ -1,19 +1,21 @@
 # Dirac Main
 
-Yep, dirac.main is a command-line tool to ease work with Dirac. 
-Most notably it can be used to launch Chrome with
-Dirac DevTools embedded instead of standard DevTools.
+Dirac Main provides a command line tool for easier access to Dirac DevTools functionality.
 
-### Install 
+By default `dirac` command launches Chromium with a matching Dirac version. This should be a replacement for your normal way how you launch Chrome for development.
 
-To install it please follow [this gist](https://gist.github.com/darwin/daad78052f3fa17a353c56dca6ad7a59).
-It could be a good idea to alias it to `dirac` in your shell.
+### Installation
 
-By default `dirac` will launch Chromium with a matching Dirac version (which will be obtained from github if not cached).
-Dirac will also create a "playground" project with Dirac Runtime present. It will fall back to this project in cases 
-where there is no Dirac Runtime present in the page.
+Please use this one-liner to download and launch Dirac installer (by default it will install into `/usr/local/bin`): 
 
-### To try it:
+```
+curl -s https://raw.githubusercontent.com/binaryage/dirac/master/install > /tmp/dirac.install && bash /tmp/dirac.install
+```
+
+Alternatively you might want to download [dirac](https://github.com/binaryage/dirac/blob/master/dirac)
+shell script and put it somewhere on your system PATH by hand.
+
+### Quick start:
 
 1. `dirac launch`
 2. in launched Chrome, open DevTools (CMD+OPT+I on a Mac)

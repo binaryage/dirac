@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+
+# this a wrapper script for launching dirac.main
+# https://github.com/binaryage/dirac/blob/master/docs/main.md
+#
+# usage: dirac [args]
+# to install: dirac install [dir]
+#
+# see `dirac help`
+
+set -e -o pipefail
+
+DIRAC_CLI_VERBOSE=${DIRAC_CLI_VERBOSE}
+if [[ -n "$DIRAC_CLI_VERBOSE" ]]; then
+  set -x
+fi
+
+DIRAC_CLI_ECHO_CMD=${DIRAC_CLI_ECHO_CMD}
+DIRAC_CLI_NO_JAVA_CHECK=${DIRAC_CLI_NO_JAVA_CHECK}
+DIRAC_CLI_NO_CLOJURE_CHECK=${DIRAC_CLI_NO_CLOJURE_CHECK}
+DIRAC_CLI_VERSION=${DIRAC_CLI_VERSION:-latest}
+DIRAC_CLI_CLOJURE_OPTS=${DIRAC_CLI_CLOJURE_OPTS}
+DIRAC_CLI_DEPS_COORDINATE=${DIRAC_CLI_DEPS_COORDINATE}
+DIRAC_CLI_ROOT=${DIRAC_CLI_ROOT:-$(pwd -P)}
+
+DIRAC_CLI_LATEST_RELEASE_URL=${DIRAC_CLI_LATEST_RELEASE_URL:-https://github.com/binaryage/dirac/releases/latest}
+DIRAC_CLI_API_MASTER=${DIRAC_CLI_API_MASTER:-https://api.github.com/repos/binaryage/dirac/git/refs/heads/master}
+
+# -- helpers ----------------------------------------------------------------------------------------------------------------
+
+version() {
+  echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'
+}
+
+fetch_release_version() {
+  local v
+  v=$(basename "$(curl -ILs -o /dev/null -w %{url_effective} "$1")")
+  # v should be something like v1.5.0, we strip "v" prefix here:
+  echo "${v:1}"
+}
+
+check_java() {
+  if ! command -v java >/dev/null 2>&1; then
+    echo "Please install Java"
+    exit 1
+  fi
+
+  local java_version
+  java_version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+  if [[ $(version "$java_version") < $(version "1.8") ]]; then
+    echo "Please install Java 1.8+"
+    echo "Detected Java version '$java_version'"
+    exit 1
+  fi
+}
+
+check_clojure() {
+  if ! command -v clojure >/dev/null 2>&1; then
+    echo "Please install Clojure CLI tools"
+    echo "https://clojure.org/guides/getting_started"
+    exit 2
+  fi
+}
+
+#https://stackoverflow.com/a/46324904/84283
+function json_extract() {
+  local key=$1
+  local json=$2
+
+  local string_regex='"([^"\]|\\.)*"'
+  local number_regex='-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?'
+  local value_regex="${string_regex}|${number_regex}|true|false|null"
+  local pair_regex="\"${key}\"[[:space:]]*:[[:space:]]*(${value_regex})"
+
+  if [[ ${json} =~ ${pair_regex} ]]; then
+    sed -e 's/^"//' -e 's/"$//' <<<"${BASH_REMATCH[1]}"
+  fi
+}
+
+# -- main -------------------------------------------------------------------------------------------------------------------
+
+if [[ -z "$DIRAC_CLI_NO_JAVA_CHECK" ]]; then
+  check_java
+fi
+
+if [[ -z "$DIRAC_CLI_NO_CLOJURE_CHECK" ]]; then
+  check_clojure
+fi
+
+if [[ "$DIRAC_CLI_VERSION" == "latest" ]]; then
+  DIRAC_CLI_VERSION=$(fetch_release_version "$DIRAC_CLI_LATEST_RELEASE_URL")
+elif [[ "$DIRAC_CLI_VERSION" == "local" ]]; then
+  DIRAC_CLI_VERSION="local"
+elif [[ "$DIRAC_CLI_VERSION" == "master" ]]; then
+  DIRAC_CLI_VERSION="master"
+else
+  if [[ $(version "$DIRAC_CLI_VERSION") < $(version "1.5") ]]; then
+    echo "DIRAC_CLI_VERSION is expected to be 1.5.0 or greater, got '$DIRAC_CLI_VERSION'"
+    exit 3
+  fi
+fi
+
+if [[ -z "$DIRAC_CLI_DEPS_COORDINATE" ]]; then
+  if [[ "$DIRAC_CLI_VERSION" == "local" ]]; then
+    DIRAC_CLI_DEPS_COORDINATE="binaryage/dirac {:local/root \"$DIRAC_CLI_ROOT\"}"
+  elif [[ "$DIRAC_CLI_VERSION" == "master" ]]; then
+    DIRAC_CLI_SHA=$(json_extract "sha" "$(curl -s "$DIRAC_CLI_API_MASTER")")
+    if [[ -z "$DIRAC_CLI_SHA" ]]; then
+      echo "unable to retrieve latest git sha from '$DIRAC_CLI_API_MASTER'"
+      exit 4
+    fi
+    DIRAC_CLI_DEPS_COORDINATE="binaryage/dirac {:git/url \"https://github.com/binaryage/dirac.git\" :sha \"$DIRAC_CLI_SHA\"}"
+  else
+    DIRAC_CLI_DEPS_COORDINATE="binaryage/dirac {:mvn/version \"$DIRAC_CLI_VERSION\"}"
+  fi
+fi
+
+DEPS="{:deps {$DIRAC_CLI_DEPS_COORDINATE clj-logging-config {:mvn/version \"1.9.12\"}}}"
+
+if [[ -n "$DIRAC_CLI_ECHO_CMD" ]]; then
+  set -x
+fi
+# shellcheck disable=SC2086
+exec clojure -Sdeps "$DEPS" -m dirac.main $DIRAC_CLI_CLOJURE_OPTS -- "$@"
