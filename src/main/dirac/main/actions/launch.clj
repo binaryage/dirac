@@ -45,7 +45,7 @@
 (defn determine-chromium-version* [config chromium-executable]
   (if-let [chromium-version (:chromium-version config)]
     (do
-      (log/debug "Chromium version is force via config")
+      (log/debug "Chromium version is forced via config")
       chromium-version)
     (do
       (log/debug "Reading Chromium version...")
