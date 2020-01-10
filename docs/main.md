@@ -76,15 +76,15 @@ shell script and put it somewhere on your system PATH by hand.
 >
 > If required, you can provide alternative version of this file via `dirac launch --releases /path/to/releases.edn`.
 
-#### Do I tell `dirac` to echo effective clojure command?
+#### How do I tell `dirac` to echo effective clojure command?
 
 > `env DIRAC_CLI_ECHO_CMD=1 dirac`
 
-#### Do I force running `dirac` using specific version ?
+#### How do I force `dirac` to use specific version?
 
 > `env DIRAC_CLI_VERSION=1.5.0 dirac`
 
-#### Do I force running `dirac` using latest code from GitHub ?
+#### How do I force `dirac` to use latest code from GitHub?
 
 > `env DIRAC_CLI_VERSION=master dirac`
 
