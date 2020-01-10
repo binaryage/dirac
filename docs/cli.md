@@ -94,7 +94,7 @@ shell script and put it somewhere on your system PATH by hand.
 
 ##### `> dirac help`
 ```
-Dirac 1.5.0
+Dirac 1.5.2
 A command-line tool for Dirac DevTools.
 
 Usage: dirac [options] [command] [...]
@@ -117,16 +117,19 @@ Run `dirac help <command>` for further info.
 
 ##### `> dirac help launch`
 ```
-Dirac 1.5.0
+Dirac 1.5.2
 A command-line tool for Dirac DevTools.
 
 Usage: dirac [...] launch [options]
 
 Options:
-      --profile NAME      default  Specify Chromium data dir
-      --no-profile                 Don't specify any Chromium data dir
-      --releases PATH              Force alternative releases.edn file, do not check for updates
-      --releases-url URL           Force alternative releases.edn url
+      --profile NAME              default  Specify Chromium data dir
+      --no-profile                         Don't specify any Chromium data dir
+      --chromium-version VERSION           Force specific Chromium version, does not ask the binary
+      --dry-chromium                       Don't spawn Chromium, only print launch command
+      --no-playground                      Don't support playground
+      --releases PATH                      Force alternative releases.edn file, do not check for updates
+      --releases-url URL                   Force alternative releases.edn url
 
 Launch Chromium with matching Dirac release:
   1. locate Chromium binary on user's machine
@@ -139,7 +142,7 @@ Run `dirac help` for general info.
 
 ##### `> dirac help nuke`
 ```
-Dirac 1.5.0
+Dirac 1.5.2
 A command-line tool for Dirac DevTools.
 
 Usage: dirac [...] nuke [options]
