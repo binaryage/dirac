@@ -6,10 +6,11 @@
   [:import (java.util.zip ZipInputStream)
            (java.io PushbackReader IOException File)
            (javax.net.ssl SSLEngine SSLParameters SNIHostName)
-           (java.net URI)
+           (java.net URI URL)
            (org.httpkit.client IFilter)
            (org.httpkit DynamicBytes)
-           (java.util Map)])
+           (java.util Map)
+           (java.util.jar JarEntry JarFile)])
 
 (def ^:dynamic *system-get-property-impl*)
 (def ^:dynamic *system-get-env-impl*)
@@ -166,26 +167,92 @@
           (delete-files-recursively! file silently)))
       (io/delete-file dir-file silently))))
 
-(defn list-resource [resource-dir]
-  (file-seq (io/file (io/resource resource-dir))))
+(defn jar-uri? [path]
+  (string/starts-with? path "jar:file:"))
+
+(defn remove-postfix [s postfix]
+  (if (string/ends-with? s postfix)
+    (subs s 0 (- (count s) (count postfix)))
+    s))
+
+(defn remove-prefix [s prefix]
+  (if (string/starts-with? s prefix)
+    (subs s (count prefix))
+    s))
+
+(defn split-jar-uri [jar-uri]
+  (let [[_ jar-path file-path] (re-matches #"^jar:file:(.*\.jar)!(.*)$" jar-uri)]
+    [jar-path (remove-prefix file-path File/separator)]))
 
 (defn relative-path [^File root-file ^File deep-file]
   (let [root-uri (.toURI root-file)
         deep-uri (.toURI deep-file)]
     (.getPath (.relativize root-uri deep-uri))))
 
-(defn is-file? [^File file]
-  (.isFile file))
+; https://stackoverflow.com/a/16485210/84283
+(defn normalize-jar-entry-path [path]
+  (remove-postfix path File/separator))
 
-(defn copy-resource-into-dir! [resource-dir target-dir]
-  (if (nil? (io/resource resource-dir))
-    (throw (ex-info (str "Resource not found: '" resource-dir "'"), {:resource resource-dir}))
-    (let [root (io/file (io/resource resource-dir))]
-      (doseq [resource (filter is-file? (list-resource resource-dir))]
-        (let [relative-path (relative-path root resource)
-              target-path (io/file target-dir relative-path)]
-          (io/make-parents target-path)
-          (io/copy resource target-path))))))
+(defn root-resource-item? [item]
+  (and (:dir? item)
+       (string/blank? (:path item))))
+
+(defn filter-root-dir-from-resource-items [resource-items]
+  (filter (complement root-resource-item?) resource-items))
+
+(defn list-jar-resource-items [jar-path]
+  (let [jar (JarFile. jar-path)
+        entries (enumeration-seq (.entries jar))
+        make-item (fn [^JarEntry file]
+                    {:path (normalize-jar-entry-path (.getName file))
+                     :dir? (.isDirectory file)})]
+    (keep make-item entries)))
+
+(defn list-disk-resource-items [dir-path]
+  (let [dir-file (io/file dir-path)
+        canonical-dir-path (str (.getCanonicalPath dir-file) File/separator)
+        canonical-dir-path-len (count canonical-dir-path)
+        make-item (fn [^File file]
+                    (let [path (.getPath file)]
+                      (if (string/starts-with? path canonical-dir-path)
+                        {:path (subs path canonical-dir-path-len)
+                         :dir? (.isDirectory file)})))]
+    (keep make-item (file-seq dir-file))))
+
+(defn filter-resource-items [prefix resources-items]
+  (let [prefix-len (count prefix)
+        xform-prefix (fn [desc]
+                       (if (string/starts-with? (:path desc) prefix)
+                         (update desc :path (fn [p] (subs p prefix-len)))))]
+    (keep xform-prefix resources-items)))
+
+(defn list-jar-resources-with-prefix [jar-path prefix-path]
+  (let [all-descriptors (list-jar-resource-items jar-path)]
+    (filter-resource-items (str prefix-path File/separator) all-descriptors)))
+
+(defn list-resource-items [^URL resource]
+  (assert (instance? URL resource))
+  (filter-root-dir-from-resource-items
+    (if (jar-uri? (str resource))
+      (apply list-jar-resources-with-prefix (split-jar-uri (str resource)))
+      (list-disk-resource-items resource))))
+
+; see https://stackoverflow.com/a/48303746/84283
+(defn copy-resources-into-dir! [root-resource target-dir]
+  (let [root-resource-url (if (instance? URL root-resource)
+                            root-resource
+                            (io/resource root-resource))]
+    (if (nil? root-resource-url)
+      (throw (ex-info (str "Resource not found: '" root-resource "'"), {:resource root-resource}))
+      (let [resource-items (list-resource-items root-resource-url)]
+        (doseq [resource-item resource-items]
+          (if-not (:dir? resource-item)
+            (let [relative-path (:path resource-item)
+                  resource-path (str root-resource-url File/separator relative-path)
+                  resource-stream (io/input-stream (URL. resource-path))
+                  target-path (io/file target-dir relative-path)]
+              (io/make-parents target-path)
+              (io/copy resource-stream target-path))))))))
 
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -195,4 +262,19 @@
                            "# test comment"
                            "--v=1"
                            "# test comment"])
+  (split-jar-uri "jar:file:/Users/darwin/.m2/repository/binaryage/dirac/1.5.1/dirac-1.5.1.jar!/dirac/playground-template")
+  (list-jar-resource-items "/Users/darwin/.m2/repository/binaryage/dirac/1.5.1/dirac-1.5.1.jar")
+  (list-disk-resource-items (.getCanonicalPath (io/file "resources/templates/dirac/playground-template")))
+
+  (list-resource-items (URL. "jar:file:/Users/darwin/.m2/repository/binaryage/dirac/1.5.1/dirac-1.5.1.jar!/dirac/playground-template"))
+
+  (copy-resources-into-dir! (URL. "jar:file:/Users/darwin/.m2/repository/binaryage/dirac/1.5.1/dirac-1.5.1.jar!/dirac/playground-template")
+                            "/tmp/dirac-test/d1")
+
+  (copy-resources-into-dir! (URL. (str "file:" (.getCanonicalPath (io/file "resources/templates/dirac/playground-template"))))
+                            "/tmp/dirac-test/d2")
+
+  (copy-resources-into-dir! "dirac/playground-template"
+                            "/tmp/dirac-test/d3")
+
   )

@@ -96,7 +96,7 @@
 
 (defn prepare-playground-dir! [dir-path]
   (helpers/ensure-dir! dir-path)
-  (helpers/copy-resource-into-dir! "dirac/playground-template" dir-path))
+  (helpers/copy-resources-into-dir! "dirac/playground-template" dir-path))
 
 (defn start-playground! [dir-path opts]
   (helpers/delete-files-recursively! dir-path)
