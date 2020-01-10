@@ -1,6 +1,6 @@
 # dirac-lein
 
-This project is an example of integration of [**Dirac DevTools**](https://github.com/binaryage/dirac) into a Leiningen-based 
+This project is an example of integration of [Dirac DevTools](https://github.com/binaryage/dirac) into a Leiningen-based 
 ClojureScript project.
 
 ![main screenshot](https://box.binaryage.com/dirac-main-01.png)
@@ -8,7 +8,7 @@ ClojureScript project.
 ## Local setup
 
 ```bash
-git clone https://github.com/binaryage/dirac.git
+git clone --depth 1 https://github.com/binaryage/dirac.git
 cd dirac/examples/leiningen
 ```
 
@@ -16,23 +16,23 @@ cd dirac/examples/leiningen
 
 #### Overview:
 
-1. launch `lein repl` in a separate terminal session
+1. launch `lein repl` in a terminal session
 1. launch `lein demo` in a separate terminal session
-1. launch Chrome with `dirac` CLI tool
+1. launch Chrome with `dirac` CLI tool in a separate terminal session
 1. play with REPL in the DevTools Console
 
 ### Details
 
 First please [install Dirac CLI tool](https://github.com/binaryage/dirac/blob/master/docs/cli.md).
 
-Now you can launch the repl from terminal:
+Now you can launch the REPL from terminal:
 
 ```
 > lein repl
 nREPL server started on port 8230 on host 127.0.0.1 - nrepl://127.0.0.1:8230
 REPL-y 0.4.3, nREPL 0.6.0
 Clojure 1.10.1
-OpenJDK 64-Bit Server VM 1.8.0_222-b10
+OpenJDK 64-Bit Server VM 13.0.1+9
     Docs: (doc function-name-here)
           (find-doc "part-of-name-here")
   Source: (source function-name-here)
@@ -41,7 +41,7 @@ OpenJDK 64-Bit Server VM 1.8.0_222-b10
  Results: Stored in vars *1, *2, *3, an exception in *e
 
 user=>
-Dirac Agent v1.4.3
+Dirac Agent v1.5.0
 Connected to nREPL server at nrepl://localhost:8230.
 Agent is accepting connections at ws://localhost:8231.
 ```
@@ -53,9 +53,13 @@ Now you can launch the demo project from terminal:
 
 ```
 > lein demo
+Compiling ClojureScript...
+Compiling ["resources/public/.compiled/demo/demo.js"] from ["src/shared" "src/demo"]...
+Successfully compiled ["resources/public/.compiled/demo/demo.js"] in 9.983 seconds.
+Starting HTTP server on port 9977 => http://localhost:9977
 ```
 
-After it starts, you can launch Chrome using `dirac`:
+Then you can launch Chrome using `dirac` tool:
 
 ```
 > dirac
@@ -75,9 +79,9 @@ Agent is accepting connections at ws://localhost:36181.
 Launching Chromium [with --user-data-dir='/Users/darwin/.dirac/chromium/profiles/default'] ...
 ```
  
-In launched Chrome please navigate [http://localhost:9977](http://localhost:9977),
+In launched Chrome please navigate to [http://localhost:9977](http://localhost:9977),
 
-In Chrome open DevTools (CTRL+SHIFT+I or CMD+OPT+I on a Mac).
+Then open DevTools (CTRL+SHIFT+I or CMD+OPT+I on a Mac).
  
 It will look almost the same as normal DevTools, but you can tell the difference at first glance: active tab highlight
 will be green instead of blue (see the screenshots above).
