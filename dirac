@@ -121,4 +121,4 @@ if [[ -n "$DIRAC_CLI_ECHO_CMD" ]]; then
   set -x
 fi
 # shellcheck disable=SC2086
-exec clojure -Sdeps "$DEPS" -m dirac.main $DIRAC_CLI_CLOJURE_OPTS -- "$@"
+exec clojure -Sdeps "$DEPS" $DIRAC_CLI_CLOJURE_OPTS -m dirac.main "$@"
