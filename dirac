@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
-# this a wrapper script for launching dirac.main
+# this a shell wrapper for launching dirac.main
 # https://github.com/binaryage/dirac/blob/master/docs/main.md
 #
 # usage: dirac [args]
-# to install: dirac install [dir]
 #
 # see `dirac help`
 
