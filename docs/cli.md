@@ -10,7 +10,7 @@ how you launch Chrome for development.
 Please use this one-liner to download and launch Dirac installer (by default it will install into `/usr/local/bin`): 
 
 ```
-curl https://raw.githubusercontent.com/binaryage/dirac/master/install > /tmp/dirac.install && bash /tmp/dirac.install
+curl -s https://raw.githubusercontent.com/binaryage/dirac/master/install > /tmp/dirac.install && bash /tmp/dirac.install
 ```
 
 Alternatively you might want to download [dirac](https://github.com/binaryage/dirac/blob/master/dirac)
@@ -94,7 +94,7 @@ shell script and put it somewhere on your system PATH by hand.
 
 ##### `> dirac help`
 ```
-Dirac Main 1.5.0
+Dirac 1.5.0
 A command-line tool for Dirac DevTools.
 
 Usage: dirac [options] [command] [...]
@@ -117,7 +117,7 @@ Run `dirac help <command>` for further info.
 
 ##### `> dirac help launch`
 ```
-Dirac Main 1.5.0
+Dirac 1.5.0
 A command-line tool for Dirac DevTools.
 
 Usage: dirac [...] launch [options]
@@ -139,7 +139,7 @@ Run `dirac help` for general info.
 
 ##### `> dirac help nuke`
 ```
-Dirac Main 1.5.0
+Dirac 1.5.0
 A command-line tool for Dirac DevTools.
 
 Usage: dirac [...] nuke [options]

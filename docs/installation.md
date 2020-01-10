@@ -10,7 +10,7 @@ to learn the basics and test-drive Dirac on a properly-configured project.
 
 Here are the ingredients you are going to need:
 
-1. [Dirac CLI tool](main.md) - a convenience launcher for Chrome 
+1. [Dirac CLI tool](cli.md) - a convenience launcher for Chrome 
 1. Dirac Runtime - a ClojureScript library installed in your page
 1. [nREPL](https://github.com/nrepl/nrepl) server with Dirac nREPL middleware
 1. Dirac Agent - a helper server providing a proxy tunnel between the nREPL server and the Dirac 
@@ -23,7 +23,7 @@ Here are the ingredients you are going to need:
 
 This should launch Chrome Canary with internal DevTools replaced by Dirac DevTools.
 
-Please refer to [Dirac CLI documentation](main.md) for details. Also note that there is an alternative workflow of using
+Please refer to [Dirac CLI documentation](cli.md) for details. Also note that there is an alternative workflow of using
 [Dirac DevTools hosted in Chrome Extension](extension.md) (old method). 
 
 ### Install the Dirac Runtime

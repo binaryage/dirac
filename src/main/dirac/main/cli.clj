@@ -39,7 +39,7 @@
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
 (defn usage-header []
-  (str "Dirac Main " cli-version "\n"
+  (str "Dirac " cli-version "\n"
        cli-description "\n"))
 
 (defn usage [options-summary commands-summary & [note]]

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # this a shell wrapper for launching dirac.main
-# https://github.com/binaryage/dirac/blob/master/docs/main.md
+# https://github.com/binaryage/dirac/blob/master/docs/cli.md
 #
 # usage: dirac [args]
 #

@@ -16,7 +16,7 @@ When I started Dirac project the internal mode was not possible and that is why 
 web app in Chrome Extension. Recently I decided to bite the bullet and finally to take advantage of the internal mode option.
 
 Since [version 1.5.0](https://github.com/binaryage/dirac/releases/tag/v1.5.0) Dirac Chrome Extension is not needed anymore.
-You should be using [Dirac CLI tool](main.md) to launch Chrome.  
+You should be using [Dirac CLI tool](cli.md) to launch Chrome.  
 
 This page documents the old hosted mode workflow which will be supported for some time but I will remove it eventually.    
 
