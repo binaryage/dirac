@@ -17,6 +17,15 @@ Dirac is a flavored [Chrome DevTools][1] with extra tweaks for ClojureScript dev
 | **[Examples](https://github.com/binaryage/dirac/tree/master/examples)**
 | **[FAQ](docs/faq.md)**
 
+### Quick start
+
+1. install the [CLI tool](docs/main.md)
+1. run `dirac`
+1. navigate away from "chrome://welcome" to some normal page, e.g. [https://clojurescript.org](https://clojurescript.org)
+1. in launched Chrome open DevTools (CTRL+SHIFT+I or CMD+OPT+I on a Mac)
+1. in DevTools switch to Console => Dirac prompt should enter `dirac.playground` and let you type in cljs code
+1. `(js/console.log (str "Hello" \space "Dirac!"))`
+
 ### Introduction
 
 Dirac project maintains [a set of patches][2] rolling on top of official Chrome DevTools.
