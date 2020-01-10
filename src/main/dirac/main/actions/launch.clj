@@ -137,7 +137,7 @@
       (helpers/ensure-dir! profile-dir-path)
       profile-dir-path)))
 
-(defn launch-playground! [config]
+(defn really-launch-playground! [config]
   (try
     (let [playground-dir-path (locations/get-playground-dir-path)]
       (log/info (str "Preparing playground environment at '" (terminal/style-path playground-dir-path) "'"))
@@ -145,6 +145,11 @@
     (catch Throwable e
       (log/error "launch-playground! unexpectedly exited" e)
       (throw e))))
+
+(defn launch-playground! [config]
+  (if (:no-playground config)
+    (log/info "Playground is disabled")
+    (really-launch-playground! config)))
 
 (defn launch!
   "Launch Chromium with matching Dirac release:
