@@ -18,7 +18,7 @@ curl -s "$SOURCE_URL" >"$TMP_FILE"
 
 # here we perform a paranoid checksum test to make sure we got expected file
 if [[ -n "$EXPECTED_CHECKSUM" ]]; then
-  CHECKSUM=$(shasum -p -a 256 "$TMP_FILE" | cut -d " " -f 1)
+  CHECKSUM=$(shasum -a 256 "$TMP_FILE" | cut -d " " -f 1)
   if [[ "$CHECKSUM" != "$EXPECTED_CHECKSUM" ]]; then
     echo "SHA checksum of downloaded file does not match expected value"
     echo "  URL: $SOURCE_URL"

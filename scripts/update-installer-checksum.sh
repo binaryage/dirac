@@ -6,7 +6,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$ROOT"
 
-CURRENT_CHECKSUM=$(shasum -p -a 256 "dirac" | cut -d " " -f 1)
+CURRENT_CHECKSUM=$(shasum -a 256 "dirac" | cut -d " " -f 1)
 
 echo "$CURRENT_CHECKSUM"
 
