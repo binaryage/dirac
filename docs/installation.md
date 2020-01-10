@@ -2,7 +2,7 @@
 
 Dirac integration with your project requires some effort and can be configured in many ways.
 In this document I will discuss standard configuration with Leiningen. For custom configuration please refer to 
-[this document](configuration.md).
+[configuration.md](configuration.md).
 
 If this is your first Dirac installation and you are not familiar with Dirac features
 I first recommend following [the demo in Dirac Example project](https://github.com/binaryage/dirac/tree/master/examples/leiningen) 
@@ -54,7 +54,7 @@ In this mode, Dirac runtime can be additionally configured via `:external-config
 
 ### Start nREPL server with Dirac Agent
 
-There are many ways how to start an nREPL server. We are going to use Leiningen's nREPL server here.
+There are many possible ways how to start an nREPL server. We are going to use Leiningen's nREPL server here.
 
 By default you should run it on port `8230` and with `dirac.nrepl/middleware` middleware.
 
@@ -66,9 +66,6 @@ The configuration snippet could look something like this:
                            (require 'dirac.agent)
                            (dirac.agent/boot!))}
                    
-Dirac Agent is a program which connects to an existing nREPL server and acts as a proxy providing nREPL connections to the 
-browser.
-
 Now when you start `lein repl` from command-line you should see something like this:
 
     nREPL server started on port 8230 on host 127.0.0.1 - nrepl://127.0.0.1:8230
@@ -87,9 +84,9 @@ Now when you start `lein repl` from command-line you should see something like t
     Connected to nREPL server at nrepl://localhost:8230.
     Agent is accepting connections at ws://localhost:8231.
 
-The last line should remind you that Dirac **Agent** started successfully and is listening for browser connections on port 8231.
+The last line should remind you that Dirac Agent started successfully and is listening for browser connections on port 8231.
 
-Now you should be able to use REPL from any of your Dirac **DevTools** instances.
+Now you should be able to use REPL from any of your Dirac DevTools instances.
 
 <details>
 
@@ -100,15 +97,15 @@ Please note that Dirac middleware
 was implemented as a [Piggieback middleware](https://github.com/nrepl/piggieback) fork, so you cannot run both.
 Think of Dirac middleware as a Piggieback middleware replacement with some extra features specific to Dirac DevTools.
 
-Please note that Dirac **DevTools** frontend is "just" a web app. It cannot open a classic TCP socket connection and talk to the nREPL server directly.
-Instead it connects to a Dirac **Agent** instance which listens for web socket connections on port 8231. Dirac **Agent** in turn has an open connection
+Please note that Dirac DevTools frontend is "just" a web app. It cannot open a classic TCP socket connection and talk to the nREPL server directly.
+Instead it connects to a Dirac Agent instance which listens for web socket connections on port 8231. Dirac Agent in turn has an open connection
 to your nREPL server at port 8230 so it can bridge messages between the two. Tunneling messages between
-the browser and the nREPL server is the main feature of Dirac **Agent**. Sometimes you might see (error) messages mentioning "nREPL Tunnel",
-which is a component of Dirac **Agent**.
+the browser and the nREPL server is the main feature of Dirac Agent. Sometimes you might see (error) messages mentioning "nREPL Tunnel",
+which is a component of Dirac Agent.
 
-Actually Dirac **Agent** is a bit smarter than that. It allows one-to-many scenario where multiple Dirac **DevTools** instances
-can connect to a singe Dirac **Agent** which talks to a single nREPL server. Each Dirac **DevTools** instance is assigned its own nREPL session
-so they don't step on each others' toes. Thanks to sessions you can open multiple pages with different Dirac **DevTools** and
+Actually Dirac Agent is a bit smarter than that. It allows one-to-many scenario where multiple Dirac DevTools instances
+can connect to a singe Dirac Agent which talks to a single nREPL server. Each Dirac DevTools instance is assigned its own nREPL session
+so they don't step on each others' toes. Thanks to sessions you can open multiple pages with different Dirac DevTools and
 they all can have their own independent REPLs.
 
 Unfortunately this is the hardest part of the setup and most fragile.

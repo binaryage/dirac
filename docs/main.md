@@ -1,26 +1,28 @@
-# Dirac Main
+# Dirac CLI
 
-Dirac Main provides a command line tool for easier access to Dirac DevTools functionality.
+Dirac provides a command line interface for easier access to Dirac DevTools functionality.
 
-By default `dirac` command launches Chromium with a matching Dirac version. This should be a replacement for your normal way how you launch Chrome for development.
+By default `dirac` command launches Chromium with a matching Dirac version. This should be a replacement for your normal way 
+how you launch Chrome for development.
 
 ### Installation
 
 Please use this one-liner to download and launch Dirac installer (by default it will install into `/usr/local/bin`): 
 
 ```
-curl -s https://raw.githubusercontent.com/binaryage/dirac/master/install > /tmp/dirac.install && bash /tmp/dirac.install
+curl https://raw.githubusercontent.com/binaryage/dirac/master/install > /tmp/dirac.install && bash /tmp/dirac.install
 ```
 
 Alternatively you might want to download [dirac](https://github.com/binaryage/dirac/blob/master/dirac)
 shell script and put it somewhere on your system PATH by hand.
 
-### Quick start:
+### Quick start
 
-1. `dirac launch`
-2. in launched Chrome, open DevTools (CMD+OPT+I on a Mac)
-3. navigate away from "chrome://welcome" to some normal page, e.g. [clojurescript.org](https://clojurescript.org)
-4. in DevTools switch Console => Dirac prompt should enter `dirac.playground` and let you type in cljs code
+1. run `dirac`
+1. navigate away from "chrome://welcome" to some normal page, e.g. [https://clojurescript.org](https://clojurescript.org)
+1. in launched Chrome open DevTools (CTRL+SHIFT+I or CMD+OPT+I on a Mac)
+1. in DevTools switch to Console => Dirac prompt should enter `dirac.playground` and let you type in cljs code
+1. `(js/console.log (str "Hello" \space "Dirac!"))`
 
 ## FAQ
 
@@ -34,7 +36,7 @@ shell script and put it somewhere on your system PATH by hand.
 > You are probably seeing "Unable to locate Chromium executable" error from `dirac launch`.
 > Dirac tries to locate Chromium executable on your machine using some heuristics depending on your OS.
 > 1. Under macOS it tries to use `/Applications/Google Chrome Canary.app`. 
-> 2. Under Windows it tries to use `"\\Google\\Chrome SxS\\Application\\chrome.exe"` from `Program Files` (depending on your OS version) 
+> 2. Under Windows it tries to use `"\\Google\\Chrome SxS\\Application\\chrome.exe"` from `Program Files` (depends on your OS version) 
 > 3. Under other systems it tries various well-known paths
 > 
 > Look at [the code](https://github.com/binaryage/dirac/blob/master/src/home/dirac/home/chromium/scout.clj) for 

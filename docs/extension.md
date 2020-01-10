@@ -31,7 +31,7 @@ You probably want to run your Chrome Canary with dedicated user profile. And you
     /Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary \
       --remote-debugging-port=9222 \
       --no-first-run \
-      --user-data-dir=$A_PATH_TO_YOUR_USER_PROFILE_DIRECTORY
+      --user-data-dir=~/.dirac/chromium/profiles/extension
 
 Please note that `--remote-debugging-port` should be 9222 by default. But you can change it in the Dirac Extension 
 `options page` if needed.

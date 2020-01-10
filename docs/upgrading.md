@@ -1,5 +1,11 @@
 # Dirac DevTools Upgrading
 
+**THIS DOCUMENT IS OUTDATED**
+
+Please read news in [v1.5.0](https://github.com/binaryage/dirac/releases/tag/v1.5.0).
+
+---
+
 So you started using Dirac DevTools, followed installation steps and integrated it into your workflow. Then forgot everything ;-)
 
 And now a new version just came out and you don't remember details of the setup. Yep, Dirac is quite a complex beast. This page should hopefully help you to upgrade smoothly.
