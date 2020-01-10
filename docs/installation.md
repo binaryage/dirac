@@ -17,8 +17,10 @@ Here are the ingredients you are going to need:
 
 ### Launch Chrome with Dirac DevTools
 
+Install [Dirac CLI tool](cli.md) and then launch:
+
 ```
-> dirac launch
+> dirac
 ```
 
 This should launch Chrome Canary with internal DevTools replaced by Dirac DevTools.
