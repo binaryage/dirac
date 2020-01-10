@@ -41,15 +41,24 @@
     (locate-chromium-via-link config)
     (locate-chromium-by-search config)))
 
-(defn determine-chromium-version [_config chromium-executable]
-  (log/debug "Reading Chromium version...")
-  (let [chromium-version (chromium/determine-chrome-version chromium-executable)]
-    (log/trace (utils/pp chromium-version))
-    (when (some? (:error chromium-version))
-      (throw (ex-info (str "Failed to detect Chromium version\n" (:error-message chromium-version))
-                      {:chromium-executable chromium-executable})))
-    (log/info (str "Detected Chromium version '" (terminal/style-version (:version chromium-version)) "'"))
-    (:version chromium-version)))
+(defn determine-chromium-version* [config chromium-executable]
+  (if-let [chromium-version (:chromium-version config)]
+    (do
+      (log/debug "Chromium version is force via config")
+      chromium-version)
+    (do
+      (log/debug "Reading Chromium version...")
+      (let [chromium-version (chromium/determine-chrome-version chromium-executable)]
+        (log/trace (utils/pp chromium-version))
+        (when (some? (:error chromium-version))
+          (throw (ex-info (str "Failed to detect Chromium version\n" (:error-message chromium-version))
+                          {:chromium-executable chromium-executable})))
+        (:version chromium-version)))))
+
+(defn determine-chromium-version [config chromium-executable]
+  (let [version (determine-chromium-version* config chromium-executable)]
+    (log/info (str "Detected Chromium version '" (terminal/style-version version) "'"))
+    version))
 
 (defn config-aware-progress-printer [config & args]
   (let [{:keys [verbosity]} config]

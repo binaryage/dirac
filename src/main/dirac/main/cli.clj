@@ -23,6 +23,7 @@
 (def launch-options
   [[nil "--profile NAME" "Specify Chromium data dir" :default "default"]
    [nil "--no-profile" "Don't specify any Chromium data dir"]
+   [nil "--chromium-version VERSION" "Force specific Chromium version, does not ask the binary"]
    [nil "--releases PATH" "Force alternative releases.edn file, do not check for updates"]
    [nil "--releases-url URL" "Force alternative releases.edn url"]])
 
