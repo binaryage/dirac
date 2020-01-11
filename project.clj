@@ -325,12 +325,16 @@
                                              "src/devtools"
                                              "src/options"
                                              "src/implant"]
-                            :compiler       {:output-to       "resources/unpacked/devtools/front_end/dirac/.compiled/implant/implant.js"
-                                             :output-dir      "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
-                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
-                                             :optimizations   :none
-                                             :main            dirac.implant
-                                             :source-map      true}}
+                            :compiler       {:output-to          "resources/unpacked/devtools/front_end/dirac/.compiled/implant/implant.js"
+                                             :output-dir         "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
+                                             :external-config    {:devtools/config {:dont-detect-custom-formatters true}}
+                                             :optimizations      :none
+                                             :main               dirac.implant
+                                             :source-map         true
+                                             ; this is using my fork of ClojureScript,
+                                             ; until https://clojure.atlassian.net/browse/CLJS-1902 gets merged
+                                             :aot-cache          false                                                        ; to get cljs.core compiled with inlined namespace
+                                             :inline-source-maps true}}
 
                            :dirac-background
                            {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-background"]
