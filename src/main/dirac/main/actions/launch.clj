@@ -138,9 +138,16 @@
         verbosity-args (if (= (:verbosity config) "ALL") ["--enable-logging=stderr" "--v=1"])
         custom-devtools [(str "--custom-devtools-frontend=" "file://" frontend-dir)]
         devtools-experiments ["--enable-devtools-experiments"]
+        debugger-args (if (:debug config) [(str "--remote-debugging-port=" (:debug config))])
         data-dir (if (some? chromium-data-dir) [(str "--user-data-dir=" chromium-data-dir)])
         extra-args (chromium/read-chromium-extra-args)
-        args (concat convenience-args verbosity-args custom-devtools data-dir devtools-experiments extra-args)
+        args (concat convenience-args
+                     verbosity-args
+                     custom-devtools
+                     data-dir
+                     devtools-experiments
+                     debugger-args
+                     extra-args)
         profile (if (some? chromium-data-dir) (str "[with --user-data-dir='" (terminal/style-path chromium-data-dir) "'] "))]
     (if-not (:dry-chromium config)
       (do

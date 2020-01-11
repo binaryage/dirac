@@ -25,6 +25,7 @@
    [nil "--no-profile" "Don't specify any Chromium data dir"]
    [nil "--chromium-version VERSION" "Force specific Chromium version, does not ask the binary"]
    [nil "--dry-chromium" "Don't spawn Chromium, only print launch command"]
+   [nil "--debug PORT" "Spawn Chromium with --remote-debugging-port=PORT"]
    [nil "--no-playground" "Don't support playground"]
    [nil "--releases PATH" "Force alternative releases.edn file, do not check for updates"]
    [nil "--releases-url URL" "Force alternative releases.edn url"]])
