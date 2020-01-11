@@ -503,7 +503,8 @@ Object.defineProperty(Array.prototype, 'remove', {
     }
     this.length = index;
     return true;
-  }
+  },
+  configurable: true
 });
 
 Object.defineProperty(Array.prototype, 'pushAll', {
@@ -516,7 +517,8 @@ Object.defineProperty(Array.prototype, 'pushAll', {
     for (let i = 0; i < array.length; ++i) {
       this.push(array[i]);
     }
-  }
+  },
+  configurable: true
 });
 
 Object.defineProperty(Array.prototype, 'rotate', {
@@ -532,7 +534,8 @@ Object.defineProperty(Array.prototype, 'rotate', {
       result.push(this[i % this.length]);
     }
     return result;
-  }
+  },
+  configurable: true
 });
 
 Object.defineProperty(Array.prototype, 'sortNumbers', {
@@ -550,7 +553,8 @@ Object.defineProperty(Array.prototype, 'sortNumbers', {
     }
 
     this.sort(numericComparator);
-  }
+  },
+  configurable: true
 });
 
 (function() {
@@ -580,7 +584,8 @@ const partition = {
     }
     swap(this, right, storeIndex);
     return storeIndex;
-  }
+  },
+  configurable: true
 };
 Object.defineProperty(Array.prototype, 'partition', partition);
 Object.defineProperty(Uint32Array.prototype, 'partition', partition);
@@ -615,7 +620,8 @@ const sortRange = {
       quickSortRange(this, comparator, leftBound, rightBound, sortWindowLeft, sortWindowRight);
     }
     return this;
-  }
+  },
+  configurable: true
 };
 Object.defineProperty(Array.prototype, 'sortRange', sortRange);
 Object.defineProperty(Uint32Array.prototype, 'sortRange', sortRange);
@@ -654,7 +660,8 @@ Object.defineProperty(Array.prototype, 'lowerBound', {
       }
     }
     return r;
-  }
+  },
+  configurable: true
 });
 
 Object.defineProperty(Array.prototype, 'upperBound', {
@@ -690,18 +697,19 @@ Object.defineProperty(Array.prototype, 'upperBound', {
       }
     }
     return r;
-  }
+  },
+  configurable: true
 });
 
-Object.defineProperty(Uint32Array.prototype, 'lowerBound', {value: Array.prototype.lowerBound});
+Object.defineProperty(Uint32Array.prototype, 'lowerBound', {value: Array.prototype.lowerBound, configurable: true});
 
-Object.defineProperty(Uint32Array.prototype, 'upperBound', {value: Array.prototype.upperBound});
+Object.defineProperty(Uint32Array.prototype, 'upperBound', {value: Array.prototype.upperBound, configurable: true});
 
-Object.defineProperty(Int32Array.prototype, 'lowerBound', {value: Array.prototype.lowerBound});
+Object.defineProperty(Int32Array.prototype, 'lowerBound', {value: Array.prototype.lowerBound, configurable: true});
 
-Object.defineProperty(Int32Array.prototype, 'upperBound', {value: Array.prototype.upperBound});
+Object.defineProperty(Int32Array.prototype, 'upperBound', {value: Array.prototype.upperBound, configurable: true});
 
-Object.defineProperty(Float64Array.prototype, 'lowerBound', {value: Array.prototype.lowerBound});
+Object.defineProperty(Float64Array.prototype, 'lowerBound', {value: Array.prototype.lowerBound, configurable: true});
 
 Object.defineProperty(Array.prototype, 'binaryIndexOf', {
   /**
@@ -714,7 +722,8 @@ Object.defineProperty(Array.prototype, 'binaryIndexOf', {
   value: function(value, comparator) {
     const index = this.lowerBound(value, comparator);
     return index < this.length && comparator(value, this[index]) === 0 ? index : -1;
-  }
+  },
+  configurable: true
 });
 
 Object.defineProperty(Array.prototype, 'select', {
@@ -730,7 +739,8 @@ Object.defineProperty(Array.prototype, 'select', {
       result[i] = this[i][field];
     }
     return result;
-  }
+  },
+  configurable: true
 });
 
 Object.defineProperty(Array.prototype, 'peekLast', {
@@ -741,7 +751,8 @@ Object.defineProperty(Array.prototype, 'peekLast', {
    */
   value: function() {
     return this[this.length - 1];
-  }
+  },
+  configurable: true
 });
 
 (function() {
@@ -790,7 +801,8 @@ Object.defineProperty(Array.prototype, 'peekLast', {
      */
     value: function(array, comparator) {
       return mergeOrIntersect(this, array, comparator, false);
-    }
+    },
+    configurable: true
   });
 
   Object.defineProperty(Array.prototype, 'mergeOrdered', {
@@ -803,7 +815,8 @@ Object.defineProperty(Array.prototype, 'peekLast', {
      */
     value: function(array, comparator) {
       return mergeOrIntersect(this, array, comparator, true);
-    }
+    },
+    configurable: true
   });
 })();
 
@@ -1443,6 +1456,27 @@ self.base64ToSize = function(content) {
     size--;
   }
   return size;
+};
+
+/**
+ * @param {?string} input
+ * @return {string}
+ */
+self.unescapeCssString = function(input) {
+  // https://drafts.csswg.org/css-syntax/#consume-escaped-code-point
+  const reCssEscapeSequence = /(?<!\\)\\(?:([a-fA-F0-9]{1,6})|(.))[\n\t\x20]?/gs;
+  return input.replace(reCssEscapeSequence, (_, $1, $2) => {
+    if ($2) {  // Handle the single-character escape sequence.
+      return $2;
+    }
+    // Otherwise, handle the code point escape sequence.
+    const codePoint = parseInt($1, 16);
+    const isSurrogate = 0xD800 <= codePoint && codePoint <= 0xDFFF;
+    if (isSurrogate || codePoint === 0x0000 || codePoint > 0x10FFFF) {
+      return '\uFFFD';
+    }
+    return String.fromCodePoint(codePoint);
+  });
 };
 
 self.Platform = self.Platform || {};

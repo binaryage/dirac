@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# this the install script for Dirac CLI tool
+
+set -e -o pipefail
+
+INSTALL_LOCATION=${1:-/usr/local/bin}
+
+NAME="dirac"
+SOURCE_URL="https://raw.githubusercontent.com/binaryage/dirac/master/dirac"
+TARGET="$INSTALL_LOCATION/$NAME"
+EXPECTED_CHECKSUM=${DIRAC_INSTALL_EXPECTED_CHECKSUM:-156aaeb033d887fcd701b37ffa7e59094502c87707bea655f0e6a5c6f527a0b0}
+
+TMP_FILE=$(mktemp "/tmp/dirac.XXXXXX")
+
+echo "Downloading Dirac CLI tool..."
+curl -s "$SOURCE_URL" >"$TMP_FILE"
+
+# here we perform a paranoid checksum test to make sure we got expected file
+if [[ -n "$EXPECTED_CHECKSUM" ]]; then
+  CHECKSUM=$(shasum -a 256 "$TMP_FILE" | cut -d " " -f 1)
+  if [[ "$CHECKSUM" != "$EXPECTED_CHECKSUM" ]]; then
+    echo "SHA checksum of downloaded file does not match expected value"
+    echo "  URL: $SOURCE_URL"
+    echo "  FILE: $TMP_FILE"
+    echo "  '$CHECKSUM' != '$EXPECTED_CHECKSUM'"
+    echo
+    echo "If this is not a network issue, please file an issue at https://github.com/binaryage/dirac/issues"
+    exit 1
+  fi
+fi
+
+echo "Installing Dirac CLI tool as '$TARGET'..."
+mkdir -p "$(dirname "$TARGET")"
+cp "$TMP_FILE" "$TARGET"
+chmod +x "$TARGET"
+
+command -v $NAME

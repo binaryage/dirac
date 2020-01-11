@@ -31,11 +31,11 @@
 /**
  * @unrestricted
  */
-Profiler.HeapSnapshotSortableDataGrid = class extends DataGrid.DataGrid {
+export class HeapSnapshotSortableDataGrid extends DataGrid.DataGrid {
   /**
    * @param {?SDK.HeapProfilerModel} heapProfilerModel
    * @param {!Profiler.ProfileType.DataDisplayDelegate} dataDisplayDelegate
-   * @param {!DataGrid.DataGrid.Parameters} dataGridParameters
+   * @param {!DataGrid.Parameters} dataGridParameters
    */
   constructor(heapProfilerModel, dataDisplayDelegate, dataGridParameters) {
     // TODO(allada) This entire class needs to be converted to use the templates in DataGridNode.
@@ -70,7 +70,7 @@ Profiler.HeapSnapshotSortableDataGrid = class extends DataGrid.DataGrid {
      */
     this._nameFilter = null;
     this._nodeFilter = new HeapSnapshotModel.NodeFilter();
-    this.addEventListener(Profiler.HeapSnapshotSortableDataGrid.Events.SortingComplete, this._sortingComplete, this);
+    this.addEventListener(HeapSnapshotSortableDataGrid.Events.SortingComplete, this._sortingComplete, this);
     this.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this.sortingChanged, this);
     this.setRowContextMenuCallback(this._populateContextMenu.bind(this));
   }
@@ -126,14 +126,14 @@ Profiler.HeapSnapshotSortableDataGrid = class extends DataGrid.DataGrid {
       this.updateVisibleNodes(true);
     }
     if (this._populatedAndSorted) {
-      this.dispatchEventToListeners(Profiler.HeapSnapshotSortableDataGrid.Events.ContentShown, this);
+      this.dispatchEventToListeners(HeapSnapshotSortableDataGrid.Events.ContentShown, this);
     }
   }
 
   _sortingComplete() {
-    this.removeEventListener(Profiler.HeapSnapshotSortableDataGrid.Events.SortingComplete, this._sortingComplete, this);
+    this.removeEventListener(HeapSnapshotSortableDataGrid.Events.SortingComplete, this._sortingComplete, this);
     this._populatedAndSorted = true;
-    this.dispatchEventToListeners(Profiler.HeapSnapshotSortableDataGrid.Events.ContentShown, this);
+    this.dispatchEventToListeners(HeapSnapshotSortableDataGrid.Events.ContentShown, this);
   }
 
   /**
@@ -281,7 +281,7 @@ Profiler.HeapSnapshotSortableDataGrid = class extends DataGrid.DataGrid {
       return;
     }
     this.updateVisibleNodes(true);
-    this.dispatchEventToListeners(Profiler.HeapSnapshotSortableDataGrid.Events.SortingComplete);
+    this.dispatchEventToListeners(HeapSnapshotSortableDataGrid.Events.SortingComplete);
   }
 
   /**
@@ -321,10 +321,10 @@ Profiler.HeapSnapshotSortableDataGrid = class extends DataGrid.DataGrid {
   removeAllChildren(parent) {
     parent.removeChildren();
   }
-};
+}
 
 /** @override @suppress {checkPrototypalTypes} @enum {symbol} */
-Profiler.HeapSnapshotSortableDataGrid.Events = {
+HeapSnapshotSortableDataGrid.Events = {
   ContentShown: Symbol('ContentShown'),
   SortingComplete: Symbol('SortingComplete')
 };
@@ -332,11 +332,11 @@ Profiler.HeapSnapshotSortableDataGrid.Events = {
 /**
  * @unrestricted
  */
-Profiler.HeapSnapshotViewportDataGrid = class extends Profiler.HeapSnapshotSortableDataGrid {
+export class HeapSnapshotViewportDataGrid extends HeapSnapshotSortableDataGrid {
   /**
    * @param {?SDK.HeapProfilerModel} heapProfilerModel
    * @param {!Profiler.ProfileType.DataDisplayDelegate} dataDisplayDelegate
-   * @param {!DataGrid.DataGrid.Parameters} dataGridParameters
+   * @param {!DataGrid.Parameters} dataGridParameters
    */
   constructor(heapProfilerModel, dataDisplayDelegate, dataGridParameters) {
     super(heapProfilerModel, dataDisplayDelegate, dataGridParameters);
@@ -618,20 +618,20 @@ Profiler.HeapSnapshotViewportDataGrid = class extends Profiler.HeapSnapshotSorta
       this._scrollToResolveCallback = null;
     }
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Profiler.HeapSnapshotContainmentDataGrid = class extends Profiler.HeapSnapshotSortableDataGrid {
+export class HeapSnapshotContainmentDataGrid extends HeapSnapshotSortableDataGrid {
   /**
    * @param {?SDK.HeapProfilerModel} heapProfilerModel
    * @param {!Profiler.ProfileType.DataDisplayDelegate} dataDisplayDelegate
    * @param {string} displayName
-   * @param {!Array.<!DataGrid.DataGrid.ColumnDescriptor>=} columns
+   * @param {!Array.<!DataGrid.ColumnDescriptor>=} columns
    */
   constructor(heapProfilerModel, dataDisplayDelegate, displayName, columns) {
-    columns = columns || (/** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
+    columns = columns || (/** @type {!Array<!DataGrid.ColumnDescriptor>} */ ([
                 {id: 'object', title: ls`Object`, disclosure: true, sortable: true},
                 {id: 'distance', title: ls`Distance`, width: '70px', sortable: true, fixedWidth: true},
                 {id: 'shallowSize', title: ls`Shallow Size`, width: '110px', sortable: true, fixedWidth: true}, {
@@ -672,18 +672,18 @@ Profiler.HeapSnapshotContainmentDataGrid = class extends Profiler.HeapSnapshotSo
       rootNode.sort();
     }
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Profiler.HeapSnapshotRetainmentDataGrid = class extends Profiler.HeapSnapshotContainmentDataGrid {
+export class HeapSnapshotRetainmentDataGrid extends HeapSnapshotContainmentDataGrid {
   /**
    * @param {?SDK.HeapProfilerModel} heapProfilerModel
    * @param {!Profiler.ProfileType.DataDisplayDelegate} dataDisplayDelegate
    */
   constructor(heapProfilerModel, dataDisplayDelegate) {
-    const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
+    const columns = /** @type {!Array<!DataGrid.ColumnDescriptor>} */ ([
       {id: 'object', title: ls`Object`, disclosure: true, sortable: true}, {
         id: 'distance',
         title: ls`Distance`,
@@ -729,23 +729,23 @@ Profiler.HeapSnapshotRetainmentDataGrid = class extends Profiler.HeapSnapshotCon
     super.setDataSource(snapshot, nodeIndex);
     this.rootNode().expand();
   }
-};
+}
 
 /** @override @suppress {checkPrototypalTypes} @enum {symbol} */
-Profiler.HeapSnapshotRetainmentDataGrid.Events = {
+HeapSnapshotRetainmentDataGrid.Events = {
   ExpandRetainersComplete: Symbol('ExpandRetainersComplete')
 };
 
 /**
  * @unrestricted
  */
-Profiler.HeapSnapshotConstructorsDataGrid = class extends Profiler.HeapSnapshotViewportDataGrid {
+export class HeapSnapshotConstructorsDataGrid extends HeapSnapshotViewportDataGrid {
   /**
    * @param {?SDK.HeapProfilerModel} heapProfilerModel
    * @param {!Profiler.ProfileType.DataDisplayDelegate} dataDisplayDelegate
    */
   constructor(heapProfilerModel, dataDisplayDelegate) {
-    const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
+    const columns = /** @type {!Array<!DataGrid.ColumnDescriptor>} */ ([
       {id: 'object', title: ls`Constructor`, disclosure: true, sortable: true},
       {id: 'distance', title: ls`Distance`, width: '70px', sortable: true, fixedWidth: true},
       {id: 'shallowSize', title: ls`Shallow Size`, width: '110px', sortable: true, fixedWidth: true}, {
@@ -893,18 +893,18 @@ Profiler.HeapSnapshotConstructorsDataGrid = class extends Profiler.HeapSnapshotV
 
     this._populateChildren(this._nodeFilter);
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Profiler.HeapSnapshotDiffDataGrid = class extends Profiler.HeapSnapshotViewportDataGrid {
+export class HeapSnapshotDiffDataGrid extends HeapSnapshotViewportDataGrid {
   /**
    * @param {?SDK.HeapProfilerModel} heapProfilerModel
    * @param {!Profiler.ProfileType.DataDisplayDelegate} dataDisplayDelegate
    */
   constructor(heapProfilerModel, dataDisplayDelegate) {
-    const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
+    const columns = /** @type {!Array<!DataGrid.ColumnDescriptor>} */ ([
       {id: 'object', title: ls`Constructor`, disclosure: true, sortable: true},
       {id: 'addedCount', title: ls`# New`, width: '75px', sortable: true, fixedWidth: true},
       {id: 'removedCount', title: ls`# Deleted`, width: '75px', sortable: true, fixedWidth: true},
@@ -954,7 +954,7 @@ Profiler.HeapSnapshotDiffDataGrid = class extends Profiler.HeapSnapshotViewportD
     this.removeTopLevelNodes();
     this.resetSortingCache();
     if (this.baseSnapshot === this.snapshot) {
-      this.dispatchEventToListeners(Profiler.HeapSnapshotSortableDataGrid.Events.SortingComplete);
+      this.dispatchEventToListeners(HeapSnapshotSortableDataGrid.Events.SortingComplete);
       return;
     }
     this._populateChildren();
@@ -973,18 +973,18 @@ Profiler.HeapSnapshotDiffDataGrid = class extends Profiler.HeapSnapshotViewportD
     }
     this.sortingChanged();
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Profiler.AllocationDataGrid = class extends Profiler.HeapSnapshotViewportDataGrid {
+export class AllocationDataGrid extends HeapSnapshotViewportDataGrid {
   /**
    * @param {?SDK.HeapProfilerModel} heapProfilerModel
    * @param {!Profiler.ProfileType.DataDisplayDelegate} dataDisplayDelegate
    */
   constructor(heapProfilerModel, dataDisplayDelegate) {
-    const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
+    const columns = /** @type {!Array<!DataGrid.ColumnDescriptor>} */ ([
       {id: 'liveCount', title: ls`Live Count`, width: '75px', sortable: true, fixedWidth: true},
       {id: 'count', title: ls`Count`, width: '65px', sortable: true, fixedWidth: true},
       {id: 'liveSize', title: ls`Live Size`, width: '75px', sortable: true, fixedWidth: true},
@@ -1056,4 +1056,31 @@ Profiler.AllocationDataGrid = class extends Profiler.HeapSnapshotViewportDataGri
     }
     return compare;
   }
-};
+}
+
+/* Legacy exported object */
+self.Profiler = self.Profiler || {};
+
+/* Legacy exported object */
+Profiler = Profiler || {};
+
+/** @constructor */
+Profiler.HeapSnapshotSortableDataGrid = HeapSnapshotSortableDataGrid;
+
+/** @constructor */
+Profiler.HeapSnapshotViewportDataGrid = HeapSnapshotViewportDataGrid;
+
+/** @constructor */
+Profiler.HeapSnapshotContainmentDataGrid = HeapSnapshotContainmentDataGrid;
+
+/** @constructor */
+Profiler.HeapSnapshotRetainmentDataGrid = HeapSnapshotRetainmentDataGrid;
+
+/** @constructor */
+Profiler.HeapSnapshotConstructorsDataGrid = HeapSnapshotConstructorsDataGrid;
+
+/** @constructor */
+Profiler.HeapSnapshotDiffDataGrid = HeapSnapshotDiffDataGrid;
+
+/** @constructor */
+Profiler.AllocationDataGrid = AllocationDataGrid;

@@ -26,7 +26,7 @@
 /**
  * @unrestricted
  */
-Resources.ApplicationCacheItemsView = class extends UI.SimpleView {
+export default class ApplicationCacheItemsView extends UI.SimpleView {
   constructor(model, frameId) {
     super(Common.UIString('AppCache'));
 
@@ -184,7 +184,7 @@ Resources.ApplicationCacheItemsView = class extends UI.SimpleView {
   }
 
   _createDataGrid() {
-    const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
+    const columns = /** @type {!Array<!DataGrid.ColumnDescriptor>} */ ([
       {id: 'resource', title: Common.UIString('Resource'), sort: DataGrid.DataGrid.Order.Ascending, sortable: true},
       {id: 'type', title: Common.UIString('Type'), sortable: true},
       {id: 'size', title: Common.UIString('Size'), align: DataGrid.DataGrid.Align.Right, sortable: true}
@@ -263,4 +263,13 @@ Resources.ApplicationCacheItemsView = class extends UI.SimpleView {
     // Protocol.inspectorBackend.deleteCachedResource(...)
     // this._update();
   }
-};
+}
+
+/* Legacy exported object */
+self.Resources = self.Resources || {};
+
+/* Legacy exported object */
+Resources = Resources || {};
+
+/** @constructor */
+Resources.ApplicationCacheItemsView = ApplicationCacheItemsView;

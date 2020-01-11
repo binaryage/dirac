@@ -28,10 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {DataGridNode} from './DataGrid.js';
+
 /**
  * @unrestricted
  */
-export default class ShowMoreDataGridNode extends DataGrid.DataGridNode {
+export class ShowMoreDataGridNode extends DataGridNode {
   /**
    * @param {function(number, number)} callback
    * @param {number} startPosition
@@ -103,6 +105,7 @@ export default class ShowMoreDataGridNode extends DataGrid.DataGridNode {
    */
   createCell(columnIdentifier) {
     const cell = this.createTD(columnIdentifier);
+    cell.classList.add('show-more');
     if (!this._hasCells) {
       this._hasCells = true;
       if (this.depth) {
@@ -142,14 +145,3 @@ export default class ShowMoreDataGridNode extends DataGrid.DataGridNode {
   dispose() {
   }
 }
-
-/* Legacy exported object */
-self.DataGrid = self.DataGrid || {};
-
-/* Legacy exported object */
-DataGrid = DataGrid || {};
-
-/**
- * @constructor
- */
-DataGrid.ShowMoreDataGridNode = ShowMoreDataGridNode;

@@ -12,8 +12,4 @@ lein "$TASK"
 
 cd "$DEPOT_DIR"
 
-IMPLANT_DIR="devtools-frontend/front_end/dirac/.compiled/implant"
-mkdir -p "$IMPLANT_DIR"
-cp "$ROOT/target/resources/release/devtools/front_end/dirac/.compiled/implant/implant.js" "$IMPLANT_DIR"
-
 "$SCRIPTS/depot-ninja.sh"

@@ -657,9 +657,13 @@ Object.assign(window.dirac, (function() {
     if (!scriptFile) {
       // do not treat missing script file as a fatal error, only log error into internal dirac console
       // see https://github.com/binaryage/dirac/issues/79
-      console.error(
-        `uiSourceCode expected to have scriptFile associated\n` +
-        `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
+
+      // disabled to prevent console spam
+      if (dirac._DEBUG_CACHES) {
+        console.error(
+          `uiSourceCode expected to have scriptFile associated\n` +
+          `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
+      }
       return null;
     }
     const script = scriptFile.getScript();

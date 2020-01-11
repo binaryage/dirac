@@ -48,10 +48,10 @@ export default class NetworkLogViewColumns {
 
   /**
    * @param {!Network.NetworkLogViewColumns.Descriptor} columnConfig
-   * @return {!DataGrid.DataGrid.ColumnDescriptor}
+   * @return {!DataGrid.ColumnDescriptor}
    */
   static _convertToDataGridDescriptor(columnConfig) {
-    return /** @type {!DataGrid.DataGrid.ColumnDescriptor} */ ({
+    return /** @type {!DataGrid.ColumnDescriptor} */ ({
       id: columnConfig.id,
       title: columnConfig.title,
       sortable: columnConfig.sortable,
@@ -243,6 +243,9 @@ export default class NetworkLogViewColumns {
     this._waterfallColumn.scheduleDraw();
   }
 
+  /**
+   * @suppressGlobalPropertiesCheck
+   */
   _updateRowsSize() {
     const largeRows = !!this._networkLogLargeRowsSetting.get();
 
@@ -253,7 +256,14 @@ export default class NetworkLogViewColumns {
     this._waterfallColumn.setRowHeight(largeRows ? 41 : 21);
     this._waterfallScroller.classList.toggle('small', !largeRows);
     this._waterfallHeaderElement.classList.toggle('small', !largeRows);
-    this._waterfallColumn.setHeaderHeight(this._waterfallScroller.offsetTop);
+
+    // Request an animation frame because under certain conditions
+    // (see crbug.com/1019723) this._waterfallScroller.offsetTop does
+    // not return the value it's supposed to return as of the applied
+    // css classes.
+    window.requestAnimationFrame(() => {
+      this._waterfallColumn.setHeaderHeight(this._waterfallScroller.offsetTop);
+    });
   }
 
   /**

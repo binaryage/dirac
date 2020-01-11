@@ -9,4 +9,3 @@ cd "$ROOT"
 echo "Running backend tests..."
 lein run-backend-tests-110
 lein run-backend-tests-19
-lein run-backend-tests-18

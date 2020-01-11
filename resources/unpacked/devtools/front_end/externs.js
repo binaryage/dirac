@@ -1259,6 +1259,12 @@ const singleton = function(constructorFunction) {};
 const base64ToSize = function(content) {};
 
 /**
+ * @param {?string} input
+ * @return {string}
+ */
+const unescapeCssString = function(input) {};
+
+/**
  * @constructor
  * @param {function(!Array<*>)} callback
  */

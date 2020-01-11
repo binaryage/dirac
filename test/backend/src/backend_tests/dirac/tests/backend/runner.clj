@@ -1,13 +1,11 @@
 (ns dirac.tests.backend.runner
   (:require [clansi :refer [style]]
             [clojure.test :refer :all]
-            [clojure.tools.logging :as log]
             [cuerdas.core :as cuerdas]
             [dirac.logging :as logging]
             [dirac.shared.travis :as travis]
             [dirac.tests.backend.agent.tests]
-            [environ.core :refer [env]])
-  (:import (java.util.concurrent ThreadLocalRandom)))
+            [environ.core :refer [env]]))
 
 ; this is the default dirac test runner
 
@@ -61,7 +59,7 @@
     (with-test-out
       (println (style (str "Ran " (:test m) " tests containing " assertions-count " assertions => " status) report-style)))))
 
-; -- main entrypoint --------------------------------------------------------------------------------------------------------
+; -- main entry point -------------------------------------------------------------------------------------------------------
 
 (defn -main []
   (setup-logging!)

@@ -2,9 +2,9 @@
 ; we use it from test/gpig project to refer to local dirac code
 ; currently I maintain it by hand when need to test/debug something
 {:deps  {org.clojure/clojure       {:mvn/version "1.10.1"}
-         org.clojure/clojurescript {:mvn/version "1.10.520"}
+         org.clojure/clojurescript {:mvn/version "1.10.597"}
 
-         org.clojure/core.async    {:mvn/version "0.4.500"}
+         org.clojure/core.async    {:mvn/version "0.6.532"}
          org.clojure/tools.logging {:mvn/version "0.5.0"}
          org.clojure/tools.cli     {:mvn/version "0.4.2"}
 
@@ -13,8 +13,15 @@
          http-kit                  {:mvn/version "2.3.0"}
          version-clj               {:mvn/version "0.1.2"}
          clansi                    {:mvn/version "1.0.0"}
-         funcool/cuerdas           {:mvn/version "2.2.0"}
-         com.rpl/specter           {:mvn/version "1.1.2"}}
+         funcool/cuerdas           {:mvn/version "2.2.1"}
+         com.rpl/specter           {:mvn/version "1.1.3"}
+         progrock                  {:mvn/version "0.1.2"}
+         me.raynes/conch           {:mvn/version "0.8.0"}
+         clj-sub-command           {:mvn/version "0.5.1"}
+         ring/ring-core            {:mvn/version "1.8.0"}
+         ring/ring-defaults        {:mvn/version "0.3.2"}
+         binaryage/devtools        {:mvn/version "0.9.11"}}
+
  :paths ["src/agent"
          "src/automation"
          "src/background"
@@ -27,4 +34,9 @@
          "src/project"
          "src/runtime"
          "src/settings"
-         "src/shared"]}
+         "src/shared"
+         "src/main"
+         "src/home"
+         "resources/templates"
+         "resources/dev"]}
+

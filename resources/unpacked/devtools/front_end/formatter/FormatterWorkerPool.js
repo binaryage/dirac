@@ -18,7 +18,7 @@ export class FormatterWorkerPool {
    * @return {!Common.Worker}
    */
   _createWorker() {
-    const worker = new Common.Worker('formatter_worker');
+    const worker = new Common.Worker('formatter_worker_entrypoint');
     worker.onmessage = this._onWorkerMessage.bind(this, worker);
     worker.onerror = this._onWorkerError.bind(this, worker);
     return worker;
@@ -366,38 +366,3 @@ export function formatterWorkerPool() {
   }
   return Formatter._formatterWorkerPool;
 }
-
-/* Legacy exported object */
-self.Formatter = self.Formatter || {};
-
-/* Legacy exported object */
-Formatter = Formatter || {};
-
-/** @constructor */
-Formatter.FormatterWorkerPool = FormatterWorkerPool;
-
-Formatter.formatterWorkerPool = formatterWorkerPool;
-
-/** @constructor */
-Formatter.FormatterWorkerPool.FormatResult = FormatResult;
-
-/** @typedef {{original: !Array<number>, formatted: !Array<number>}} */
-Formatter.FormatterWorkerPool.FormatMapping;
-
-/** @typedef {{line: number, column: number, title: string, subtitle: (string|undefined) }} */
-Formatter.FormatterWorkerPool.OutlineItem;
-
-/**
- * @typedef {{atRule: string, lineNumber: number, columnNumber: number}}
- */
-Formatter.FormatterWorkerPool.CSSAtRule;
-
-/**
- * @typedef {(CSSStyleRule|Formatter.FormatterWorkerPool.CSSAtRule)}
- */
-Formatter.FormatterWorkerPool.CSSRule;
-
-/**
- * @typedef {{startLine: number, startColumn: number, endLine: number, endColumn: number}}
- */
-Formatter.FormatterWorkerPool.TextRange;

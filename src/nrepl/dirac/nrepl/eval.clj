@@ -64,7 +64,8 @@
     (catch NumberFormatException e)))
 
 (defn sanitize-filename [s]
-  (string/replace s #"[.?*!@#$%^&]" "-"))
+  (if (some? s)
+    (string/replace s #"[.?*!@#$%^&]" "-")))
 
 (defn get-current-repl-filename [job-id iteration]
   (let [compiler-id (compilers/get-selected-compiler-id (state/get-current-session))
@@ -72,7 +73,6 @@
         numeric-job-id (sorting-friendly-numeric-job-id job-id)
         sanitized-repl-job-name (if numeric-job-id (str "repl-job-" numeric-job-id) (sanitize-filename job-id))
         iteration-str (if (> iteration 1) (str "-" iteration))]
-    (assert compiler-id)
     (str "repl://dirac-repl/" sanitized-compiler-id "/" sanitized-repl-job-name iteration-str ".cljs")))
 
 (defn repl-prepare-reader! [job-id counter-volatile reader]

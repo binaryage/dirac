@@ -24,7 +24,7 @@ This should tell you two important settings:
 
 You have to set node.js debugger address into Dirac Extension Options as "Debugger URL":
 
-<img src="https://box.binaryage.com/dirac-node-debugger-url-example.png" width="600">
+<img src="https://box.binaryage.com/dirac-node-debugger-url-example.png" width="600" alt="node debugger">
 
 The debugger-id of your Javascript context is detected automatically. In more complex scenario when you have multiple 
 debuggable Javascript contexts running inside your node.js process, you might specify `ws=919c3f53-2784-4120-848b-68416181e90f`

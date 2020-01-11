@@ -13,5 +13,6 @@ redirect_to_test_stage_if_needed
 
 cd "$ROOT"
 
+./scripts/test-cli.sh
 ./scripts/test-backend.sh
 ./scripts/test-browser.sh "$@"

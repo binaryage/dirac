@@ -1,11 +1,13 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 /**
  * @implements {UI.ContextFlavorListener}
+ * @implements {UI.ListDelegate}
  * @unrestricted
  */
-Sources.JavaScriptBreakpointsSidebarPane = class extends UI.ThrottledWidget {
+export default class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget {
   constructor() {
     super(true);
     this.registerRequiredCSS('sources/javaScriptBreakpointsSidebarPane.css');
@@ -15,8 +17,17 @@ Sources.JavaScriptBreakpointsSidebarPane = class extends UI.ThrottledWidget {
     this._breakpointManager.addEventListener(Bindings.BreakpointManager.Events.BreakpointRemoved, this.update, this);
     Common.moduleSetting('breakpointsActive').addChangeListener(this.update, this);
 
-    /** @type {?Element} */
-    this._listElement = null;
+    /** @type {!UI.ListModel.<!Sources.JavaScriptBreakpointsSidebarPane.BreakpointItem>} */
+    this._breakpoints = new UI.ListModel();
+    /** @type {!UI.ListControl.<!Sources.JavaScriptBreakpointsSidebarPane.BreakpointItem>} */
+    this._list = new UI.ListControl(this._breakpoints, this, UI.ListMode.NonViewport);
+    UI.ARIAUtils.markAsList(this._list.element);
+    this.contentElement.appendChild(this._list.element);
+
+    this._emptyElement = this.contentElement.createChild('div', 'gray-info-message');
+    this._emptyElement.textContent = ls`No breakpoints`;
+    this._emptyElement.tabIndex = -1;
+
     this.update();
   }
 
@@ -25,24 +36,20 @@ Sources.JavaScriptBreakpointsSidebarPane = class extends UI.ThrottledWidget {
    * @return {!Promise<?>}
    */
   doUpdate() {
+    const hadFocus = this.hasFocus();
     const breakpointLocations = this._breakpointManager.allBreakpointLocations().filter(
         breakpointLocation =>
             breakpointLocation.uiLocation.uiSourceCode.project().type() !== Workspace.projectTypes.Debugger);
     if (!breakpointLocations.length) {
-      this._listElement = null;
-      this.contentElement.removeChildren();
-      const emptyElement = this.contentElement.createChild('div', 'gray-info-message');
-      emptyElement.textContent = Common.UIString('No breakpoints');
-      this.contentElement.appendChild(emptyElement);
+      this._list.element.classList.add('hidden');
+      this._emptyElement.classList.remove('hidden');
+      this._breakpoints.replaceAll([]);
       this._didUpdateForTest();
       return Promise.resolve();
     }
 
-    if (!this._listElement) {
-      this.contentElement.removeChildren();
-      this._listElement = this.contentElement.createChild('div');
-      this.contentElement.appendChild(this._listElement);
-    }
+    this._list.element.classList.remove('hidden');
+    this._emptyElement.classList.add('hidden');
 
     breakpointLocations.sort((item1, item2) => item1.uiLocation.compareTo(item2.uiLocation));
 
@@ -65,79 +72,148 @@ Sources.JavaScriptBreakpointsSidebarPane = class extends UI.ThrottledWidget {
         null;
 
     let shouldShowView = false;
-    let entry = this._listElement.firstChild;
     const promises = [];
+    const breakpoints = [];
+    let itemToSelect;
     for (const descriptor of locationForEntry.keysArray()) {
-      if (!entry) {
-        entry = this._listElement.createChild('div', 'breakpoint-entry');
-        entry.addEventListener('contextmenu', this._breakpointContextMenu.bind(this), true);
-        entry.addEventListener('click', this._revealLocation.bind(this), false);
-        const checkboxLabel = UI.CheckboxLabel.create('');
-        checkboxLabel.addEventListener('click', this._breakpointCheckboxClicked.bind(this), false);
-        entry.appendChild(checkboxLabel);
-        entry[Sources.JavaScriptBreakpointsSidebarPane._checkboxLabelSymbol] = checkboxLabel;
-        const snippetElement = entry.createChild('div', 'source-text monospace');
-        entry[Sources.JavaScriptBreakpointsSidebarPane._snippetElementSymbol] = snippetElement;
-      }
-
       const locations = Array.from(locationForEntry.get(descriptor));
-      const uiLocation = locations[0].uiLocation;
+      const breakpointLocation = locations[0];
+      const uiLocation = breakpointLocation.uiLocation;
       const isSelected =
           !!selectedUILocation && locations.some(location => location.uiLocation.id() === selectedUILocation.id());
-      const hasEnabled = locations.some(location => location.breakpoint.enabled());
-      const hasDisabled = locations.some(location => !location.breakpoint.enabled());
-      const showCoumn =
+      const showColumn =
           breakpointEntriesForLine.get(`${uiLocation.uiSourceCode.url()}:${uiLocation.lineNumber}`).size > 1;
-      promises.push(
-          this._resetEntry(/** @type {!Element}*/ (entry), uiLocation, isSelected, hasEnabled, hasDisabled, showCoumn));
-      entry[Sources.JavaScriptBreakpointsSidebarPane._breakpointLocationsSymbol] = locations;
+
+      const content = uiLocation.uiSourceCode.requestContent();
+      promises.push(content);
+      const item = {breakpointLocation, locations, isSelected, showColumn, content};
+      breakpoints.push(item);
+      if (this._list.selectedItem() &&
+          this._list.selectedItem().breakpointLocation.breakpoint === breakpointLocation.breakpoint) {
+        itemToSelect = item;
+      }
       if (isSelected) {
         shouldShowView = true;
       }
-      entry = entry.nextSibling;
-    }
-    while (entry) {
-      const next = entry.nextSibling;
-      entry.remove();
-      entry = next;
     }
     if (shouldShowView) {
       UI.viewManager.showView('sources.jsBreakpoints');
     }
-    this._listElement.classList.toggle(
+    this._list.element.classList.toggle(
         'breakpoints-list-deactivated', !Common.moduleSetting('breakpointsActive').get());
+    this._breakpoints.replaceAll(breakpoints);
+    this._list.selectItem(itemToSelect || this._breakpoints.at(0));
+    if (hadFocus) {
+      this.focus();
+    }
     return Promise.all(promises).then(() => this._didUpdateForTest());
   }
 
   /**
-   * @param {!Element} element
-   * @param {!Workspace.UILocation} uiLocation
-   * @param {boolean} isSelected
-   * @param {boolean} hasEnabled
-   * @param {boolean} hasDisabled
-   * @param {boolean} showColumn
-   * @return {!Promise}
+   * @override
+   * @param {!Sources.JavaScriptBreakpointsSidebarPane.BreakpointItem} item
+   * @return {!Element}
    */
-  async _resetEntry(element, uiLocation, isSelected, hasEnabled, hasDisabled, showColumn) {
-    element[Sources.JavaScriptBreakpointsSidebarPane._locationSymbol] = uiLocation;
-    element.classList.toggle('breakpoint-hit', isSelected);
+  createElementForItem(item) {
+    const element = createElementWithClass('div', 'breakpoint-entry');
+    UI.ARIAUtils.markAsListitem(element);
+    element.tabIndex = this._list.selectedItem() === item ? 0 : -1;
+    element.addEventListener('contextmenu', this._breakpointContextMenu.bind(this), true);
+    element.addEventListener('click', this._revealLocation.bind(this, element), false);
+    const checkboxLabel = UI.CheckboxLabel.create('');
 
-    const checkboxLabel = element[Sources.JavaScriptBreakpointsSidebarPane._checkboxLabelSymbol];
+    const uiLocation = item.locations[0].uiLocation;
+    const hasEnabled = item.locations.some(location => location.breakpoint.enabled());
+    const hasDisabled = item.locations.some(location => !location.breakpoint.enabled());
     checkboxLabel.textElement.textContent =
-        uiLocation.linkText() + (showColumn ? ':' + (uiLocation.columnNumber + 1) : '');
+        uiLocation.linkText() + (item.showColumn ? ':' + (uiLocation.columnNumber + 1) : '');
     checkboxLabel.checkboxElement.checked = hasEnabled;
     checkboxLabel.checkboxElement.indeterminate = hasEnabled && hasDisabled;
-
-    const snippetElement = element[Sources.JavaScriptBreakpointsSidebarPane._snippetElementSymbol];
-    const {content} = await uiLocation.uiSourceCode.requestContent();
-    const lineNumber = uiLocation.lineNumber;
-    const text = new TextUtils.Text(content || '');
-    if (lineNumber < text.lineCount()) {
-      const lineText = text.lineAt(lineNumber);
-      const maxSnippetLength = 200;
-      snippetElement.textContent =
-          lineText.substring(showColumn ? uiLocation.columnNumber : 0).trimEndWithMaxLength(maxSnippetLength);
+    checkboxLabel.checkboxElement.tabIndex = -1;
+    checkboxLabel.addEventListener('click', this._breakpointCheckboxClicked.bind(this), false);
+    element.appendChild(checkboxLabel);
+    let checkedDescription = hasEnabled ? ls`checked` : ls`unchecked`;
+    if (hasEnabled && hasDisabled) {
+      checkedDescription = ls`mixed`;
     }
+    if (item.isSelected) {
+      UI.ARIAUtils.setDescription(element, ls`${checkedDescription} breakpoint hit`);
+      element.classList.add('breakpoint-hit');
+      this.setDefaultFocusedElement(element);
+    } else {
+      UI.ARIAUtils.setDescription(element, checkedDescription);
+    }
+
+    element.addEventListener('keydown', event => {
+      if (event.key === ' ') {
+        checkboxLabel.checkboxElement.click();
+        event.consume(true);
+      }
+    });
+
+    const snippetElement = element.createChild('div', 'source-text monospace');
+    item.content.then(content => {
+      const lineNumber = uiLocation.lineNumber;
+      const text = new TextUtils.Text(content.content || '');
+      if (lineNumber < text.lineCount()) {
+        const lineText = text.lineAt(lineNumber);
+        const maxSnippetLength = 200;
+        snippetElement.textContent =
+            lineText.substring(item.showColumn ? uiLocation.columnNumber : 0).trimEndWithMaxLength(maxSnippetLength);
+      }
+    });
+
+    element[Sources.JavaScriptBreakpointsSidebarPane._breakpointLocationsSymbol] = item.locations;
+    element[Sources.JavaScriptBreakpointsSidebarPane._locationSymbol] = uiLocation;
+    return element;
+  }
+
+  /**
+   * @override
+   * @param {!Sources.JavaScriptBreakpointsSidebarPane.BreakpointItem} item
+   * @return {number}
+   */
+  heightForItem(item) {
+    return 0;
+  }
+
+  /**
+   * @override
+   * @param {!Sources.JavaScriptBreakpointsSidebarPane.BreakpointItem} item
+   * @return {boolean}
+   */
+  isItemSelectable(item) {
+    return true;
+  }
+
+  /**
+   * @override
+   * @param {?Sources.JavaScriptBreakpointsSidebarPane.BreakpointItem} from
+   * @param {?Sources.JavaScriptBreakpointsSidebarPane.BreakpointItem} to
+   * @param {?Element} fromElement
+   * @param {?Element} toElement
+   */
+  selectedItemChanged(from, to, fromElement, toElement) {
+    if (fromElement) {
+      fromElement.tabIndex = -1;
+    }
+    if (toElement) {
+      toElement.tabIndex = 0;
+      this.setDefaultFocusedElement(toElement);
+      if (this.hasFocus()) {
+        toElement.focus();
+      }
+    }
+  }
+
+  /**
+   * @override
+   * @param {?Element} fromElement
+   * @param {?Element} toElement
+   * @return {boolean}
+   */
+  updateSelectedItemARIA(fromElement, toElement) {
+    return true;
   }
 
   /**
@@ -145,30 +221,51 @@ Sources.JavaScriptBreakpointsSidebarPane = class extends UI.ThrottledWidget {
    * @return {!Array<!Bindings.BreakpointManager.BreakpointLocation>}
    */
   _breakpointLocations(event) {
-    const node = event.target.enclosingNodeOrSelfWithClass('breakpoint-entry');
+    if (event.target instanceof Element) {
+      return this._breakpointLocationsForElement(event.target);
+    }
+    return [];
+  }
+
+  /**
+   * @param {!Element} element
+   * @return {!Array<!Bindings.BreakpointManager.BreakpointLocation>}
+   */
+  _breakpointLocationsForElement(element) {
+    const node = element.enclosingNodeOrSelfWithClass('breakpoint-entry');
     if (!node) {
       return [];
     }
-    return node[Sources.JavaScriptBreakpointsSidebarPane._breakpointLocationsSymbol] || [];
+    return node[_breakpointLocationsSymbol] || [];
   }
 
   /**
    * @param {!Event} event
    */
   _breakpointCheckboxClicked(event) {
+    const hadFocus = this.hasFocus();
     const breakpoints = this._breakpointLocations(event).map(breakpointLocation => breakpointLocation.breakpoint);
     const newState = event.target.checkboxElement.checked;
     for (const breakpoint of breakpoints) {
       breakpoint.setEnabled(newState);
+      const item =
+          this._breakpoints.find(breakpointItem => breakpointItem.breakpointLocation.breakpoint === breakpoint);
+      if (item) {
+        this._list.refreshItem(item);
+      }
+    }
+    if (hadFocus) {
+      this.focus();
     }
     event.consume();
   }
 
   /**
-   * @param {!Event} event
+   * @param {!Element} element
    */
-  _revealLocation(event) {
-    const uiLocations = this._breakpointLocations(event).map(breakpointLocation => breakpointLocation.uiLocation);
+  _revealLocation(element) {
+    const uiLocations =
+        this._breakpointLocationsForElement(element).map(breakpointLocation => breakpointLocation.uiLocation);
     let uiLocation = null;
     for (const uiLocationCandidate of uiLocations) {
       if (!uiLocation || uiLocationCandidate.columnNumber < uiLocation.columnNumber) {
@@ -191,6 +288,9 @@ Sources.JavaScriptBreakpointsSidebarPane = class extends UI.ThrottledWidget {
                                                       Common.UIString('Remove breakpoint');
     contextMenu.defaultSection().appendItem(
         removeEntryTitle, () => breakpoints.map(breakpoint => breakpoint.remove(false /* keepInStorage */)));
+    if (event.target instanceof Element) {
+      contextMenu.defaultSection().appendItem(ls`Reveal location`, this._revealLocation.bind(this, event.target));
+    }
 
     const breakpointActive = Common.moduleSetting('breakpointsActive').get();
     const breakpointActiveTitle =
@@ -250,9 +350,37 @@ Sources.JavaScriptBreakpointsSidebarPane = class extends UI.ThrottledWidget {
 
   _didUpdateForTest() {
   }
-};
+}
 
-Sources.JavaScriptBreakpointsSidebarPane._locationSymbol = Symbol('location');
-Sources.JavaScriptBreakpointsSidebarPane._checkboxLabelSymbol = Symbol('checkbox-label');
-Sources.JavaScriptBreakpointsSidebarPane._snippetElementSymbol = Symbol('snippet-element');
-Sources.JavaScriptBreakpointsSidebarPane._breakpointLocationsSymbol = Symbol('locations');
+export const _locationSymbol = Symbol('location');
+export const _checkboxLabelSymbol = Symbol('checkbox-label');
+export const _snippetElementSymbol = Symbol('snippet-element');
+export const _breakpointLocationsSymbol = Symbol('locations');
+
+/* Legacy exported object */
+self.Sources = self.Sources || {};
+
+/* Legacy exported object */
+Sources = Sources || {};
+
+/** @constructor */
+Sources.JavaScriptBreakpointsSidebarPane = JavaScriptBreakpointsSidebarPane;
+
+Sources.JavaScriptBreakpointsSidebarPane._locationSymbol = _locationSymbol;
+Sources.JavaScriptBreakpointsSidebarPane._checkboxLabelSymbol = _checkboxLabelSymbol;
+Sources.JavaScriptBreakpointsSidebarPane._snippetElementSymbol = _snippetElementSymbol;
+Sources.JavaScriptBreakpointsSidebarPane._breakpointLocationsSymbol = _breakpointLocationsSymbol;
+
+/** @typedef {{breakpoint: !Bindings.BreakpointManager.Breakpoint, uiLocation: !Workspace.UILocation}} */
+Sources.JavaScriptBreakpointsSidebarPane.Breakpoint;
+
+/**
+ * @typedef {{
+ * breakpointLocation: !Sources.JavaScriptBreakpointsSidebarPane.Breakpoint,
+ * locations: !Array.<!Sources.JavaScriptBreakpointsSidebarPane.Breakpoint>,
+ * showColumn: boolean,
+ * isSelected: boolean,
+ * content: !Promise.<?string>
+ * }}
+ */
+Sources.JavaScriptBreakpointsSidebarPane.BreakpointItem;

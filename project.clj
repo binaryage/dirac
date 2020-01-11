@@ -7,11 +7,11 @@
 (def lein-cljsbuild-version "1.1.7")
 
 (def provided-deps
-  [['org.clojure/clojure selected-clojure-version :scope "provided"]
-   ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
+  [['org.clojure/clojure selected-clojure-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "0.6.532"]
+  [['org.clojure/clojurescript selected-clojurescript-version]
+   ['org.clojure/core.async "0.6.532"]
    ['org.clojure/tools.logging "0.5.0"]
    ['org.clojure/tools.cli "0.4.2"]
    ['nrepl/nrepl "0.6.0"]
@@ -20,14 +20,19 @@
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
    ['funcool/cuerdas "2.2.1"]
-   ['com.rpl/specter "1.1.3"]])
+   ['com.rpl/specter "1.1.3"]
+   ['progrock "0.1.2"]
+   ['me.raynes/conch "0.8.0"]
+   ['clj-sub-command "0.5.1"]
+   ['ring/ring-core "1.8.0"]
+   ['ring/ring-defaults "0.3.2"]
+   ['binaryage/devtools "0.9.11"]])
 
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.7.0" :scope "test"]
    ['binaryage/chromex "0.8.5" :scope "test"]
-   ['binaryage/devtools "0.9.11" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.46" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
@@ -38,13 +43,13 @@
    ['org.clojure/tools.namespace "0.3.1" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
    ['fipp "0.6.22" :scope "test"]
+   ['nubank/matcher-combinators "1.2.7" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
 
    ['http.async.client "1.3.1" :scope "test"]
 
-   ['ring/ring-core "1.8.0" :scope "test"]
    ['ring/ring-devel "1.8.0" :scope "test"]
    ['clj-time "0.15.2" :scope "test"]
 
@@ -59,7 +64,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.4.6"
+(defproject binaryage/dirac "1.5.2"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -90,6 +95,8 @@
                  "src/settings"
                  "src/shared"
                  "src/logging"
+                 "src/main"
+                 "src/home"
 
                  "test/src/test_lib"
                  "test/src/webdriver"
@@ -101,7 +108,8 @@
                  "test/browser/fixtures/src/scenarios03"
                  "test/browser/fixtures/src/tasks"
                  "test/browser/src/browser_tests"]
-  :resource-paths ["resources"]
+  :resource-paths ["resources/dev"
+                   "resources/templates"]
   :test-paths ["test"]
 
   ; unfortunately this must be on root level because leiningen does not properly merge metadata
@@ -123,16 +131,18 @@
                                           "src/settings"
                                           "src/runtime"
                                           "src/lib"
+                                          "src/home"
+                                          "src/main"
                                           "src/agent"
                                           "src/nrepl"]
-               :resource-paths ^:replace []
+               :resource-paths ^:replace ["resources/templates"]
                :test-paths     ^:replace []}]
 
              :logging-support
              ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
              [{:dependencies [[clj-logging-config ~clj-logging-config-version :scope nil]
-                             [org.slf4j/slf4j-log4j12 ~slf4j-log4j12-version :scope nil]]
-              :source-paths ["src/logging"]}]
+                              [org.slf4j/slf4j-log4j12 ~slf4j-log4j12-version :scope nil]]
+               :source-paths ["src/logging"]}]
 
              :lib-with-logging
              [:lib :logging-support]
@@ -154,9 +164,6 @@
 
              :suspended-debugger-5007
              {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5007"]}
-
-             :clojure18
-             {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
              {:dependencies [[org.clojure/clojure "1.9.0" :scope "provided" :upgrade false]]}
@@ -182,6 +189,8 @@
                                        "src/nrepl"
                                        "src/shared"
                                        "src/logging"
+                                       "src/home"
+                                       "src/main"
                                        "test/src/test_lib"
                                        "test/src/webdriver"
                                        "test/browser/src/browser_tests"
@@ -205,7 +214,7 @@
                             :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/tasks/main.js"
                                              :output-dir           "test/browser/fixtures/resources/.compiled/tasks"
                                              :optimizations        :none                                                      ; we rely on optimizations :none in test runner
-                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
+                                             :external-config      {:devtools/config {:dont-detect-custom-formatters true}}
                                              :source-map           true
                                              :source-map-timestamp true}}
                            :scenarios01
@@ -320,6 +329,7 @@
                                              :output-dir      "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
                                              :external-config {:devtools/config {:dont-detect-custom-formatters true}}
                                              :optimizations   :none
+                                             :main            dirac.implant
                                              :source-map      true}}
 
                            :dirac-background
@@ -495,9 +505,11 @@
             "test-browser"               ["shell" "scripts/test-browser.sh"]                                                  ; this will run browser tests against fully optimized dirac extension (release build)
             "test-browser-dev"           ["shell" "scripts/test-browser-dev.sh"]                                              ; this will run browser tests against unpacked dirac extension
 
-            "run-backend-tests-18"       ["with-profile" "+test-runner,+clojure18" "run" "-m" "dirac.tests.backend.runner"]
             "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19" "run" "-m" "dirac.tests.backend.runner"]
             "run-backend-tests-110"      ["with-profile" "+test-runner,+clojure110" "run" "-m" "dirac.tests.backend.runner"]
+
+            "run-cli-tests-19"           ["with-profile" "+test-runner,+clojure19" "run" "-m" "dirac.test-runner"]
+            "run-cli-tests-110"          ["with-profile" "+test-runner,+clojure110" "run" "-m" "dirac.test-runner"]
 
             "run-browser-tests"          ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner"]
             "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner/-dev-main"]

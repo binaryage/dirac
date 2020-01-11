@@ -1,11 +1,12 @@
 // Copyright (c) 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 /**
  * @implements {SDK.TargetManager.Observer}
  * @unrestricted
  */
-Resources.AppManifestView = class extends UI.VBox {
+export default class AppManifestView extends UI.VBox {
   constructor() {
     super(true);
     this.registerRequiredCSS('resources/appManifestView.css');
@@ -175,11 +176,8 @@ Resources.AppManifestView = class extends UI.VBox {
       this._iconsSection.setIconMasked(setIconMaskedCheckbox.checkboxElement.checked);
     });
     this._iconsSection.appendRow().appendChild(setIconMaskedCheckbox);
-    // TODO(mathias): Uncomment this once we have official docs.
-    // const documentationLink = UI.XLink.create(
-    //   'https://web.dev/#TODO',  // TODO(mathias): Update once we have official docs.
-    //   ls`documentation on maskable icons`);
-    // this._iconsSection.appendRow().appendChild(UI.formatLocalized('Need help? Read our %s.', [documentationLink]));
+    const documentationLink = UI.XLink.create('https://web.dev/maskable-icon/', ls`documentation on maskable icons`);
+    this._iconsSection.appendRow().appendChild(UI.formatLocalized('Need help? Read our %s.', [documentationLink]));
 
     if (manifestIcons && manifestIcons.primaryIcon) {
       const wrapper = createElement('div');
@@ -189,7 +187,7 @@ Resources.AppManifestView = class extends UI.VBox {
       image.style.maxHeight = '200px';
       image.src = 'data:image/png;base64,' + manifestIcons.primaryIcon;
       image.alt = ls`Primary manifest icon from ${url}`;
-      const title = ls`Primary Icon\nas used by chrome`;
+      const title = ls`Primary icon\nas used by Chrome`;
       const field = this._iconsSection.appendFlexedField(title);
       wrapper.appendChild(image);
       field.appendChild(wrapper);
@@ -273,4 +271,13 @@ Resources.AppManifestView = class extends UI.VBox {
     }
     return null;
   }
-};
+}
+
+/* Legacy exported object */
+self.Resources = self.Resources || {};
+
+/* Legacy exported object */
+Resources = Resources || {};
+
+/** @constructor */
+Resources.AppManifestView = AppManifestView;
