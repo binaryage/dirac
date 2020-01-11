@@ -402,7 +402,7 @@ export class RegExpSetting extends Setting {
    * @param {string=} regexFlags
    */
   constructor(settings, name, defaultValue, eventSupport, storage, regexFlags) {
-    super(settings, name, defaultValue ? [{pattern: defaultValue}] : [], eventSupport, storage);
+    super(settings, name, defaultValue ? (typeof defaultValue === "string" ? [{pattern: defaultValue}] : defaultValue) : [], eventSupport, storage);
     this._regexFlags = regexFlags;
   }
 
