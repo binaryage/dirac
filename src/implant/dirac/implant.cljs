@@ -14,7 +14,7 @@
             [dirac.implant.version :refer [version]]
             [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
             [dirac.shared.console :refer [log-to-console!]]
-            [dirac.shared.utils :refer [runonce]]
+            [dirac.shared.utils :refer [runonce when-advanced-mode]]
             [oops.core :refer [gcall! gget oapply ocall oget oset! oset!+]])
   (:import goog.async.Debouncer))
 
@@ -166,7 +166,8 @@
     ; (log-to-console!)
     ;(install-devtools-if-needed!)
     (enhance-dirac-object! (gget "dirac"))                                                                                    ; see front_end/dirac/dirac.js
-    (reporter/install!)
+    (when-advanced-mode
+      (reporter/install!))
     (automation/install!)
     (feedback/install!)
     (eval/go-start-eval-request-queue-processing-loop!)
