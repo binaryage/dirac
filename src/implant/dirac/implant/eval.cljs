@@ -133,8 +133,8 @@
   (if-some [info-fn (pref :display-user-info-fn)]
     (info-fn msg)))
 
-(defn display-user-error! [msg & more]
-  (warn msg more)
+(defn display-user-error! [msg]
+  (warn msg)
   (if-some [error-fn (pref :display-user-error-fn)]
     (error-fn msg)))
 
