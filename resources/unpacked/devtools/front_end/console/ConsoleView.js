@@ -33,7 +33,7 @@ import {ConsolePrompt, Events as ConsolePromptEvents} from './ConsolePrompt.js';
 import {ConsoleSidebar, Events} from './ConsoleSidebar.js';
 import {ConsoleGroupViewMessage, ConsoleViewMessage, MaxLengthForLinks} from './ConsoleViewMessage.js';  // eslint-disable-line no-unused-vars
 import {ConsoleViewport, ConsoleViewportElement, ConsoleViewportProvider} from './ConsoleViewport.js';  // eslint-disable-line no-unused-vars
-import {DiracPromptWithHistory} from './DiracPrompt.js';
+import {ConsoleDiracPrompt} from './ConsoleDiracPrompt.js';
 
 /**
  * @implements {UI.Searchable}
@@ -260,7 +260,7 @@ export class ConsoleView extends UI.VBox {
     this._activePromptIndex = 0;
 
     if (dirac.hasREPL) {
-      const diracPrompt = new DiracPromptWithHistory(diracPromptCodeMirrorInstance);
+      const diracPrompt = new ConsoleDiracPrompt(diracPromptCodeMirrorInstance);
       diracPrompt.setAutocompletionTimeout(0);
       diracPrompt.renderAsBlock();
       const diracProxyElement = diracPrompt.attach(diracPromptElement);
@@ -1513,7 +1513,7 @@ export class ConsoleView extends UI.VBox {
       this._updateStickToBottomOnWheel();
       return;
     } else if (isEnterKey(keyboardEvent)) {
-      // TODO: this should be eventually moved to DiracPrompt.js
+      // TODO: this should be eventually moved to ConsoleDiracPrompt.js
       // let's wait for upstream to finish transition to ConsolePrompt.js
       const promptDescriptor = this._prompts[this._activePromptIndex];
       if (promptDescriptor.id === "dirac") {

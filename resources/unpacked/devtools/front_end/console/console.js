@@ -11,7 +11,7 @@ import './ConsoleViewMessage.js';
 import './ConsolePrompt.js';
 import './ConsoleView.js';
 import './ConsolePanel.js';
-import './DiracPrompt.js';
+import './ConsoleDiracPrompt.js';
 
 import * as ConsoleContextSelector from './ConsoleContextSelector.js';
 import * as ConsoleFilter from './ConsoleFilter.js';
@@ -22,7 +22,7 @@ import * as ConsoleSidebar from './ConsoleSidebar.js';
 import * as ConsoleView from './ConsoleView.js';
 import * as ConsoleViewMessage from './ConsoleViewMessage.js';
 import * as ConsoleViewport from './ConsoleViewport.js';
-import * as DiracPromptWithHistory from './DiracPrompt.js';
+import * as ConsoleDiracPrompt from './ConsoleDiracPrompt.js';
 
 export {
   ConsoleContextSelector,
@@ -34,5 +34,5 @@ export {
   ConsoleView,
   ConsoleViewMessage,
   ConsoleViewport,
-  DiracPromptWithHistory,
+  ConsoleDiracPrompt,
 };

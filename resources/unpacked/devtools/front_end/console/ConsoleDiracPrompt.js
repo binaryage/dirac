@@ -1,7 +1,7 @@
 /**
  * @unrestricted
  */
-export class DiracPromptWithHistory extends UI.TextPrompt {
+export class ConsoleDiracPrompt extends UI.TextPrompt {
 
   /**
    * @param {!CodeMirror} codeMirrorInstance

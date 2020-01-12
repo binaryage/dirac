@@ -383,7 +383,7 @@ all_devtools_files = [
 
   # dirac - start
   "front_end/console/clojure-parinfer.js",
-  "front_end/console/DiracPrompt.js",
+  "front_end/console/ConsoleDiracPrompt.js",
   "front_end/console/dirac-hacks.css",
   "front_end/console/dirac-codemirror.css",
   "front_end/console/dirac-theme.css",
@@ -1137,7 +1137,7 @@ all_devtools_modules = [
   "front_end/workspace/workspace.js",
   "front_end/workspace/WorkspaceImpl.js",
   # dirac - start
-  "front_end/console/DiracPrompt.js",
+  "front_end/console/ConsoleDiracPrompt.js",
   "front_end/cm/placeholder.js",
   "front_end/cm/runmode.js",
   # dirac - end

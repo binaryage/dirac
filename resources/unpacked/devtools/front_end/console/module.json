@@ -228,9 +228,9 @@
         "ConsoleViewport.js",
         "ConsoleViewMessage.js",
         "ConsolePrompt.js",
-        "DiracPrompt.js",
         "ConsoleView.js",
-        "ConsolePanel.js"
+        "ConsolePanel.js",
+        "ConsoleDiracPrompt.js"
     ],
     "skip_compilation": [
         "clojure-parinfer.js"
