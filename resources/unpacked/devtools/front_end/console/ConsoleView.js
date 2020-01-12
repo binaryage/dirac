@@ -1185,9 +1185,9 @@ export class ConsoleView extends UI.VBox {
       case SDK.ConsoleMessage.MessageType.Command:
         return new ConsoleCommand(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.DiracCommand:
-        return new Console.ConsoleDiracCommand(message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
+        return new ConsoleDiracCommand(message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.DiracMarkup:
-        return new Console.ConsoleDiracMarkup(message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
+        return new ConsoleDiracMarkup(message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.Result:
         return new ConsoleCommandResult(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.StartGroupCollapsed:
@@ -2051,7 +2051,7 @@ export class ConsoleCommand extends ConsoleViewMessage {
 /**
  * @unrestricted
  */
-export class ConsoleDiracCommand extends ConsoleCommand {
+class ConsoleDiracCommand extends ConsoleCommand {
   /**
    * @override
    * @return {!Element}
@@ -2078,7 +2078,7 @@ export class ConsoleDiracCommand extends ConsoleCommand {
 /**
  * @unrestricted
  */
-export class ConsoleDiracMarkup extends ConsoleCommand {
+class ConsoleDiracMarkup extends ConsoleCommand {
   /**
    * @override
    * @return {!Element}
