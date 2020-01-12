@@ -127,6 +127,7 @@ Options:
       --no-profile                         Don't specify any Chromium data dir
       --chromium-version VERSION           Force specific Chromium version, does not ask the binary
       --dry-chromium                       Don't spawn Chromium, only print launch command
+      --debug PORT                         Spawn Chromium with --remote-debugging-port=PORT
       --no-playground                      Don't support playground
       --releases PATH                      Force alternative releases.edn file, do not check for updates
       --releases-url URL                   Force alternative releases.edn url
