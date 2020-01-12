@@ -219,6 +219,8 @@
       "clojure-parinfer.js"
     ],
     "modules": [
+        "console.js",
+        "console-legacy.js",
         "ConsoleContextSelector.js",
         "ConsoleFilter.js",
         "ConsolePinPane.js",
