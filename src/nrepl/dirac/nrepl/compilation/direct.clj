@@ -6,7 +6,7 @@
             [clojure.string :as string]
             [clojure.data.json :as json]
             [clojure.tools.logging :as log]
-            [dirac.lib.utils :as utils])
+            [dirac.utils :as utils])
   (:import (java.util.concurrent.atomic AtomicLong)
            (java.util Base64)))
 

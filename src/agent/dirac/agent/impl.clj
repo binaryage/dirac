@@ -1,10 +1,11 @@
 (ns dirac.agent.impl
   (:require [clojure.core.async :refer [<! <!! >!! alts!! chan close! go go-loop put! timeout]]
             [clojure.tools.logging :as log]
+            [dirac.nrepl-lib.nrepl-tunnel :as nrepl-tunnel]
+            [dirac.nrepl-lib.common :as nrepl-common]
             [dirac.agent.config :as config]
             [dirac.agent.version :refer [version]]
-            [dirac.lib.nrepl-tunnel :as nrepl-tunnel]
-            [dirac.lib.utils :as utils])
+            [dirac.utils :as utils])
   (:import (clojure.lang ExceptionInfo)
            (java.net ConnectException)))
 
@@ -113,7 +114,7 @@
                       (Thread/sleep delay-between-boot-trials)
                       (recur (inc trial)))))
         (let [{:keys [host port]} (:nrepl-server config)
-              nrepl-server-url (utils/get-nrepl-server-url host port)
+              nrepl-server-url (nrepl-common/get-nrepl-server-url host port)
               trial-period-in-seconds (/ (* max-boot-trials delay-between-boot-trials) 1000)
               trial-display (format "%.2f" (double trial-period-in-seconds))]
           (log/error (failed-to-start-dirac-agent-message max-boot-trials trial-display nrepl-server-url))

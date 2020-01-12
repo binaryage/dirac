@@ -7,7 +7,7 @@
             [dirac.automation.runner :as runner]
             [dirac.automation.status-host :as status-host]
             [dirac.automation.transcript-host :as transcript-host]
-            [dirac.lib.ws-client :as ws-client]
+            [dirac.shared.ws-client :as ws-client]
             [dirac.options.model :as options-model]
             [dirac.settings :refer [get-chrome-remote-debugging-host
                                     get-chrome-remote-debugging-port

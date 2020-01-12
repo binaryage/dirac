@@ -1,5 +1,6 @@
 (ns dirac.agent.config
-  (:require [dirac.lib.utils :refer [deep-merge-ignoring-nils read-env-config]]))
+  (:require [dirac.utils :refer [deep-merge-ignoring-nils]]
+            [dirac.config :refer [read-env-config]]))
 
 (def env-config-prefix "dirac-agent")
 

@@ -1,13 +1,13 @@
 (ns dirac.main.logging
   (:require [clj-logging-config.log4j :as config]
-            [dirac.lib.utils :as lib-utils]
+            [dirac.utils :as utils]
             [dirac.main.logging.format :refer [standard-layout]])
   (:import (org.apache.log4j Level)))
 
 (def initialized? (volatile! false))
 
 (defn merge-options [& option-maps]
-  (or (apply lib-utils/deep-merge-ignoring-nils option-maps) {}))
+  (or (apply utils/deep-merge-ignoring-nils option-maps) {}))
 
 ; -- options ----------------------------------------------------------------------------------------------------------------
 

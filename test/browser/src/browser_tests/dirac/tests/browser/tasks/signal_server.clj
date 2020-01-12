@@ -1,6 +1,6 @@
 (ns dirac.tests.browser.tasks.signal-server
   (:require [clojure.tools.logging :as log]
-            [dirac.lib.ws-server :as ws-server]
+            [dirac.shared.ws-server :as ws-server]
             [dirac.settings :refer [get-default-task-timeout
                                     get-kill-task-timeout
                                     get-signal-server-close-wait-timeout

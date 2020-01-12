@@ -1,7 +1,7 @@
 (ns dirac.nrepl
   (:require [clojure.tools.logging :as log]
             [nrepl.middleware :refer [set-descriptor!]]
-            [dirac.lib.utils :as utils]
+            [dirac.utils :as utils]
             [dirac.nrepl.bootstrap :as bootstrap]
             [dirac.nrepl.config :as config]
             [dirac.nrepl.piggieback :as piggieback]))

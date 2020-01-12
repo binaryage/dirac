@@ -1,6 +1,6 @@
 (ns dirac.automation.transcript-streamer
   (:require [dirac.automation.logging :refer [error info log warn]]
-            [dirac.lib.ws-client :as ws-client]
+            [dirac.shared.ws-client :as ws-client]
             [dirac.shared.async :refer [<! go go-channel put! sliding-buffer]]))
 
 (defonce current-client (atom nil))

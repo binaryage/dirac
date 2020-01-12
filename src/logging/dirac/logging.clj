@@ -14,7 +14,7 @@
 (def base-options
   (standard-layout :yellow))
 
-(def lib-options
+(def other-options
   (standard-layout :blue))
 
 (def nrepl-options
@@ -47,7 +47,8 @@
         "dirac.agent" (merge-options base-options options)
         ; nrepl
         "dirac.nrepl" (merge-options nrepl-options options)
-        ; lib
-        "dirac.logging" (merge-options lib-options options)
-        "dirac.lib" (merge-options lib-options options)
-        "dirac.lib.weasel-server" (merge-options weasel-options options)))))
+        "dirac.nrepl-lib" (merge-options nrepl-options options)
+        ; other
+        "dirac.logging" (merge-options other-options options)
+        "dirac.utils" (merge-options other-options options)
+        "dirac.config" (merge-options other-options options)))))

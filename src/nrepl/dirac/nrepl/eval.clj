@@ -5,7 +5,7 @@
             [clojure.tools.reader]
             [clojure.tools.reader.reader-types :as readers]
             [cuerdas.core :as cuerdas]
-            [dirac.lib.utils :as utils]
+            [dirac.utils :as utils]
             [dirac.nrepl.compilers :as compilers]
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.protocol :as protocol]

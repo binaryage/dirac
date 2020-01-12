@@ -1,7 +1,7 @@
 ; initial version taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
-(ns dirac.lib.ws-client
+(ns dirac.shared.ws-client
   (:require [cljs.reader :refer [read-string]]
-            [dirac.lib.logging :refer [error info log warn]]
+            [dirac.shared.logging :refer [error info log warn]]
             [goog.net.WebSocket :as goog-ws]))
 
 (def defaults {:name              "WebSocket Client"

@@ -77,16 +77,17 @@
 
   :plugins [[lein-shell "0.5.0"]]
 
-  ; this is for Cursive, may be redefined by profiles
+  ; this union of all paths for Cursive, may be redefined by profiles
   :source-paths ["scripts"
 
+                 "src/base"
                  "src/agent"
                  "src/automation"
                  "src/background"
                  "src/devtools"
                  "src/figwheel"
                  "src/implant"
-                 "src/lib"
+                 "src/nrepl-lib"
                  "src/nrepl"
                  "src/options"
                  "src/project"
@@ -127,10 +128,11 @@
   :profiles {:lib
              ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
              [{:dependencies   ~(with-meta lib-deps {:replace true})
-               :source-paths   ^:replace ["src/project"
+               :source-paths   ^:replace ["src/base"
+                                          "src/project"
                                           "src/settings"
                                           "src/runtime"
-                                          "src/lib"
+                                          "src/nrepl-lib"
                                           "src/home"
                                           "src/main"
                                           "src/agent"
@@ -182,10 +184,11 @@
              {:aliases ^:replace {}}
 
              :test-runner
-             {:source-paths ^:replace ["src/project"
+             {:source-paths ^:replace ["src/base"
+                                       "src/project"
                                        "src/settings"
-                                       "src/lib"
                                        "src/agent"
+                                       "src/nrepl-lib"
                                        "src/nrepl"
                                        "src/shared"
                                        "src/logging"
@@ -318,7 +321,6 @@
                           {:dirac-implant
                            {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-implant"]
                             :source-paths   ["src/settings"
-                                             "src/lib"
                                              "src/shared"
                                              "src/logging"
                                              "src/project"
@@ -339,7 +341,6 @@
                            :dirac-background
                            {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-background"]
                             :source-paths   ["src/settings"
-                                             "src/lib"
                                              "src/figwheel"
                                              "src/shared"
                                              "src/logging"
@@ -355,7 +356,6 @@
                            :dirac-options
                            {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-options"]
                             :source-paths   ["src/settings"
-                                             "src/lib"
                                              "src/figwheel"
                                              "src/shared"
                                              "src/logging"
@@ -375,7 +375,6 @@
               :cljsbuild {:builds
                           {:dirac-implant
                            {:source-paths ["src/settings"
-                                           "src/lib"
                                            "src/shared"
                                            "src/logging"
                                            "src/project"
@@ -387,7 +386,6 @@
                                            :elide-asserts true}}
                            :dirac-background
                            {:source-paths ["src/settings"
-                                           "src/lib"
                                            "src/shared"
                                            "src/logging"
                                            "src/project"
@@ -399,7 +397,6 @@
                                            :elide-asserts true}}
                            :dirac-options
                            {:source-paths ["src/settings"
-                                           "src/lib"
                                            "src/shared"
                                            "src/logging"
                                            "src/project"

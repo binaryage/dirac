@@ -1,7 +1,7 @@
 (ns dirac.nrepl.debug
   (:require [clojure.tools.logging :as log]
             [cuerdas.core :as cuerdas]
-            [dirac.lib.utils :as utils])
+            [dirac.utils :as utils])
   (:import (java.io PrintWriter StringWriter)))
 
 (def ^:dynamic *log-stack-traces* false)

@@ -11,7 +11,7 @@
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
             [dirac.implant.version :as implant-version]
             [dirac.implant.weasel-client :as weasel-client]
-            [dirac.lib.ws-client :as ws-client]
+            [dirac.shared.ws-client :as ws-client]
             [dirac.shared.async :refer [<! close! go go-channel go-wait put!]]
             [dirac.shared.utils :as utils]
             [goog.functions :as gfns]

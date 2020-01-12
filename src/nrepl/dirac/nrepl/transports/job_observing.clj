@@ -1,7 +1,7 @@
 (ns dirac.nrepl.transports.job-observing
   (:require [clojure.tools.logging :as log]
             [nrepl.transport :as nrepl-transport]
-            [dirac.lib.utils :as utils]
+            [dirac.utils :as utils]
             [dirac.nrepl.jobs :as jobs]
             [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.sessions :as sessions])

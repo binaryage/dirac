@@ -1,8 +1,9 @@
 ; taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
-(ns dirac.lib.ws-server
+(ns dirac.nrepl-lib.ws-server
   (:require [clojure.core.async :as core-async :refer [<! <!! >!! alts!! chan go go-loop put! timeout]]
             [clojure.tools.logging :as log]
-            [dirac.lib.utils :as utils]
+            [dirac.utils :as utils]
+            [dirac.nrepl-lib.common :as common]
             [org.httpkit.server :as http])
   (:import (java.net BindException)))
 
@@ -77,7 +78,7 @@
   {:pre [(instance? WebSocketServer server)]}
   (let [host (get-host server)
         port (get-local-port server)]
-    (utils/get-ws-url host port)))
+    (common/get-ws-url host port)))
 
 (defn deliver-first-client-promise! [server client]
   (let [first-client-promise (get-first-client-promise server)]

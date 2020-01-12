@@ -1,7 +1,7 @@
 (ns dirac.nrepl.compilers
   (:require [cljs.env :as cljs-env]
             [clojure.tools.logging :as log]
-            [dirac.lib.utils :as utils]
+            [dirac.utils :as utils]
             [dirac.nrepl.figwheel :as figwheel]
             [dirac.nrepl.figwheel2 :as figwheel2]
             [dirac.nrepl.sessions :as sessions]

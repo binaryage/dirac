@@ -3,7 +3,7 @@
   (:require [clojure.string :as string]
             [clojure.tools.logging :as log]
             [nrepl.transport :as transport]
-            [dirac.lib.utils :as utils]
+            [dirac.utils :as utils]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.jobs :as jobs]
             [dirac.nrepl.messages :as messages]
