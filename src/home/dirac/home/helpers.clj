@@ -238,21 +238,25 @@
       (list-disk-resource-items resource))))
 
 ; see https://stackoverflow.com/a/48303746/84283
-(defn copy-resources-into-dir! [root-resource target-dir]
-  (let [root-resource-url (if (instance? URL root-resource)
-                            root-resource
-                            (io/resource root-resource))]
-    (if (nil? root-resource-url)
-      (throw (ex-info (str "Resource not found: '" root-resource "'"), {:resource root-resource}))
-      (let [resource-items (list-resource-items root-resource-url)]
-        (doseq [resource-item resource-items]
-          (if-not (:dir? resource-item)
-            (let [relative-path (:path resource-item)
-                  resource-path (str root-resource-url File/separator relative-path)
-                  resource-stream (io/input-stream (URL. resource-path))
-                  target-path (io/file target-dir relative-path)]
-              (io/make-parents target-path)
-              (io/copy resource-stream target-path))))))))
+(defn copy-resources-into-dir!
+  ([root-resource target-dir] (copy-resources-into-dir! root-resource target-dir identity))
+  ([root-resource target-dir target-path-xform]
+   (doall (remove nil?
+                  (let [root-resource-url (if (instance? URL root-resource)
+                                            root-resource
+                                            (io/resource root-resource))]
+                    (if (nil? root-resource-url)
+                      (throw (ex-info (str "Resource not found: '" root-resource "'"), {:resource root-resource}))
+                      (let [resource-items (list-resource-items root-resource-url)]
+                        (for [resource-item resource-items]
+                          (if-not (:dir? resource-item)
+                            (let [relative-path (:path resource-item)
+                                  resource-path (str root-resource-url File/separator relative-path)
+                                  resource-stream (io/input-stream (URL. resource-path))
+                                  target-path (io/file (target-path-xform (.getPath (io/file target-dir relative-path))))]
+                              (io/make-parents target-path)
+                              (io/copy resource-stream target-path)
+                              (.getCanonicalPath target-path)))))))))))
 
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -262,13 +266,13 @@
                            "# test comment"
                            "--v=1"
                            "# test comment"])
-  (split-jar-uri "jar:file:/Users/darwin/.m2/repository/binaryage/dirac/1.5.1/dirac-1.5.1.jar!/dirac/playground-template")
-  (list-jar-resource-items "/Users/darwin/.m2/repository/binaryage/dirac/1.5.1/dirac-1.5.1.jar")
+  (split-jar-uri "jar:file:/Users/darwin/.m2/repository/binaryage/dirac/1.5.2/dirac-1.5.2.jar!/dirac/playground-template")
+  (list-jar-resource-items "/Users/darwin/.m2/repository/binaryage/dirac/1.5.2/dirac-1.5.2.jar")
   (list-disk-resource-items (.getCanonicalPath (io/file "resources/templates/dirac/playground-template")))
 
-  (list-resource-items (URL. "jar:file:/Users/darwin/.m2/repository/binaryage/dirac/1.5.1/dirac-1.5.1.jar!/dirac/playground-template"))
+  (list-resource-items (URL. "jar:file:/Users/darwin/.m2/repository/binaryage/dirac/1.5.2/dirac-1.5.2.jar!/dirac/playground-template"))
 
-  (copy-resources-into-dir! (URL. "jar:file:/Users/darwin/.m2/repository/binaryage/dirac/1.5.1/dirac-1.5.1.jar!/dirac/playground-template")
+  (copy-resources-into-dir! (URL. "jar:file:/Users/darwin/.m2/repository/binaryage/dirac/1.5.2/dirac-1.5.2.jar!/dirac/playground-template")
                             "/tmp/dirac-test/d1")
 
   (copy-resources-into-dir! (URL. (str "file:" (.getCanonicalPath (io/file "resources/templates/dirac/playground-template"))))
@@ -276,5 +280,10 @@
 
   (copy-resources-into-dir! "dirac/playground-template"
                             "/tmp/dirac-test/d3")
+
+  (copy-resources-into-dir! "dirac/playground-template"
+                            "/tmp/dirac-test/d4"
+                            (fn [name]
+                              (string/replace name #"\.template$" "")))
 
   )

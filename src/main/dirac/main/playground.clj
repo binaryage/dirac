@@ -14,7 +14,8 @@
             [org.httpkit.server :as http]
             [dirac.main.utils :as utils]
             [dirac.main.terminal :as terminal]
-            [dirac.nrepl.config-helpers :refer [standard-repl-init-code]]))
+            [dirac.nrepl.config-helpers :refer [standard-repl-init-code]]
+            [clojure.string :as string]))
 
 ; Our goal here is to run nREPL server with Dirac Agent and Figwheel Main inside current JVM.
 ; With this setup Dirac (v1.4.0+) can be aware of Figwheel Main and use its CLJS compiler auto-magically
@@ -94,9 +95,22 @@
      :nrepl-tunnel {:host "localhost"
                     :port agent-port}}))
 
+(defn rename-playground-resource [name]
+  ; playground-template is included in published dirac jar
+  ; people should add it as a dependency when including dirac middleware
+  ; shadow-cljs is indexing all cljs files on classpath and reports false positives on our playground-template directory:
+  ;
+  ; [2020-01-12 13:45:31.565 - INFO] filename violation for ns dirac.playground,
+  ; got: dirac/playground-template/src/dirac/playground.cljs
+  ; expected: dirac/playground.cljs (or .cljc)
+  ;
+  ; a workaround is to keep all cljs files in the template with extra ".template" file extension
+  ; and perform rename during on-disk extraction
+  (string/replace name #"\.template$" ""))
+
 (defn prepare-playground-dir! [dir-path]
   (helpers/ensure-dir! dir-path)
-  (helpers/copy-resources-into-dir! "dirac/playground-template" dir-path))
+  (helpers/copy-resources-into-dir! "dirac/playground-template" dir-path rename-playground-resource))
 
 (defn start-playground! [dir-path opts]
   (helpers/delete-files-recursively! dir-path)
