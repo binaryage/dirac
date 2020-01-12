@@ -33,6 +33,7 @@ import {ConsolePrompt, Events as ConsolePromptEvents} from './ConsolePrompt.js';
 import {ConsoleSidebar, Events} from './ConsoleSidebar.js';
 import {ConsoleGroupViewMessage, ConsoleViewMessage, MaxLengthForLinks} from './ConsoleViewMessage.js';  // eslint-disable-line no-unused-vars
 import {ConsoleViewport, ConsoleViewportElement, ConsoleViewportProvider} from './ConsoleViewport.js';  // eslint-disable-line no-unused-vars
+import {DiracPromptWithHistory} from './DiracPrompt.js';
 
 /**
  * @implements {UI.Searchable}
@@ -259,7 +260,7 @@ export class ConsoleView extends UI.VBox {
     this._activePromptIndex = 0;
 
     if (dirac.hasREPL) {
-      const diracPrompt = new Console.DiracPromptWithHistory(diracPromptCodeMirrorInstance);
+      const diracPrompt = new DiracPromptWithHistory(diracPromptCodeMirrorInstance);
       diracPrompt.setAutocompletionTimeout(0);
       diracPrompt.renderAsBlock();
       const diracProxyElement = diracPrompt.attach(diracPromptElement);
