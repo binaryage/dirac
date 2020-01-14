@@ -1,5 +1,5 @@
 ; taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
-(ns dirac.nrepl-lib.ws-server
+(ns dirac.ws-server
   (:require [clojure.core.async :as core-async :refer [<! <!! >!! alts!! chan go go-loop put! timeout]]
             [clojure.tools.logging :as log]
             [dirac.utils :as utils]

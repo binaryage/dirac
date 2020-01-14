@@ -6,7 +6,7 @@
             [clojure.tools.logging :as log]
             [org.httpkit.server :as http]
             [dirac.utils :as utils]
-            [dirac.nrepl-lib.ws-server :as server])
+            [dirac.ws-server :as server])
   (:import (clojure.lang Atom IDeref)))
 
 (def default-opts {:host       "localhost"

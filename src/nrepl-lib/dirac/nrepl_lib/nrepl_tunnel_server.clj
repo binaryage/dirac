@@ -5,7 +5,7 @@
             [dirac.nrepl-lib.nrepl-protocols :refer :all]
             [dirac.nrepl-lib.common :as nrepl-common]
             [dirac.nrepl-lib.version :as lib-version]
-            [dirac.nrepl-lib.ws-server :as ws-server]
+            [dirac.ws-server :as ws-server]
             [version-clj.core :refer [version-compare]])
   (:use [nrepl.misc :only (uuid)]))
 
