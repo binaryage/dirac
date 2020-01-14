@@ -18,7 +18,7 @@ Dirac is a flavored [Chrome DevTools][1] with extra tweaks for ClojureScript dev
 
 ### Quick start
 
-1. install the [CLI tool](docs/cli.md)
+1. install [the command-line tool](docs/cli.md)
 1. run `dirac` and wait for Chrome to launch
 1. in Chrome navigate away from "chrome://welcome" to some normal page, e.g. [https://clojurescript.org](https://clojurescript.org)
 1. in Chrome open DevTools (CTRL+SHIFT+I or CMD+OPT+I on a Mac)
@@ -29,7 +29,7 @@ Dirac is a flavored [Chrome DevTools][1] with extra tweaks for ClojureScript dev
 
 Dirac project maintains [a set of patches][2] rolling on top of official Chrome DevTools.
 That means you don't lose any functionality, you just sprinkle cljs enhancements on top. Additionally we 
-provide [a command-line tool][docs/cli.md] which allows you to launch Chrome with Dirac swapped in place of normal DevTools.
+provide [a command-line tool](docs/cli.md) which allows you to launch Chrome with Dirac swapped in place of normal DevTools.
 
   * enables [custom formatters][6] by default (for [cljs-devtools][7])
      * custom formatters are displayed inline on Source Panel (during debugging)
@@ -41,6 +41,8 @@ provide [a command-line tool][docs/cli.md] which allows you to launch Chrome wit
     * eval cljs code in the context of currently selected stack frame (when paused on a breakpoint)
     * cljs [code completion suggestions][4] (like completions in Javascript console)
     * [Parinfer][5] goodness
+  * initialized [blackboxing patterns](https://developer.chrome.com/devtools/docs/blackboxing) of cljs core libraries for 
+    better stack-trace experience
 
 ### Screenshots
 
