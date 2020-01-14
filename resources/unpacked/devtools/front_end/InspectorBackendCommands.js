@@ -3989,12 +3989,12 @@ Protocol.inspectorBackend.registerCommand("Profiler.startPreciseCoverage", [{
     "name": "detailed",
     "type": "boolean",
     "optional": true
-}], [], false);
+}], ["timestamp"], false);
 Protocol.inspectorBackend.registerCommand("Profiler.startTypeProfile", [], [], false);
 Protocol.inspectorBackend.registerCommand("Profiler.stop", [], ["profile"], false);
 Protocol.inspectorBackend.registerCommand("Profiler.stopPreciseCoverage", [], [], false);
 Protocol.inspectorBackend.registerCommand("Profiler.stopTypeProfile", [], [], false);
-Protocol.inspectorBackend.registerCommand("Profiler.takePreciseCoverage", [], ["result"], false);
+Protocol.inspectorBackend.registerCommand("Profiler.takePreciseCoverage", [], ["result", "timestamp"], false);
 Protocol.inspectorBackend.registerCommand("Profiler.takeTypeProfile", [], ["result"], false);
 Protocol.inspectorBackend.registerCommand("Profiler.enableRuntimeCallStats", [], [], false);
 Protocol.inspectorBackend.registerCommand("Profiler.disableRuntimeCallStats", [], [], false);
