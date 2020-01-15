@@ -6,7 +6,7 @@
 [![Examples](https://img.shields.io/badge/project-examples-ff69b4.svg)](https://github.com/binaryage/dirac/tree/master/examples) 
 [![Chrome Extension](https://img.shields.io/badge/chrome-extension-ebb338.svg)](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi)
 
-Dirac is a flavored [Chrome DevTools][1] with extra tweaks for ClojureScript developers.
+Dirac is a flavored [Chrome DevTools][1] with extra tweaks for [ClojureScript](https://clojurescript.org) developers.
 
 **DOC** 
 : **[Motivation](docs/motivation.md)**
