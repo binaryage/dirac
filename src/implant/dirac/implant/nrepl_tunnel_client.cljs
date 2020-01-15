@@ -4,7 +4,7 @@
             [dirac.implant.eval :as eval]
             [dirac.implant.logging :refer [error info log warn]]
             [dirac.implant.version :as implant-version]
-            [dirac.lib.ws-client :as ws-client]
+            [dirac.shared.ws-client :as ws-client]
             [dirac.shared.async :refer [<! close! go go-channel go-wait put!]]))
 
 (defonce wannabe-client (atom nil))

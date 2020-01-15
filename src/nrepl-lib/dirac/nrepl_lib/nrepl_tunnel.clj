@@ -1,13 +1,14 @@
-(ns dirac.lib.nrepl-tunnel
+(ns dirac.nrepl-lib.nrepl-tunnel
   (:require [clojure.core.async :refer [<! <!! >!! alts!! chan close! go go-loop put! timeout]]
             [clojure.core.async.impl.protocols :as core-async]
             [clojure.data]
             [clojure.tools.logging :as log]
-            [dirac.lib.nrepl-client :as nrepl-client]
-            [dirac.lib.nrepl-protocols :refer [NREPLTunnelService]]
-            [dirac.lib.nrepl-tunnel-server :as nrepl-tunnel-server]
-            [dirac.lib.utils :as utils]
-            [dirac.lib.version :as lib]
+            [dirac.utils :as utils]
+            [dirac.nrepl-lib.nrepl-client :as nrepl-client]
+            [dirac.nrepl-lib.nrepl-protocols :refer [NREPLTunnelService]]
+            [dirac.nrepl-lib.nrepl-tunnel-server :as nrepl-tunnel-server]
+            [dirac.nrepl-lib.common :as nrepl-common]
+            [dirac.nrepl-lib.version :as lib]
             [version-clj.core :refer [version-compare]]))
 
 ; Unfortunately, we cannot easily implement full-blown nREPL client in Dirac DevTools.
@@ -214,7 +215,7 @@
       (if (core-async/closed? channel)
         (log/warn (str tunnel) (str "An attempt to enqueue a message for nREPL server, but channel was already closed! => ignored\n")
                   (utils/pp message))
-        (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to nREPL server:\n")
+        (log/trace (str tunnel) (str "Enqueue message " (nrepl-common/sid message) " to be sent to nREPL server:\n")
                    (utils/pp message)))
       (put! channel [message receipt])
       receipt)))
@@ -226,7 +227,7 @@
       (if-some [[message receipt] (<! messages-chan)]
         (let [client (get-nrepl-client tunnel)]
           (deliver receipt (nrepl-client/send! client message))
-          (log/trace (str tunnel) (str "Sent message " (utils/sid message) " to nREPL server"))
+          (log/trace (str tunnel) (str "Sent message " (nrepl-common/sid message) " to nREPL server"))
           (recur))
         (do
           (log/debug (str tunnel) "Exiting server-messages-channel-processing-loop")
@@ -238,7 +239,7 @@
       (if (core-async/closed? channel)
         (log/warn (str tunnel) (str "An attempt to enqueue a message for DevTools client, but channel was already closed! => ignored\n")
                   (utils/pp message))
-        (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to a DevTools client via tunnel:\n")
+        (log/trace (str tunnel) (str "Enqueue message " (nrepl-common/sid message) " to be sent to a DevTools client via tunnel:\n")
                    (utils/pp message)))
       (put! channel [message receipt])
       receipt)))
@@ -250,7 +251,7 @@
       (if-some [[message receipt] (<! messages-chan)]
         (let [server (get-nrepl-tunnel-server tunnel)]
           (deliver receipt (nrepl-tunnel-server/dispatch-message! server message))
-          (log/trace (str tunnel) (str "Dispatched message " (utils/sid message) " to tunnel"))
+          (log/trace (str tunnel) (str "Dispatched message " (nrepl-common/sid message) " to tunnel"))
           (recur))
         (do
           (log/debug (str tunnel) "Exiting client-messages-channel-processing-loop")
@@ -273,8 +274,8 @@
 (defn dirac-nrepl-middleware-check! [nrepl-client]
   (let [[status message] (identify-dirac-nrepl-middleware! nrepl-client)]
     (case status
-      ::missing (utils/exit-with-error! message 77)
-      (::old ::unknown) (utils/print-warning! message)
+      ::missing (nrepl-common/exit-with-error! message 77)
+      (::old ::unknown) (nrepl-common/print-warning! message)
       ::ok nil)))
 
 (defn describe-middleware-setup! [nrepl-client expected-ops]
@@ -298,8 +299,8 @@
 (defn paranoid-middleware-setup-check! [nrepl-client expected-ops]
   (let [[status message] (describe-middleware-setup! nrepl-client expected-ops)]
     (case status
-      ::unexpected-setup (utils/print-warning! message)
-      ::bad-nrepl-version (utils/print-warning! message)
+      ::unexpected-setup (nrepl-common/print-warning! message)
+      ::bad-nrepl-version (nrepl-common/print-warning! message)
       ::ok nil)))
 
 (defn create! [options]

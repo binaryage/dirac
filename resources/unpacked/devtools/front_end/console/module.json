@@ -219,6 +219,8 @@
       "clojure-parinfer.js"
     ],
     "modules": [
+        "console.js",
+        "console-legacy.js",
         "ConsoleContextSelector.js",
         "ConsoleFilter.js",
         "ConsolePinPane.js",
@@ -226,9 +228,9 @@
         "ConsoleViewport.js",
         "ConsoleViewMessage.js",
         "ConsolePrompt.js",
-        "DiracPrompt.js",
         "ConsoleView.js",
-        "ConsolePanel.js"
+        "ConsolePanel.js",
+        "ConsoleDiracPrompt.js"
     ],
     "skip_compilation": [
         "clojure-parinfer.js"

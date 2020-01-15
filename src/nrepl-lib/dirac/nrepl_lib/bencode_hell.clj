@@ -1,4 +1,4 @@
-(ns dirac.lib.bencode-hell
+(ns dirac.nrepl-lib.bencode-hell
   (:require [clojure.edn :as edn]
             [clojure.walk :refer [postwalk]]))
 

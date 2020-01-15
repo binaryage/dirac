@@ -33,6 +33,6 @@ fi
 echo "Installing Dirac CLI tool as '$TARGET'..."
 mkdir -p "$(dirname "$TARGET")"
 cp "$TMP_FILE" "$TARGET"
-chmod +x "$TARGET"
+chmod a+rx "$TARGET"
 
 command -v $NAME

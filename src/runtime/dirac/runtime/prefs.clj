@@ -1,6 +1,7 @@
 (ns dirac.runtime.prefs
   (:require [clojure.string :as string]
-            [dirac.lib.utils :as utils])
+            [dirac.utils :as utils]
+            [dirac.config :as config])
   (:import (java.io File)))
 
 (defn attempt-to-read-runtime-tag-from-project-settings []
@@ -29,6 +30,6 @@
 (def env-config-prefix "dirac-runtime")
 
 (defmacro gen-static-config []
-  (let [env-config (utils/read-env-config env-config-prefix)
+  (let [env-config (config/read-env-config env-config-prefix)
         runtime-tag-config {:runtime-tag (attempt-to-determine-runtime-tag)}]
     (utils/deep-merge-ignoring-nils {} runtime-tag-config env-config)))

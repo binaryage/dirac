@@ -4,7 +4,7 @@
             [clj-sub-command.core :refer [parse-cmds]]))
 
 (def cli-name "dirac")
-(def cli-version "1.5.2")
+(def cli-version "1.5.3")
 (def cli-description "A command-line tool for Dirac DevTools.")
 
 ; -- options ----------------------------------------------------------------------------------------------------------------
@@ -23,6 +23,10 @@
 (def launch-options
   [[nil "--profile NAME" "Specify Chromium data dir" :default "default"]
    [nil "--no-profile" "Don't specify any Chromium data dir"]
+   [nil "--chromium-version VERSION" "Force specific Chromium version, does not ask the binary"]
+   [nil "--dry-chromium" "Don't spawn Chromium, only print launch command"]
+   [nil "--debug PORT" "Spawn Chromium with --remote-debugging-port=PORT"]
+   [nil "--no-playground" "Don't support playground"]
    [nil "--releases PATH" "Force alternative releases.edn file, do not check for updates"]
    [nil "--releases-url URL" "Force alternative releases.edn url"]])
 

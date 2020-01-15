@@ -1,7 +1,7 @@
 (ns dirac.nrepl.messages
   (:require [clojure.string :as string]
             [dirac.nrepl.helpers :as helpers]
-            [dirac.lib.utils :as utils]))
+            [dirac.utils :as utils]))
 
 (defn ^:dynamic make-missing-nrepl-session-msg [nrepl-message]
   (str "Error when processing a nREPL message. Unable to obtain nREPL session.\n"

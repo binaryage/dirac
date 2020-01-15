@@ -17,10 +17,8 @@ if (typeof runtime !== "undefined") {
       goog.define('goog.ENABLE_CHROME_APP_SAFE_SCRIPT_LOADING', true);
       insertScript('dirac/.compiled/implant/goog/deps.js', function () {
         insertScript('dirac/.compiled/implant/cljs_deps.js', function () {
-          insertScript('dirac/.compiled/implant/implant.js', function () {
-            goog.require("dirac.devtools");
-            goog.require("dirac.implant");
-          });
+          goog.require("dirac.devtools");
+          goog.require("dirac.implant");
         });
       });
     });

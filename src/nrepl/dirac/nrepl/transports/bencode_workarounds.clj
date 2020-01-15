@@ -1,12 +1,12 @@
 (ns dirac.nrepl.transports.bencode-workarounds
   (:require [clojure.tools.logging :as log]
             [nrepl.transport :as nrepl-transport]
-            [dirac.lib.bencode-hell :as bencode-hell]
+            [dirac.nrepl-lib.bencode-hell :as bencode-hell]
             [dirac.nrepl.debug :as debug])
   (:import (nrepl.transport Transport)))
 
 ; we have to invent our own encoding/decoding scheme for values which bencode cannot safely transfer
-; see dirac.lib.bencode-hell
+; see dirac.nrepl-lib.bencode-hell
 ;
 ; please note that if user is not using bencode transport but replace it with something sane, this workaround won't break it
 

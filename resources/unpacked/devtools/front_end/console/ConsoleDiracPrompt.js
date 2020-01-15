@@ -1,7 +1,7 @@
 /**
  * @unrestricted
  */
-export default class DiracPromptWithHistory extends UI.TextPrompt {
+export class ConsoleDiracPrompt extends UI.TextPrompt {
 
   /**
    * @param {!CodeMirror} codeMirrorInstance
@@ -935,14 +935,3 @@ export default class DiracPromptWithHistory extends UI.TextPrompt {
     }
   }
 }
-
-/* Legacy exported object */
-self.Console = self.Console || {};
-
-/* Legacy exported object */
-Console = Console || {};
-
-/**
- * @constructor
- */
-Console.DiracPromptWithHistory = DiracPromptWithHistory;

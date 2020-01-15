@@ -11,7 +11,13 @@
             "type": "setting",
             "settingName": "skipStackFramesPattern",
             "settingType": "regex",
-            "defaultValue": ""
+            "defaultValue": [
+              {"pattern":"cljs/.*\\.cljs$"},
+              {"pattern":"clojure/.*\\.cljs$"},
+              {"pattern":"goog/.*\\.js$"},
+              {"pattern":"devtools/.*\\.cljs$"},
+              {"pattern":"dirac/runtime/.*\\.cljs$"}
+            ]
         },
         {
             "type": "setting",
@@ -395,7 +401,7 @@
           "title": "Enable link actions",
           "settingName": "hasLinkActions",
           "settingType": "boolean",
-          "defaultValue": true
+          "defaultValue": false
         },
         {
             "type": "setting",

@@ -1,15 +1,15 @@
 (ns dirac.nrepl.bootstrap
   (:require [clojure.tools.logging :as log]
             [nrepl.middleware :refer [set-descriptor!]]
-            [dirac.lib.utils :as lib-utils]
-            [dirac.lib.weasel-server :as weasel-server]
+            [dirac.utils :as utils]
+            [dirac.nrepl-lib.weasel-server :as weasel-server]
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.messages :as messages]
             [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.state :as state]
-            [dirac.nrepl.utils :as utils]))
+            [dirac.nrepl.utils :as nrepl-utils]))
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
 
@@ -37,11 +37,11 @@
 (defn start-cljs-repl! [nrepl-message dirac-nrepl-config repl-env repl-options]
   (log/trace "start-cljs-repl!\n"
              "dirac-nrepl-config:\n"
-             (lib-utils/pp dirac-nrepl-config)
+             (utils/pp dirac-nrepl-config)
              "repl-env:\n"
-             (lib-utils/pp repl-env)
+             (utils/pp repl-env)
              "repl-options:\n"
-             (lib-utils/pp repl-options))
+             (utils/pp repl-options))
   (debug/log-stack-trace!)
   (state/set-session-cljs-ns! 'cljs.user)
   (state/set-session-dirac-nrepl-config! dirac-nrepl-config)
@@ -53,14 +53,14 @@
   (let [; WARNING
         ; we are being called via boot-dirac-repl! which has been invoked outside our middleware
         ; that is why we have to wrap our nrepl-message for the rest of processing
-        nrepl-message (utils/wrap-nrepl-message nrepl-message)                                                                ; warnings: we depend on going after state/set-session-cljs-repl-env! setup
+        nrepl-message (nrepl-utils/wrap-nrepl-message nrepl-message)                                                                ; warnings: we depend on going after state/set-session-cljs-repl-env! setup
         initial-session-meta (state/get-session-meta)]
     (try
       (let [selected-compiler (or (sticky-compiler-selection dirac-nrepl-config) (:preferred-compiler dirac-nrepl-config))]   ; try to stick to previous, or use preferred
         (state/set-session-selected-compiler! selected-compiler))                                                             ; TODO: validate that preferred compiler exists
-      (utils/start-new-cljs-compiler-repl-environment! nrepl-message dirac-nrepl-config repl-env repl-options)
+      (nrepl-utils/start-new-cljs-compiler-repl-environment! nrepl-message dirac-nrepl-config repl-env repl-options)
       (set! *ns* (find-ns (state/get-session-cljs-ns)))                                                                       ; TODO: is this really needed? is it for macros?
-      (helpers/send-response! nrepl-message (utils/prepare-current-env-info-response))
+      (helpers/send-response! nrepl-message (nrepl-utils/prepare-current-env-info-response))
       (catch Exception e
         (state/set-session-meta! initial-session-meta)                                                                        ; restore session to initial state
         (throw e)))))
@@ -71,7 +71,7 @@
       (let [weasel-repl-options (:weasel-repl config)
             runtime-tag (:runtime-tag config)
             after-launch! (fn [repl-env weasel-url]
-                            (log/trace "after-launch handler called with repl-env:\n" (lib-utils/pp repl-env))
+                            (log/trace "after-launch handler called with repl-env:\n" (utils/pp repl-env))
                             (weasel-server-started! nrepl-message weasel-url runtime-tag))
             repl-options (assoc weasel-repl-options :after-launch after-launch!)
             repl-env (weasel-server/make-weasel-repl-env repl-options)

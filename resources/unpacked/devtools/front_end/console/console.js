@@ -9,20 +9,20 @@ import './ConsoleSidebar.js';
 import './ConsoleViewport.js';
 import './ConsoleViewMessage.js';
 import './ConsolePrompt.js';
-import './DiracPrompt.js';
 import './ConsoleView.js';
 import './ConsolePanel.js';
+import './ConsoleDiracPrompt.js';
 
 import * as ConsoleContextSelector from './ConsoleContextSelector.js';
 import * as ConsoleFilter from './ConsoleFilter.js';
 import * as ConsolePanel from './ConsolePanel.js';
 import * as ConsolePinPane from './ConsolePinPane.js';
 import * as ConsolePrompt from './ConsolePrompt.js';
-import * as DiracPromptWithHistory from './DiracPrompt.js';
 import * as ConsoleSidebar from './ConsoleSidebar.js';
 import * as ConsoleView from './ConsoleView.js';
 import * as ConsoleViewMessage from './ConsoleViewMessage.js';
 import * as ConsoleViewport from './ConsoleViewport.js';
+import * as ConsoleDiracPrompt from './ConsoleDiracPrompt.js';
 
 export {
   ConsoleContextSelector,
@@ -30,9 +30,9 @@ export {
   ConsolePanel,
   ConsolePinPane,
   ConsolePrompt,
-  DiracPromptWithHistory,
   ConsoleSidebar,
   ConsoleView,
   ConsoleViewMessage,
   ConsoleViewport,
+  ConsoleDiracPrompt,
 };

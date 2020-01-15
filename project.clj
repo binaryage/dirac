@@ -64,7 +64,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.5.2"
+(defproject binaryage/dirac "1.5.3"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -77,16 +77,17 @@
 
   :plugins [[lein-shell "0.5.0"]]
 
-  ; this is for Cursive, may be redefined by profiles
+  ; this union of all paths for Cursive, may be redefined by profiles
   :source-paths ["scripts"
 
+                 "src/base"
                  "src/agent"
                  "src/automation"
                  "src/background"
                  "src/devtools"
                  "src/figwheel"
                  "src/implant"
-                 "src/lib"
+                 "src/nrepl-lib"
                  "src/nrepl"
                  "src/options"
                  "src/project"
@@ -127,10 +128,11 @@
   :profiles {:lib
              ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
              [{:dependencies   ~(with-meta lib-deps {:replace true})
-               :source-paths   ^:replace ["src/project"
+               :source-paths   ^:replace ["src/base"
+                                          "src/project"
                                           "src/settings"
                                           "src/runtime"
-                                          "src/lib"
+                                          "src/nrepl-lib"
                                           "src/home"
                                           "src/main"
                                           "src/agent"
@@ -182,10 +184,11 @@
              {:aliases ^:replace {}}
 
              :test-runner
-             {:source-paths ^:replace ["src/project"
+             {:source-paths ^:replace ["src/base"
+                                       "src/project"
                                        "src/settings"
-                                       "src/lib"
                                        "src/agent"
+                                       "src/nrepl-lib"
                                        "src/nrepl"
                                        "src/shared"
                                        "src/logging"
@@ -318,24 +321,26 @@
                           {:dirac-implant
                            {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-implant"]
                             :source-paths   ["src/settings"
-                                             "src/lib"
                                              "src/shared"
                                              "src/logging"
                                              "src/project"
                                              "src/devtools"
                                              "src/options"
                                              "src/implant"]
-                            :compiler       {:output-to       "resources/unpacked/devtools/front_end/dirac/.compiled/implant/implant.js"
-                                             :output-dir      "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
-                                             :external-config {:devtools/config {:dont-detect-custom-formatters true}}
-                                             :optimizations   :none
-                                             :main            dirac.implant
-                                             :source-map      true}}
+                            :compiler       {:output-to          "resources/unpacked/devtools/front_end/dirac/.compiled/implant/implant.js"
+                                             :output-dir         "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
+                                             :external-config    {:devtools/config {:dont-detect-custom-formatters true}}
+                                             :optimizations      :none
+                                             :main               dirac.implant
+                                             :source-map         true
+                                             ; this is using my fork of ClojureScript,
+                                             ; until https://clojure.atlassian.net/browse/CLJS-1902 gets merged
+                                             :aot-cache          false                                                        ; to get cljs.core compiled with inlined namespace
+                                             :inline-source-maps true}}
 
                            :dirac-background
                            {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-background"]
                             :source-paths   ["src/settings"
-                                             "src/lib"
                                              "src/figwheel"
                                              "src/shared"
                                              "src/logging"
@@ -351,7 +356,6 @@
                            :dirac-options
                            {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-options"]
                             :source-paths   ["src/settings"
-                                             "src/lib"
                                              "src/figwheel"
                                              "src/shared"
                                              "src/logging"
@@ -371,7 +375,6 @@
               :cljsbuild {:builds
                           {:dirac-implant
                            {:source-paths ["src/settings"
-                                           "src/lib"
                                            "src/shared"
                                            "src/logging"
                                            "src/project"
@@ -383,7 +386,6 @@
                                            :elide-asserts true}}
                            :dirac-background
                            {:source-paths ["src/settings"
-                                           "src/lib"
                                            "src/shared"
                                            "src/logging"
                                            "src/project"
@@ -395,7 +397,6 @@
                                            :elide-asserts true}}
                            :dirac-options
                            {:source-paths ["src/settings"
-                                           "src/lib"
                                            "src/shared"
                                            "src/logging"
                                            "src/project"

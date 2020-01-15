@@ -1,6 +1,6 @@
 (ns dirac.nrepl.state
   (:require [clojure.tools.logging :as log]
-            [dirac.lib.utils :as utils]
+            [dirac.utils :as utils]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.messages :as messages]))
 

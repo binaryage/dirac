@@ -95,6 +95,8 @@
          (search-for-chrome-executable strategy opts)))))
 
 (defn determine-chrome-version [executable-path]
+  ; TODO: this approach does not work under Windows
+  ; issue: https://bugs.chromium.org/p/chromium/issues/detail?id=158372
   (try
     (let [command [executable-path "--version"]
           {:keys [exit out err]} (apply sh command)

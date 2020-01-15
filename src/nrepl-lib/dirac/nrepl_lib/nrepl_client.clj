@@ -1,11 +1,11 @@
-(ns dirac.lib.nrepl-client
+(ns dirac.nrepl-lib.nrepl-client
   (:require [clojure.core.async :refer [<! <!! >!! alts!! chan close! go go-loop put! timeout]]
             [clojure.tools.logging :as log]
             [nrepl.core :as nrepl]
             [nrepl.transport :as nrepl-transport]
-            [dirac.lib.bencode-hell :as bencode-hell]
-            [dirac.lib.nrepl-protocols :as nrepl-protocols]
-            [dirac.lib.utils :as utils])
+            [dirac.nrepl-lib.bencode-hell :as bencode-hell]
+            [dirac.nrepl-lib.nrepl-protocols :as nrepl-protocols]
+            [dirac.nrepl-lib.common :as utils])
   (:use [nrepl.misc :only (uuid)])
   (:import (java.net SocketException)))
 
@@ -40,7 +40,7 @@
   {:pre [(instance? NREPLClient client)]}
   (:tunnel (meta client)))
 
-(defn get-connenction [client]
+(defn get-connection [client]
   {:pre [(instance? NREPLClient client)]}
   (:connection client))
 
@@ -166,7 +166,7 @@
 
 (defn destroy! [client & opts]
   (let [{:keys [timeout] :or {timeout 1000}} opts
-        connection (get-connenction client)]
+        connection (get-connection client)]
     (log/trace "Destroying" (str client))
     (.close connection)                                                                                                       ; poll-for-responses should gracefully leave its loop
     (wait-for-response-poller-shutdown client timeout)

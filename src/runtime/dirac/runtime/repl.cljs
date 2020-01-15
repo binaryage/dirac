@@ -7,7 +7,7 @@
             [dirac.runtime.prefs :refer [get-prefs pref]]
             [dirac.runtime.util :refer [in-node-context?]]
             [goog.labs.userAgent.browser :as ua]
-            [goog.object :as gobject]))
+            [goog.object :as gobj]))
 
 ; We didn't want to introduce new protocol methods for websocket connection between DevTools front-end and back-end.
 ; So instead we tunnel our messages through console.log calls.
@@ -31,7 +31,7 @@
 ; -- tunneling messages to Dirac DevTools -----------------------------------------------------------------------------------
 
 (defn console-tunnel [method & args]
-  (.apply (gobject/get js/console method) js/console (to-array args)))
+  (.apply (gobj/get js/console method) js/console (to-array args)))
 
 (defn dirac-msg-args [name args]
   (concat ["~~$DIRAC-MSG$~~" name] args))

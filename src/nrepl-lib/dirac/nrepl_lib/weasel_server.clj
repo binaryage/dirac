@@ -1,13 +1,12 @@
 ; original code taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
-(ns dirac.lib.weasel-server
+(ns dirac.nrepl-lib.weasel-server
   (:refer-clojure :exclude [loaded-libs])
   (:require [cljs.compiler :as cmp]
             [cljs.repl]
             [clojure.tools.logging :as log]
-            [dirac.lib.utils :as utils]
-            [dirac.lib.ws-server :as server]
-            [org.httpkit.server :as http])
-  (:use [com.rpl.specter])
+            [org.httpkit.server :as http]
+            [dirac.utils :as utils]
+            [dirac.ws-server :as server])
   (:import (clojure.lang Atom IDeref)))
 
 (def default-opts {:host       "localhost"
@@ -99,30 +98,23 @@
   {:pre [(instance? WeaselREPLEnv env)
          (some? eval-id)]}
   (let [state-atom (get-state-atom env)]
-    (select-one [:client-response-promises eval-id] @state-atom)))
-
-(defn swap-client-response-promise! [env eval-id f & args]
-  {:pre [(instance? WeaselREPLEnv env)
-         (some? eval-id)]}
-  (let [state-atom (get-state-atom env)
-        sf (fn [val]
-             (if-some [result (apply f val args)]
-               result
-               NONE))]
-    (swap! state-atom #(transform [:client-response-promises eval-id] sf %))))
+    (get-in @state-atom [:client-response-promises eval-id])))
 
 (defn reset-client-response-promise! [env eval-id new-promise]
   {:pre [(instance? WeaselREPLEnv env)
          (some? eval-id)]}
-  (swap-client-response-promise! env eval-id (constantly new-promise)))
+  (let [state-atom (:state env)]
+    (if (some? new-promise)
+      (swap! state-atom update :client-response-promises assoc eval-id new-promise)
+      (swap! state-atom update :client-response-promises dissoc eval-id))))
 
 (defn get-client-ready-promise [env]
   (let [state-atom (get-state-atom env)]
-    (select-one [:client-ready-promise] @state-atom)))
+    (get @state-atom :client-ready-promise)))
 
 (defn set-client-ready-promise! [env new-val]
   (let [state-atom (get-state-atom env)]
-    (swap! state-atom #(setval [:client-ready-promise] new-val %))))
+    (swap! state-atom assoc :client-ready-promise new-val)))
 
 (defn mark-client-as-ready! [env]
   (let [client-ready-promise (get-client-ready-promise env)]
@@ -180,7 +172,7 @@
 (defn generate-new-eval-id [env]
   {:pre [(instance? WeaselREPLEnv env)]}
   (let [state-atom (get-state-atom env)]
-    (select-one [:last-eval-id] (swap! state-atom #(transform [:last-eval-id] inc %)))))
+    (:last-eval-id (swap! state-atom update :last-eval-id inc))))
 
 (defn promise-new-client-response! [env eval-id]
   {:pre [(instance? WeaselREPLEnv env)

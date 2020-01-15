@@ -1,4 +1,4 @@
-(ns dirac.lib.nrepl-protocols)
+(ns dirac.nrepl-lib.nrepl-protocols)
 
 (defprotocol NREPLTunnelService
   (open-session [this])

@@ -1,10 +1,11 @@
-(ns dirac.lib.nrepl-tunnel-server
+(ns dirac.nrepl-lib.nrepl-tunnel-server
   (:require [clojure.core.async :refer [<! <!! >!! alts!! chan close! go go-loop put! timeout]]
             [clojure.tools.logging :as log]
-            [dirac.lib.nrepl-protocols :refer :all]
-            [dirac.lib.utils :as utils]
-            [dirac.lib.version :as lib-version]
-            [dirac.lib.ws-server :as ws-server]
+            [dirac.utils :as utils]
+            [dirac.nrepl-lib.nrepl-protocols :refer :all]
+            [dirac.nrepl-lib.common :as nrepl-common]
+            [dirac.nrepl-lib.version :as lib-version]
+            [dirac.ws-server :as ws-server]
             [version-clj.core :refer [version-compare]])
   (:use [nrepl.misc :only (uuid)]))
 
@@ -98,7 +99,7 @@
 (defn send! [client message]
   {:pre [client]}
   (let [message (update message :id #(if (some? %) % (uuid)))]
-    (log/trace (str "Sending message " (utils/sid message) " to client " (str client)))
+    (log/trace (str "Sending message " (nrepl-common/sid message) " to client " (str client)))
     (ws-server/send! client message)))
 
 (defn dispatch-message! [server message]
@@ -106,7 +107,7 @@
   (if-some [session (:session message)]                                                                                       ; ignore messages without session
     (when-some [client (get-client-for-session server session)]                                                               ; client may be already disconnected
       (send! client message))
-    (log/trace (str server) (str "Message " (utils/sid message) " cannot be dispatched because it does not have a session"))))
+    (log/trace (str server) (str "Message " (nrepl-common/sid message) " cannot be dispatched because it does not have a session"))))
 
 (defn send-message-to-server! [server client message]
   (let [tunnel (get-tunnel server)
@@ -158,20 +159,24 @@
 
 ; -- utilities --------------------------------------------------------------------------------------------------------------
 
+(defn wait-for-all-responses! [responses-channel]
+  (when (<!! responses-channel)
+    (recur responses-channel)))
+
 (defn cljs-quit-message []
   {:op   "eval"
    :code ":cljs/quit"})
 
 (defn quit-client! [server client]
   (let [responses-channel @(send-message-to-server! server client (cljs-quit-message))]
-    (utils/wait-for-all-responses! responses-channel)))
+    (wait-for-all-responses! responses-channel)))
 
 (defn teardown-client! [server client]
   (let [tunnel (get-tunnel server)
         session (get-client-session server client)]
-    (log/trace (str client) (str "Teardown session " (utils/sid session) " from " (str server)))
+    (log/trace (str client) (str "Teardown session " (nrepl-common/sid session) " from " (str server)))
     (quit-client! server client)
-    (utils/wait-for-all-responses! (close-session tunnel session))))
+    (wait-for-all-responses! (close-session tunnel session))))
 
 (defn open-client-session [server client]
   (let [session-promise (promise)]
@@ -181,14 +186,14 @@
           session-message (<!! responses-channel)
           session (:new-session session-message)]
       (assert session (str "expected session id in " session-message))
-      (log/debug (str server) (str "New client initialized " (utils/sid session)))
+      (log/debug (str server) (str "New client initialized " (nrepl-common/sid session)))
       (deliver session-promise session))))
 
 (defn get-server-url [server]
   (let [ws-server (get-ws-server server)
         host (ws-server/get-host ws-server)
         port (ws-server/get-local-port ws-server)
-        url (utils/get-ws-url host port)]
+        url (nrepl-common/get-ws-url host port)]
     url))
 
 ; -- request handling -------------------------------------------------------------------------------------------------------

@@ -11,7 +11,8 @@
             [progrock.core :as progrock]
             [dirac.home.defaults :as defaults]
             [dirac.home.locations :as locations]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.string :as string]))
 
 (defn locate-chromium-via-link [config]
   (log/debug "Locating Chromium via a link...")
@@ -41,15 +42,24 @@
     (locate-chromium-via-link config)
     (locate-chromium-by-search config)))
 
-(defn determine-chromium-version [_config chromium-executable]
-  (log/debug "Reading Chromium version...")
-  (let [chromium-version (chromium/determine-chrome-version chromium-executable)]
-    (log/trace (utils/pp chromium-version))
-    (when (some? (:error chromium-version))
-      (throw (ex-info (str "Failed to detect Chromium version\n" (:error-message chromium-version))
-                      {:chromium-executable chromium-executable})))
-    (log/info (str "Detected Chromium version '" (terminal/style-version (:version chromium-version)) "'"))
-    (:version chromium-version)))
+(defn determine-chromium-version* [config chromium-executable]
+  (if-let [chromium-version (:chromium-version config)]
+    (do
+      (log/debug "Chromium version is forced via config")
+      chromium-version)
+    (do
+      (log/debug "Reading Chromium version...")
+      (let [chromium-version (chromium/determine-chrome-version chromium-executable)]
+        (log/trace (utils/pp chromium-version))
+        (when (some? (:error chromium-version))
+          (throw (ex-info (str "Failed to detect Chromium version\n" (:error-message chromium-version))
+                          {:chromium-executable chromium-executable})))
+        (:version chromium-version)))))
+
+(defn determine-chromium-version [config chromium-executable]
+  (let [version (determine-chromium-version* config chromium-executable)]
+    (log/info (str "Detected Chromium version '" (terminal/style-version version) "'"))
+    version))
 
 (defn config-aware-progress-printer [config & args]
   (let [{:keys [verbosity]} config]
@@ -98,27 +108,54 @@
       :release (retrieve-dirac-release! config (:version release-descriptor))
       :local (retrieve-local-dirac! config (:path release-descriptor)))))
 
+(defn spawn-chromium! [chromium-executable args]
+  (log/debug (str "Spawning a sub-process '" chromium-executable "' with args:\n" (utils/pp args)))
+  (let [conch-process (apply conch/proc chromium-executable args)
+        unix-process (:process conch-process)]
+    (log/debug (str "Chromium process: " unix-process))
+    (future (conch/stream-to conch-process :out (System/out)))
+    (future (conch/stream-to conch-process :err (System/err)))
+    (log/debug "Waiting for Chromium to exit...")
+    (let [exit-status (conch/exit-code conch-process)]
+      (log/debug (str "Chromium exited with status " exit-status))
+      exit-status)))
+
+(defn escape-spaces-for-shell [s]
+  (string/escape s {\space "\\ "}))
+
+(defn present-shell-args [args]
+  (string/join " \\\n  " (map escape-spaces-for-shell args)))
+
+(defn wait-for-interruption []
+  (log/info "Waiting for CTRL+C to exit...")
+  (loop []
+    (read-line)
+    (recur)))
+
 (defn launch-chromium! [config chromium-executable dirac-version-dir chromium-data-dir]
   (let [frontend-dir (releases/get-devtools-frontend-dir-path dirac-version-dir)
         convenience-args ["--no-first-run"]
         verbosity-args (if (= (:verbosity config) "ALL") ["--enable-logging=stderr" "--v=1"])
         custom-devtools [(str "--custom-devtools-frontend=" "file://" frontend-dir)]
         devtools-experiments ["--enable-devtools-experiments"]
+        debugger-args (if (:debug config) [(str "--remote-debugging-port=" (:debug config))])
         data-dir (if (some? chromium-data-dir) [(str "--user-data-dir=" chromium-data-dir)])
         extra-args (chromium/read-chromium-extra-args)
-        args (concat convenience-args verbosity-args custom-devtools data-dir devtools-experiments extra-args)
+        args (concat convenience-args
+                     verbosity-args
+                     custom-devtools
+                     data-dir
+                     devtools-experiments
+                     debugger-args
+                     extra-args)
         profile (if (some? chromium-data-dir) (str "[with --user-data-dir='" (terminal/style-path chromium-data-dir) "'] "))]
-    (log/info (str "Launching Chromium " profile "..."))
-    (log/debug (str "Spawning a sub-process '" chromium-executable "' with args:\n" (utils/pp args)))
-    (let [conch-process (apply conch/proc chromium-executable args)
-          unix-process (:process conch-process)]
-      (log/debug (str "Chromium process: " unix-process))
-      (future (conch/stream-to conch-process :out (System/out)))
-      (future (conch/stream-to conch-process :err (System/err)))
-      (log/debug "Waiting for Chromium to exit...")
-      (let [exit-status (conch/exit-code conch-process)]
-        (log/debug (str "Chromium exited with status " exit-status))
-        exit-status))))
+    (if-not (:dry-chromium config)
+      (do
+        (log/info (str "Launching Chromium " profile "..."))
+        (spawn-chromium! chromium-executable args))
+      (do
+        (log/info (str "Chromium launch command:\n" (present-shell-args (concat [chromium-executable] args))))
+        (wait-for-interruption)))))
 
 (defn prepare-chromium-data-dir! [config]
   (if (or (true? (:no-profile config)) (nil? (:profile config)))
@@ -128,7 +165,7 @@
       (helpers/ensure-dir! profile-dir-path)
       profile-dir-path)))
 
-(defn launch-playground! [config]
+(defn really-launch-playground! [config]
   (try
     (let [playground-dir-path (locations/get-playground-dir-path)]
       (log/info (str "Preparing playground environment at '" (terminal/style-path playground-dir-path) "'"))
@@ -136,6 +173,11 @@
     (catch Throwable e
       (log/error "launch-playground! unexpectedly exited" e)
       (throw e))))
+
+(defn launch-playground! [config]
+  (if (:no-playground config)
+    (log/info "Playground is disabled")
+    (really-launch-playground! config)))
 
 (defn launch!
   "Launch Chromium with matching Dirac release:
@@ -167,5 +209,8 @@
   (binding [m/*mock-releases* {:chromium {"81.0.4010" {:result :local
                                                        :path   "/tmp"}}}]
     (launch! {}))
+
+  (println (escape-spaces-for-shell "a b c"))
+  (present-shell-args ["launch" "--some-arg" "param with spaces"])
 
   )

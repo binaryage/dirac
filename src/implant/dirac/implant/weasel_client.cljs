@@ -17,7 +17,7 @@
   (:require [clojure.string :as string]
             [dirac.implant.eval :as eval]
             [dirac.implant.logging :refer [error info log warn]]
-            [dirac.lib.ws-client :as ws-client]
+            [dirac.shared.ws-client :as ws-client]
             [dirac.shared.async :refer [<! go go-channel go-wait put!]]))
 
 (defonce current-client (atom nil))
