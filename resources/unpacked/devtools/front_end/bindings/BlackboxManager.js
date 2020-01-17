@@ -155,15 +155,17 @@ export class BlackboxManager {
 
     const mappings = sourceMap.mappings();
     const newRanges = [];
-    let currentBlackboxed = false;
-    if (mappings[0].lineNumber !== 0 || mappings[0].columnNumber !== 0) {
-      newRanges.push({lineNumber: 0, columnNumber: 0});
-      currentBlackboxed = true;
-    }
-    for (const mapping of mappings) {
-      if (mapping.sourceURL && currentBlackboxed !== this.isBlackboxedURL(mapping.sourceURL)) {
-        newRanges.push({lineNumber: mapping.lineNumber, columnNumber: mapping.columnNumber});
-        currentBlackboxed = !currentBlackboxed;
+    if (mappings.length > 0) {
+      let currentBlackboxed = false;
+      if (mappings[0].lineNumber !== 0 || mappings[0].columnNumber !== 0) {
+        newRanges.push({lineNumber: 0, columnNumber: 0});
+        currentBlackboxed = true;
+      }
+      for (const mapping of mappings) {
+        if (mapping.sourceURL && currentBlackboxed !== this.isBlackboxedURL(mapping.sourceURL)) {
+          newRanges.push({lineNumber: mapping.lineNumber, columnNumber: mapping.columnNumber});
+          currentBlackboxed = !currentBlackboxed;
+        }
       }
     }
 
