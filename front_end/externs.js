@@ -68,28 +68,11 @@ KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
  */
 Array.prototype.remove = function(value, onlyFirst) {};
 /**
- * @param {!Array.<!T>} array
- * @this {Array.<!T>}
- * @template T
- */
-Array.prototype.pushAll = function(array) {};
-/**
  * @return {!Object.<string, boolean>}
  * @this {Array.<T>}
  * @template T
  */
 Array.prototype.keySet = function() {};
-/**
- * @param {number} index
- * @return {!Array.<!T>}
- * @this {Array.<T>}
- * @template T
- */
-Array.prototype.rotate = function(index) {};
-/**
- * @this {Array.<number>}
- */
-Array.prototype.sortNumbers = function() {};
 /**
  * @param {!S} object
  * @param {function(!S,!T):number=} comparator

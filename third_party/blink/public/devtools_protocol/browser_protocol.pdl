@@ -1244,6 +1244,8 @@ experimental domain CSS
   command takeCoverageDelta
     returns
       array of RuleUsage coverage
+      # Monotonically increasing time, in seconds.
+      number timestamp
 
   # Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded
   # web font
@@ -5334,6 +5336,7 @@ domain Page
       metaTagRefresh
       pageBlockInterstitial
       reload
+      anchorClick
 
   # Deprecated, please use addScriptToEvaluateOnNewDocument instead.
   experimental deprecated command addScriptToEvaluateOnLoad
@@ -5892,14 +5895,7 @@ domain Page
       # guaranteed to start.
       number delay
       # The reason for the navigation.
-      enum reason
-        formSubmissionGet
-        formSubmissionPost
-        httpHeaderRefresh
-        scriptInitiated
-        metaTagRefresh
-        pageBlockInterstitial
-        reload
+      ClientNavigationReason reason
       # The destination URL for the scheduled navigation.
       string url
 

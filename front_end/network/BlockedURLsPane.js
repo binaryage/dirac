@@ -1,15 +1,19 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+/** @type {?BlockedURLsPane} */
+export let _instance = null;
+
 /**
  * @implements {UI.ListWidget.Delegate<SDK.NetworkManager.BlockedPattern>}
  */
-export default class BlockedURLsPane extends UI.VBox {
+export class BlockedURLsPane extends UI.VBox {
   constructor() {
     super(true);
     this.registerRequiredCSS('network/blockedURLsPane.css');
 
-    Network.BlockedURLsPane._instance = this;
+    _instance = this;
     this._manager = SDK.multitargetNetworkManager;
     this._manager.addEventListener(SDK.MultitargetNetworkManager.Events.BlockedPatternsChanged, this._update, this);
 
@@ -57,8 +61,8 @@ export default class BlockedURLsPane extends UI.VBox {
   }
 
   static reset() {
-    if (Network.BlockedURLsPane._instance) {
-      Network.BlockedURLsPane._instance.reset();
+    if (_instance) {
+      _instance.reset();
     }
   }
 
@@ -158,8 +162,16 @@ export default class BlockedURLsPane extends UI.VBox {
         Common.UIString('Text pattern to block matching requests; use * for wildcard');
     const fields = content.createChild('div', 'blocked-url-edit-row');
     const validator = (item, index, input) => {
-      const valid = !!input.value && !this._manager.blockedPatterns().find(pattern => pattern.url === input.value);
-      return {valid};
+      let valid = true;
+      let errorMessage;
+      if (!input.value) {
+        errorMessage = ls`Pattern input cannot be empty.`;
+        valid = false;
+      } else if (this._manager.blockedPatterns().find(pattern => pattern.url === input.value)) {
+        errorMessage = ls`Pattern already exists.`;
+        valid = false;
+      }
+      return {valid, errorMessage};
     };
     const urlInput = editor.createInput('url', 'text', '', validator);
     fields.createChild('div', 'blocked-url-edit-value').appendChild(urlInput);
@@ -241,20 +253,3 @@ export default class BlockedURLsPane extends UI.VBox {
     }
   }
 }
-
-/** @type {?BlockedURLsPane} */
-export const _instance = null;
-
-/* Legacy exported object */
-self.Network = self.Network || {};
-
-/* Legacy exported object */
-Network = Network || {};
-
-/**
- * @constructor
- */
-Network.BlockedURLsPane = BlockedURLsPane;
-
-/** @type {?Network.BlockedURLsPane} */
-Network.BlockedURLsPane._instance = _instance;
