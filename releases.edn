@@ -4,7 +4,7 @@
  {; we match most recent Chromium version from the list below
   ; see https://github.com/binaryage/dirac/blob/master/src/home/dirac/home/chromium/mapping.clj
   ; ...
-  "81.0.4000" "1.5.3"
+  "81.0.4000" "1.5.5"
   :unsupported  {:message "This Chromium version is too old and is not supported by Dirac 1.5.x"}
   ; alternatively you can point to a local folder with something like this:
   ; "80.0.4000" {:result :local :path "/Users/darwin/code/dirac-ws/dirac/resources/unpacked"}
