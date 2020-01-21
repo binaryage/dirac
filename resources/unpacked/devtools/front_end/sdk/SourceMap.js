@@ -28,10 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {CompilerSourceMappingContentProvider} from './CompilerSourceMappingContentProvider.js';
+
 /**
  * @interface
  */
-export default class SourceMap {
+export class SourceMap {
   /**
    * @return {string}
    */
@@ -299,7 +301,7 @@ export class TextSourceMap {
     if (info.content) {
       return Common.StaticContentProvider.fromString(sourceURL, contentType, info.content);
     }
-    return new SDK.CompilerSourceMappingContentProvider(sourceURL, contentType);
+    return new CompilerSourceMappingContentProvider(sourceURL, contentType);
   }
 
   /**
@@ -643,7 +645,7 @@ TextSourceMap.SourceInfo = class {
 TextSourceMap._sourcesListSymbol = Symbol('sourcesList');
 
 /**
- * @implements {SDK.SourceMap}
+ * @implements {SourceMap}
  * @unrestricted
  */
 export class WasmSourceMap {
@@ -677,7 +679,7 @@ export class WasmSourceMap {
   static async load(script, wasmUrl) {
     const [Resolver, wasm] = await Promise.all([WasmSourceMap._loadBindingsOnce(), script.getWasmBytecode()]);
 
-    return new SDK.WasmSourceMap(wasmUrl, new Resolver(new Uint8Array(wasm)));
+    return new WasmSourceMap(wasmUrl, new Resolver(new Uint8Array(wasm)));
   }
 
   /**
@@ -719,7 +721,7 @@ export class WasmSourceMap {
    * @return {!Common.ContentProvider}
    */
   sourceContentProvider(sourceURL, contentType) {
-    return new SDK.CompilerSourceMappingContentProvider(sourceURL, contentType);
+    return new CompilerSourceMappingContentProvider(sourceURL, contentType);
   }
 
   /**
@@ -735,7 +737,7 @@ export class WasmSourceMap {
    * @override
    * @param {number} lineNumber in compiled resource
    * @param {number} columnNumber in compiled resource
-   * @return {?SDK.SourceMapEntry}
+   * @return {?SourceMapEntry}
    */
   findEntry(lineNumber, columnNumber) {
     if (lineNumber !== 0) {
@@ -773,24 +775,3 @@ export class WasmSourceMap {
 
 /* Special URL that should be kept in sync with one in V8 */
 WasmSourceMap.FAKE_URL = 'wasm://dwarf';
-
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @interface */
-SDK.SourceMap = SourceMap;
-
-/** @constructor */
-SDK.SourceMapEntry = SourceMapEntry;
-
-/** @constructor */
-SDK.TextSourceMap = TextSourceMap;
-
-/** @constructor */
-SDK.WasmSourceMap = WasmSourceMap;
-
-/** @constructor */
-SDK.SourceMap.EditResult = EditResult;

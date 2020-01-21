@@ -32,6 +32,9 @@ LICENSES = [
 DEPS = {
     "@types/chai": "4.2.0",
     "@types/mocha": "5.2.7",
+    "@types/puppeteer": "2.0.0",
+    "@typescript-eslint/parser": "2.16.0",
+    "@typescript-eslint/eslint-plugin": "2.16.0",
     "chai": "4.2.0",
     "escodegen": "1.12.0",
     "eslint": "6.0.1",
@@ -48,14 +51,14 @@ DEPS = {
     "mocha": "6.2.0",
     "puppeteer": "2.0.0",
     "rollup": "1.23.1",
-    "typescript": "3.5.3",
+    "typescript": "3.7.5",
     "yargs": "15.0.2"
 }
 
 def exec_command(cmd):
     try:
         cmd_proc_result = subprocess.check_call(cmd, cwd=devtools_paths.root_path())
-    except CalledProcessError as error:
+    except Error as error:
         print(error.output)
         return True
 
