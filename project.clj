@@ -7,11 +7,11 @@
 (def lein-cljsbuild-version "1.1.7")
 
 (def provided-deps
-  [['org.clojure/clojure selected-clojure-version :scope "provided"]])
+  [['org.clojure/clojure selected-clojure-version :scope "provided"]
+   ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/clojurescript selected-clojurescript-version]
-   ['org.clojure/core.async "0.7.559"]
+  [['org.clojure/core.async "0.7.559"]
    ['org.clojure/tools.logging "0.5.0"]
    ['org.clojure/tools.cli "0.4.2"]
    ['nrepl/nrepl "0.6.0"]
