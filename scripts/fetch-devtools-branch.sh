@@ -54,6 +54,8 @@ git fetch --tags
 CHROME_REV=$(git rev-parse HEAD)
 CHROME_TAG=$(git tag -l "[0-9]*" | tail -1)
 
+export FILTER_BRANCH_SQUELCH_WARNING=1
+
 if ! git rev-parse --verify tracker1; then
   echo "tracker1 branch does not exist => filter it"
   git branch -f tracker1 "$SPLIT_SHA_PARENT"
