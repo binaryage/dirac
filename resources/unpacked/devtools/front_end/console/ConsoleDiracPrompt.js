@@ -1,3 +1,5 @@
+import {ConsoleHistoryManager} from './ConsolePrompt.js';
+
 /**
  * @unrestricted
  */
@@ -9,7 +11,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt {
   constructor(codeMirrorInstance) {
     super();
 
-    this._history = new Console.ConsoleHistoryManager();
+    this._history = new ConsoleHistoryManager();
     this._codeMirror = codeMirrorInstance;
     this._codeMirror.on("changes", this._changes.bind(this));
     this._codeMirror.on("scroll", this._onScroll.bind(this));
@@ -29,7 +31,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt {
   }
 
   /**
-   * @return {!Console.ConsoleHistoryManager}
+   * @return {!ConsoleHistoryManager}
    */
   history() {
     return this._history;
