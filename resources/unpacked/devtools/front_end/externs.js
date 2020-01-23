@@ -511,7 +511,7 @@ var dirac = {
     notifyPanelSwitch: function(panelId) {},
     notifyFrontendInitialized: function() {},
     getVersion: function() {},
-    getRuntimeTag: function() {},
+    getRuntimeTag: function(f) {},
     /**
      * @param {Element} textAreaElement
      * @param {boolean} useParinfer
@@ -557,7 +557,11 @@ var dirac = {
      */
     parseNsFromSource: function(source) {},
 
-    isIntercomReady: function() {},
+  /**
+   * @return {boolean}
+   * */
+  isIntercomReady: function () {
+  },
 
     reportNamespacesCacheMutation: function() {},
 

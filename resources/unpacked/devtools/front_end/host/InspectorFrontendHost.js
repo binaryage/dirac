@@ -145,17 +145,20 @@ export class InspectorFrontendHostStub {
       return;
     }
 
-    var version = dirac.getVersion();
+    const version = dirac.getVersion();
     dirac.getRuntimeTag(
-      /** @suppressGlobalPropertiesCheck */
+      /**
+         * @suppressGlobalPropertiesCheck
+         * @param {string} tag
+         */
       function(tag) {
         if (!tag) {
           tag = "[no runtime] " + url;
         }
-        document.title = Common.UIString.UIString("Dirac v%s <-> %s", version, tag);
+        document.title = "Dirac v" + version + " <-> " + tag;
       });
     // this is just for a temporary display, we will update it when get_runtime_tag calls us back with full runtime info
-    document.title = Common.UIString("Dirac v%s <-> %s", version, url);
+    document.title = "Dirac v" + version + " <-> " + url;
   }
 
   /**
