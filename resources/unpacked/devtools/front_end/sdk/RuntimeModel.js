@@ -54,11 +54,12 @@ export class RuntimeModel extends SDKModel {
     /** @type {?boolean} */
     this._hasSideEffectSupport = null;
 
-    if (Common.moduleSetting('customFormatters').get()) {
+    if (self.Common.settings.moduleSetting('customFormatters').get()) {
       this._agent.setCustomObjectFormatterEnabled(true);
     }
 
-    Common.moduleSetting('customFormatters').addChangeListener(this._customFormattersStateChanged.bind(this));
+    self.Common.settings.moduleSetting('customFormatters')
+        .addChangeListener(this._customFormattersStateChanged.bind(this));
 
     // note dirac module is initialized at this point because sdk module (our module) depends on dirac
     // these should match "feature toggles" in dirac.js, dirac[name] = enabled
@@ -449,7 +450,7 @@ export class RuntimeModel extends SDKModel {
     const result = await this.queryObjects(object);
     object.release();
     if (result.error) {
-      Common.console.error(result.error);
+      self.Common.console.error(result.error);
       return;
     }
     this.dispatchEventToListeners(Events.QueryObjectRequested, {objects: result.objects});

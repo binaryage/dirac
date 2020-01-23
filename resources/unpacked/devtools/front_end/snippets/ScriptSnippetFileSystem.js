@@ -5,8 +5,8 @@
 class SnippetFileSystem extends Persistence.PlatformFileSystem {
   constructor() {
     super('snippet://', 'snippets');
-    this._lastSnippetIdentifierSetting = Common.settings.createSetting('scriptSnippets_lastIdentifier', 0);
-    this._snippetsSetting = Common.settings.createSetting('scriptSnippets', []);
+    this._lastSnippetIdentifierSetting = self.Common.settings.createSetting('scriptSnippets_lastIdentifier', 0);
+    this._snippetsSetting = self.Common.settings.createSetting('scriptSnippets', []);
   }
 
   /**
@@ -166,7 +166,7 @@ export async function evaluateScriptSnippet(uiSourceCode) {
   await uiSourceCode.requestContent();
   uiSourceCode.commitWorkingCopy();
   const expression = uiSourceCode.workingCopy();
-  Common.console.show();
+  self.Common.console.show();
 
   const url = uiSourceCode.url();
 

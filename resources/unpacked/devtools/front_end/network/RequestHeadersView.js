@@ -621,11 +621,20 @@ export class RequestHeadersView extends UI.VBox {
     this._refreshHeadersTitle(title, headersTreeElement, length);
 
     if (provisionalHeaders) {
-      const cautionText = Common.UIString('Provisional headers are shown');
-      const cautionFragment = createDocumentFragment();
-      cautionFragment.createChild('span', '', 'dt-icon-label').type = 'smallicon-warning';
-      cautionFragment.createChild('div', 'caution').textContent = cautionText;
-      const cautionTreeElement = new UI.TreeElement(cautionFragment);
+      let cautionText;
+      let cautionTitle = '';
+      if (this._request.cachedInMemory() || this._request.cached()) {
+        cautionText = ls`Provisional headers are shown. Disable cache to see full headers.`;
+        cautionTitle = ls
+        `Only provisional headers are available because this request was not sent over the network and instead was served from a local cache, which doesn't store the original request headers. Disable cache to see full request headers.`;
+      } else {
+        cautionText = ls`Provisional headers are shown`;
+      }
+      const cautionElement = createElement('div');
+      cautionElement.title = cautionTitle;
+      cautionElement.createChild('span', '', 'dt-icon-label').type = 'smallicon-warning';
+      cautionElement.createChild('div', 'caution').textContent = cautionText;
+      const cautionTreeElement = new UI.TreeElement(cautionElement);
       headersTreeElement.appendChild(cautionTreeElement);
     }
 
@@ -785,7 +794,7 @@ export class Category extends UI.TreeElement {
     super(title || '', true);
     this.toggleOnClick = true;
     this.hidden = true;
-    this._expandedSetting = Common.settings.createSetting('request-info-' + name + '-category-expanded', true);
+    this._expandedSetting = self.Common.settings.createSetting('request-info-' + name + '-category-expanded', true);
     this.expanded = this._expandedSetting.get();
     root.appendChild(this);
   }

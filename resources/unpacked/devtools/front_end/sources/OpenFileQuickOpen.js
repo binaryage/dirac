@@ -1,15 +1,16 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-export default class OpenFileQuickOpen extends Sources.FilteredUISourceCodeListProvider {
+import {FilteredUISourceCodeListProvider} from './FilteredUISourceCodeListProvider.js';
+import {SourcesView} from './SourcesView.js';
+
+export class OpenFileQuickOpen extends FilteredUISourceCodeListProvider {
   /**
    * @override
    */
   attach() {
-    this.setDefaultScores(Sources.SourcesView.defaultUISourceCodeScores());
+    this.setDefaultScores(SourcesView.defaultUISourceCodeScores());
     super.attach();
   }
 
@@ -49,12 +50,3 @@ export default class OpenFileQuickOpen extends Sources.FilteredUISourceCodeListP
     return true;
   }
 }
-
-/* Legacy exported object */
-self.Sources = self.Sources || {};
-
-/* Legacy exported object */
-Sources = Sources || {};
-
-/** @constructor */
-Sources.OpenFileQuickOpen = OpenFileQuickOpen;

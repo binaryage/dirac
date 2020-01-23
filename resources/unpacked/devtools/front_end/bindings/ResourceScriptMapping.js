@@ -345,7 +345,7 @@ export class ResourceScriptFile extends Common.Object {
       return;
     }
     const debuggerModel = this._resourceScriptMapping._debuggerModel;
-    const breakpoints = Bindings.breakpointManager.breakpointLocationsForUISourceCode(this._uiSourceCode)
+    const breakpoints = self.Bindings.breakpointManager.breakpointLocationsForUISourceCode(this._uiSourceCode)
                             .map(breakpointLocation => breakpointLocation.breakpoint);
     const source = this._uiSourceCode.workingCopy();
     debuggerModel.setScriptSource(this._script.scriptId, source, scriptSourceWasSet.bind(this));
@@ -368,7 +368,8 @@ export class ResourceScriptFile extends Common.Object {
         return;
       }
       if (!exceptionDetails) {
-        Common.console.addMessage(Common.UIString('LiveEdit failed: %s', error), Common.Console.MessageLevel.Warning);
+        self.Common.console.addMessage(
+            Common.UIString('LiveEdit failed: %s', error), Common.Console.MessageLevel.Warning);
         return;
       }
       const messageText = Common.UIString('LiveEdit compile failed: %s', exceptionDetails.text);

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ SourcesTestRunner.startDebuggerTestPromise = function(quiet) {
 };
 
 SourcesTestRunner.completeDebuggerTest = function() {
-  Common.moduleSetting('breakpointsActive').set(true);
+  self.Common.settings.moduleSetting('breakpointsActive').set(true);
   SourcesTestRunner.resumeExecution(TestRunner.completeTest.bind(TestRunner));
 };
 
@@ -305,9 +305,9 @@ SourcesTestRunner.captureStackTraceIntoString = function(callFrames, asyncStackT
       const frame = callFrames[i];
       const location = locationFunction.call(frame);
       const script = location.script();
-      const uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location);
+      const uiLocation = self.Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location);
       const isFramework =
-          uiLocation ? Bindings.blackboxManager.isBlackboxedUISourceCode(uiLocation.uiSourceCode) : false;
+          uiLocation ? self.Bindings.blackboxManager.isBlackboxedUISourceCode(uiLocation.uiSourceCode) : false;
 
       if (options.dropFrameworkCallFrames && isFramework) {
         continue;
@@ -513,7 +513,7 @@ SourcesTestRunner.waitBreakpointSidebarPane = function(waitUntilResolved) {
       return;
     }
 
-    for (const {breakpoint} of Bindings.breakpointManager.allBreakpointLocations()) {
+    for (const {breakpoint} of self.Bindings.breakpointManager.allBreakpointLocations()) {
       if (breakpoint._uiLocations.size === 0 && breakpoint.enabled()) {
         return SourcesTestRunner.waitBreakpointSidebarPane();
       }
@@ -639,7 +639,7 @@ SourcesTestRunner.queryScripts = function(filter) {
 
 SourcesTestRunner.createScriptMock = function(
     url, startLine, startColumn, isContentScript, source, target, preRegisterCallback) {
-  target = target || SDK.targetManager.mainTarget();
+  target = target || self.SDK.targetManager.mainTarget();
   const debuggerModel = target.model(SDK.DebuggerModel);
   const scriptId = ++SourcesTestRunner._lastScriptId + '';
   const lineCount = source.computeLineEndings().length;
@@ -733,7 +733,7 @@ SourcesTestRunner.waitDebuggerPluginBreakpoints = function(sourceFrame) {
   return SourcesTestRunner.waitDebuggerPluginDecorations().then(checkIfReady);
 
   function checkIfReady() {
-    for (const {breakpoint} of Bindings.breakpointManager.allBreakpointLocations()) {
+    for (const {breakpoint} of self.Bindings.breakpointManager.allBreakpointLocations()) {
       if (breakpoint._uiLocations.size === 0 && breakpoint.enabled()) {
         return SourcesTestRunner.waitDebuggerPluginDecorations().then(checkIfReady);
       }

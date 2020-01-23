@@ -5,19 +5,21 @@
  * modification, are permitted provided that the following conditions are
  * met:
  *
- * 1. Redistributions of source code must retain the above copyright
+ *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
+ *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY GOOGLE INC. AND ITS CONTRIBUTORS
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL GOOGLE INC.
- * OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
@@ -26,7 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-export default class UISourceCodeFrame extends SourceFrame.SourceFrame {
+import {CoveragePlugin} from './CoveragePlugin.js';
+import {CSSPlugin} from './CSSPlugin.js';
+import {DebuggerPlugin} from './DebuggerPlugin.js';
+import {GutterDiffPlugin} from './GutterDiffPlugin.js';
+import {JavaScriptCompilerPlugin} from './JavaScriptCompilerPlugin.js';
+import {Plugin} from './Plugin.js';  // eslint-disable-line no-unused-vars
+import {ScriptOriginPlugin} from './ScriptOriginPlugin.js';
+import {SnippetsPlugin} from './SnippetsPlugin.js';
+import {SourcesPanel} from './SourcesPanel.js';
+
+export class UISourceCodeFrame extends SourceFrame.SourceFrame {
   /**
    * @param {!Workspace.UISourceCode} uiSourceCode
    */
@@ -58,7 +70,7 @@ export default class UISourceCodeFrame extends SourceFrame.SourceFrame {
         SourceFrame.SourcesTextEditor.Events.EditorBlurred, () => UI.context.setFlavor(UISourceCodeFrame, null));
     this.textEditor.addEventListener(
         SourceFrame.SourcesTextEditor.Events.EditorFocused, () => UI.context.setFlavor(UISourceCodeFrame, this));
-    Common.settings.moduleSetting('persistenceNetworkOverridesEnabled')
+    self.Common.settings.moduleSetting('persistenceNetworkOverridesEnabled')
         .addChangeListener(this._onNetworkPersistenceChanged, this);
 
 
@@ -294,7 +306,7 @@ export default class UISourceCodeFrame extends SourceFrame.SourceFrame {
     if (this._isSettingContent) {
       return;
     }
-    Sources.SourcesPanel.instance().updateLastModificationTime();
+    SourcesPanel.instance().updateLastModificationTime();
     this._muteSourceCodeEvents = true;
     if (this.isClean()) {
       this._uiSourceCode.resetWorkingCopy();
@@ -339,27 +351,27 @@ export default class UISourceCodeFrame extends SourceFrame.SourceFrame {
     const pluginUISourceCode = binding ? binding.network : this._uiSourceCode;
 
     // The order of these plugins matters for toolbar items
-    if (Sources.DebuggerPlugin.accepts(pluginUISourceCode)) {
-      this._plugins.push(new Sources.DebuggerPlugin(this.textEditor, pluginUISourceCode, this.transformer()));
+    if (DebuggerPlugin.accepts(pluginUISourceCode)) {
+      this._plugins.push(new DebuggerPlugin(this.textEditor, pluginUISourceCode, this.transformer()));
     }
-    if (Sources.CSSPlugin.accepts(pluginUISourceCode)) {
-      this._plugins.push(new Sources.CSSPlugin(this.textEditor));
+    if (CSSPlugin.accepts(pluginUISourceCode)) {
+      this._plugins.push(new CSSPlugin(this.textEditor));
     }
-    if (!this.pretty && Sources.JavaScriptCompilerPlugin.accepts(pluginUISourceCode)) {
-      this._plugins.push(new Sources.JavaScriptCompilerPlugin(this.textEditor, pluginUISourceCode));
+    if (!this.pretty && JavaScriptCompilerPlugin.accepts(pluginUISourceCode)) {
+      this._plugins.push(new JavaScriptCompilerPlugin(this.textEditor, pluginUISourceCode));
     }
-    if (Sources.SnippetsPlugin.accepts(pluginUISourceCode)) {
-      this._plugins.push(new Sources.SnippetsPlugin(this.textEditor, pluginUISourceCode));
+    if (SnippetsPlugin.accepts(pluginUISourceCode)) {
+      this._plugins.push(new SnippetsPlugin(this.textEditor, pluginUISourceCode));
     }
-    if (Sources.ScriptOriginPlugin.accepts(pluginUISourceCode)) {
-      this._plugins.push(new Sources.ScriptOriginPlugin(this.textEditor, pluginUISourceCode));
+    if (ScriptOriginPlugin.accepts(pluginUISourceCode)) {
+      this._plugins.push(new ScriptOriginPlugin(this.textEditor, pluginUISourceCode));
     }
     if (!this.pretty && Root.Runtime.experiments.isEnabled('sourceDiff') &&
-        Sources.GutterDiffPlugin.accepts(pluginUISourceCode)) {
-      this._plugins.push(new Sources.GutterDiffPlugin(this.textEditor, pluginUISourceCode));
+        GutterDiffPlugin.accepts(pluginUISourceCode)) {
+      this._plugins.push(new GutterDiffPlugin(this.textEditor, pluginUISourceCode));
     }
-    if (Sources.CoveragePlugin.accepts(pluginUISourceCode)) {
-      this._plugins.push(new Sources.CoveragePlugin(this.textEditor, pluginUISourceCode));
+    if (CoveragePlugin.accepts(pluginUISourceCode)) {
+      this._plugins.push(new CoveragePlugin(this.textEditor, pluginUISourceCode));
     }
 
     this.dispatchEventToListeners(Events.ToolbarItemsChanged);
@@ -426,7 +438,7 @@ export default class UISourceCodeFrame extends SourceFrame.SourceFrame {
     this._unloadUISourceCode();
     this.textEditor.dispose();
     this.detach();
-    Common.settings.moduleSetting('persistenceNetworkOverridesEnabled')
+    self.Common.settings.moduleSetting('persistenceNetworkOverridesEnabled')
         .removeChangeListener(this._onNetworkPersistenceChanged, this);
   }
 
@@ -607,17 +619,17 @@ export default class UISourceCodeFrame extends SourceFrame.SourceFrame {
   }
 }
 
-export const _iconClassPerLevel = {};
-_iconClassPerLevel[Workspace.UISourceCode.Message.Level.Error] = 'smallicon-error';
-_iconClassPerLevel[Workspace.UISourceCode.Message.Level.Warning] = 'smallicon-warning';
+export const iconClassPerLevel = {};
+iconClassPerLevel[Workspace.UISourceCode.Message.Level.Error] = 'smallicon-error';
+iconClassPerLevel[Workspace.UISourceCode.Message.Level.Warning] = 'smallicon-warning';
 
-export const _bubbleTypePerLevel = {};
-_bubbleTypePerLevel[Workspace.UISourceCode.Message.Level.Error] = 'error';
-_bubbleTypePerLevel[Workspace.UISourceCode.Message.Level.Warning] = 'warning';
+export const bubbleTypePerLevel = {};
+bubbleTypePerLevel[Workspace.UISourceCode.Message.Level.Error] = 'error';
+bubbleTypePerLevel[Workspace.UISourceCode.Message.Level.Warning] = 'warning';
 
-export const _lineClassPerLevel = {};
-_lineClassPerLevel[Workspace.UISourceCode.Message.Level.Error] = 'text-editor-line-with-error';
-_lineClassPerLevel[Workspace.UISourceCode.Message.Level.Warning] = 'text-editor-line-with-warning';
+export const lineClassPerLevel = {};
+lineClassPerLevel[Workspace.UISourceCode.Message.Level.Error] = 'text-editor-line-with-error';
+lineClassPerLevel[Workspace.UISourceCode.Message.Level.Warning] = 'text-editor-line-with-warning';
 
 /**
  * @unrestricted
@@ -631,10 +643,10 @@ export class RowMessage {
     this._repeatCount = 1;
     this.element = createElementWithClass('div', 'text-editor-row-message');
     this._icon = this.element.createChild('label', '', 'dt-icon-label');
-    this._icon.type = _iconClassPerLevel[message.level()];
+    this._icon.type = iconClassPerLevel[message.level()];
     this._repeatCountElement =
         this.element.createChild('span', 'text-editor-row-message-repeat-count hidden', 'dt-small-bubble');
-    this._repeatCountElement.type = _bubbleTypePerLevel[message.level()];
+    this._repeatCountElement.type = bubbleTypePerLevel[message.level()];
     const linesContainer = this.element.createChild('div');
     const lines = this._message.text().split('\n');
     for (let i = 0; i < lines.length; ++i) {
@@ -737,7 +749,7 @@ export class RowMessageBucket {
     }
     const editorLineNumber = position.lineNumber;
     if (this._level) {
-      this.textEditor.toggleLineClass(editorLineNumber, _lineClassPerLevel[this._level], false);
+      this.textEditor.toggleLineClass(editorLineNumber, lineClassPerLevel[this._level], false);
     }
     if (this._decorationStartColumn !== null) {
       this.textEditor.removeDecoration(this._decoration, editorLineNumber);
@@ -817,15 +829,15 @@ export class RowMessageBucket {
       return;
     }
     if (this._level) {
-      this.textEditor.toggleLineClass(editorLineNumber, _lineClassPerLevel[this._level], false);
+      this.textEditor.toggleLineClass(editorLineNumber, lineClassPerLevel[this._level], false);
       this._icon.type = '';
     }
     this._level = maxMessage.level();
     if (!this._level) {
       return;
     }
-    this.textEditor.toggleLineClass(editorLineNumber, _lineClassPerLevel[this._level], true);
-    this._icon.type = _iconClassPerLevel[this._level];
+    this.textEditor.toggleLineClass(editorLineNumber, lineClassPerLevel[this._level], true);
+    this._icon.type = iconClassPerLevel[this._level];
   }
 }
 
@@ -844,87 +856,7 @@ Workspace.UISourceCode.Message.messageLevelComparator = function(a, b) {
       Workspace.UISourceCode.Message._messageLevelPriority[b.level()];
 };
 
-export class Plugin {
-  /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @return {boolean}
-   */
-  static accepts(uiSourceCode) {
-    return false;
-  }
-
-  wasShown() {
-  }
-
-  willHide() {
-  }
-
-  /**
-   * @return {!Promise<!Array<!UI.ToolbarItem>>}
-   */
-  async rightToolbarItems() {
-    return [];
-  }
-
-  /**
-   * @return {!Array<!UI.ToolbarItem>}
-   *
-   * TODO(szuend): It is OK to asyncify this function (similar to {rightToolbarItems}),
-   *               but it is currently not strictly necessary.
-   */
-  leftToolbarItems() {
-    return [];
-  }
-
-  /**
-   * @param {!UI.ContextMenu} contextMenu
-   * @param {number} lineNumber
-   * @return {!Promise}
-   */
-  populateLineGutterContextMenu(contextMenu, lineNumber) {
-    return Promise.resolve();
-  }
-
-  /**
-   * @param {!UI.ContextMenu} contextMenu
-   * @param {number} lineNumber
-   * @param {number} columnNumber
-   * @return {!Promise}
-   */
-  populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber) {
-    return Promise.resolve();
-  }
-
-  dispose() {
-  }
-}
-
 /** @enum {symbol} */
 export const Events = {
   ToolbarItemsChanged: Symbol('ToolbarItemsChanged')
 };
-
-/* Legacy exported object */
-self.Sources = self.Sources || {};
-
-/* Legacy exported object */
-Sources = Sources || {};
-
-/** @constructor */
-Sources.UISourceCodeFrame = UISourceCodeFrame;
-
-Sources.UISourceCodeFrame._iconClassPerLevel = _iconClassPerLevel;
-Sources.UISourceCodeFrame._bubbleTypePerLevel = _bubbleTypePerLevel;
-Sources.UISourceCodeFrame._lineClassPerLevel = _lineClassPerLevel;
-
-/** @constructor */
-Sources.UISourceCodeFrame.RowMessage = RowMessage;
-
-/** @constructor */
-Sources.UISourceCodeFrame.RowMessageBucket = RowMessageBucket;
-
-/** @constructor */
-Sources.UISourceCodeFrame.Plugin = Plugin;
-
-/** @enum {symbol} */
-Sources.UISourceCodeFrame.Events = Events;

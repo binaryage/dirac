@@ -102,7 +102,8 @@ export class ProfilesPanel extends UI.PanelWithSidebar {
     this._createFileSelectorElement();
     this.element.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), false);
 
-    SDK.targetManager.addEventListener(SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
+    self.SDK.targetManager.addEventListener(
+        SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
     UI.context.addFlavorChangeListener(SDK.CPUProfilerModel, this._updateProfileTypeSpecificUI, this);
     UI.context.addFlavorChangeListener(SDK.HeapProfilerModel, this._updateProfileTypeSpecificUI, this);
   }
@@ -157,13 +158,13 @@ export class ProfilesPanel extends UI.PanelWithSidebar {
     const profileType = this._findProfileTypeByExtension(file.name);
     if (!profileType) {
       const extensions = new Set(this._profileTypes.map(type => type.fileExtension()).filter(ext => ext));
-      Common.console.error(
+      self.Common.console.error(
           Common.UIString(`Can't load file. Supported file extensions: '%s'.`, Array.from(extensions).join(`', '`)));
       return;
     }
 
     if (!!profileType.profileBeingRecorded()) {
-      Common.console.error(Common.UIString(`Can't load profile while another profile is being recorded.`));
+      self.Common.console.error(Common.UIString(`Can't load profile while another profile is being recorded.`));
       return;
     }
 
@@ -207,7 +208,7 @@ export class ProfilesPanel extends UI.PanelWithSidebar {
    */
   _updateToggleRecordAction(toggled) {
     const hasSelectedTarget = !!(UI.context.flavor(SDK.CPUProfilerModel) || UI.context.flavor(SDK.HeapProfilerModel));
-    const enable = toggled || (!SDK.targetManager.allTargetsSuspended() && hasSelectedTarget);
+    const enable = toggled || (!self.SDK.targetManager.allTargetsSuspended() && hasSelectedTarget);
     this._toggleRecordAction.setEnabled(enable);
     this._toggleRecordAction.setToggled(toggled);
     if (enable) {

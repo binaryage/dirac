@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ Persistence.AutomappingStatus.prototype.toString = function() {
 
 
 BindingsTestRunner.waitForBinding = function(fileName) {
-  const uiSourceCodes = Workspace.workspace.uiSourceCodes();
+  const uiSourceCodes = self.Workspace.workspace.uiSourceCodes();
 
   for (const uiSourceCode of uiSourceCodes) {
     const binding = Persistence.persistence.binding(uiSourceCode);

@@ -7,7 +7,7 @@ import './platform/platform.js';
 import './dom_extension/dom_extension.js';
 import './common/common-legacy.js';
 import './host/host-legacy.js';
-import './protocol/protocol.js';
+import './protocol/protocol-legacy.js';
 import './sdk/sdk-legacy.js';
 import './ui/ui-legacy.js';
 
@@ -19,4 +19,4 @@ import './persistence/persistence-legacy.js';
 import './browser_sdk/browser_sdk-legacy.js';
 import './extensions/extensions-legacy.js';
 import './console_counters/console_counters-legacy.js';
-import './text_utils/text_utils.js';
+import './text_utils/text_utils-legacy.js';

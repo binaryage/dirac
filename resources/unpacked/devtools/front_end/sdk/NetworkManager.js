@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {ResourceLoader} from '../host/ResourceLoader.js';  // eslint-disable-line no-unused-vars
+
 import {Cookie} from './Cookie.js';
 import {Events as NetworkRequestEvents, NetworkRequest} from './NetworkRequest.js';
 import {Capability, SDKModel, SDKModelObserver, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
@@ -44,19 +46,19 @@ export class NetworkManager extends SDKModel {
     this._dispatcher = new NetworkDispatcher(this);
     this._networkAgent = target.networkAgent();
     target.registerNetworkDispatcher(this._dispatcher);
-    if (Common.moduleSetting('cacheDisabled').get()) {
+    if (self.Common.settings.moduleSetting('cacheDisabled').get()) {
       this._networkAgent.setCacheDisabled(true);
     }
 
     this._networkAgent.enable(undefined, undefined, MAX_EAGER_POST_REQUEST_BODY_LENGTH);
 
-    this._bypassServiceWorkerSetting = Common.settings.createSetting('bypassServiceWorker', false);
+    this._bypassServiceWorkerSetting = self.Common.settings.createSetting('bypassServiceWorker', false);
     if (this._bypassServiceWorkerSetting.get()) {
       this._bypassServiceWorkerChanged();
     }
     this._bypassServiceWorkerSetting.addChangeListener(this._bypassServiceWorkerChanged, this);
 
-    Common.moduleSetting('cacheDisabled').addChangeListener(this._cacheDisabledSettingChanged, this);
+    self.Common.settings.moduleSetting('cacheDisabled').addChangeListener(this._cacheDisabledSettingChanged, this);
   }
 
   /**
@@ -196,7 +198,7 @@ export class NetworkManager extends SDKModel {
    * @override
    */
   dispose() {
-    Common.moduleSetting('cacheDisabled').removeChangeListener(this._cacheDisabledSettingChanged, this);
+    self.Common.settings.moduleSetting('cacheDisabled').removeChangeListener(this._cacheDisabledSettingChanged, this);
   }
 
   _bypassServiceWorkerChanged() {
@@ -965,7 +967,7 @@ export class NetworkDispatcher {
           Events.MessageGenerated, {message: message, requestId: networkRequest.requestId(), warning: true});
     }
 
-    if (Common.moduleSetting('monitoringXHREnabled').get() &&
+    if (self.Common.settings.moduleSetting('monitoringXHREnabled').get() &&
         networkRequest.resourceType().category() === Common.resourceCategories.XHR) {
       let message;
       const failedToLoad = networkRequest.failed || networkRequest.hasErrorStatusCode();
@@ -1017,15 +1019,15 @@ export class MultitargetNetworkManager extends Common.Object {
     this._updatingInterceptionPatternsPromise = null;
 
     // TODO(allada) Remove these and merge it with request interception.
-    this._blockingEnabledSetting = Common.moduleSetting('requestBlockingEnabled');
-    this._blockedPatternsSetting = Common.settings.createSetting('networkBlockedPatterns', []);
+    this._blockingEnabledSetting = self.Common.settings.moduleSetting('requestBlockingEnabled');
+    this._blockedPatternsSetting = self.Common.settings.createSetting('networkBlockedPatterns', []);
     this._effectiveBlockedURLs = [];
     this._updateBlockedPatterns();
 
     /** @type {!Platform.Multimap<!SDK.MultitargetNetworkManager.RequestInterceptor, !SDK.MultitargetNetworkManager.InterceptionPattern>} */
     this._urlsForRequestInterceptor = new Platform.Multimap();
 
-    SDK.targetManager.observeModels(NetworkManager, this);
+    self.SDK.targetManager.observeModels(NetworkManager, this);
   }
 
   /**
@@ -1283,8 +1285,8 @@ export class MultitargetNetworkManager extends Common.Object {
    * @return {!Promise}
    */
   _updateInterceptionPatterns() {
-    if (!Common.moduleSetting('cacheDisabled').get()) {
-      Common.moduleSetting('cacheDisabled').set(true);
+    if (!self.Common.settings.moduleSetting('cacheDisabled').get()) {
+      self.Common.settings.moduleSetting('cacheDisabled').set(true);
     }
     this._updatingInterceptionPatternsPromise = null;
     const promises = /** @type {!Array<!Promise>} */ ([]);
@@ -1327,13 +1329,13 @@ export class MultitargetNetworkManager extends Common.Object {
    * @return {!Promise<!Array<string>>}
    */
   getCertificate(origin) {
-    const target = SDK.targetManager.mainTarget();
+    const target = self.SDK.targetManager.mainTarget();
     return target.networkAgent().getCertificate(origin).then(certificate => certificate || []);
   }
 
   /**
    * @param {string} url
-   * @param {function(number, !Object.<string, string>, string, number)} callback
+   * @param {function(boolean, !Object.<string, string>, string, !ResourceLoader.LoadErrorDescription)} callback
    */
   loadResource(url, callback) {
     const headers = {};
@@ -1343,7 +1345,7 @@ export class MultitargetNetworkManager extends Common.Object {
       headers['User-Agent'] = currentUserAgent;
     }
 
-    if (Common.moduleSetting('cacheDisabled').get()) {
+    if (self.Common.settings.moduleSetting('cacheDisabled').get()) {
       headers['Cache-Control'] = 'no-cache';
     }
 

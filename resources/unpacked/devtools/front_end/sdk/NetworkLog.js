@@ -48,7 +48,7 @@ export class NetworkLog extends Common.Object {
     /** @type {!Map<!NetworkManager, !PageLoad>} */
     this._pageLoadForManager = new Map();
     this._isRecording = true;
-    SDK.targetManager.observeModels(NetworkManager, this);
+    self.SDK.targetManager.observeModels(NetworkManager, this);
   }
 
   /**
@@ -106,10 +106,10 @@ export class NetworkLog extends Common.Object {
     }
     this._isRecording = enabled;
     if (enabled) {
-      SDK.targetManager.observeModels(NetworkManager, this);
+      self.SDK.targetManager.observeModels(NetworkManager, this);
     } else {
-      SDK.targetManager.unobserveModels(NetworkManager, this);
-      SDK.targetManager.models(NetworkManager).forEach(this._removeNetworkManagerListeners.bind(this));
+      self.SDK.targetManager.unobserveModels(NetworkManager, this);
+      self.SDK.targetManager.models(NetworkManager).forEach(this._removeNetworkManagerListeners.bind(this));
     }
   }
 
@@ -304,7 +304,7 @@ export class NetworkLog extends Common.Object {
   }
 
   _willReloadPage() {
-    if (!Common.moduleSetting('network_log.preserve-log').get()) {
+    if (!self.Common.settings.moduleSetting('network_log.preserve-log').get()) {
       this.reset();
     }
   }
@@ -368,7 +368,7 @@ export class NetworkLog extends Common.Object {
       this.dispatchEventToListeners(Events.RequestAdded, request);
     }
 
-    if (Common.moduleSetting('network_log.preserve-log').get()) {
+    if (self.Common.settings.moduleSetting('network_log.preserve-log').get()) {
       for (const request of oldRequestsSet) {
         this._requests.push(request);
         this._requestsSet.add(request);
@@ -455,7 +455,7 @@ export class NetworkLog extends Common.Object {
   reset() {
     this._requests = [];
     this._requestsSet.clear();
-    const managers = new Set(SDK.targetManager.models(NetworkManager));
+    const managers = new Set(self.SDK.targetManager.models(NetworkManager));
     for (const manager of this._pageLoadForManager.keys()) {
       if (!managers.has(manager)) {
         this._pageLoadForManager.delete(manager);

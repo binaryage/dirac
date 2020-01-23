@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,7 +144,8 @@ ApplicationTestRunner.addIDBValue = function(frameId, databaseName, objectStoreN
 };
 
 ApplicationTestRunner.createIndexedDBModel = function() {
-  const indexedDBModel = new Resources.IndexedDBModel(SDK.targetManager.mainTarget(), TestRunner.securityOriginManager);
+  const indexedDBModel =
+      new Resources.IndexedDBModel(self.SDK.targetManager.mainTarget(), TestRunner.securityOriginManager);
   indexedDBModel.enable();
   return indexedDBModel;
 };

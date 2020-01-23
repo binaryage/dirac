@@ -170,8 +170,8 @@ export class TimelineModelImpl {
   targetByEvent(event) {
     // FIXME: Consider returning null for loaded traces.
     const workerId = this._workerIdByThread.get(event.thread);
-    const mainTarget = SDK.targetManager.mainTarget();
-    return workerId ? SDK.targetManager.targetById(workerId) : mainTarget;
+    const mainTarget = self.SDK.targetManager.mainTarget();
+    return workerId ? self.SDK.targetManager.targetById(workerId) : mainTarget;
   }
 
   /**
@@ -403,7 +403,7 @@ export class TimelineModelImpl {
       workers: workersDevToolsMetadataEvents.sort(SDK.TracingModel.Event.compareStartTime)
     };
     if (mismatchingIds.size) {
-      Common.console.error(
+      self.Common.console.error(
           'Timeline recording was started in more than one page simultaneously. Session id mismatch: ' +
           this._sessionId + ' and ' + mismatchingIds.valuesArray() + '.');
     }
@@ -487,7 +487,7 @@ export class TimelineModelImpl {
       target = this.targetByEvent(cpuProfileEvent);
       const profileGroup = tracingModel.profileGroup(cpuProfileEvent);
       if (!profileGroup) {
-        Common.console.error('Invalid CPU profile format.');
+        self.Common.console.error('Invalid CPU profile format.');
         return null;
       }
       cpuProfile = /** @type {!Protocol.Profiler.Profile} */ ({
@@ -509,12 +509,12 @@ export class TimelineModelImpl {
         const nodesAndSamples = eventData['cpuProfile'] || {};
         const samples = nodesAndSamples['samples'] || [];
         const lines = eventData['lines'] || Array(samples.length).fill(0);
-        cpuProfile.nodes.push(...nodesAndSamples['nodes'] || []);
+        cpuProfile.nodes.push(...(nodesAndSamples['nodes'] || []));
         cpuProfile.lines.push(...lines);
         cpuProfile.samples.push(...samples);
-        cpuProfile.timeDeltas.push(...eventData['timeDeltas'] || []);
+        cpuProfile.timeDeltas.push(...(eventData['timeDeltas'] || []));
         if (cpuProfile.samples.length !== cpuProfile.timeDeltas.length) {
-          Common.console.error('Failed to parse CPU profile.');
+          self.Common.console.error('Failed to parse CPU profile.');
           return null;
         }
       }
@@ -528,7 +528,7 @@ export class TimelineModelImpl {
       this._cpuProfiles.push(jsProfileModel);
       return jsProfileModel;
     } catch (e) {
-      Common.console.error('Failed to parse CPU profile.');
+      self.Common.console.error('Failed to parse CPU profile.');
     }
     return null;
   }

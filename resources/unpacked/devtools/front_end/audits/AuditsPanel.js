@@ -95,7 +95,7 @@ export class AuditsPanel extends UI.Panel {
     this._settingsPane.show(this.contentElement);
     this._settingsPane.element.classList.add('audits-settings-pane');
     this._settingsPane.element.appendChild(this._startView.settingsToolbar().element);
-    this._showSettingsPaneSetting = Common.settings.createSetting('auditsShowSettingsToolbar', false);
+    this._showSettingsPaneSetting = self.Common.settings.createSetting('auditsShowSettingsToolbar', false);
 
     this._rightToolbar = new UI.Toolbar('', auditsToolbarContainer);
     this._rightToolbar.appendSeparator();
@@ -212,7 +212,7 @@ export class AuditsPanel extends UI.Panel {
   }
 
   _waitForMainTargetLoad() {
-    const mainTarget = SDK.targetManager.mainTarget();
+    const mainTarget = self.SDK.targetManager.mainTarget();
     const resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel);
     return resourceTreeModel.once(SDK.ResourceTreeModel.Events.Load);
   }
@@ -375,7 +375,7 @@ export class AuditsPanel extends UI.Panel {
 
     Emulation.InspectedPagePlaceholder.instance().update(true);
 
-    const resourceTreeModel = SDK.targetManager.mainTarget().model(SDK.ResourceTreeModel);
+    const resourceTreeModel = self.SDK.targetManager.mainTarget().model(SDK.ResourceTreeModel);
     // reload to reset the page state
     const inspectedURL = await this._controller.getInspectedURL();
     await resourceTreeModel.navigate(inspectedURL);

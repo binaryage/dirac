@@ -28,13 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {UISourceCodeFrame} from './UISourceCodeFrame.js';
+
 /**
  * @implements {UI.ActionDelegate}
  * @implements {UI.ToolbarItem.ItemsProvider}
  * @implements {UI.ContextMenu.Provider}
  * @unrestricted
  */
-export default class WatchExpressionsSidebarPane extends UI.ThrottledWidget {
+export class WatchExpressionsSidebarPane extends UI.ThrottledWidget {
   constructor() {
     super(true);
     this.registerRequiredCSS('object_ui/objectValue.css');
@@ -42,7 +44,7 @@ export default class WatchExpressionsSidebarPane extends UI.ThrottledWidget {
 
     /** @type {!Array.<!WatchExpression>} */
     this._watchExpressions = [];
-    this._watchExpressionsSetting = Common.settings.createLocalSetting('watchExpressions', []);
+    this._watchExpressionsSetting = self.Common.settings.createLocalSetting('watchExpressions', []);
 
     this._addButton = new UI.ToolbarButton(ls`Add watch expression`, 'largeicon-add');
     this._addButton.addEventListener(UI.ToolbarButton.Events.Click, this._addButtonClicked.bind(this));
@@ -228,7 +230,7 @@ export default class WatchExpressionsSidebarPane extends UI.ThrottledWidget {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const frame = UI.context.flavor(Sources.UISourceCodeFrame);
+    const frame = UI.context.flavor(UISourceCodeFrame);
     if (!frame) {
       return false;
     }
@@ -256,7 +258,7 @@ export default class WatchExpressionsSidebarPane extends UI.ThrottledWidget {
           ls`Add property path to watch`, this._addPropertyPathToWatch.bind(this, target));
     }
 
-    const frame = UI.context.flavor(Sources.UISourceCodeFrame);
+    const frame = UI.context.flavor(UISourceCodeFrame);
     if (!frame || frame.textEditor.selection().isEmpty()) {
       return;
     }
@@ -534,15 +536,3 @@ WatchExpression._watchObjectGroupId = 'watch-group';
 WatchExpression.Events = {
   ExpressionUpdated: Symbol('ExpressionUpdated')
 };
-
-/* Legacy exported object */
-self.Sources = self.Sources || {};
-
-/* Legacy exported object */
-Sources = Sources || {};
-
-/** @constructor */
-Sources.WatchExpressionsSidebarPane = WatchExpressionsSidebarPane;
-
-/** @constructor */
-Sources.WatchExpression = WatchExpression;

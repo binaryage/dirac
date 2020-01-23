@@ -23,7 +23,7 @@ export class MediaQueryInspector extends UI.Widget {
     this._setWidthCallback = setWidthCallback;
     this._scale = 1;
 
-    SDK.targetManager.observeModels(SDK.CSSModel, this);
+    self.SDK.targetManager.observeModels(SDK.CSSModel, this);
     UI.zoomManager.addEventListener(UI.ZoomManager.Events.ZoomChanged, this._renderMediaQueries.bind(this), this);
   }
 
@@ -113,7 +113,7 @@ export class MediaQueryInspector extends UI.Widget {
     const locations = mediaQueryMarker._locations;
     const uiLocations = new Map();
     for (let i = 0; i < locations.length; ++i) {
-      const uiLocation = Bindings.cssWorkspaceBinding.rawLocationToUILocation(locations[i]);
+      const uiLocation = self.Bindings.cssWorkspaceBinding.rawLocationToUILocation(locations[i]);
       if (!uiLocation) {
         continue;
       }

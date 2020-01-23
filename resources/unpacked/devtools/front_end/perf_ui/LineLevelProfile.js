@@ -149,7 +149,7 @@ export class Helper {
 
   _doUpdate() {
     this._locationPool.disposeAll();
-    Workspace.workspace.uiSourceCodes().forEach(uiSourceCode => uiSourceCode.removeDecorationsForType(this._type));
+    self.Workspace.workspace.uiSourceCodes().forEach(uiSourceCode => uiSourceCode.removeDecorationsForType(this._type));
     for (const targetToScript of this._lineData) {
       const target = /** @type {?SDK.Target} */ (targetToScript[0]);
       const debuggerModel = target ? target.model(SDK.DebuggerModel) : null;
@@ -160,7 +160,7 @@ export class Helper {
         // debuggerModel is null when the profile is loaded from file.
         // Try to get UISourceCode by the URL in this case.
         const uiSourceCode = !debuggerModel && typeof scriptIdOrUrl === 'string' ?
-            Workspace.workspace.uiSourceCodeForURL(scriptIdOrUrl) :
+            self.Workspace.workspace.uiSourceCodeForURL(scriptIdOrUrl) :
             null;
         if (!debuggerModel && !uiSourceCode) {
           continue;
@@ -195,7 +195,8 @@ export class Presentation {
     this._type = type;
     this._time = time;
     this._uiLocation = null;
-    Bindings.debuggerWorkspaceBinding.createLiveLocation(rawLocation, this.updateLocation.bind(this), locationPool);
+    self.Bindings.debuggerWorkspaceBinding.createLiveLocation(
+        rawLocation, this.updateLocation.bind(this), locationPool);
   }
 
   /**
