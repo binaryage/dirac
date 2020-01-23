@@ -14,12 +14,12 @@ let _appInstance;
  */
 export class ScreencastApp {
   constructor() {
-    this._enabledSetting = Common.settings.createSetting('screencastEnabled', true);
+    this._enabledSetting = self.Common.settings.createSetting('screencastEnabled', true);
     this._toggleButton = new UI.ToolbarToggle(Common.UIString('Toggle screencast'), 'largeicon-phone');
     this._toggleButton.setToggled(this._enabledSetting.get());
     this._toggleButton.setEnabled(false);
     this._toggleButton.addEventListener(UI.ToolbarButton.Events.Click, this._toggleButtonClicked, this);
-    SDK.targetManager.observeModels(SDK.ScreenCaptureModel, this);
+    self.SDK.targetManager.observeModels(SDK.ScreenCaptureModel, this);
   }
 
   /**

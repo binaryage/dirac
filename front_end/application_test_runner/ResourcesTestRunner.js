@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
  * doesn't get reset between tests.
  */
 ApplicationTestRunner.resetState = async function() {
-  const targets = SDK.targetManager.targets();
+  const targets = self.SDK.targetManager.targets();
   for (const target of targets) {
     const securityOrigin = new Common.ParsedURL(target.inspectedURL()).securityOrigin();
     await target.storageAgent().clearDataForOrigin(

@@ -160,6 +160,8 @@ Common.SegmentedRange = CommonModule.SegmentedRange.SegmentedRange;
  */
 Common.Settings = CommonModule.Settings.Settings;
 
+Common.Settings.detectColorFormat = CommonModule.Settings.detectColorFormat;
+
 /**
  * @constructor
  */
@@ -247,7 +249,7 @@ Common.Object._listenerCallbackTuple;
 /**
  * @type {!Common.Settings}
  */
-Common.settings;
+self.Common.settings;
 
 /** @typedef {function(!Error=)} */
 Common.Throttler.FinishCallback;

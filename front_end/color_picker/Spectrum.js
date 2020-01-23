@@ -586,13 +586,13 @@ export class Spectrum extends UI.VBox {
     this._palettes.set(MaterialPalette.title, MaterialPalette);
     /** @type {!ColorPicker.Spectrum.Palette} */
     const defaultCustomPalette = {title: 'Custom', colors: [], colorNames: [], mutable: true};
-    this._customPaletteSetting = Common.settings.createSetting('customColorPalette', defaultCustomPalette);
+    this._customPaletteSetting = self.Common.settings.createSetting('customColorPalette', defaultCustomPalette);
     const customPalette = this._customPaletteSetting.get();
     // Fallback case for custom palettes created pre-m67
     customPalette.colorNames = customPalette.colorNames || [];
     this._palettes.set(customPalette.title, customPalette);
 
-    this._selectedColorPalette = Common.settings.createSetting('selectedColorPalette', GeneratedPaletteTitle);
+    this._selectedColorPalette = self.Common.settings.createSetting('selectedColorPalette', GeneratedPaletteTitle);
     const palette = this._palettes.get(this._selectedColorPalette.get());
     if (palette) {
       this._showPalette(palette, true);
@@ -1112,7 +1112,7 @@ export class PaletteGenerator {
     /** @type {!Map.<string, number>} */
     this._frequencyMap = new Map();
     const stylesheetPromises = [];
-    for (const cssModel of SDK.targetManager.models(SDK.CSSModel)) {
+    for (const cssModel of self.SDK.targetManager.models(SDK.CSSModel)) {
       for (const stylesheet of cssModel.allStyleSheets()) {
         stylesheetPromises.push(this._processStylesheet(stylesheet));
       }

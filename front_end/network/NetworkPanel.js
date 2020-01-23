@@ -45,9 +45,9 @@ export class NetworkPanel extends UI.Panel {
     super('network');
     this.registerRequiredCSS('network/networkPanel.css');
 
-    this._networkLogShowOverviewSetting = Common.settings.createSetting('networkLogShowOverview', true);
-    this._networkLogLargeRowsSetting = Common.settings.createSetting('networkLogLargeRows', false);
-    this._networkRecordFilmStripSetting = Common.settings.createSetting('networkRecordFilmStripSetting', false);
+    this._networkLogShowOverviewSetting = self.Common.settings.createSetting('networkLogShowOverview', true);
+    this._networkLogLargeRowsSetting = self.Common.settings.createSetting('networkLogLargeRows', false);
+    this._networkRecordFilmStripSetting = self.Common.settings.createSetting('networkRecordFilmStripSetting', false);
     this._toggleRecordAction = /** @type {!UI.Action }*/ (UI.actionRegistry.action('network.toggle-recording'));
 
     /** @type {number|undefined} */
@@ -74,7 +74,7 @@ export class NetworkPanel extends UI.Panel {
     this._settingsPane = new UI.HBox();
     this._settingsPane.element.classList.add('network-settings-pane');
     this._settingsPane.show(panel.contentElement);
-    this._showSettingsPaneSetting = Common.settings.createSetting('networkShowSettingsToolbar', false);
+    this._showSettingsPaneSetting = self.Common.settings.createSetting('networkShowSettingsToolbar', false);
     this._showSettingsPaneSetting.addChangeListener(this._updateSettingsPaneVisibility.bind(this));
     this._updateSettingsPaneVisibility();
 
@@ -148,7 +148,7 @@ export class NetworkPanel extends UI.Panel {
     this._networkLogLargeRowsSetting.addChangeListener(this._toggleLargerRequests, this);
     this._networkRecordFilmStripSetting.addChangeListener(this._toggleRecordFilmStrip, this);
 
-    this._preserveLogSetting = Common.moduleSetting('network_log.preserve-log');
+    this._preserveLogSetting = self.Common.settings.moduleSetting('network_log.preserve-log');
 
     this._throttlingSelect = this._createThrottlingConditionsSelect();
     this._setupToolbarButtons(splitWidget);
@@ -159,9 +159,9 @@ export class NetworkPanel extends UI.Panel {
     this._toggleRecordFilmStrip();
     this._updateUI();
 
-    SDK.targetManager.addModelListener(
+    self.SDK.targetManager.addModelListener(
         SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.WillReloadPage, this._willReloadPage, this);
-    SDK.targetManager.addModelListener(SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._load, this);
+    self.SDK.targetManager.addModelListener(SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._load, this);
     this._networkLogView.addEventListener(Events.RequestSelected, this._onRequestSelected, this);
     this._networkLogView.addEventListener(Events.RequestActivated, this._onRequestActivated, this);
     SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestAdded, this._onUpdateRequest, this);
@@ -233,7 +233,7 @@ export class NetworkPanel extends UI.Panel {
         Common.UIString('Preserve log')));
 
     const disableCacheCheckbox = new UI.ToolbarSettingCheckbox(
-        Common.moduleSetting('cacheDisabled'), Common.UIString('Disable cache (while DevTools is open)'),
+        self.Common.settings.moduleSetting('cacheDisabled'), Common.UIString('Disable cache (while DevTools is open)'),
         Common.UIString('Disable cache'));
     this._panelToolbar.appendToolbarItem(disableCacheCheckbox);
 
@@ -254,8 +254,8 @@ export class NetworkPanel extends UI.Panel {
 
     const settingsToolbarRight = new UI.Toolbar('', this._settingsPane.element);
     settingsToolbarRight.makeVertical();
-    settingsToolbarRight.appendToolbarItem(
-        new UI.ToolbarSettingCheckbox(Common.moduleSetting('network.group-by-frame'), '', ls`Group by frame`));
+    settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(
+        self.Common.settings.moduleSetting('network.group-by-frame'), '', ls`Group by frame`));
     settingsToolbarRight.appendToolbarItem(
         new UI.ToolbarSettingCheckbox(this._networkRecordFilmStripSetting, '', ls`Capture screenshots`));
 
@@ -740,7 +740,7 @@ export class FilmStripRecorder {
   startRecording() {
     this._filmStripView.reset();
     this._filmStripView.setStatusText(Common.UIString('Recording frames...'));
-    const tracingManagers = SDK.targetManager.models(SDK.TracingManager);
+    const tracingManagers = self.SDK.targetManager.models(SDK.TracingManager);
     if (this._tracingManager || !tracingManagers.length) {
       return;
     }

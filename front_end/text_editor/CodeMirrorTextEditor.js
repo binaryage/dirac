@@ -47,7 +47,7 @@ export class CodeMirrorTextEditor extends UI.VBox {
     this.registerRequiredCSS('text_editor/cmdevtools.css');
 
     const {indentWithTabs, indentUnit} =
-        CodeMirrorTextEditor._getIndentation(Common.moduleSetting('textEditorIndent').get());
+        CodeMirrorTextEditor._getIndentation(self.Common.settings.moduleSetting('textEditorIndent').get());
 
     this._codeMirror = new CodeMirror(this.element, {
       devtoolsAccessibleName: options.devtoolsAccessibleName,
@@ -69,7 +69,7 @@ export class CodeMirrorTextEditor extends UI.VBox {
 
     this._codeMirror._codeMirrorTextEditor = this;
 
-    Common.moduleSetting('textEditorIndent').addChangeListener(this._updateIndentSize.bind(this));
+    self.Common.settings.moduleSetting('textEditorIndent').addChangeListener(this._updateIndentSize.bind(this));
 
     CodeMirror.keyMap['devtools-common'] = {
       'Left': 'goCharLeft',
@@ -609,7 +609,7 @@ export class CodeMirrorTextEditor extends UI.VBox {
    * @param {!Event} e
    */
   _handleKeyDown(e) {
-    if (e.key === 'Tab' && Common.moduleSetting('textEditorTabMovesFocus').get()) {
+    if (e.key === 'Tab' && self.Common.settings.moduleSetting('textEditorTabMovesFocus').get()) {
       e.consume(false);
       return;
     }
@@ -1046,22 +1046,35 @@ export class CodeMirrorTextEditor extends UI.VBox {
    * @param {number} height
    */
   _updatePaddingBottom(width, height) {
-    if (!this._options.padBottom) {
+    let newPaddingBottom = 0;
+    const linesElement = this._codeMirrorElement.getElementsByClassName('CodeMirror-lines')[0];
+
+    if (this._options.padBottom) {
+      const scrollInfo = this._codeMirror.getScrollInfo();
+      const lineCount = this._codeMirror.lineCount();
+      if (lineCount > 1) {
+        newPaddingBottom =
+            Math.max(scrollInfo.clientHeight - this._codeMirror.getLineHandle(this._codeMirror.lastLine()).height, 0);
+      }
+    }
+
+    newPaddingBottom += 'px';
+    if (linesElement.style.paddingBottom !== newPaddingBottom) {
+      linesElement.style.paddingBottom = newPaddingBottom;
+      this._codeMirror.setSize(width, height);
+    }
+  }
+
+  /**
+   * @param {boolean} enableScrolling
+   */
+  toggleScrollPastEof(enableScrolling) {
+    if (this._options.padBottom === enableScrolling) {
       return;
     }
-    const scrollInfo = this._codeMirror.getScrollInfo();
-    let newPaddingBottom;
-    const linesElement = this._codeMirrorElement.querySelector('.CodeMirror-lines');
-    const lineCount = this._codeMirror.lineCount();
-    if (lineCount <= 1) {
-      newPaddingBottom = 0;
-    } else {
-      newPaddingBottom =
-          Math.max(scrollInfo.clientHeight - this._codeMirror.getLineHandle(this._codeMirror.lastLine()).height, 0);
-    }
-    newPaddingBottom += 'px';
-    linesElement.style.paddingBottom = newPaddingBottom;
-    this._codeMirror.setSize(width, height);
+
+    this._options.padBottom = enableScrolling;
+    this._resizeEditor();
   }
 
   _resizeEditor() {
@@ -1443,7 +1456,7 @@ CodeMirror.commands.UserIndent = function(codeMirror) {
     return;
   }
 
-  const indentation = Common.moduleSetting('textEditorIndent').get();
+  const indentation = self.Common.settings.moduleSetting('textEditorIndent').get();
   codeMirror.replaceSelection(indentation);
 };
 

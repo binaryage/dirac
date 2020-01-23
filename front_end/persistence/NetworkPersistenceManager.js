@@ -15,7 +15,7 @@ export class NetworkPersistenceManager extends Common.Object {
     this._originalResponseContentPromiseSymbol = Symbol('OriginalResponsePromise');
     this._savingSymbol = Symbol('SavingForOverrides');
 
-    this._enabledSetting = Common.settings.moduleSetting('persistenceNetworkOverridesEnabled');
+    this._enabledSetting = self.Common.settings.moduleSetting('persistenceNetworkOverridesEnabled');
     this._enabledSetting.addChangeListener(this._enabledChanged, this);
 
     this._workspace = workspace;
@@ -81,20 +81,20 @@ export class NetworkPersistenceManager extends Common.Object {
     this._enabled = this._enabledSetting.get();
     if (this._enabled) {
       this._eventDescriptors = [
-        Workspace.workspace.addEventListener(
+        self.Workspace.workspace.addEventListener(
             Workspace.Workspace.Events.UISourceCodeRenamed,
             event => {
               const uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data.uiSourceCode);
               this._onUISourceCodeRemoved(uiSourceCode);
               this._onUISourceCodeAdded(uiSourceCode);
             }),
-        Workspace.workspace.addEventListener(
+        self.Workspace.workspace.addEventListener(
             Workspace.Workspace.Events.UISourceCodeAdded,
             event => this._onUISourceCodeAdded(/** @type {!Workspace.UISourceCode} */ (event.data))),
-        Workspace.workspace.addEventListener(
+        self.Workspace.workspace.addEventListener(
             Workspace.Workspace.Events.UISourceCodeRemoved,
             event => this._onUISourceCodeRemoved(/** @type {!Workspace.UISourceCode} */ (event.data))),
-        Workspace.workspace.addEventListener(
+        self.Workspace.workspace.addEventListener(
             Workspace.Workspace.Events.WorkingCopyCommitted,
             event => this._onUISourceCodeWorkingCopyCommitted(
                 /** @type {!Workspace.UISourceCode} */ (event.data.uiSourceCode)))
@@ -108,7 +108,7 @@ export class NetworkPersistenceManager extends Common.Object {
 
   _updateActiveProject() {
     const wasActive = this._active;
-    this._active = !!(this._enabledSetting.get() && SDK.targetManager.mainTarget() && this._project);
+    this._active = !!(this._enabledSetting.get() && self.SDK.targetManager.mainTarget() && this._project);
     if (this._active === wasActive) {
       return;
     }

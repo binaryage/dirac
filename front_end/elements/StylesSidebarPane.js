@@ -38,8 +38,8 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     this.setMinimumSize(96, 26);
     this.registerRequiredCSS('elements/stylesSidebarPane.css');
 
-    Common.moduleSetting('colorFormat').addChangeListener(this.update.bind(this));
-    Common.moduleSetting('textEditorIndent').addChangeListener(this.update.bind(this));
+    self.Common.settings.moduleSetting('colorFormat').addChangeListener(this.update.bind(this));
+    self.Common.settings.moduleSetting('textEditorIndent').addChangeListener(this.update.bind(this));
 
     /** @type {?UI.Widget} */
     this._currentToolbarPane = null;
@@ -1751,7 +1751,7 @@ export class StylePropertiesSection {
         event.consume(true);
         return;
       }
-      const uiLocation = Bindings.cssWorkspaceBinding.rawLocationToUILocation(location);
+      const uiLocation = self.Bindings.cssWorkspaceBinding.rawLocationToUILocation(location);
       if (uiLocation) {
         Common.Revealer.reveal(uiLocation);
       }
@@ -1885,7 +1885,7 @@ export class StylePropertiesSection {
    * @param {boolean} focus
    */
   static _revealSelectorSource(rawLocation, focus) {
-    const uiLocation = Bindings.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
+    const uiLocation = self.Bindings.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
     if (uiLocation) {
       Common.Revealer.reveal(uiLocation, !focus);
     }

@@ -72,8 +72,8 @@ export class CSSModel extends SDKModel {
     /** @type {boolean} */
     this._isRuleUsageTrackingEnabled = false;
 
-    this._sourceMapManager.setEnabled(Common.moduleSetting('cssSourceMapsEnabled').get());
-    Common.moduleSetting('cssSourceMapsEnabled')
+    this._sourceMapManager.setEnabled(self.Common.settings.moduleSetting('cssSourceMapsEnabled').get());
+    self.Common.settings.moduleSetting('cssSourceMapsEnabled')
         .addChangeListener(event => this._sourceMapManager.setEnabled(/** @type {boolean} */ (event.data)));
   }
 
@@ -248,10 +248,13 @@ export class CSSModel extends SDKModel {
   }
 
   /**
-   * @return {!Promise<!Array<!Protocol.CSS.RuleUsage>>}
+   * @return {!Promise<{timestamp: number, coverage:!Array<!Protocol.CSS.RuleUsage>}>}
    */
-  takeCoverageDelta() {
-    return this._agent.takeCoverageDelta().then(ruleUsage => ruleUsage || []);
+  async takeCoverageDelta() {
+    const r = await this._agent.invoke_takeCoverageDelta({});
+    const timestamp = (r && r.timestamp) || 0;
+    const coverage = (r && r.coverage) || [];
+    return {timestamp, coverage};
   }
 
   /**

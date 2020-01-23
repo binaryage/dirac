@@ -52,9 +52,9 @@ export class NetworkLogView extends UI.VBox {
     this.element.id = 'network-container';
     this.element.classList.add('no-node-selected');
 
-    this._networkHideDataURLSetting = Common.settings.createSetting('networkHideDataURL', false);
-    this._networkShowIssuesOnlySetting = Common.settings.createSetting('networkShowIssuesOnly', false);
-    this._networkResourceTypeFiltersSetting = Common.settings.createSetting('networkResourceTypeFilters', {});
+    this._networkHideDataURLSetting = self.Common.settings.createSetting('networkHideDataURL', false);
+    this._networkShowIssuesOnlySetting = self.Common.settings.createSetting('networkShowIssuesOnly', false);
+    this._networkResourceTypeFiltersSetting = self.Common.settings.createSetting('networkResourceTypeFilters', {});
 
     this._rawRowHeight = 0;
     this._progressBarContainer = progressBarContainer;
@@ -158,22 +158,22 @@ export class NetworkLogView extends UI.VBox {
     new UI.DropTarget(
         this.element, [UI.DropTarget.Type.File], Common.UIString('Drop HAR files here'), this._handleDrop.bind(this));
 
-    Common.moduleSetting('networkColorCodeResourceTypes')
+    self.Common.settings.moduleSetting('networkColorCodeResourceTypes')
         .addChangeListener(this._invalidateAllItems.bind(this, false), this);
 
-    SDK.targetManager.observeModels(SDK.NetworkManager, this);
+    self.SDK.targetManager.observeModels(SDK.NetworkManager, this);
     SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestAdded, this._onRequestUpdated, this);
     SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestUpdated, this._onRequestUpdated, this);
     SDK.networkLog.addEventListener(SDK.NetworkLog.Events.Reset, this._reset, this);
 
     this._updateGroupByFrame();
-    Common.moduleSetting('network.group-by-frame').addChangeListener(() => this._updateGroupByFrame());
+    self.Common.settings.moduleSetting('network.group-by-frame').addChangeListener(() => this._updateGroupByFrame());
 
     this._filterBar = filterBar;
   }
 
   _updateGroupByFrame() {
-    const value = Common.moduleSetting('network.group-by-frame').get();
+    const value = self.Common.settings.moduleSetting('network.group-by-frame').get();
     this._setGrouping(value ? 'Frame' : null);
   }
 
@@ -517,7 +517,7 @@ export class NetworkLogView extends UI.VBox {
    * @param {string} message
    */
   _harLoadFailed(message) {
-    Common.console.error('Failed to load HAR file with following error: ' + message);
+    self.Common.console.error('Failed to load HAR file with following error: ' + message);
   }
 
   /**
@@ -1467,7 +1467,7 @@ export class NetworkLogView extends UI.VBox {
    * @return {!Promise}
    */
   async exportAll() {
-    const url = SDK.targetManager.mainTarget().inspectedURL();
+    const url = self.SDK.targetManager.mainTarget().inspectedURL();
     const parsedURL = Common.ParsedURL.fromString(url);
     const filename = parsedURL ? parsedURL.host : 'network-log';
     const stream = new Bindings.FileOutputStream();

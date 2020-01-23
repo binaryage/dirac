@@ -4,8 +4,8 @@
  * Copyright (C) 2009 Joseph Pecoraro
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
  * 1.  Redistributions of source code must retain the above copyright
  *     notice, this list of conditions and the following disclaimer.
@@ -32,7 +32,7 @@
  * @return {?SDK.Resource}
  */
 export function resourceForURL(url) {
-  for (const resourceTreeModel of SDK.targetManager.models(SDK.ResourceTreeModel)) {
+  for (const resourceTreeModel of self.SDK.targetManager.models(SDK.ResourceTreeModel)) {
     const resource = resourceTreeModel.resourceForURL(url);
     if (resource) {
       return resource;
@@ -55,12 +55,12 @@ export function displayNameForURL(url) {
     return resource.displayName;
   }
 
-  const uiSourceCode = Workspace.workspace.uiSourceCodeForURL(url);
+  const uiSourceCode = self.Workspace.workspace.uiSourceCodeForURL(url);
   if (uiSourceCode) {
     return uiSourceCode.displayName();
   }
 
-  const mainTarget = SDK.targetManager.mainTarget();
+  const mainTarget = self.SDK.targetManager.mainTarget();
   const inspectedURL = mainTarget && mainTarget.inspectedURL();
   if (!inspectedURL) {
     return url.trimURL('');

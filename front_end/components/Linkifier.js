@@ -45,7 +45,7 @@ export class Linkifier {
     this._locationPoolByTarget = new Map();
     this._useLinkDecorator = !!useLinkDecorator;
     _instances.add(this);
-    SDK.targetManager.observeTargets(this);
+    self.SDK.targetManager.observeTargets(this);
   }
 
   /**
@@ -183,7 +183,7 @@ export class Linkifier {
     const info = Linkifier._linkInfo(anchor);
     info.enableDecorator = this._useLinkDecorator;
     info.fallback = fallbackAnchor;
-    info.liveLocation = Bindings.debuggerWorkspaceBinding.createLiveLocation(
+    info.liveLocation = self.Bindings.debuggerWorkspaceBinding.createLiveLocation(
         rawLocation, this._updateAnchor.bind(this, anchor),
         /** @type {!Bindings.LiveLocationPool} */ (this._locationPoolByTarget.get(rawLocation.debuggerModel.target())));
 
@@ -257,7 +257,7 @@ export class Linkifier {
     const info = Linkifier._linkInfo(anchor);
     info.enableDecorator = this._useLinkDecorator;
     info.fallback = fallbackAnchor;
-    info.liveLocation = Bindings.debuggerWorkspaceBinding.createStackTraceTopFrameLiveLocation(
+    info.liveLocation = self.Bindings.debuggerWorkspaceBinding.createStackTraceTopFrameLiveLocation(
         rawLocations, this._updateAnchor.bind(this, anchor),
         /** @type {!Bindings.LiveLocationPool} */ (this._locationPoolByTarget.get(target)));
 
@@ -275,7 +275,7 @@ export class Linkifier {
     const anchor = Linkifier._createLink('', classes || '');
     const info = Linkifier._linkInfo(anchor);
     info.enableDecorator = this._useLinkDecorator;
-    info.liveLocation = Bindings.cssWorkspaceBinding.createLiveLocation(
+    info.liveLocation = self.Bindings.cssWorkspaceBinding.createLiveLocation(
         rawLocation, this._updateAnchor.bind(this, anchor),
         /** @type {!Bindings.LiveLocationPool} */ (this._locationPoolByTarget.get(rawLocation.cssModel().target())));
 
@@ -295,7 +295,7 @@ export class Linkifier {
     for (const target of this._anchorsByTarget.keysArray()) {
       this.targetRemoved(target);
     }
-    SDK.targetManager.unobserveTargets(this);
+    self.SDK.targetManager.unobserveTargets(this);
     _instances.delete(this);
   }
 
@@ -558,7 +558,7 @@ export class Linkifier {
    */
   static _linkHandlerSetting() {
     if (!Linkifier._linkHandlerSettingInstance) {
-      Linkifier._linkHandlerSettingInstance = Common.settings.createSetting('openLinkHandler', ls`auto`);
+      Linkifier._linkHandlerSettingInstance = self.Common.settings.createSetting('openLinkHandler', ls`auto`);
     }
     return Linkifier._linkHandlerSettingInstance;
   }
@@ -607,8 +607,8 @@ export class Linkifier {
       url = uiLocation.uiSourceCode.contentURL();
     } else if (info.url) {
       url = info.url;
-      const uiSourceCode = Workspace.workspace.uiSourceCodeForURL(url) ||
-          Workspace.workspace.uiSourceCodeForURL(Common.ParsedURL.urlWithoutHash(url));
+      const uiSourceCode = self.Workspace.workspace.uiSourceCodeForURL(url) ||
+          self.Workspace.workspace.uiSourceCodeForURL(Common.ParsedURL.urlWithoutHash(url));
       uiLocation = uiSourceCode ? uiSourceCode.uiLocation(info.lineNumber || 0, info.columnNumber || 0) : null;
     }
     const resource = url ? Bindings.resourceForURL(url) : null;

@@ -18,7 +18,7 @@ export class ThrottlingManager extends Common.Object {
     this._cpuThrottlingControls = new Set();
     this._cpuThrottlingRates = cpuThrottlingPresets;
     /** @type {!Common.Setting<!Array<!SDK.NetworkManager.Conditions>>} */
-    this._customNetworkConditionsSetting = Common.moduleSetting('customNetworkConditions');
+    this._customNetworkConditionsSetting = self.Common.settings.moduleSetting('customNetworkConditions');
     /** @type {!SDK.NetworkManager.Conditions} */
     this._currentNetworkThrottlingConditions = SDK.NetworkManager.NoThrottlingConditions;
     /** @type {!SDK.NetworkManager.Conditions} */
@@ -29,7 +29,7 @@ export class ThrottlingManager extends Common.Object {
       this._currentNetworkThrottlingConditions = SDK.multitargetNetworkManager.networkConditions();
     });
 
-    SDK.targetManager.observeModels(SDK.EmulationModel, this);
+    self.SDK.targetManager.observeModels(SDK.EmulationModel, this);
   }
 
 
@@ -190,7 +190,7 @@ export class ThrottlingManager extends Common.Object {
    */
   setCPUThrottlingRate(rate) {
     this._cpuThrottlingRate = rate;
-    for (const emulationModel of SDK.targetManager.models(SDK.EmulationModel)) {
+    for (const emulationModel of self.SDK.targetManager.models(SDK.EmulationModel)) {
       emulationModel.setCPUThrottlingRate(this._cpuThrottlingRate);
     }
     let icon = null;

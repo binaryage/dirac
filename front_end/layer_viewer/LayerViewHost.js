@@ -1,8 +1,7 @@
-/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /**
  * @interface
  */
@@ -165,7 +164,7 @@ export class LayerViewHost {
     this._views = [];
     this._selectedObject = null;
     this._hoveredObject = null;
-    this._showInternalLayersSetting = Common.settings.createSetting('layersShowInternalLayers', false);
+    this._showInternalLayersSetting = self.Common.settings.createSetting('layersShowInternalLayers', false);
   }
 
   /**

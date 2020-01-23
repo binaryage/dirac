@@ -57,12 +57,12 @@ export class ServiceWorkersView extends UI.VBox {
     this._updateCollapsedStyle();
 
     this._toolbar.appendToolbarItem(MobileThrottling.throttlingManager().createOfflineToolbarCheckbox());
-    const updateOnReloadSetting = Common.settings.createSetting('serviceWorkerUpdateOnReload', false);
+    const updateOnReloadSetting = self.Common.settings.createSetting('serviceWorkerUpdateOnReload', false);
     updateOnReloadSetting.setTitle(Common.UIString('Update on reload'));
     const forceUpdate = new UI.ToolbarSettingCheckbox(
         updateOnReloadSetting, ls`On page reload, force the service worker to update, and activate it`);
     this._toolbar.appendToolbarItem(forceUpdate);
-    const bypassServiceWorkerSetting = Common.settings.createSetting('bypassServiceWorker', false);
+    const bypassServiceWorkerSetting = self.Common.settings.createSetting('bypassServiceWorker', false);
     bypassServiceWorkerSetting.setTitle(Common.UIString('Bypass for network'));
     const fallbackToNetwork = new UI.ToolbarSettingCheckbox(
         bypassServiceWorkerSetting, ls`Bypass the service worker and load resources from the network`);
@@ -70,7 +70,7 @@ export class ServiceWorkersView extends UI.VBox {
 
     /** @type {!Map<!SDK.ServiceWorkerManager, !Array<!Common.EventTarget.EventDescriptor>>}*/
     this._eventListeners = new Map();
-    SDK.targetManager.observeModels(SDK.ServiceWorkerManager, this);
+    self.SDK.targetManager.observeModels(SDK.ServiceWorkerManager, this);
     this._updateListVisibility();
   }
 
@@ -331,10 +331,10 @@ export class Section {
     /** @type {?symbol} */
     this._fingerprint = null;
     this._pushNotificationDataSetting =
-        Common.settings.createLocalSetting('pushData', Common.UIString('Test push message from DevTools.'));
-    this._syncTagNameSetting = Common.settings.createLocalSetting('syncTagName', 'test-tag-from-devtools');
+        self.Common.settings.createLocalSetting('pushData', Common.UIString('Test push message from DevTools.'));
+    this._syncTagNameSetting = self.Common.settings.createLocalSetting('syncTagName', 'test-tag-from-devtools');
     this._periodicSyncTagNameSetting =
-        Common.settings.createLocalSetting('periodicSyncTagName', 'test-tag-from-devtools');
+        self.Common.settings.createLocalSetting('periodicSyncTagName', 'test-tag-from-devtools');
 
     this._toolbar = section.createToolbar();
     this._toolbar.renderAsLinks();
@@ -406,7 +406,7 @@ export class Section {
     if (!version || !version.targetId) {
       return null;
     }
-    return SDK.targetManager.targetById(version.targetId);
+    return self.SDK.targetManager.targetById(version.targetId);
   }
 
   /**
@@ -453,7 +453,7 @@ export class Section {
       errorsLabel.classList.add('link');
       errorsLabel.tabIndex = 0;
       UI.ARIAUtils.setAccessibleName(errorsLabel, ls`${this._registration.errors.length} registration errors`);
-      self.onInvokeElement(errorsLabel, () => Common.console.show());
+      self.onInvokeElement(errorsLabel, () => self.Common.console.show());
       name.appendChild(errorsLabel);
     }
     this._sourceField.createChild('div', 'report-field-value-subtitle').textContent =

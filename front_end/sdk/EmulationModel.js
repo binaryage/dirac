@@ -21,16 +21,18 @@ export class EmulationModel extends SDKModel {
       this._overlayModel.addEventListener(Events.InspectModeWillBeToggled, this._updateTouch, this);
     }
 
-    const disableJavascriptSetting = Common.settings.moduleSetting('javaScriptDisabled');
+    const disableJavascriptSetting = self.Common.settings.moduleSetting('javaScriptDisabled');
     disableJavascriptSetting.addChangeListener(
         () => this._emulationAgent.setScriptExecutionDisabled(disableJavascriptSetting.get()));
     if (disableJavascriptSetting.get()) {
       this._emulationAgent.setScriptExecutionDisabled(true);
     }
 
-    const mediaTypeSetting = Common.moduleSetting('emulatedCSSMedia');
-    const mediaFeaturePrefersColorSchemeSetting = Common.moduleSetting('emulatedCSSMediaFeaturePrefersColorScheme');
-    const mediaFeaturePrefersReducedMotionSetting = Common.moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion');
+    const mediaTypeSetting = self.Common.settings.moduleSetting('emulatedCSSMedia');
+    const mediaFeaturePrefersColorSchemeSetting =
+        self.Common.settings.moduleSetting('emulatedCSSMediaFeaturePrefersColorScheme');
+    const mediaFeaturePrefersReducedMotionSetting =
+        self.Common.settings.moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion');
     // Note: this uses a different format than what the CDP API expects,
     // because we want to update these values per media type/feature
     // without having to search the `features` array (inefficient) or

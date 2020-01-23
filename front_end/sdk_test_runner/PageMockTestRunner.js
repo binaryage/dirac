@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,17 +43,17 @@ SDKTestRunner.PageMock = class {
   }
 
   connectAsMainTarget(targetName) {
-    Bindings.debuggerWorkspaceBinding._resetForTest(TestRunner.mainTarget);
-    Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
+    self.Bindings.debuggerWorkspaceBinding._resetForTest(TestRunner.mainTarget);
+    self.Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
     this._enabledDomains.clear();
-    SDK.targetManager._targets = [];
+    self.SDK.targetManager._targets = [];
 
     const oldFactory = Protocol.Connection.getFactory();
     Protocol.Connection.setFactory(() => {
       this._connection = new MockPageConnection(this);
       return this._connection;
     });
-    const target = SDK.targetManager.createTarget(nextId('mock-target-'), targetName, this._type, null);
+    const target = self.SDK.targetManager.createTarget(nextId('mock-target-'), targetName, this._type, null);
     Protocol.Connection.setFactory(oldFactory);
 
     this._target = target;
@@ -65,8 +65,8 @@ SDKTestRunner.PageMock = class {
     this._sessionId = nextId('mock-target-');
     this._root = parentMock._root || parentMock;
     this._root._children.set(this._sessionId, this);
-    const target =
-        SDK.targetManager.createTarget(this._sessionId, targetName, this._type, parentMock._target, this._sessionId);
+    const target = self.SDK.targetManager.createTarget(
+        this._sessionId, targetName, this._type, parentMock._target, this._sessionId);
     this._target = target;
     return target;
   }
