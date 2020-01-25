@@ -7,11 +7,11 @@
 (def lein-cljsbuild-version "1.1.7")
 
 (def provided-deps
-  [['org.clojure/clojure selected-clojure-version :scope "provided"]])
+  [['org.clojure/clojure selected-clojure-version :scope "provided"]
+   ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/clojurescript selected-clojurescript-version]
-   ['org.clojure/core.async "0.6.532"]
+  [['org.clojure/core.async "0.7.559"]
    ['org.clojure/tools.logging "0.5.0"]
    ['org.clojure/tools.cli "0.4.2"]
    ['nrepl/nrepl "0.6.0"]
@@ -43,7 +43,7 @@
    ['org.clojure/tools.namespace "0.3.1" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
    ['fipp "0.6.22" :scope "test"]
-   ['nubank/matcher-combinators "1.2.7" :scope "test"]
+   ['nubank/matcher-combinators "1.3.1" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
@@ -64,7 +64,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.5.3"
+(defproject binaryage/dirac "1.5.5"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {ProfilesPanel} from './ProfilesPanel.js';
+import {instance} from './ProfileTypeRegistry.js';
+
 /**
  * @implements {UI.ContextMenu.Provider}
  * @implements {UI.ActionDelegate}
  */
-export default class HeapProfilerPanel extends Profiler.ProfilesPanel {
+export class HeapProfilerPanel extends ProfilesPanel {
   constructor() {
-    const registry = Profiler.ProfileTypeRegistry.instance;
+    const registry = instance;
     const profileTypes =
         [registry.heapSnapshotProfileType, registry.trackingHeapSnapshotProfileType, registry.samplingHeapProfileType];
     if (Root.Runtime.experiments.isEnabled('nativeHeapProfiler')) {
@@ -40,7 +43,7 @@ export default class HeapProfilerPanel extends Profiler.ProfilesPanel {
     }
     const objectId = /** @type {string} */ (object.objectId);
 
-    const heapProfiles = Profiler.ProfileTypeRegistry.instance.heapSnapshotProfileType.getProfiles();
+    const heapProfiles = instance.heapSnapshotProfileType.getProfiles();
     if (!heapProfiles.length) {
       return;
     }
@@ -52,7 +55,7 @@ export default class HeapProfilerPanel extends Profiler.ProfilesPanel {
 
     /**
      * @param {string} viewName
-     * @this {Profiler.ProfilesPanel}
+     * @this {ProfilesPanel}
      */
     function revealInView(viewName) {
       heapProfilerModel.snapshotObjectIdForObjectId(objectId).then(result => {
@@ -84,6 +87,8 @@ export default class HeapProfilerPanel extends Profiler.ProfilesPanel {
    */
   wasShown() {
     UI.context.setFlavor(HeapProfilerPanel, this);
+    // Record the memory tool load time.
+    Host.userMetrics.panelLoaded('heap_profiler', 'DevTools.Launch.HeapProfiler');
   }
 
   /**
@@ -99,7 +104,7 @@ export default class HeapProfilerPanel extends Profiler.ProfilesPanel {
    * @param {string} perspectiveName
    */
   showObject(snapshotObjectId, perspectiveName) {
-    const registry = Profiler.ProfileTypeRegistry.instance;
+    const registry = instance;
     const heapProfiles = registry.heapSnapshotProfileType.getProfiles();
     for (let i = 0; i < heapProfiles.length; i++) {
       const profile = heapProfiles[i];
@@ -113,12 +118,3 @@ export default class HeapProfilerPanel extends Profiler.ProfilesPanel {
     }
   }
 }
-
-/* Legacy exported object */
-self.Profiler = self.Profiler || {};
-
-/* Legacy exported object */
-Profiler = Profiler || {};
-
-/** @constructor */
-Profiler.HeapProfilerPanel = HeapProfilerPanel;

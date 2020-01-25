@@ -1,4 +1,4 @@
-SDK.CSSMetadata._generatedProperties = [{
+export const generatedProperties = [{
     "name": "-internal-effective-zoom",
     "inherited": true
 }, {
@@ -1052,6 +1052,9 @@ SDK.CSSMetadata._generatedProperties = [{
 }, {
     "name": "orientation"
 }, {
+    "name": "origin-trial-test-property",
+    "keywords": ["normal", "none"]
+}, {
     "name": "orphans",
     "inherited": true
 }, {
@@ -1498,7 +1501,7 @@ SDK.CSSMetadata._generatedProperties = [{
 }, {
     "name": "zoom"
 }];
-SDK.CSSMetadata._generatedPropertyValues = {
+export const generatedPropertyValues = {
     "-webkit-box-orient": {
         "values": ["horizontal", "vertical"]
     },
@@ -2105,8 +2108,8 @@ SDK.CSSMetadata._generatedPropertyValues = {
     "mask-type": {
         "values": ["luminance", "alpha"]
     },
-    "margin-block-end": {
-        "values": ["auto"]
+    "origin-trial-test-property": {
+        "values": ["normal", "none"]
     },
     "border-right-color": {
         "values": ["currentcolor"]
@@ -2167,6 +2170,9 @@ SDK.CSSMetadata._generatedPropertyValues = {
     },
     "scroll-snap-stop": {
         "values": ["normal", "always"]
+    },
+    "margin-block-end": {
+        "values": ["auto"]
     },
     "left": {
         "values": ["auto"]

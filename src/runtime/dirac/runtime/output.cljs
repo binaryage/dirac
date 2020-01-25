@@ -1,6 +1,7 @@
 (ns dirac.runtime.output
   (:require [clojure.string :as string]
-            [dirac.runtime.prefs :refer [get-prefs pref]]))
+            [dirac.runtime.prefs :refer [get-prefs pref]]
+            [goog.string :as gstring]))
 
 (def re-split (js/RegExp. "(---<.*?>---)" "g"))
 (def re-style (js/RegExp. "---<(.*?)>---"))
@@ -56,6 +57,7 @@
 
 (defn prepare-formatted-text [text]
   (let [marked-text (-> text
+                        (gstring/htmlEscape true)
                         mark-code
                         mark-ansi)
         soup (.split marked-text re-split)

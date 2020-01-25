@@ -513,7 +513,7 @@ Protocol.inspectorBackend.registerCommand("CSS.setStyleTexts", [{
 }], ["styles"], false);
 Protocol.inspectorBackend.registerCommand("CSS.startRuleUsageTracking", [], [], false);
 Protocol.inspectorBackend.registerCommand("CSS.stopRuleUsageTracking", [], ["ruleUsage"], false);
-Protocol.inspectorBackend.registerCommand("CSS.takeCoverageDelta", [], ["coverage"], false);
+Protocol.inspectorBackend.registerCommand("CSS.takeCoverageDelta", [], ["coverage", "timestamp"], false);
 
 // CacheStorage.
 Protocol.inspectorBackend.registerEnum("CacheStorage.CachedResponseType", {
@@ -2539,7 +2539,8 @@ Protocol.inspectorBackend.registerEnum("Page.ClientNavigationReason", {
     ScriptInitiated: "scriptInitiated",
     MetaTagRefresh: "metaTagRefresh",
     PageBlockInterstitial: "pageBlockInterstitial",
-    Reload: "reload"
+    Reload: "reload",
+    AnchorClick: "anchorClick"
 });
 Protocol.inspectorBackend.registerEvent("Page.domContentEventFired", ["timestamp"]);
 Protocol.inspectorBackend.registerEvent("Page.fileChooserOpened", ["frameId", "backendNodeId", "mode"]);

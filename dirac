@@ -114,7 +114,7 @@ if [[ -z "$DIRAC_CLI_DEPS_COORDINATE" ]]; then
   fi
 fi
 
-DEPS="{:deps {$DIRAC_CLI_DEPS_COORDINATE clj-logging-config {:mvn/version \"1.9.12\"}}}"
+DEPS="{:deps {$DIRAC_CLI_DEPS_COORDINATE org.clojure/clojurescript {:mvn/version \"RELEASE\"} clj-logging-config {:mvn/version \"1.9.12\"}}}"
 
 if [[ -n "$DIRAC_CLI_ECHO_CMD" ]]; then
   set -x

@@ -47,9 +47,9 @@ export class FontView extends UI.SimpleView {
 
   /**
    * @override
-   * @return {!Array<!UI.ToolbarItem>}
+   * @return {!Promise<!Array<!UI.ToolbarItem>>}
    */
-  syncToolbarItems() {
+  async toolbarItems() {
     return [this._mimeTypeLabel];
   }
 
@@ -166,12 +166,3 @@ let _fontId = 0;
 
 const _fontPreviewLines = ['ABCDEFGHIJKLM', 'NOPQRSTUVWXYZ', 'abcdefghijklm', 'nopqrstuvwxyz', '1234567890'];
 const _measureFontSize = 50;
-
-/* Legacy exported object */
-self.SourceFrame = self.SourceFrame || {};
-
-/* Legacy exported object */
-SourceFrame = SourceFrame || {};
-
-/** @constructor */
-SourceFrame.FontView = FontView;

@@ -3,7 +3,9 @@
   (:require [cljs.analyzer :as ana]
             [cljs.env :as env]
             [cljs.tools.reader.reader-types :as tools-reader-types]
-            [clojure.tools.namespace.parse :as ns-parse]))
+            [clojure.tools.namespace.parse :as ns-parse]
+            [clojure.walk :refer [postwalk]]
+            [com.rpl.specter :refer [walker setval NONE]]))
 
 (defn analyze-ns [ns-form opts]
   (binding [env/*compiler* (env/default-compiler-env)]
@@ -30,10 +32,38 @@
         (sort)
         (dedupe))))
 
+(defn mark-unsupported-stuff [ns-form]
+  ; this is a stateful postwalk which looks for :default keyword, marks it and then marks immediately following item
+  (let [state (volatile! 0)
+        marker (fn [node]
+                 (case @state
+                   0 (if (= node :default)
+                       (do
+                         (vreset! state 1)
+                         ::deleted)
+                       node)
+                   1 (do
+                       (vreset! state 0)
+                       ::deleted)))]
+    (postwalk marker ns-form)))
+
+(defn delete-unsupported-stuff [marked-ns-form]
+  ; we lean on specter to do proper form transformation
+  (setval [(walker #(= % ::deleted))] NONE marked-ns-form))
+
+(defn massage-ns-form [ns-form]
+  ; we want to remove shadow-cljs features not supported by cljs analyzer
+  ; currently it is only :default feature as documented here:
+  ; https://shadow-cljs.github.io/docs/UsersGuide.html#_using_npm_packages
+  (-> ns-form
+      (mark-unsupported-stuff)
+      (delete-unsupported-stuff)))
+
 (defn parse-ns-from-source [source]
   (when (re-find #"\(ns\s" source)
     (when-some [ns-form (parse-ns-form source)]
-      (let [ast (analyze-ns ns-form {})]
+      (let [massaged-ns-form (massage-ns-form ns-form)
+            ast (analyze-ns massaged-ns-form {})]
         #js {"name"                    (str (:name ast))
              "namespaceAliases"        (clj->js (get-aliases (:requires ast)))
              "macroNamespaceAliases"   (clj->js (get-aliases (:require-macros ast)))

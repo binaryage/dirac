@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {TimelineJSProfileProcessor} from './TimelineJSProfile.js';
+
 /**
  * @unrestricted
  */
@@ -507,10 +509,10 @@ export class TimelineModelImpl {
         const nodesAndSamples = eventData['cpuProfile'] || {};
         const samples = nodesAndSamples['samples'] || [];
         const lines = eventData['lines'] || Array(samples.length).fill(0);
-        cpuProfile.nodes.pushAll(nodesAndSamples['nodes'] || []);
-        cpuProfile.lines.pushAll(lines);
-        cpuProfile.samples.pushAll(samples);
-        cpuProfile.timeDeltas.pushAll(eventData['timeDeltas'] || []);
+        cpuProfile.nodes.push(...nodesAndSamples['nodes'] || []);
+        cpuProfile.lines.push(...lines);
+        cpuProfile.samples.push(...samples);
+        cpuProfile.timeDeltas.push(...eventData['timeDeltas'] || []);
         if (cpuProfile.samples.length !== cpuProfile.timeDeltas.length) {
           Common.console.error('Failed to parse CPU profile.');
           return null;
@@ -539,14 +541,13 @@ export class TimelineModelImpl {
   _injectJSFrameEvents(tracingModel, thread) {
     const jsProfileModel = this._extractCpuProfile(tracingModel, thread);
     let events = thread.events();
-    const jsSamples = jsProfileModel ?
-        TimelineModel.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(jsProfileModel, thread) :
-        null;
+    const jsSamples =
+        jsProfileModel ? TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(jsProfileModel, thread) : null;
     if (jsSamples && jsSamples.length) {
       events = events.mergeOrdered(jsSamples, SDK.TracingModel.Event.orderedCompareStartTime);
     }
     if (jsSamples || events.some(e => e.name === RecordType.JSSample)) {
-      const jsFrameEvents = TimelineModel.TimelineJSProfileProcessor.generateJSFrameEvents(events);
+      const jsFrameEvents = TimelineJSProfileProcessor.generateJSFrameEvents(events);
       if (jsFrameEvents && jsFrameEvents.length) {
         events = jsFrameEvents.mergeOrdered(events, SDK.TracingModel.Event.orderedCompareStartTime);
       }
@@ -2230,45 +2231,3 @@ export class TimelineData {
 }
 
 TimelineData._symbol = Symbol('timelineData');
-
-/* Legacy exported object */
-self.TimelineModel = self.TimelineModel || {};
-
-/* Legacy exported object */
-TimelineModel = TimelineModel || {};
-
-/** @constructor */
-TimelineModel.TimelineModel = TimelineModelImpl;
-
-/** @constructor */
-TimelineModel.TimelineModel.Track = Track;
-
-/** @enum {symbol} */
-TimelineModel.TimelineModel.TrackType = TrackType;
-
-/** @enum {string} */
-TimelineModel.TimelineModel.RecordType = RecordType;
-
-/** @constructor */
-TimelineModel.TimelineModel.PageFrame = PageFrame;
-
-/** @constructor */
-TimelineModel.TimelineModel.NetworkRequest = NetworkRequest;
-
-/** @constructor */
-TimelineModel.InvalidationTrackingEvent = InvalidationTrackingEvent;
-
-/** @constructor */
-TimelineModel.InvalidationTracker = InvalidationTracker;
-
-/** @constructor */
-TimelineModel.TimelineAsyncEventTracker = TimelineAsyncEventTracker;
-
-/** @constructor */
-TimelineModel.TimelineData = TimelineData;
-
-/** @typedef {{reason: string, stackTrace: ?Array<!Protocol.Runtime.CallFrame>}} */
-TimelineModel.InvalidationCause;
-
-/** @typedef {!{page: !Array<!SDK.TracingModel.Event>, workers: !Array<!SDK.TracingModel.Event>}} */
-TimelineModel.TimelineModel.MetadataEvents;

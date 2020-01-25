@@ -63,7 +63,7 @@ String.prototype.reverse = function() {
 String.prototype.replaceControlCharacters = function() {
   // Replace C0 and C1 control character sets with printable character.
   // Do not replace '\t', \n' and '\r'.
-  return this.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u0080-\u009f]/g, '�');
+  return this.replace(/[\0-\x08\x0B\f\x0E-\x1F\x80-\x9F]/g, '\uFFFD');
 };
 
 /**
@@ -149,26 +149,22 @@ String.filterRegex = function(query) {
   * @return {string}
   */
 String.escapeInvalidUnicodeCharacters = function(text) {
-  if (!String._invalidCharactersRegExp) {
-    // Escape orphan surrogates and invalid characters.
-    let invalidCharacters = '';
-    for (let i = 0xfffe; i <= 0x10ffff; i += 0x10000) {
-      invalidCharacters += String.fromCodePoint(i, i + 1);
-    }
-    String._invalidCharactersRegExp = new RegExp(`[${invalidCharacters}\uD800-\uDFFF\uFDD0-\uFDEF]`, 'gu');
-  }
+  // Escape lone surrogates and non-characters.
+  // https://unicode.org/faq/private_use.html#nonchar1
+  const reInvalid =
+      /[\p{Surrogate}\uFDD0-\uFDEF\uFFFE\uFFFF\u{1FFFE}\u{1FFFF}\u{2FFFE}\u{2FFFF}\u{3FFFE}\u{3FFFF}\u{4FFFE}\u{4FFFF}\u{5FFFE}\u{5FFFF}\u{6FFFE}\u{6FFFF}\u{7FFFE}\u{7FFFF}\u{8FFFE}\u{8FFFF}\u{9FFFE}\u{9FFFF}\u{AFFFE}\u{AFFFF}\u{BFFFE}\u{BFFFF}\u{CFFFE}\u{CFFFF}\u{DFFFE}\u{DFFFF}\u{EFFFE}\u{EFFFF}\u{FFFFE}\u{FFFFF}\u{10FFFE}\u{10FFFF}]/gu;
   let result = '';
   let lastPos = 0;
   while (true) {
-    const match = String._invalidCharactersRegExp.exec(text);
+    const match = reInvalid.exec(text);
     if (!match) {
       break;
     }
     result += text.substring(lastPos, match.index) + '\\u' + text.charCodeAt(match.index).toString(16);
-    if (match.index + 1 < String._invalidCharactersRegExp.lastIndex) {
+    if (match.index + 1 < reInvalid.lastIndex) {
       result += '\\u' + text.charCodeAt(match.index + 1).toString(16);
     }
-    lastPos = String._invalidCharactersRegExp.lastIndex;
+    lastPos = reInvalid.lastIndex;
   }
   return result + text.substring(lastPos);
 };
@@ -503,56 +499,6 @@ Object.defineProperty(Array.prototype, 'remove', {
     }
     this.length = index;
     return true;
-  },
-  configurable: true
-});
-
-Object.defineProperty(Array.prototype, 'pushAll', {
-  /**
-   * @param {!Array<!T>} array
-   * @this {Array<!T>}
-   * @template T
-   */
-  value: function(array) {
-    for (let i = 0; i < array.length; ++i) {
-      this.push(array[i]);
-    }
-  },
-  configurable: true
-});
-
-Object.defineProperty(Array.prototype, 'rotate', {
-  /**
-   * @param {number} index
-   * @return {!Array.<!T>}
-   * @this {Array.<!T>}
-   * @template T
-   */
-  value: function(index) {
-    const result = [];
-    for (let i = index; i < index + this.length; ++i) {
-      result.push(this[i % this.length]);
-    }
-    return result;
-  },
-  configurable: true
-});
-
-Object.defineProperty(Array.prototype, 'sortNumbers', {
-  /**
-   * @this {Array.<number>}
-   */
-  value: function() {
-    /**
-     * @param {number} a
-     * @param {number} b
-     * @return {number}
-     */
-    function numericComparator(a, b) {
-      return a - b;
-    }
-
-    this.sort(numericComparator);
   },
   configurable: true
 });
@@ -1280,7 +1226,7 @@ const Multimap = class {
     const result = [];
     const keys = this.keysArray();
     for (let i = 0; i < keys.length; ++i) {
-      result.pushAll(this.get(keys[i]).valuesArray());
+      result.push(...this.get(keys[i]).valuesArray());
     }
     return result;
   }

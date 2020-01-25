@@ -88,6 +88,16 @@ def _CheckJSON(input_api, output_api):
     return _checkWithNodeScript(input_api, output_api, script_path)
 
 
+def _CheckUnitTests(input_api, output_api):
+    unittest_root = input_api.os_path.join(input_api.PresubmitLocalPath(), 'test')
+    affected_unittest_files = _getAffectedFiles(input_api, [unittest_root], ['D'], ['.ts'])
+    if len(affected_unittest_files) == 0:
+        return []
+
+    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'test', 'check_for_unittest_onlys.js')
+    return _checkWithNodeScript(input_api, output_api, script_path, affected_unittest_files)
+
+
 def _CheckFormat(input_api, output_api):
 
     def popen(args):
@@ -124,15 +134,6 @@ def _CheckFormat(input_api, output_api):
     format_out, _ = format_process.communicate()
     if format_process.returncode != 0:
         return [output_api.PresubmitError(format_out)]
-
-    # Use eslint to autofix the braces.
-    # Also fix semicolon to avoid confusing clang-format.
-    eslint_process = popen(
-        [devtools_paths.node_path(), devtools_paths.eslint_path(), '--config', '.eslintrc.js', '--fix'] + affected_files)
-    eslint_process.communicate()
-
-    # Need to run clang-format again to align the braces
-    popen(format_args).communicate()
 
     return [
         output_api.PresubmitError('ERROR: Found formatting violations.\n'
@@ -218,6 +219,17 @@ def _CheckCSSViolations(input_api, output_api):
     return results
 
 
+def _CheckNoUncheckedFiles(input_api, output_api):
+    results = []
+    process = input_api.subprocess.Popen(['git', 'diff', '--exit-code'],
+                                         stdout=input_api.subprocess.PIPE,
+                                         stderr=input_api.subprocess.STDOUT)
+    out, _ = process.communicate()
+    if process.returncode != 0:
+        return [output_api.PresubmitError('You have changed files that need to be committed.')]
+    return []
+
+
 def _CommonChecks(input_api, output_api):
     """Checks common to both upload and commit."""
     results = []
@@ -231,11 +243,13 @@ def _CommonChecks(input_api, output_api):
     results.extend(input_api.canned_checks.CheckGenderNeutral(input_api, output_api))
     results.extend(_CheckBuildGN(input_api, output_api))
     results.extend(_CheckJSON(input_api, output_api))
-    results.extend(_CheckFormat(input_api, output_api))
     results.extend(_CheckDevtoolsStyle(input_api, output_api))
+    results.extend(_CheckFormat(input_api, output_api))
     results.extend(_CheckOptimizeSVGHashes(input_api, output_api))
     results.extend(_CheckCSSViolations(input_api, output_api))
     results.extend(_CheckChangesAreExclusiveToDirectory(input_api, output_api))
+    results.extend(_CheckUnitTests(input_api, output_api))
+    results.extend(_CheckNoUncheckedFiles(input_api, output_api))
     return results
 
 

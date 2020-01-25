@@ -54,6 +54,8 @@ git fetch --tags
 CHROME_REV=$(git rev-parse HEAD)
 CHROME_TAG=$(git tag -l "[0-9]*" | tail -1)
 
+export FILTER_BRANCH_SQUELCH_WARNING=1
+
 if ! git rev-parse --verify tracker1; then
   echo "tracker1 branch does not exist => filter it"
   git branch -f tracker1 "$SPLIT_SHA_PARENT"
@@ -117,7 +119,19 @@ git filter-branch -f --parent-filter "
         echo \"\$parents\"
     fi" -- "$POST_SPLIT2_SHA_PARENT..tracker4"
 
-git branch -f devtools tracker4
+git branch -f tracker5 tracker4
+
+# filter large files, started seeing
+#remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.
+#remote: error: Trace: 397240da7b0263da721d56d01caea68a
+#remote: error: See http://git.io/iEPt8g for more information.
+#remote: error: File node_modules/puppeteer/.local-chromium/linux-706915/chrome-linux/chrome is 228.63 MB; this exceeds GitHub's file size limit of 100.00 MB
+
+LAST_GOOD_REV="acb302e47295068444b2f3a9712194de2d14240a"
+OFFENDING_FILE="node_modules/puppeteer/.local-chromium/linux-706915/chrome-linux/chrome"
+git filter-branch -f --index-filter "git rm --cached --ignore-unmatch \"$OFFENDING_FILE\"" $LAST_GOOD_REV..tracker5
+
+git branch -f devtools tracker5
 
 # now we add one extra commit on top
 # this commit will add .chrome-rev.txt and .chrome-tag.txt files with source chrome revision/version

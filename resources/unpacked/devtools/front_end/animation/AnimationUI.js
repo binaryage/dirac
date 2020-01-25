@@ -148,6 +148,8 @@ export class AnimationUI {
     circle.style.stroke = this._color;
     circle.setAttribute('r', Options.AnimationMargin / 2);
     circle.tabIndex = 0;
+    UI.ARIAUtils.setAccessibleName(
+        circle, keyframeIndex <= 0 ? ls`Animation Endpoint slider` : ls`Animation Keyframe slider`);
 
     if (keyframeIndex <= 0) {
       circle.style.fill = this._color;
@@ -204,6 +206,7 @@ export class AnimationUI {
     }
     const group = cache[keyframeIndex];
     group.tabIndex = 0;
+    UI.ARIAUtils.setAccessibleName(group, ls`${this._animation.name()} slider`);
     group.style.transform = 'translateX(' + leftDistance.toFixed(2) + 'px)';
 
     if (easing === 'linear') {
@@ -366,7 +369,14 @@ export class AnimationUI {
    * @param {!Event} event
    */
   _mouseMove(event) {
-    this._movementInMs = (event.clientX - this._downMouseX) / this._timeline.pixelMsRatio();
+    this._setMovementAndRedraw((event.clientX - this._downMouseX) / this._timeline.pixelMsRatio());
+  }
+
+  /**
+   * @param {number} movement
+   */
+  _setMovementAndRedraw(movement) {
+    this._movementInMs = movement;
     if (this._delay() + this._duration() > this._timeline.duration() * 0.8) {
       this._timeline.setDuration(this._timeline.duration() * 1.2);
     }
@@ -414,8 +424,7 @@ export class AnimationUI {
     } else {
       this._animation.setTiming(this._duration(), this._delay());
     }
-    this._movementInMs = 0;
-    this.redraw();
+    this._setMovementAndRedraw(0);
 
     delete this._mouseEventType;
     delete this._keyframeMoved;

@@ -64,9 +64,9 @@ export class ImageView extends UI.SimpleView {
 
   /**
    * @override
-   * @return {!Array<!UI.ToolbarItem>}
+   * @return {!Promise<!Array<!UI.ToolbarItem>>}
    */
-  syncToolbarItems() {
+  async toolbarItems() {
     return [
       this._sizeLabel, new UI.ToolbarSeparator(), this._dimensionsLabel, new UI.ToolbarSeparator(), this._mimeTypeLabel
     ];
@@ -182,12 +182,3 @@ export class ImageView extends UI.SimpleView {
     });
   }
 }
-
-/* Legacy exported object */
-self.SourceFrame = self.SourceFrame || {};
-
-/* Legacy exported object */
-SourceFrame = SourceFrame || {};
-
-/** @constructor */
-SourceFrame.ImageView = ImageView;
