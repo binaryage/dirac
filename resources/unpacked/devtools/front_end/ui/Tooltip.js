@@ -22,7 +22,7 @@ export class Tooltip {
     doc.addEventListener('mousedown', this._hide.bind(this, true), true);
     doc.addEventListener('mouseleave', this._hide.bind(this, false), true);
     doc.addEventListener('keydown', this._hide.bind(this, true), true);
-    UI.zoomManager.addEventListener(ZoomManagerEvents.ZoomChanged, this._reset, this);
+    self.UI.zoomManager.addEventListener(ZoomManagerEvents.ZoomChanged, this._reset, this);
     doc.defaultView.addEventListener('resize', this._reset.bind(this), false);
   }
 
@@ -108,7 +108,7 @@ export class Tooltip {
     }
 
     if (tooltip.actionId) {
-      const shortcuts = UI.shortcutRegistry.shortcutDescriptorsForAction(tooltip.actionId);
+      const shortcuts = self.UI.shortcutRegistry.shortcutDescriptorsForAction(tooltip.actionId);
       for (const shortcut of shortcuts) {
         const shortcutElement = this._tooltipElement.createChild('div', 'tooltip-shortcut');
         shortcutElement.textContent = shortcut.name;

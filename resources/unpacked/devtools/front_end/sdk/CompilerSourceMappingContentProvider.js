@@ -28,14 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+
 /**
- * @implements {Common.ContentProvider}
+ * @implements {Common.ContentProvider.ContentProvider}
  * @unrestricted
  */
 export class CompilerSourceMappingContentProvider {
   /**
    * @param {string} sourceURL
-   * @param {!Common.ResourceType} contentType
+   * @param {!Common.ResourceType.ResourceType} contentType
    */
   constructor(sourceURL, contentType) {
     this._sourceURL = sourceURL;
@@ -52,7 +54,7 @@ export class CompilerSourceMappingContentProvider {
 
   /**
    * @override
-   * @return {!Common.ResourceType}
+   * @return {!Common.ResourceType.ResourceType}
    */
   contentType() {
     return this._contentType;
@@ -72,15 +74,16 @@ export class CompilerSourceMappingContentProvider {
    */
   requestContent() {
     return new Promise(resolve => {
-      SDK.multitargetNetworkManager.loadResource(this._sourceURL, (success, _headers, content, errorDescription) => {
-        if (!success) {
-          const error = ls`Could not load content for ${this._sourceURL} (${errorDescription.message})`;
-          console.error(error);
-          resolve({error, isEncoded: false});
-        } else {
-          resolve({content, isEncoded: false});
-        }
-      });
+      self.SDK.multitargetNetworkManager.loadResource(
+          this._sourceURL, (success, _headers, content, errorDescription) => {
+            if (!success) {
+              const error = ls`Could not load content for ${this._sourceURL} (${errorDescription.message})`;
+              console.error(error);
+              resolve({error, isEncoded: false});
+            } else {
+              resolve({content, isEncoded: false});
+            }
+          });
     });
   }
 

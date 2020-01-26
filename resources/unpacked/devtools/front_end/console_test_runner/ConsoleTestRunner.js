@@ -175,7 +175,7 @@ ConsoleTestRunner.selectMainExecutionContext = function() {
   const executionContexts = TestRunner.runtimeModel.executionContexts();
   for (const context of executionContexts) {
     if (context.isDefault) {
-      UI.context.setFlavor(SDK.ExecutionContext, context);
+      self.UI.context.setFlavor(SDK.ExecutionContext, context);
       return;
     }
   }
@@ -497,7 +497,7 @@ ConsoleTestRunner.waitUntilConsoleEditorLoaded = function() {
  * @param {!Function} callback
  */
 ConsoleTestRunner.waitUntilMessageReceived = function(callback) {
-  TestRunner.addSniffer(SDK.consoleModel, 'addMessage', callback, false);
+  TestRunner.addSniffer(self.SDK.consoleModel, 'addMessage', callback, false);
 };
 
 /**
@@ -516,10 +516,10 @@ ConsoleTestRunner.waitUntilNthMessageReceived = function(count, callback) {
     if (--count === 0) {
       TestRunner.safeWrap(callback)();
     } else {
-      TestRunner.addSniffer(SDK.consoleModel, 'addMessage', override, false);
+      TestRunner.addSniffer(self.SDK.consoleModel, 'addMessage', override, false);
     }
   }
-  TestRunner.addSniffer(SDK.consoleModel, 'addMessage', override, false);
+  TestRunner.addSniffer(self.SDK.consoleModel, 'addMessage', override, false);
 };
 
 /**
@@ -537,7 +537,7 @@ ConsoleTestRunner.changeExecutionContext = function(namePrefix) {
   const selector = Console.ConsoleView.instance()._consoleContextSelector;
   for (const executionContext of selector._items) {
     if (selector.titleFor(executionContext).startsWith(namePrefix)) {
-      UI.context.setFlavor(SDK.ExecutionContext, executionContext);
+      self.UI.context.setFlavor(SDK.ExecutionContext, executionContext);
       return;
     }
   }

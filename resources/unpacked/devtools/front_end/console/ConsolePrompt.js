@@ -113,7 +113,7 @@ export class ConsolePrompt extends UI.Widget {
    */
   async _requestPreview() {
     const text = this._editor.textWithCurrentSuggestion().trim();
-    const executionContext = UI.context.flavor(SDK.ExecutionContext);
+    const executionContext = self.UI.context.flavor(SDK.ExecutionContext);
     const {preview, result} =
         await ObjectUI.JavaScriptREPL.evaluateAndBuildPreview(text, true /* throwOnSideEffect */, 500);
     this._innerPreviewElement.removeChildren();
@@ -308,12 +308,12 @@ export class ConsolePrompt extends UI.Widget {
    */
   async _appendCommand(text, useCommandLineAPI) {
     this.setText('');
-    const currentExecutionContext = UI.context.flavor(SDK.ExecutionContext);
+    const currentExecutionContext = self.UI.context.flavor(SDK.ExecutionContext);
     if (currentExecutionContext) {
       const executionContext = currentExecutionContext;
-      const message = SDK.consoleModel.addCommandMessage(executionContext, text);
+      const message = self.SDK.consoleModel.addCommandMessage(executionContext, text);
       const expression = ObjectUI.JavaScriptREPL.preprocessExpression(text);
-      SDK.consoleModel.evaluateCommandInConsole(
+      self.SDK.consoleModel.evaluateCommandInConsole(
           executionContext, message, expression, useCommandLineAPI,
           /* awaitPromise */ false);
       if (ConsolePanel.instance().isShowing()) {

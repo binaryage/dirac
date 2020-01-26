@@ -59,9 +59,9 @@ export class TimelinePanel extends UI.Panel {
     this._recordingPageReload = false;
     this._millisecondsToRecordAfterLoadEvent = 3000;
     this._toggleRecordAction =
-        /** @type {!UI.Action }*/ (UI.actionRegistry.action('timeline.toggle-recording'));
+        /** @type {!UI.Action }*/ (self.UI.actionRegistry.action('timeline.toggle-recording'));
     this._recordReloadAction =
-        /** @type {!UI.Action }*/ (UI.actionRegistry.action('timeline.record-reload'));
+        /** @type {!UI.Action }*/ (self.UI.actionRegistry.action('timeline.record-reload'));
 
     this._historyManager = new TimelineHistoryManager();
 
@@ -131,7 +131,7 @@ export class TimelinePanel extends UI.Panel {
     this._showLandingPage();
     this._updateTimelineControls();
 
-    Extensions.extensionServer.addEventListener(
+    self.Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.TraceProviderAdded, this._appendExtensionsToToolbar, this);
     self.SDK.targetManager.addEventListener(
         SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
@@ -156,7 +156,7 @@ export class TimelinePanel extends UI.Panel {
    * @override
    */
   wasShown() {
-    UI.context.setFlavor(TimelinePanel, this);
+    self.UI.context.setFlavor(TimelinePanel, this);
     // Record the performance tool load time.
     Host.userMetrics.panelLoaded('timeline', 'DevTools.Launch.Timeline');
   }
@@ -165,7 +165,7 @@ export class TimelinePanel extends UI.Panel {
    * @override
    */
   willHide() {
-    UI.context.setFlavor(TimelinePanel, null);
+    self.UI.context.setFlavor(TimelinePanel, null);
     this._historyManager.cancelIfShowing();
   }
 
@@ -266,7 +266,7 @@ export class TimelinePanel extends UI.Panel {
     this._showSettingsPaneSetting = self.Common.settings.createSetting('timelineShowSettingsToolbar', false);
     this._showSettingsPaneButton = new UI.ToolbarSettingToggle(
         this._showSettingsPaneSetting, 'largeicon-settings-gear', Common.UIString('Capture settings'));
-    SDK.multitargetNetworkManager.addEventListener(
+    self.SDK.multitargetNetworkManager.addEventListener(
         SDK.MultitargetNetworkManager.Events.ConditionsChanged, this._updateShowSettingsToolbarButton, this);
     MobileThrottling.throttlingManager().addEventListener(
         MobileThrottling.ThrottlingManager.Events.RateChanged, this._updateShowSettingsToolbarButton, this);
@@ -485,7 +485,7 @@ export class TimelinePanel extends UI.Panel {
     if (MobileThrottling.throttlingManager().cpuThrottlingRate() !== 1) {
       messages.push(Common.UIString('- CPU throttling is enabled'));
     }
-    if (SDK.multitargetNetworkManager.isThrottling()) {
+    if (self.SDK.multitargetNetworkManager.isThrottling()) {
       messages.push(Common.UIString('- Network throttling is enabled'));
     }
     if (this._captureLayersAndPicturesSetting.get()) {
@@ -528,14 +528,14 @@ export class TimelinePanel extends UI.Panel {
     };
 
     if (recordingOptions.startCoverage) {
-      await UI.viewManager.showView('coverage')
-          .then(() => UI.viewManager.view('coverage').widget())
+      await self.UI.viewManager.showView('coverage')
+          .then(() => self.UI.viewManager.view('coverage').widget())
           .then(widget => widget.ensureRecordingStarted());
     }
 
     this._showRecordingStarted();
 
-    const enabledTraceProviders = Extensions.extensionServer.traceProviders().filter(
+    const enabledTraceProviders = self.Extensions.extensionServer.traceProviders().filter(
         provider => TimelinePanel._settingForTraceProvider(provider).get());
 
     const mainTarget = /** @type {!SDK.Target} */ (self.SDK.targetManager.mainTarget());
@@ -733,9 +733,9 @@ export class TimelinePanel extends UI.Panel {
         Common.UIString('Learn\xa0more'));
 
     const recordKey =
-        encloseWithTag('b', UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.toggle-recording')[0].name);
+        encloseWithTag('b', self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.toggle-recording')[0].name);
     const reloadKey =
-        encloseWithTag('b', UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.record-reload')[0].name);
+        encloseWithTag('b', self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.record-reload')[0].name);
     const navigateNode = encloseWithTag('b', Common.UIString('WASD'));
 
     this._landingPage = new UI.VBox();
@@ -822,8 +822,8 @@ export class TimelinePanel extends UI.Panel {
     this._historyManager.addRecording(this._performanceModel);
 
     if (this._startCoverage.get()) {
-      UI.viewManager.showView('coverage')
-          .then(() => UI.viewManager.view('coverage').widget())
+      self.UI.viewManager.showView('coverage')
+          .then(() => self.UI.viewManager.view('coverage').widget())
           .then(widget => widget.stopRecording())
           .then(() => this._updateOverviewControls());
     }
@@ -1267,7 +1267,7 @@ export class LoadTimelineHandler {
    * @param {string} value
    */
   handleQueryParam(value) {
-    UI.viewManager.showView('timeline').then(() => {
+    self.UI.viewManager.showView('timeline').then(() => {
       TimelinePanel.instance()._loadFromURL(window.decodeURIComponent(value));
     });
   }
@@ -1285,7 +1285,7 @@ export class ActionDelegate {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const panel = UI.context.flavor(TimelinePanel);
+    const panel = self.UI.context.flavor(TimelinePanel);
     console.assert(panel && panel instanceof TimelinePanel);
     switch (actionId) {
       case 'timeline.toggle-recording':

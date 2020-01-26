@@ -96,7 +96,7 @@ export class ElementsPanel extends UI.Panel {
     self.Common.settings.moduleSetting('showUAShadowDOM').addChangeListener(this._showUAShadowDOMChanged.bind(this));
     self.SDK.targetManager.addModelListener(
         SDK.DOMModel, SDK.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
-    Extensions.extensionServer.addEventListener(
+    self.Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
 
     /**
@@ -244,7 +244,7 @@ export class ElementsPanel extends UI.Panel {
    * @override
    */
   wasShown() {
-    UI.context.setFlavor(ElementsPanel, this);
+    self.UI.context.setFlavor(ElementsPanel, this);
 
     for (let i = 0; i < this._treeOutlines.length; ++i) {
       const treeOutline = this._treeOutlines[i];
@@ -298,7 +298,7 @@ export class ElementsPanel extends UI.Panel {
       this._popoverHelper.hidePopover();
     }
     super.willHide();
-    UI.context.setFlavor(ElementsPanel, null);
+    self.UI.context.setFlavor(ElementsPanel, null);
   }
 
   /**
@@ -323,7 +323,7 @@ export class ElementsPanel extends UI.Panel {
 
     this._breadcrumbs.setSelectedNode(selectedNode);
 
-    UI.context.setFlavor(SDK.DOMNode, selectedNode);
+    self.UI.context.setFlavor(SDK.DOMNode, selectedNode);
 
     if (!selectedNode) {
       return;
@@ -338,7 +338,7 @@ export class ElementsPanel extends UI.Panel {
     const nodeFrameId = selectedNode.frameId();
     for (const context of executionContexts) {
       if (context.frameId === nodeFrameId) {
-        UI.context.setFlavor(SDK.ExecutionContext, context);
+        self.UI.context.setFlavor(SDK.ExecutionContext, context);
         break;
       }
     }
@@ -503,7 +503,7 @@ export class ElementsPanel extends UI.Panel {
   switchToAndFocus(node) {
     // Reset search restore.
     this._searchableView.cancelSearch();
-    UI.viewManager.showView('elements').then(() => this.selectDOMNode(node, true));
+    self.UI.viewManager.showView('elements').then(() => this.selectDOMNode(node, true));
   }
 
   /**
@@ -720,7 +720,7 @@ export class ElementsPanel extends UI.Panel {
       node.highlightForTwoSeconds();
     }
 
-    return UI.viewManager.showView('elements', false, !focus).then(() => {
+    return self.UI.viewManager.showView('elements', false, !focus).then(() => {
       this.selectDOMNode(node, focus);
       delete this._omitDefaultSelection;
 
@@ -800,9 +800,9 @@ export class ElementsPanel extends UI.Panel {
 
     let splitMode;
     const position = self.Common.settings.moduleSetting('sidebarPosition').get();
-    if (position === 'right' || (position === 'auto' && UI.inspectorView.element.offsetWidth > 680)) {
+    if (position === 'right' || (position === 'auto' && self.UI.inspectorView.element.offsetWidth > 680)) {
       splitMode = _splitMode.Vertical;
-    } else if (UI.inspectorView.element.offsetWidth > 415) {
+    } else if (self.UI.inspectorView.element.offsetWidth > 415) {
       splitMode = _splitMode.Horizontal;
     } else {
       splitMode = _splitMode.Slim;
@@ -813,7 +813,7 @@ export class ElementsPanel extends UI.Panel {
     }
     this._splitMode = splitMode;
 
-    const extensionSidebarPanes = Extensions.extensionServer.sidebarPanes();
+    const extensionSidebarPanes = self.Extensions.extensionServer.sidebarPanes();
     let lastSelectedTabId = null;
     if (this.sidebarPaneView) {
       lastSelectedTabId = this.sidebarPaneView.tabbedPane().selectedTabId;
@@ -858,7 +858,7 @@ export class ElementsPanel extends UI.Panel {
       }
     }
 
-    this.sidebarPaneView = UI.viewManager.createTabbedLocation(() => UI.viewManager.showView('elements'));
+    this.sidebarPaneView = self.UI.viewManager.createTabbedLocation(() => self.UI.viewManager.showView('elements'));
     const tabbedPane = this.sidebarPaneView.tabbedPane();
     if (this._popoverHelper) {
       this._popoverHelper.hidePopover();
@@ -1063,7 +1063,7 @@ export class ElementsActionDelegate {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const node = UI.context.flavor(SDK.DOMNode);
+    const node = self.UI.context.flavor(SDK.DOMNode);
     if (!node) {
       return true;
     }
@@ -1080,11 +1080,11 @@ export class ElementsActionDelegate {
         treeOutline.toggleEditAsHTML(node);
         return true;
       case 'elements.undo':
-        SDK.domModelUndoStack.undo();
+        self.SDK.domModelUndoStack.undo();
         ElementsPanel.instance()._stylesWidget.forceUpdate();
         return true;
       case 'elements.redo':
-        SDK.domModelUndoStack.redo();
+        self.SDK.domModelUndoStack.redo();
         ElementsPanel.instance()._stylesWidget.forceUpdate();
         return true;
     }

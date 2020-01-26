@@ -70,10 +70,10 @@ Persistence.IsolatedFileSystemManager.FilesChangedData;
 /**
  * @type {!PersistenceModule.IsolatedFileSystemManager.IsolatedFileSystemManager}
  */
-Persistence.isolatedFileSystemManager;
+self.Persistence.isolatedFileSystemManager;
 
 /** @type {!PersistenceModule.NetworkPersistenceManager.NetworkPersistenceManager} */
-Persistence.networkPersistenceManager;
+self.Persistence.networkPersistenceManager;
 
 /** @type {!PersistenceModule.Persistence.PersistenceImpl} */
-Persistence.persistence;
+self.Persistence.persistence;

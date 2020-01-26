@@ -162,9 +162,9 @@ export class NetworkLogView extends UI.VBox {
         .addChangeListener(this._invalidateAllItems.bind(this, false), this);
 
     self.SDK.targetManager.observeModels(SDK.NetworkManager, this);
-    SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestAdded, this._onRequestUpdated, this);
-    SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestUpdated, this._onRequestUpdated, this);
-    SDK.networkLog.addEventListener(SDK.NetworkLog.Events.Reset, this._reset, this);
+    self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestAdded, this._onRequestUpdated, this);
+    self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestUpdated, this._onRequestUpdated, this);
+    self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.Reset, this._reset, this);
 
     this._updateGroupByFrame();
     self.Common.settings.moduleSetting('network.group-by-frame').addChangeListener(() => this._updateGroupByFrame());
@@ -510,7 +510,7 @@ export class NetworkLogView extends UI.VBox {
       this._harLoadFailed(e);
       return;
     }
-    SDK.networkLog.importRequests(HARImporter.Importer.requestsFromHARLog(harRoot.log));
+    self.SDK.networkLog.importRequests(HARImporter.Importer.requestsFromHARLog(harRoot.log));
   }
 
   /**
@@ -645,7 +645,7 @@ export class NetworkLogView extends UI.VBox {
     const hintText = this._recordingHint.createChild('div', 'recording-hint');
 
     let reloadShortcutNode = null;
-    const reloadShortcutDescriptor = UI.shortcutRegistry.shortcutDescriptorsForAction('inspector_main.reload')[0];
+    const reloadShortcutDescriptor = self.UI.shortcutRegistry.shortcutDescriptorsForAction('inspector_main.reload')[0];
     if (reloadShortcutDescriptor) {
       reloadShortcutNode = this._recordingHint.createChild('b');
       reloadShortcutNode.textContent = reloadShortcutDescriptor.name;
@@ -661,7 +661,7 @@ export class NetworkLogView extends UI.VBox {
       }
     } else {
       const recordNode = hintText.createChild('b');
-      recordNode.textContent = UI.shortcutRegistry.shortcutTitleForAction('network.toggle-recording');
+      recordNode.textContent = self.UI.shortcutRegistry.shortcutTitleForAction('network.toggle-recording');
       if (reloadShortcutNode) {
         hintText.appendChild(UI.formatLocalized(
             'Record (%s) or reload (%s) to display network activity.', [recordNode, reloadShortcutNode]));
@@ -789,7 +789,7 @@ export class NetworkLogView extends UI.VBox {
     let maxTime = -1;
 
     let nodeCount = 0;
-    for (const request of SDK.networkLog.requests()) {
+    for (const request of self.SDK.networkLog.requests()) {
       const node = request[_networkNodeSymbol];
       if (!node) {
         continue;
@@ -915,7 +915,7 @@ export class NetworkLogView extends UI.VBox {
    * @param {boolean=} deferUpdate
    */
   _invalidateAllItems(deferUpdate) {
-    this._staleRequests = new Set(SDK.networkLog.requests());
+    this._staleRequests = new Set(self.SDK.networkLog.requests());
     if (deferUpdate) {
       this.scheduleRefresh();
     } else {
@@ -1354,7 +1354,7 @@ export class NetworkLogView extends UI.VBox {
 
     if (request) {
       const maxBlockedURLLength = 20;
-      const manager = SDK.multitargetNetworkManager;
+      const manager = self.SDK.multitargetNetworkManager;
       let patterns = manager.blockedPatterns();
 
       /**
@@ -1364,7 +1364,7 @@ export class NetworkLogView extends UI.VBox {
         patterns.push({enabled: true, url: url});
         manager.setBlockedPatterns(patterns);
         manager.setBlockingEnabled(true);
-        UI.viewManager.showView('network.blocked-urls');
+        self.UI.viewManager.showView('network.blocked-urls');
       }
 
       /**
@@ -1373,7 +1373,7 @@ export class NetworkLogView extends UI.VBox {
       function removeBlockedURL(url) {
         patterns = patterns.filter(pattern => pattern.url !== url);
         manager.setBlockedPatterns(patterns);
-        UI.viewManager.showView('network.blocked-urls');
+        self.UI.viewManager.showView('network.blocked-urls');
       }
 
       const urlWithoutScheme = request.parsedURL.urlWithoutScheme();
@@ -1404,7 +1404,7 @@ export class NetworkLogView extends UI.VBox {
   }
 
   _harRequests() {
-    return SDK.networkLog.requests().filter(NetworkLogView.HTTPRequestsFilter).filter(request => {
+    return self.SDK.networkLog.requests().filter(NetworkLogView.HTTPRequestsFilter).filter(request => {
       return request.finished ||
           (request.resourceType() === Common.resourceTypes.WebSocket && request.responseReceivedTime);
     });
@@ -1428,7 +1428,7 @@ export class NetworkLogView extends UI.VBox {
    * @param {string} platform
    */
   async _copyAllCurlCommand(platform) {
-    const commands = await this._generateAllCurlCommand(SDK.networkLog.requests(), platform);
+    const commands = await this._generateAllCurlCommand(self.SDK.networkLog.requests(), platform);
     Host.InspectorFrontendHost.copyText(commands);
   }
 
@@ -1445,7 +1445,7 @@ export class NetworkLogView extends UI.VBox {
    * @param {boolean} includeCookies
    */
   async _copyAllFetchCall(includeCookies) {
-    const commands = await this._generateAllFetchCall(SDK.networkLog.requests(), includeCookies);
+    const commands = await this._generateAllFetchCall(self.SDK.networkLog.requests(), includeCookies);
     Host.InspectorFrontendHost.copyText(commands);
   }
 
@@ -1458,7 +1458,7 @@ export class NetworkLogView extends UI.VBox {
   }
 
   async _copyAllPowerShellCommand() {
-    const commands = await this._generateAllPowerShellCommand(SDK.networkLog.requests());
+    const commands = await this._generateAllPowerShellCommand(self.SDK.networkLog.requests());
     Host.InspectorFrontendHost.copyText(commands);
   }
 
@@ -1485,13 +1485,13 @@ export class NetworkLogView extends UI.VBox {
 
   _clearBrowserCache() {
     if (confirm(Common.UIString('Are you sure you want to clear browser cache?'))) {
-      SDK.multitargetNetworkManager.clearBrowserCache();
+      self.SDK.multitargetNetworkManager.clearBrowserCache();
     }
   }
 
   _clearBrowserCookies() {
     if (confirm(Common.UIString('Are you sure you want to clear browser cookies?'))) {
-      SDK.multitargetNetworkManager.clearBrowserCookies();
+      self.SDK.multitargetNetworkManager.clearBrowserCookies();
     }
   }
 
@@ -2032,7 +2032,7 @@ export class NetworkLogView extends UI.VBox {
    * @return {string}
    */
   static getDCLEventColor() {
-    if (UI.themeSupport.themeName() === 'dark') {
+    if (self.UI.themeSupport.themeName() === 'dark') {
       return '#03A9F4';
     }
     return '#0867CB';
@@ -2042,7 +2042,7 @@ export class NetworkLogView extends UI.VBox {
    * @return {string}
    */
   static getLoadEventColor() {
-    return UI.themeSupport.patchColorText('#B31412', UI.ThemeSupport.ColorUsage.Foreground);
+    return self.UI.themeSupport.patchColorText('#B31412', UI.ThemeSupport.ColorUsage.Foreground);
   }
 }
 

@@ -60,7 +60,7 @@ export class CommandMenu {
    * @return {!Command}
    */
   static createActionCommand(action) {
-    const shortcut = UI.shortcutRegistry.shortcutTitleForAction(action.id()) || '';
+    const shortcut = self.UI.shortcutRegistry.shortcutTitleForAction(action.id()) || '';
     return CommandMenu.createCommand(
         action.category(), action.tags(), action.title(), shortcut, action.execute.bind(action));
   }
@@ -72,7 +72,7 @@ export class CommandMenu {
    */
   static createRevealViewCommand(extension, category) {
     const viewId = extension.descriptor()['id'];
-    const executeHandler = UI.viewManager.showView.bind(UI.viewManager, viewId);
+    const executeHandler = self.UI.viewManager.showView.bind(self.UI.viewManager, viewId);
     const tags = extension.descriptor()['tags'] || '';
     return CommandMenu.createCommand(category, tags, Common.UIString('Show %s', extension.title()), '', executeHandler);
   }
@@ -128,7 +128,7 @@ export class CommandMenuProvider extends Provider {
     const allCommands = commandMenu.commands();
 
     // Populate whitelisted actions.
-    const actions = UI.actionRegistry.availableActions();
+    const actions = self.UI.actionRegistry.availableActions();
     for (const action of actions) {
       if (action.category()) {
         this._commands.push(CommandMenu.createActionCommand(action));

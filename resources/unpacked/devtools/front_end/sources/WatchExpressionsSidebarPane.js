@@ -58,8 +58,8 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget {
     this._treeOutline.setShowSelectionOnKeyboardFocus(/* show */ true);
     this._expandController = new ObjectUI.ObjectPropertiesSectionsTreeExpandController(this._treeOutline);
 
-    UI.context.addFlavorChangeListener(SDK.ExecutionContext, this.update, this);
-    UI.context.addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this.update, this);
+    self.UI.context.addFlavorChangeListener(SDK.ExecutionContext, this.update, this);
+    self.UI.context.addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this.update, this);
     this._linkifier = new Components.Linkifier();
     this.update();
   }
@@ -103,7 +103,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget {
   }
 
   async _addButtonClicked() {
-    await UI.viewManager.showView('sources.watch');
+    await self.UI.viewManager.showView('sources.watch');
     this._createWatchExpression(null).startEditing();
   }
 
@@ -210,7 +210,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget {
    * @param {string} expression
    */
   _focusAndAddExpressionToWatch(expression) {
-    UI.viewManager.showView('sources.watch');
+    self.UI.viewManager.showView('sources.watch');
     this.doUpdate();
     this._addExpressionToWatch(expression);
   }
@@ -230,7 +230,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const frame = UI.context.flavor(UISourceCodeFrame);
+    const frame = self.UI.context.flavor(UISourceCodeFrame);
     if (!frame) {
       return false;
     }
@@ -258,7 +258,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget {
           ls`Add property path to watch`, this._addPropertyPathToWatch.bind(this, target));
     }
 
-    const frame = UI.context.flavor(UISourceCodeFrame);
+    const frame = self.UI.context.flavor(UISourceCodeFrame);
     if (!frame || frame.textEditor.selection().isEmpty()) {
       return;
     }
@@ -303,7 +303,7 @@ export class WatchExpression extends Common.Object {
   }
 
   update() {
-    const currentExecutionContext = UI.context.flavor(SDK.ExecutionContext);
+    const currentExecutionContext = self.UI.context.flavor(SDK.ExecutionContext);
     if (currentExecutionContext && this._expression) {
       currentExecutionContext
           .evaluate(
