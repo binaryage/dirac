@@ -7,13 +7,6 @@ const {assert} = chai;
 import {CharacterIdMap} from '../../../../front_end/common/CharacterIdMap.js';
 
 describe('CharacterIdMap class', () => {
-  it('is able to be instantiated successfully', () => {
-    const characterIdMap = new CharacterIdMap();
-    assert.instanceOf(characterIdMap._elementToCharacter, Map, 'elementToCharacter is not of type Map');
-    assert.instanceOf(characterIdMap._characterToElement, Map, 'characterToElement is not of type Map');
-    assert.equal(characterIdMap._charCode, 33, 'charCode is not equal to 33');
-  });
-
   it('is able to convert an element to a character', () => {
     const testElement = document.createElement('p');
     const characterIdMap = new CharacterIdMap();
@@ -35,14 +28,15 @@ describe('CharacterIdMap class', () => {
   });
 
   it('throws an error when trying to convert a number when there is no capacity left', () => {
+    const upperLimit = 0xFFFF;
     const characterIdMap = new CharacterIdMap();
-    for (let index = 0; index < 65502; index++) {
-      const el = document.createElement('div');
-      el.setAttribute('id', 'Div' + index);
-      characterIdMap.toChar(el);
-    }
-    const testElement = document.createElement('p');
-    assert.throws(() => characterIdMap.toChar(testElement), 'CharacterIdMap ran out of capacity!');
+    assert.throws(() => {
+      for (let index = 0; index <= upperLimit; index++) {
+        const el = document.createElement('div');
+        el.setAttribute('id', 'Div' + index);
+        characterIdMap.toChar(el);
+      }
+    }, 'CharacterIdMap ran out of capacity!');
   });
 
   it('returns null when trying to convert  a character that does not exist in the Map', () => {

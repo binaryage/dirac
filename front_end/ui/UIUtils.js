@@ -1244,10 +1244,10 @@ export function initializeUIUtils(document, themeSetting) {
     document.defaultView.requestAnimationFrame(() => void(UI._keyboardFocus = false));
   }, true);
 
-  if (!UI.themeSupport) {
-    UI.themeSupport = new ThemeSupport(themeSetting);
+  if (!self.UI.themeSupport) {
+    self.UI.themeSupport = new ThemeSupport(themeSetting);
   }
-  UI.themeSupport.applyTheme(document);
+  self.UI.themeSupport.applyTheme(document);
 
   const body = /** @type {!Element} */ (document.body);
   appendStyle(body, 'ui/inspectorStyle.css');
@@ -2165,3 +2165,6 @@ export function formatTimestamp(timestamp, full) {
     return valueString.padStart(length, '0');
   }
 }
+
+/** @typedef {!{title: (string|!Element|undefined), editable: (boolean|undefined) }} */
+export let Options;

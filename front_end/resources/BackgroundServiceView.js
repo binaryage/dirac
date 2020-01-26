@@ -56,7 +56,8 @@ export class BackgroundServiceView extends UI.VBox {
 
 
     /** @const {!UI.Action} */
-    this._recordAction = /** @type {!UI.Action} */ (UI.actionRegistry.action('background-service.toggle-recording'));
+    this._recordAction =
+        /** @type {!UI.Action} */ (self.UI.actionRegistry.action('background-service.toggle-recording'));
     /** @type {?UI.ToolbarButton} */
     this._recordButton = null;
 
@@ -337,7 +338,7 @@ export class BackgroundServiceView extends UI.VBox {
 
       const recordKey = createElementWithClass('b', 'background-service-shortcut');
       recordKey.textContent =
-          UI.shortcutRegistry.shortcutDescriptorsForAction('background-service.toggle-recording')[0].name;
+          self.UI.shortcutRegistry.shortcutDescriptorsForAction('background-service.toggle-recording')[0].name;
 
       const inlineButton = UI.createInlineButton(landingRecordButton);
       inlineButton.classList.add('background-service-record-inline-button');

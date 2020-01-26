@@ -264,7 +264,7 @@ export async function loadModule(module) {
  * @return {!Promise.<?UI.Panel>}
  */
 export function showPanel(panel) {
-  return UI.viewManager.showView(panel);
+  return self.UI.viewManager.showView(panel);
 }
 
 /**
@@ -1231,7 +1231,7 @@ export function clearSpecificInfoFromStackFrames(text) {
 }
 
 export function hideInspectorView() {
-  UI.inspectorView.element.setAttribute('style', 'display:none !important');
+  self.UI.inspectorView.element.setAttribute('style', 'display:none !important');
 }
 
 /**

@@ -14,7 +14,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.VBox {
 
     /** @type {!Map<string, !BrowserDebugger.EventListenerBreakpointsSidebarPane.Item>} */
     this._categories = new Map();
-    const categories = SDK.domDebuggerManager.eventListenerBreakpoints().map(breakpoint => breakpoint.category());
+    const categories = self.SDK.domDebuggerManager.eventListenerBreakpoints().map(breakpoint => breakpoint.category());
     categories.sort();
     for (const category of categories) {
       if (!this._categories.has(category)) {
@@ -28,7 +28,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.VBox {
 
     /** @type {!Map<!SDK.DOMDebuggerModel.EventListenerBreakpoint, !BrowserDebugger.EventListenerBreakpointsSidebarPane.Item>} */
     this._breakpoints = new Map();
-    for (const breakpoint of SDK.domDebuggerManager.eventListenerBreakpoints()) {
+    for (const breakpoint of self.SDK.domDebuggerManager.eventListenerBreakpoints()) {
       this._createBreakpoint(breakpoint);
     }
 
@@ -36,7 +36,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.VBox {
         SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._update, this);
     self.SDK.targetManager.addModelListener(
         SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._update, this);
-    UI.context.addFlavorChangeListener(SDK.Target, this._update, this);
+    self.UI.context.addFlavorChangeListener(SDK.Target, this._update, this);
   }
 
   /**
@@ -91,7 +91,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.VBox {
   }
 
   _update() {
-    const target = UI.context.flavor(SDK.Target);
+    const target = self.UI.context.flavor(SDK.Target);
     const debuggerModel = target ? target.model(SDK.DebuggerModel) : null;
     const details = debuggerModel ? debuggerModel.debuggerPausedDetails() : null;
 
@@ -104,12 +104,13 @@ export class EventListenerBreakpointsSidebarPane extends UI.VBox {
       return;
     }
 
-    const breakpoint = SDK.domDebuggerManager.resolveEventListenerBreakpoint(/** @type {!Object} */ (details.auxData));
+    const breakpoint =
+        self.SDK.domDebuggerManager.resolveEventListenerBreakpoint(/** @type {!Object} */ (details.auxData));
     if (!breakpoint) {
       return;
     }
 
-    UI.viewManager.showView('sources.eventListenerBreakpoints');
+    self.UI.viewManager.showView('sources.eventListenerBreakpoints');
     this._categories.get(breakpoint.category()).element.expand();
     this._highlightedElement = this._breakpoints.get(breakpoint).element.listItemElement;
     UI.ARIAUtils.setDescription(this._highlightedElement, ls`breakpoint hit`);

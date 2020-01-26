@@ -2,31 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
 export class NetworkPanelIndicator {
   constructor() {
     // TODO: we should not access network from other modules.
-    if (!UI.inspectorView.hasPanel('network')) {
+    if (!self.UI.inspectorView.hasPanel('network')) {
       return;
     }
-    const manager = SDK.multitargetNetworkManager;
-    manager.addEventListener(SDK.MultitargetNetworkManager.Events.ConditionsChanged, updateVisibility);
-    manager.addEventListener(SDK.MultitargetNetworkManager.Events.BlockedPatternsChanged, updateVisibility);
-    manager.addEventListener(SDK.MultitargetNetworkManager.Events.InterceptorsChanged, updateVisibility);
+    const manager = self.SDK.multitargetNetworkManager;
+    manager.addEventListener(SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged, updateVisibility);
+    manager.addEventListener(
+        SDK.NetworkManager.MultitargetNetworkManager.Events.BlockedPatternsChanged, updateVisibility);
+    manager.addEventListener(SDK.NetworkManager.MultitargetNetworkManager.Events.InterceptorsChanged, updateVisibility);
     updateVisibility();
 
     function updateVisibility() {
       let icon = null;
       if (manager.isThrottling()) {
-        icon = UI.Icon.create('smallicon-warning');
-        icon.title = Common.UIString('Network throttling is enabled');
-      } else if (SDK.multitargetNetworkManager.isIntercepting()) {
-        icon = UI.Icon.create('smallicon-warning');
-        icon.title = Common.UIString('Requests may be rewritten by local overrides');
+        icon = UI.Icon.Icon.create('smallicon-warning');
+        icon.title = Common.UIString.UIString('Network throttling is enabled');
+      } else if (self.SDK.multitargetNetworkManager.isIntercepting()) {
+        icon = UI.Icon.Icon.create('smallicon-warning');
+        icon.title = Common.UIString.UIString('Requests may be rewritten by local overrides');
       } else if (manager.isBlocking()) {
-        icon = UI.Icon.create('smallicon-warning');
-        icon.title = Common.UIString('Requests may be blocked');
+        icon = UI.Icon.Icon.create('smallicon-warning');
+        icon.title = Common.UIString.UIString('Requests may be blocked');
       }
-      UI.inspectorView.setPanelIcon('network', icon);
+      self.UI.inspectorView.setPanelIcon('network', icon);
     }
   }
 }

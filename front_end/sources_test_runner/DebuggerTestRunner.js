@@ -14,7 +14,7 @@ SourcesTestRunner.startDebuggerTest = function(callback, quiet) {
     SourcesTestRunner._quiet = quiet;
   }
 
-  UI.viewManager.showView('sources');
+  self.UI.viewManager.showView('sources');
   TestRunner.addSniffer(SDK.DebuggerModel.prototype, '_pausedScript', SourcesTestRunner._pausedScript, true);
   TestRunner.addSniffer(SDK.DebuggerModel.prototype, '_resumedScript', SourcesTestRunner._resumedScript, true);
   TestRunner.safeWrap(callback)();
@@ -718,7 +718,7 @@ SourcesTestRunner.waitForExecutionContextInTarget = function(target, callback) {
 };
 
 SourcesTestRunner.selectThread = function(target) {
-  UI.context.setFlavor(SDK.Target, target);
+  self.UI.context.setFlavor(SDK.Target, target);
 };
 
 SourcesTestRunner.evaluateOnCurrentCallFrame = function(code) {
@@ -809,7 +809,7 @@ SourcesTestRunner.setEventListenerBreakpoint = function(id, enabled, targetName)
     auxData.targetName = targetName;
   }
 
-  const breakpoint = SDK.domDebuggerManager.resolveEventListenerBreakpoint(auxData);
+  const breakpoint = self.SDK.domDebuggerManager.resolveEventListenerBreakpoint(auxData);
 
   if (breakpoint.enabled() !== enabled) {
     pane._breakpoints.get(breakpoint).checkbox.checked = enabled;

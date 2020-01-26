@@ -48,7 +48,7 @@ export class NetworkPanel extends UI.Panel {
     this._networkLogShowOverviewSetting = self.Common.settings.createSetting('networkLogShowOverview', true);
     this._networkLogLargeRowsSetting = self.Common.settings.createSetting('networkLogLargeRows', false);
     this._networkRecordFilmStripSetting = self.Common.settings.createSetting('networkRecordFilmStripSetting', false);
-    this._toggleRecordAction = /** @type {!UI.Action }*/ (UI.actionRegistry.action('network.toggle-recording'));
+    this._toggleRecordAction = /** @type {!UI.Action }*/ (self.UI.actionRegistry.action('network.toggle-recording'));
 
     /** @type {number|undefined} */
     this._pendingStopTimer;
@@ -102,8 +102,8 @@ export class NetworkPanel extends UI.Panel {
     splitWidget.hideSidebar();
     splitWidget.enableShowModeSaving();
     splitWidget.show(this.element);
-    this._sidebarLocation = UI.viewManager.createTabbedLocation(async () => {
-      UI.viewManager.showView('network');
+    this._sidebarLocation = self.UI.viewManager.createTabbedLocation(async () => {
+      self.UI.viewManager.showView('network');
       splitWidget.showBoth();
     }, 'network-sidebar', true);
     const tabbedPane = this._sidebarLocation.tabbedPane();
@@ -141,7 +141,7 @@ export class NetworkPanel extends UI.Panel {
 
     this._closeButtonElement = createElement('div', 'dt-close-button');
     this._closeButtonElement.addEventListener(
-        'click', async () => await UI.actionRegistry.action('network.hide-request-details').execute(), false);
+        'click', async () => await self.UI.actionRegistry.action('network.hide-request-details').execute(), false);
     this._closeButtonElement.style.margin = '0 5px';
 
     this._networkLogShowOverviewSetting.addChangeListener(this._toggleShowOverview, this);
@@ -164,9 +164,9 @@ export class NetworkPanel extends UI.Panel {
     self.SDK.targetManager.addModelListener(SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._load, this);
     this._networkLogView.addEventListener(Events.RequestSelected, this._onRequestSelected, this);
     this._networkLogView.addEventListener(Events.RequestActivated, this._onRequestActivated, this);
-    SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestAdded, this._onUpdateRequest, this);
-    SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestUpdated, this._onUpdateRequest, this);
-    SDK.networkLog.addEventListener(SDK.NetworkLog.Events.Reset, this._onNetworkLogReset, this);
+    self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestAdded, this._onUpdateRequest, this);
+    self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestUpdated, this._onUpdateRequest, this);
+    self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.Reset, this._onNetworkLogReset, this);
   }
 
   /**
@@ -179,7 +179,7 @@ export class NetworkPanel extends UI.Panel {
       filterString += `${filter.filterType}:${filter.filterValue} `;
     }
     panel._networkLogView.setTextFilterValue(filterString);
-    UI.viewManager.showView('network');
+    self.UI.viewManager.showView('network');
   }
 
   /**
@@ -216,7 +216,7 @@ export class NetworkPanel extends UI.Panel {
     }
     this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._toggleRecordAction));
     const clearButton = new UI.ToolbarButton(Common.UIString('Clear'), 'largeicon-clear');
-    clearButton.addEventListener(UI.ToolbarButton.Events.Click, () => SDK.networkLog.reset(), this);
+    clearButton.addEventListener(UI.ToolbarButton.Events.Click, () => self.SDK.networkLog.reset(), this);
     this._panelToolbar.appendToolbarItem(clearButton);
     this._panelToolbar.appendSeparator();
 
@@ -224,7 +224,7 @@ export class NetworkPanel extends UI.Panel {
     updateSidebarToggle();
     splitWidget.addEventListener(UI.SplitWidget.Events.ShowModeChanged, updateSidebarToggle);
     searchToggle.addEventListener(
-        UI.ToolbarButton.Events.Click, async () => await UI.actionRegistry.action('network.search').execute());
+        UI.ToolbarButton.Events.Click, async () => await self.UI.actionRegistry.action('network.search').execute());
     this._panelToolbar.appendToolbarItem(searchToggle);
     this._panelToolbar.appendSeparator();
 
@@ -284,7 +284,7 @@ export class NetworkPanel extends UI.Panel {
 
   _toggleRecording() {
     if (!this._preserveLogSetting.get() && !this._toggleRecordAction.toggled()) {
-      SDK.networkLog.reset();
+      self.SDK.networkLog.reset();
     }
     this._toggleRecord(!this._toggleRecordAction.toggled());
   }
@@ -300,7 +300,7 @@ export class NetworkPanel extends UI.Panel {
     }
     // TODO(einbinder) This should be moved to a setting/action that NetworkLog owns but NetworkPanel controls, but
     // always be present in the command menu.
-    SDK.networkLog.setIsRecording(toggled);
+    self.SDK.networkLog.setIsRecording(toggled);
   }
 
   /**
@@ -401,7 +401,7 @@ export class NetworkPanel extends UI.Panel {
   }
 
   _resetFilmStripView() {
-    const reloadShortcutDescriptor = UI.shortcutRegistry.shortcutDescriptorsForAction('inspector_main.reload')[0];
+    const reloadShortcutDescriptor = self.UI.shortcutRegistry.shortcutDescriptorsForAction('inspector_main.reload')[0];
 
     this._filmStripView.reset();
     if (reloadShortcutDescriptor) {
@@ -422,7 +422,7 @@ export class NetworkPanel extends UI.Panel {
    * @override
    */
   wasShown() {
-    UI.context.setFlavor(NetworkPanel, this);
+    self.UI.context.setFlavor(NetworkPanel, this);
 
     // Record the network tool load time after the panel has loaded.
     Host.userMetrics.panelLoaded('network', 'DevTools.Launch.Network');
@@ -432,7 +432,7 @@ export class NetworkPanel extends UI.Panel {
    * @override
    */
   willHide() {
-    UI.context.setFlavor(NetworkPanel, null);
+    self.UI.context.setFlavor(NetworkPanel, null);
   }
 
   /**
@@ -450,7 +450,7 @@ export class NetworkPanel extends UI.Panel {
    * @return {!Promise<?NetworkItemView>}
    */
   async selectRequest(request) {
-    await UI.viewManager.showView('network');
+    await self.UI.viewManager.showView('network');
     this._networkLogView.selectRequest(request);
     return this._networkItemView;
   }
@@ -548,7 +548,7 @@ export class NetworkPanel extends UI.Panel {
      * @this {NetworkPanel}
      */
     function reveal(request) {
-      UI.viewManager.showView('network').then(this.revealAndHighlightRequest.bind(this, request));
+      self.UI.viewManager.showView('network').then(this.revealAndHighlightRequest.bind(this, request));
     }
 
     /**
@@ -672,7 +672,7 @@ export class RequestRevealer {
       return Promise.reject(new Error('Internal error: not a network request'));
     }
     const panel = NetworkPanel._instance();
-    return UI.viewManager.showView('network').then(panel.revealAndHighlightRequest.bind(panel, request));
+    return self.UI.viewManager.showView('network').then(panel.revealAndHighlightRequest.bind(panel, request));
   }
 }
 
@@ -791,7 +791,7 @@ export class ActionDelegate {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const panel = UI.context.flavor(NetworkPanel);
+    const panel = self.UI.context.flavor(NetworkPanel);
     console.assert(panel && panel instanceof NetworkPanel);
     switch (actionId) {
       case 'network.toggle-recording':
@@ -805,7 +805,7 @@ export class ActionDelegate {
         panel._networkLogView.resetFocus();
         return true;
       case 'network.search':
-        const selection = UI.inspectorView.element.window().getSelection();
+        const selection = self.UI.inspectorView.element.window().getSelection();
         let queryCandidate = '';
         if (selection.rangeCount) {
           queryCandidate = selection.toString().replace(/\r?\n.*/, '');
@@ -855,7 +855,7 @@ export class SearchNetworkView extends Search.SearchView {
    * @return {!Promise<!Search.SearchView>}
    */
   static async openSearch(query, searchImmediately) {
-    await UI.viewManager.showView('network.search-network-tab');
+    await self.UI.viewManager.showView('network.search-network-tab');
     const searchView =
         /** @type {!SearchNetworkView} */ (self.runtime.sharedInstance(SearchNetworkView));
     searchView.toggle(query, !!searchImmediately);

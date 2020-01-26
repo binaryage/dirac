@@ -18,7 +18,7 @@ export class LiveHeapProfileView extends UI.VBox {
     const toolbar = new UI.Toolbar('live-heap-profile-toolbar', this.contentElement);
 
     this._toggleRecordAction =
-        /** @type {!UI.Action }*/ (UI.actionRegistry.action('live-heap-profile.toggle-recording'));
+        /** @type {!UI.Action }*/ (self.UI.actionRegistry.action('live-heap-profile.toggle-recording'));
     this._toggleRecordButton = UI.Toolbar.createActionButton(this._toggleRecordAction);
     this._toggleRecordButton.setToggled(this._setting.get());
     toolbar.appendToolbarItem(this._toggleRecordButton);
@@ -26,7 +26,7 @@ export class LiveHeapProfileView extends UI.VBox {
     const mainTarget = self.SDK.targetManager.mainTarget();
     if (mainTarget && mainTarget.model(SDK.ResourceTreeModel)) {
       const startWithReloadAction =
-          /** @type {!UI.Action }*/ (UI.actionRegistry.action('live-heap-profile.start-with-reload'));
+          /** @type {!UI.Action }*/ (self.UI.actionRegistry.action('live-heap-profile.start-with-reload'));
       this._startWithReloadButton = UI.Toolbar.createActionButton(startWithReloadAction);
       toolbar.appendToolbarItem(this._startWithReloadButton);
     }
@@ -103,7 +103,7 @@ export class LiveHeapProfileView extends UI.VBox {
   async _poll() {
     const pollId = this._currentPollId;
     do {
-      const isolates = Array.from(SDK.isolateManager.isolates());
+      const isolates = Array.from(self.SDK.isolateManager.isolates());
       const profiles = await Promise.all(
           isolates.map(isolate => isolate.heapProfilerModel() && isolate.heapProfilerModel().getSamplingProfile()));
       if (this._currentPollId !== pollId) {
@@ -322,8 +322,8 @@ export class ActionDelegate {
   handleAction(context, actionId) {
     (async () => {
       const profileViewId = 'live_heap_profile';
-      await UI.viewManager.showView(profileViewId);
-      const widget = await UI.viewManager.view(profileViewId).widget();
+      await self.UI.viewManager.showView(profileViewId);
+      const widget = await self.UI.viewManager.view(profileViewId).widget();
       this._innerHandleAction(/** @type {!LiveHeapProfileView} */ (widget), actionId);
     })();
     return true;

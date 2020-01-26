@@ -28,6 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
+import * as ProtocolModule from '../protocol/protocol.js';
+
 import {DebuggerModel} from './DebuggerModel.js';
 import {HeapProfilerModel} from './HeapProfilerModel.js';
 import {RemoteFunction, RemoteObject,
@@ -67,7 +71,7 @@ export class RuntimeModel extends SDKModel {
    * @return {boolean}
    */
   static isSideEffectFailure(response) {
-    const exceptionDetails = !response[Protocol.Error] && response.exceptionDetails;
+    const exceptionDetails = !response[ProtocolModule.InspectorBackend.ProtocolError] && response.exceptionDetails;
     return !!(
         exceptionDetails && exceptionDetails.exception && exceptionDetails.exception.description &&
         exceptionDetails.exception.description.startsWith('EvalError: Possible side-effect in debug-evaluate'));
@@ -259,14 +263,14 @@ export class RuntimeModel extends SDKModel {
    */
   async compileScript(expression, sourceURL, persistScript, executionContextId) {
     const response = await this._agent.invoke_compileScript({
-      expression: String.escapeInvalidUnicodeCharacters(expression),
+      expression: expression,
       sourceURL: sourceURL,
       persistScript: persistScript,
-      executionContextId: executionContextId
+      executionContextId: executionContextId,
     });
 
-    if (response[Protocol.Error]) {
-      console.error(response[Protocol.Error]);
+    if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
+      console.error(response[ProtocolModule.InspectorBackend.ProtocolError]);
       return null;
     }
     return {scriptId: response.scriptId, exceptionDetails: response.exceptionDetails};
@@ -294,10 +298,10 @@ export class RuntimeModel extends SDKModel {
       includeCommandLineAPI,
       returnByValue,
       generatePreview,
-      awaitPromise
+      awaitPromise,
     });
 
-    const error = response[Protocol.Error];
+    const error = response[ProtocolModule.InspectorBackend.ProtocolError];
     if (error) {
       console.error(error);
       return {error: error};
@@ -315,7 +319,7 @@ export class RuntimeModel extends SDKModel {
     }
     const response = await this._agent.invoke_queryObjects(
         {prototypeObjectId: /** @type {string} */ (prototype.objectId), objectGroup: 'console'});
-    const error = response[Protocol.Error];
+    const error = response[ProtocolModule.InspectorBackend.ProtocolError];
     if (error) {
       console.error(error);
       return {error: error};
@@ -335,7 +339,7 @@ export class RuntimeModel extends SDKModel {
    */
   async heapUsage() {
     const result = await this._agent.invoke_getHeapUsage({});
-    return result[Protocol.Error] ? null : result;
+    return result[ProtocolModule.InspectorBackend.ProtocolError] ? null : result;
   }
 
   /**
@@ -383,11 +387,13 @@ export class RuntimeModel extends SDKModel {
    */
   _copyRequested(object) {
     if (!object.objectId) {
-      Host.InspectorFrontendHost.copyText(object.unserializableValue() || /** @type {string} */ (object.value));
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(
+          object.unserializableValue() || /** @type {string} */ (object.value));
       return;
     }
     object.callFunctionJSON(toStringForClipboard, [{value: object.subtype}])
-        .then(Host.InspectorFrontendHost.copyText.bind(Host.InspectorFrontendHost));
+        .then(Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance));
 
     /**
      * @param {string} subtype
@@ -469,7 +475,7 @@ export class RuntimeModel extends SDKModel {
       executionContextId: executionContextId,
       timestamp: timestamp,
       stackTrace: stackTrace,
-      context: context
+      context: context,
     };
     this.dispatchEventToListeners(Events.ConsoleAPICalled, consoleAPICall);
   }
@@ -514,9 +520,9 @@ export class RuntimeModel extends SDKModel {
     }
     // Check for a positive throwOnSideEffect response without triggering side effects.
     const response = await this._agent.invoke_evaluate({
-      expression: String.escapeInvalidUnicodeCharacters(_sideEffectTestExpression),
+      expression: _sideEffectTestExpression,
       contextId: testContext.id,
-      throwOnSideEffect: true
+      throwOnSideEffect: true,
     });
 
     this._hasSideEffectSupport = RuntimeModel.isSideEffectFailure(response);
@@ -780,7 +786,7 @@ export class ExecutionContext {
           includeCommandLineAPI: false,
           silent: true,
           returnByValue: false,
-          generatePreview: generatePreview
+          generatePreview: generatePreview,
         },
         /* userGesture */ false, /* awaitPromise */ false);
   }
@@ -798,7 +804,7 @@ export class ExecutionContext {
     }
 
     const response = await this.runtimeModel._agent.invoke_evaluate({
-      expression: String.escapeInvalidUnicodeCharacters(options.expression),
+      expression: options.expression,
       objectGroup: options.objectGroup,
       includeCommandLineAPI: options.includeCommandLineAPI,
       silent: options.silent,
@@ -810,10 +816,10 @@ export class ExecutionContext {
       throwOnSideEffect: options.throwOnSideEffect,
       timeout: options.timeout,
       disableBreaks: options.disableBreaks,
-      replMode: options.replMode
+      replMode: options.replMode,
     });
 
-    const error = response[Protocol.Error];
+    const error = response[ProtocolModule.InspectorBackend.ProtocolError];
     if (error) {
       console.error(error);
       return {error: error};
@@ -826,7 +832,7 @@ export class ExecutionContext {
    */
   async globalLexicalScopeNames() {
     const response = await this.runtimeModel._agent.invoke_globalLexicalScopeNames({executionContextId: this.id});
-    return response[Protocol.Error] ? [] : response.names;
+    return response[ProtocolModule.InspectorBackend.ProtocolError] ? [] : response.names;
   }
 
   /**
@@ -856,9 +862,17 @@ export class ExecutionContext {
       this._label = this.name;
       return;
     }
-    const parsedUrl = Common.ParsedURL.fromString(this.origin);
+    const parsedUrl = Common.ParsedURL.ParsedURL.fromString(this.origin);
     this._label = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : '';
   }
 }
 
 SDKModel.register(RuntimeModel, Capability.JS, true);
+
+/** @typedef {{
+ *    object: (!RemoteObject|undefined),
+ *    exceptionDetails: (!Protocol.Runtime.ExceptionDetails|undefined),
+ *    error: (!Protocol.Error|undefined)}
+ *  }}
+ */
+export let EvaluationResult;

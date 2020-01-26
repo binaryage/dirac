@@ -54,7 +54,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame {
     this._isSettingContent = false;
 
     /** @type {?Persistence.PersistenceBinding} */
-    this._persistenceBinding = Persistence.persistence.binding(uiSourceCode);
+    this._persistenceBinding = self.Persistence.persistence.binding(uiSourceCode);
 
     /** @type {!Map<number, !RowMessageBucket>} */
     this._rowMessageBuckets = new Map();
@@ -67,9 +67,9 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame {
     this._boundOnBindingChanged = this._onBindingChanged.bind(this);
 
     this.textEditor.addEventListener(
-        SourceFrame.SourcesTextEditor.Events.EditorBlurred, () => UI.context.setFlavor(UISourceCodeFrame, null));
+        SourceFrame.SourcesTextEditor.Events.EditorBlurred, () => self.UI.context.setFlavor(UISourceCodeFrame, null));
     this.textEditor.addEventListener(
-        SourceFrame.SourcesTextEditor.Events.EditorFocused, () => UI.context.setFlavor(UISourceCodeFrame, this));
+        SourceFrame.SourcesTextEditor.Events.EditorFocused, () => self.UI.context.setFlavor(UISourceCodeFrame, this));
     self.Common.settings.moduleSetting('persistenceNetworkOverridesEnabled')
         .addChangeListener(this._onNetworkPersistenceChanged, this);
 
@@ -161,7 +161,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame {
     Common.EventTarget.removeEventListeners(this._messageAndDecorationListeners);
     Common.EventTarget.removeEventListeners(this._uiSourceCodeEventListeners);
     this._uiSourceCode.removeWorkingCopyGetter();
-    Persistence.persistence.unsubscribeFromBindingEvent(this._uiSourceCode, this._boundOnBindingChanged);
+    self.Persistence.persistence.unsubscribeFromBindingEvent(this._uiSourceCode, this._boundOnBindingChanged);
   }
 
   _initializeUISourceCode() {
@@ -174,7 +174,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame {
           Workspace.UISourceCode.Events.TitleChanged, this._refreshHighlighterType, this)
     ];
 
-    Persistence.persistence.subscribeForBindingEvent(this._uiSourceCode, this._boundOnBindingChanged);
+    self.Persistence.persistence.subscribeForBindingEvent(this._uiSourceCode, this._boundOnBindingChanged);
     for (const message of this._allMessages()) {
       this._addMessageToSource(message);
     }
@@ -210,12 +210,12 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame {
       plugin.willHide();
     }
     super.willHide();
-    UI.context.setFlavor(UISourceCodeFrame, null);
+    self.UI.context.setFlavor(UISourceCodeFrame, null);
     this._uiSourceCode.removeWorkingCopyGetter();
   }
 
   _refreshHighlighterType() {
-    const binding = Persistence.persistence.binding(this._uiSourceCode);
+    const binding = self.Persistence.persistence.binding(this._uiSourceCode);
     const highlighterType = binding ? binding.network.mimeType() : this._uiSourceCode.mimeType();
     if (this.highlighterType() === highlighterType) {
       return;
@@ -232,7 +232,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame {
     if (this.hasLoadError()) {
       return false;
     }
-    if (Persistence.persistence.binding(this._uiSourceCode)) {
+    if (self.Persistence.persistence.binding(this._uiSourceCode)) {
       return true;
     }
     if (this._uiSourceCode.project().canSetFileContent()) {
@@ -242,7 +242,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame {
       return false;
     }
     if (this._uiSourceCode.project().type() === Workspace.projectTypes.Network &&
-        Persistence.networkPersistenceManager.active()) {
+        self.Persistence.networkPersistenceManager.active()) {
       return true;
     }
     // Because live edit fails on large whitespace changes, pretty printed scripts are not editable.
@@ -347,7 +347,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame {
       return;
     }
 
-    const binding = Persistence.persistence.binding(this._uiSourceCode);
+    const binding = self.Persistence.persistence.binding(this._uiSourceCode);
     const pluginUISourceCode = binding ? binding.network : this._uiSourceCode;
 
     // The order of these plugins matters for toolbar items
@@ -390,7 +390,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame {
   }
 
   _onBindingChanged() {
-    const binding = Persistence.persistence.binding(this._uiSourceCode);
+    const binding = self.Persistence.persistence.binding(this._uiSourceCode);
     if (binding === this._persistenceBinding) {
       return;
     }

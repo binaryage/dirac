@@ -66,7 +66,7 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget {
       breakpointEntriesForLine.set(lineDescriptor, entryDescriptor);
     }
 
-    const details = UI.context.flavor(SDK.DebuggerPausedDetails);
+    const details = self.UI.context.flavor(SDK.DebuggerPausedDetails);
     const selectedUILocation = details && details.callFrames.length ?
         self.Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(details.callFrames[0].location()) :
         null;
@@ -97,7 +97,7 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget {
       }
     }
     if (shouldShowView) {
-      UI.viewManager.showView('sources.jsBreakpoints');
+      self.UI.viewManager.showView('sources.jsBreakpoints');
     }
     this._list.element.classList.toggle(
         'breakpoints-list-deactivated', !self.Common.settings.moduleSetting('breakpointsActive').get());

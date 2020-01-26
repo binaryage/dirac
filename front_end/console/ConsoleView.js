@@ -108,12 +108,12 @@ export class ConsoleView extends UI.VBox {
     const rightToolbar = new UI.Toolbar('', consoleToolbarContainer);
     toolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton(ls`console sidebar`));
     toolbar.appendToolbarItem(UI.Toolbar.createActionButton(
-        /** @type {!UI.Action }*/ (UI.actionRegistry.action('console.clear'))));
+        /** @type {!UI.Action }*/ (self.UI.actionRegistry.action('console.clear'))));
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._consoleContextSelector.toolbarItem());
     toolbar.appendSeparator();
     const liveExpressionButton =
-        UI.Toolbar.createActionButton(/** @type {!UI.Action }*/ (UI.actionRegistry.action('console.create-pin')));
+        UI.Toolbar.createActionButton(/** @type {!UI.Action }*/ (self.UI.actionRegistry.action('console.create-pin')));
     toolbar.appendToolbarItem(liveExpressionButton);
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._filter._textFilterUI);
@@ -239,7 +239,7 @@ export class ConsoleView extends UI.VBox {
 
     this._registerWithMessageSink();
 
-    UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._executionContextChanged, this);
+    self.UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._executionContextChanged, this);
 
     this._messagesElement.addEventListener(
         'mousedown', event => this._updateStickToBottomOnPointerDown(event.button === 2), false);
@@ -251,11 +251,11 @@ export class ConsoleView extends UI.VBox {
     this._messagesElement.addEventListener('touchend', this._updateStickToBottomOnPointerUp.bind(this), false);
     this._messagesElement.addEventListener('touchcancel', this._updateStickToBottomOnPointerUp.bind(this), false);
 
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
-    SDK.consoleModel.messages().forEach(this._addConsoleMessage, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
+    self.SDK.consoleModel.messages().forEach(this._addConsoleMessage, this);
   }
 
   /**
@@ -269,7 +269,7 @@ export class ConsoleView extends UI.VBox {
   }
 
   static clearConsole() {
-    SDK.consoleModel.requestClearMessages();
+    self.SDK.consoleModel.requestClearMessages();
   }
 
   _onFilterChanged() {
@@ -1002,7 +1002,7 @@ export class ConsoleView extends UI.VBox {
           result.runtimeModel(), exceptionDetails, SDK.ConsoleMessage.MessageType.Result, undefined, undefined);
     }
     message.setOriginatingMessage(originatingConsoleMessage);
-    SDK.consoleModel.addMessage(message);
+    self.SDK.consoleModel.addMessage(message);
   }
 
   /**
@@ -1272,7 +1272,7 @@ export class ConsoleViewFilter {
     this._messageLevelFiltersSetting.addChangeListener(this._onFilterChanged.bind(this));
     this._hideNetworkMessagesSetting.addChangeListener(this._onFilterChanged.bind(this));
     this._filterByExecutionContextSetting.addChangeListener(this._onFilterChanged.bind(this));
-    UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._onFilterChanged, this);
+    self.UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._onFilterChanged, this);
 
     const filterKeys = Object.values(FilterType);
     this._suggestionBuilder = new UI.FilterSuggestionBuilder(filterKeys);
@@ -1339,7 +1339,7 @@ export class ConsoleViewFilter {
     }
 
     this._currentFilter.executionContext =
-        this._filterByExecutionContextSetting.get() ? UI.context.flavor(SDK.ExecutionContext) : null;
+        this._filterByExecutionContextSetting.get() ? self.UI.context.flavor(SDK.ExecutionContext) : null;
     this._currentFilter.parsedFilters = parsedFilters;
     this._currentFilter.levelsMask = this._messageLevelFiltersSetting.get();
   }

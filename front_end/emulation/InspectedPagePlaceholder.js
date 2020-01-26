@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  */
-export class InspectedPagePlaceholder extends UI.Widget {
+export class InspectedPagePlaceholder extends UI.Widget.Widget {
   constructor() {
     super(true);
     this.registerRequiredCSS('emulation/inspectedPagePlaceholder.css');
-    UI.zoomManager.addEventListener(UI.ZoomManager.Events.ZoomChanged, this.onResize, this);
+    self.UI.zoomManager.addEventListener(UI.ZoomManager.Events.ZoomChanged, this.onResize, this);
     this.restoreMinimumSize();
   }
 
@@ -32,7 +34,7 @@ export class InspectedPagePlaceholder extends UI.Widget {
   }
 
   _dipPageRect() {
-    const zoomFactor = UI.zoomManager.zoomFactor();
+    const zoomFactor = self.UI.zoomManager.zoomFactor();
     const rect = this.element.getBoundingClientRect();
     const bodyRect = this.element.ownerDocument.body.getBoundingClientRect();
 

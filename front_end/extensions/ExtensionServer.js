@@ -238,7 +238,7 @@ export class ExtensionServer extends Common.Object {
       }
     }
 
-    SDK.multitargetNetworkManager.setExtraHTTPHeaders(allHeaders);
+    self.SDK.multitargetNetworkManager.setExtraHTTPHeaders(allHeaders);
   }
 
   /**
@@ -253,11 +253,11 @@ export class ExtensionServer extends Common.Object {
     styleSheet.textContent = message.styleSheet;
     document.head.appendChild(styleSheet);
 
-    UI.themeSupport.addCustomStylesheet(message.styleSheet);
+    self.UI.themeSupport.addCustomStylesheet(message.styleSheet);
     // Add to all the shadow roots that have already been created
     for (let node = document.body; node; node = node.traverseNextNode(document.body)) {
       if (node instanceof ShadowRoot) {
-        UI.themeSupport.injectCustomStyleSheets(node);
+        self.UI.themeSupport.injectCustomStyleSheets(node);
       }
     }
   }
@@ -266,7 +266,7 @@ export class ExtensionServer extends Common.Object {
     const id = message.id;
     // The ids are generated on the client API side and must be unique, so the check below
     // shouldn't be hit unless someone is bypassing the API.
-    if (id in this._clientObjects || UI.inspectorView.hasPanel(id)) {
+    if (id in this._clientObjects || self.UI.inspectorView.hasPanel(id)) {
       return this._status.E_EXISTS(id);
     }
 
@@ -276,7 +276,7 @@ export class ExtensionServer extends Common.Object {
     const panelView =
         new ExtensionServerPanelView(persistentId, message.title, new ExtensionPanel(this, persistentId, id, page));
     this._clientObjects[id] = panelView;
-    UI.inspectorView.addPanel(panelView);
+    self.UI.inspectorView.addPanel(panelView);
     return this._status.OK();
   }
 
@@ -286,7 +286,7 @@ export class ExtensionServer extends Common.Object {
     if (panelView && panelView instanceof ExtensionServerPanelView) {
       panelViewId = panelView.viewId();
     }
-    UI.inspectorView.showPanel(panelViewId);
+    self.UI.inspectorView.showPanel(panelViewId);
   }
 
   _onCreateToolbarButton(message, port) {
@@ -402,7 +402,7 @@ export class ExtensionServer extends Common.Object {
       return this._status.OK();
     }
 
-    const request = SDK.networkLog.requestForURL(message.url);
+    const request = self.SDK.networkLog.requestForURL(message.url);
     if (request) {
       Common.Revealer.reveal(request);
       return this._status.OK();
@@ -428,7 +428,8 @@ export class ExtensionServer extends Common.Object {
   _onReload(message) {
     const options = /** @type {!ExtensionReloadOptions} */ (message.options || {});
 
-    SDK.multitargetNetworkManager.setUserAgentOverride(typeof options.userAgent === 'string' ? options.userAgent : '');
+    self.SDK.multitargetNetworkManager.setUserAgentOverride(
+        typeof options.userAgent === 'string' ? options.userAgent : '');
     let injectedScript;
     if (options.injectedScript) {
       injectedScript = '(function(){' + options.injectedScript + '})()';
@@ -461,7 +462,7 @@ export class ExtensionServer extends Common.Object {
   }
 
   async _onGetHAR() {
-    const requests = SDK.networkLog.requests();
+    const requests = self.SDK.networkLog.requests();
     const harLog = await SDK.HARLog.build(requests);
     for (let i = 0; i < harLog.entries.length; ++i) {
       harLog.entries[i]._requestId = this._requestId(requests[i]);
@@ -640,14 +641,14 @@ export class ExtensionServer extends Common.Object {
      * @this {ExtensionServer}
      */
     function onElementsSubscriptionStarted() {
-      UI.context.addFlavorChangeListener(SDK.DOMNode, this._notifyElementsSelectionChanged, this);
+      self.UI.context.addFlavorChangeListener(SDK.DOMNode, this._notifyElementsSelectionChanged, this);
     }
 
     /**
      * @this {ExtensionServer}
      */
     function onElementsSubscriptionStopped() {
-      UI.context.removeFlavorChangeListener(SDK.DOMNode, this._notifyElementsSelectionChanged, this);
+      self.UI.context.removeFlavorChangeListener(SDK.DOMNode, this._notifyElementsSelectionChanged, this);
     }
 
     this._registerSubscriptionHandler(
@@ -721,8 +722,8 @@ export class ExtensionServer extends Common.Object {
       if (!this._registeredExtensions[extensionOrigin]) {
         // See ExtensionAPI.js for details.
         const injectedAPI = self.buildExtensionAPIInjectedScript(
-            extensionInfo, this._inspectedTabId, UI.themeSupport.themeName(), UI.shortcutRegistry.globalShortcutKeys(),
-            Extensions.extensionServer['_extensionAPITestHook']);
+            extensionInfo, this._inspectedTabId, self.UI.themeSupport.themeName(),
+            self.UI.shortcutRegistry.globalShortcutKeys(), self.Extensions.extensionServer['_extensionAPITestHook']);
         Host.InspectorFrontendHost.setInjectedScriptForOrigin(extensionOrigin, injectedAPI);
         this._registeredExtensions[extensionOrigin] = {name: name};
       }

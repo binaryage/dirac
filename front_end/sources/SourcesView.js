@@ -89,7 +89,7 @@ export class SourcesView extends UI.VBox {
       }
 
       event.returnValue = Common.UIString('DevTools have unsaved changes that will be permanently lost.');
-      UI.viewManager.showView('sources');
+      self.UI.viewManager.showView('sources');
       for (let i = 0; i < unsavedSourceCodes.length; ++i) {
         Common.Revealer.reveal(unsavedSourceCodes[i]);
       }
@@ -124,7 +124,7 @@ export class SourcesView extends UI.VBox {
 
     for (let i = 0; i < shortcuts.length; i++) {
       const shortcut = shortcuts[i];
-      const shortcutKeyText = UI.shortcutRegistry.shortcutTitleForAction(shortcut.actionId);
+      const shortcutKeyText = self.UI.shortcutRegistry.shortcutTitleForAction(shortcut.actionId);
       const listItemElement = list.createChild('div');
       UI.ARIAUtils.markAsListitem(listItemElement);
       const row = listItemElement.createChild('div', 'tabbed-pane-placeholder-row');
@@ -136,7 +136,7 @@ export class SourcesView extends UI.VBox {
       } else {
         row.createChild('div', 'tabbed-pane-no-shortcut').textContent = shortcut.description;
       }
-      const action = UI.actionRegistry.action(shortcut.actionId);
+      const action = self.UI.actionRegistry.action(shortcut.actionId);
       const actionHandler = action.execute.bind(action);
       this._placeholderOptionArray.push({element: row, handler: actionHandler});
     }
@@ -194,7 +194,7 @@ export class SourcesView extends UI.VBox {
   static defaultUISourceCodeScores() {
     /** @type {!Map.<!Workspace.UISourceCode, number>} */
     const defaultScores = new Map();
-    const sourcesView = UI.context.flavor(SourcesView);
+    const sourcesView = self.UI.context.flavor(SourcesView);
     if (sourcesView) {
       const uiSourceCodes = sourcesView._editorContainer.historyUISourceCodes();
       for (let i = 1; i < uiSourceCodes.length; ++i)  // Skip current element
@@ -249,14 +249,14 @@ export class SourcesView extends UI.VBox {
    */
   wasShown() {
     super.wasShown();
-    UI.context.setFlavor(SourcesView, this);
+    self.UI.context.setFlavor(SourcesView, this);
   }
 
   /**
    * @override
    */
   willHide() {
-    UI.context.setFlavor(SourcesView, null);
+    self.UI.context.setFlavor(SourcesView, null);
     this._resetPlaceholderState();
     super.willHide();
   }
@@ -733,7 +733,7 @@ export class SwitchFileActionDelegate {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const sourcesView = UI.context.flavor(SourcesView);
+    const sourcesView = self.UI.context.flavor(SourcesView);
     const currentUISourceCode = sourcesView.currentUISourceCode();
     if (!currentUISourceCode) {
       return false;
@@ -759,7 +759,7 @@ export class ActionDelegate {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const sourcesView = UI.context.flavor(SourcesView);
+    const sourcesView = self.UI.context.flavor(SourcesView);
     if (!sourcesView) {
       return false;
     }

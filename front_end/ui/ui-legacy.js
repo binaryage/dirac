@@ -25,7 +25,7 @@ UI.ActionRegistry = UIModule.ActionRegistry.ActionRegistry;
 UI.Context = UIModule.Context.Context;
 
 /** @type {!UIModule.Context.Context} */
-UI.context = new UIModule.Context.Context();
+self.UI.context = new UIModule.Context.Context();
 
 /** @interface */
 UI.ContextFlavorListener = UIModule.ContextFlavorListener.ContextFlavorListener;
@@ -613,7 +613,7 @@ UI.ZoomManager = UIModule.ZoomManager.ZoomManager;
 UI.ZoomManager.Events = UIModule.ZoomManager.Events;
 
 /** @type {!UI.ActionRegistry} */
-UI.actionRegistry;
+self.UI.actionRegistry;
 
 /** @typedef {{name: string, label: string, title: (string|undefined)}} */
 UI.NamedBitSetFilterUI.Item;
@@ -670,13 +670,13 @@ UI.ListWidget.ValidatorResult;
 UI.PopoverRequest;
 
 /** @type {!UI.ShortcutRegistry} */
-UI.shortcutRegistry;
+self.UI.shortcutRegistry;
 
 /**
  * We cannot initialize it here as localized strings are not loaded yet.
  * @type {!UI.ShortcutsScreen}
  */
-UI.shortcutsScreen;
+self.UI.shortcutsScreen;
 
 /** @typedef {{showMode: string, size: number}} */
 UI.SplitWidget.SettingForOrientation;
@@ -728,7 +728,7 @@ UI.TextEditor.Options;
 UI.AutocompleteConfig;
 
 /** @type {?UI.ThemeSupport} */
-UI.themeSupport;
+self.UI.themeSupport;
 
 /** @typedef {!{title: (string|!Element|undefined), editable: (boolean|undefined) }} */
 UI.Renderer.Options;
@@ -736,9 +736,9 @@ UI.Renderer.Options;
 /**
  * @type {!UI.ViewManager}
  */
-UI.viewManager;
+self.UI.viewManager;
 
 /**
  * @type {!UI.ZoomManager}
  */
-UI.zoomManager;
+self.UI.zoomManager;

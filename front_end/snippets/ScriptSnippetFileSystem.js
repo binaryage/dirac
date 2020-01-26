@@ -157,7 +157,7 @@ export async function evaluateScriptSnippet(uiSourceCode) {
     return;
   }
 
-  const executionContext = UI.context.flavor(SDK.ExecutionContext);
+  const executionContext = self.UI.context.flavor(SDK.ExecutionContext);
   if (!executionContext) {
     return;
   }
@@ -184,7 +184,7 @@ export async function evaluateScriptSnippet(uiSourceCode) {
       /* awaitPromise */ true);
 
   if (result.exceptionDetails) {
-    SDK.consoleModel.addMessage(SDK.ConsoleMessage.fromException(
+    self.SDK.consoleModel.addMessage(SDK.ConsoleMessage.fromException(
         runtimeModel, result.exceptionDetails, /* messageType */ undefined, /* timestamp */ undefined, url));
     return;
   }
@@ -194,7 +194,7 @@ export async function evaluateScriptSnippet(uiSourceCode) {
 
   const scripts = executionContext.debuggerModel.scriptsForSourceURL(url);
   const scriptId = scripts[scripts.length - 1].scriptId;
-  SDK.consoleModel.addMessage(new SDK.ConsoleMessage(
+  self.SDK.consoleModel.addMessage(new SDK.ConsoleMessage(
       runtimeModel, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Info, '',
       SDK.ConsoleMessage.MessageType.Result, url, undefined, undefined, [result.object], undefined, undefined,
       executionContext.id, scriptId));
@@ -217,4 +217,4 @@ export function isSnippetsProject(project) {
       Persistence.FileSystemWorkspaceBinding.fileSystemType(project) === 'snippets';
 }
 
-Persistence.isolatedFileSystemManager.addPlatformFileSystem('snippet://', new SnippetFileSystem());
+self.Persistence.isolatedFileSystemManager.addPlatformFileSystem('snippet://', new SnippetFileSystem());

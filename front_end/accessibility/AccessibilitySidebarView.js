@@ -16,7 +16,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget {
     this._node = null;
     this._axNode = null;
     this._skipNextPullNode = false;
-    this._sidebarPaneStack = UI.viewManager.createStackLocation();
+    this._sidebarPaneStack = self.UI.viewManager.createStackLocation();
     this._breadcrumbsSubPane = new AXBreadcrumbsPane(this);
     this._sidebarPaneStack.showView(this._breadcrumbsSubPane);
     this._ariaSubPane = new ARIAAttributesPane();
@@ -24,7 +24,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget {
     this._axNodeSubPane = new AXNodeSubPane();
     this._sidebarPaneStack.showView(this._axNodeSubPane);
     this._sidebarPaneStack.widget().show(this.element);
-    UI.context.addFlavorChangeListener(SDK.DOMNode, this._pullNode, this);
+    self.UI.context.addFlavorChangeListener(SDK.DOMNode, this._pullNode, this);
     this._pullNode();
   }
 
@@ -131,7 +131,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget {
       this._skipNextPullNode = false;
       return;
     }
-    this.setNode(UI.context.flavor(SDK.DOMNode));
+    this.setNode(self.UI.context.flavor(SDK.DOMNode));
   }
 
   /**
