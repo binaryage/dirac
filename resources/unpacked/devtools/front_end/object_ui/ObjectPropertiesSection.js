@@ -211,9 +211,9 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     if (friendlyName) {
       let numHtml="";
       if (friendlyNameNum) {
-        numHtml = UI.html`<sub class="friendly-num">${friendlyNameNum}</sub>`
+        numHtml = UI.Fragment.html`<sub class="friendly-num">${friendlyNameNum}</sub>`
       }
-      return UI.html`<span class="name friendly-name" title="${name}">${friendlyName}${numHtml}</span>`;
+      return UI.Fragment.html`<span class="name friendly-name" title="${name}">${friendlyName}${numHtml}</span>`;
     }
 
     if (name === null) {

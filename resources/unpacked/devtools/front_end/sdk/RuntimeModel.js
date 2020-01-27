@@ -83,12 +83,12 @@ export class RuntimeModel extends SDKModel {
       if (dirac.hostedInExtension) {
         // in hosted mode we receive flags via dirac_flags url param
         // we pass them down to moduleSetting
-        Common.moduleSetting(flagName).set(dirac.getToggle(flagName));
+        self.Common.moduleSetting(flagName).set(dirac.getToggle(flagName));
       } else {
         // in internal mode we simply use flags from moduleSetting
-        dirac.setToggle(flagName, Common.moduleSetting(flagName).get());
+        dirac.setToggle(flagName, self.Common.moduleSetting(flagName).get());
       }
-      Common.moduleSetting(flagName).addChangeListener(this._diracToggleChanged.bind(this, flagName));
+      self.Common.moduleSetting(flagName).addChangeListener(this._diracToggleChanged.bind(this, flagName));
     }
   }
 
