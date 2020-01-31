@@ -1,4 +1,4 @@
-Accessibility.ARIAMetadata._config = {
+export const config = {
     "attributes": [{
         "type": "IDREF",
         "name": "aria-activedescendant"
