@@ -188,6 +188,7 @@ export function registerCommands(inspectorBackend) {
     }], ["manifestURL"], false);
 
     // Audits.
+    inspectorBackend.registerEvent("Audits.issueAdded", ["issue"]);
     inspectorBackend.registerCommand("Audits.getEncodedResponse", [{
         "name": "requestId",
         "type": "string",
@@ -205,6 +206,8 @@ export function registerCommands(inspectorBackend) {
         "type": "boolean",
         "optional": true
     }], ["body", "originalSize", "encodedSize"], false);
+    inspectorBackend.registerCommand("Audits.disable", [], [], false);
+    inspectorBackend.registerCommand("Audits.enable", [], [], false);
 
     // BackgroundService.
     inspectorBackend.registerEnum("BackgroundService.ServiceName", {
