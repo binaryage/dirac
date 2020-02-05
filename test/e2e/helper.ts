@@ -4,6 +4,7 @@
 
 import {join} from 'path';
 import * as puppeteer from 'puppeteer';
+import {performance} from 'perf_hooks';
 
 interface BrowserAndPages {
   browser: puppeteer.Browser;
@@ -15,7 +16,7 @@ const targetPage = Symbol('TargetPage');
 const frontEndPage = Symbol('DevToolsPage');
 const browserInstance = Symbol('BrowserInstance');
 
-export let resetPages: () => void;
+export let resetPages: (...enabledExperiments: string[]) => void;
 
 // TODO: Remove once Chromium updates its version of Node.js to 12+.
 const globalThis: any = global;
@@ -50,8 +51,8 @@ const collectAllElementsFromPage = async (root?: puppeteer.JSHandle) => {
   }, root);
 }
 
-export const getElementPosition = async (selector: string) => {
-  const element = await $(selector);
+export const getElementPosition = async (selector: string, root?: puppeteer.JSHandle) => {
+  const element = await $(selector, root);
   const position = await element.evaluate(element => {
     // Extract the location values.
     const {left, top, width, height} = element.getBoundingClientRect();
@@ -75,6 +76,31 @@ export const $ = async (selector: string, root?: puppeteer.JSHandle) => {
     return elements.find(element => element.matches(selector));
   }, selector);
   return element;
+};
+
+export const waitFor =
+    async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
+  if (maxTotalTimeout === 0) {
+    maxTotalTimeout = Number.POSITIVE_INFINITY;
+  }
+
+  const start = performance.now();
+  const timeout = (duration: number) => new Promise((resolve) => setTimeout(resolve, duration));
+  do {
+    await timeout(100);
+    const element = await $(selector, root);
+    if (element.asElement()) {
+      return element;
+    }
+  } while (performance.now() - start < maxTotalTimeout);
+
+  throw new Error(`Unable to find element with selector ${selector}`);
+}
+
+export const debuggerStatement = (frontend: puppeteer.Page) => {
+  return frontend.evaluate(() => {
+    debugger;
+  });
 };
 
 export const store = (browser, target, frontend, reset) => {
