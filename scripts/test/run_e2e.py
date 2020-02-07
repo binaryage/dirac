@@ -39,10 +39,25 @@ def popen(arguments, cwd=None, env=None, capture=False):
     if not capture:
         return process
 
+    def handle_signal(signum, frame):
+        print 'Sending signal (%i) to process' % signum
+        process.send_signal(signum)
+        process.terminate()
+
+    # Propagate sigterm / int to the child process.
+    original_sigint = signal.getsignal(signal.SIGINT)
+    original_sigterm = signal.getsignal(signal.SIGTERM)
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+
     for line in iter(process.stdout.readline, ''):
         sys.stdout.write(line)
         if process.returncode == 0:
             sys.stdout.write('done')
+
+    # Restore the original sigterm / int handlers.
+    signal.signal(signal.SIGINT, original_sigint)
+    signal.signal(signal.SIGTERM, original_sigterm)
 
     return process
 
@@ -55,26 +70,22 @@ def to_platform_path_exact(filepath):
     return output.strip().replace('\\', '\\\\')
 
 
-def start_hosted_mode_server():
-    proc = popen([devtools_paths.node_path(), devtools_paths.hosted_mode_script_path()])
-    hosted_mode_pid = proc.pid
-    return hosted_mode_pid
-
-
-def stop_hosted_mode_server(hosted_mode_pid):
-    if hosted_mode_pid is None:
-        return
-
-    os.kill(hosted_mode_pid, signal.SIGTERM)
-    hosted_mode_pid = None
-
-
 def compile_typescript_test_files():
     tsc_compile_errors_found = False
     cwd = devtools_paths.devtools_root_path()
     env = os.environ.copy()
+    shared_path = os.path.join(cwd, 'test/shared')
     e2e_test_path = os.path.join(cwd, 'test/e2e')
 
+    # Compile shared code, e.g. helper and runner.
+    print("Compiling shared TypeScript")
+    exec_command = [devtools_paths.node_path(), devtools_paths.typescript_compiler_path(), '-p', shared_path]
+    tsc_compile_proc = popen(exec_command, cwd=cwd, env=env, capture=True)
+    tsc_compile_proc.communicate()
+    if tsc_compile_proc.returncode != 0:
+        tsc_compile_errors_found = True
+
+    # Compile e2e tests, e.g. helper and runner.
     print("Compiling e2e TypeScript")
     exec_command = [devtools_paths.node_path(), devtools_paths.typescript_compiler_path(), '-p', e2e_test_path]
     tsc_compile_proc = popen(exec_command, cwd=cwd, env=env, capture=True)
@@ -88,11 +99,13 @@ def compile_typescript_test_files():
 def run_e2e_test(chrome_binary):
     e2e_errors_found = False
     cwd = devtools_paths.devtools_root_path()
-    e2e_test_path = os.path.join(cwd, 'test/e2e/runner.js')
+    e2e_test_path = os.path.join(cwd, 'test/shared/runner.js')
+    e2e_test_list = os.path.join(cwd, 'test/e2e/test-list.js')
     exec_command = [devtools_paths.node_path(), e2e_test_path]
 
     env = os.environ.copy()
     env['CHROME_BIN'] = chrome_binary
+    env['TEST_LIST'] = e2e_test_list
 
     e2e_proc = popen(exec_command, cwd=cwd, env=env, capture=True)
     e2e_proc.communicate()
@@ -126,17 +139,13 @@ def main():
     print('Using Chromium binary (%s)\n' % chrome_binary)
 
     errors_found = False
-    hosted_mode_pid = None
     try:
-        hosted_mode_pid = start_hosted_mode_server()
         errors_found = compile_typescript_test_files()
         if (errors_found):
             raise Exception('Typescript failed to compile')
         errors_found = run_e2e_test(chrome_binary)
     except Exception as err:
         print(err)
-    finally:
-        stop_hosted_mode_server(hosted_mode_pid)
 
     if errors_found:
         print('ERRORS DETECTED')
