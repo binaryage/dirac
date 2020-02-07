@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {join} from 'path';
 import * as puppeteer from 'puppeteer';
 import {performance} from 'perf_hooks';
 
@@ -54,6 +53,9 @@ const collectAllElementsFromPage = async (root?: puppeteer.JSHandle) => {
 export const getElementPosition = async (selector: string, root?: puppeteer.JSHandle) => {
   const element = await $(selector, root);
   const position = await element.evaluate(element => {
+    if (!element) {
+      return {};
+    }
     // Extract the location values.
     const {left, top, width, height} = element.getBoundingClientRect();
     return {
@@ -61,7 +63,30 @@ export const getElementPosition = async (selector: string, root?: puppeteer.JSHa
       y: top + height * 0.5,
     };
   });
+  if (position.x === undefined || position.y === undefined) {
+    throw new Error(`Unable to find element with selector "${selector}"`);
+  }
   return position;
+};
+
+export const click =
+    async (selector: string, options?: {root?: puppeteer.JSHandle, clickOptions?: puppeteer.ClickOptions}) => {
+  const frontend: puppeteer.Page = globalThis[frontEndPage];
+  if (!frontend) {
+    throw new Error('Unable to locate DevTools frontend page. Was it stored first?');
+  }
+  const clickableElement = await getElementPosition(selector, options?.root);
+
+  if (!clickableElement) {
+    throw new Error(`Unable to locate clickable element "${selector}".`);
+  }
+
+  // Click on the button and wait for the console to load. The reason we use this method
+  // rather than elementHandle.click() is because the frontend attaches the behavior to
+  // a 'mousedown' event (not the 'click' event). To avoid attaching the test behavior
+  // to a specific event we instead locate the button in question and ask Puppeteer to
+  // click on it instead.
+  await frontend.mouse.click(clickableElement.x, clickableElement.y, options?.clickOptions);
 };
 
 // Get a single element handle, across Shadow DOM boundaries.
@@ -72,10 +97,24 @@ export const $ = async (selector: string, root?: puppeteer.JSHandle) => {
   }
   await collectAllElementsFromPage(root);
   const element = await frontend.evaluateHandle(selector => {
-    const elements = globalThis.__elements;
+    const elements: Element[] = globalThis.__elements;
     return elements.find(element => element.matches(selector));
   }, selector);
   return element;
+};
+
+// Get a multiple element handles, across Shadow DOM boundaries.
+export const $$ = async (selector: string, root?: puppeteer.JSHandle) => {
+  const frontend: puppeteer.Page = globalThis[frontEndPage];
+  if (!frontend) {
+    throw new Error('Unable to locate DevTools frontend page. Was it stored first?');
+  }
+  await collectAllElementsFromPage(root);
+  const elements = await frontend.evaluateHandle(selector => {
+    const elements: Element[] = globalThis.__elements;
+    return elements.filter(element => element.matches(selector));
+  }, selector);
+  return elements;
 };
 
 export const waitFor =

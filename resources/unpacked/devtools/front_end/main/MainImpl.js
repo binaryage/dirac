@@ -138,6 +138,7 @@ export class MainImpl {
     Root.Runtime.experiments.register('mediaInspector', 'Media Element Inspection');
     Root.Runtime.experiments.register('nativeHeapProfiler', 'Native memory sampling heap profiler', true);
     Root.Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
+    Root.Runtime.experiments.register('issuesPane', 'Issues Pane');
     Root.Runtime.experiments.register(
         'recordCoverageWithPerformanceTracing', 'Record coverage while performance tracing');
     Root.Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
@@ -155,7 +156,7 @@ export class MainImpl {
     Root.Runtime.experiments.register(
         'timelineV8RuntimeCallStats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
     Root.Runtime.experiments.register('timelineWebGL', 'Timeline: WebGL-based flamechart');
-    Root.Runtime.experiments.register('timelineReplayEvent', 'Timeline: Replay input events');
+    Root.Runtime.experiments.register('timelineReplayEvent', 'Timeline: Replay input events', true);
     Root.Runtime.experiments.register('wasmDWARFDebugging', 'WebAssembly Debugging: Enable DWARF support');
 
     Root.Runtime.experiments.cleanUpStaleExperiments();

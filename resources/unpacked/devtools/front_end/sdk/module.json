@@ -454,6 +454,7 @@
         "CookieModel.js",
         "CookieParser.js",
         "ProfileTreeModel.js",
+        "Issue.js",
         "IssuesModel.js",
         "ServerTiming.js",
         "CPUProfileDataModel.js",

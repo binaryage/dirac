@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {join} from 'path';
+
 export const testList = [
-  './hello-world/hello-world.js',
-  './sources/script-in-multiple-workers.js',
-  './console/console-message-format.js',
+  join(__dirname, '.', 'console', 'console-message-format.js'),
+  join(__dirname, '.', 'network', 'network-datagrid.js'),
+  join(__dirname, '.', 'sources', 'script-in-multiple-workers.js'),
+  join(__dirname, '.', 'sources', 'debug-raw-wasm.js'),
 ];
