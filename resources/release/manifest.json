@@ -39,7 +39,6 @@
   },
   "permissions": [
     "storage",
-    "webRequest",
     "http://*/json",
     "activeTab"
   ],
