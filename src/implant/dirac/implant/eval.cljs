@@ -390,6 +390,15 @@
 
 ; -- probing of page context ------------------------------------------------------------------------------------------------
 
+(defn go-ask-is-shadow-present? []
+  (go
+    (let [res (<! (go-call-eval-with-timeout! :default "typeof SHADOW_ENV" 2000 true))]
+      (if-not (= (first res) ::ok)
+        (do
+          (error "Failed to detect shadow-cljs presence" (pr-str res))
+          false)
+        (= (second res) "object")))))
+
 (defn go-ask-is-runtime-present? []
   (go
     (let [[value error] (<! (go-eval-in-context! :default "dirac.runtime" true))]

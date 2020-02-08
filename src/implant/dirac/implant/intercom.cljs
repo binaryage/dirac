@@ -104,6 +104,11 @@
          (if-not (or (re-find #"Cannot read property 'installed_QMARK_' of undefined" reason) (= reason "Uncaught"))          ; this is known and expected error when dirac.runtime is not present
            (str "\n" (cuerdas/escape-html reason))))))
 
+(defn ^:dynamic no-playground-due-to-shadow-msg []
+  (str "Dirac runtime wasn't detected but it appears you are using shadow-cljs as the build tool.\n"
+       "Normally we would inject playground project to get ad-hoc REPL working here "
+       "but it is currently not supported with shadow-cljs."))
+
 (defn check-agent-version! [agent-version]
   (let [our-version implant-version/version]
     (when-not (= agent-version our-version)
@@ -327,14 +332,16 @@
     (when-not *last-connection-url*
       (reset-eval!)
       (display-prompt-status "Checking for Dirac Runtime presence in your app..." :info)
-      (let [present? (<! (eval/go-ask-is-runtime-present?))]
-        (if (true? present?)
+      (let [runtime-present? (<! (eval/go-ask-is-runtime-present?))]
+        (if (true? runtime-present?)
           (if (<! (eval/go-ask-is-runtime-repl-enabled?))
             (<! (go-start-repl!))
             (display-prompt-status (repl-support-not-enabled-msg)))
           (if (or no-playground? (hosted?))
-            (display-prompt-status (missing-runtime-msg present?))
-            (<! (go-start-playground-repl!))))))))
+            (display-prompt-status (missing-runtime-msg runtime-present?))
+            (if (eval/go-ask-is-shadow-present?)
+              (display-prompt-status (no-playground-due-to-shadow-msg))
+              (<! (go-start-playground-repl!)))))))))
 
 (defn go-react-on-global-object-cleared! []
   (reset-repl-state!)
