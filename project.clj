@@ -12,7 +12,7 @@
 
 (def required-deps
   [['org.clojure/core.async "0.7.559"]
-   ['org.clojure/tools.logging "0.5.0"]
+   ['org.clojure/tools.logging "0.6.0"]
    ['org.clojure/tools.cli "0.4.2"]
    ['nrepl/nrepl "0.6.0"]
    ['binaryage/env-config "0.2.2"]
@@ -26,13 +26,13 @@
    ['clj-sub-command "0.5.1"]
    ['ring/ring-core "1.8.0"]
    ['ring/ring-defaults "0.3.2"]
-   ['binaryage/devtools "0.9.11"]])
+   ['binaryage/devtools "1.0.0"]])
 
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.7.0" :scope "test"]
-   ['binaryage/chromex "0.8.5" :scope "test"]
+   ['binaryage/chromex "0.8.6" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.46" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
