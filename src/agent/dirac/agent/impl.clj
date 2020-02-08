@@ -103,7 +103,6 @@
             true (let [agent @current-agent]
                    (assert agent)
                    (log/debug "Started Dirac Agent" (str agent))
-                   (println)
                    (println (get-agent-info agent))
                    true)                                                                                                      ; success
             false (do
