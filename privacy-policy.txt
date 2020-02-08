@@ -1,0 +1,8 @@
+Dirac Chrome Extension Privacy Policy
+
+1. Dirac bundles and uses official Chrome DevTools codebase[1].
+2. Our code modifies Chrome DevTools in several places to improve ClojureScript experience.
+3. Dirac does not call home in any way.
+4. We do not collect any data from Dirac usage.
+
+[1] https://github.com/ChromeDevTools/devtools-frontend
