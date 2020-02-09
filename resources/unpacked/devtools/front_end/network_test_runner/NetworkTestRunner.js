@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ NetworkTestRunner.networkWaterfallColumn = function() {
 };
 
 NetworkTestRunner.networkRequests = function() {
-  return Array.from(SDK.networkLog.requests());
+  return Array.from(self.SDK.networkLog.requests());
 };
 
 NetworkTestRunner.dumpNetworkRequests = function() {
@@ -75,7 +75,7 @@ NetworkTestRunner.dumpNetworkRequests = function() {
 };
 
 NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo = function() {
-  for (const request of SDK.networkLog.requests()) {
+  for (const request of self.SDK.networkLog.requests()) {
     TestRunner.addResult(`* ${request.url()}`);
     TestRunner.addResult(`  failed: ${!!request.failed}`);
     TestRunner.addResult(`  statusCode: ${request.statusCode}`);

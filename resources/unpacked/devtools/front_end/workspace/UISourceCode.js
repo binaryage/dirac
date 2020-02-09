@@ -28,24 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+
 import {Events as WorkspaceImplEvents, Project, projectTypes} from './WorkspaceImpl.js';  // eslint-disable-line no-unused-vars
 
 /**
- * @implements {Common.ContentProvider}
+ * @implements {Common.ContentProvider.ContentProvider}
  * @unrestricted
  */
-export class UISourceCode extends Common.Object {
+export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!Project} project
    * @param {string} url
-   * @param {!Common.ResourceType} contentType
+   * @param {!Common.ResourceType.ResourceType} contentType
    */
   constructor(project, url, contentType) {
     super();
     this._project = project;
     this._url = url;
 
-    const parsedURL = Common.ParsedURL.fromString(url);
+    const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
     if (parsedURL) {
       this._origin = parsedURL.securityOrigin();
       this._parentURL = this._origin + parsedURL.folderPathComponents;
@@ -135,7 +137,7 @@ export class UISourceCode extends Common.Object {
    */
   displayName(skipTrim) {
     if (!this._name) {
-      return Common.UIString('(index)');
+      return Common.UIString.UIString('(index)');
     }
     let name = this._name;
     try {
@@ -182,14 +184,14 @@ export class UISourceCode extends Common.Object {
      * @param {boolean} success
      * @param {string=} newName
      * @param {string=} newURL
-     * @param {!Common.ResourceType=} newContentType
+     * @param {!Common.ResourceType.ResourceType=} newContentType
      * @this {UISourceCode}
      */
     function innerCallback(success, newName, newURL, newContentType) {
       if (success) {
         this._updateName(
             /** @type {string} */ (newName), /** @type {string} */ (newURL),
-            /** @type {!Common.ResourceType} */ (newContentType));
+            /** @type {!Common.ResourceType.ResourceType} */ (newContentType));
       }
       fulfill(success);
     }
@@ -202,7 +204,7 @@ export class UISourceCode extends Common.Object {
   /**
    * @param {string} name
    * @param {string} url
-   * @param {!Common.ResourceType=} contentType
+   * @param {!Common.ResourceType.ResourceType=} contentType
    */
   _updateName(name, url, contentType) {
     const oldURL = this._url;
@@ -229,7 +231,7 @@ export class UISourceCode extends Common.Object {
 
   /**
    * @override
-   * @return {!Common.ResourceType}
+   * @return {!Common.ResourceType.ResourceType}
    */
   contentType() {
     return this._contentType;
@@ -466,7 +468,7 @@ export class UISourceCode extends Common.Object {
    * @return {string}
    */
   extension() {
-    return Common.ParsedURL.extractExtension(this._name);
+    return Common.ParsedURL.ParsedURL.extractExtension(this._name);
   }
 
   /**

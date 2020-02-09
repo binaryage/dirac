@@ -1,19 +1,19 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import {FilePathScoreFunction} from './FilePathScoreFunction.js';
 
 /**
  * @unrestricted
  */
-export default class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidget.Provider {
+export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidget.Provider {
   constructor() {
     super();
 
     this._queryLineNumberAndColumnNumber = '';
     this._defaultScores = null;
-    this._scorer = new Sources.FilePathScoreFunction('');
+    this._scorer = new FilePathScoreFunction('');
   }
 
   /**
@@ -31,7 +31,7 @@ export default class FilteredUISourceCodeListProvider extends QuickOpen.Filtered
   _populate(skipProject) {
     /** @type {!Array.<!Workspace.UISourceCode>} */
     this._uiSourceCodes = [];
-    const projects = Workspace.workspace.projects().filter(this.filterProject.bind(this));
+    const projects = self.Workspace.workspace.projects().filter(this.filterProject.bind(this));
     for (let i = 0; i < projects.length; ++i) {
       if (skipProject && projects[i] === skipProject) {
         continue;
@@ -46,7 +46,7 @@ export default class FilteredUISourceCodeListProvider extends QuickOpen.Filtered
    * @return {boolean}
    */
   _filterUISourceCode(uiSourceCode) {
-    const binding = Persistence.persistence.binding(uiSourceCode);
+    const binding = self.Persistence.persistence.binding(uiSourceCode);
     return !binding || binding.fileSystem === uiSourceCode;
   }
 
@@ -108,12 +108,12 @@ export default class FilteredUISourceCodeListProvider extends QuickOpen.Filtered
 
     if (this._query !== query) {
       this._query = query;
-      this._scorer = new Sources.FilePathScoreFunction(query);
+      this._scorer = new FilePathScoreFunction(query);
     }
 
     let multiplier = 10;
     if (uiSourceCode.project().type() === Workspace.projectTypes.FileSystem &&
-        !Persistence.persistence.binding(uiSourceCode)) {
+        !self.Persistence.persistence.binding(uiSourceCode)) {
       multiplier = 5;
     }
 
@@ -133,7 +133,7 @@ export default class FilteredUISourceCodeListProvider extends QuickOpen.Filtered
     const uiSourceCode = this._uiSourceCodes[itemIndex];
     const fullDisplayName = uiSourceCode.fullDisplayName();
     const indexes = [];
-    new Sources.FilePathScoreFunction(query).score(fullDisplayName, indexes);
+    new FilePathScoreFunction(query).score(fullDisplayName, indexes);
     const fileNameIndex = fullDisplayName.lastIndexOf('/');
 
     titleElement.classList.add('monospace');
@@ -235,8 +235,9 @@ export default class FilteredUISourceCodeListProvider extends QuickOpen.Filtered
    * @override
    */
   attach() {
-    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
-    Workspace.workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
+    self.Workspace.workspace.addEventListener(
+        Workspace.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
+    self.Workspace.workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
     this._populate();
   }
 
@@ -244,19 +245,10 @@ export default class FilteredUISourceCodeListProvider extends QuickOpen.Filtered
    * @override
    */
   detach() {
-    Workspace.workspace.removeEventListener(
+    self.Workspace.workspace.removeEventListener(
         Workspace.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
-    Workspace.workspace.removeEventListener(Workspace.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
+    self.Workspace.workspace.removeEventListener(Workspace.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
     this._queryLineNumberAndColumnNumber = '';
     this._defaultScores = null;
   }
 }
-
-/* Legacy exported object */
-self.Sources = self.Sources || {};
-
-/* Legacy exported object */
-Sources = Sources || {};
-
-/** @constructor */
-Sources.FilteredUISourceCodeListProvider = FilteredUISourceCodeListProvider;

@@ -220,13 +220,13 @@ export class ConsoleViewMessage {
           break;
         case SDK.ConsoleMessage.MessageType.Clear:
           messageElement = createElementWithClass('span', 'console-info');
-          if (Common.moduleSetting('preserveConsoleLog').get()) {
+          if (self.Common.settings.moduleSetting('preserveConsoleLog').get()) {
             messageElement.textContent = Common.UIString('console.clear() was prevented due to \'Preserve log\'');
           } else {
             messageElement.textContent = Common.UIString('Console was cleared');
           }
           messageElement.title =
-              ls`Clear all messages with ${UI.shortcutRegistry.shortcutTitleForAction('console.clear')}`;
+              ls`Clear all messages with ${self.UI.shortcutRegistry.shortcutTitleForAction('console.clear')}`;
           break;
         case SDK.ConsoleMessage.MessageType.Dir: {
           const obj = this._message.parameters ? this._message.parameters[0] : undefined;
@@ -970,7 +970,8 @@ export class ConsoleViewMessage {
     element.style.setProperty('-webkit-text-stroke', '0', 'important');
     element.style.setProperty('text-decoration', 'underline', 'important');
 
-    const themedColor = UI.themeSupport.patchColorText('rgb(33%, 33%, 33%)', UI.ThemeSupport.ColorUsage.Foreground);
+    const themedColor =
+        self.UI.themeSupport.patchColorText('rgb(33%, 33%, 33%)', UI.ThemeSupport.ColorUsage.Foreground);
     element.style.setProperty('color', themedColor, 'important');
 
     let backgroundColor = 'hsl(0, 0%, 100%)';
@@ -980,7 +981,7 @@ export class ConsoleViewMessage {
       backgroundColor = 'hsl(50, 100%, 95%)';
     }
     const themedBackgroundColor =
-        UI.themeSupport.patchColorText(backgroundColor, UI.ThemeSupport.ColorUsage.Background);
+        self.UI.themeSupport.patchColorText(backgroundColor, UI.ThemeSupport.ColorUsage.Background);
     element.style.setProperty('background-color', themedBackgroundColor, 'important');
   }
 
@@ -1009,7 +1010,7 @@ export class ConsoleViewMessage {
       return;
     }
 
-    if (Common.moduleSetting('consoleTimestampsEnabled').get()) {
+    if (self.Common.settings.moduleSetting('consoleTimestampsEnabled').get()) {
       if (!this._timestampElement) {
         this._timestampElement = createElementWithClass('span', 'console-timestamp');
       }

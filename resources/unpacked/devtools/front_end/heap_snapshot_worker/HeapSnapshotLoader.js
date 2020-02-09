@@ -28,16 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as TextUtils from '../text_utils/text_utils.js';
+
+import {HeapSnapshotHeader, HeapSnapshotProgress, JSHeapSnapshot} from './HeapSnapshot.js';  // eslint-disable-line no-unused-vars
+import {HeapSnapshotWorkerDispatcher} from './HeapSnapshotWorkerDispatcher.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
 export class HeapSnapshotLoader {
   /**
-   * @param {!HeapSnapshotWorker.HeapSnapshotWorkerDispatcher} dispatcher
+   * @param {!HeapSnapshotWorkerDispatcher} dispatcher
    */
   constructor(dispatcher) {
     this._reset();
-    this._progress = new HeapSnapshotWorker.HeapSnapshotProgress(dispatcher);
+    this._progress = new HeapSnapshotProgress(dispatcher);
     this._buffer = '';
     this._dataCallback = null;
     this._done = false;
@@ -61,11 +66,11 @@ export class HeapSnapshotLoader {
   }
 
   /**
-   * @return {!HeapSnapshotWorker.JSHeapSnapshot}
+   * @return {!JSHeapSnapshot}
    */
   buildSnapshot() {
     this._progress.updateStatus(ls`Processing snapshot\u2026`);
-    const result = new HeapSnapshotWorker.JSHeapSnapshot(this._snapshot, this._progress);
+    const result = new JSHeapSnapshot(this._snapshot, this._progress);
     this._reset();
     return result;
   }
@@ -186,10 +191,10 @@ export class HeapSnapshotLoader {
 
     this._progress.updateStatus(ls`Loading snapshot info\u2026`);
     const json = this._json.slice(snapshotTokenIndex + snapshotToken.length + 1);
-    this._jsonTokenizer = new TextUtils.BalancedJSONTokenizer(metaJSON => {
+    this._jsonTokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(metaJSON => {
       this._json = this._jsonTokenizer.remainder();
       this._jsonTokenizer = null;
-      this._snapshot.snapshot = /** @type {!HeapSnapshotWorker.HeapSnapshotHeader} */ (JSON.parse(metaJSON));
+      this._snapshot.snapshot = /** @type {!HeapSnapshotHeader} */ (JSON.parse(metaJSON));
     });
     this._jsonTokenizer.write(json);
     while (this._jsonTokenizer) {
@@ -238,12 +243,3 @@ export class HeapSnapshotLoader {
     this._parseStringsArray();
   }
 }
-
-/* Legacy exported object */
-self.HeapSnapshotWorker = self.HeapSnapshotWorker || {};
-
-/* Legacy exported object */
-HeapSnapshotWorker = HeapSnapshotWorker || {};
-
-/** @constructor */
-HeapSnapshotWorker.HeapSnapshotLoader = HeapSnapshotLoader;

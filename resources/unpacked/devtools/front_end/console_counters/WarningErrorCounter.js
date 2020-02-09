@@ -14,13 +14,13 @@ export class WarningErrorCounter {
     this._toolbarItem = new UI.ToolbarItem(countersWrapper);
 
     this._counter = createElement('div');
-    this._counter.addEventListener('click', Common.console.show.bind(Common.console), false);
+    this._counter.addEventListener('click', self.Common.console.show.bind(self.Common.console), false);
     const shadowRoot = UI.createShadowRootWithCoreStyles(this._counter, 'console_counters/errorWarningCounter.css');
     countersWrapper.appendChild(this._counter);
 
     this._violationCounter = createElement('div');
     this._violationCounter.addEventListener('click', () => {
-      UI.viewManager.showView('audits');
+      self.UI.viewManager.showView('audits');
     });
     const violationShadowRoot =
         UI.createShadowRootWithCoreStyles(this._violationCounter, 'console_counters/errorWarningCounter.css');
@@ -40,9 +40,9 @@ export class WarningErrorCounter {
     this._violationCount = -1;
     this._throttler = new Common.Throttler(100);
 
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._update, this);
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._update, this);
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, this._update, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._update, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._update, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, this._update, this);
     this._update();
   }
 
@@ -85,9 +85,9 @@ export class WarningErrorCounter {
    * @return {!Promise}
    */
   _updateThrottled() {
-    const errors = SDK.consoleModel.errors();
-    const warnings = SDK.consoleModel.warnings();
-    const violations = SDK.consoleModel.violations();
+    const errors = self.SDK.consoleModel.errors();
+    const warnings = self.SDK.consoleModel.warnings();
+    const violations = self.SDK.consoleModel.violations();
     if (errors === this._errorCount && warnings === this._warningCount && violations === this._violationCount) {
       return Promise.resolve();
     }
@@ -137,7 +137,7 @@ export class WarningErrorCounter {
 
     this._counter.title = this._titles;
     UI.ARIAUtils.setAccessibleName(this._counter, this._titles);
-    UI.inspectorView.toolbarItemResized();
+    self.UI.inspectorView.toolbarItemResized();
     this._updatingForTest = false;
     this._updatedForTest();
     return Promise.resolve();

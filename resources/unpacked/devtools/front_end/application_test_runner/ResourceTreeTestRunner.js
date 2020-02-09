@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,7 @@ ApplicationTestRunner.dumpResourcesTree = function() {
 
   if (!ApplicationTestRunner._testSourceNavigator) {
     ApplicationTestRunner._testSourceNavigator = new Sources.NetworkNavigatorView();
-    ApplicationTestRunner._testSourceNavigator.show(UI.inspectorView.element);
+    ApplicationTestRunner._testSourceNavigator.show(self.UI.inspectorView.element);
   }
 
   SourcesTestRunner.dumpNavigatorViewInAllModes(ApplicationTestRunner._testSourceNavigator);

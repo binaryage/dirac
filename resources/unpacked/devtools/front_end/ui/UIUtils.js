@@ -1175,7 +1175,6 @@ export class LongClickController extends Common.ObjectWrapper.ObjectWrapper {
      */
     function keyDown(e) {
       if (this._editKey(e)) {
-        e.consume(true);
         const callback = this._callback;
         this._longClickInterval = setTimeout(callback.bind(null, e), LongClickController.TIME_MS);
       }
@@ -1187,7 +1186,6 @@ export class LongClickController extends Common.ObjectWrapper.ObjectWrapper {
      */
     function keyUp(e) {
       if (this._editKey(e)) {
-        e.consume(true);
         this.reset();
       }
     }
@@ -1244,10 +1242,10 @@ export function initializeUIUtils(document, themeSetting) {
     document.defaultView.requestAnimationFrame(() => void(UI._keyboardFocus = false));
   }, true);
 
-  if (!UI.themeSupport) {
-    UI.themeSupport = new ThemeSupport(themeSetting);
+  if (!self.UI.themeSupport) {
+    self.UI.themeSupport = new ThemeSupport(themeSetting);
   }
-  UI.themeSupport.applyTheme(document);
+  self.UI.themeSupport.applyTheme(document);
 
   const body = /** @type {!Element} */ (document.body);
   appendStyle(body, 'ui/inspectorStyle.css');
@@ -2088,18 +2086,22 @@ export class ConfirmDialog {
     const dialog = new Dialog();
     dialog.setSizeBehavior(SizeBehavior.MeasureContent);
     dialog.setDimmed(true);
+    UI.ARIAUtils.setAccessibleName(dialog.contentElement, message);
     const shadowRoot = createShadowRootWithCoreStyles(dialog.contentElement, 'ui/confirmDialog.css');
     const content = shadowRoot.createChild('div', 'widget');
     content.createChild('div', 'message').createChild('span').textContent = message;
     const buttonsBar = content.createChild('div', 'button');
     const result = await new Promise(resolve => {
-      buttonsBar.appendChild(createTextButton(Common.UIString.UIString('OK'), () => resolve(true), '', true));
-      buttonsBar.appendChild(createTextButton(Common.UIString.UIString('Cancel'), () => resolve(false)));
+      const okButton = createTextButton(
+          /* text= */ ls`OK`, /* clickHandler= */ () => resolve(true), /* className= */ '', /* primary= */ true);
+      buttonsBar.appendChild(okButton);
+      buttonsBar.appendChild(createTextButton(ls`Cancel`, () => resolve(false)));
       dialog.setOutsideClickCallback(event => {
         event.consume();
         resolve(false);
       });
       dialog.show(where);
+      okButton.focus();
     });
     dialog.hide();
     return result;
@@ -2168,3 +2170,6 @@ export function formatTimestamp(timestamp, full) {
     return valueString.padStart(length, '0');
   }
 }
+
+/** @typedef {!{title: (string|!Element|undefined), editable: (boolean|undefined) }} */
+export let Options;

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+
 export const DiffWrapper = {
   /**
    * @param {string} text1
@@ -24,8 +26,8 @@ export const DiffWrapper = {
    * @return {!Diff.Diff.DiffArray}
    */
   lineDiff: function(lines1, lines2) {
-    /** @type {!Common.CharacterIdMap<string>} */
-    const idMap = new Common.CharacterIdMap();
+    /** @type {!Common.CharacterIdMap.CharacterIdMap<string>} */
+    const idMap = new Common.CharacterIdMap.CharacterIdMap();
     const text1 = lines1.map(line => idMap.toChar(line)).join('');
     const text2 = lines2.map(line => idMap.toChar(line)).join('');
 
@@ -90,3 +92,6 @@ export const Operation = {
   Delete: -1,
   Edit: 2
 };
+
+/** @typedef {!Array<!{0: !Operation, 1: !Array<string>}>} */
+export let DiffArray;

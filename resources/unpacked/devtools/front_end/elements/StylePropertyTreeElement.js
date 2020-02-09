@@ -137,7 +137,7 @@ export class StylePropertyTreeElement extends UI.TreeElement {
 
     const swatch = InlineEditor.ColorSwatch.create();
     swatch.setColor(color);
-    swatch.setFormat(Common.Color.detectColorFormat(swatch.color()));
+    swatch.setFormat(Common.Settings.detectColorFormat(swatch.color()));
     this._addColorContrastInfo(swatch);
 
     return swatch;
@@ -168,7 +168,7 @@ export class StylePropertyTreeElement extends UI.TreeElement {
 
     const swatch = InlineEditor.ColorSwatch.create();
     swatch.setColor(color);
-    swatch.setFormat(Common.Color.detectColorFormat(swatch.color()));
+    swatch.setFormat(Common.Settings.detectColorFormat(swatch.color()));
     swatch.setText(text, computedValue);
     this._addColorContrastInfo(swatch);
     return swatch;
@@ -258,7 +258,7 @@ export class StylePropertyTreeElement extends UI.TreeElement {
       return createTextNode(propertyValue);
     }
 
-    const indent = Common.moduleSetting('textEditorIndent').get();
+    const indent = self.Common.settings.moduleSetting('textEditorIndent').get();
     const container = createDocumentFragment();
     for (const result of splitResult) {
       const value = result.value.trim();
@@ -469,7 +469,7 @@ export class StylePropertyTreeElement extends UI.TreeElement {
       return;
     }
 
-    const indent = Common.moduleSetting('textEditorIndent').get();
+    const indent = self.Common.settings.moduleSetting('textEditorIndent').get();
     this.listItemElement.createChild('span', 'styles-clipboard-only')
         .createTextChild(indent + (this.property.disabled ? '/* ' : ''));
     this.listItemElement.appendChild(this.nameElement);
@@ -573,7 +573,7 @@ export class StylePropertyTreeElement extends UI.TreeElement {
       return;
     }
     const propertyNameClicked = element === this.nameElement;
-    const uiLocation = Bindings.cssWorkspaceBinding.propertyUILocation(this.property, propertyNameClicked);
+    const uiLocation = self.Bindings.cssWorkspaceBinding.propertyUILocation(this.property, propertyNameClicked);
     if (uiLocation) {
       Common.Revealer.reveal(uiLocation, omitFocus);
     }

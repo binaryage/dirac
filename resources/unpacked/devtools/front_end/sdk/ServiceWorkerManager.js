@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+
 import {Events as RuntimeModelEvents, ExecutionContext, RuntimeModel} from './RuntimeModel.js';  // eslint-disable-line no-unused-vars
 import {Capability, SDKModel, Target, Type} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
@@ -46,7 +48,7 @@ export class ServiceWorkerManager extends SDKModel {
     /** @type {!Map.<string, !ServiceWorkerRegistration>} */
     this._registrations = new Map();
     this.enable();
-    this._forceUpdateSetting = Common.settings.createSetting('serviceWorkerUpdateOnReload', false);
+    this._forceUpdateSetting = self.Common.settings.createSetting('serviceWorkerUpdateOnReload', false);
     if (this._forceUpdateSetting.get()) {
       this._forceUpdateSettingChanged();
     }
@@ -145,7 +147,7 @@ export class ServiceWorkerManager extends SDKModel {
     if (!registration) {
       return;
     }
-    const origin = Common.ParsedURL.extractOrigin(registration.scopeURL);
+    const origin = Common.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
     this._agent.deliverPushMessage(origin, registrationId, data);
   }
 
@@ -159,7 +161,7 @@ export class ServiceWorkerManager extends SDKModel {
     if (!registration) {
       return;
     }
-    const origin = Common.ParsedURL.extractOrigin(registration.scopeURL);
+    const origin = Common.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
     this._agent.dispatchSyncEvent(origin, registrationId, tag, lastChance);
   }
 
@@ -172,7 +174,7 @@ export class ServiceWorkerManager extends SDKModel {
     if (!registration) {
       return;
     }
-    const origin = Common.ParsedURL.extractOrigin(registration.scopeURL);
+    const origin = Common.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
     this._agent.dispatchPeriodicSyncEvent(origin, registrationId, tag);
   }
 
@@ -271,7 +273,7 @@ export class ServiceWorkerManager extends SDKModel {
   }
 
   /**
-   * @return {!Common.Setting}
+   * @return {!Common.Settings.Setting}
    */
   forceUpdateOnReloadSetting() {
     return this._forceUpdateSetting;
@@ -345,7 +347,7 @@ export class ServiceWorkerVersion {
   _update(payload) {
     this.id = payload.versionId;
     this.scriptURL = payload.scriptURL;
-    const parsedURL = new Common.ParsedURL(payload.scriptURL);
+    const parsedURL = new Common.ParsedURL.ParsedURL(payload.scriptURL);
     this.securityOrigin = parsedURL.securityOrigin();
     this.runningStatus = payload.runningStatus;
     this.status = payload.status;
@@ -513,7 +515,7 @@ export class ServiceWorkerRegistration {
     this._fingerprint = Symbol('fingerprint');
     this.id = payload.registrationId;
     this.scopeURL = payload.scopeURL;
-    const parsedURL = new Common.ParsedURL(payload.scopeURL);
+    const parsedURL = new Common.ParsedURL.ParsedURL(payload.scopeURL);
     this.securityOrigin = parsedURL.securityOrigin();
     this.isDeleted = payload.isDeleted;
     this.forceUpdateOnPageLoad = payload.forceUpdateOnPageLoad;
@@ -602,7 +604,7 @@ class ServiceWorkerContextNamer {
     this._versionByTargetId = new Map();
     serviceWorkerManager.addEventListener(Events.RegistrationUpdated, this._registrationsUpdated, this);
     serviceWorkerManager.addEventListener(Events.RegistrationDeleted, this._registrationsUpdated, this);
-    SDK.targetManager.addModelListener(
+    self.SDK.targetManager.addModelListener(
         RuntimeModel, RuntimeModelEvents.ExecutionContextCreated, this._executionContextCreated, this);
   }
 
@@ -647,7 +649,7 @@ class ServiceWorkerContextNamer {
   }
 
   _updateAllContextLabels() {
-    for (const target of SDK.targetManager.targets()) {
+    for (const target of self.SDK.targetManager.targets()) {
       const serviceWorkerTargetId = this._serviceWorkerTargetId(target);
       if (!serviceWorkerTargetId) {
         continue;
@@ -670,7 +672,7 @@ class ServiceWorkerContextNamer {
       context.setLabel('');
       return;
     }
-    const parsedUrl = Common.ParsedURL.fromString(context.origin);
+    const parsedUrl = Common.ParsedURL.ParsedURL.fromString(context.origin);
     const label = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : context.name;
     const localizedStatus = ServiceWorkerVersion.Status[version.status];
     context.setLabel(ls`${label} #${version.id} (${localizedStatus})`);

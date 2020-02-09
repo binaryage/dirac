@@ -263,6 +263,9 @@ SDK.IsolateManager.MemoryTrend = SDKModule.IsolateManager.MemoryTrend;
 /** @constructor */
 SDK.IssuesModel = SDKModule.IssuesModel.IssuesModel;
 
+/** @constructor */
+SDK.Issue = SDKModule.Issue.Issue;
+
 /** @interface */
 SDK.Layer = SDKModule.LayerTreeBase.Layer;
 
@@ -549,7 +552,7 @@ SDK.ChildTargetManager._attachCallback;
 SDK.consoleModel;
 
 /** @type {!SDK.DOMDebuggerManager} */
-SDK.domDebuggerManager;
+self.SDK.domDebuggerManager;
 
 /** @typedef {{name: string, value: string, _node: SDK.DOMNode}} */
 SDK.DOMNode.Attribute;
@@ -767,7 +770,7 @@ SDK.RuntimeModel.ExceptionWithTimestamp;
  */
 SDK.TracingManager.EventPayload;
 
-SDK.targetManager = new SDKModule.SDKModel.TargetManager();
-SDK.isolateManager = new SDKModule.IsolateManager.IsolateManager();
-SDK.domModelUndoStack = new SDKModule.DOMModel.DOMModelUndoStack();
-SDK.networkLog = new SDKModule.NetworkLog.NetworkLog();
+self.SDK.targetManager = new SDKModule.SDKModel.TargetManager();
+self.SDK.isolateManager = new SDKModule.IsolateManager.IsolateManager();
+self.SDK.domModelUndoStack = new SDKModule.DOMModel.DOMModelUndoStack();
+self.SDK.networkLog = new SDKModule.NetworkLog.NetworkLog();

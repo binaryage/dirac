@@ -52,9 +52,9 @@ Workspace.ProjectStore = WorkspaceModule.Workspace.ProjectStore;
 /**
  * @type {?Workspace.FileManager}
  */
-Workspace.fileManager;
+self.Workspace.fileManager;
 
 /**
  * @type {!Workspace.Workspace}
  */
-Workspace.workspace;
+self.Workspace.workspace;

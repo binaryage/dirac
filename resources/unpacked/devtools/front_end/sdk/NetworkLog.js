@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+
 import {ConsoleMessage, MessageLevel, MessageSource} from './ConsoleModel.js';
 import {Events as NetworkManagerEvents, NetworkManager} from './NetworkManager.js';  // eslint-disable-line no-unused-vars
 import {Events as NetworkRequestEvents, InitiatorType, NetworkRequest} from './NetworkRequest.js';  // eslint-disable-line no-unused-vars
@@ -38,7 +40,7 @@ import {SDKModelObserver} from './SDKModel.js';  // eslint-disable-line no-unuse
 /**
  * @implements {SDKModelObserver<!NetworkManager>}
  */
-export class NetworkLog extends Common.Object {
+export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
     /** @type {!Array<!NetworkRequest>} */
@@ -48,7 +50,7 @@ export class NetworkLog extends Common.Object {
     /** @type {!Map<!NetworkManager, !PageLoad>} */
     this._pageLoadForManager = new Map();
     this._isRecording = true;
-    SDK.targetManager.observeModels(NetworkManager, this);
+    self.SDK.targetManager.observeModels(NetworkManager, this);
   }
 
   /**
@@ -94,7 +96,7 @@ export class NetworkLog extends Common.Object {
    * @param {!NetworkManager} networkManager
    */
   _removeNetworkManagerListeners(networkManager) {
-    Common.EventTarget.removeEventListeners(networkManager[_events]);
+    Common.EventTarget.EventTarget.removeEventListeners(networkManager[_events]);
   }
 
   /**
@@ -106,10 +108,10 @@ export class NetworkLog extends Common.Object {
     }
     this._isRecording = enabled;
     if (enabled) {
-      SDK.targetManager.observeModels(NetworkManager, this);
+      self.SDK.targetManager.observeModels(NetworkManager, this);
     } else {
-      SDK.targetManager.unobserveModels(NetworkManager, this);
-      SDK.targetManager.models(NetworkManager).forEach(this._removeNetworkManagerListeners.bind(this));
+      self.SDK.targetManager.unobserveModels(NetworkManager, this);
+      self.SDK.targetManager.models(NetworkManager).forEach(this._removeNetworkManagerListeners.bind(this));
     }
   }
 
@@ -206,7 +208,7 @@ export class NetworkLog extends Common.Object {
             continue;
           }
           type = InitiatorType.Script;
-          url = topFrame.url || Common.UIString('<anonymous>');
+          url = topFrame.url || Common.UIString.UIString('<anonymous>');
           lineNumber = topFrame.lineNumber;
           columnNumber = topFrame.columnNumber;
           scriptId = topFrame.scriptId;
@@ -304,7 +306,7 @@ export class NetworkLog extends Common.Object {
   }
 
   _willReloadPage() {
-    if (!Common.moduleSetting('network_log.preserve-log').get()) {
+    if (!self.Common.settings.moduleSetting('network_log.preserve-log').get()) {
       this.reset();
     }
   }
@@ -368,7 +370,7 @@ export class NetworkLog extends Common.Object {
       this.dispatchEventToListeners(Events.RequestAdded, request);
     }
 
-    if (Common.moduleSetting('network_log.preserve-log').get()) {
+    if (self.Common.settings.moduleSetting('network_log.preserve-log').get()) {
       for (const request of oldRequestsSet) {
         this._requests.push(request);
         this._requestsSet.add(request);
@@ -455,7 +457,7 @@ export class NetworkLog extends Common.Object {
   reset() {
     this._requests = [];
     this._requestsSet.clear();
-    const managers = new Set(SDK.targetManager.models(NetworkManager));
+    const managers = new Set(self.SDK.targetManager.models(NetworkManager));
     for (const manager of this._pageLoadForManager.keys()) {
       if (!managers.has(manager)) {
         this._pageLoadForManager.delete(manager);
@@ -475,7 +477,7 @@ export class NetworkLog extends Common.Object {
         networkManager.target().model(RuntimeModel), MessageSource.Network,
         message.warning ? MessageLevel.Warning : MessageLevel.Info, message.message);
     this.associateConsoleMessageWithRequest(consoleMessage, message.requestId);
-    SDK.consoleModel.addMessage(consoleMessage);
+    self.SDK.consoleModel.addMessage(consoleMessage);
   }
 
   /**
@@ -539,8 +541,8 @@ export class PageLoad {
     }
     const saveDataHeader = this.mainRequest.requestHeaderValue('Save-Data');
     if (!PageLoad._dataSaverMessageWasShown && saveDataHeader && saveDataHeader === 'on') {
-      const message = Common.UIString(
-          'Consider disabling %s while debugging. For more info see: %s', Common.UIString('Chrome Data Saver'),
+      const message = Common.UIString.UIString(
+          'Consider disabling %s while debugging. For more info see: %s', Common.UIString.UIString('Chrome Data Saver'),
           'https://support.google.com/chrome/?p=datasaver');
       manager.dispatchEventToListeners(
           NetworkManagerEvents.MessageGenerated,
@@ -579,3 +581,6 @@ export const Events = {
 
 const _initiatorDataSymbol = Symbol('InitiatorData');
 const _events = Symbol('SDK.NetworkLog.events');
+
+/** @typedef {!{initiators: !Set<!NetworkRequest>, initiated: !Map<!NetworkRequest, !NetworkRequest>}} */
+export let InitiatorGraph;

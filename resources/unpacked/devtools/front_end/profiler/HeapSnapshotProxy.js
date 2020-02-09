@@ -5,7 +5,7 @@
  * modification, are permitted provided that the following conditions are
  * met:
  *
- *     * Redistributions of source code must retain the above copyrightdd
+ *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
@@ -182,10 +182,10 @@ export class HeapSnapshotWorkerProxy extends Common.Object {
     }
     if (data.error) {
       if (data.errorMethodName) {
-        Common.console.error(
+        self.Common.console.error(
             Common.UIString('An error occurred when a call to method \'%s\' was requested', data.errorMethodName));
       }
-      Common.console.error(data['errorCallStack']);
+      self.Common.console.error(data['errorCallStack']);
       this._callbacks.delete(data.callId);
       return;
     }

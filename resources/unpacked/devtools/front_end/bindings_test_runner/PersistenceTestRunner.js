@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,10 +24,10 @@ Persistence.AutomappingStatus.prototype.toString = function() {
 
 
 BindingsTestRunner.waitForBinding = function(fileName) {
-  const uiSourceCodes = Workspace.workspace.uiSourceCodes();
+  const uiSourceCodes = self.Workspace.workspace.uiSourceCodes();
 
   for (const uiSourceCode of uiSourceCodes) {
-    const binding = Persistence.persistence.binding(uiSourceCode);
+    const binding = self.Persistence.persistence.binding(uiSourceCode);
 
     if (!binding) {
       continue;
@@ -39,7 +39,7 @@ BindingsTestRunner.waitForBinding = function(fileName) {
   }
 
   return TestRunner.waitForEvent(
-      Persistence.Persistence.Events.BindingCreated, Persistence.persistence,
+      Persistence.Persistence.Events.BindingCreated, self.Persistence.persistence,
       binding => binding.network.name() === fileName || binding.fileSystem.name() === fileName);
 };
 
@@ -51,7 +51,7 @@ BindingsTestRunner.addFooJSFile = function(fs) {
 };
 
 BindingsTestRunner.initializeTestMapping = function() {
-  return new TestMapping(Persistence.persistence);
+  return new TestMapping(self.Persistence.persistence);
 };
 
 class TestMapping {
@@ -72,7 +72,7 @@ class TestMapping {
     const fileSystemUISourceCode = await TestRunner.waitForUISourceCode(urlSuffix, Workspace.projectTypes.FileSystem);
     const binding = new Persistence.PersistenceBinding(networkUISourceCode, fileSystemUISourceCode);
     this._bindings.add(binding);
-    this._persistence.addBindingForTest(binding);
+    await this._persistence.addBindingForTest(binding);
   }
 
   _findBinding(urlSuffix) {
@@ -95,12 +95,12 @@ class TestMapping {
     }
 
     this._bindings.delete(binding);
-    this._persistence.removeBindingForTest(binding);
+    await this._persistence.removeBindingForTest(binding);
   }
 
-  dispose() {
+  async dispose() {
     for (const binding of this._bindings) {
-      this._persistence.removeBindingForTest(binding);
+      await this._persistence.removeBindingForTest(binding);
     }
 
     this._bindings.clear();

@@ -28,10 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {PerformanceModel} from './PerformanceModel.js';  // eslint-disable-line no-unused-vars
+import {EventDispatchTypeDescriptor, TimelineUIUtils} from './TimelineUIUtils.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-export default class TimelineEventOverview extends PerfUI.TimelineOverviewBase {
+export class TimelineEventOverview extends PerfUI.TimelineOverviewBase {
   /**
    * @param {string} id
    * @param {?string} title
@@ -40,7 +43,7 @@ export default class TimelineEventOverview extends PerfUI.TimelineOverviewBase {
     super();
     this.element.id = 'timeline-overview-' + id;
     this.element.classList.add('overview-strip');
-    /** @type {?Timeline.PerformanceModel} */
+    /** @type {?PerformanceModel} */
     this._model = null;
     if (title) {
       this.element.createChild('div', 'timeline-overview-strip-title').textContent = title;
@@ -48,7 +51,7 @@ export default class TimelineEventOverview extends PerfUI.TimelineOverviewBase {
   }
 
   /**
-   * @param {?Timeline.PerformanceModel} model
+   * @param {?PerformanceModel} model
    */
   setModel(model) {
     this._model = model;
@@ -87,8 +90,8 @@ export class TimelineEventOverviewInput extends TimelineEventOverview {
       return;
     }
     const height = this.height();
-    const descriptors = Timeline.TimelineUIUtils.eventDispatchDesciptors();
-    /** @type {!Map.<string,!Timeline.TimelineUIUtils.EventDispatchTypeDescriptor>} */
+    const descriptors = TimelineUIUtils.eventDispatchDesciptors();
+    /** @type {!Map.<string,!EventDispatchTypeDescriptor>} */
     const descriptorsByType = new Map();
     let maxPriority = -1;
     for (const descriptor of descriptors) {
@@ -203,8 +206,8 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
     const timeSpan = timelineModel.maximumRecordTime() - timeOffset;
     const scale = width / timeSpan;
     const quantTime = quantSizePx / scale;
-    const categories = Timeline.TimelineUIUtils.categories();
-    const categoryOrder = Timeline.TimelineUIUtils.getTimelineMainEventCategories();
+    const categories = TimelineUIUtils.categories();
+    const categoryOrder = TimelineUIUtils.getTimelineMainEventCategories();
     const otherIndex = categoryOrder.indexOf('other');
     const idleIndex = 0;
     console.assert(idleIndex === categoryOrder.indexOf('idle'));
@@ -258,7 +261,7 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
       function onEventStart(e) {
         const index = categoryIndexStack.length ? categoryIndexStack.peekLast() : idleIndex;
         quantizer.appendInterval(e.startTime, index);
-        categoryIndexStack.push(Timeline.TimelineUIUtils.eventStyle(e).category._overviewIndex || otherIndex);
+        categoryIndexStack.push(TimelineUIUtils.eventStyle(e).category._overviewIndex || otherIndex);
       }
 
       /**
@@ -751,7 +754,7 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
 
   /**
    * @override
-   * @param {?Timeline.PerformanceModel} model
+   * @param {?PerformanceModel} model
    */
   setModel(model) {
     super.setModel(model);
@@ -786,7 +789,6 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
           if (!totalByTimestamp.has(stamp)) {
             totalByTimestamp.set(stamp, new Set());
           }
-
           totalByTimestamp.get(stamp).add(info);
 
           if (!usedByTimestamp.has(stamp)) {
@@ -821,9 +823,9 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
     const percentUsed = total ? Math.round(100 * total_used / total) : 0;
     const lowerOffset = 3 * ratio;
 
-    const minTime = this._model.recordStartTime();
-    const maxTime =
-        minTime + (this._model.timelineModel().maximumRecordTime() - this._model.timelineModel().minimumRecordTime());
+    const millisecondsPerSecond = 1000;
+    const minTime = this._model.timelineModel().minimumRecordTime() / millisecondsPerSecond;
+    const maxTime = this._model.timelineModel().maximumRecordTime() / millisecondsPerSecond;
 
     const lineWidth = 1;
     const width = this.width();
@@ -840,7 +842,13 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
 
     ctx.lineTo(-lineWidth, height - yOffset);
 
-    for (const [stamp, coverage] of coverageByTimestamp) {
+    let previous = null;
+    for (const stamp of this._coverageModel.coverageUpdateTimes()) {
+      const coverage = coverageByTimestamp.get(stamp) || previous;
+      previous = coverage;
+      if (!coverage) {
+        continue;
+      }
       if (stamp > maxTime) {
         break;
       }
@@ -849,18 +857,25 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
       ctx.lineTo(x, height - yOffset);
     }
 
+    const white = 'hsl(0, 100%, 100%)';
+    const blue = 'hsl(220, 90%, 70%)';
+    const transparentBlue = 'hsla(220, 90%, 70%, 0.2)';
+
     ctx.lineTo(width + lineWidth, height - yOffset);
     ctx.lineTo(width + lineWidth, heightBeyondView);
     ctx.closePath();
-    ctx.fillStyle = 'hsla(220, 90%, 70%, 0.2)';
+    ctx.fillStyle = transparentBlue;
     ctx.fill();
     ctx.lineWidth = lineWidth;
-    ctx.strokeStyle = 'hsl(220, 90%, 70%)';
+    ctx.strokeStyle = blue;
     ctx.stroke();
 
-    for (const [stamp, coverage] of coverageByTimestamp) {
-      if (stamp > maxTime) {
-        break;
+    previous = null;
+    for (const stamp of this._coverageModel.coverageUpdateTimes()) {
+      const coverage = coverageByTimestamp.get(stamp) || previous;
+      previous = coverage;
+      if (!coverage) {
+        continue;
       }
       ctx.beginPath();
       const x = (stamp - minTime) * xFactor;
@@ -868,45 +883,10 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
       ctx.arc(x, y, 2 * lineWidth, 0, 2 * Math.PI, false);
       ctx.closePath();
       ctx.stroke();
+      ctx.fillStyle = coverageByTimestamp.has(stamp) ? blue : white;
       ctx.fill();
     }
 
     this._heapSizeLabel.textContent = `${percentUsed}% used`;
   }
 }
-
-/* Legacy exported object */
-self.Timeline = self.Timeline || {};
-
-/* Legacy exported object */
-Timeline = Timeline || {};
-
-/** @constructor */
-Timeline.TimelineEventOverview = TimelineEventOverview;
-
-/** @constructor */
-Timeline.TimelineEventOverviewInput = TimelineEventOverviewInput;
-
-/** @constructor */
-Timeline.TimelineEventOverviewNetwork = TimelineEventOverviewNetwork;
-
-/** @constructor */
-Timeline.TimelineEventOverviewCPUActivity = TimelineEventOverviewCPUActivity;
-
-/** @constructor */
-Timeline.TimelineEventOverviewResponsiveness = TimelineEventOverviewResponsiveness;
-
-/** @constructor */
-Timeline.TimelineFilmStripOverview = TimelineFilmStripOverview;
-
-/** @constructor */
-Timeline.TimelineEventOverviewFrames = TimelineEventOverviewFrames;
-
-/** @constructor */
-Timeline.TimelineEventOverviewMemory = TimelineEventOverviewMemory;
-
-/** @constructor */
-Timeline.Quantizer = Quantizer;
-
-/** @constructor */
-Timeline.TimelineEventOverviewCoverage = TimelineEventOverviewCoverage;

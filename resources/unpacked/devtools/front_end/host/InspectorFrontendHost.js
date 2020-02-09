@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+
 import {EventDescriptors, Events} from './InspectorFrontendHostAPI.js';
 import {streamWrite as resourceLoaderStreamWrite} from './ResourceLoader.js';
 
@@ -58,7 +60,7 @@ export class InspectorFrontendHostStub {
     this._urlsBeingSaved = new Map();
 
     /**
-     * @type {!Common.EventTarget}
+     * @type {!Common.EventTarget.EventTarget}
      */
     this.events;
   }
@@ -143,17 +145,20 @@ export class InspectorFrontendHostStub {
       return;
     }
 
-    var version = dirac.getVersion();
+    const version = dirac.getVersion();
     dirac.getRuntimeTag(
-      /** @suppressGlobalPropertiesCheck */
+      /**
+         * @suppressGlobalPropertiesCheck
+         * @param {string} tag
+         */
       function(tag) {
         if (!tag) {
           tag = "[no runtime] " + url;
         }
-        document.title = Common.UIString("Dirac v%s <-> %s", version, tag);
+        document.title = "Dirac v" + version + " <-> " + tag;
       });
     // this is just for a temporary display, we will update it when get_runtime_tag calls us back with full runtime info
-    document.title = Common.UIString("Dirac v%s <-> %s", version, url);
+    document.title = "Dirac v" + version + " <-> " + url;
   }
 
   /**
@@ -175,7 +180,7 @@ export class InspectorFrontendHostStub {
       document.execCommand('copy');
       document.body.removeChild(input);
     } else {
-      Common.console.error('Clipboard is not enabled in hosted mode. Please inspect using chrome://inspect');
+      self.Common.console.error('Clipboard is not enabled in hosted mode. Please inspect using chrome://inspect');
     }
   }
 
@@ -192,7 +197,8 @@ export class InspectorFrontendHostStub {
    * @param {string} fileSystemPath
    */
   showItemInFolder(fileSystemPath) {
-    Common.console.error('Show item in folder is not enabled in hosted mode. Please inspect using chrome://inspect');
+    self.Common.console.error(
+        'Show item in folder is not enabled in hosted mode. Please inspect using chrome://inspect');
   }
 
   /**
@@ -532,8 +538,8 @@ export let InspectorFrontendHostInstance = window.InspectorFrontendHost;
  */
 class InspectorFrontendAPIImpl {
   constructor() {
-    this._debugFrontend =
-        !!Root.Runtime.queryParam('debugFrontend') || (window['InspectorTest'] && window['InspectorTest']['debugTest']);
+    this._debugFrontend = (self.Root && Root.Runtime && !!Root.Runtime.queryParam('debugFrontend')) ||
+        (window['InspectorTest'] && window['InspectorTest']['debugTest']);
 
     const descriptors = EventDescriptors;
     for (let i = 0; i < descriptors.length; ++i) {
@@ -609,7 +615,7 @@ class InspectorFrontendAPIImpl {
     }
 
     // Attach the events object.
-    InspectorFrontendHostInstance.events = new Common.Object();
+    InspectorFrontendHostInstance.events = new Common.ObjectWrapper.ObjectWrapper();
   }
 
   // FIXME: This file is included into both apps, since the devtools_app needs the InspectorFrontendHostAPI only,
@@ -631,5 +637,5 @@ export function isUnderTest(prefs) {
   if (prefs) {
     return prefs['isUnderTest'] === 'true';
   }
-  return Common.settings && Common.settings.createSetting('isUnderTest', false).get();
+  return self.Common.settings && self.Common.settings.createSetting('isUnderTest', false).get();
 }

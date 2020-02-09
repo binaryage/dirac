@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export default class JavaScriptCompilerPlugin extends Sources.UISourceCodeFrame.Plugin {
+import {Plugin} from './Plugin.js';
+
+export class JavaScriptCompilerPlugin extends Plugin {
   /**
    * @param {!SourceFrame.SourcesTextEditor} textEditor
    * @param {!Workspace.UISourceCode} uiSourceCode
@@ -37,8 +39,8 @@ export default class JavaScriptCompilerPlugin extends Sources.UISourceCodeFrame.
     if (Snippets.isSnippetsUISourceCode(uiSourceCode)) {
       return true;
     }
-    for (const debuggerModel of SDK.targetManager.models(SDK.DebuggerModel)) {
-      if (Bindings.debuggerWorkspaceBinding.scriptFile(uiSourceCode, debuggerModel)) {
+    for (const debuggerModel of self.SDK.targetManager.models(SDK.DebuggerModel)) {
+      if (self.Bindings.debuggerWorkspaceBinding.scriptFile(uiSourceCode, debuggerModel)) {
         return true;
       }
     }
@@ -60,14 +62,14 @@ export default class JavaScriptCompilerPlugin extends Sources.UISourceCodeFrame.
    * @return {?SDK.RuntimeModel}
    */
   _findRuntimeModel() {
-    const debuggerModels = SDK.targetManager.models(SDK.DebuggerModel);
+    const debuggerModels = self.SDK.targetManager.models(SDK.DebuggerModel);
     for (let i = 0; i < debuggerModels.length; ++i) {
-      const scriptFile = Bindings.debuggerWorkspaceBinding.scriptFile(this._uiSourceCode, debuggerModels[i]);
+      const scriptFile = self.Bindings.debuggerWorkspaceBinding.scriptFile(this._uiSourceCode, debuggerModels[i]);
       if (scriptFile) {
         return debuggerModels[i].runtimeModel();
       }
     }
-    return SDK.targetManager.mainTarget() ? SDK.targetManager.mainTarget().model(SDK.RuntimeModel) : null;
+    return self.SDK.targetManager.mainTarget() ? self.SDK.targetManager.mainTarget().model(SDK.RuntimeModel) : null;
   }
 
   async _compile() {
@@ -75,7 +77,7 @@ export default class JavaScriptCompilerPlugin extends Sources.UISourceCodeFrame.
     if (!runtimeModel) {
       return;
     }
-    const currentExecutionContext = UI.context.flavor(SDK.ExecutionContext);
+    const currentExecutionContext = self.UI.context.flavor(SDK.ExecutionContext);
     if (!currentExecutionContext) {
       return;
     }
@@ -127,14 +129,3 @@ export default class JavaScriptCompilerPlugin extends Sources.UISourceCodeFrame.
 }
 
 export const CompileDelay = 1000;
-
-/* Legacy exported object */
-self.Sources = self.Sources || {};
-
-/* Legacy exported object */
-Sources = Sources || {};
-
-/** @constructor */
-Sources.JavaScriptCompilerPlugin = JavaScriptCompilerPlugin;
-
-Sources.JavaScriptCompilerPlugin.CompileDelay = CompileDelay;

@@ -5,19 +5,21 @@
  * modification, are permitted provided that the following conditions are
  * met:
  *
- * 1. Redistributions of source code must retain the above copyright
+ *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
+ *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY GOOGLE INC. AND ITS CONTRIBUTORS
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL GOOGLE INC.
- * OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
@@ -29,7 +31,7 @@
 /**
  * @implements {Search.SearchScope}
  */
-export default class SourcesSearchScope {
+export class SourcesSearchScope {
   constructor() {
     // FIXME: Add title once it is used by search controller.
     this._searchId = 0;
@@ -56,9 +58,9 @@ export default class SourcesSearchScope {
       return 1;
     }
     const isFileSystem1 = uiSourceCode1.project().type() === Workspace.projectTypes.FileSystem &&
-        !Persistence.persistence.binding(uiSourceCode1);
+        !self.Persistence.persistence.binding(uiSourceCode1);
     const isFileSystem2 = uiSourceCode2.project().type() === Workspace.projectTypes.FileSystem &&
-        !Persistence.persistence.binding(uiSourceCode2);
+        !self.Persistence.persistence.binding(uiSourceCode2);
     if (isFileSystem1 !== isFileSystem2) {
       return isFileSystem1 ? 1 : -1;
     }
@@ -93,9 +95,10 @@ export default class SourcesSearchScope {
    * @return {!Array.<!Workspace.Project>}
    */
   _projects() {
-    const searchInAnonymousAndContentScripts = Common.moduleSetting('searchInAnonymousAndContentScripts').get();
+    const searchInAnonymousAndContentScripts =
+        self.Common.settings.moduleSetting('searchInAnonymousAndContentScripts').get();
 
-    return Workspace.workspace.projects().filter(project => {
+    return self.Workspace.workspace.projects().filter(project => {
       if (project.type() === Workspace.projectTypes.Service) {
         return false;
       }
@@ -157,7 +160,7 @@ export default class SourcesSearchScope {
       if (!uiSourceCode.contentType().isTextType()) {
         continue;
       }
-      const binding = Persistence.persistence.binding(uiSourceCode);
+      const binding = self.Persistence.persistence.binding(uiSourceCode);
       if (binding && binding.network === uiSourceCode) {
         continue;
       }
@@ -374,15 +377,3 @@ export class FileBasedSearchResult {
     return this._searchMatches[index].lineNumber + 1;
   }
 }
-
-/* Legacy exported object */
-self.Sources = self.Sources || {};
-
-/* Legacy exported object */
-Sources = Sources || {};
-
-/** @constructor */
-Sources.SourcesSearchScope = SourcesSearchScope;
-
-/** @constructor */
-Sources.FileBasedSearchResult = FileBasedSearchResult;

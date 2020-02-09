@@ -16,8 +16,8 @@ RUN add-apt-repository ppa:openjdk-r/ppa && \
     openjdk-13-jdk ca-certificates-java && \
     java -version
 
-# dependencies needed by chromedriver
-RUN apt-get -y install libnss3 libgconf-2-4 libasound2
+# dependencies needed by chrome/chromedriver
+RUN apt-get -y install libnss3 libgconf-2-4 libasound2 libgbm1
 
 # install latest lein
 ENV LEIN_ROOT 1

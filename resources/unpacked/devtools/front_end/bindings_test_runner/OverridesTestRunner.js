@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@ BindingsTestRunner.createOverrideProject = async function(folderPath) {
   const isolatedFileSystem = await testFileSystem.reportCreatedPromise('overrides');
   isolatedFileSystem._type = 'overrides';
   const project =
-      Workspace.workspace.project(Persistence.FileSystemWorkspaceBinding.projectId(isolatedFileSystem.path()));
+      self.Workspace.workspace.project(Persistence.FileSystemWorkspaceBinding.projectId(isolatedFileSystem.path()));
   console.assert(project);
   return {isolatedFileSystem, project, testFileSystem};
 };
@@ -20,5 +20,5 @@ BindingsTestRunner.createOverrideProject = async function(folderPath) {
  * @param {boolean} enabled
  */
 BindingsTestRunner.setOverridesEnabled = function(enabled) {
-  Common.settings.moduleSetting('persistenceNetworkOverridesEnabled').set(enabled);
+  self.Common.settings.moduleSetting('persistenceNetworkOverridesEnabled').set(enabled);
 };

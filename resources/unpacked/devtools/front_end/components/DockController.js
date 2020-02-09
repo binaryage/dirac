@@ -28,10 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  */
-export class DockController extends Common.Object {
+export class DockController extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {boolean} canDock
    */
@@ -39,9 +43,11 @@ export class DockController extends Common.Object {
     super();
     this._canDock = canDock;
 
-    this._closeButton = new UI.ToolbarButton(Common.UIString('Close'), 'largeicon-delete');
+    this._closeButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Close'), 'largeicon-delete');
     this._closeButton.addEventListener(
-        UI.ToolbarButton.Events.Click, Host.InspectorFrontendHost.closeWindow.bind(Host.InspectorFrontendHost));
+        UI.Toolbar.ToolbarButton.Events.Click,
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.closeWindow.bind(
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance));
 
     if (!canDock) {
       this._dockSide = State.Undocked;
@@ -50,9 +56,9 @@ export class DockController extends Common.Object {
     }
 
     this._states = [State.DockedToRight, State.DockedToBottom, State.DockedToLeft, State.Undocked];
-    this._currentDockStateSetting = Common.settings.moduleSetting('currentDockState');
+    this._currentDockStateSetting = self.Common.settings.moduleSetting('currentDockState');
     this._currentDockStateSetting.addChangeListener(this._dockSideChanged, this);
-    this._lastDockStateSetting = Common.settings.createSetting('lastDockState', 'bottom');
+    this._lastDockStateSetting = self.Common.settings.createSetting('lastDockState', 'bottom');
     if (this._states.indexOf(this._currentDockStateSetting.get()) === -1) {
       this._currentDockStateSetting.set('right');
     }
@@ -67,8 +73,8 @@ export class DockController extends Common.Object {
     }
 
     this._titles = [
-      Common.UIString('Dock to right'), Common.UIString('Dock to bottom'), Common.UIString('Dock to left'),
-      Common.UIString('Undock into separate window')
+      Common.UIString.UIString('Dock to right'), Common.UIString.UIString('Dock to bottom'),
+      Common.UIString.UIString('Dock to left'), Common.UIString.UIString('Undock into separate window')
     ];
     this._dockSideChanged();
   }
@@ -121,7 +127,7 @@ export class DockController extends Common.Object {
     console.timeStamp('DockController.setIsDocked');
     this._dockSide = dockSide;
     this._currentDockStateSetting.set(dockSide);
-    Host.InspectorFrontendHost.setIsDocked(
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setIsDocked(
         dockSide !== State.Undocked, this._setIsDockedResponse.bind(this, eventData));
     this._closeButton.setVisible(this._dockSide !== State.Undocked);
     this.dispatchEventToListeners(Events.DockSideChanged, eventData);
@@ -166,32 +172,32 @@ export const Events = {
 };
 
 /**
- * @implements {UI.ActionDelegate}
+ * @implements {UI.ActionDelegate.ActionDelegate}
  * @unrestricted
  */
 export class ToggleDockActionDelegate {
   /**
    * @override
-   * @param {!UI.Context} context
+   * @param {!UI.Context.Context} context
    * @param {string} actionId
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    Components.dockController._toggleDockSide();
+    self.Components.dockController._toggleDockSide();
     return true;
   }
 }
 
 /**
- * @implements {UI.ToolbarItem.Provider}
+ * @implements {UI.Toolbar.Provider}
  * @unrestricted
  */
 export class CloseButtonProvider {
   /**
    * @override
-   * @return {?UI.ToolbarItem}
+   * @return {?UI.Toolbar.ToolbarItem}
    */
   item() {
-    return Components.dockController._closeButton;
+    return self.Components.dockController._closeButton;
   }
 }

@@ -5,19 +5,21 @@
  * modification, are permitted provided that the following conditions are
  * met:
  *
- * 1. Redistributions of source code must retain the above copyright
+ *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
+ *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY GOOGLE INC. AND ITS CONTRIBUTORS
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL GOOGLE INC.
- * OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
@@ -26,13 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {NavigatorUISourceCodeTreeNode, NavigatorView} from './NavigatorView.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-export class NetworkNavigatorView extends Sources.NavigatorView {
+export class NetworkNavigatorView extends NavigatorView {
   constructor() {
     super();
-    SDK.targetManager.addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this._inspectedURLChanged, this);
+    self.SDK.targetManager.addEventListener(
+        SDK.TargetManager.Events.InspectedURLChanged, this._inspectedURLChanged, this);
 
     // Record the sources tool load time after the file navigator has loaded.
     Host.userMetrics.panelLoaded('sources', 'DevTools.Launch.Sources');
@@ -51,7 +56,7 @@ export class NetworkNavigatorView extends Sources.NavigatorView {
    * @param {!Common.Event} event
    */
   _inspectedURLChanged(event) {
-    const mainTarget = SDK.targetManager.mainTarget();
+    const mainTarget = self.SDK.targetManager.mainTarget();
     if (event.data !== mainTarget) {
       return;
     }
@@ -71,7 +76,7 @@ export class NetworkNavigatorView extends Sources.NavigatorView {
    * @param {!Workspace.UISourceCode} uiSourceCode
    */
   uiSourceCodeAdded(uiSourceCode) {
-    const mainTarget = SDK.targetManager.mainTarget();
+    const mainTarget = self.SDK.targetManager.mainTarget();
     const inspectedURL = mainTarget && mainTarget.inspectedURL();
     if (!inspectedURL) {
       return;
@@ -85,7 +90,7 @@ export class NetworkNavigatorView extends Sources.NavigatorView {
 /**
  * @unrestricted
  */
-export class FilesNavigatorView extends Sources.NavigatorView {
+export class FilesNavigatorView extends NavigatorView {
   constructor() {
     super();
     const placeholder = new UI.EmptyWidget('');
@@ -125,7 +130,7 @@ export class FilesNavigatorView extends Sources.NavigatorView {
   }
 }
 
-export class OverridesNavigatorView extends Sources.NavigatorView {
+export class OverridesNavigatorView extends NavigatorView {
   constructor() {
     super();
     const placeholder = new UI.EmptyWidget('');
@@ -139,7 +144,7 @@ export class OverridesNavigatorView extends Sources.NavigatorView {
 
     this.contentElement.insertBefore(this._toolbar.element, this.contentElement.firstChild);
 
-    Persistence.networkPersistenceManager.addEventListener(
+    self.Persistence.networkPersistenceManager.addEventListener(
         Persistence.NetworkPersistenceManager.Events.ProjectChanged, this._updateProjectAndUI, this);
     this.workspace().addEventListener(Workspace.Workspace.Events.ProjectAdded, this._onProjectAddOrRemoved, this);
     this.workspace().addEventListener(Workspace.Workspace.Events.ProjectRemoved, this._onProjectAddOrRemoved, this);
@@ -160,7 +165,7 @@ export class OverridesNavigatorView extends Sources.NavigatorView {
 
   _updateProjectAndUI() {
     this.reset();
-    const project = Persistence.networkPersistenceManager.project();
+    const project = self.Persistence.networkPersistenceManager.project();
     if (project) {
       this.tryAddProject(project);
     }
@@ -169,10 +174,10 @@ export class OverridesNavigatorView extends Sources.NavigatorView {
 
   _updateUI() {
     this._toolbar.removeToolbarItems();
-    const project = Persistence.networkPersistenceManager.project();
+    const project = self.Persistence.networkPersistenceManager.project();
     if (project) {
       const enableCheckbox =
-          new UI.ToolbarSettingCheckbox(Common.settings.moduleSetting('persistenceNetworkOverridesEnabled'));
+          new UI.ToolbarSettingCheckbox(self.Common.settings.moduleSetting('persistenceNetworkOverridesEnabled'));
       this._toolbar.appendToolbarItem(enableCheckbox);
 
       this._toolbar.appendToolbarItem(new UI.ToolbarSeparator(true));
@@ -190,11 +195,11 @@ export class OverridesNavigatorView extends Sources.NavigatorView {
   }
 
   async _setupNewWorkspace() {
-    const fileSystem = await Persistence.isolatedFileSystemManager.addFileSystem('overrides');
+    const fileSystem = await self.Persistence.isolatedFileSystemManager.addFileSystem('overrides');
     if (!fileSystem) {
       return;
     }
-    Common.settings.moduleSetting('persistenceNetworkOverridesEnabled').set(true);
+    self.Common.settings.moduleSetting('persistenceNetworkOverridesEnabled').set(true);
   }
 
   /**
@@ -203,14 +208,14 @@ export class OverridesNavigatorView extends Sources.NavigatorView {
    * @return {boolean}
    */
   acceptProject(project) {
-    return project === Persistence.networkPersistenceManager.project();
+    return project === self.Persistence.networkPersistenceManager.project();
   }
 }
 
 /**
  * @unrestricted
  */
-export class ContentScriptsNavigatorView extends Sources.NavigatorView {
+export class ContentScriptsNavigatorView extends NavigatorView {
   constructor() {
     super();
     const placeholder = new UI.EmptyWidget('');
@@ -234,7 +239,7 @@ export class ContentScriptsNavigatorView extends Sources.NavigatorView {
 /**
  * @unrestricted
  */
-export class SnippetsNavigatorView extends Sources.NavigatorView {
+export class SnippetsNavigatorView extends NavigatorView {
   constructor() {
     super();
     const placeholder = new UI.EmptyWidget('');
@@ -273,7 +278,7 @@ export class SnippetsNavigatorView extends Sources.NavigatorView {
   /**
    * @override
    * @param {!Event} event
-   * @param {!Sources.NavigatorUISourceCodeTreeNode} node
+   * @param {!NavigatorUISourceCodeTreeNode} node
    */
   handleFileContextMenu(event, node) {
     const uiSourceCode = node.uiSourceCode();
@@ -292,8 +297,8 @@ export class SnippetsNavigatorView extends Sources.NavigatorView {
   async _handleSaveAs(uiSourceCode) {
     uiSourceCode.commitWorkingCopy();
     const {content} = await uiSourceCode.requestContent();
-    Workspace.fileManager.save(uiSourceCode.url(), content || '', true);
-    Workspace.fileManager.close(uiSourceCode.url());
+    self.Workspace.fileManager.save(uiSourceCode.url(), content || '', true);
+    self.Workspace.fileManager.close(uiSourceCode.url());
   }
 }
 
@@ -313,33 +318,9 @@ export class ActionDelegate {
         Snippets.project.createFile('', null, '').then(uiSourceCode => Common.Revealer.reveal(uiSourceCode));
         return true;
       case 'sources.add-folder-to-workspace':
-        Persistence.isolatedFileSystemManager.addFileSystem();
+        self.Persistence.isolatedFileSystemManager.addFileSystem();
         return true;
     }
     return false;
   }
 }
-
-/* Legacy exported object */
-self.Sources = self.Sources || {};
-
-/* Legacy exported object */
-Sources = Sources || {};
-
-/** @constructor */
-Sources.NetworkNavigatorView = NetworkNavigatorView;
-
-/** @constructor */
-Sources.FilesNavigatorView = FilesNavigatorView;
-
-/** @constructor */
-Sources.OverridesNavigatorView = OverridesNavigatorView;
-
-/** @constructor */
-Sources.ContentScriptsNavigatorView = ContentScriptsNavigatorView;
-
-/** @constructor */
-Sources.SnippetsNavigatorView = SnippetsNavigatorView;
-
-/** @constructor */
-Sources.ActionDelegate = ActionDelegate;

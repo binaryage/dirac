@@ -14,12 +14,12 @@ let _appInstance;
  */
 export class ScreencastApp {
   constructor() {
-    this._enabledSetting = Common.settings.createSetting('screencastEnabled', false);
+    this._enabledSetting = self.Common.settings.createSetting('screencastEnabled', false);
     this._toggleButton = new UI.ToolbarToggle(Common.UIString('Toggle screencast'), 'largeicon-phone');
     this._toggleButton.setToggled(this._enabledSetting.get());
     this._toggleButton.setEnabled(false);
     this._toggleButton.addEventListener(UI.ToolbarButton.Events.Click, this._toggleButtonClicked, this);
-    SDK.targetManager.observeModels(SDK.ScreenCaptureModel, this);
+    self.SDK.targetManager.observeModels(SDK.ScreenCaptureModel, this);
   }
 
   /**
@@ -45,8 +45,8 @@ export class ScreencastApp {
     this._rootSplitWidget.show(rootView.element);
     this._rootSplitWidget.hideMain();
 
-    this._rootSplitWidget.setSidebarWidget(UI.inspectorView);
-    UI.inspectorView.setOwnerSplit(this._rootSplitWidget);
+    this._rootSplitWidget.setSidebarWidget(self.UI.inspectorView);
+    self.UI.inspectorView.setOwnerSplit(this._rootSplitWidget);
     rootView.attachToDocument(document);
     rootView.focus();
   }

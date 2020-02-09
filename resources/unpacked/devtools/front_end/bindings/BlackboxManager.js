@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as Workspace from '../workspace/workspace.js';
+
 import {DebuggerWorkspaceBinding} from './DebuggerWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
- * @implements {SDK.SDKModelObserver<!SDK.DebuggerModel>}
+ * @implements {SDK.SDKModel.SDKModelObserver<!SDK.DebuggerModel.DebuggerModel>}
  */
 export class BlackboxManager {
   /**
@@ -15,10 +19,11 @@ export class BlackboxManager {
   constructor(debuggerWorkspaceBinding) {
     this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
 
-    SDK.targetManager.addModelListener(
-        SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this._clearCacheIfNeeded.bind(this), this);
-    Common.moduleSetting('skipStackFramesPattern').addChangeListener(this._patternChanged.bind(this));
-    Common.moduleSetting('skipContentScripts').addChangeListener(this._patternChanged.bind(this));
+    self.SDK.targetManager.addModelListener(
+        SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared,
+        this._clearCacheIfNeeded.bind(this), this);
+    self.Common.settings.moduleSetting('skipStackFramesPattern').addChangeListener(this._patternChanged.bind(this));
+    self.Common.settings.moduleSetting('skipContentScripts').addChangeListener(this._patternChanged.bind(this));
 
     /** @type {!Set<function()>} */
     this._listeners = new Set();
@@ -26,7 +31,7 @@ export class BlackboxManager {
     /** @type {!Map<string, boolean>} */
     this._isBlackboxedURLCache = new Map();
 
-    SDK.targetManager.observeModels(SDK.DebuggerModel, this);
+    self.SDK.targetManager.observeModels(SDK.DebuggerModel.DebuggerModel, this);
   }
 
   /**
@@ -45,7 +50,7 @@ export class BlackboxManager {
 
   /**
    * @override
-   * @param {!SDK.DebuggerModel} debuggerModel
+   * @param {!SDK.DebuggerModel.DebuggerModel} debuggerModel
    */
   modelAdded(debuggerModel) {
     this._setBlackboxPatterns(debuggerModel);
@@ -56,7 +61,7 @@ export class BlackboxManager {
 
   /**
    * @override
-   * @param {!SDK.DebuggerModel} debuggerModel
+   * @param {!SDK.DebuggerModel.DebuggerModel} debuggerModel
    */
   modelRemoved(debuggerModel) {
     this._clearCacheIfNeeded();
@@ -72,11 +77,11 @@ export class BlackboxManager {
   }
 
   /**
-   * @param {!SDK.DebuggerModel} debuggerModel
+   * @param {!SDK.DebuggerModel.DebuggerModel} debuggerModel
    * @return {!Promise<boolean>}
    */
   _setBlackboxPatterns(debuggerModel) {
-    const regexPatterns = Common.moduleSetting('skipStackFramesPattern').getAsArray();
+    const regexPatterns = self.Common.settings.moduleSetting('skipStackFramesPattern').getAsArray();
     const patterns = /** @type {!Array<string>} */ ([]);
     for (const item of regexPatterns) {
       if (!item.disabled && item.pattern) {
@@ -87,13 +92,13 @@ export class BlackboxManager {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {boolean}
    */
   isBlackboxedUISourceCode(uiSourceCode) {
     const projectType = uiSourceCode.project().type();
-    const isContentScript = projectType === Workspace.projectTypes.ContentScripts;
-    if (isContentScript && Common.moduleSetting('skipContentScripts').get()) {
+    const isContentScript = projectType === Workspace.Workspace.projectTypes.ContentScripts;
+    if (isContentScript && self.Common.settings.moduleSetting('skipContentScripts').get()) {
       return true;
     }
     const url = this._uiSourceCodeURL(uiSourceCode);
@@ -109,10 +114,10 @@ export class BlackboxManager {
     if (this._isBlackboxedURLCache.has(url)) {
       return !!this._isBlackboxedURLCache.get(url);
     }
-    if (isContentScript && Common.moduleSetting('skipContentScripts').get()) {
+    if (isContentScript && self.Common.settings.moduleSetting('skipContentScripts').get()) {
       return true;
     }
-    const regex = Common.moduleSetting('skipStackFramesPattern').asRegExp();
+    const regex = self.Common.settings.moduleSetting('skipStackFramesPattern').asRegExp();
     const isBlackboxed = (regex && regex.test(url)) || false;
     this._isBlackboxedURLCache.set(url, isBlackboxed);
     return isBlackboxed;
@@ -122,8 +127,8 @@ export class BlackboxManager {
    * @param {!Common.Event} event
    */
   _sourceMapAttached(event) {
-    const script = /** @type {!SDK.Script} */ (event.data.client);
-    const sourceMap = /** @type {!SDK.SourceMap} */ (event.data.sourceMap);
+    const script = /** @type {!SDK.Script.Script} */ (event.data.client);
+    const sourceMap = /** @type {!SDK.SourceMap.SourceMap} */ (event.data.sourceMap);
     this._updateScriptRanges(script, sourceMap);
   }
 
@@ -131,18 +136,18 @@ export class BlackboxManager {
    * @param {!Common.Event} event
    */
   _sourceMapDetached(event) {
-    const script = /** @type {!SDK.Script} */ (event.data.client);
+    const script = /** @type {!SDK.Script.Script} */ (event.data.client);
     this._updateScriptRanges(script, null);
   }
 
   /**
-   * @param {!SDK.Script} script
-   * @param {?SDK.SourceMap} sourceMap
+   * @param {!SDK.Script.Script} script
+   * @param {?SDK.SourceMap.SourceMap} sourceMap
    * @return {!Promise<undefined>}
    */
   async _updateScriptRanges(script, sourceMap) {
     let hasBlackboxedMappings = false;
-    if (!Bindings.blackboxManager.isBlackboxedURL(script.sourceURL, script.isContentScript())) {
+    if (!self.Bindings.blackboxManager.isBlackboxedURL(script.sourceURL, script.isContentScript())) {
       hasBlackboxedMappings = sourceMap ? sourceMap.sourceURLs().some(url => this.isBlackboxedURL(url)) : false;
     }
     if (!hasBlackboxedMappings) {
@@ -194,15 +199,15 @@ export class BlackboxManager {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {?string}
    */
   _uiSourceCodeURL(uiSourceCode) {
-    return uiSourceCode.project().type() === Workspace.projectTypes.Debugger ? null : uiSourceCode.url();
+    return uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Debugger ? null : uiSourceCode.url();
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {boolean}
    */
   canBlackboxUISourceCode(uiSourceCode) {
@@ -211,7 +216,7 @@ export class BlackboxManager {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   blackboxUISourceCode(uiSourceCode) {
     const url = this._uiSourceCodeURL(uiSourceCode);
@@ -221,7 +226,7 @@ export class BlackboxManager {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   unblackboxUISourceCode(uiSourceCode) {
     const url = this._uiSourceCodeURL(uiSourceCode);
@@ -231,18 +236,18 @@ export class BlackboxManager {
   }
 
   blackboxContentScripts() {
-    Common.moduleSetting('skipContentScripts').set(true);
+    self.Common.settings.moduleSetting('skipContentScripts').set(true);
   }
 
   unblackboxContentScripts() {
-    Common.moduleSetting('skipContentScripts').set(false);
+    self.Common.settings.moduleSetting('skipContentScripts').set(false);
   }
 
   /**
    * @param {string} url
    */
   _blackboxURL(url) {
-    const regexPatterns = Common.moduleSetting('skipStackFramesPattern').getAsArray();
+    const regexPatterns = self.Common.settings.moduleSetting('skipStackFramesPattern').getAsArray();
     const regexValue = this._urlToRegExpString(url);
     if (!regexValue) {
       return;
@@ -259,15 +264,15 @@ export class BlackboxManager {
     if (!found) {
       regexPatterns.push({pattern: regexValue});
     }
-    Common.moduleSetting('skipStackFramesPattern').setAsArray(regexPatterns);
+    self.Common.settings.moduleSetting('skipStackFramesPattern').setAsArray(regexPatterns);
   }
 
   /**
    * @param {string} url
    */
   _unblackboxURL(url) {
-    let regexPatterns = Common.moduleSetting('skipStackFramesPattern').getAsArray();
-    const regexValue = Bindings.blackboxManager._urlToRegExpString(url);
+    let regexPatterns = self.Common.settings.moduleSetting('skipStackFramesPattern').getAsArray();
+    const regexValue = self.Bindings.blackboxManager._urlToRegExpString(url);
     if (!regexValue) {
       return;
     }
@@ -287,7 +292,7 @@ export class BlackboxManager {
       } catch (e) {
       }
     }
-    Common.moduleSetting('skipStackFramesPattern').setAsArray(regexPatterns);
+    self.Common.settings.moduleSetting('skipStackFramesPattern').setAsArray(regexPatterns);
   }
 
   async _patternChanged() {
@@ -295,7 +300,7 @@ export class BlackboxManager {
 
     /** @type {!Array<!Promise>} */
     const promises = [];
-    for (const debuggerModel of SDK.targetManager.models(SDK.DebuggerModel)) {
+    for (const debuggerModel of self.SDK.targetManager.models(SDK.DebuggerModel.DebuggerModel)) {
       promises.push(this._setBlackboxPatterns(debuggerModel));
       const sourceMapManager = debuggerModel.sourceMapManager();
       for (const script of debuggerModel.scripts()) {
@@ -319,7 +324,7 @@ export class BlackboxManager {
    * @return {string}
    */
   _urlToRegExpString(url) {
-    const parsedURL = new Common.ParsedURL(url);
+    const parsedURL = new Common.ParsedURL.ParsedURL(url);
     if (parsedURL.isAboutBlank() || parsedURL.isDataURL()) {
       return '';
     }

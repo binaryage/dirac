@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {PerformanceModel} from './PerformanceModel.js';  // eslint-disable-line no-unused-vars
+import {FlameChartStyle, Selection} from './TimelineFlameChartView.js';
+import {TimelineSelection} from './TimelinePanel.js';
+import {TimelineUIUtils} from './TimelineUIUtils.js';
+
 /**
  * @implements {PerfUI.FlameChartDataProvider}
  * @unrestricted
  */
-export default class TimelineFlameChartNetworkDataProvider {
+export class TimelineFlameChartNetworkDataProvider {
   constructor() {
     this._font = '11px ' + Host.fontFamily();
     this.setModel(null);
@@ -14,9 +19,9 @@ export default class TimelineFlameChartNetworkDataProvider {
       padding: 4,
       height: 17,
       collapsible: true,
-      color: UI.themeSupport.patchColorText('#222', UI.ThemeSupport.ColorUsage.Foreground),
+      color: self.UI.themeSupport.patchColorText('#222', UI.ThemeSupport.ColorUsage.Foreground),
       font: this._font,
-      backgroundColor: UI.themeSupport.patchColorText('white', UI.ThemeSupport.ColorUsage.Background),
+      backgroundColor: self.UI.themeSupport.patchColorText('white', UI.ThemeSupport.ColorUsage.Background),
       nestingLevel: 0,
       useFirstLineForOverview: false,
       useDecoratorsForOverview: true,
@@ -29,7 +34,7 @@ export default class TimelineFlameChartNetworkDataProvider {
   }
 
   /**
-   * @param {?Timeline.PerformanceModel} performanceModel
+   * @param {?PerformanceModel} performanceModel
    */
   setModel(performanceModel) {
     this._model = performanceModel && performanceModel.timelineModel();
@@ -100,20 +105,19 @@ export default class TimelineFlameChartNetworkDataProvider {
 
   /**
    * @param {number} index
-   * @return {?Timeline.TimelineSelection}
+   * @return {?TimelineSelection}
    */
   createSelection(index) {
     if (index === -1) {
       return null;
     }
     const request = this._requests[index];
-    this._lastSelection =
-        new Timeline.TimelineFlameChartView.Selection(Timeline.TimelineSelection.fromNetworkRequest(request), index);
+    this._lastSelection = new Selection(TimelineSelection.fromNetworkRequest(request), index);
     return this._lastSelection.timelineSelection;
   }
 
   /**
-   * @param {?Timeline.TimelineSelection} selection
+   * @param {?TimelineSelection} selection
    * @return {number}
    */
   entryIndexForSelection(selection) {
@@ -125,14 +129,13 @@ export default class TimelineFlameChartNetworkDataProvider {
       return this._lastSelection.entryIndex;
     }
 
-    if (selection.type() !== Timeline.TimelineSelection.Type.NetworkRequest) {
+    if (selection.type() !== TimelineSelection.Type.NetworkRequest) {
       return -1;
     }
     const request = /** @type{!TimelineModel.TimelineModel.NetworkRequest} */ (selection.object());
     const index = this._requests.indexOf(request);
     if (index !== -1) {
-      this._lastSelection =
-          new Timeline.TimelineFlameChartView.Selection(Timeline.TimelineSelection.fromNetworkRequest(request), index);
+      this._lastSelection = new Selection(TimelineSelection.fromNetworkRequest(request), index);
     }
     return index;
   }
@@ -144,8 +147,8 @@ export default class TimelineFlameChartNetworkDataProvider {
    */
   entryColor(index) {
     const request = /** @type {!TimelineModel.TimelineModel.NetworkRequest} */ (this._requests[index]);
-    const category = Timeline.TimelineUIUtils.networkRequestCategory(request);
-    return Timeline.TimelineUIUtils.networkCategoryColor(category);
+    const category = TimelineUIUtils.networkRequestCategory(request);
+    return TimelineUIUtils.networkCategoryColor(category);
   }
 
   /**
@@ -154,7 +157,7 @@ export default class TimelineFlameChartNetworkDataProvider {
    * @return {string}
    */
   textColor(index) {
-    return Timeline.FlameChartStyle.textColor;
+    return FlameChartStyle.textColor;
   }
 
   /**
@@ -216,7 +219,7 @@ export default class TimelineFlameChartNetworkDataProvider {
     context.fillStyle = 'hsla(0, 100%, 100%, 0.8)';
     context.fillRect(sendStart + 0.5, barY + 0.5, headersEnd - sendStart - 0.5, barHeight - 2);
     // Clear portions of initial rect to prepare for the ticks.
-    context.fillStyle = UI.themeSupport.patchColorText('white', UI.ThemeSupport.ColorUsage.Background);
+    context.fillStyle = self.UI.themeSupport.patchColorText('white', UI.ThemeSupport.ColorUsage.Background);
     context.fillRect(barX, barY - 0.5, sendStart - barX, barHeight);
     context.fillRect(finish, barY - 0.5, barX + barWidth - finish, barHeight);
 
@@ -440,12 +443,3 @@ export default class TimelineFlameChartNetworkDataProvider {
     return false;
   }
 }
-
-/* Legacy exported object */
-self.Timeline = self.Timeline || {};
-
-/* Legacy exported object */
-Timeline = Timeline || {};
-
-/** @constructor */
-Timeline.TimelineFlameChartNetworkDataProvider = TimelineFlameChartNetworkDataProvider;

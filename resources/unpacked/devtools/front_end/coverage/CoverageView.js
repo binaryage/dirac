@@ -43,15 +43,15 @@ export class CoverageView extends UI.VBox {
     toolbar.appendToolbarItem(this._coverageTypeComboBox);
 
     this._toggleRecordAction =
-        /** @type {!UI.Action }*/ (UI.actionRegistry.action('coverage.toggle-recording'));
+        /** @type {!UI.Action }*/ (self.UI.actionRegistry.action('coverage.toggle-recording'));
     this._toggleRecordButton = UI.Toolbar.createActionButton(this._toggleRecordAction);
     toolbar.appendToolbarItem(this._toggleRecordButton);
 
-    const mainTarget = SDK.targetManager.mainTarget();
+    const mainTarget = self.SDK.targetManager.mainTarget();
     const mainTargetSupportsRecordOnReload = mainTarget && mainTarget.model(SDK.ResourceTreeModel);
     if (mainTargetSupportsRecordOnReload) {
       const startWithReloadAction =
-          /** @type {!UI.Action }*/ (UI.actionRegistry.action('coverage.start-with-reload'));
+          /** @type {!UI.Action }*/ (self.UI.actionRegistry.action('coverage.start-with-reload'));
       this._startWithReloadButton = UI.Toolbar.createActionButton(startWithReloadAction);
       toolbar.appendToolbarItem(this._startWithReloadButton);
       this._toggleRecordButton.setEnabled(false);
@@ -102,7 +102,7 @@ export class CoverageView extends UI.VBox {
     toolbar.appendToolbarItem(this._filterByTypeComboBox);
 
     toolbar.appendSeparator();
-    this._showContentScriptsSetting = Common.settings.createSetting('showContentScripts', false);
+    this._showContentScriptsSetting = self.Common.settings.createSetting('showContentScripts', false);
     this._showContentScriptsSetting.addChangeListener(this._onFilterChanged, this);
     const contentScriptsCheckbox = new UI.ToolbarSettingCheckbox(
         this._showContentScriptsSetting, Common.UIString('Include extension content scripts'),
@@ -202,7 +202,7 @@ export class CoverageView extends UI.VBox {
    */
   async _startRecording(options) {
     this._reset();
-    const mainTarget = SDK.targetManager.mainTarget();
+    const mainTarget = self.SDK.targetManager.mainTarget();
     if (!mainTarget) {
       return;
     }
@@ -273,6 +273,10 @@ export class CoverageView extends UI.VBox {
       this._toggleRecordButton.setVisible(false);
     }
     this._clearButton.setEnabled(true);
+  }
+
+  processBacklog() {
+    this._model.processJSBacklog();
   }
 
   _onMainFrameNavigated() {
@@ -381,8 +385,8 @@ export class ActionDelegate {
    */
   handleAction(context, actionId) {
     const coverageViewId = 'coverage';
-    UI.viewManager.showView(coverageViewId)
-        .then(() => UI.viewManager.view(coverageViewId).widget())
+    self.UI.viewManager.showView(coverageViewId)
+        .then(() => self.UI.viewManager.view(coverageViewId).widget())
         .then(widget => this._innerHandleAction(/** @type !CoverageView} */ (widget), actionId));
 
     return true;
@@ -466,11 +470,13 @@ export class LineDecorator {
         return;
       }
       const coverageViewId = 'coverage';
-      UI.viewManager.showView(coverageViewId).then(() => UI.viewManager.view(coverageViewId).widget()).then(widget => {
-        const matchFormattedSuffix = url.match(/(.*):formatted$/);
-        const urlWithoutFormattedSuffix = (matchFormattedSuffix && matchFormattedSuffix[1]) || url;
-        widget.selectCoverageItemByUrl(urlWithoutFormattedSuffix);
-      });
+      self.UI.viewManager.showView(coverageViewId)
+          .then(() => self.UI.viewManager.view(coverageViewId).widget())
+          .then(widget => {
+            const matchFormattedSuffix = url.match(/(.*):formatted$/);
+            const urlWithoutFormattedSuffix = (matchFormattedSuffix && matchFormattedSuffix[1]) || url;
+            widget.selectCoverageItemByUrl(urlWithoutFormattedSuffix);
+          });
     }
     return handleGutterClick;
   }

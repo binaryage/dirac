@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export default class ScriptOriginPlugin extends Sources.UISourceCodeFrame.Plugin {
+import {Plugin} from './Plugin.js';
+
+export class ScriptOriginPlugin extends Plugin {
   /**
    * @param {!SourceFrame.SourcesTextEditor} textEditor
    * @param {!Workspace.UISourceCode} uiSourceCode
@@ -38,7 +40,7 @@ export default class ScriptOriginPlugin extends Sources.UISourceCodeFrame.Plugin
     if (!script || !script.originStackTrace) {
       return [];
     }
-    const link = _linkifier.linkifyStackTraceTopFrame(script.debuggerModel.target(), script.originStackTrace);
+    const link = linkifier.linkifyStackTraceTopFrame(script.debuggerModel.target(), script.originStackTrace);
     return [new UI.ToolbarItem(link)];
   }
 
@@ -47,7 +49,7 @@ export default class ScriptOriginPlugin extends Sources.UISourceCodeFrame.Plugin
    * @return {!Promise<?SDK.Script>}
    */
   static async _script(uiSourceCode) {
-    const locations = await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 0, 0);
+    const locations = await self.Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 0, 0);
     for (const location of locations) {
       const script = location.script();
       if (script && script.originStackTrace) {
@@ -58,15 +60,4 @@ export default class ScriptOriginPlugin extends Sources.UISourceCodeFrame.Plugin
   }
 }
 
-export const _linkifier = new Components.Linkifier();
-
-/* Legacy exported object */
-self.Sources = self.Sources || {};
-
-/* Legacy exported object */
-Sources = Sources || {};
-
-/** @constructor */
-Sources.ScriptOriginPlugin = ScriptOriginPlugin;
-
-Sources.ScriptOriginPlugin._linkifier = _linkifier;
+export const linkifier = new Components.Linkifier();

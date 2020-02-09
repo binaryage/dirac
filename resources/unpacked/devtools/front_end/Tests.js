@@ -240,7 +240,7 @@
    * @param {string} panelName Name of the panel to show.
    */
   TestSuite.prototype.showPanel = function(panelName) {
-    return UI.inspectorView.showPanel(panelName);
+    return self.UI.inspectorView.showPanel(panelName);
   };
 
   // UI Tests
@@ -267,7 +267,7 @@
    */
   TestSuite.prototype.testScriptsTabIsPopulatedOnInspectedPageRefresh = function() {
     const test = this;
-    const debuggerModel = SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
+    const debuggerModel = self.SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
     debuggerModel.addEventListener(SDK.DebuggerModel.Events.GlobalObjectCleared, waitUntilScriptIsParsed);
 
     this.showPanel('elements').then(function() {
@@ -352,7 +352,7 @@
   // Tests that debugger works correctly if pause event occurs when DevTools
   // frontend is being loaded.
   TestSuite.prototype.testPauseWhenLoadingDevTools = function() {
-    const debuggerModel = SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
+    const debuggerModel = self.SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
     if (debuggerModel.debuggerPausedDetails) {
       return;
     }
@@ -524,13 +524,13 @@
   TestSuite.prototype.testConsoleOnNavigateBack = function() {
 
     function filteredMessages() {
-      return SDK.consoleModel.messages().filter(a => a.source !== SDK.ConsoleMessage.MessageSource.Violation);
+      return self.SDK.consoleModel.messages().filter(a => a.source !== SDK.ConsoleMessage.MessageSource.Violation);
     }
 
     if (filteredMessages().length === 1) {
       firstConsoleMessageReceived.call(this, null);
     } else {
-      SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
+      self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
     }
 
 
@@ -538,7 +538,8 @@
       if (event && event.data.source === SDK.ConsoleMessage.MessageSource.Violation) {
         return;
       }
-      SDK.consoleModel.removeEventListener(SDK.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
+      self.SDK.consoleModel.removeEventListener(
+          SDK.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
       this.evaluateInConsole_('clickLink();', didClickLink.bind(this));
     }
 
@@ -585,9 +586,9 @@
     this._waitForTargets(1, callback.bind(this));
 
     function callback() {
-      const debuggerModel = SDK.targetManager.models(SDK.DebuggerModel)[0];
+      const debuggerModel = self.SDK.targetManager.models(SDK.DebuggerModel)[0];
       if (debuggerModel.isPaused()) {
-        SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
+        self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
         debuggerModel.resume();
         return;
       }
@@ -615,12 +616,12 @@
 
   TestSuite.prototype.enableTouchEmulation = function() {
     const deviceModeModel = new Emulation.DeviceModeModel(function() {});
-    deviceModeModel._target = SDK.targetManager.mainTarget();
+    deviceModeModel._target = self.SDK.targetManager.mainTarget();
     deviceModeModel._applyTouch(true, true);
   };
 
   TestSuite.prototype.waitForDebuggerPaused = function() {
-    const debuggerModel = SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
+    const debuggerModel = self.SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
     if (debuggerModel.debuggerPausedDetails) {
       return;
     }
@@ -644,7 +645,7 @@
     const test = this;
 
     async function testOverrides(params, metrics, callback) {
-      await SDK.targetManager.mainTarget().emulationAgent().invoke_setDeviceMetricsOverride(params);
+      await self.SDK.targetManager.mainTarget().emulationAgent().invoke_setDeviceMetricsOverride(params);
       test.evaluateInConsole_('(' + dumpPageMetrics.toString() + ')()', checkMetrics);
 
       function checkMetrics(consoleResult) {
@@ -691,20 +692,20 @@
     let receivedReady = false;
 
     function signalToShowAutofill() {
-      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+      self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
           {type: 'rawKeyDown', key: 'Down', windowsVirtualKeyCode: 40, nativeVirtualKeyCode: 40});
-      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+      self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
           {type: 'keyUp', key: 'Down', windowsVirtualKeyCode: 40, nativeVirtualKeyCode: 40});
     }
 
     function selectTopAutoFill() {
-      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+      self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
           {type: 'rawKeyDown', key: 'Down', windowsVirtualKeyCode: 40, nativeVirtualKeyCode: 40});
-      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+      self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
           {type: 'keyUp', key: 'Down', windowsVirtualKeyCode: 40, nativeVirtualKeyCode: 40});
-      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+      self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
           {type: 'rawKeyDown', key: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13});
-      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+      self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
           {type: 'keyUp', key: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13});
 
       test.evaluateInConsole_('document.getElementById("name").value', onResultOfInput);
@@ -732,9 +733,9 @@
 
     // It is possible for the ready console messagage to be already received but not handled
     // or received later. This ensures we can catch both cases.
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
 
-    const messages = SDK.consoleModel.messages();
+    const messages = self.SDK.consoleModel.messages();
     if (messages.length) {
       const text = messages[0].messageText;
       this.assertEquals('ready', text);
@@ -753,7 +754,7 @@
           Host.InspectorFrontendHostAPI.Events.KeyEventUnhandled, onKeyEventUnhandledKeyDown, this);
       Host.InspectorFrontendHost.events.addEventListener(
           Host.InspectorFrontendHostAPI.Events.KeyEventUnhandled, onKeyEventUnhandledKeyUp, this);
-      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+      self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
           {type: 'keyUp', key: 'F8', code: 'F8', windowsVirtualKeyCode: 119, nativeVirtualKeyCode: 119});
     }
     function onKeyEventUnhandledKeyUp(event) {
@@ -767,14 +768,14 @@
     this.takeControl();
     Host.InspectorFrontendHost.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.KeyEventUnhandled, onKeyEventUnhandledKeyDown, this);
-    SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+    self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
         {type: 'rawKeyDown', key: 'F8', windowsVirtualKeyCode: 119, nativeVirtualKeyCode: 119});
   };
 
   TestSuite.prototype.testDispatchKeyEventDoesNotCrash = function() {
-    SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+    self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
         {type: 'rawKeyDown', windowsVirtualKeyCode: 0x23, key: 'End'});
-    SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+    self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
         {type: 'keyUp', windowsVirtualKeyCode: 0x23, key: 'End'});
   };
 
@@ -865,7 +866,7 @@
   // See crbug.com/747724
   TestSuite.prototype.testOfflineNetworkConditions = async function() {
     const test = this;
-    SDK.multitargetNetworkManager.setNetworkConditions(SDK.NetworkManager.OfflineConditions);
+    self.SDK.multitargetNetworkManager.setNetworkConditions(SDK.NetworkManager.OfflineConditions);
 
     function finishRequest(request) {
       test.assertEquals(
@@ -892,13 +893,13 @@
 
         messages.splice(index, 1);
         if (!messages.length) {
-          SDK.consoleModel.removeEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
+          self.SDK.consoleModel.removeEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
           next();
         }
       }
 
-      SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
-      SDK.multitargetNetworkManager.setNetworkConditions(preset);
+      self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
+      self.SDK.multitargetNetworkManager.setNetworkConditions(preset);
     }
 
     test.takeControl();
@@ -952,7 +953,7 @@
       }
     }
 
-    const captureFilmStripSetting = Common.settings.createSetting('timelineCaptureFilmStrip', false);
+    const captureFilmStripSetting = self.Common.settings.createSetting('timelineCaptureFilmStrip', false);
     captureFilmStripSetting.set(true);
     test.evaluateInConsole_(performActionsInPage.toString(), function() {});
     test.invokeAsyncWithTimeline_('performActionsInPage', onTimelineDone);
@@ -1026,9 +1027,9 @@
     setTimeout(reset, 0);
 
     function createSettings() {
-      const localSetting = Common.settings.createLocalSetting('local', undefined);
+      const localSetting = self.Common.settings.createLocalSetting('local', undefined);
       localSetting.set({s: 'local', n: 1});
-      const globalSetting = Common.settings.createSetting('global', undefined);
+      const globalSetting = self.Common.settings.createSetting('global', undefined);
       globalSetting.set({s: 'global', n: 2});
     }
 
@@ -1040,11 +1041,11 @@
     function gotPreferences(prefs) {
       Main.Main._instanceForTest._createSettings(prefs);
 
-      const localSetting = Common.settings.createLocalSetting('local', undefined);
+      const localSetting = self.Common.settings.createLocalSetting('local', undefined);
       test.assertEquals('object', typeof localSetting.get());
       test.assertEquals('local', localSetting.get().s);
       test.assertEquals(1, localSetting.get().n);
-      const globalSetting = Common.settings.createSetting('global', undefined);
+      const globalSetting = self.Common.settings.createSetting('global', undefined);
       test.assertEquals('object', typeof globalSetting.get());
       test.assertEquals('global', globalSetting.get().s);
       test.assertEquals(2, globalSetting.get().n);
@@ -1055,15 +1056,15 @@
   TestSuite.prototype.testWindowInitializedOnNavigateBack = function() {
     const test = this;
     test.takeControl();
-    const messages = SDK.consoleModel.messages();
+    const messages = self.SDK.consoleModel.messages();
     if (messages.length === 1) {
       checkMessages();
     } else {
-      SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, checkMessages.bind(this), this);
+      self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, checkMessages.bind(this), this);
     }
 
     function checkMessages() {
-      const messages = SDK.consoleModel.messages();
+      const messages = self.SDK.consoleModel.messages();
       test.assertEquals(1, messages.length);
       test.assertTrue(messages[0].messageText.indexOf('Uncaught') === -1);
       test.releaseControl();
@@ -1091,7 +1092,7 @@
   TestSuite.prototype.testRawHeadersWithHSTS = function(url) {
     const test = this;
     test.takeControl();
-    SDK.targetManager.addModelListener(
+    self.SDK.targetManager.addModelListener(
         SDK.NetworkManager, SDK.NetworkManager.Events.ResponseReceived, onResponseReceived);
 
     this.evaluateInConsole_(`
@@ -1133,14 +1134,14 @@
   };
 
   TestSuite.prototype.testDOMWarnings = function() {
-    const messages = SDK.consoleModel.messages();
+    const messages = self.SDK.consoleModel.messages();
     this.assertEquals(1, messages.length);
     const expectedPrefix = '[DOM] Found 2 elements with non-unique id #dup:';
     this.assertTrue(messages[0].messageText.startsWith(expectedPrefix));
   };
 
   TestSuite.prototype.waitForTestResultsInConsole = function() {
-    const messages = SDK.consoleModel.messages();
+    const messages = self.SDK.consoleModel.messages();
     for (let i = 0; i < messages.length; ++i) {
       const text = messages[i].messageText;
       if (text === 'PASS') {
@@ -1159,7 +1160,7 @@
       }
     }
 
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
     this.takeControl();
   };
 
@@ -1204,12 +1205,12 @@
         Array.prototype.slice.call(arguments, 1, -1).map(arg => JSON.stringify(arg)).join(',') + ',';
     this.evaluateInConsole_(
         `${functionName}(${argsString} function() { console.log('${doneMessage}'); });`, function() {});
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage);
 
     function onConsoleMessage(event) {
       const text = event.data.messageText;
       if (text === doneMessage) {
-        SDK.consoleModel.removeEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage);
+        self.SDK.consoleModel.removeEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage);
         callback();
       }
     }
@@ -1269,7 +1270,7 @@
 
   TestSuite.prototype.testDisposeEmptyBrowserContext = async function(url) {
     this.takeControl();
-    const targetAgent = SDK.targetManager.mainTarget().targetAgent();
+    const targetAgent = self.SDK.targetManager.mainTarget().targetAgent();
     const {browserContextId} = await targetAgent.invoke_createBrowserContext();
     const response1 = await targetAgent.invoke_getBrowserContexts();
     this.assertEquals(response1.browserContextIds.length, 1);
@@ -1282,7 +1283,7 @@
   TestSuite.prototype.testCreateBrowserContext = async function(url) {
     this.takeControl();
     const browserContextIds = [];
-    const targetAgent = SDK.targetManager.mainTarget().targetAgent();
+    const targetAgent = self.SDK.targetManager.mainTarget().targetAgent();
 
     const target1 = await createIsolatedTarget(url);
     const target2 = await createIsolatedTarget(url);
@@ -1301,7 +1302,8 @@
     this.assertEquals(await evalCode(target2, 'localStorage.getItem("page2")'), 'page2');
 
     const removedTargets = [];
-    SDK.targetManager.observeTargets({targetAdded: () => {}, targetRemoved: target => removedTargets.push(target)});
+    self.SDK.targetManager.observeTargets(
+        {targetAdded: () => {}, targetRemoved: target => removedTargets.push(target)});
     await Promise.all([disposeBrowserContext(browserContextIds[0]), disposeBrowserContext(browserContextIds[1])]);
     this.assertEquals(removedTargets.length, 2);
     this.assertEquals(removedTargets.indexOf(target1) !== -1, true);
@@ -1320,7 +1322,7 @@
       const {targetId} = await targetAgent.invoke_createTarget({url: 'about:blank', browserContextId});
       await targetAgent.invoke_attachToTarget({targetId, flatten: true});
 
-      const target = SDK.targetManager.targets().find(target => target.id() === targetId);
+      const target = self.SDK.targetManager.targets().find(target => target.id() === targetId);
       const pageAgent = target.pageAgent();
       await pageAgent.invoke_enable();
       await pageAgent.invoke_navigate({url});
@@ -1328,7 +1330,7 @@
     }
 
     async function disposeBrowserContext(browserContextId) {
-      const targetAgent = SDK.targetManager.mainTarget().targetAgent();
+      const targetAgent = self.SDK.targetManager.mainTarget().targetAgent();
       await targetAgent.invoke_disposeBrowserContext({browserContextId});
     }
 
@@ -1356,8 +1358,8 @@
     let parentFrameOutput;
     let childFrameOutput;
 
-    const inputAgent = SDK.targetManager.mainTarget().inputAgent();
-    const runtimeAgent = SDK.targetManager.mainTarget().runtimeAgent();
+    const inputAgent = self.SDK.targetManager.mainTarget().inputAgent();
+    const runtimeAgent = self.SDK.targetManager.mainTarget().runtimeAgent();
     await inputAgent.invoke_dispatchMouseEvent({type: 'mousePressed', button: 'left', clickCount: 1, x: 10, y: 10});
     await inputAgent.invoke_dispatchMouseEvent({type: 'mouseMoved', button: 'left', clickCount: 1, x: 10, y: 20});
     await inputAgent.invoke_dispatchMouseEvent({type: 'mouseReleased', button: 'left', clickCount: 1, x: 10, y: 20});
@@ -1365,27 +1367,27 @@
     await inputAgent.invoke_dispatchMouseEvent({type: 'mouseMoved', button: 'left', clickCount: 1, x: 230, y: 150});
     await inputAgent.invoke_dispatchMouseEvent({type: 'mouseReleased', button: 'left', clickCount: 1, x: 230, y: 150});
     parentFrameOutput = 'Event type: mousedown button: 0 x: 10 y: 10 Event type: mouseup button: 0 x: 10 y: 20';
-    this.assertEquals(parentFrameOutput, await takeLogs(SDK.targetManager.targets()[0]));
+    this.assertEquals(parentFrameOutput, await takeLogs(self.SDK.targetManager.targets()[0]));
     childFrameOutput = 'Event type: mousedown button: 0 x: 30 y: 40 Event type: mouseup button: 0 x: 30 y: 50';
-    this.assertEquals(childFrameOutput, await takeLogs(SDK.targetManager.targets()[1]));
+    this.assertEquals(childFrameOutput, await takeLogs(self.SDK.targetManager.targets()[1]));
 
 
     await inputAgent.invoke_dispatchKeyEvent({type: 'keyDown', key: 'a'});
     await runtimeAgent.invoke_evaluate({expression: `document.querySelector('iframe').focus()`});
     await inputAgent.invoke_dispatchKeyEvent({type: 'keyDown', key: 'a'});
     parentFrameOutput = 'Event type: keydown';
-    this.assertEquals(parentFrameOutput, await takeLogs(SDK.targetManager.targets()[0]));
+    this.assertEquals(parentFrameOutput, await takeLogs(self.SDK.targetManager.targets()[0]));
     childFrameOutput = 'Event type: keydown';
-    this.assertEquals(childFrameOutput, await takeLogs(SDK.targetManager.targets()[1]));
+    this.assertEquals(childFrameOutput, await takeLogs(self.SDK.targetManager.targets()[1]));
 
     await inputAgent.invoke_dispatchTouchEvent({type: 'touchStart', touchPoints: [{x: 10, y: 10}]});
     await inputAgent.invoke_dispatchTouchEvent({type: 'touchEnd', touchPoints: []});
     await inputAgent.invoke_dispatchTouchEvent({type: 'touchStart', touchPoints: [{x: 230, y: 140}]});
     await inputAgent.invoke_dispatchTouchEvent({type: 'touchEnd', touchPoints: []});
     parentFrameOutput = 'Event type: touchstart touch x: 10 touch y: 10';
-    this.assertEquals(parentFrameOutput, await takeLogs(SDK.targetManager.targets()[0]));
+    this.assertEquals(parentFrameOutput, await takeLogs(self.SDK.targetManager.targets()[0]));
     childFrameOutput = 'Event type: touchstart touch x: 30 touch y: 40';
-    this.assertEquals(childFrameOutput, await takeLogs(SDK.targetManager.targets()[1]));
+    this.assertEquals(childFrameOutput, await takeLogs(self.SDK.targetManager.targets()[1]));
 
     this.releaseControl();
   };
@@ -1397,8 +1399,8 @@
       return new Promise(fulfill => {
         Host.ResourceLoader.load(url, headers, callback);
 
-        function callback(statusCode, headers, content) {
-          test.assertEquals(expectedStatus, statusCode);
+        function callback(success, headers, content, errorDescription) {
+          test.assertEquals(expectedStatus, errorDescription.statusCode);
 
           const headersArray = [];
           for (const name in headers) {
@@ -1421,14 +1423,14 @@
     await testCase(baseURL + 'echoheader?x-devtools-test', {'x-devtools-test': 'Foo'}, 200, ['cache-control'], 'Foo');
     await testCase(baseURL + 'set-header?pragma:%20no-cache', undefined, 200, ['pragma'], 'pragma: no-cache');
 
-    await SDK.targetManager.mainTarget().runtimeAgent().invoke_evaluate({
+    await self.SDK.targetManager.mainTarget().runtimeAgent().invoke_evaluate({
       expression: `fetch("/set-cookie?devtools-test-cookie=Bar",
                          {credentials: 'include'})`,
       awaitPromise: true
     });
     await testCase(baseURL + 'echoheader?Cookie', undefined, 200, ['cache-control'], 'devtools-test-cookie=Bar');
 
-    await SDK.targetManager.mainTarget().runtimeAgent().invoke_evaluate({
+    await self.SDK.targetManager.mainTarget().runtimeAgent().invoke_evaluate({
       expression: `fetch("/set-cookie?devtools-test-cookie=same-site-cookie;SameSite=Lax",
                          {credentials: 'include'})`,
       awaitPromise: true
@@ -1446,7 +1448,7 @@
     this.takeControl();
 
     const testUserAgent = 'test user agent';
-    SDK.multitargetNetworkManager.setUserAgentOverride(testUserAgent);
+    self.SDK.multitargetNetworkManager.setUserAgentOverride(testUserAgent);
 
     function onRequestUpdated(event) {
       const request = event.data;
@@ -1466,7 +1468,7 @@
       this.assertEquals(testUserAgent, actualUserAgent);
       this.releaseControl();
     }
-    SDK.targetManager.addModelListener(
+    self.SDK.targetManager.addModelListener(
         SDK.NetworkManager, SDK.NetworkManager.Events.RequestUpdated, onRequestUpdated.bind(this));
 
     this.evaluateInConsole_(`new WebSocket('ws://127.0.0.1:${websocketPort}')`, () => {});
@@ -1497,7 +1499,7 @@
       return !uiSourceCode.project().isServiceProject();
     }
 
-    const uiSourceCodes = Workspace.workspace.uiSourceCodes();
+    const uiSourceCodes = self.Workspace.workspace.uiSourceCodes();
     return uiSourceCodes.filter(filterOutService);
   };
 
@@ -1509,7 +1511,7 @@
  */
   TestSuite.prototype.evaluateInConsole_ = function(code, callback) {
     function innerEvaluate() {
-      UI.context.removeFlavorChangeListener(SDK.ExecutionContext, showConsoleAndEvaluate, this);
+      self.UI.context.removeFlavorChangeListener(SDK.ExecutionContext, showConsoleAndEvaluate, this);
       const consoleView = Console.ConsoleView.instance();
       consoleView._prompt._appendCommand(code);
 
@@ -1519,11 +1521,11 @@
     }
 
     function showConsoleAndEvaluate() {
-      Common.console.showPromise().then(innerEvaluate.bind(this));
+      self.Common.console.showPromise().then(innerEvaluate.bind(this));
     }
 
-    if (!UI.context.flavor(SDK.ExecutionContext)) {
-      UI.context.addFlavorChangeListener(SDK.ExecutionContext, showConsoleAndEvaluate, this);
+    if (!self.UI.context.flavor(SDK.ExecutionContext)) {
+      self.UI.context.addFlavorChangeListener(SDK.ExecutionContext, showConsoleAndEvaluate, this);
       return;
     }
     showConsoleAndEvaluate.call(this);
@@ -1581,7 +1583,7 @@
     checkTargets.call(this);
 
     function checkTargets() {
-      if (SDK.targetManager.targets().length >= n) {
+      if (self.SDK.targetManager.targets().length >= n) {
         callback.call(null);
       } else {
         this.addSniffer(SDK.TargetManager.prototype, 'createTarget', checkTargets.bind(this));
@@ -1590,7 +1592,7 @@
   };
 
   TestSuite.prototype._waitForExecutionContexts = function(n, callback) {
-    const runtimeModel = SDK.targetManager.mainTarget().model(SDK.RuntimeModel);
+    const runtimeModel = self.SDK.targetManager.mainTarget().model(SDK.RuntimeModel);
     checkForExecutionContexts.call(this);
 
     function checkForExecutionContexts() {

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as SDK from '../sdk/sdk.js';
+
 /**
  * @implements {Protocol.WebAudioDispatcher}
  */
-export class WebAudioModel extends SDK.SDKModel {
+export class WebAudioModel extends SDK.SDKModel.SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   constructor(target) {
     super(target);
@@ -25,8 +27,9 @@ export class WebAudioModel extends SDK.SDKModel {
     // To resolve this inconsistency, we flush the leftover from the previous
     // frame when the current page is loaded. This call can be omitted when the
     // bug is fixed.
-    SDK.targetManager.addModelListener(
-        SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this._flushContexts, this);
+    self.SDK.targetManager.addModelListener(
+        SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this._flushContexts,
+        this);
   }
 
   _flushContexts() {
@@ -204,7 +207,7 @@ export class WebAudioModel extends SDK.SDKModel {
   }
 }
 
-SDK.SDKModel.register(WebAudioModel, SDK.Target.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(WebAudioModel, SDK.SDKModel.Capability.DOM, false);
 
 /** @enum {symbol} */
 export const Events = {

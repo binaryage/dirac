@@ -128,6 +128,10 @@ Object.assign(window.dirac, (function() {
     evalInContext(lookupDefaultContext(), code, silent, callback);
   }
 
+  function getMainDebuggerModel() {
+    return SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
+  }
+
   let debuggerEventsUnsubscribers = new Map();
 
   /**
@@ -911,6 +915,7 @@ Object.assign(window.dirac, (function() {
     hasCurrentContext: hasCurrentContext,
     evalInDefaultContext: evalInDefaultContext,
     hasDefaultContext: hasDefaultContext,
+    getMainDebuggerModel: getMainDebuggerModel,
     subscribeDebuggerEvents: subscribeDebuggerEvents,
     unsubscribeDebuggerEvents: unsubscribeDebuggerEvents,
     addConsoleMessageToMainTarget: addConsoleMessageToMainTarget,

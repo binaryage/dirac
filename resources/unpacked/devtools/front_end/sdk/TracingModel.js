@@ -1,8 +1,6 @@
-/*
- * Copyright 2014 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 export class TracingModel {
   /**
@@ -125,7 +123,7 @@ export class TracingModel {
     if (tracingStartedInBrowser.length === 1) {
       return tracingStartedInBrowser[0].thread;
     }
-    Common.console.error('Failed to find browser main thread in trace, some timeline features may be unavailable');
+    self.Common.console.error('Failed to find browser main thread in trace, some timeline features may be unavailable');
     return null;
   }
 
@@ -715,7 +713,7 @@ export class ObjectSnapshot extends Event {
         const payload = JSON.parse(result);
         callback(payload['args']['snapshot']);
       } catch (e) {
-        Common.console.error('Malformed event data in backing storage');
+        self.Common.console.error('Malformed event data in backing storage');
         callback(null);
       }
     }

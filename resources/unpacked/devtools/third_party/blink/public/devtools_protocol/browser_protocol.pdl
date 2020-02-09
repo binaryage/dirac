@@ -447,6 +447,10 @@ experimental domain ApplicationCache
 experimental domain Audits
   depends on Network
 
+  type Issue extends object
+    properties
+      string code
+
   # Returns the response body and size if it were re-encoded with the specified settings. Only
   # applies to images.
   command getEncodedResponse
@@ -469,6 +473,17 @@ experimental domain Audits
       integer originalSize
       # Size after re-encoding.
       integer encodedSize
+
+  # Disables issues domain, prevents further issues from being reported to the client.
+  command disable
+
+  # Enables issues domain, sends the issues collected so far to the client by means of the
+  # `issueAdded` event.
+  command enable
+
+  event issueAdded
+    parameters
+      Issue issue
 
 # Defines events for background web platform features.
 experimental domain BackgroundService
@@ -3526,7 +3541,9 @@ experimental domain LayerTree
       LayerId layerId
     returns
       # A list of strings specifying reasons for the given layer to become composited.
-      array of string compositingReasons
+      deprecated array of string compositingReasons
+      # A list of strings specifying reason IDs for the given layer to become composited.
+      array of string compositingReasonIds
 
   # Disables compositing tree inspection.
   command disable
@@ -5338,6 +5355,21 @@ domain Page
       reload
       anchorClick
 
+  experimental type InstallabilityErrorArgument extends object
+    properties
+      # Argument name (e.g. name:'minimum-icon-size-in-pixels').
+      string name
+      # Argument value (e.g. value:'64').
+      string value
+
+  # The installability error
+  experimental type InstallabilityError extends object
+    properties
+      # The error id (e.g. 'manifest-missing-suitable-icon').
+      string errorId
+      # The list of error arguments (e.g. {name:'minimum-icon-size-in-pixels', value:'64'}).
+      array of InstallabilityErrorArgument errorArguments
+
   # Deprecated, please use addScriptToEvaluateOnNewDocument instead.
   experimental deprecated command addScriptToEvaluateOnLoad
     parameters
@@ -5446,7 +5478,8 @@ domain Page
 
   experimental command getInstallabilityErrors
     returns
-      array of string errors
+      deprecated array of string errors
+      experimental array of InstallabilityError installabilityErrors
 
   experimental command getManifestIcons
     returns
@@ -7522,8 +7555,8 @@ experimental domain Media
   # Break out events into different types
   type PlayerEventType extends string
     enum
-      playbackEvent
-      systemEvent
+      errorEvent
+      triggeredEvent
       messageEvent
 
   type PlayerEvent extends object

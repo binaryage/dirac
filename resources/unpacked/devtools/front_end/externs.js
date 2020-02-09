@@ -421,6 +421,10 @@ var dirac = {
     hasDefaultContext: function() {},
 
     /**
+     * @return {?SDK.DebuggerModel}
+     */
+    getMainDebuggerModel: function() {},
+    /**
      * @param {?} callback
      * @return {boolean}
      * @this {Object}
@@ -511,7 +515,7 @@ var dirac = {
     notifyPanelSwitch: function(panelId) {},
     notifyFrontendInitialized: function() {},
     getVersion: function() {},
-    getRuntimeTag: function() {},
+    getRuntimeTag: function(f) {},
     /**
      * @param {Element} textAreaElement
      * @param {boolean} useParinfer
@@ -557,7 +561,11 @@ var dirac = {
      */
     parseNsFromSource: function(source) {},
 
-    isIntercomReady: function() {},
+  /**
+   * @return {boolean}
+   * */
+  isIntercomReady: function () {
+  },
 
     reportNamespacesCacheMutation: function() {},
 
@@ -1775,7 +1783,11 @@ InspectorFrontendHostAPI.ContextMenuDescriptor;
 /** @typedef
 {{
     statusCode: number,
-    headers: (!Object.<string, string>|undefined)
+    headers: (!Object.<string, string>|undefined),
+    netError: (number|undefined),
+    netErrorName: (string|undefined),
+    urlValid: (boolean|undefined),
+    messageOverride: (string|undefined)
 }} */
 InspectorFrontendHostAPI.LoadNetworkResourceResult;
 

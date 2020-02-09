@@ -50,7 +50,7 @@ export class SearchableView extends VBox {
 
     this._searchProvider = searchable;
     // Note: go via self.Common for globally-namespaced singletons.
-    this._setting = settingName ? self.Common.settings.createSetting(settingName, {}) : null;
+    this._setting = settingName ? self.self.Common.settings.createSetting(settingName, {}) : null;
     this._replaceable = false;
 
     this.contentElement.createChild('slot');
@@ -342,7 +342,7 @@ export class SearchableView extends VBox {
 
     let queryCandidate;
     if (!this._searchInputElement.hasFocus()) {
-      const selection = UI.inspectorView.element.window().getSelection();
+      const selection = self.UI.inspectorView.element.window().getSelection();
       if (selection.rangeCount) {
         queryCandidate = selection.toString().replace(/\r?\n.*/, '');
       }

@@ -68,10 +68,10 @@ export class ElementsPanel extends UI.Panel {
 
     this._contentElement.id = 'elements-content';
     // FIXME: crbug.com/425984
-    if (Common.moduleSetting('domWordWrap').get()) {
+    if (self.Common.settings.moduleSetting('domWordWrap').get()) {
       this._contentElement.classList.add('elements-wrap');
     }
-    Common.moduleSetting('domWordWrap').addChangeListener(this._domWordWrapSettingChanged.bind(this));
+    self.Common.settings.moduleSetting('domWordWrap').addChangeListener(this._domWordWrapSettingChanged.bind(this));
 
     crumbsContainer.id = 'elements-crumbs';
     this._breadcrumbs = new ElementsBreadcrumbs();
@@ -82,21 +82,21 @@ export class ElementsPanel extends UI.Panel {
     this._computedStyleWidget = new ComputedStyleWidget();
     this._metricsWidget = new MetricsSidebarPane();
 
-    Common.moduleSetting('sidebarPosition').addChangeListener(this._updateSidebarPosition.bind(this));
+    self.Common.settings.moduleSetting('sidebarPosition').addChangeListener(this._updateSidebarPosition.bind(this));
     this._updateSidebarPosition();
 
     /** @type {!Array.<!ElementsTreeOutline>} */
     this._treeOutlines = [];
     /** @type {!Map<!ElementsTreeOutline, !Element>} */
     this._treeOutlineHeaders = new Map();
-    SDK.targetManager.observeModels(SDK.DOMModel, this);
-    SDK.targetManager.addEventListener(
+    self.SDK.targetManager.observeModels(SDK.DOMModel, this);
+    self.SDK.targetManager.addEventListener(
         SDK.TargetManager.Events.NameChanged,
         event => this._targetNameChanged(/** @type {!SDK.Target} */ (event.data)));
-    Common.moduleSetting('showUAShadowDOM').addChangeListener(this._showUAShadowDOMChanged.bind(this));
-    SDK.targetManager.addModelListener(
+    self.Common.settings.moduleSetting('showUAShadowDOM').addChangeListener(this._showUAShadowDOMChanged.bind(this));
+    self.SDK.targetManager.addModelListener(
         SDK.DOMModel, SDK.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
-    Extensions.extensionServer.addEventListener(
+    self.Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
 
     /**
@@ -148,7 +148,7 @@ export class ElementsPanel extends UI.Panel {
     let treeOutline = parentModel ? ElementsTreeOutline.forDOMModel(parentModel) : null;
     if (!treeOutline) {
       treeOutline = new ElementsTreeOutline(true, true);
-      treeOutline.setWordWrap(Common.moduleSetting('domWordWrap').get());
+      treeOutline.setWordWrap(self.Common.settings.moduleSetting('domWordWrap').get());
       treeOutline.addEventListener(ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedNodeChanged, this);
       treeOutline.addEventListener(
           ElementsTreeOutline.Events.ElementsTreeUpdated, this._updateBreadcrumbIfNeeded, this);
@@ -244,7 +244,7 @@ export class ElementsPanel extends UI.Panel {
    * @override
    */
   wasShown() {
-    UI.context.setFlavor(ElementsPanel, this);
+    self.UI.context.setFlavor(ElementsPanel, this);
 
     for (let i = 0; i < this._treeOutlines.length; ++i) {
       const treeOutline = this._treeOutlines[i];
@@ -260,7 +260,7 @@ export class ElementsPanel extends UI.Panel {
     super.wasShown();
     this._breadcrumbs.update();
 
-    const domModels = SDK.targetManager.models(SDK.DOMModel);
+    const domModels = self.SDK.targetManager.models(SDK.DOMModel);
     for (const domModel of domModels) {
       if (domModel.parentModel()) {
         continue;
@@ -298,7 +298,7 @@ export class ElementsPanel extends UI.Panel {
       this._popoverHelper.hidePopover();
     }
     super.willHide();
-    UI.context.setFlavor(ElementsPanel, null);
+    self.UI.context.setFlavor(ElementsPanel, null);
   }
 
   /**
@@ -323,7 +323,7 @@ export class ElementsPanel extends UI.Panel {
 
     this._breadcrumbs.setSelectedNode(selectedNode);
 
-    UI.context.setFlavor(SDK.DOMNode, selectedNode);
+    self.UI.context.setFlavor(SDK.DOMNode, selectedNode);
 
     if (!selectedNode) {
       return;
@@ -338,7 +338,7 @@ export class ElementsPanel extends UI.Panel {
     const nodeFrameId = selectedNode.frameId();
     for (const context of executionContexts) {
       if (context.frameId === nodeFrameId) {
-        UI.context.setFlavor(SDK.ExecutionContext, context);
+        self.UI.context.setFlavor(SDK.ExecutionContext, context);
         break;
       }
     }
@@ -454,8 +454,8 @@ export class ElementsPanel extends UI.Panel {
 
     this._searchConfig = searchConfig;
 
-    const showUAShadowDOM = Common.moduleSetting('showUAShadowDOM').get();
-    const domModels = SDK.targetManager.models(SDK.DOMModel);
+    const showUAShadowDOM = self.Common.settings.moduleSetting('showUAShadowDOM').get();
+    const domModels = self.SDK.targetManager.models(SDK.DOMModel);
     const promises = domModels.map(domModel => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
     Promise.all(promises).then(resultCountCallback.bind(this));
 
@@ -503,7 +503,7 @@ export class ElementsPanel extends UI.Panel {
   switchToAndFocus(node) {
     // Reset search restore.
     this._searchableView.cancelSearch();
-    UI.viewManager.showView('elements').then(() => this.selectDOMNode(node, true));
+    self.UI.viewManager.showView('elements').then(() => this.selectDOMNode(node, true));
   }
 
   /**
@@ -715,12 +715,12 @@ export class ElementsPanel extends UI.Panel {
   revealAndSelectNode(node, focus, omitHighlight) {
     this._omitDefaultSelection = true;
 
-    node = Common.moduleSetting('showUAShadowDOM').get() ? node : this._leaveUserAgentShadowDOM(node);
+    node = self.Common.settings.moduleSetting('showUAShadowDOM').get() ? node : this._leaveUserAgentShadowDOM(node);
     if (!omitHighlight) {
       node.highlightForTwoSeconds();
     }
 
-    return UI.viewManager.showView('elements', false, !focus).then(() => {
+    return self.UI.viewManager.showView('elements', false, !focus).then(() => {
       this.selectDOMNode(node, focus);
       delete this._omitDefaultSelection;
 
@@ -799,10 +799,10 @@ export class ElementsPanel extends UI.Panel {
     }  // We can't reparent extension iframes.
 
     let splitMode;
-    const position = Common.moduleSetting('sidebarPosition').get();
-    if (position === 'right' || (position === 'auto' && UI.inspectorView.element.offsetWidth > 680)) {
+    const position = self.Common.settings.moduleSetting('sidebarPosition').get();
+    if (position === 'right' || (position === 'auto' && self.UI.inspectorView.element.offsetWidth > 680)) {
       splitMode = _splitMode.Vertical;
-    } else if (UI.inspectorView.element.offsetWidth > 415) {
+    } else if (self.UI.inspectorView.element.offsetWidth > 415) {
       splitMode = _splitMode.Horizontal;
     } else {
       splitMode = _splitMode.Slim;
@@ -813,7 +813,7 @@ export class ElementsPanel extends UI.Panel {
     }
     this._splitMode = splitMode;
 
-    const extensionSidebarPanes = Extensions.extensionServer.sidebarPanes();
+    const extensionSidebarPanes = self.Extensions.extensionServer.sidebarPanes();
     let lastSelectedTabId = null;
     if (this.sidebarPaneView) {
       lastSelectedTabId = this.sidebarPaneView.tabbedPane().selectedTabId;
@@ -858,7 +858,7 @@ export class ElementsPanel extends UI.Panel {
       }
     }
 
-    this.sidebarPaneView = UI.viewManager.createTabbedLocation(() => UI.viewManager.showView('elements'));
+    this.sidebarPaneView = self.UI.viewManager.createTabbedLocation(() => self.UI.viewManager.showView('elements'));
     const tabbedPane = this.sidebarPaneView.tabbedPane();
     if (this._popoverHelper) {
       this._popoverHelper.hidePopover();
@@ -1019,7 +1019,7 @@ export class DOMNodeRevealer {
         const isDocument = node instanceof SDK.DOMDocument;
         if (!isDocument && isDetached) {
           const msg = ls`Node cannot be found in the current page.`;
-          Common.console.warn(msg);
+          self.Common.console.warn(msg);
           reject(new Error(msg));
           return;
         }
@@ -1063,7 +1063,7 @@ export class ElementsActionDelegate {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const node = UI.context.flavor(SDK.DOMNode);
+    const node = self.UI.context.flavor(SDK.DOMNode);
     if (!node) {
       return true;
     }
@@ -1080,11 +1080,11 @@ export class ElementsActionDelegate {
         treeOutline.toggleEditAsHTML(node);
         return true;
       case 'elements.undo':
-        SDK.domModelUndoStack.undo();
+        self.SDK.domModelUndoStack.undo();
         ElementsPanel.instance()._stylesWidget.forceUpdate();
         return true;
       case 'elements.redo':
-        SDK.domModelUndoStack.redo();
+        self.SDK.domModelUndoStack.redo();
         ElementsPanel.instance()._stylesWidget.forceUpdate();
         return true;
     }

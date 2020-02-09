@@ -18,7 +18,7 @@ export class ConsolePinPane extends UI.ThrottledWidget {
 
     /** @type {!Set<!ConsolePin>} */
     this._pins = new Set();
-    this._pinsSetting = Common.settings.createLocalSetting('consolePins', []);
+    this._pinsSetting = self.Common.settings.createLocalSetting('consolePins', []);
     for (const expression of this._pinsSetting.get()) {
       this.addPin(expression);
     }
@@ -248,7 +248,7 @@ export class ConsolePin extends Common.Object {
     const isEditing = this._pinElement.hasFocus();
     const throwOnSideEffect = isEditing && text !== this._committedExpression;
     const timeout = throwOnSideEffect ? 250 : undefined;
-    const executionContext = UI.context.flavor(SDK.ExecutionContext);
+    const executionContext = self.UI.context.flavor(SDK.ExecutionContext);
     const {preview, result} = await ObjectUI.JavaScriptREPL.evaluateAndBuildPreview(
         text, throwOnSideEffect, timeout, !isEditing /* allowErrors */, 'console');
     if (this._lastResult && this._lastExecutionContext) {

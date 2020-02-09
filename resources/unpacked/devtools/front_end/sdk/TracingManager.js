@@ -1,8 +1,8 @@
-/*
- * Copyright 2014 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import * as ProtocolModule from '../protocol/protocol.js';
 
 import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
@@ -78,7 +78,7 @@ export class TracingManager extends SDKModel {
       transferMode: TransferMode.ReportEvents
     };
     const response = await this._tracingAgent.invoke_start(args);
-    if (response[Protocol.Error]) {
+    if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
       this._activeClient = null;
     }
     return response;
@@ -164,3 +164,21 @@ class TracingDispatcher {
 }
 
 SDKModel.register(TracingManager, Capability.Tracing, false);
+
+/** @typedef {!{
+        cat: (string|undefined),
+        pid: number,
+        tid: number,
+        ts: number,
+        ph: string,
+        name: string,
+        args: !Object,
+        dur: number,
+        id: string,
+        id2: (!{global: (string|undefined), local: (string|undefined)}|undefined),
+        scope: string,
+        bind_id: string,
+        s: string
+    }}
+ */
+export let EventPayload;

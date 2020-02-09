@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export default class CoveragePlugin extends Sources.UISourceCodeFrame.Plugin {
+import {Plugin} from './Plugin.js';
+
+export class CoveragePlugin extends Plugin {
   /**
    * @param {!SourceFrame.SourcesTextEditor} textEditor
    * @param {!Workspace.UISourceCode} uiSourceCode
@@ -19,10 +21,10 @@ export default class CoveragePlugin extends Sources.UISourceCodeFrame.Plugin {
     this._text = new UI.ToolbarButton(ls`Click to show Coverage Panel`);
     this._text.setSecondary();
     this._text.addEventListener(UI.ToolbarButton.Events.Click, () => {
-      UI.viewManager.showView('coverage');
+      self.UI.viewManager.showView('coverage');
     });
 
-    const mainTarget = SDK.targetManager.mainTarget();
+    const mainTarget = self.SDK.targetManager.mainTarget();
     if (mainTarget) {
       this._model = mainTarget.model(Coverage.CoverageModel);
       this._model.addEventListener(Coverage.CoverageModel.Events.CoverageReset, this._handleReset, this);
@@ -86,12 +88,3 @@ export default class CoveragePlugin extends Sources.UISourceCodeFrame.Plugin {
     return [this._text];
   }
 }
-
-/* Legacy exported object */
-self.Sources = self.Sources || {};
-
-/* Legacy exported object */
-Sources = Sources || {};
-
-/** @constructor */
-Sources.CoveragePlugin = CoveragePlugin;

@@ -6,7 +6,7 @@
  * @implements {SDK.SDKModelObserver<!SDK.DebuggerModel>}
  * @implements {UI.ListDelegate<!SDK.DebuggerModel>}
  */
-export default class ThreadsSidebarPane extends UI.VBox {
+export class ThreadsSidebarPane extends UI.VBox {
   constructor() {
     super(true);
     this.registerRequiredCSS('sources/threadsSidebarPane.css');
@@ -15,19 +15,19 @@ export default class ThreadsSidebarPane extends UI.VBox {
     this._items = new UI.ListModel();
     /** @type {!UI.ListControl<!SDK.DebuggerModel>} */
     this._list = new UI.ListControl(this._items, this, UI.ListMode.NonViewport);
-    const currentTarget = UI.context.flavor(SDK.Target);
+    const currentTarget = self.UI.context.flavor(SDK.Target);
     this._selectedModel = !!currentTarget ? currentTarget.model(SDK.DebuggerModel) : null;
     this.contentElement.appendChild(this._list.element);
 
-    UI.context.addFlavorChangeListener(SDK.Target, this._targetFlavorChanged, this);
-    SDK.targetManager.observeModels(SDK.DebuggerModel, this);
+    self.UI.context.addFlavorChangeListener(SDK.Target, this._targetFlavorChanged, this);
+    self.SDK.targetManager.observeModels(SDK.DebuggerModel, this);
   }
 
   /**
    * @return {boolean}
    */
   static shouldBeShown() {
-    return SDK.targetManager.models(SDK.DebuggerModel).length >= 2;
+    return self.SDK.targetManager.models(SDK.DebuggerModel).length >= 2;
   }
 
   /**
@@ -42,10 +42,10 @@ export default class ThreadsSidebarPane extends UI.VBox {
     element.appendChild(UI.Icon.create('smallicon-thick-right-arrow', 'selected-thread-icon'));
     element.tabIndex = -1;
     self.onInvokeElement(element, event => {
-      UI.context.setFlavor(SDK.Target, debuggerModel.target());
+      self.UI.context.setFlavor(SDK.Target, debuggerModel.target());
       event.consume(true);
     });
-    const isSelected = UI.context.flavor(SDK.Target) === debuggerModel.target();
+    const isSelected = self.UI.context.flavor(SDK.Target) === debuggerModel.target();
     element.classList.toggle('selected', isSelected);
     UI.ARIAUtils.setSelected(element, isSelected);
 
@@ -72,7 +72,7 @@ export default class ThreadsSidebarPane extends UI.VBox {
     debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerPaused, updatePausedState);
     debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerResumed, updatePausedState);
     debuggerModel.runtimeModel().addEventListener(SDK.RuntimeModel.Events.ExecutionContextChanged, updateTitle);
-    SDK.targetManager.addEventListener(SDK.TargetManager.Events.NameChanged, targetNameChanged);
+    self.SDK.targetManager.addEventListener(SDK.TargetManager.Events.NameChanged, targetNameChanged);
 
     updatePausedState();
     updateTitle();
@@ -134,7 +134,7 @@ export default class ThreadsSidebarPane extends UI.VBox {
    */
   modelAdded(debuggerModel) {
     this._items.insert(this._items.length, debuggerModel);
-    const currentTarget = UI.context.flavor(SDK.Target);
+    const currentTarget = self.UI.context.flavor(SDK.Target);
     if (currentTarget === debuggerModel.target()) {
       this._list.selectItem(debuggerModel);
     }
@@ -167,12 +167,3 @@ export default class ThreadsSidebarPane extends UI.VBox {
     }
   }
 }
-
-/* Legacy exported object */
-self.Sources = self.Sources || {};
-
-/* Legacy exported object */
-Sources = Sources || {};
-
-/** @constructor */
-Sources.ThreadsSidebarPane = ThreadsSidebarPane;

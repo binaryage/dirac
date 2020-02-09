@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -645,8 +645,8 @@ HeapProfilerTestRunner.takeAndOpenSnapshot = async function(generator, callback)
 
   HeapProfilerTestRunner._takeAndOpenSnapshotCallback = callback;
   TestRunner.override(TestRunner.HeapProfilerAgent, 'takeHeapSnapshot', pushGeneratedSnapshot);
-  if (!UI.context.flavor(SDK.HeapProfilerModel)) {
-    await new Promise(resolve => UI.context.addFlavorChangeListener(SDK.HeapProfilerModel, resolve));
+  if (!self.UI.context.flavor(SDK.HeapProfilerModel)) {
+    await new Promise(resolve => self.UI.context.addFlavorChangeListener(SDK.HeapProfilerModel, resolve));
   }
   profileType._takeHeapSnapshot();
 };
@@ -744,8 +744,8 @@ HeapProfilerTestRunner._profileViewRefresh = function() {
 };
 
 HeapProfilerTestRunner.startSamplingHeapProfiler = async function() {
-  if (!UI.context.flavor(SDK.HeapProfilerModel)) {
-    await new Promise(resolve => UI.context.addFlavorChangeListener(SDK.HeapProfilerModel, resolve));
+  if (!self.UI.context.flavor(SDK.HeapProfilerModel)) {
+    await new Promise(resolve => self.UI.context.addFlavorChangeListener(SDK.HeapProfilerModel, resolve));
   }
   Profiler.SamplingHeapProfileType.instance._startRecordingProfile();
 };

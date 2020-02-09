@@ -29,12 +29,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {Events, PerformanceModel} from './PerformanceModel.js';
+import {Client, TimelineController} from './TimelineController.js';  // eslint-disable-line no-unused-vars
+import {TimelineEventOverview, TimelineEventOverviewCoverage, TimelineEventOverviewCPUActivity, TimelineEventOverviewFrames, TimelineEventOverviewInput, TimelineEventOverviewMemory, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, TimelineFilmStripOverview,} from './TimelineEventOverview.js';  // eslint-disable-line no-unused-vars
+import {TimelineFlameChartView} from './TimelineFlameChartView.js';
+import {TimelineHistoryManager} from './TimelineHistoryManager.js';
+import {TimelineLoader} from './TimelineLoader.js';
+import {TimelineUIUtils} from './TimelineUIUtils.js';
+import {UIDevtoolsController} from './UIDevtoolsController.js';
+import {UIDevtoolsUtils} from './UIDevtoolsUtils.js';
+
 /**
- * @implements {Timeline.TimelineController.Client}
+ * @implements {Client}
  * @implements {TimelineModeViewDelegate}
  * @unrestricted
  */
-export default class TimelinePanel extends UI.Panel {
+export class TimelinePanel extends UI.Panel {
   constructor() {
     super('timeline');
     this.registerRequiredCSS('timeline/timelinePanel.css');
@@ -49,27 +59,28 @@ export default class TimelinePanel extends UI.Panel {
     this._recordingPageReload = false;
     this._millisecondsToRecordAfterLoadEvent = 3000;
     this._toggleRecordAction =
-        /** @type {!UI.Action }*/ (UI.actionRegistry.action('timeline.toggle-recording'));
+        /** @type {!UI.Action }*/ (self.UI.actionRegistry.action('timeline.toggle-recording'));
     this._recordReloadAction =
-        /** @type {!UI.Action }*/ (UI.actionRegistry.action('timeline.record-reload'));
+        /** @type {!UI.Action }*/ (self.UI.actionRegistry.action('timeline.record-reload'));
 
-    this._historyManager = new Timeline.TimelineHistoryManager();
+    this._historyManager = new TimelineHistoryManager();
 
-    /** @type {?Timeline.PerformanceModel} */
+    /** @type {?PerformanceModel} */
     this._performanceModel = null;
 
-    this._viewModeSetting = Common.settings.createSetting('timelineViewMode', ViewMode.FlameChart);
+    this._viewModeSetting = self.Common.settings.createSetting('timelineViewMode', ViewMode.FlameChart);
 
-    this._disableCaptureJSProfileSetting = Common.settings.createSetting('timelineDisableJSSampling', false);
+    this._disableCaptureJSProfileSetting = self.Common.settings.createSetting('timelineDisableJSSampling', false);
     this._disableCaptureJSProfileSetting.setTitle(Common.UIString('Disable JavaScript samples'));
-    this._captureLayersAndPicturesSetting = Common.settings.createSetting('timelineCaptureLayersAndPictures', false);
+    this._captureLayersAndPicturesSetting =
+        self.Common.settings.createSetting('timelineCaptureLayersAndPictures', false);
     this._captureLayersAndPicturesSetting.setTitle(Common.UIString('Enable advanced paint instrumentation (slow)'));
 
-    this._showScreenshotsSetting = Common.settings.createSetting('timelineShowScreenshots', true);
+    this._showScreenshotsSetting = self.Common.settings.createSetting('timelineShowScreenshots', true);
     this._showScreenshotsSetting.setTitle(Common.UIString('Screenshots'));
     this._showScreenshotsSetting.addChangeListener(this._updateOverviewControls, this);
 
-    this._startCoverage = Common.settings.createSetting('timelineStartCoverage', false);
+    this._startCoverage = self.Common.settings.createSetting('timelineStartCoverage', false);
     this._startCoverage.setTitle(ls`Coverage`);
 
     if (!Root.Runtime.experiments.isEnabled('recordCoverageWithPerformanceTracing')) {
@@ -77,7 +88,7 @@ export default class TimelinePanel extends UI.Panel {
     }
 
 
-    this._showMemorySetting = Common.settings.createSetting('timelineShowMemory', false);
+    this._showMemorySetting = self.Common.settings.createSetting('timelineShowMemory', false);
     this._showMemorySetting.setTitle(Common.UIString('Memory'));
     this._showMemorySetting.addChangeListener(this._onModeChanged, this);
 
@@ -97,17 +108,17 @@ export default class TimelinePanel extends UI.Panel {
     this._overviewPane.addEventListener(
         PerfUI.TimelineOverviewPane.Events.WindowChanged, this._onOverviewWindowChanged.bind(this));
     this._overviewPane.show(topPaneElement);
-    /** @type {!Array<!Timeline.TimelineEventOverview>} */
+    /** @type {!Array<!TimelineEventOverview>} */
     this._overviewControls = [];
 
     this._statusPaneContainer = this._timelinePane.element.createChild('div', 'status-pane-container fill');
 
     this._createFileSelector();
 
-    SDK.targetManager.addModelListener(
+    self.SDK.targetManager.addModelListener(
         SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._loadEventFired, this);
 
-    this._flameChart = new Timeline.TimelineFlameChartView(this);
+    this._flameChart = new TimelineFlameChartView(this);
     this._searchableView = new UI.SearchableView(this._flameChart);
     this._searchableView.setMinimumSize(0, 100);
     this._searchableView.element.classList.add('searchable-view');
@@ -120,9 +131,10 @@ export default class TimelinePanel extends UI.Panel {
     this._showLandingPage();
     this._updateTimelineControls();
 
-    Extensions.extensionServer.addEventListener(
+    self.Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.TraceProviderAdded, this._appendExtensionsToToolbar, this);
-    SDK.targetManager.addEventListener(SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
+    self.SDK.targetManager.addEventListener(
+        SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
   }
 
   /**
@@ -144,7 +156,7 @@ export default class TimelinePanel extends UI.Panel {
    * @override
    */
   wasShown() {
-    UI.context.setFlavor(TimelinePanel, this);
+    self.UI.context.setFlavor(TimelinePanel, this);
     // Record the performance tool load time.
     Host.userMetrics.panelLoaded('timeline', 'DevTools.Launch.Timeline');
   }
@@ -153,7 +165,7 @@ export default class TimelinePanel extends UI.Panel {
    * @override
    */
   willHide() {
-    UI.context.setFlavor(TimelinePanel, null);
+    self.UI.context.setFlavor(TimelinePanel, null);
     this._historyManager.cancelIfShowing();
   }
 
@@ -165,7 +177,7 @@ export default class TimelinePanel extends UI.Panel {
       return;
     }
     this._prepareToLoadTimeline();
-    this._loader = Timeline.TimelineLoader.loadFromEvents(events, this);
+    this._loader = TimelineLoader.loadFromEvents(events, this);
   }
 
   /**
@@ -251,10 +263,10 @@ export default class TimelinePanel extends UI.Panel {
   }
 
   _createSettingsPane() {
-    this._showSettingsPaneSetting = Common.settings.createSetting('timelineShowSettingsToolbar', false);
+    this._showSettingsPaneSetting = self.Common.settings.createSetting('timelineShowSettingsToolbar', false);
     this._showSettingsPaneButton = new UI.ToolbarSettingToggle(
         this._showSettingsPaneSetting, 'largeicon-settings-gear', Common.UIString('Capture settings'));
-    SDK.multitargetNetworkManager.addEventListener(
+    self.SDK.multitargetNetworkManager.addEventListener(
         SDK.MultitargetNetworkManager.Events.ConditionsChanged, this._updateShowSettingsToolbarButton, this);
     MobileThrottling.throttlingManager().addEventListener(
         MobileThrottling.ThrottlingManager.Events.RateChanged, this._updateShowSettingsToolbarButton, this);
@@ -308,12 +320,12 @@ export default class TimelinePanel extends UI.Panel {
    * @return {!Common.Setting<boolean>}
    */
   static _settingForTraceProvider(traceProvider) {
-    let setting = traceProvider[_traceProviderSettingSymbol];
+    let setting = traceProvider[traceProviderSettingSymbol];
     if (!setting) {
       const providerId = traceProvider.persistentIdentifier();
-      setting = Common.settings.createSetting(providerId, false);
+      setting = self.Common.settings.createSetting(providerId, false);
       setting.setTitle(traceProvider.shortDisplayName());
-      traceProvider[_traceProviderSettingSymbol] = setting;
+      traceProvider[traceProviderSettingSymbol] = setting;
     }
     return setting;
   }
@@ -379,7 +391,7 @@ export default class TimelinePanel extends UI.Panel {
     if (!error) {
       return;
     }
-    Common.console.error(
+    self.Common.console.error(
         Common.UIString('Failed to save timeline: %s (%s, %s)', error.message, error.name, error.code));
   }
 
@@ -414,7 +426,7 @@ export default class TimelinePanel extends UI.Panel {
       return;
     }
     this._prepareToLoadTimeline();
-    this._loader = Timeline.TimelineLoader.loadFromFile(file, this);
+    this._loader = TimelineLoader.loadFromFile(file, this);
     this._createFileSelector();
   }
 
@@ -426,27 +438,27 @@ export default class TimelinePanel extends UI.Panel {
       return;
     }
     this._prepareToLoadTimeline();
-    this._loader = Timeline.TimelineLoader.loadFromURL(url, this);
+    this._loader = TimelineLoader.loadFromURL(url, this);
   }
 
   _updateOverviewControls() {
     this._overviewControls = [];
-    this._overviewControls.push(new Timeline.TimelineEventOverviewResponsiveness());
+    this._overviewControls.push(new TimelineEventOverviewResponsiveness());
     if (Root.Runtime.experiments.isEnabled('inputEventsOnTimelineOverview')) {
-      this._overviewControls.push(new Timeline.TimelineEventOverviewInput());
+      this._overviewControls.push(new TimelineEventOverviewInput());
     }
-    this._overviewControls.push(new Timeline.TimelineEventOverviewFrames());
-    this._overviewControls.push(new Timeline.TimelineEventOverviewCPUActivity());
-    this._overviewControls.push(new Timeline.TimelineEventOverviewNetwork());
+    this._overviewControls.push(new TimelineEventOverviewFrames());
+    this._overviewControls.push(new TimelineEventOverviewCPUActivity());
+    this._overviewControls.push(new TimelineEventOverviewNetwork());
     if (this._showScreenshotsSetting.get() && this._performanceModel &&
         this._performanceModel.filmStripModel().frames().length) {
-      this._overviewControls.push(new Timeline.TimelineFilmStripOverview());
+      this._overviewControls.push(new TimelineFilmStripOverview());
     }
     if (this._showMemorySetting.get()) {
-      this._overviewControls.push(new Timeline.TimelineEventOverviewMemory());
+      this._overviewControls.push(new TimelineEventOverviewMemory());
     }
     if (this._startCoverage.get()) {
-      this._overviewControls.push(new Timeline.TimelineEventOverviewCoverage());
+      this._overviewControls.push(new TimelineEventOverviewCoverage());
     }
     for (const control of this._overviewControls) {
       control.setModel(this._performanceModel);
@@ -473,7 +485,7 @@ export default class TimelinePanel extends UI.Panel {
     if (MobileThrottling.throttlingManager().cpuThrottlingRate() !== 1) {
       messages.push(Common.UIString('- CPU throttling is enabled'));
     }
-    if (SDK.multitargetNetworkManager.isThrottling()) {
+    if (self.SDK.multitargetNetworkManager.isThrottling()) {
       messages.push(Common.UIString('- Network throttling is enabled'));
     }
     if (this._captureLayersAndPicturesSetting.get()) {
@@ -516,21 +528,21 @@ export default class TimelinePanel extends UI.Panel {
     };
 
     if (recordingOptions.startCoverage) {
-      await UI.viewManager.showView('coverage')
-          .then(() => UI.viewManager.view('coverage').widget())
+      await self.UI.viewManager.showView('coverage')
+          .then(() => self.UI.viewManager.view('coverage').widget())
           .then(widget => widget.ensureRecordingStarted());
     }
 
     this._showRecordingStarted();
 
-    const enabledTraceProviders = Extensions.extensionServer.traceProviders().filter(
+    const enabledTraceProviders = self.Extensions.extensionServer.traceProviders().filter(
         provider => TimelinePanel._settingForTraceProvider(provider).get());
 
-    const mainTarget = /** @type {!SDK.Target} */ (SDK.targetManager.mainTarget());
-    if (Timeline.UIDevtoolsUtils.isUiDevTools()) {
-      this._controller = new Timeline.UIDevtoolsController(mainTarget, this);
+    const mainTarget = /** @type {!SDK.Target} */ (self.SDK.targetManager.mainTarget());
+    if (UIDevtoolsUtils.isUiDevTools()) {
+      this._controller = new UIDevtoolsController(mainTarget, this);
     } else {
-      this._controller = new Timeline.TimelineController(mainTarget, this);
+      this._controller = new TimelineController(mainTarget, this);
     }
     this._setUIControlsEnabled(false);
     this._hideLandingPage();
@@ -549,6 +561,11 @@ export default class TimelinePanel extends UI.Panel {
       this._statusPane.updateProgressBar(Common.UIString('Received'), 0);
     }
     this._setState(State.StopPending);
+    if (this._startCoverage.get()) {
+      await UI.viewManager.showView('coverage')
+          .then(() => UI.viewManager.view('coverage').widget())
+          .then(widget => widget.stopRecording());
+    }
     const model = await this._controller.stopRecording();
     this._performanceModel = model;
     this._setUIControlsEnabled(true);
@@ -628,22 +645,21 @@ export default class TimelinePanel extends UI.Panel {
   }
 
   /**
-   * @param {!Timeline.PerformanceModel} model
+   * @param {!PerformanceModel} model
    */
   _applyFilters(model) {
     if (model.timelineModel().isGenericTrace() || Root.Runtime.experiments.isEnabled('timelineShowAllEvents')) {
       return;
     }
-    model.setFilters([Timeline.TimelineUIUtils.visibleEventsFilter()]);
+    model.setFilters([TimelineUIUtils.visibleEventsFilter()]);
   }
 
   /**
-   * @param {?Timeline.PerformanceModel} model
+   * @param {?PerformanceModel} model
    */
   _setModel(model) {
     if (this._performanceModel) {
-      this._performanceModel.removeEventListener(
-          Timeline.PerformanceModel.Events.WindowChanged, this._onModelWindowChanged, this);
+      this._performanceModel.removeEventListener(Events.WindowChanged, this._onModelWindowChanged, this);
     }
     this._performanceModel = model;
     if (model) {
@@ -654,8 +670,7 @@ export default class TimelinePanel extends UI.Panel {
     this._updateOverviewControls();
     this._overviewPane.reset();
     if (model) {
-      this._performanceModel.addEventListener(
-          Timeline.PerformanceModel.Events.WindowChanged, this._onModelWindowChanged, this);
+      this._performanceModel.addEventListener(Events.WindowChanged, this._onModelWindowChanged, this);
       this._overviewPane.setBounds(
           model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime());
       const lineLevelProfile = self.runtime.sharedInstance(PerfUI.LineLevelProfile.Performance);
@@ -723,9 +738,9 @@ export default class TimelinePanel extends UI.Panel {
         Common.UIString('Learn\xa0more'));
 
     const recordKey =
-        encloseWithTag('b', UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.toggle-recording')[0].name);
+        encloseWithTag('b', self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.toggle-recording')[0].name);
     const reloadKey =
-        encloseWithTag('b', UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.record-reload')[0].name);
+        encloseWithTag('b', self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.record-reload')[0].name);
     const navigateNode = encloseWithTag('b', Common.UIString('WASD'));
 
     this._landingPage = new UI.VBox();
@@ -805,7 +820,7 @@ export default class TimelinePanel extends UI.Panel {
     }
 
     if (!this._performanceModel) {
-      this._performanceModel = new Timeline.PerformanceModel();
+      this._performanceModel = new PerformanceModel();
     }
     this._performanceModel.setTracingModel(tracingModel);
     this._setModel(this._performanceModel);
@@ -814,7 +829,7 @@ export default class TimelinePanel extends UI.Panel {
     if (this._startCoverage.get()) {
       UI.viewManager.showView('coverage')
           .then(() => UI.viewManager.view('coverage').widget())
-          .then(widget => widget.stopRecording())
+          .then(widget => widget.processBacklog())
           .then(() => this._updateOverviewControls());
     }
   }
@@ -845,7 +860,7 @@ export default class TimelinePanel extends UI.Panel {
       if (event.name === recordTypes.TimeStamp || event.name === recordTypes.ConsoleTime) {
         continue;
       }
-      markers.set(event.startTime, Timeline.TimelineUIUtils.createEventDivider(event, zeroTime));
+      markers.set(event.startTime, TimelineUIUtils.createEventDivider(event, zeroTime));
     }
     this._overviewPane.setMarkers(markers);
   }
@@ -1257,7 +1272,7 @@ export class LoadTimelineHandler {
    * @param {string} value
    */
   handleQueryParam(value) {
-    UI.viewManager.showView('timeline').then(() => {
+    self.UI.viewManager.showView('timeline').then(() => {
       TimelinePanel.instance()._loadFromURL(window.decodeURIComponent(value));
     });
   }
@@ -1275,7 +1290,7 @@ export class ActionDelegate {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const panel = UI.context.flavor(TimelinePanel);
+    const panel = self.UI.context.flavor(TimelinePanel);
     console.assert(panel && panel instanceof TimelinePanel);
     switch (actionId) {
       case 'timeline.toggle-recording':
@@ -1310,42 +1325,4 @@ export class ActionDelegate {
   }
 }
 
-export const _traceProviderSettingSymbol = Symbol('traceProviderSetting');
-
-/* Legacy exported object */
-self.Timeline = self.Timeline || {};
-
-/* Legacy exported object */
-Timeline = Timeline || {};
-
-/** @constructor */
-Timeline.TimelinePanel = TimelinePanel;
-
-/** @enum {symbol} */
-Timeline.TimelinePanel.State = State;
-
-/** @enum {string} */
-Timeline.TimelinePanel.ViewMode = ViewMode;
-
-Timeline.TimelinePanel.rowHeight = rowHeight;
-Timeline.TimelinePanel.headerHeight = headerHeight;
-
-/** @constructor */
-Timeline.TimelinePanel.StatusPane = StatusPane;
-
-/** @constructor */
-Timeline.TimelinePanel.ActionDelegate = ActionDelegate;
-
-Timeline.TimelinePanel._traceProviderSettingSymbol = _traceProviderSettingSymbol;
-
-/** @constructor */
-Timeline.TimelineSelection = TimelineSelection;
-
-/** @interface */
-Timeline.TimelineModeViewDelegate = TimelineModeViewDelegate;
-
-/** @constructor */
-Timeline.LoadTimelineHandler = LoadTimelineHandler;
-
-/** @typedef {{selection: ?TimelineSelection, windowLeftTime: number, windowRightTime: number}} */
-Timeline.TimelinePanel.ModelSelectionData;
+export const traceProviderSettingSymbol = Symbol('traceProviderSetting');

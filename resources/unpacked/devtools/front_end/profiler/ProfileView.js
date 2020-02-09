@@ -98,7 +98,7 @@ export class ProfileView extends UI.SimpleView {
   initialize(nodeFormatter, viewTypes) {
     this._nodeFormatter = nodeFormatter;
 
-    this._viewType = Common.settings.createSetting('profileView', ViewTypes.Heavy);
+    this._viewType = self.Common.settings.createSetting('profileView', ViewTypes.Heavy);
     viewTypes = viewTypes || [ViewTypes.Flame, ViewTypes.Heavy, ViewTypes.Tree];
 
     const optionNames = new Map([
@@ -334,7 +334,7 @@ export class ProfileView extends UI.SimpleView {
     }
     const location = /** @type {!SDK.DebuggerModel.Location} */ (
         debuggerModel.createRawLocation(script, node.lineNumber, node.columnNumber));
-    Common.Revealer.reveal(Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location));
+    Common.Revealer.reveal(self.Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location));
   }
 
   _changeView() {

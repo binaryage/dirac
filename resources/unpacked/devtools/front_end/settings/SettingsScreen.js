@@ -27,11 +27,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import * as Common from '../common/common.js';
+import * as Components from '../components/components.js';
+import * as Host from '../host/host.js';
+import * as UI from '../ui/ui.js';
+
 /**
- * @implements {UI.ViewLocationResolver}
+ * @implements {UI.View.ViewLocationResolver}
  * @unrestricted
  */
-export class SettingsScreen extends UI.VBox {
+export class SettingsScreen extends UI.Widget.VBox {
   constructor() {
     super(true);
     this.registerRequiredCSS('settings/settingsScreen.css');
@@ -40,25 +46,24 @@ export class SettingsScreen extends UI.VBox {
     this.contentElement.classList.add('vbox');
 
     const settingsLabelElement = createElement('div');
-    const settingsTitleElement = UI.createShadowRootWithCoreStyles(settingsLabelElement, 'settings/settingsScreen.css')
-                                     .createChild('div', 'settings-window-title');
+    const settingsTitleElement =
+        UI.Utils.createShadowRootWithCoreStyles(settingsLabelElement, 'settings/settingsScreen.css')
+            .createChild('div', 'settings-window-title');
 
     UI.ARIAUtils.markAsHeading(settingsTitleElement, 1);
     settingsTitleElement.textContent = ls`Settings`;
 
     this._tabbedLocation =
-        UI.viewManager.createTabbedLocation(() => SettingsScreen._showSettingsScreen(), 'settings-view');
+        self.UI.viewManager.createTabbedLocation(() => SettingsScreen._showSettingsScreen(), 'settings-view');
     const tabbedPane = this._tabbedLocation.tabbedPane();
-    tabbedPane.leftToolbar().appendToolbarItem(new UI.ToolbarItem(settingsLabelElement));
+    tabbedPane.leftToolbar().appendToolbarItem(new UI.Toolbar.ToolbarItem(settingsLabelElement));
     tabbedPane.setShrinkableTabs(false);
     tabbedPane.makeVerticalTabLayout();
-    const shortcutsView = new UI.SimpleView(ls`Shortcuts`);
-    UI.shortcutsScreen.createShortcutsTabView().show(shortcutsView.element);
+    const shortcutsView = new UI.View.SimpleView(ls`Shortcuts`);
+    self.UI.shortcutsScreen.createShortcutsTabView().show(shortcutsView.element);
     this._tabbedLocation.appendView(shortcutsView);
     tabbedPane.show(this.contentElement);
 
-    this.element.addEventListener('keydown', this._keyDown.bind(this), false);
-    this._developerModeCounter = 0;
     this.setDefaultFocusedElement(this.contentElement);
   }
 
@@ -71,7 +76,7 @@ export class SettingsScreen extends UI.VBox {
     if (settingsScreen.isShowing()) {
       return;
     }
-    const dialog = new UI.Dialog();
+    const dialog = new UI.Dialog.Dialog();
     dialog.contentElement.tabIndex = -1;
     dialog.addCloseButton();
     dialog.setOutsideClickCallback(() => {});
@@ -85,7 +90,7 @@ export class SettingsScreen extends UI.VBox {
   /**
    * @override
    * @param {string} locationName
-   * @return {?UI.ViewLocation}
+   * @return {?UI.View.ViewLocation}
    */
   resolveLocation(locationName) {
     return this._tabbedLocation;
@@ -95,24 +100,14 @@ export class SettingsScreen extends UI.VBox {
    * @param {string} name
    */
   _selectTab(name) {
-    UI.viewManager.showView(name);
-  }
-
-  /**
-   * @param {!Event} event
-   */
-  _keyDown(event) {
-    const shiftKeyCode = 16;
-    if (event.keyCode === shiftKeyCode && ++this._developerModeCounter > 5) {
-      this.contentElement.classList.add('settings-developer-mode');
-    }
+    self.UI.viewManager.showView(name);
   }
 }
 
 /**
  * @unrestricted
  */
-class SettingsTab extends UI.VBox {
+class SettingsTab extends UI.Widget.VBox {
   /**
    * @param {string} name
    * @param {string=} id
@@ -151,7 +146,7 @@ class SettingsTab extends UI.VBox {
  */
 export class GenericSettingsTab extends SettingsTab {
   constructor() {
-    super(Common.UIString('Preferences'), 'preferences-tab-content');
+    super(Common.UIString.UIString('Preferences'), 'preferences-tab-content');
 
     /** @const */
     const explicitSectionOrder =
@@ -162,14 +157,14 @@ export class GenericSettingsTab extends SettingsTab {
       this._sectionElement(sectionName);
     }
     self.runtime.extensions('setting').forEach(this._addSetting.bind(this));
-    self.runtime.extensions(UI.SettingUI).forEach(this._addSettingUI.bind(this));
+    self.runtime.extensions(UI.SettingsUI.SettingUI).forEach(this._addSettingUI.bind(this));
 
     this._appendSection().appendChild(
-        UI.createTextButton(Common.UIString('Restore defaults and reload'), restoreAndReload));
+        UI.UIUtils.createTextButton(Common.UIString.UIString('Restore defaults and reload'), restoreAndReload));
 
     function restoreAndReload() {
-      Common.settings.clearAll();
-      Components.reload();
+      self.Common.settings.clearAll();
+      Components.Reload.reload();
     }
   }
 
@@ -196,7 +191,7 @@ export class GenericSettingsTab extends SettingsTab {
       return;
     }
     const sectionElement = this._sectionElement(extension.descriptor()['category']);
-    const setting = Common.moduleSetting(extension.descriptor()['settingName']);
+    const setting = self.Common.settings.moduleSetting(extension.descriptor()['settingName']);
     const settingControl = UI.SettingsUI.createControlForSetting(setting);
     if (settingControl) {
       sectionElement.appendChild(settingControl);
@@ -216,7 +211,7 @@ export class GenericSettingsTab extends SettingsTab {
      * @this {GenericSettingsTab}
      */
     function appendCustomSetting(object) {
-      const settingUI = /** @type {!UI.SettingUI} */ (object);
+      const settingUI = /** @type {!UI.SettingsUI.SettingUI} */ (object);
       const element = settingUI.settingElement();
       if (element) {
         this._sectionElement(sectionName).appendChild(element);
@@ -231,7 +226,7 @@ export class GenericSettingsTab extends SettingsTab {
   _sectionElement(sectionName) {
     let sectionElement = this._nameToSection.get(sectionName);
     if (!sectionElement) {
-      const uiSectionName = sectionName && Common.UIString(sectionName);
+      const uiSectionName = sectionName && Common.UIString.UIString(sectionName);
       sectionElement = this._appendSection(uiSectionName);
       this._nameToSection.set(sectionName, sectionElement);
     }
@@ -244,33 +239,46 @@ export class GenericSettingsTab extends SettingsTab {
  */
 export class ExperimentsSettingsTab extends SettingsTab {
   constructor() {
-    super(Common.UIString('Experiments'), 'experiments-tab-content');
+    super(Common.UIString.UIString('Experiments'), 'experiments-tab-content');
 
-    const experiments = Root.Runtime.experiments.allConfigurableExperiments();
-    if (experiments.length) {
+    const experiments = Root.Runtime.experiments.allConfigurableExperiments().sort();
+    const unstableExperiments = experiments.filter(e => e.unstable);
+    const stableExperiments = experiments.filter(e => !e.unstable);
+    if (stableExperiments.length) {
       const experimentsSection = this._appendSection();
-      experimentsSection.appendChild(this._createExperimentsWarningSubsection());
-      for (let i = 0; i < experiments.length; ++i) {
-        experimentsSection.appendChild(this._createExperimentCheckbox(experiments[i]));
+      const warningMessage = Common.UIString.UIString('These experiments could be dangerous and may require restart.');
+      experimentsSection.appendChild(this._createExperimentsWarningSubsection(warningMessage));
+      for (const experiment of stableExperiments) {
+        experimentsSection.appendChild(this._createExperimentCheckbox(experiment));
+      }
+    }
+    if (unstableExperiments.length) {
+      const experimentsSection = this._appendSection();
+      const warningMessage =
+          Common.UIString.UIString('These experiments are particularly unstable. Enable at your own risk.');
+      experimentsSection.appendChild(this._createExperimentsWarningSubsection(warningMessage));
+      for (const experiment of unstableExperiments) {
+        experimentsSection.appendChild(this._createExperimentCheckbox(experiment));
       }
     }
   }
 
   /**
+   * @param {string} warningMessage
    * @return {!Element} element
    */
-  _createExperimentsWarningSubsection() {
+  _createExperimentsWarningSubsection(warningMessage) {
     const subsection = createElement('div');
     const warning = subsection.createChild('span', 'settings-experiments-warning-subsection-warning');
-    warning.textContent = Common.UIString('WARNING:');
+    warning.textContent = Common.UIString.UIString('WARNING:');
     subsection.createTextChild(' ');
     const message = subsection.createChild('span', 'settings-experiments-warning-subsection-message');
-    message.textContent = Common.UIString('These experiments could be dangerous and may require restart.');
+    message.textContent = warningMessage;
     return subsection;
   }
 
   _createExperimentCheckbox(experiment) {
-    const label = UI.CheckboxLabel.create(Common.UIString(experiment.title), experiment.isEnabled());
+    const label = UI.UIUtils.CheckboxLabel.create(Common.UIString.UIString(experiment.title), experiment.isEnabled());
     const input = label.checkboxElement;
     input.name = experiment.name;
     function listener() {
@@ -279,20 +287,20 @@ export class ExperimentsSettingsTab extends SettingsTab {
     input.addEventListener('click', listener, false);
 
     const p = createElement('p');
-    p.className = experiment.hidden && !experiment.isEnabled() ? 'settings-experiment-hidden' : '';
+    p.className = experiment.unstable && !experiment.isEnabled() ? 'settings-experiment-unstable' : '';
     p.appendChild(label);
     return p;
   }
 }
 
 /**
- * @implements {UI.ActionDelegate}
+ * @implements {UI.ActionDelegate.ActionDelegate}
  * @unrestricted
  */
 export class ActionDelegate {
   /**
    * @override
-   * @param {!UI.Context} context
+   * @param {!UI.Context.Context} context
    * @param {string} actionId
    * @return {boolean}
    */
@@ -302,10 +310,11 @@ export class ActionDelegate {
         SettingsScreen._showSettingsScreen();
         return true;
       case 'settings.documentation':
-        Host.InspectorFrontendHost.openInNewTab('https://developers.google.com/web/tools/chrome-devtools/');
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(
+            'https://developers.google.com/web/tools/chrome-devtools/');
         return true;
       case 'settings.shortcuts':
-        SettingsScreen._showSettingsScreen(Common.UIString('Shortcuts'));
+        SettingsScreen._showSettingsScreen(Common.UIString.UIString('Shortcuts'));
         return true;
     }
     return false;
@@ -313,7 +322,7 @@ export class ActionDelegate {
 }
 
 /**
- * @implements {Common.Revealer}
+ * @implements {Common.Revealer.Revealer}
  * @unrestricted
  */
 export class Revealer {
@@ -323,12 +332,12 @@ export class Revealer {
    * @return {!Promise}
    */
   reveal(object) {
-    console.assert(object instanceof Common.Setting);
-    const setting = /** @type {!Common.Setting} */ (object);
+    console.assert(object instanceof Common.Settings.Setting);
+    const setting = /** @type {!Common.Settings.Setting} */ (object);
     let success = false;
 
     self.runtime.extensions('setting').forEach(revealModuleSetting);
-    self.runtime.extensions(UI.SettingUI).forEach(revealSettingUI);
+    self.runtime.extensions(UI.SettingsUI.SettingUI).forEach(revealSettingUI);
     self.runtime.extensions('view').forEach(revealSettingsView);
 
     return success ? Promise.resolve() : Promise.reject();
@@ -341,7 +350,7 @@ export class Revealer {
         return;
       }
       if (extension.descriptor()['settingName'] === setting.name) {
-        Host.InspectorFrontendHost.bringToFront();
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
         SettingsScreen._showSettingsScreen();
         success = true;
       }
@@ -353,7 +362,7 @@ export class Revealer {
     function revealSettingUI(extension) {
       const settings = extension.descriptor()['settings'];
       if (settings && settings.indexOf(setting.name) !== -1) {
-        Host.InspectorFrontendHost.bringToFront();
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
         SettingsScreen._showSettingsScreen();
         success = true;
       }
@@ -369,7 +378,7 @@ export class Revealer {
       }
       const settings = extension.descriptor()['settings'];
       if (settings && settings.indexOf(setting.name) !== -1) {
-        Host.InspectorFrontendHost.bringToFront();
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
         SettingsScreen._showSettingsScreen(extension.descriptor()['id']);
         success = true;
       }

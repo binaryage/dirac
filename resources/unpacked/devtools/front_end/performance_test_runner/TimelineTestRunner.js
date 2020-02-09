@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ PerformanceTestRunner.createPerformanceModelWithEvents = function(events) {
 };
 
 PerformanceTestRunner.createTimelineController = function() {
-  const controller = new Timeline.TimelineController(SDK.targetManager.mainTarget(), UI.panels.timeline);
+  const controller = new Timeline.TimelineController(self.SDK.targetManager.mainTarget(), UI.panels.timeline);
   controller._tracingManager = TestRunner.tracingManager;
   return controller;
 };
@@ -159,7 +159,7 @@ PerformanceTestRunner.runPerfTraceWithReload = async function() {
 };
 
 PerformanceTestRunner.getTimelineWidget = async function() {
-  return await UI.viewManager.view('timeline').widget();
+  return await self.UI.viewManager.view('timeline').widget();
 };
 
 PerformanceTestRunner.getNetworkFlameChartElement = async function() {
@@ -284,7 +284,7 @@ PerformanceTestRunner.printTraceEventProperties = function(traceEvent) {
 PerformanceTestRunner.printTraceEventPropertiesWithDetails = function(event) {
   PerformanceTestRunner.printTraceEventProperties(event);
   const details = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(
-      event, SDK.targetManager.mainTarget(), new Components.Linkifier());
+      event, self.SDK.targetManager.mainTarget(), new Components.Linkifier());
   TestRunner.addResult(`Text details for ${event.name}: ${details}`);
 
   if (TimelineModel.TimelineData.forEvent(event).warning) {

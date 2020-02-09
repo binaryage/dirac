@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Bindings from '../bindings/bindings.js';
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as Workspace from '../workspace/workspace.js';
+
 import {FormatterInterface, FormatterSourceMapping} from './ScriptFormatter.js';  // eslint-disable-line no-unused-vars
 
 export class SourceFormatData {
   /**
-   * @param {!Workspace.UISourceCode} originalSourceCode
-   * @param {!Workspace.UISourceCode} formattedSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} originalSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} formattedSourceCode
    * @param {!FormatterSourceMapping} mapping
    */
   constructor(originalSourceCode, formattedSourceCode, mapping) {
@@ -34,15 +39,15 @@ SourceFormatData._formatDataSymbol = Symbol('formatData');
 export class SourceFormatter {
   constructor() {
     this._projectId = 'formatter:';
-    this._project = new Bindings.ContentProviderBasedProject(
-        Workspace.workspace, this._projectId, Workspace.projectTypes.Formatter, 'formatter',
+    this._project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(
+        self.Workspace.workspace, this._projectId, Workspace.Workspace.projectTypes.Formatter, 'formatter',
         true /* isServiceProject */);
 
-    /** @type {!Map<!Workspace.UISourceCode, !{promise: !Promise<!SourceFormatData>, formatData: ?SourceFormatData}>} */
+    /** @type {!Map<!Workspace.UISourceCode.UISourceCode, !{promise: !Promise<!SourceFormatData>, formatData: ?SourceFormatData}>} */
     this._formattedSourceCodes = new Map();
     this._scriptMapping = new ScriptMapping();
     this._styleMapping = new StyleMapping();
-    Workspace.workspace.addEventListener(
+    self.Workspace.workspace.addEventListener(
         Workspace.Workspace.Events.UISourceCodeRemoved, this._onUISourceCodeRemoved, this);
   }
 
@@ -50,7 +55,7 @@ export class SourceFormatter {
    * @param {!Common.Event} event
    */
   _onUISourceCodeRemoved(event) {
-    const uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
+    const uiSourceCode = /** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data);
     const cacheEntry = this._formattedSourceCodes.get(uiSourceCode);
     if (cacheEntry && cacheEntry.formatData) {
       this._discardFormatData(cacheEntry.formatData);
@@ -59,8 +64,8 @@ export class SourceFormatter {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} formattedUISourceCode
-   * @return {?Workspace.UISourceCode}
+   * @param {!Workspace.UISourceCode.UISourceCode} formattedUISourceCode
+   * @return {?Workspace.UISourceCode.UISourceCode}
    */
   discardFormattedUISourceCode(formattedUISourceCode) {
     const formatData = SourceFormatData._for(formattedUISourceCode);
@@ -83,7 +88,7 @@ export class SourceFormatter {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {boolean}
    */
   hasFormatted(uiSourceCode) {
@@ -91,8 +96,8 @@ export class SourceFormatter {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @return {!Workspace.UISourceCode}
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @return {!Workspace.UISourceCode.UISourceCode}
    */
   getOriginalUISourceCode(uiSourceCode) {
     const formatData =
@@ -104,7 +109,7 @@ export class SourceFormatter {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {!Promise<!SourceFormatData>}
    */
   async format(uiSourceCode) {
@@ -141,8 +146,8 @@ export class SourceFormatter {
         formattedURL = `${uiSourceCode.url()}:formatted${suffix}`;
         suffix = `:${count++}`;
       } while (this._project.uiSourceCodeForURL(formattedURL));
-      const contentProvider =
-          Common.StaticContentProvider.fromString(formattedURL, uiSourceCode.contentType(), formattedContent);
+      const contentProvider = Common.StaticContentProvider.StaticContentProvider.fromString(
+          formattedURL, uiSourceCode.contentType(), formattedContent);
       const formattedUISourceCode =
           this._project.addContentProvider(formattedURL, contentProvider, uiSourceCode.mimeType());
       const formatData = new SourceFormatData(uiSourceCode, formattedUISourceCode, formatterMapping);
@@ -167,17 +172,17 @@ export class SourceFormatter {
 }
 
 /**
- * @implements {Bindings.DebuggerSourceMapping}
+ * @implements {Bindings.DebuggerWorkspaceBinding.DebuggerSourceMapping}
  */
 class ScriptMapping {
   constructor() {
-    Bindings.debuggerWorkspaceBinding.addSourceMapping(this);
+    self.Bindings.debuggerWorkspaceBinding.addSourceMapping(this);
   }
 
   /**
    * @override
    * @param {!SDK.DebuggerModel.Location} rawLocation
-   * @return {?Workspace.UILocation}
+   * @return {?Workspace.UISourceCode.UILocation}
    */
   rawLocationToUILocation(rawLocation) {
     const script = rawLocation.script();
@@ -207,7 +212,7 @@ class ScriptMapping {
 
   /**
    * @override
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @param {number} lineNumber
    * @param {number} columnNumber
    * @return {!Array<!SDK.DebuggerModel.Location>}
@@ -222,14 +227,14 @@ class ScriptMapping {
       // Here we have a script that is displayed on its own (i.e. it has a dedicated uiSourceCode). This means it is
       // either a stand-alone script or an inline script with a #sourceURL= and in both cases we can just forward the
       // question to the original (unformatted) source code.
-      const rawLocations = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocationsForUnformattedJavaScript(
+      const rawLocations = self.Bindings.debuggerWorkspaceBinding.uiLocationToRawLocationsForUnformattedJavaScript(
           formatData.originalSourceCode, originalLine, originalColumn);
       console.assert(rawLocations.every(l => l && !!l.script()));
       return rawLocations;
     }
-    if (formatData.originalSourceCode.contentType() === Common.resourceTypes.Document) {
-      const target = Bindings.NetworkProject.targetForUISourceCode(formatData.originalSourceCode);
-      const debuggerModel = target && target.model(SDK.DebuggerModel);
+    if (formatData.originalSourceCode.contentType() === Common.ResourceType.resourceTypes.Document) {
+      const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(formatData.originalSourceCode);
+      const debuggerModel = target && target.model(SDK.DebuggerModel.DebuggerModel);
       if (debuggerModel) {
         const scripts = debuggerModel.scriptsForSourceURL(formatData.originalSourceCode.url())
                             .filter(script => script.isInlineScript() && !script.hasSourceURL);
@@ -262,18 +267,18 @@ class ScriptMapping {
       }
     }
     for (const script of scripts) {
-      Bindings.debuggerWorkspaceBinding.updateLocations(script);
+      self.Bindings.debuggerWorkspaceBinding.updateLocations(script);
     }
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @return {!Array<!SDK.Script>}
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @return {!Array<!SDK.Script.Script>}
    */
   _scriptsForUISourceCode(uiSourceCode) {
-    if (uiSourceCode.contentType() === Common.resourceTypes.Document) {
-      const target = Bindings.NetworkProject.targetForUISourceCode(uiSourceCode);
-      const debuggerModel = target && target.model(SDK.DebuggerModel);
+    if (uiSourceCode.contentType() === Common.ResourceType.resourceTypes.Document) {
+      const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
+      const debuggerModel = target && target.model(SDK.DebuggerModel.DebuggerModel);
       if (debuggerModel) {
         const scripts = debuggerModel.scriptsForSourceURL(uiSourceCode.url())
                             .filter(script => script.isInlineScript() && !script.hasSourceURL);
@@ -285,7 +290,7 @@ class ScriptMapping {
           !uiSourceCode[SourceFormatData._formatDataSymbol] ||
           uiSourceCode[SourceFormatData._formatDataSymbol] === uiSourceCode);
       const rawLocations =
-          Bindings.debuggerWorkspaceBinding.uiLocationToRawLocationsForUnformattedJavaScript(uiSourceCode, 0, 0);
+          self.Bindings.debuggerWorkspaceBinding.uiLocationToRawLocationsForUnformattedJavaScript(uiSourceCode, 0, 0);
       return rawLocations.map(location => location.script()).filter(script => !!script);
     }
     return [];
@@ -297,14 +302,14 @@ class ScriptMapping {
  */
 class StyleMapping {
   constructor() {
-    Bindings.cssWorkspaceBinding.addSourceMapping(this);
+    self.Bindings.cssWorkspaceBinding.addSourceMapping(this);
     this._headersSymbol = Symbol('Formatter.SourceFormatter.StyleMapping._headersSymbol');
   }
 
   /**
    * @override
-   * @param {!SDK.CSSLocation} rawLocation
-   * @return {?Workspace.UILocation}
+   * @param {!SDK.CSSModel.CSSLocation} rawLocation
+   * @return {?Workspace.UISourceCode.UILocation}
    */
   rawLocationToUILocation(rawLocation) {
     const styleHeader = rawLocation.header();
@@ -319,8 +324,8 @@ class StyleMapping {
 
   /**
    * @override
-   * @param {!Workspace.UILocation} uiLocation
-   * @return {!Array<!SDK.CSSLocation>}
+   * @param {!Workspace.UISourceCode.UILocation} uiLocation
+   * @return {!Array<!SDK.CSSModel.CSSLocation>}
    */
   uiLocationToRawLocations(uiLocation) {
     const formatData = SourceFormatData._for(uiLocation.uiSourceCode);
@@ -331,7 +336,7 @@ class StyleMapping {
         formatData.mapping.formattedToOriginal(uiLocation.lineNumber, uiLocation.columnNumber);
     const headers = formatData.originalSourceCode[this._headersSymbol].filter(
         header => header.containsLocation(originalLine, originalColumn));
-    return headers.map(header => new SDK.CSSLocation(header, originalLine, originalColumn));
+    return headers.map(header => new SDK.CSSModel.CSSLocation(header, originalLine, originalColumn));
   }
 
   /**
@@ -348,23 +353,23 @@ class StyleMapping {
       original[this._headersSymbol] = null;
       headers.forEach(header => delete header[SourceFormatData._formatDataSymbol]);
     }
-    headers.forEach(header => Bindings.cssWorkspaceBinding.updateLocations(header));
+    headers.forEach(header => self.Bindings.cssWorkspaceBinding.updateLocations(header));
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @return {!Array<!SDK.CSSStyleSheetHeader>}
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @return {!Array<!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader>}
    */
   _headersForUISourceCode(uiSourceCode) {
-    if (uiSourceCode.contentType() === Common.resourceTypes.Document) {
-      const target = Bindings.NetworkProject.targetForUISourceCode(uiSourceCode);
-      const cssModel = target && target.model(SDK.CSSModel);
+    if (uiSourceCode.contentType() === Common.ResourceType.resourceTypes.Document) {
+      const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
+      const cssModel = target && target.model(SDK.CSSModel.CSSModel);
       if (cssModel) {
         return cssModel.headersForSourceURL(uiSourceCode.url())
             .filter(header => header.isInline && !header.hasSourceURL);
       }
     } else if (uiSourceCode.contentType().isStyleSheet()) {
-      const rawLocations = Bindings.cssWorkspaceBinding.uiLocationToRawLocations(uiSourceCode.uiLocation(0, 0));
+      const rawLocations = self.Bindings.cssWorkspaceBinding.uiLocationToRawLocations(uiSourceCode.uiLocation(0, 0));
       return rawLocations.map(rawLocation => rawLocation.header()).filter(header => !!header);
     }
     return [];

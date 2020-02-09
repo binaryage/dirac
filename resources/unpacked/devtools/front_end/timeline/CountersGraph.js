@@ -28,12 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {Events, PerformanceModel} from './PerformanceModel.js';  // eslint-disable-line no-unused-vars
+import {TimelineModeViewDelegate} from './TimelinePanel.js';     // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-export default class CountersGraph extends UI.VBox {
+export class CountersGraph extends UI.VBox {
   /**
-   * @param {!Timeline.TimelineModeViewDelegate} delegate
+   * @param {!TimelineModeViewDelegate} delegate
    */
   constructor(delegate) {
     super();
@@ -86,17 +89,17 @@ export default class CountersGraph extends UI.VBox {
   }
 
   /**
-   * @param {?Timeline.PerformanceModel} model
+   * @param {?PerformanceModel} model
    * @param {?TimelineModel.TimelineModel.Track} track
    */
   setModel(model, track) {
     if (this._model !== model) {
       if (this._model) {
-        this._model.removeEventListener(Timeline.PerformanceModel.Events.WindowChanged, this._onWindowChanged, this);
+        this._model.removeEventListener(Events.WindowChanged, this._onWindowChanged, this);
       }
       this._model = model;
       if (this._model) {
-        this._model.addEventListener(Timeline.PerformanceModel.Events.WindowChanged, this._onWindowChanged, this);
+        this._model.addEventListener(Events.WindowChanged, this._onWindowChanged, this);
       }
     }
     this._calculator.setZeroTime(model ? model.timelineModel().minimumRecordTime() : 0);
@@ -371,7 +374,7 @@ export class CounterUI {
     this.counter = counter;
     this._formatter = formatter || Number.withThousandsSeparator;
 
-    this._setting = Common.settings.createSetting('timelineCountersGraph-' + title, true);
+    this._setting = self.Common.settings.createSetting('timelineCountersGraph-' + title, true);
     this._setting.setTitle(title);
     this._filter = new UI.ToolbarSettingCheckbox(this._setting, title);
     this._filter.inputElement.classList.add('-theme-preserve');
@@ -601,21 +604,3 @@ export class Calculator {
     return this._maximumBoundary - this._minimumBoundary;
   }
 }
-
-/* Legacy exported object */
-self.Timeline = self.Timeline || {};
-
-/* Legacy exported object */
-Timeline = Timeline || {};
-
-/** @constructor */
-Timeline.CountersGraph = CountersGraph;
-
-/** @constructor */
-Timeline.CountersGraph.Counter = Counter;
-
-/** @constructor */
-Timeline.CountersGraph.CounterUI = CounterUI;
-
-/** @constructor */
-Timeline.CountersGraph.Calculator = Calculator;

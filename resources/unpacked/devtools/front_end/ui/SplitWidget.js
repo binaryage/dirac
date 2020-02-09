@@ -5,19 +5,21 @@
  * modification, are permitted provided that the following conditions are
  * met:
  *
- * 1. Redistributions of source code must retain the above copyright
+ *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
+ *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY GOOGLE INC. AND ITS CONTRIBUTORS
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL GOOGLE INC.
- * OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
@@ -71,7 +73,7 @@ export class SplitWidget extends Widget {
     this._constraintsInDip = !!constraintsInDip;
     this._resizeStartSizeDIP = 0;
     // Note: go via self.Common for globally-namespaced singletons.
-    this._setting = settingName ? self.Common.settings.createSetting(settingName, {}) : null;
+    this._setting = settingName ? self.self.Common.settings.createSetting(settingName, {}) : null;
 
     this._totalSizeCSS = 0;
     this._totalSizeOtherDimensionCSS = 0;
@@ -451,7 +453,7 @@ export class SplitWidget extends Widget {
    * @param {number} size
    */
   setSidebarSize(size) {
-    const sizeDIP = UI.zoomManager.cssToDIP(size);
+    const sizeDIP = self.UI.zoomManager.cssToDIP(size);
     this._savedSidebarSizeDIP = sizeDIP;
     this._saveSetting();
     this._innerSetSidebarSizeDIP(sizeDIP, false, true);
@@ -462,7 +464,7 @@ export class SplitWidget extends Widget {
    */
   sidebarSize() {
     const sizeDIP = Math.max(0, this._sidebarSizeDIP);
-    return UI.zoomManager.dipToCSS(sizeDIP);
+    return self.UI.zoomManager.dipToCSS(sizeDIP);
   }
 
   /**
@@ -475,7 +477,7 @@ export class SplitWidget extends Widget {
       this._totalSizeOtherDimensionCSS =
           this._isVertical ? this.contentElement.offsetHeight : this.contentElement.offsetWidth;
     }
-    return UI.zoomManager.cssToDIP(this._totalSizeCSS);
+    return self.UI.zoomManager.cssToDIP(this._totalSizeCSS);
   }
 
   /**
@@ -514,7 +516,7 @@ export class SplitWidget extends Widget {
     this._removeAllLayoutProperties();
 
     // this._totalSizeDIP is available below since we successfully applied constraints.
-    const roundSizeCSS = Math.round(UI.zoomManager.dipToCSS(sizeDIP));
+    const roundSizeCSS = Math.round(self.UI.zoomManager.dipToCSS(sizeDIP));
     const sidebarSizeValue = roundSizeCSS + 'px';
     const mainSizeValue = (this._totalSizeCSS - roundSizeCSS) + 'px';
     this._sidebarElement.style.flexBasis = sidebarSizeValue;
@@ -579,8 +581,8 @@ export class SplitWidget extends Widget {
       animatedMarginPropertyName = this._secondIsSidebar ? 'margin-bottom' : 'margin-top';
     }
 
-    const marginFrom = reverse ? '0' : '-' + UI.zoomManager.dipToCSS(this._sidebarSizeDIP) + 'px';
-    const marginTo = reverse ? '-' + UI.zoomManager.dipToCSS(this._sidebarSizeDIP) + 'px' : '0';
+    const marginFrom = reverse ? '0' : '-' + self.UI.zoomManager.dipToCSS(this._sidebarSizeDIP) + 'px';
+    const marginTo = reverse ? '-' + self.UI.zoomManager.dipToCSS(this._sidebarSizeDIP) + 'px' : '0';
 
     // This order of things is important.
     // 1. Resize main element early and force layout.
@@ -653,7 +655,7 @@ export class SplitWidget extends Widget {
    */
   _applyConstraints(sidebarSize, userAction) {
     const totalSize = this._totalSizeDIP();
-    const zoomFactor = this._constraintsInDip ? 1 : UI.zoomManager.zoomFactor();
+    const zoomFactor = this._constraintsInDip ? 1 : self.UI.zoomManager.zoomFactor();
 
     let constraints = this._sidebarWidget ? this._sidebarWidget.constraints() : new Constraints();
     let minSidebarSize = this.isVertical() ? constraints.minimum.width : constraints.minimum.height;
@@ -719,14 +721,14 @@ export class SplitWidget extends Widget {
    */
   wasShown() {
     this._forceUpdateLayout();
-    UI.zoomManager.addEventListener(ZoomManagerEvents.ZoomChanged, this._onZoomChanged, this);
+    self.UI.zoomManager.addEventListener(ZoomManagerEvents.ZoomChanged, this._onZoomChanged, this);
   }
 
   /**
    * @override
    */
   willHide() {
-    UI.zoomManager.removeEventListener(ZoomManagerEvents.ZoomChanged, this._onZoomChanged, this);
+    self.UI.zoomManager.removeEventListener(ZoomManagerEvents.ZoomChanged, this._onZoomChanged, this);
   }
 
   /**
@@ -781,7 +783,7 @@ export class SplitWidget extends Widget {
    */
   _onResizeUpdate(event) {
     const offset = event.data.currentPosition - event.data.startPosition;
-    const offsetDIP = UI.zoomManager.cssToDIP(offset);
+    const offsetDIP = self.UI.zoomManager.cssToDIP(offset);
     const newSizeDIP =
         this._secondIsSidebar ? this._resizeStartSizeDIP - offsetDIP : this._resizeStartSizeDIP + offsetDIP;
     const constrainedSizeDIP = this._applyConstraints(newSizeDIP, true);

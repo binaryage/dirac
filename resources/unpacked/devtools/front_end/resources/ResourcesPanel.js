@@ -15,7 +15,7 @@ export class ResourcesPanel extends UI.PanelWithSidebar {
     super('resources');
     this.registerRequiredCSS('resources/resourcesPanel.css');
 
-    this._resourcesLastSelectedItemSetting = Common.settings.createSetting('resourcesLastSelectedElementPath', []);
+    this._resourcesLastSelectedItemSetting = self.Common.settings.createSetting('resourcesLastSelectedElementPath', []);
 
     /** @type {?UI.Widget} */
     this.visibleView = null;
@@ -208,7 +208,7 @@ export class ResourceRevealer {
       return Promise.reject(new Error('Internal error: not a resource'));
     }
     const sidebar = ResourcesPanel._instance()._sidebar;
-    await UI.viewManager.showView('resources');
+    await self.UI.viewManager.showView('resources');
     await sidebar.showResource(resource);
   }
 }

@@ -79,7 +79,7 @@ export class ElementsTreeElement extends UI.TreeElement {
    */
   static visibleShadowRoots(node) {
     let roots = node.shadowRoots();
-    if (roots.length && !Common.moduleSetting('showUAShadowDOM').get()) {
+    if (roots.length && !self.Common.settings.moduleSetting('showUAShadowDOM').get()) {
       roots = roots.filter(filter);
     }
 
@@ -587,7 +587,7 @@ export class ElementsTreeElement extends UI.TreeElement {
     menuItem = contextMenu.debugSection().appendCheckboxItem(
         Common.UIString('Hide element'), treeOutline.toggleHideElement.bind(treeOutline, this._node),
         treeOutline.isToggledToHidden(this._node));
-    menuItem.setShortcut(UI.shortcutRegistry.shortcutTitleForAction('elements.hide-element'));
+    menuItem.setShortcut(self.UI.shortcutRegistry.shortcutTitleForAction('elements.hide-element'));
 
     if (isEditable) {
       contextMenu.editSection().appendItem(Common.UIString('Delete element'), this.remove.bind(this));
@@ -860,7 +860,7 @@ export class ElementsTreeElement extends UI.TreeElement {
     function gotFactory(factory) {
       const editor = factory.createEditor({
         lineNumbers: false,
-        lineWrapping: Common.moduleSetting('domWordWrap').get(),
+        lineWrapping: self.Common.settings.moduleSetting('domWordWrap').get(),
         mimeType: 'text/html',
         autoHeight: false,
         padBottom: false
@@ -1812,7 +1812,7 @@ export class ElementsTreeElement extends UI.TreeElement {
 
   _editAsHTML() {
     const promise = Common.Revealer.reveal(this.node());
-    promise.then(() => UI.actionRegistry.action('elements.edit-as-html').execute());
+    promise.then(() => self.UI.actionRegistry.action('elements.edit-as-html').execute());
   }
 }
 

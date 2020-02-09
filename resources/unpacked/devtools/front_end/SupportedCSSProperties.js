@@ -2,6 +2,9 @@ export const generatedProperties = [{
     "name": "-internal-effective-zoom",
     "inherited": true
 }, {
+    "name": "-internal-empty-line-height",
+    "inherited": false
+}, {
     "name": "-internal-ua-background-attachment"
 }, {
     "name": "-internal-ua-background-blend-mode"
@@ -628,6 +631,19 @@ export const generatedProperties = [{
     "name": "contain",
     "keywords": ["none", "strict", "content", "size", "layout", "style", "paint"]
 }, {
+    "name": "contain-intrinsic-block-size"
+}, {
+    "name": "contain-intrinsic-height",
+    "keywords": ["auto", "legacy"]
+}, {
+    "name": "contain-intrinsic-inline-size"
+}, {
+    "longhands": ["contain-intrinsic-width", "contain-intrinsic-height"],
+    "name": "contain-intrinsic-size"
+}, {
+    "name": "contain-intrinsic-width",
+    "keywords": ["auto", "legacy"]
+}, {
     "name": "content"
 }, {
     "name": "counter-increment",
@@ -874,19 +890,6 @@ export const generatedProperties = [{
     "name": "inset-inline-end"
 }, {
     "name": "inset-inline-start"
-}, {
-    "name": "intrinsic-block-size"
-}, {
-    "name": "intrinsic-height",
-    "keywords": ["auto", "legacy"]
-}, {
-    "name": "intrinsic-inline-size"
-}, {
-    "longhands": ["intrinsic-width", "intrinsic-height"],
-    "name": "intrinsic-size"
-}, {
-    "name": "intrinsic-width",
-    "keywords": ["auto", "legacy"]
 }, {
     "name": "isolation",
     "keywords": ["auto", "isolate"]
@@ -1505,6 +1508,9 @@ export const generatedPropertyValues = {
     "-webkit-box-orient": {
         "values": ["horizontal", "vertical"]
     },
+    "contain-intrinsic-width": {
+        "values": ["auto", "legacy"]
+    },
     "counter-reset": {
         "values": ["none"]
     },
@@ -1694,8 +1700,8 @@ export const generatedPropertyValues = {
     "offset-position": {
         "values": ["auto"]
     },
-    "intrinsic-width": {
-        "values": ["auto", "legacy"]
+    "paint-order": {
+        "values": ["normal", "fill", "stroke", "markers"]
     },
     "break-inside": {
         "values": ["auto", "avoid", "avoid-column", "avoid-page"]
@@ -1769,9 +1775,6 @@ export const generatedPropertyValues = {
     "border-left-style": {
         "values": ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"]
     },
-    "paint-order": {
-        "values": ["normal", "fill", "stroke", "markers"]
-    },
     "marker-mid": {
         "values": ["none"]
     },
@@ -1789,6 +1792,9 @@ export const generatedPropertyValues = {
     },
     "-webkit-ruby-position": {
         "values": ["before", "after"]
+    },
+    "offset-rotate": {
+        "values": ["auto", "reverse"]
     },
     "word-spacing": {
         "values": ["normal"]
@@ -2042,8 +2048,8 @@ export const generatedPropertyValues = {
     "grid-auto-rows": {
         "values": ["auto", "min-content", "max-content"]
     },
-    "offset-rotate": {
-        "values": ["auto", "reverse"]
+    "contain-intrinsic-height": {
+        "values": ["auto", "legacy"]
     },
     "font-variant-ligatures": {
         "values": ["normal", "none", "common-ligatures", "no-common-ligatures", "discretionary-ligatures", "no-discretionary-ligatures", "historical-ligatures", "no-historical-ligatures", "contextual", "no-contextual"]
@@ -2113,9 +2119,6 @@ export const generatedPropertyValues = {
     },
     "border-right-color": {
         "values": ["currentcolor"]
-    },
-    "intrinsic-height": {
-        "values": ["auto", "legacy"]
     },
     "transition-property": {
         "values": ["none"]

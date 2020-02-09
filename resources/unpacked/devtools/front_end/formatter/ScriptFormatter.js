@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+
 import {FormatResult, formatterWorkerPool} from './FormatterWorkerPool.js';  // eslint-disable-line no-unused-vars
 
 /**
@@ -36,7 +38,7 @@ import {FormatResult, formatterWorkerPool} from './FormatterWorkerPool.js';  // 
 export class FormatterInterface {}
 
 /**
- * @param {!Common.ResourceType} contentType
+ * @param {!Common.ResourceType.ResourceType} contentType
  * @param {string} mimeType
  * @param {string} content
  * @param {function(string, !FormatterSourceMapping)} callback
@@ -91,7 +93,7 @@ export class ScriptFormatter {
     this._originalContent = content;
 
     formatterWorkerPool()
-        .format(mimeType, content, Common.moduleSetting('textEditorIndent').get())
+        .format(mimeType, content, self.Common.settings.moduleSetting('textEditorIndent').get())
         .then(this._didFormatContent.bind(this));
   }
 

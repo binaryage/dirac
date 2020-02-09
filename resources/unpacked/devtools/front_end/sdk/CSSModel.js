@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as HostModule from '../host/host.js';
+import * as ProtocolModule from '../protocol/protocol.js';
+
 import {CSSMatchedStyles} from './CSSMatchedStyles.js';
 import {CSSMedia} from './CSSMedia.js';
 import {CSSStyleRule} from './CSSRule.js';
@@ -72,8 +75,8 @@ export class CSSModel extends SDKModel {
     /** @type {boolean} */
     this._isRuleUsageTrackingEnabled = false;
 
-    this._sourceMapManager.setEnabled(Common.moduleSetting('cssSourceMapsEnabled').get());
-    Common.moduleSetting('cssSourceMapsEnabled')
+    this._sourceMapManager.setEnabled(self.Common.settings.moduleSetting('cssSourceMapsEnabled').get());
+    self.Common.settings.moduleSetting('cssSourceMapsEnabled')
         .addChangeListener(event => this._sourceMapManager.setEnabled(/** @type {boolean} */ (event.data)));
   }
 
@@ -199,7 +202,7 @@ export class CSSModel extends SDKModel {
    * @return {!Promise<boolean>}
    */
   async setSelectorText(styleSheetId, range, text) {
-    Host.userMetrics.actionTaken(Host.UserMetrics.Action.StyleRuleEdited);
+    HostModule.userMetrics.actionTaken(Host.UserMetrics.Action.StyleRuleEdited);
 
     try {
       await this._ensureOriginalStyleSheetText(styleSheetId);
@@ -224,7 +227,7 @@ export class CSSModel extends SDKModel {
    * @return {!Promise<boolean>}
    */
   async setKeyframeKey(styleSheetId, range, text) {
-    Host.userMetrics.actionTaken(Host.UserMetrics.Action.StyleRuleEdited);
+    HostModule.userMetrics.actionTaken(Host.UserMetrics.Action.StyleRuleEdited);
 
     try {
       await this._ensureOriginalStyleSheetText(styleSheetId);
@@ -248,10 +251,13 @@ export class CSSModel extends SDKModel {
   }
 
   /**
-   * @return {!Promise<!Array<!Protocol.CSS.RuleUsage>>}
+   * @return {!Promise<{timestamp: number, coverage:!Array<!Protocol.CSS.RuleUsage>}>}
    */
-  takeCoverageDelta() {
-    return this._agent.takeCoverageDelta().then(ruleUsage => ruleUsage || []);
+  async takeCoverageDelta() {
+    const r = await this._agent.invoke_takeCoverageDelta({});
+    const timestamp = (r && r.timestamp) || 0;
+    const coverage = (r && r.coverage) || [];
+    return {timestamp, coverage};
   }
 
   /**
@@ -296,7 +302,7 @@ export class CSSModel extends SDKModel {
   async matchedStylesPromise(nodeId) {
     const response = await this._agent.invoke_getMatchedStylesForNode({nodeId});
 
-    if (response[Protocol.Error]) {
+    if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
       return null;
     }
 
@@ -333,7 +339,7 @@ export class CSSModel extends SDKModel {
    */
   async backgroundColorsPromise(nodeId) {
     const response = this._agent.invoke_getBackgroundColors({nodeId});
-    if (response[Protocol.Error]) {
+    if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
       return null;
     }
 
@@ -378,7 +384,7 @@ export class CSSModel extends SDKModel {
   async inlineStylesPromise(nodeId) {
     const response = await this._agent.invoke_getInlineStylesForNode({nodeId});
 
-    if (response[Protocol.Error] || !response.inlineStyle) {
+    if (response[ProtocolModule.InspectorBackend.ProtocolError] || !response.inlineStyle) {
       return null;
     }
     const inlineStyle = new CSSStyleDeclaration(this, null, response.inlineStyle, Type.Inline);
@@ -434,7 +440,7 @@ export class CSSModel extends SDKModel {
    * @return {!Promise<boolean>}
    */
   async setMediaText(styleSheetId, range, newMediaText) {
-    Host.userMetrics.actionTaken(Host.UserMetrics.Action.StyleRuleEdited);
+    HostModule.userMetrics.actionTaken(Host.UserMetrics.Action.StyleRuleEdited);
 
     try {
       await this._ensureOriginalStyleSheetText(styleSheetId);

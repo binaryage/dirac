@@ -112,7 +112,7 @@ export class MainImpl {
     const globalStorage = new Common.SettingsStorage(
         prefs, Host.InspectorFrontendHost.setPreference, Host.InspectorFrontendHost.removePreference,
         Host.InspectorFrontendHost.clearPreferences, storagePrefix);
-    Common.settings = new Common.Settings(globalStorage, localStorage);
+    self.Common.settings = new Common.Settings(globalStorage, localStorage);
     if (!Host.isUnderTest()) {
       new Common.VersionController().updateVersion();
     }
@@ -138,11 +138,13 @@ export class MainImpl {
     Root.Runtime.experiments.register('mediaInspector', 'Media Element Inspection');
     Root.Runtime.experiments.register('nativeHeapProfiler', 'Native memory sampling heap profiler', true);
     Root.Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
-    Root.Runtime.experiments.register(
-        'reportInternalNetErrorOnSourceMapLoadFail', 'Report internal net error code when a SourceMap fails to load');
+    Root.Runtime.experiments.register('issuesPane', 'Issues Pane');
     Root.Runtime.experiments.register(
         'recordCoverageWithPerformanceTracing', 'Record coverage while performance tracing');
     Root.Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
+    Root.Runtime.experiments.register(
+        'showOptionToNotTreatGlobalObjectsAsRoots',
+        'Show option to take heap snapshot where globals are not treated as root');
     Root.Runtime.experiments.register('sourceDiff', 'Source diff');
     Root.Runtime.experiments.register('spotlight', 'Spotlight', true);
 
@@ -154,7 +156,8 @@ export class MainImpl {
     Root.Runtime.experiments.register(
         'timelineV8RuntimeCallStats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
     Root.Runtime.experiments.register('timelineWebGL', 'Timeline: WebGL-based flamechart');
-    Root.Runtime.experiments.register('timelineReplayEvent', 'Timeline: Replay input events');
+    Root.Runtime.experiments.register('timelineReplayEvent', 'Timeline: Replay input events', true);
+    Root.Runtime.experiments.register('wasmDWARFDebugging', 'WebAssembly Debugging: Enable DWARF support');
 
     Root.Runtime.experiments.cleanUpStaleExperiments();
     const enabledExperiments = Root.Runtime.queryParam('enabledExperiments');
@@ -181,12 +184,12 @@ export class MainImpl {
 
     MainImpl.time('Main._createAppUI');
 
-    UI.viewManager = new UI.ViewManager();
+    self.UI.viewManager = new UI.ViewManager();
 
     // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
-    Persistence.isolatedFileSystemManager = new Persistence.IsolatedFileSystemManager();
+    self.Persistence.isolatedFileSystemManager = new Persistence.IsolatedFileSystemManager();
 
-    const themeSetting = Common.settings.createSetting('uiTheme', 'systemPreferred');
+    const themeSetting = self.Common.settings.createSetting('uiTheme', 'systemPreferred');
     UI.initializeUIUtils(document, themeSetting);
     themeSetting.addChangeListener(Components.reload.bind(Components));
 
@@ -195,48 +198,51 @@ export class MainImpl {
     this._addMainEventListeners(document);
 
     const canDock = !!Root.Runtime.queryParam('can_dock');
-    UI.zoomManager = new UI.ZoomManager(window, Host.InspectorFrontendHost);
-    UI.inspectorView = UI.InspectorView.instance();
+    self.UI.zoomManager = new UI.ZoomManager(window, Host.InspectorFrontendHost);
+    self.UI.inspectorView = UI.InspectorView.instance();
     UI.ContextMenu.initialize();
     UI.ContextMenu.installHandler(document);
     UI.Tooltip.installHandler(document);
-    Components.dockController = new Components.DockController(canDock);
-    SDK.consoleModel = new SDK.ConsoleModel();
-    SDK.multitargetNetworkManager = new SDK.MultitargetNetworkManager();
-    SDK.domDebuggerManager = new SDK.DOMDebuggerManager();
-    SDK.targetManager.addEventListener(
+    self.SDK.consoleModel = new SDK.ConsoleModel();
+    self.Components.dockController = new Components.DockController(canDock);
+    self.SDK.multitargetNetworkManager = new SDK.MultitargetNetworkManager();
+    self.SDK.domDebuggerManager = new SDK.DOMDebuggerManager();
+    self.SDK.targetManager.addEventListener(
         SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged.bind(this));
 
-    UI.shortcutsScreen = new UI.ShortcutsScreen();
+    self.UI.shortcutsScreen = new UI.ShortcutsScreen();
     // set order of some sections explicitly
-    UI.shortcutsScreen.section(Common.UIString('Elements Panel'));
-    UI.shortcutsScreen.section(Common.UIString('Styles Pane'));
-    UI.shortcutsScreen.section(Common.UIString('Debugger'));
-    UI.shortcutsScreen.section(Common.UIString('Console'));
+    self.UI.shortcutsScreen.section(Common.UIString('Elements Panel'));
+    self.UI.shortcutsScreen.section(Common.UIString('Styles Pane'));
+    self.UI.shortcutsScreen.section(Common.UIString('Debugger'));
+    self.UI.shortcutsScreen.section(Common.UIString('Console'));
 
-    Workspace.fileManager = new Workspace.FileManager();
-    Workspace.workspace = new Workspace.Workspace();
+    self.Workspace.fileManager = new Workspace.FileManager();
+    self.Workspace.workspace = new Workspace.Workspace();
 
-    Bindings.networkProjectManager = new Bindings.NetworkProjectManager();
-    Bindings.resourceMapping = new Bindings.ResourceMapping(SDK.targetManager, Workspace.workspace);
+    self.Bindings.networkProjectManager = new Bindings.NetworkProjectManager();
+    self.Bindings.resourceMapping = new Bindings.ResourceMapping(self.SDK.targetManager, self.Workspace.workspace);
     new Bindings.PresentationConsoleMessageManager();
-    Bindings.cssWorkspaceBinding = new Bindings.CSSWorkspaceBinding(SDK.targetManager, Workspace.workspace);
-    Bindings.debuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(SDK.targetManager, Workspace.workspace);
-    Bindings.breakpointManager =
-        new Bindings.BreakpointManager(Workspace.workspace, SDK.targetManager, Bindings.debuggerWorkspaceBinding);
-    Extensions.extensionServer = new Extensions.ExtensionServer();
+    self.Bindings.cssWorkspaceBinding =
+        new Bindings.CSSWorkspaceBinding(self.SDK.targetManager, self.Workspace.workspace);
+    self.Bindings.debuggerWorkspaceBinding =
+        new Bindings.DebuggerWorkspaceBinding(self.SDK.targetManager, self.Workspace.workspace);
+    self.Bindings.breakpointManager = new Bindings.BreakpointManager(
+        self.Workspace.workspace, self.SDK.targetManager, self.Bindings.debuggerWorkspaceBinding);
+    self.Extensions.extensionServer = new Extensions.ExtensionServer();
 
-    new Persistence.FileSystemWorkspaceBinding(Persistence.isolatedFileSystemManager, Workspace.workspace);
-    Persistence.persistence = new Persistence.Persistence(Workspace.workspace, Bindings.breakpointManager);
-    Persistence.networkPersistenceManager = new Persistence.NetworkPersistenceManager(Workspace.workspace);
+    new Persistence.FileSystemWorkspaceBinding(self.Persistence.isolatedFileSystemManager, self.Workspace.workspace);
+    self.Persistence.persistence =
+        new Persistence.Persistence(self.Workspace.workspace, self.Bindings.breakpointManager);
+    self.Persistence.networkPersistenceManager = new Persistence.NetworkPersistenceManager(self.Workspace.workspace);
 
-    new ExecutionContextSelector(SDK.targetManager, UI.context);
-    Bindings.blackboxManager = new Bindings.BlackboxManager(Bindings.debuggerWorkspaceBinding);
+    new ExecutionContextSelector(self.SDK.targetManager, self.UI.context);
+    self.Bindings.blackboxManager = new Bindings.BlackboxManager(self.Bindings.debuggerWorkspaceBinding);
 
     new PauseListener();
 
-    UI.actionRegistry = new UI.ActionRegistry();
-    UI.shortcutRegistry = new UI.ShortcutRegistry(UI.actionRegistry, document);
+    self.UI.actionRegistry = new UI.ActionRegistry();
+    self.UI.shortcutRegistry = new UI.ShortcutRegistry(self.UI.actionRegistry, document);
     UI.ShortcutsScreen.registerShortcuts();
     this._registerForwardedShortcuts();
     this._registerMessageSinkListener();
@@ -253,10 +259,10 @@ export class MainImpl {
     MainImpl.time('Main._showAppUI');
     const app = /** @type {!Common.AppProvider} */ (appProvider).createApp();
     // It is important to kick controller lifetime after apps are instantiated.
-    Components.dockController.initialize();
+    self.Components.dockController.initialize();
     app.presentUI(document);
 
-    const toggleSearchNodeAction = UI.actionRegistry.action('elements.toggle-element-search');
+    const toggleSearchNodeAction = self.UI.actionRegistry.action('elements.toggle-element-search');
     // TODO: we should not access actions from other modules.
     if (toggleSearchNodeAction) {
       Host.InspectorFrontendHost.events.addEventListener(
@@ -266,7 +272,7 @@ export class MainImpl {
     Host.InspectorFrontendHost.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.RevealSourceLine, this._revealSourceLine, this);
 
-    UI.inspectorView.createToolbars();
+    self.UI.inspectorView.createToolbars();
     Host.InspectorFrontendHost.loadCompleted();
 
     const extensions = self.runtime.extensions(Common.QueryParamHandler);
@@ -308,12 +314,12 @@ export class MainImpl {
   _lateInitialization() {
     MainImpl.time('Main._lateInitialization');
     this._registerShortcuts();
-    Extensions.extensionServer.initializeExtensions();
+    self.Extensions.extensionServer.initializeExtensions();
     const extensions = self.runtime.extensions('late-initialization');
     const promises = [];
     for (const extension of extensions) {
       const setting = extension.descriptor()['setting'];
-      if (!setting || Common.settings.moduleSetting(setting).get()) {
+      if (!setting || self.Common.settings.moduleSetting(setting).get()) {
         promises.push(extension.instance().then(instance => (/** @type {!Common.Runnable} */ (instance)).run()));
         continue;
       }
@@ -324,10 +330,10 @@ export class MainImpl {
         if (!event.data) {
           return;
         }
-        Common.settings.moduleSetting(setting).removeChangeListener(changeListener);
+        self.Common.settings.moduleSetting(setting).removeChangeListener(changeListener);
         (/** @type {!Common.Runnable} */ (await extension.instance())).run();
       }
-      Common.settings.moduleSetting(setting).addChangeListener(changeListener);
+      self.Common.settings.moduleSetting(setting).addChangeListener(changeListener);
     }
     this._lateInitDonePromise = Promise.all(promises);
     MainImpl.timeEnd('Main._lateInitialization');
@@ -347,12 +353,12 @@ export class MainImpl {
       'console.show'
     ];
     const actionKeys =
-        UI.shortcutRegistry.keysForActions(forwardedActions).map(UI.KeyboardShortcut.keyCodeAndModifiersFromKey);
+        self.UI.shortcutRegistry.keysForActions(forwardedActions).map(UI.KeyboardShortcut.keyCodeAndModifiersFromKey);
     Host.InspectorFrontendHost.setWhitelistedShortcuts(JSON.stringify(actionKeys));
   }
 
   _registerMessageSinkListener() {
-    Common.console.addEventListener(Common.Console.Events.MessageAdded, messageAdded);
+    self.Common.console.addEventListener(Common.Console.Events.MessageAdded, messageAdded);
 
     /**
      * @param {!Common.Event} event
@@ -360,7 +366,7 @@ export class MainImpl {
     function messageAdded(event) {
       const message = /** @type {!Common.Console.Message} */ (event.data);
       if (message.show) {
-        Common.console.show();
+        self.Common.console.show();
       }
     }
   }
@@ -373,7 +379,7 @@ export class MainImpl {
     const lineNumber = /** @type {number} */ (event.data['lineNumber']);
     const columnNumber = /** @type {number} */ (event.data['columnNumber']);
 
-    const uiSourceCode = Workspace.workspace.uiSourceCodeForURL(url);
+    const uiSourceCode = self.Workspace.workspace.uiSourceCodeForURL(url);
     if (uiSourceCode) {
       Common.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
       return;
@@ -386,16 +392,16 @@ export class MainImpl {
       const uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
       if (uiSourceCode.url() === url) {
         Common.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
-        Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
+        self.Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
       }
     }
 
-    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
+    self.Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
   }
 
   _registerShortcuts() {
     const shortcut = UI.KeyboardShortcut;
-    const section = UI.shortcutsScreen.section(Common.UIString('All Panels'));
+    const section = self.UI.shortcutsScreen.section(Common.UIString('All Panels'));
     let keys = [
       shortcut.makeDescriptor('[', shortcut.Modifiers.CtrlOrMeta),
       shortcut.makeDescriptor(']', shortcut.Modifiers.CtrlOrMeta)
@@ -405,7 +411,7 @@ export class MainImpl {
     const toggleConsoleLabel = Common.UIString('Show console');
     section.addKey(shortcut.makeDescriptor(shortcut.Keys.Tilde, shortcut.Modifiers.Ctrl), toggleConsoleLabel);
     section.addKey(shortcut.makeDescriptor(shortcut.Keys.Esc), Common.UIString('Toggle drawer'));
-    if (Components.dockController.canDock()) {
+    if (self.Components.dockController.canDock()) {
       section.addKey(
           shortcut.makeDescriptor('M', shortcut.Modifiers.CtrlOrMeta | shortcut.Modifiers.Shift),
           Common.UIString('Toggle device mode'));
@@ -422,7 +428,7 @@ export class MainImpl {
     section.addKey(advancedSearchShortcut, Common.UIString('Search across all sources'));
 
     const inspectElementModeShortcuts =
-        UI.shortcutRegistry.shortcutDescriptorsForAction('elements.toggle-element-search');
+        self.UI.shortcutRegistry.shortcutDescriptorsForAction('elements.toggle-element-search');
     if (inspectElementModeShortcuts.length) {
       section.addKey(inspectElementModeShortcuts[0], Common.UIString('Select node to inspect'));
     }
@@ -441,7 +447,7 @@ export class MainImpl {
 
   _postDocumentKeyDown(event) {
     if (!event.handled) {
-      UI.shortcutRegistry.handleShortcut(event);
+      self.UI.shortcutRegistry.handleShortcut(event);
     }
   }
 
@@ -480,8 +486,8 @@ export class MainImpl {
   }
 
   _onSuspendStateChanged() {
-    const suspended = SDK.targetManager.allTargetsSuspended();
-    UI.inspectorView.onSuspendStateChanged(suspended);
+    const suspended = self.SDK.targetManager.allTargetsSuspended();
+    self.UI.inspectorView.onSuspendStateChanged(suspended);
   }
 }
 
@@ -531,7 +537,7 @@ export class SearchActionDelegate {
   handleAction(context, actionId) {
     let searchableView = UI.SearchableView.fromElement(document.deepActiveElement());
     if (!searchableView) {
-      const currentPanel = UI.inspectorView.currentPanelDeprecated();
+      const currentPanel = self.UI.inspectorView.currentPanelDeprecated();
       if (currentPanel) {
         searchableView = currentPanel.searchableView();
       }
@@ -574,17 +580,17 @@ export class MainMenuItem {
    * @param {!UI.ContextMenu} contextMenu
    */
   _handleContextMenu(contextMenu) {
-    if (Components.dockController.canDock()) {
+    if (self.Components.dockController.canDock()) {
       const dockItemElement = createElementWithClass('div', 'flex-centered flex-auto');
       dockItemElement.tabIndex = -1;
       const titleElement = dockItemElement.createChild('span', 'flex-auto');
       titleElement.textContent = Common.UIString('Dock side');
-      const toggleDockSideShorcuts = UI.shortcutRegistry.shortcutDescriptorsForAction('main.toggle-dock');
+      const toggleDockSideShorcuts = self.UI.shortcutRegistry.shortcutDescriptorsForAction('main.toggle-dock');
       titleElement.title = Common.UIString(
           'Placement of DevTools relative to the page. (%s to restore last position)', toggleDockSideShorcuts[0].name);
       dockItemElement.appendChild(titleElement);
       const dockItemToolbar = new UI.Toolbar('', dockItemElement);
-      if (Host.isMac() && !UI.themeSupport.hasTheme()) {
+      if (Host.isMac() && !self.UI.themeSupport.hasTheme()) {
         dockItemToolbar.makeBlueOnHover();
       }
       const undock = new UI.ToolbarToggle(Common.UIString('Undock into separate window'), 'largeicon-undock');
@@ -603,10 +609,10 @@ export class MainMenuItem {
           UI.ToolbarButton.Events.Click, setDockSide.bind(null, Components.DockController.State.DockedToRight));
       left.addEventListener(
           UI.ToolbarButton.Events.Click, setDockSide.bind(null, Components.DockController.State.DockedToLeft));
-      undock.setToggled(Components.dockController.dockSide() === Components.DockController.State.Undocked);
-      bottom.setToggled(Components.dockController.dockSide() === Components.DockController.State.DockedToBottom);
-      right.setToggled(Components.dockController.dockSide() === Components.DockController.State.DockedToRight);
-      left.setToggled(Components.dockController.dockSide() === Components.DockController.State.DockedToLeft);
+      undock.setToggled(self.Components.dockController.dockSide() === Components.DockController.State.Undocked);
+      bottom.setToggled(self.Components.dockController.dockSide() === Components.DockController.State.DockedToBottom);
+      right.setToggled(self.Components.dockController.dockSide() === Components.DockController.State.DockedToRight);
+      left.setToggled(self.Components.dockController.dockSide() === Components.DockController.State.DockedToLeft);
       dockItemToolbar.appendToolbarItem(undock);
       dockItemToolbar.appendToolbarItem(left);
       dockItemToolbar.appendToolbarItem(bottom);
@@ -640,25 +646,25 @@ export class MainMenuItem {
      */
     function setDockSide(side) {
       const hadKeyboardFocus = document.deepActiveElement().hasAttribute('data-keyboard-focus');
-      Components.dockController.once(Components.DockController.Events.AfterDockSideChanged).then(() => {
+      self.Components.dockController.once(Components.DockController.Events.AfterDockSideChanged).then(() => {
         button.focus();
         if (hadKeyboardFocus) {
           UI.markAsFocusedByKeyboard(button);
         }
       });
-      Components.dockController.setDockSide(side);
+      self.Components.dockController.setDockSide(side);
       contextMenu.discard();
     }
 
-    if (Components.dockController.dockSide() === Components.DockController.State.Undocked &&
-        SDK.targetManager.mainTarget() && SDK.targetManager.mainTarget().type() === SDK.Target.Type.Frame) {
+    if (self.Components.dockController.dockSide() === Components.DockController.State.Undocked &&
+        self.SDK.targetManager.mainTarget() && self.SDK.targetManager.mainTarget().type() === SDK.Target.Type.Frame) {
       contextMenu.defaultSection().appendAction('inspector_main.focus-debuggee', Common.UIString('Focus debuggee'));
     }
 
     contextMenu.defaultSection().appendAction(
         'main.toggle-drawer',
-        UI.inspectorView.drawerVisible() ? Common.UIString('Hide console drawer') :
-                                           Common.UIString('Show console drawer'));
+        self.UI.inspectorView.drawerVisible() ? Common.UIString('Hide console drawer') :
+                                                Common.UIString('Show console drawer'));
     contextMenu.appendItemsAtLocation('mainMenu');
     const moreTools = contextMenu.defaultSection().appendSubMenuItem(Common.UIString('More tools'));
     const extensions = self.runtime.extensions('view', undefined, true);
@@ -671,7 +677,7 @@ export class MainMenuItem {
         continue;
       }
       moreTools.defaultSection().appendItem(
-          extension.title(), UI.viewManager.showView.bind(UI.viewManager, descriptor['id']));
+          extension.title(), self.UI.viewManager.showView.bind(self.UI.viewManager, descriptor['id']));
     }
 
     const helpSubMenu = contextMenu.footerSection().appendSubMenuItem(Common.UIString('Help'));
@@ -684,7 +690,7 @@ export class MainMenuItem {
  */
 export class PauseListener {
   constructor() {
-    SDK.targetManager.addModelListener(
+    self.SDK.targetManager.addModelListener(
         SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
   }
 
@@ -692,11 +698,11 @@ export class PauseListener {
    * @param {!Common.Event} event
    */
   _debuggerPaused(event) {
-    SDK.targetManager.removeModelListener(
+    self.SDK.targetManager.removeModelListener(
         SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
     const debuggerModel = /** @type {!SDK.DebuggerModel} */ (event.data);
     const debuggerPausedDetails = debuggerModel.debuggerPausedDetails();
-    UI.context.setFlavor(SDK.Target, debuggerModel.target());
+    self.UI.context.setFlavor(SDK.Target, debuggerModel.target());
     Common.Revealer.reveal(debuggerPausedDetails);
   }
 }

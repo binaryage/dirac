@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as SDK from '../sdk/sdk.js';
+
 import {TimelineJSProfileProcessor} from './TimelineJSProfile.js';
 
 /**
@@ -60,7 +62,7 @@ export class TimelineModelImpl {
       if (e.startTime >= endTime) {
         break;
       }
-      if (SDK.TracingModel.isAsyncPhase(e.phase) || SDK.TracingModel.isFlowPhase(e.phase)) {
+      if (SDK.TracingModel.TracingModel.isAsyncPhase(e.phase) || SDK.TracingModel.TracingModel.isFlowPhase(e.phase)) {
         continue;
       }
       while (stack.length && stack.peekLast().endTime <= e.startTime) {
@@ -87,7 +89,7 @@ export class TimelineModelImpl {
    */
   static _topLevelEventEndingAfter(events, time) {
     let index = events.upperBound(time, (time, event) => time - event.startTime) - 1;
-    while (index > 0 && !SDK.TracingModel.isTopLevelEvent(events[index])) {
+    while (index > 0 && !SDK.TracingModel.TracingModel.isTopLevelEvent(events[index])) {
       index--;
     }
     return Math.max(index, 0);
@@ -157,7 +159,7 @@ export class TimelineModelImpl {
   }
 
   /**
-   * @return {!Array<!SDK.CPUProfileDataModel>}
+   * @return {!Array<!SDK.CPUProfileDataModel.CPUProfileDataModel>}
    */
   cpuProfiles() {
     return this._cpuProfiles;
@@ -165,17 +167,17 @@ export class TimelineModelImpl {
 
   /**
    * @param {!SDK.TracingModel.Event} event
-   * @return {?SDK.Target}
+   * @return {?SDK.SDKModel.Target}
    */
   targetByEvent(event) {
     // FIXME: Consider returning null for loaded traces.
     const workerId = this._workerIdByThread.get(event.thread);
-    const mainTarget = SDK.targetManager.mainTarget();
-    return workerId ? SDK.targetManager.targetById(workerId) : mainTarget;
+    const mainTarget = self.SDK.targetManager.mainTarget();
+    return workerId ? self.SDK.targetManager.targetById(workerId) : mainTarget;
   }
 
   /**
-   * @param {!SDK.TracingModel} tracingModel
+   * @param {!SDK.TracingModel.TracingModel} tracingModel
    */
   setEvents(tracingModel) {
     this._reset();
@@ -206,10 +208,10 @@ export class TimelineModelImpl {
   }
 
   /**
-   * @param {!SDK.TracingModel} tracingModel
+   * @param {!SDK.TracingModel.TracingModel} tracingModel
    */
   _processGenericTrace(tracingModel) {
-    let browserMainThread = SDK.TracingModel.browserMainThread(tracingModel);
+    let browserMainThread = SDK.TracingModel.TracingModel.browserMainThread(tracingModel);
     if (!browserMainThread && tracingModel.sortedProcesses().length) {
       browserMainThread = tracingModel.sortedProcesses()[0].sortedThreads()[0];
     }
@@ -222,7 +224,7 @@ export class TimelineModelImpl {
   }
 
   /**
-   * @param {!SDK.TracingModel} tracingModel
+   * @param {!SDK.TracingModel.TracingModel} tracingModel
    * @param {!TimelineModel.TimelineModel.MetadataEvents} metadataEvents
    */
   _processMetadataAndThreads(tracingModel, metadataEvents) {
@@ -267,7 +269,7 @@ export class TimelineModelImpl {
   }
 
   /**
-   * @param {!SDK.TracingModel} tracingModel
+   * @param {!SDK.TracingModel.TracingModel} tracingModel
    */
   _processThreadsForBrowserFrames(tracingModel) {
     const processData = new Map();
@@ -348,7 +350,7 @@ export class TimelineModelImpl {
   }
 
   /**
-   * @param {!SDK.TracingModel} tracingModel
+   * @param {!SDK.TracingModel.TracingModel} tracingModel
    * @return {?TimelineModel.TimelineModel.MetadataEvents}
    */
   _processMetadataEvents(tracingModel) {
@@ -403,7 +405,7 @@ export class TimelineModelImpl {
       workers: workersDevToolsMetadataEvents.sort(SDK.TracingModel.Event.compareStartTime)
     };
     if (mismatchingIds.size) {
-      Common.console.error(
+      self.Common.console.error(
           'Timeline recording was started in more than one page simultaneously. Session id mismatch: ' +
           this._sessionId + ' and ' + mismatchingIds.valuesArray() + '.');
     }
@@ -411,27 +413,27 @@ export class TimelineModelImpl {
   }
 
   /**
-   * @param {!SDK.TracingModel} tracingModel
+   * @param {!SDK.TracingModel.TracingModel} tracingModel
    */
   _processSyncBrowserEvents(tracingModel) {
-    const browserMain = SDK.TracingModel.browserMainThread(tracingModel);
+    const browserMain = SDK.TracingModel.TracingModel.browserMainThread(tracingModel);
     if (browserMain) {
       browserMain.events().forEach(this._processBrowserEvent, this);
     }
   }
 
   /**
-   * @param {!SDK.TracingModel} tracingModel
+   * @param {!SDK.TracingModel.TracingModel} tracingModel
    */
   _processAsyncBrowserEvents(tracingModel) {
-    const browserMain = SDK.TracingModel.browserMainThread(tracingModel);
+    const browserMain = SDK.TracingModel.TracingModel.browserMainThread(tracingModel);
     if (browserMain) {
       this._processAsyncEvents(browserMain, [{from: 0, to: Infinity}]);
     }
   }
 
   /**
-   * @param {!SDK.TracingModel} tracingModel
+   * @param {!SDK.TracingModel.TracingModel} tracingModel
    */
   _buildGPUEvents(tracingModel) {
     const thread = tracingModel.threadByName('GPU Process', 'CrGpuMain');
@@ -462,9 +464,9 @@ export class TimelineModelImpl {
   }
 
   /**
-   * @param {!SDK.TracingModel} tracingModel
+   * @param {!SDK.TracingModel.TracingModel} tracingModel
    * @param {!SDK.TracingModel.Thread} thread
-   * @return {?SDK.CPUProfileDataModel}
+   * @return {?SDK.CPUProfileDataModel.CPUProfileDataModel}
    */
   _extractCpuProfile(tracingModel, thread) {
     const events = thread.events();
@@ -487,7 +489,7 @@ export class TimelineModelImpl {
       target = this.targetByEvent(cpuProfileEvent);
       const profileGroup = tracingModel.profileGroup(cpuProfileEvent);
       if (!profileGroup) {
-        Common.console.error('Invalid CPU profile format.');
+        self.Common.console.error('Invalid CPU profile format.');
         return null;
       }
       cpuProfile = /** @type {!Protocol.Profiler.Profile} */ ({
@@ -509,12 +511,12 @@ export class TimelineModelImpl {
         const nodesAndSamples = eventData['cpuProfile'] || {};
         const samples = nodesAndSamples['samples'] || [];
         const lines = eventData['lines'] || Array(samples.length).fill(0);
-        cpuProfile.nodes.push(...nodesAndSamples['nodes'] || []);
+        cpuProfile.nodes.push(...(nodesAndSamples['nodes'] || []));
         cpuProfile.lines.push(...lines);
         cpuProfile.samples.push(...samples);
-        cpuProfile.timeDeltas.push(...eventData['timeDeltas'] || []);
+        cpuProfile.timeDeltas.push(...(eventData['timeDeltas'] || []));
         if (cpuProfile.samples.length !== cpuProfile.timeDeltas.length) {
-          Common.console.error('Failed to parse CPU profile.');
+          self.Common.console.error('Failed to parse CPU profile.');
           return null;
         }
       }
@@ -524,17 +526,17 @@ export class TimelineModelImpl {
     }
 
     try {
-      const jsProfileModel = new SDK.CPUProfileDataModel(cpuProfile, target);
+      const jsProfileModel = new SDK.CPUProfileDataModel.CPUProfileDataModel(cpuProfile, target);
       this._cpuProfiles.push(jsProfileModel);
       return jsProfileModel;
     } catch (e) {
-      Common.console.error('Failed to parse CPU profile.');
+      self.Common.console.error('Failed to parse CPU profile.');
     }
     return null;
   }
 
   /**
-   * @param {!SDK.TracingModel} tracingModel
+   * @param {!SDK.TracingModel.TracingModel} tracingModel
    * @param {!SDK.TracingModel.Thread} thread
    * @return {!Array<!SDK.TracingModel.Event>}
    */
@@ -556,7 +558,7 @@ export class TimelineModelImpl {
   }
 
   /**
-   * @param {!SDK.TracingModel} tracingModel
+   * @param {!SDK.TracingModel.TracingModel} tracingModel
    * @param {!Array<!{from: number, to: number}>} ranges
    * @param {!SDK.TracingModel.Thread} thread
    * @param {boolean} isMainThread
@@ -598,7 +600,7 @@ export class TimelineModelImpl {
         if (!this._processEvent(event)) {
           continue;
         }
-        if (!SDK.TracingModel.isAsyncPhase(event.phase) && event.duration) {
+        if (!SDK.TracingModel.TracingModel.isAsyncPhase(event.phase) && event.duration) {
           if (eventStack.length) {
             const parent = eventStack.peekLast();
             parent.selfTime -= event.duration;
@@ -1158,7 +1160,7 @@ export class TimelineModelImpl {
     this._sessionId = null;
     /** @type {?number} */
     this._mainFrameNodeId = null;
-    /** @type {!Array<!SDK.CPUProfileDataModel>} */
+    /** @type {!Array<!SDK.CPUProfileDataModel.CPUProfileDataModel>} */
     this._cpuProfiles = [];
     /** @type {!WeakMap<!SDK.TracingModel.Thread, string>} */
     this._workerIdByThread = new WeakMap();
@@ -1180,7 +1182,7 @@ export class TimelineModelImpl {
   }
 
   /**
-   * @return {!SDK.TracingModel}
+   * @return {!SDK.TracingModel.TracingModel}
    */
   tracingModel() {
     return this._tracingModel;
@@ -1577,7 +1579,7 @@ export class PageFrame {
     /** @type {?number} */
     this.deletedTime = null;
     // TODO(dgozman): figure this out.
-    // this.ownerNode = target && payload['nodeId'] ? new SDK.DeferredDOMNode(target, payload['nodeId']) : null;
+    // this.ownerNode = target && payload['nodeId'] ? new SDK.DOMModel.DeferredDOMNode(target, payload['nodeId']) : null;
     this.ownerNode = null;
   }
 

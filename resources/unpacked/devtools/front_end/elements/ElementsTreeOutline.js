@@ -90,7 +90,7 @@ export class ElementsTreeOutline extends UI.TreeOutline {
     /** @type {!Set<!ElementsTreeElement>} */
     this._treeElementsBeingUpdated = new Set();
 
-    this._showHTMLCommentsSetting = Common.moduleSetting('showHTMLComments');
+    this._showHTMLCommentsSetting = self.Common.settings.moduleSetting('showHTMLComments');
     this._showHTMLCommentsSetting.addChangeListener(this._onShowHTMLCommentsChange.bind(this));
     this.useLightSelectionColor();
   }
@@ -838,7 +838,8 @@ export class ElementsTreeOutline extends UI.TreeOutline {
    */
   async _saveNodeToTempVariable(node) {
     const remoteObjectForConsole = await node.resolveToObject();
-    await SDK.consoleModel.saveToTempVariable(UI.context.flavor(SDK.ExecutionContext), remoteObjectForConsole);
+    await self.SDK.consoleModel.saveToTempVariable(
+        self.UI.context.flavor(SDK.ExecutionContext), remoteObjectForConsole);
   }
 
   runPendingUpdates() {

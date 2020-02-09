@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ SourcesTestRunner.createTestEditor = function(clientHeight, textEditorDelegate) 
   clientHeight = clientHeight || 100;
   textEditor.element.style.height = clientHeight + 'px';
   textEditor.element.style.flex = 'none';
-  textEditor.show(UI.inspectorView.element);
+  textEditor.show(self.UI.inspectorView.element);
   return textEditor;
 };
 

@@ -28,13 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Bindings from '../bindings/bindings.js';
+import * as Common from '../common/common.js';
+import * as Components from '../components/components.js';
+import * as Host from '../host/host.js';
+import * as ProtocolModule from '../protocol/protocol.js';  // eslint-disable-line no-unused-vars
+import * as SDK from '../sdk/sdk.js';
+import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
+import * as UI from '../ui/ui.js';
+import * as Workspace from '../workspace/workspace.js';
+
 import {ExtensionButton, ExtensionPanel, ExtensionSidebarPane} from './ExtensionPanel.js';
 import {ExtensionTraceProvider, TracingSession} from './ExtensionTraceProvider.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
  */
-export class ExtensionServer extends Common.Object {
+export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @suppressGlobalPropertiesCheck
    */
@@ -92,14 +102,14 @@ export class ExtensionServer extends Common.Object {
     if (existingTabId) {
       this._setInspectedTabId({data: existingTabId});
     }
-    Host.InspectorFrontendHost.events.addEventListener(
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.SetInspectedTabId, this._setInspectedTabId, this);
 
     this._initExtensions();
   }
 
   initializeExtensions() {
-    Host.InspectorFrontendHost.setAddExtensionCallback(this._addExtension.bind(this));
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setAddExtensionCallback(this._addExtension.bind(this));
   }
 
   /**
@@ -141,7 +151,7 @@ export class ExtensionServer extends Common.Object {
   }
 
   _inspectedURLChanged(event) {
-    if (event.data !== SDK.targetManager.mainTarget()) {
+    if (event.data !== self.SDK.targetManager.mainTarget()) {
       return;
     }
     this._requests = {};
@@ -238,7 +248,7 @@ export class ExtensionServer extends Common.Object {
       }
     }
 
-    SDK.multitargetNetworkManager.setExtraHTTPHeaders(allHeaders);
+    self.SDK.multitargetNetworkManager.setExtraHTTPHeaders(allHeaders);
   }
 
   /**
@@ -253,11 +263,11 @@ export class ExtensionServer extends Common.Object {
     styleSheet.textContent = message.styleSheet;
     document.head.appendChild(styleSheet);
 
-    UI.themeSupport.addCustomStylesheet(message.styleSheet);
+    self.UI.themeSupport.addCustomStylesheet(message.styleSheet);
     // Add to all the shadow roots that have already been created
     for (let node = document.body; node; node = node.traverseNextNode(document.body)) {
       if (node instanceof ShadowRoot) {
-        UI.themeSupport.injectCustomStyleSheets(node);
+        self.UI.themeSupport.injectCustomStyleSheets(node);
       }
     }
   }
@@ -266,7 +276,7 @@ export class ExtensionServer extends Common.Object {
     const id = message.id;
     // The ids are generated on the client API side and must be unique, so the check below
     // shouldn't be hit unless someone is bypassing the API.
-    if (id in this._clientObjects || UI.inspectorView.hasPanel(id)) {
+    if (id in this._clientObjects || self.UI.inspectorView.hasPanel(id)) {
       return this._status.E_EXISTS(id);
     }
 
@@ -276,7 +286,7 @@ export class ExtensionServer extends Common.Object {
     const panelView =
         new ExtensionServerPanelView(persistentId, message.title, new ExtensionPanel(this, persistentId, id, page));
     this._clientObjects[id] = panelView;
-    UI.inspectorView.addPanel(panelView);
+    self.UI.inspectorView.addPanel(panelView);
     return this._status.OK();
   }
 
@@ -286,7 +296,7 @@ export class ExtensionServer extends Common.Object {
     if (panelView && panelView instanceof ExtensionServerPanelView) {
       panelViewId = panelView.viewId();
     }
-    UI.inspectorView.showPanel(panelViewId);
+    self.UI.inspectorView.showPanel(panelViewId);
   }
 
   _onCreateToolbarButton(message, port) {
@@ -302,7 +312,7 @@ export class ExtensionServer extends Common.Object {
     panelView.widget().then(appendButton);
 
     /**
-     * @param {!UI.Widget} panel
+     * @param {!UI.Widget.Widget} panel
      */
     function appendButton(panel) {
       /** @type {!ExtensionPanel} panel*/ (panel).addToolbarItem(button.toolbarButton());
@@ -390,19 +400,19 @@ export class ExtensionServer extends Common.Object {
   }
 
   _onOpenResource(message) {
-    const uiSourceCode = Workspace.workspace.uiSourceCodeForURL(message.url);
+    const uiSourceCode = self.Workspace.workspace.uiSourceCodeForURL(message.url);
     if (uiSourceCode) {
       Common.Revealer.reveal(uiSourceCode.uiLocation(message.lineNumber, 0));
       return this._status.OK();
     }
 
-    const resource = Bindings.resourceForURL(message.url);
+    const resource = Bindings.ResourceUtils.resourceForURL(message.url);
     if (resource) {
       Common.Revealer.reveal(resource);
       return this._status.OK();
     }
 
-    const request = SDK.networkLog.requestForURL(message.url);
+    const request = self.SDK.networkLog.requestForURL(message.url);
     if (request) {
       Common.Revealer.reveal(request);
       return this._status.OK();
@@ -414,9 +424,9 @@ export class ExtensionServer extends Common.Object {
   _onSetOpenResourceHandler(message, port) {
     const name = this._registeredExtensions[port._extensionOrigin].name || ('Extension ' + port._extensionOrigin);
     if (message.handlerPresent) {
-      Components.Linkifier.registerLinkHandler(name, this._handleOpenURL.bind(this, port));
+      Components.Linkifier.Linkifier.registerLinkHandler(name, this._handleOpenURL.bind(this, port));
     } else {
-      Components.Linkifier.unregisterLinkHandler(name);
+      Components.Linkifier.Linkifier.unregisterLinkHandler(name);
     }
   }
 
@@ -428,19 +438,20 @@ export class ExtensionServer extends Common.Object {
   _onReload(message) {
     const options = /** @type {!ExtensionReloadOptions} */ (message.options || {});
 
-    SDK.multitargetNetworkManager.setUserAgentOverride(typeof options.userAgent === 'string' ? options.userAgent : '');
+    self.SDK.multitargetNetworkManager.setUserAgentOverride(
+        typeof options.userAgent === 'string' ? options.userAgent : '');
     let injectedScript;
     if (options.injectedScript) {
       injectedScript = '(function(){' + options.injectedScript + '})()';
     }
-    SDK.ResourceTreeModel.reloadAllPages(!!options.ignoreCache, injectedScript);
+    SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(!!options.ignoreCache, injectedScript);
     return this._status.OK();
   }
 
   _onEvaluateOnInspectedPage(message, port) {
     /**
-     * @param {?Protocol.Error} error
-     * @param {?SDK.RemoteObject} object
+     * @param {?ProtocolModule.InspectorBackend.ProtocolError} error
+     * @param {?SDK.RemoteObject.RemoteObject} object
      * @param {boolean} wasThrown
      * @this {ExtensionServer}
      */
@@ -461,8 +472,8 @@ export class ExtensionServer extends Common.Object {
   }
 
   async _onGetHAR() {
-    const requests = SDK.networkLog.requests();
-    const harLog = await SDK.HARLog.build(requests);
+    const requests = self.SDK.networkLog.requests();
+    const harLog = await SDK.HARLog.HARLog.build(requests);
     for (let i = 0; i < harLog.entries.length; ++i) {
       harLog.entries[i]._requestId = this._requestId(requests[i]);
     }
@@ -470,17 +481,17 @@ export class ExtensionServer extends Common.Object {
   }
 
   /**
-   * @param {!Common.ContentProvider} contentProvider
+   * @param {!Common.ContentProvider.ContentProvider} contentProvider
    */
   _makeResource(contentProvider) {
     return {url: contentProvider.contentURL(), type: contentProvider.contentType().name()};
   }
 
   /**
-   * @return {!Array<!Common.ContentProvider>}
+   * @return {!Array<!Common.ContentProvider.ContentProvider>}
    */
   _onGetPageResources() {
-    /** @type {!Map<string, !Common.ContentProvider>} */
+    /** @type {!Map<string, !Common.ContentProvider.ContentProvider>} */
     const resources = new Map();
 
     /**
@@ -491,18 +502,18 @@ export class ExtensionServer extends Common.Object {
         resources.set(contentProvider.contentURL(), this._makeResource(contentProvider));
       }
     }
-    let uiSourceCodes = Workspace.workspace.uiSourceCodesForProjectType(Workspace.projectTypes.Network);
-    uiSourceCodes =
-        uiSourceCodes.concat(Workspace.workspace.uiSourceCodesForProjectType(Workspace.projectTypes.ContentScripts));
+    let uiSourceCodes = self.Workspace.workspace.uiSourceCodesForProjectType(Workspace.Workspace.projectTypes.Network);
+    uiSourceCodes = uiSourceCodes.concat(
+        self.Workspace.workspace.uiSourceCodesForProjectType(Workspace.Workspace.projectTypes.ContentScripts));
     uiSourceCodes.forEach(pushResourceData.bind(this));
-    for (const resourceTreeModel of SDK.targetManager.models(SDK.ResourceTreeModel)) {
+    for (const resourceTreeModel of self.SDK.targetManager.models(SDK.ResourceTreeModel.ResourceTreeModel)) {
       resourceTreeModel.forAllResources(pushResourceData.bind(this));
     }
     return resources.valuesArray();
   }
 
   /**
-   * @param {!Common.ContentProvider} contentProvider
+   * @param {!Common.ContentProvider.ContentProvider} contentProvider
    * @param {!Object} message
    * @param {!MessagePort} port
    */
@@ -522,7 +533,8 @@ export class ExtensionServer extends Common.Object {
 
   _onGetResourceContent(message, port) {
     const url = /** @type {string} */ (message.url);
-    const contentProvider = Workspace.workspace.uiSourceCodeForURL(url) || Bindings.resourceForURL(url);
+    const contentProvider =
+        self.Workspace.workspace.uiSourceCodeForURL(url) || Bindings.ResourceUtils.resourceForURL(url);
     if (!contentProvider) {
       return this._status.E_NOTFOUND(url);
     }
@@ -531,7 +543,7 @@ export class ExtensionServer extends Common.Object {
 
   _onSetResourceContent(message, port) {
     /**
-     * @param {?Protocol.Error} error
+     * @param {?ProtocolModule.InspectorBackend.ProtocolError} error
      * @this {ExtensionServer}
      */
     function callbackWrapper(error) {
@@ -540,9 +552,9 @@ export class ExtensionServer extends Common.Object {
     }
 
     const url = /** @type {string} */ (message.url);
-    const uiSourceCode = Workspace.workspace.uiSourceCodeForURL(url);
+    const uiSourceCode = self.Workspace.workspace.uiSourceCodeForURL(url);
     if (!uiSourceCode || !uiSourceCode.contentType().isDocumentOrScriptOrStyleSheet()) {
-      const resource = SDK.ResourceTreeModel.resourceForURL(url);
+      const resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
       if (!resource) {
         return this._status.E_NOTFOUND(url);
       }
@@ -630,24 +642,24 @@ export class ExtensionServer extends Common.Object {
 
   _initExtensions() {
     this._registerAutosubscriptionHandler(
-        Extensions.extensionAPI.Events.ResourceAdded, Workspace.workspace, Workspace.Workspace.Events.UISourceCodeAdded,
-        this._notifyResourceAdded);
+        Extensions.extensionAPI.Events.ResourceAdded, self.Workspace.workspace,
+        Workspace.Workspace.Events.UISourceCodeAdded, this._notifyResourceAdded);
     this._registerAutosubscriptionTargetManagerHandler(
-        Extensions.extensionAPI.Events.NetworkRequestFinished, SDK.NetworkManager,
+        Extensions.extensionAPI.Events.NetworkRequestFinished, SDK.NetworkManager.NetworkManager,
         SDK.NetworkManager.Events.RequestFinished, this._notifyRequestFinished);
 
     /**
      * @this {ExtensionServer}
      */
     function onElementsSubscriptionStarted() {
-      UI.context.addFlavorChangeListener(SDK.DOMNode, this._notifyElementsSelectionChanged, this);
+      self.UI.context.addFlavorChangeListener(SDK.DOMModel.DOMNode, this._notifyElementsSelectionChanged, this);
     }
 
     /**
      * @this {ExtensionServer}
      */
     function onElementsSubscriptionStopped() {
-      UI.context.removeFlavorChangeListener(SDK.DOMNode, this._notifyElementsSelectionChanged, this);
+      self.UI.context.removeFlavorChangeListener(SDK.DOMModel.DOMNode, this._notifyElementsSelectionChanged, this);
     }
 
     this._registerSubscriptionHandler(
@@ -655,23 +667,23 @@ export class ExtensionServer extends Common.Object {
         onElementsSubscriptionStopped.bind(this));
     this._registerResourceContentCommittedHandler(this._notifyUISourceCodeContentCommitted);
 
-    SDK.targetManager.addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this._inspectedURLChanged, this);
+    self.SDK.targetManager.addEventListener(SDK.SDKModel.Events.InspectedURLChanged, this._inspectedURLChanged, this);
   }
 
   _notifyResourceAdded(event) {
-    const uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
+    const uiSourceCode = /** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data);
     this._postNotification(Extensions.extensionAPI.Events.ResourceAdded, this._makeResource(uiSourceCode));
   }
 
   _notifyUISourceCodeContentCommitted(event) {
-    const uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data.uiSourceCode);
+    const uiSourceCode = /** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data.uiSourceCode);
     const content = /** @type {string} */ (event.data.content);
     this._postNotification(
         Extensions.extensionAPI.Events.ResourceContentCommitted, this._makeResource(uiSourceCode), content);
   }
 
   async _notifyRequestFinished(event) {
-    const request = /** @type {!SDK.NetworkRequest} */ (event.data);
+    const request = /** @type {!SDK.NetworkRequest.NetworkRequest} */ (event.data);
     const entry = await SDK.HARLog.Entry.build(request);
     this._postNotification(Extensions.extensionAPI.Events.NetworkRequestFinished, this._requestId(request), entry);
   }
@@ -682,7 +694,7 @@ export class ExtensionServer extends Common.Object {
 
   /**
    * @param {string} url
-   * @param {!TextUtils.TextRange} range
+   * @param {!TextUtils.TextRange.TextRange} range
    */
   sourceSelectionChanged(url, range) {
     this._postNotification(Extensions.extensionAPI.Events.PanelObjectSelected + 'sources', {
@@ -720,9 +732,10 @@ export class ExtensionServer extends Common.Object {
       if (!this._registeredExtensions[extensionOrigin]) {
         // See ExtensionAPI.js for details.
         const injectedAPI = self.buildExtensionAPIInjectedScript(
-            extensionInfo, this._inspectedTabId, UI.themeSupport.themeName(), UI.shortcutRegistry.globalShortcutKeys(),
-            Extensions.extensionServer['_extensionAPITestHook']);
-        Host.InspectorFrontendHost.setInjectedScriptForOrigin(extensionOrigin, injectedAPI);
+            extensionInfo, this._inspectedTabId, self.UI.themeSupport.themeName(),
+            self.UI.shortcutRegistry.globalShortcutKeys(), self.Extensions.extensionServer['_extensionAPITestHook']);
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.setInjectedScriptForOrigin(
+            extensionOrigin, injectedAPI);
         this._registeredExtensions[extensionOrigin] = {name: name};
       }
       const iframe = createElement('iframe');
@@ -801,8 +814,10 @@ export class ExtensionServer extends Common.Object {
   _registerAutosubscriptionTargetManagerHandler(eventTopic, modelClass, frontendEventType, handler) {
     this._registerSubscriptionHandler(
         eventTopic,
-        SDK.targetManager.addModelListener.bind(SDK.targetManager, modelClass, frontendEventType, handler, this),
-        SDK.targetManager.removeModelListener.bind(SDK.targetManager, modelClass, frontendEventType, handler, this));
+        self.SDK.targetManager.addModelListener.bind(
+            self.SDK.targetManager, modelClass, frontendEventType, handler, this),
+        self.SDK.targetManager.removeModelListener.bind(
+            self.SDK.targetManager, modelClass, frontendEventType, handler, this));
   }
 
   _registerResourceContentCommittedHandler(handler) {
@@ -810,16 +825,17 @@ export class ExtensionServer extends Common.Object {
      * @this {ExtensionServer}
      */
     function addFirstEventListener() {
-      Workspace.workspace.addEventListener(Workspace.Workspace.Events.WorkingCopyCommittedByUser, handler, this);
-      Workspace.workspace.setHasResourceContentTrackingExtensions(true);
+      self.Workspace.workspace.addEventListener(Workspace.Workspace.Events.WorkingCopyCommittedByUser, handler, this);
+      self.Workspace.workspace.setHasResourceContentTrackingExtensions(true);
     }
 
     /**
      * @this {ExtensionServer}
      */
     function removeLastEventListener() {
-      Workspace.workspace.setHasResourceContentTrackingExtensions(false);
-      Workspace.workspace.removeEventListener(Workspace.Workspace.Events.WorkingCopyCommittedByUser, handler, this);
+      self.Workspace.workspace.setHasResourceContentTrackingExtensions(false);
+      self.Workspace.workspace.removeEventListener(
+          Workspace.Workspace.Events.WorkingCopyCommittedByUser, handler, this);
     }
 
     this._registerSubscriptionHandler(
@@ -861,7 +877,7 @@ export class ExtensionServer extends Common.Object {
    * @param {boolean} returnByValue
    * @param {?Object} options
    * @param {string} securityOrigin
-   * @param {function(?string, ?SDK.RemoteObject, boolean)} callback
+   * @param {function(?string, ?SDK.RemoteObject.RemoteObject, boolean)} callback
    * @return {!Extensions.ExtensionStatus.Record|undefined}
    */
   evaluate(expression, exposeCommandLineAPI, returnByValue, options, securityOrigin, callback) {
@@ -877,7 +893,7 @@ export class ExtensionServer extends Common.Object {
         found = (frame.url === url) ? frame : null;
         return found;
       }
-      SDK.ResourceTreeModel.frames().some(hasMatchingURL);
+      SDK.ResourceTreeModel.ResourceTreeModel.frames().some(hasMatchingURL);
       return found;
     }
 
@@ -886,8 +902,8 @@ export class ExtensionServer extends Common.Object {
     if (options.frameURL) {
       frame = resolveURLToFrame(options.frameURL);
     } else {
-      const target = SDK.targetManager.mainTarget();
-      const resourceTreeModel = target && target.model(SDK.ResourceTreeModel);
+      const target = self.SDK.targetManager.mainTarget();
+      const resourceTreeModel = target && target.model(SDK.ResourceTreeModel.ResourceTreeModel);
       frame = resourceTreeModel && resourceTreeModel.mainFrame;
     }
     if (!frame) {
@@ -906,7 +922,7 @@ export class ExtensionServer extends Common.Object {
       contextSecurityOrigin = options.scriptExecutionContext;
     }
 
-    const runtimeModel = frame.resourceTreeModel().target().model(SDK.RuntimeModel);
+    const runtimeModel = frame.resourceTreeModel().target().model(SDK.RuntimeModel.RuntimeModel);
     const executionContexts = runtimeModel ? runtimeModel.executionContexts() : [];
     if (contextSecurityOrigin) {
       for (let i = 0; i < executionContexts.length; ++i) {
@@ -967,11 +983,11 @@ export const Events = {
 /**
  * @unrestricted
  */
-class ExtensionServerPanelView extends UI.SimpleView {
+class ExtensionServerPanelView extends UI.View.SimpleView {
   /**
    * @param {string} name
    * @param {string} title
-   * @param {!UI.Panel} panel
+   * @param {!UI.Panel.Panel} panel
    */
   constructor(name, title, panel) {
     super(title);
@@ -989,10 +1005,10 @@ class ExtensionServerPanelView extends UI.SimpleView {
 
   /**
    * @override
-   * @return {!Promise.<!UI.Widget>}
+   * @return {!Promise.<!UI.Widget.Widget>}
    */
   widget() {
-    return /** @type {!Promise.<!UI.Widget>} */ (Promise.resolve(this._panel));
+    return /** @type {!Promise.<!UI.Widget.Widget>} */ (Promise.resolve(this._panel));
   }
 }
 

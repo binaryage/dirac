@@ -42,6 +42,12 @@ export class CoverageModel extends SDK.SDKModel {
     /** @type {!Map<!Common.ContentProvider, !CoverageInfo>} */
     this._coverageByContentProvider = new Map();
 
+    // We keep track of the update times, because the other data-structures don't change if an
+    // update doesn't change the coverage. Some visualizations want to convey to the user that
+    // an update was received at a certain time, but did not result in a coverage change.
+    /** @type {!Set<number>} */
+    this._coverageUpdateTimes = new Set();
+
     /** @type {!SuspensionState} */
     this._suspensionState = SuspensionState.Active;
     /** @type {?number} */
@@ -76,11 +82,17 @@ export class CoverageModel extends SDK.SDKModel {
       promises.push(this._cssModel.startCoverage());
     }
     if (this._cpuProfilerModel) {
-      promises.push(this._cpuProfilerModel.startPreciseCoverage(jsCoveragePerBlock));
+      promises.push(
+          this._cpuProfilerModel.startPreciseCoverage(jsCoveragePerBlock, this.preciseCoverageDeltaUpdate.bind(this)));
     }
 
     await Promise.all(promises);
     return !!(this._cssModel || this._cpuProfilerModel);
+  }
+
+  preciseCoverageDeltaUpdate(timestamp, occasion, coverageData) {
+    this._coverageUpdateTimes.add(timestamp);
+    this._backlogOrProcessJSCoverage(coverageData, timestamp);
   }
 
   /**
@@ -102,6 +114,7 @@ export class CoverageModel extends SDK.SDKModel {
   reset() {
     this._coverageByURL = new Map();
     this._coverageByContentProvider = new Map();
+    this._coverageUpdateTimes = new Set();
     this.dispatchEventToListeners(CoverageModel.Events.CoverageReset);
   }
 
@@ -279,9 +292,13 @@ export class CoverageModel extends SDK.SDKModel {
     if (!this._cpuProfilerModel) {
       return [];
     }
-    const now = Date.now();
-    const freshRawCoverageData = await this._cpuProfilerModel.takePreciseCoverage();
-    return this._backlogOrProcessJSCoverage(freshRawCoverageData, now);
+    const {coverage, timestamp} = await this._cpuProfilerModel.takePreciseCoverage();
+    this._coverageUpdateTimes.add(timestamp);
+    return this._backlogOrProcessJSCoverage(coverage, timestamp);
+  }
+
+  coverageUpdateTimes() {
+    return this._coverageUpdateTimes;
   }
 
   async _backlogOrProcessJSCoverage(freshRawCoverageData, freshTimestamp) {
@@ -291,12 +308,17 @@ export class CoverageModel extends SDK.SDKModel {
     if (this._suspensionState !== SuspensionState.Active) {
       return [];
     }
+    const ascendingByTimestamp = (x, y) => x.stamp - y.stamp;
     const results = [];
-    for (const {rawCoverageData, stamp} of this._jsBacklog) {
+    for (const {rawCoverageData, stamp} of this._jsBacklog.sort(ascendingByTimestamp)) {
       results.push(this._processJSCoverage(rawCoverageData, stamp));
     }
     this._jsBacklog = [];
     return results.flat();
+  }
+
+  async processJSBacklog() {
+    this._backlogOrProcessJSCoverage([], 0);
   }
 
   /**
@@ -349,24 +371,24 @@ export class CoverageModel extends SDK.SDKModel {
     if (!this._cssModel || this._suspensionState !== SuspensionState.Active) {
       return [];
     }
-    const now = Date.now();
-    const freshRawCoverageData = await this._cssModel.takeCoverageDelta();
-    if (this._suspensionState !== SuspensionState.Active) {
-      if (freshRawCoverageData.length > 0) {
-        this._cssBacklog.push({rawCoverageData: freshRawCoverageData, stamp: now});
-      }
+    const {coverage, timestamp} = await this._cssModel.takeCoverageDelta();
+    this._coverageUpdateTimes.add(timestamp);
+    return this._backlogOrProcessCSSCoverage(coverage, timestamp);
+  }
 
+  async _backlogOrProcessCSSCoverage(freshRawCoverageData, freshTimestamp) {
+    if (freshRawCoverageData.length > 0) {
+      this._cssBacklog.push({rawCoverageData: freshRawCoverageData, stamp: freshTimestamp});
+    }
+    if (this._suspensionState !== SuspensionState.Active) {
       return [];
     }
+    const ascendingByTimestamp = (x, y) => x.stamp - y.stamp;
     const results = [];
-    for (const {rawCoverageData, stamp} of this._cssBacklog) {
+    for (const {rawCoverageData, stamp} of this._cssBacklog.sort(ascendingByTimestamp)) {
       results.push(this._processCSSCoverage(rawCoverageData, stamp));
     }
-
     this._cssBacklog = [];
-    if (freshRawCoverageData.length > 0) {
-      results.push(this._processCSSCoverage(freshRawCoverageData, now));
-    }
     return results.flat();
   }
 

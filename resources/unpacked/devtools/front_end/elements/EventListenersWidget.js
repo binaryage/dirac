@@ -36,14 +36,14 @@ export class EventListenersWidget extends UI.ThrottledWidget {
     super();
     this._toolbarItems = [];
 
-    this._showForAncestorsSetting = Common.settings.moduleSetting('showEventListenersForAncestors');
+    this._showForAncestorsSetting = self.Common.settings.moduleSetting('showEventListenersForAncestors');
     this._showForAncestorsSetting.addChangeListener(this.update.bind(this));
 
     this._dispatchFilterBySetting =
-        Common.settings.createSetting('eventListenerDispatchFilterType', DispatchFilterBy.All);
+        self.Common.settings.createSetting('eventListenerDispatchFilterType', DispatchFilterBy.All);
     this._dispatchFilterBySetting.addChangeListener(this.update.bind(this));
 
-    this._showFrameworkListenersSetting = Common.settings.createSetting('showFrameowkrListeners', true);
+    this._showFrameworkListenersSetting = self.Common.settings.createSetting('showFrameowkrListeners', true);
     this._showFrameworkListenersSetting.setTitle(Common.UIString('Framework listeners'));
     this._showFrameworkListenersSetting.addChangeListener(this._showFrameworkListenersChanged.bind(this));
     this._eventListenersView = new EventListeners.EventListenersView(this.update.bind(this));
@@ -77,7 +77,7 @@ export class EventListenersWidget extends UI.ThrottledWidget {
     this._toolbarItems.push(new UI.ToolbarSettingCheckbox(
         this._showFrameworkListenersSetting, Common.UIString('Resolve event listeners bound with framework')));
 
-    UI.context.addFlavorChangeListener(SDK.DOMNode, this.update, this);
+    self.UI.context.addFlavorChangeListener(SDK.DOMNode, this.update, this);
     this.update();
   }
 
@@ -91,7 +91,7 @@ export class EventListenersWidget extends UI.ThrottledWidget {
       this._lastRequestedNode.domModel().runtimeModel().releaseObjectGroup(_objectGroupName);
       delete this._lastRequestedNode;
     }
-    const node = UI.context.flavor(SDK.DOMNode);
+    const node = self.UI.context.flavor(SDK.DOMNode);
     if (!node) {
       this._eventListenersView.reset();
       this._eventListenersView.addEmptyHolderIfNeeded();

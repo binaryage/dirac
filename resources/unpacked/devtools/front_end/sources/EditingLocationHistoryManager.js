@@ -28,22 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {HistoryEntry, SimpleHistoryManager} from './SimpleHistoryManager.js';  // eslint-disable-line no-unused-vars
+import {SourcesView} from './SourcesView.js';                                  // eslint-disable-line no-unused-vars
+import {UISourceCodeFrame} from './UISourceCodeFrame.js';                      // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-export default class EditingLocationHistoryManager {
+export class EditingLocationHistoryManager {
   /**
-   * @param {!Sources.SourcesView} sourcesView
-   * @param {function():?Sources.UISourceCodeFrame} currentSourceFrameCallback
+   * @param {!SourcesView} sourcesView
+   * @param {function():?UISourceCodeFrame} currentSourceFrameCallback
    */
   constructor(sourcesView, currentSourceFrameCallback) {
     this._sourcesView = sourcesView;
-    this._historyManager = new Sources.SimpleHistoryManager(HistoryDepth);
+    this._historyManager = new SimpleHistoryManager(HistoryDepth);
     this._currentSourceFrameCallback = currentSourceFrameCallback;
   }
 
   /**
-   * @param {!Sources.UISourceCodeFrame} sourceFrame
+   * @param {!UISourceCodeFrame} sourceFrame
    */
   trackSourceFrameCursorJumps(sourceFrame) {
     sourceFrame.textEditor.addEventListener(
@@ -129,14 +133,14 @@ export default class EditingLocationHistoryManager {
 export const HistoryDepth = 20;
 
 /**
- * @implements {Sources.HistoryEntry}
+ * @implements {HistoryEntry}
  * @unrestricted
  */
 export class EditingLocationHistoryEntry {
   /**
-   * @param {!Sources.SourcesView} sourcesView
+   * @param {!SourcesView} sourcesView
    * @param {!EditingLocationHistoryManager} editingLocationManager
-   * @param {!Sources.UISourceCodeFrame} sourceFrame
+   * @param {!UISourceCodeFrame} sourceFrame
    * @param {!TextUtils.TextRange} selection
    */
   constructor(sourcesView, editingLocationManager, sourceFrame, selection) {
@@ -174,7 +178,7 @@ export class EditingLocationHistoryEntry {
    */
   valid() {
     const position = this._positionHandle.resolve();
-    const uiSourceCode = Workspace.workspace.uiSourceCode(this._projectId, this._url);
+    const uiSourceCode = self.Workspace.workspace.uiSourceCode(this._projectId, this._url);
     return !!(position && uiSourceCode);
   }
 
@@ -183,7 +187,7 @@ export class EditingLocationHistoryEntry {
    */
   reveal() {
     const position = this._positionHandle.resolve();
-    const uiSourceCode = Workspace.workspace.uiSourceCode(this._projectId, this._url);
+    const uiSourceCode = self.Workspace.workspace.uiSourceCode(this._projectId, this._url);
     if (!position || !uiSourceCode) {
       return;
     }
@@ -192,17 +196,3 @@ export class EditingLocationHistoryEntry {
     this._sourcesView.showSourceLocation(uiSourceCode, position.lineNumber, position.columnNumber);
   }
 }
-
-/* Legacy exported object */
-self.Sources = self.Sources || {};
-
-/* Legacy exported object */
-Sources = Sources || {};
-
-/** @constructor */
-Sources.EditingLocationHistoryManager = EditingLocationHistoryManager;
-
-Sources.EditingLocationHistoryManager.HistoryDepth = HistoryDepth;
-
-/** @constructor */
-Sources.EditingLocationHistoryEntry = EditingLocationHistoryEntry;

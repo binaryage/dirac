@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ ApplicationTestRunner.postToServiceWorker = function(scope, message) {
 };
 
 ApplicationTestRunner.waitForServiceWorker = function(callback) {
-  SDK.targetManager.observeTargets({
+  self.SDK.targetManager.observeTargets({
     targetAdded: function(target) {
       if (target.type() === SDK.Target.Type.ServiceWorker && callback) {
         setTimeout(callback.bind(null, target), 0);

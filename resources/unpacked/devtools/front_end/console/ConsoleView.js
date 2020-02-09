@@ -101,11 +101,11 @@ export class ConsoleView extends UI.VBox {
 
     this._filterStatusText = new UI.ToolbarText();
     this._filterStatusText.element.classList.add('dimmed');
-    this._showSettingsPaneSetting = Common.settings.createSetting('consoleShowSettingsToolbar', false);
+    this._showSettingsPaneSetting = self.Common.settings.createSetting('consoleShowSettingsToolbar', false);
     this._showSettingsPaneButton = new UI.ToolbarSettingToggle(
         this._showSettingsPaneSetting, 'largeicon-settings-gear', Common.UIString('Console settings'));
     this._progressToolbarItem = new UI.ToolbarItem(createElement('div'));
-    this._groupSimilarSetting = Common.settings.moduleSetting('consoleGroupSimilar');
+    this._groupSimilarSetting = self.Common.settings.moduleSetting('consoleGroupSimilar');
     this._groupSimilarSetting.addChangeListener(() => this._updateMessageList());
     const groupSimilarToggle =
         new UI.ToolbarSettingCheckbox(this._groupSimilarSetting, Common.UIString('Group similar'));
@@ -114,12 +114,12 @@ export class ConsoleView extends UI.VBox {
     const rightToolbar = new UI.Toolbar('', consoleToolbarContainer);
     toolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton(ls`console sidebar`));
     toolbar.appendToolbarItem(UI.Toolbar.createActionButton(
-        /** @type {!UI.Action }*/ (UI.actionRegistry.action('console.clear'))));
+        /** @type {!UI.Action }*/ (self.UI.actionRegistry.action('console.clear'))));
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._consoleContextSelector.toolbarItem());
     toolbar.appendSeparator();
     const liveExpressionButton =
-        UI.Toolbar.createActionButton(/** @type {!UI.Action }*/ (UI.actionRegistry.action('console.create-pin')));
+        UI.Toolbar.createActionButton(/** @type {!UI.Action }*/ (self.UI.actionRegistry.action('console.create-pin')));
     toolbar.appendToolbarItem(liveExpressionButton);
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._filter._textFilterUI);
@@ -130,8 +130,8 @@ export class ConsoleView extends UI.VBox {
     rightToolbar.appendToolbarItem(this._showSettingsPaneButton);
 
     this._preserveLogCheckbox = new UI.ToolbarSettingCheckbox(
-        Common.moduleSetting('preserveConsoleLog'), Common.UIString('Do not clear log on page reload / navigation'),
-        Common.UIString('Preserve log'));
+        self.Common.settings.moduleSetting('preserveConsoleLog'),
+        Common.UIString('Do not clear log on page reload / navigation'), Common.UIString('Preserve log'));
     this._hideNetworkMessagesCheckbox = new UI.ToolbarSettingCheckbox(
         this._filter._hideNetworkMessagesSetting, this._filter._hideNetworkMessagesSetting.title(),
         Common.UIString('Hide network'));
@@ -139,9 +139,9 @@ export class ConsoleView extends UI.VBox {
         this._filter._filterByExecutionContextSetting,
         Common.UIString('Only show messages from the current context (top, iframe, worker, extension)'),
         Common.UIString('Selected context only'));
-    const monitoringXHREnabledSetting = Common.moduleSetting('monitoringXHREnabled');
-    this._timestampsSetting = Common.moduleSetting('consoleTimestampsEnabled');
-    this._consoleHistoryAutocompleteSetting = Common.moduleSetting('consoleHistoryAutocomplete');
+    const monitoringXHREnabledSetting = self.Common.settings.moduleSetting('monitoringXHREnabled');
+    this._timestampsSetting = self.Common.settings.moduleSetting('consoleTimestampsEnabled');
+    this._consoleHistoryAutocompleteSetting = self.Common.settings.moduleSetting('consoleHistoryAutocomplete');
 
     const settingsPane = new UI.HBox();
     settingsPane.show(this._contentsElement);
@@ -160,11 +160,11 @@ export class ConsoleView extends UI.VBox {
     settingsToolbarRight.makeVertical();
     settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(monitoringXHREnabledSetting));
     const eagerEvalCheckbox = new UI.ToolbarSettingCheckbox(
-        Common.settings.moduleSetting('consoleEagerEval'), ls`Eagerly evaluate text in the prompt`);
+        self.Common.settings.moduleSetting('consoleEagerEval'), ls`Eagerly evaluate text in the prompt`);
     settingsToolbarRight.appendToolbarItem(eagerEvalCheckbox);
     settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(this._consoleHistoryAutocompleteSetting));
     const userGestureCheckbox =
-        new UI.ToolbarSettingCheckbox(Common.settings.moduleSetting('consoleUserActivationEval'));
+        new UI.ToolbarSettingCheckbox(self.Common.settings.moduleSetting('consoleUserActivationEval'));
     settingsToolbarRight.appendToolbarItem(userGestureCheckbox);
     if (!this._showSettingsPaneSetting.get()) {
       settingsPane.element.classList.add('hidden');
@@ -227,7 +227,7 @@ export class ConsoleView extends UI.VBox {
     this._consoleMessages = [];
     this._viewMessageSymbol = Symbol('viewMessage');
 
-    this._consoleHistorySetting = Common.settings.createLocalSetting('consoleHistory', []);
+    this._consoleHistorySetting = self.Common.settings.createLocalSetting('consoleHistory', []);
 
     this._prompt = new ConsolePrompt();
     this._prompt.show(this._promptElement);
@@ -292,7 +292,7 @@ export class ConsoleView extends UI.VBox {
 
     this._registerWithMessageSink();
 
-    UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._executionContextChanged, this);
+    self.UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._executionContextChanged, this);
 
     const defaultPromptIndex = dirac.hostedInExtension?0:1;
     this._consolePromptIndexSetting = Common.settings.createLocalSetting("consolePromptIndex", defaultPromptIndex);
@@ -321,12 +321,12 @@ export class ConsoleView extends UI.VBox {
     this._messagesElement.addEventListener('touchend', this._updateStickToBottomOnPointerUp.bind(this), false);
     this._messagesElement.addEventListener('touchcancel', this._updateStickToBottomOnPointerUp.bind(this), false);
 
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.DiracMessage, this._onConsoleDiracMessage, this);
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
-    SDK.consoleModel.messages().forEach(this._addConsoleMessage, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.DiracMessage, this._onConsoleDiracMessage, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
+    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
+    self.SDK.consoleModel.messages().forEach(this._addConsoleMessage, this);
 
     this._switchToLastPrompt();
   }
@@ -342,7 +342,7 @@ export class ConsoleView extends UI.VBox {
   }
 
   static clearConsole() {
-    SDK.consoleModel.requestClearMessages();
+    self.SDK.consoleModel.requestClearMessages();
   }
 
   _onFilterChanged() {
@@ -414,8 +414,8 @@ export class ConsoleView extends UI.VBox {
   }
 
   _registerWithMessageSink() {
-    Common.console.messages().forEach(this._addSinkMessage, this);
-    Common.console.addEventListener(Common.Console.Events.MessageAdded, messageAdded, this);
+    self.Common.console.messages().forEach(this._addSinkMessage, this);
+    self.Common.console.addEventListener(Common.Console.Events.MessageAdded, messageAdded, this);
 
     /**
      * @param {!Common.Event} event
@@ -1274,7 +1274,7 @@ export class ConsoleView extends UI.VBox {
   }
 
   async _saveConsole() {
-    const url = SDK.targetManager.mainTarget().inspectedURL();
+    const url = self.SDK.targetManager.mainTarget().inspectedURL();
     const parsedURL = Common.ParsedURL.fromString(url);
     const filename = String.sprintf('%s-%d.log', parsedURL ? parsedURL.host : 'console', Date.now());
     const stream = new Bindings.FileOutputStream();
@@ -1563,7 +1563,7 @@ export class ConsoleView extends UI.VBox {
           result.runtimeModel(), exceptionDetails, SDK.ConsoleMessage.MessageType.Result, undefined, undefined);
     }
     message.setOriginatingMessage(originatingConsoleMessage);
-    SDK.consoleModel.addMessage(message);
+    self.SDK.consoleModel.addMessage(message);
   }
 
   /**
@@ -1827,20 +1827,20 @@ export class ConsoleViewFilter {
     this._filterChanged = filterChangedCallback;
 
     this._messageLevelFiltersSetting = ConsoleViewFilter.levelFilterSetting();
-    this._hideNetworkMessagesSetting = Common.moduleSetting('hideNetworkMessages');
-    this._filterByExecutionContextSetting = Common.moduleSetting('selectedContextFilterEnabled');
+    this._hideNetworkMessagesSetting = self.Common.settings.moduleSetting('hideNetworkMessages');
+    this._filterByExecutionContextSetting = self.Common.settings.moduleSetting('selectedContextFilterEnabled');
 
     this._messageLevelFiltersSetting.addChangeListener(this._onFilterChanged.bind(this));
     this._hideNetworkMessagesSetting.addChangeListener(this._onFilterChanged.bind(this));
     this._filterByExecutionContextSetting.addChangeListener(this._onFilterChanged.bind(this));
-    UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._onFilterChanged, this);
+    self.UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._onFilterChanged, this);
 
     const filterKeys = Object.values(FilterType);
     this._suggestionBuilder = new UI.FilterSuggestionBuilder(filterKeys);
     this._textFilterUI = new UI.ToolbarInput(
         Common.UIString('Filter'), '', 0.2, 1, Common.UIString('e.g. /event\\d/ -cdn url:a.com'),
         this._suggestionBuilder.completions.bind(this._suggestionBuilder));
-    this._textFilterSetting = Common.settings.createSetting('console.textFilter', '');
+    this._textFilterSetting = self.Common.settings.createSetting('console.textFilter', '');
     if (this._textFilterSetting.get()) {
       this._textFilterUI.setValue(this._textFilterSetting.get());
     }
@@ -1890,7 +1890,7 @@ export class ConsoleViewFilter {
    * @return {!Common.Setting}
    */
   static levelFilterSetting() {
-    return Common.settings.createSetting('messageLevelFilters', ConsoleFilter.defaultLevelsFilterValue());
+    return self.Common.settings.createSetting('messageLevelFilters', ConsoleFilter.defaultLevelsFilterValue());
   }
 
   _updateCurrentFilter() {
@@ -1900,7 +1900,7 @@ export class ConsoleViewFilter {
     }
 
     this._currentFilter.executionContext =
-        this._filterByExecutionContextSetting.get() ? UI.context.flavor(SDK.ExecutionContext) : null;
+        this._filterByExecutionContextSetting.get() ? self.UI.context.flavor(SDK.ExecutionContext) : null;
     this._currentFilter.parsedFilters = parsedFilters;
     this._currentFilter.levelsMask = this._messageLevelFiltersSetting.get();
   }
@@ -2178,7 +2178,7 @@ export class ActionDelegate {
     switch (actionId) {
       case 'console.show':
         Host.InspectorFrontendHost.bringToFront();
-        Common.console.show();
+        self.Common.console.show();
         ConsoleView.instance()._focusPrompt();
         return true;
       case 'console.clear':

@@ -22,7 +22,7 @@ console.log('Tip: Look for the \'Development server options\' section\n');
 function requestHandler(request, response) {
   var filePath = parseURL(request.url).pathname;
   if (filePath === '/') {
-    var landingURL = `http://localhost:${remoteDebuggingPort}#custom=true&experiments=true`;
+    var landingURL = `http://localhost:${remoteDebuggingPort}#custom=true`;
     sendResponse(200, `<html>Please go to <a href="${landingURL}">${landingURL}</a></html>`);
     return;
   }
@@ -39,9 +39,9 @@ function requestHandler(request, response) {
     sendResponse(500, '500 - Internal Server Error');
   }
 
-  var absoluteFilePath = path.join(process.cwd(), filePath);
+  var absoluteFilePath = path.join(devtoolsFolder, filePath);
   if (!path.resolve(absoluteFilePath).startsWith(devtoolsFolder)) {
-    console.log(`File requested is outside of devtools folder: ${devtoolsFolder}`);
+    console.log(`File requested (${absoluteFilePath}) is outside of devtools folder: ${devtoolsFolder}`);
     sendResponse(403, `403 - Access denied. File requested is outside of devtools folder: ${devtoolsFolder}`);
     return;
   }
@@ -67,12 +67,52 @@ function requestHandler(request, response) {
   }
 
   function sendResponse(statusCode, data) {
-    if (request.url.endsWith('.js')) {
+    const path = parseURL(request.url).pathname;
+
+    if (path.endsWith('.rawresponse')) {
+      sendRawResponse(data);
+      return;
+    }
+
+    if (path.endsWith('.js')) {
       response.setHeader('Content-Type', 'text/javascript');
+    }
+
+    if (path.endsWith('.wasm')) {
+      response.setHeader('Content-Type', 'application/wasm');
+    }
+
+    if (path.endsWith('.svg')) {
+      response.setHeader('Content-Type', 'image/svg+xml');
     }
 
     response.writeHead(statusCode);
     response.write(data, 'binary');
+    response.end();
+  }
+
+  function sendRawResponse(data) {
+    const lines = data.split('\n');
+
+    let isHeader = true;
+    let line = lines.shift();
+    const statusCode = parseInt(line);
+
+    while ((line = lines.shift()) !== undefined) {
+      if (line.trim() === '') {
+        isHeader = false;
+        response.writeHead(statusCode);
+        continue;
+      }
+
+      if (isHeader) {
+        const firstColon = line.indexOf(':');
+        response.setHeader(line.substring(0, firstColon), line.substring(firstColon + 1));
+      } else {
+        response.write(line);
+      }
+    }
+
     response.end();
   }
 }

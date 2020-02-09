@@ -38,16 +38,16 @@ export class AnimationTimeline extends UI.VBox {
     this._symbol = Symbol('animationTimeline');
     /** @type {!Map.<string, !AnimationImpl>} */
     this._animationsMap = new Map();
-    SDK.targetManager.addModelListener(SDK.DOMModel, SDK.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
-    SDK.targetManager.observeModels(AnimationModel, this);
-    UI.context.addFlavorChangeListener(SDK.DOMNode, this._nodeChanged, this);
+    self.SDK.targetManager.addModelListener(SDK.DOMModel, SDK.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
+    self.SDK.targetManager.observeModels(AnimationModel, this);
+    self.UI.context.addFlavorChangeListener(SDK.DOMNode, this._nodeChanged, this);
   }
 
   /**
    * @override
    */
   wasShown() {
-    for (const animationModel of SDK.targetManager.models(AnimationModel)) {
+    for (const animationModel of self.SDK.targetManager.models(AnimationModel)) {
       this._addEventListeners(animationModel);
     }
   }
@@ -56,7 +56,7 @@ export class AnimationTimeline extends UI.VBox {
    * @override
    */
   willHide() {
-    for (const animationModel of SDK.targetManager.models(AnimationModel)) {
+    for (const animationModel of self.SDK.targetManager.models(AnimationModel)) {
       this._removeEventListeners(animationModel);
     }
     this._popoverHelper.hidePopover();
@@ -265,7 +265,7 @@ export class AnimationTimeline extends UI.VBox {
    */
   _setPlaybackRate(playbackRate) {
     this._playbackRate = playbackRate;
-    for (const animationModel of SDK.targetManager.models(AnimationModel)) {
+    for (const animationModel of self.SDK.targetManager.models(AnimationModel)) {
       animationModel.setPlaybackRate(this._allPaused ? 0 : this._playbackRate);
     }
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.AnimationsPlaybackRateChanged);
@@ -853,7 +853,7 @@ export class NodeUI {
 
   _nodeChanged() {
     this.element.classList.toggle(
-        'animation-node-selected', this._node && this._node === UI.context.flavor(SDK.DOMNode));
+        'animation-node-selected', this._node && this._node === self.UI.context.flavor(SDK.DOMNode));
   }
 }
 

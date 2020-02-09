@@ -396,7 +396,7 @@ class Runtime {
   static _isDescriptorEnabled(descriptor) {
     const activatorExperiment = descriptor['experiment'];
     if (activatorExperiment === '*') {
-      return Runtime.experiments.supportEnabled();
+      return true;
     }
     if (activatorExperiment && activatorExperiment.startsWith('!') &&
         Runtime.experiments.isEnabled(activatorExperiment.substring(1))) {
@@ -1052,7 +1052,6 @@ class Extension { /**
  */
 class ExperimentsSupport {
   constructor() {
-    this._supportEnabled = Runtime.queryParam('experiments') !== null;
     this._experiments = [];
     this._experimentNames = {};
     this._enabledTransiently = {};
@@ -1075,13 +1074,6 @@ class ExperimentsSupport {
   }
 
   /**
-   * @return {boolean}
-   */
-  supportEnabled() {
-    return this._supportEnabled;
-  }
-
-  /**
    * @param {!Object} value
    */
   _setExperimentsSetting(value) {
@@ -1094,12 +1086,12 @@ class ExperimentsSupport {
   /**
    * @param {string} experimentName
    * @param {string} experimentTitle
-   * @param {boolean=} hidden
+   * @param {boolean=} unstable
    */
-  register(experimentName, experimentTitle, hidden) {
+  register(experimentName, experimentTitle, unstable) {
     Runtime._assert(!this._experimentNames[experimentName], 'Duplicate registration of experiment ' + experimentName);
     this._experimentNames[experimentName] = true;
-    this._experiments.push(new Runtime.Experiment(this, experimentName, experimentTitle, !!hidden));
+    this._experiments.push(new Runtime.Experiment(this, experimentName, experimentTitle, !!unstable));
   }
 
   /**
@@ -1118,9 +1110,6 @@ class ExperimentsSupport {
     }
     if (this._serverEnabled.has(experimentName)) {
       return true;
-    }
-    if (!this.supportEnabled()) {
-      return false;
     }
 
     return !!Runtime._experimentsSetting()[experimentName];
@@ -1200,12 +1189,12 @@ class Experiment {
    * @param {!Runtime.ExperimentsSupport} experiments
    * @param {string} name
    * @param {string} title
-   * @param {boolean} hidden
+   * @param {boolean} unstable
    */
-  constructor(experiments, name, title, hidden) {
+  constructor(experiments, name, title, unstable) {
     this.name = name;
     this.title = title;
-    this.hidden = hidden;
+    this.unstable = unstable;
     this._experiments = experiments;
   }
 

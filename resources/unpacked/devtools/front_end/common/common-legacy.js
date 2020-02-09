@@ -138,6 +138,7 @@ Common.ResourceType = CommonModule.ResourceType.ResourceType;
  */
 Common.Revealer = CommonModule.Revealer.Revealer;
 Common.Revealer.reveal = CommonModule.Revealer.reveal;
+Common.Revealer.setRevealForTest = CommonModule.Revealer.setRevealForTest;
 Common.Revealer.revealDestination = CommonModule.Revealer.revealDestination;
 
 /**
@@ -159,6 +160,8 @@ Common.SegmentedRange = CommonModule.SegmentedRange.SegmentedRange;
  * @constructor
  */
 Common.Settings = CommonModule.Settings.Settings;
+
+Common.Settings.detectColorFormat = CommonModule.Settings.detectColorFormat;
 
 /**
  * @constructor
@@ -247,7 +250,7 @@ Common.Object._listenerCallbackTuple;
 /**
  * @type {!Common.Settings}
  */
-Common.settings;
+self.Common.settings;
 
 /** @typedef {function(!Error=)} */
 Common.Throttler.FinishCallback;

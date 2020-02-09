@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ SourcesTestRunner.startDebuggerTest = function(callback, quiet) {
     SourcesTestRunner._quiet = quiet;
   }
 
-  UI.viewManager.showView('sources');
+  self.UI.viewManager.showView('sources');
   TestRunner.addSniffer(SDK.DebuggerModel.prototype, '_pausedScript', SourcesTestRunner._pausedScript, true);
   TestRunner.addSniffer(SDK.DebuggerModel.prototype, '_resumedScript', SourcesTestRunner._resumedScript, true);
   TestRunner.safeWrap(callback)();
@@ -28,7 +28,7 @@ SourcesTestRunner.startDebuggerTestPromise = function(quiet) {
 };
 
 SourcesTestRunner.completeDebuggerTest = function() {
-  Common.moduleSetting('breakpointsActive').set(true);
+  self.Common.settings.moduleSetting('breakpointsActive').set(true);
   SourcesTestRunner.resumeExecution(TestRunner.completeTest.bind(TestRunner));
 };
 
@@ -305,9 +305,9 @@ SourcesTestRunner.captureStackTraceIntoString = function(callFrames, asyncStackT
       const frame = callFrames[i];
       const location = locationFunction.call(frame);
       const script = location.script();
-      const uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location);
+      const uiLocation = self.Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location);
       const isFramework =
-          uiLocation ? Bindings.blackboxManager.isBlackboxedUISourceCode(uiLocation.uiSourceCode) : false;
+          uiLocation ? self.Bindings.blackboxManager.isBlackboxedUISourceCode(uiLocation.uiSourceCode) : false;
 
       if (options.dropFrameworkCallFrames && isFramework) {
         continue;
@@ -471,10 +471,10 @@ SourcesTestRunner.objectForPopover = function(sourceFrame, lineNumber, columnNum
   return promise;
 };
 
-SourcesTestRunner.setBreakpoint = function(sourceFrame, lineNumber, condition, enabled) {
+SourcesTestRunner.setBreakpoint = async function(sourceFrame, lineNumber, condition, enabled) {
   const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
   if (!debuggerPlugin._muted) {
-    debuggerPlugin._setBreakpoint(lineNumber, 0, condition, enabled);
+    await debuggerPlugin._setBreakpoint(lineNumber, 0, condition, enabled);
   }
 };
 
@@ -487,18 +487,18 @@ SourcesTestRunner.removeBreakpoint = function(sourceFrame, lineNumber) {
   breakpointLocation.breakpoint.remove();
 };
 
-SourcesTestRunner.createNewBreakpoint = function(sourceFrame, lineNumber, condition, enabled) {
+SourcesTestRunner.createNewBreakpoint = async function(sourceFrame, lineNumber, condition, enabled) {
   const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
   const promise =
       new Promise(resolve => TestRunner.addSniffer(debuggerPlugin.__proto__, '_breakpointWasSetForTest', resolve));
-  debuggerPlugin._createNewBreakpoint(lineNumber, condition, enabled);
+  await debuggerPlugin._createNewBreakpoint(lineNumber, condition, enabled);
   return promise;
 };
 
-SourcesTestRunner.toggleBreakpoint = function(sourceFrame, lineNumber, disableOnly) {
+SourcesTestRunner.toggleBreakpoint = async function(sourceFrame, lineNumber, disableOnly) {
   const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
   if (!debuggerPlugin._muted) {
-    debuggerPlugin._toggleBreakpoint(lineNumber, disableOnly);
+    await debuggerPlugin._toggleBreakpoint(lineNumber, disableOnly);
   }
 };
 
@@ -513,7 +513,7 @@ SourcesTestRunner.waitBreakpointSidebarPane = function(waitUntilResolved) {
       return;
     }
 
-    for (const {breakpoint} of Bindings.breakpointManager.allBreakpointLocations()) {
+    for (const {breakpoint} of self.Bindings.breakpointManager.allBreakpointLocations()) {
       if (breakpoint._uiLocations.size === 0 && breakpoint.enabled()) {
         return SourcesTestRunner.waitBreakpointSidebarPane();
       }
@@ -639,7 +639,7 @@ SourcesTestRunner.queryScripts = function(filter) {
 
 SourcesTestRunner.createScriptMock = function(
     url, startLine, startColumn, isContentScript, source, target, preRegisterCallback) {
-  target = target || SDK.targetManager.mainTarget();
+  target = target || self.SDK.targetManager.mainTarget();
   const debuggerModel = target.model(SDK.DebuggerModel);
   const scriptId = ++SourcesTestRunner._lastScriptId + '';
   const lineCount = source.computeLineEndings().length;
@@ -718,7 +718,7 @@ SourcesTestRunner.waitForExecutionContextInTarget = function(target, callback) {
 };
 
 SourcesTestRunner.selectThread = function(target) {
-  UI.context.setFlavor(SDK.Target, target);
+  self.UI.context.setFlavor(SDK.Target, target);
 };
 
 SourcesTestRunner.evaluateOnCurrentCallFrame = function(code) {
@@ -733,13 +733,80 @@ SourcesTestRunner.waitDebuggerPluginBreakpoints = function(sourceFrame) {
   return SourcesTestRunner.waitDebuggerPluginDecorations().then(checkIfReady);
 
   function checkIfReady() {
-    for (const {breakpoint} of Bindings.breakpointManager.allBreakpointLocations()) {
+    for (const {breakpoint} of self.Bindings.breakpointManager.allBreakpointLocations()) {
       if (breakpoint._uiLocations.size === 0 && breakpoint.enabled()) {
         return SourcesTestRunner.waitDebuggerPluginDecorations().then(checkIfReady);
       }
     }
 
     return Promise.resolve();
+  }
+};
+
+/**
+ * Useful for tests that want to run some breakpoint action like setting, toggling, adding a condition, etc.
+ * and dumping the set breakpoint decorations afterwards.
+ * See {SourcesTestRunner.waitForExactBreakpointDecorations} for the format of the {expectedDecorations} paramter.
+ */
+SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations =
+    async function(sourceFrame, expectedDecorations, action, skipFirstWait = false) {
+  const waitPromise =
+      SourcesTestRunner.waitForExactBreakpointDecorations(sourceFrame, expectedDecorations, skipFirstWait);
+  await action();
+  await waitPromise;
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
+};
+
+/**
+ * Waits for breakpoint decoration updates until specific decorations are met.
+ *
+ * @param expectedDecorations An array of key/value pairs where the key is a line number
+ *    and the value is the number of decorations in the given line, e.g.:
+ *
+ *      expectedDecorations = [[5, 1], [10, 2]]
+ *
+ *    waits until line 5 has one breakpoint decoration and line 10 has two decorations.
+ * @param skipFirstWait Check decorations immediately without waiting for the
+ *                      "decorations updated" event.
+ */
+SourcesTestRunner.waitForExactBreakpointDecorations = function(
+    sourceFrame, expectedDecorations, skipFirstWait = false) {
+  if (skipFirstWait) {
+    return checkIfDecorationsReady();
+  }
+  return SourcesTestRunner.waitDebuggerPluginDecorations().then(checkIfDecorationsReady);
+
+  function checkIfDecorationsReady() {
+    const currentDecorations = collectCurrentDecorationsFromDebuggerPlugin();
+    const expectedDecorationsMap = new Map(expectedDecorations);
+    if (decorationsAreEqual(currentDecorations, expectedDecorationsMap)) {
+      return Promise.resolve();
+    }
+    return SourcesTestRunner.waitForExactBreakpointDecorations(sourceFrame, expectedDecorations);
+  }
+
+  function collectCurrentDecorationsFromDebuggerPlugin() {
+    const currentDecorationCountPerLine = new Map();
+    for (const decoration of SourcesTestRunner.debuggerPlugin(sourceFrame)._breakpointDecorations.values()) {
+      const lineNumber = (decoration.handle.resolve() || {}).lineNumber;
+      if (lineNumber) {
+        const count = currentDecorationCountPerLine.get(lineNumber) || 0;
+        currentDecorationCountPerLine.set(lineNumber, count + 1);
+      }
+    }
+    return currentDecorationCountPerLine;
+  }
+
+  function decorationsAreEqual(map1, map2) {
+    if (map1.size !== map2.size) {
+      return false;
+    }
+    for (const [line1, count1] of map1) {
+      if (map2.get(line1) !== count1) {
+        return false;
+      }
+    }
+    return true;
   }
 };
 
@@ -756,7 +823,7 @@ SourcesTestRunner.dumpDebuggerPluginBreakpoints = function(sourceFrame) {
     TestRunner.addResult(
         'breakpoint at ' + lineNumber + ((disabled ? ' disabled' : '')) + ((conditional ? ' conditional' : '')));
     const range = new TextUtils.TextRange(lineNumber, 0, lineNumber, textEditor.line(lineNumber).length);
-    let bookmarks = textEditor.bookmarks(range, Sources.DebuggerPlugin.BreakpointDecoration._bookmarkSymbol);
+    let bookmarks = textEditor.bookmarks(range, Sources.DebuggerPlugin.BreakpointDecoration.bookmarkSymbol);
     bookmarks = bookmarks.filter(bookmark => !!bookmark.position());
     bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
 
@@ -777,7 +844,7 @@ SourcesTestRunner.clickDebuggerPluginBreakpoint = function(sourceFrame, lineNumb
   const textEditor = sourceFrame._textEditor;
   const lineLength = textEditor.line(lineNumber).length;
   const lineRange = new TextUtils.TextRange(lineNumber, 0, lineNumber, lineLength);
-  const bookmarks = textEditor.bookmarks(lineRange, Sources.DebuggerPlugin.BreakpointDecoration._bookmarkSymbol);
+  const bookmarks = textEditor.bookmarks(lineRange, Sources.DebuggerPlugin.BreakpointDecoration.bookmarkSymbol);
   bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
   const bookmark = bookmarks[index];
 
@@ -809,7 +876,7 @@ SourcesTestRunner.setEventListenerBreakpoint = function(id, enabled, targetName)
     auxData.targetName = targetName;
   }
 
-  const breakpoint = SDK.domDebuggerManager.resolveEventListenerBreakpoint(auxData);
+  const breakpoint = self.SDK.domDebuggerManager.resolveEventListenerBreakpoint(auxData);
 
   if (breakpoint.enabled() !== enabled) {
     pane._breakpoints.get(breakpoint).checkbox.checked = enabled;

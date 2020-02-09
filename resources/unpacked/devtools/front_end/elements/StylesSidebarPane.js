@@ -38,8 +38,8 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     this.setMinimumSize(96, 26);
     this.registerRequiredCSS('elements/stylesSidebarPane.css');
 
-    Common.moduleSetting('colorFormat').addChangeListener(this.update.bind(this));
-    Common.moduleSetting('textEditorIndent').addChangeListener(this.update.bind(this));
+    self.Common.settings.moduleSetting('colorFormat').addChangeListener(this.update.bind(this));
+    self.Common.settings.moduleSetting('textEditorIndent').addChangeListener(this.update.bind(this));
 
     /** @type {?UI.Widget} */
     this._currentToolbarPane = null;
@@ -76,7 +76,7 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     this._sectionBlocks = [];
     this._needsForceUpdate = false;
     StylesSidebarPane._instance = this;
-    UI.context.addFlavorChangeListener(SDK.DOMNode, this.forceUpdate, this);
+    self.UI.context.addFlavorChangeListener(SDK.DOMNode, this.forceUpdate, this);
     this.contentElement.addEventListener('copy', this._clipboardCopy.bind(this));
     this._resizeThrottler = new Common.Throttler(100);
   }
@@ -1751,7 +1751,7 @@ export class StylePropertiesSection {
         event.consume(true);
         return;
       }
-      const uiLocation = Bindings.cssWorkspaceBinding.rawLocationToUILocation(location);
+      const uiLocation = self.Bindings.cssWorkspaceBinding.rawLocationToUILocation(location);
       if (uiLocation) {
         Common.Revealer.reveal(uiLocation);
       }
@@ -1885,7 +1885,7 @@ export class StylePropertiesSection {
    * @param {boolean} focus
    */
   static _revealSelectorSource(rawLocation, focus) {
-    const uiLocation = Bindings.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
+    const uiLocation = self.Bindings.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
     if (uiLocation) {
       Common.Revealer.reveal(uiLocation, !focus);
     }
@@ -2699,14 +2699,14 @@ export class ButtonProvider {
     this._button.element.appendChild(longclickTriangle);
 
     new UI.LongClickController(this._button.element, this._longClicked.bind(this));
-    UI.context.addFlavorChangeListener(SDK.DOMNode, onNodeChanged.bind(this));
+    self.UI.context.addFlavorChangeListener(SDK.DOMNode, onNodeChanged.bind(this));
     onNodeChanged.call(this);
 
     /**
      * @this {ButtonProvider}
      */
     function onNodeChanged() {
-      let node = UI.context.flavor(SDK.DOMNode);
+      let node = self.UI.context.flavor(SDK.DOMNode);
       node = node ? node.enclosingElementOrSelf() : null;
       this._button.setEnabled(!!node);
     }

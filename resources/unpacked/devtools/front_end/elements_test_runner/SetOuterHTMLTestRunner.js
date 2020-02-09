@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ ElementsTestRunner.setOuterHTMLUseUndo = function(newText, next) {
 
   async function bringBack() {
     TestRunner.addResult('\nBringing things back\n');
-    await SDK.domModelUndoStack.undo();
+    await self.SDK.domModelUndoStack.undo();
     ElementsTestRunner._dumpOuterHTML(true, next);
   }
 };

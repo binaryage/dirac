@@ -53,7 +53,7 @@ export class FilterBar extends HBox {
     this.element.classList.add('filter-bar');
 
     // Note: go via self.Common for globally-namespaced singletons.
-    this._stateSetting = self.Common.settings.createSetting('filterBar-' + name + '-toggled', !!visibleByDefault);
+    this._stateSetting = self.self.Common.settings.createSetting('filterBar-' + name + '-toggled', !!visibleByDefault);
     this._filterButton =
         new ToolbarSettingToggle(this._stateSetting, 'largeicon-filter', Common.UIString.UIString('Filter'));
 
@@ -275,7 +275,7 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
  */
 export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
   /**
-   * @param {!Array.<!UI.NamedBitSetFilterUI.Item>} items
+   * @param {!Array.<!Item>} items
    * @param {!Common.Settings.Setting=} setting
    */
   constructor(items, setting) {
@@ -534,3 +534,6 @@ export class CheckboxFilterUI extends Common.ObjectWrapper.ObjectWrapper {
     this._label.borderColor = borderColor;
   }
 }
+
+/** @typedef {{name: string, label: string, title: (string|undefined)}} */
+export let Item;
