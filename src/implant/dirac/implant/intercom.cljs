@@ -314,11 +314,16 @@
 (declare go-react-on-global-object-cleared!)
 
 (defn on-debugger-event [type & args]
-  (log "on-debugger-event" type)
-  (case type
-    "GlobalObjectCleared" (let [handle-global-object-cleared (gfns/debounce go-react-on-global-object-cleared! 500)]
-                            (apply handle-global-object-cleared args))
-    true))
+  (let [event (first args)
+        debugger-model (oget event "data")
+        main-debugger-model (eval/get-main-debugger-model)]
+    ; we are only interested in main frame debugger events
+    (when (= debugger-model main-debugger-model)
+      (log "on-debugger-event" type args)
+      (case type
+        "GlobalObjectCleared" (let [handle-global-object-cleared (gfns/debounce go-react-on-global-object-cleared! 500)]
+                                (apply handle-global-object-cleared args))
+        true))))
 
 (defn subscribe-debugger-events! []
   (when-not *debugger-events-subscribed*

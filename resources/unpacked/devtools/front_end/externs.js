@@ -421,6 +421,10 @@ var dirac = {
     hasDefaultContext: function() {},
 
     /**
+     * @return {?SDK.DebuggerModel}
+     */
+    getMainDebuggerModel: function() {},
+    /**
      * @param {?} callback
      * @return {boolean}
      * @this {Object}

@@ -64,6 +64,9 @@
     (eval-fn code)
     (error "window.dirac.codeAsString not found")))
 
+(defn get-main-debugger-model []
+  (ocall (get-dirac) "getMainDebuggerModel"))
+
 (defn subscribe-debugger-events! [f]
   (ocall (get-dirac) "subscribeDebuggerEvents" f))
 

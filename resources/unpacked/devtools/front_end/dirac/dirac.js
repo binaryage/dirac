@@ -215,6 +215,10 @@ Object.assign(window.dirac, (function () {
     return loadLazyDirac().then(() => window.dirac.hasDefaultContext());
   }
 
+  function getMainDebuggerModel(...args) {
+    return loadLazyDirac().then(() => window.dirac.getMainDebuggerModel(...args));
+  }
+
   function subscribeDebuggerEvents(...args) {
     return loadLazyDirac().then(() => window.dirac.subscribeDebuggerEvents(...args));
   }
@@ -277,6 +281,7 @@ Object.assign(window.dirac, (function () {
     hasCurrentContext: hasCurrentContext,
     evalInDefaultContext: evalInDefaultContext,
     hasDefaultContext: hasDefaultContext,
+    getMainDebuggerModel: getMainDebuggerModel,
     subscribeDebuggerEvents: subscribeDebuggerEvents,
     unsubscribeDebuggerEvents: unsubscribeDebuggerEvents,
     addConsoleMessageToMainTarget: addConsoleMessageToMainTarget,
