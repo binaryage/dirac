@@ -339,7 +339,7 @@
             (display-prompt-status (repl-support-not-enabled-msg)))
           (if (or no-playground? (hosted?))
             (display-prompt-status (missing-runtime-msg runtime-present?))
-            (if (eval/go-ask-is-shadow-present?)
+            (if (<! (eval/go-ask-is-shadow-present?))
               (display-prompt-status (no-playground-due-to-shadow-msg))
               (<! (go-start-playground-repl!)))))))))
 
