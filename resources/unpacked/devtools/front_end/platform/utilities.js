@@ -147,29 +147,6 @@ String.filterRegex = function(query) {
 /**
  * @return {string}
  */
-String.prototype.escapeHTML = function() {
-  return this.replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');  // " doublequotes just for editor
-};
-
-/**
- * @return {string}
- */
-String.prototype.unescapeHTML = function() {
-  return this.replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&#58;/g, ':')
-      .replace(/&quot;/g, '"')
-      .replace(/&#60;/g, '<')
-      .replace(/&#62;/g, '>')
-      .replace(/&amp;/g, '&');
-};
-
-/**
- * @return {string}
- */
 String.prototype.collapseWhitespace = function() {
   return this.replace(/[\s\xA0]+/g, ' ');
 };
@@ -1056,20 +1033,6 @@ Set.prototype.addAll = function(iterable) {
 };
 
 /**
- * @param {!Iterable<T>|!Array<!T>} iterable
- * @return {boolean}
- * @template T
- */
-Set.prototype.containsAll = function(iterable) {
-  for (const e of iterable) {
-    if (!this.has(e)) {
-      return false;
-    }
-  }
-  return true;
-};
-
-/**
  * @return {T}
  * @template T
  */
@@ -1253,19 +1216,6 @@ self.setImmediate = function(callback) {
   const args = [...arguments].slice(1);
   Promise.resolve().then(() => callback(...args));
   return 0;
-};
-
-/**
- * @param {function(...?)} callback
- * @return {!Promise.<T>}
- * @template T
- */
-Promise.prototype.spread = function(callback) {
-  return this.then(spreadPromise);
-
-  function spreadPromise(arg) {
-    return callback.apply(null, arg);
-  }
 };
 
 /**
