@@ -967,24 +967,6 @@ self.createPlainTextSearchRegex = function(query, flags) {
 };
 
 /**
- * @param {!RegExp} regex
- * @param {string} content
- * @return {number}
- */
-self.countRegexMatches = function(regex, content) {
-  let text = content;
-  let result = 0;
-  let match;
-  while (text && (match = regex.exec(text))) {
-    if (match[0].length > 0) {
-      ++result;
-    }
-    text = text.substring(match.index + 1);
-  }
-  return result;
-};
-
-/**
  * @param {number} spacesCount
  * @return {string}
  */
@@ -1164,7 +1146,7 @@ const Multimap = class {
     const result = [];
     const keys = this.keysArray();
     for (let i = 0; i < keys.length; ++i) {
-      result.push(...this.get(keys[i]).valuesArray());
+      result.push(...this.get(keys[i]).values());
     }
     return result;
   }
@@ -1228,51 +1210,6 @@ Promise.prototype.catchException = function(defaultValue) {
     console.error(error);
     return defaultValue;
   });
-};
-
-/**
- * @param {!Map<number, ?>} other
- * @param {function(!VALUE,?):boolean} isEqual
- * @return {!{removed: !Array<!VALUE>, added: !Array<?>, equal: !Array<!VALUE>}}
- * @this {Map<number, VALUE>}
- */
-Map.prototype.diff = function(other, isEqual) {
-  const leftKeys = this.keysArray();
-  const rightKeys = other.keysArray();
-  leftKeys.sort((a, b) => a - b);
-  rightKeys.sort((a, b) => a - b);
-
-  const removed = [];
-  const added = [];
-  const equal = [];
-  let leftIndex = 0;
-  let rightIndex = 0;
-  while (leftIndex < leftKeys.length && rightIndex < rightKeys.length) {
-    const leftKey = leftKeys[leftIndex];
-    const rightKey = rightKeys[rightIndex];
-    if (leftKey === rightKey && isEqual(this.get(leftKey), other.get(rightKey))) {
-      equal.push(this.get(leftKey));
-      ++leftIndex;
-      ++rightIndex;
-      continue;
-    }
-    if (leftKey <= rightKey) {
-      removed.push(this.get(leftKey));
-      ++leftIndex;
-      continue;
-    }
-    added.push(other.get(rightKey));
-    ++rightIndex;
-  }
-  while (leftIndex < leftKeys.length) {
-    const leftKey = leftKeys[leftIndex++];
-    removed.push(this.get(leftKey));
-  }
-  while (rightIndex < rightKeys.length) {
-    const rightKey = rightKeys[rightIndex++];
-    added.push(other.get(rightKey));
-  }
-  return {added: added, removed: removed, equal: equal};
 };
 
 /**
