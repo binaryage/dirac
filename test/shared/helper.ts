@@ -47,7 +47,7 @@ const collectAllElementsFromPage = async (root?: puppeteer.JSHandle) => {
       } while (walker.nextNode());
     };
     collect(root || document.documentElement);
-  }, root);
+  }, root || '');
 }
 
 export const getElementPosition = async (selector: string, root?: puppeteer.JSHandle) => {
@@ -75,7 +75,7 @@ export const click =
   if (!frontend) {
     throw new Error('Unable to locate DevTools frontend page. Was it stored first?');
   }
-  const clickableElement = await getElementPosition(selector, options?.root);
+  const clickableElement = await getElementPosition(selector, options && options.root);
 
   if (!clickableElement) {
     throw new Error(`Unable to locate clickable element "${selector}".`);
@@ -86,7 +86,7 @@ export const click =
   // a 'mousedown' event (not the 'click' event). To avoid attaching the test behavior
   // to a specific event we instead locate the button in question and ask Puppeteer to
   // click on it instead.
-  await frontend.mouse.click(clickableElement.x, clickableElement.y, options?.clickOptions);
+  await frontend.mouse.click(clickableElement.x, clickableElement.y, options && options.clickOptions);
 };
 
 // Get a single element handle, across Shadow DOM boundaries.
@@ -142,12 +142,14 @@ export const debuggerStatement = (frontend: puppeteer.Page) => {
   });
 };
 
-export const store = (browser, target, frontend, reset) => {
-  globalThis[browserInstance] = browser;
-  globalThis[targetPage] = target;
-  globalThis[frontEndPage] = frontend;
-  resetPages = reset;
-};
+export const store =
+    (browser: puppeteer.Browser, target: puppeteer.Page, frontend: puppeteer.Page,
+     reset: (...enabledExperiments: string[]) => void) => {
+      globalThis[browserInstance] = browser;
+      globalThis[targetPage] = target;
+      globalThis[frontEndPage] = frontend;
+      resetPages = reset;
+    };
 
 export const getBrowserAndPages = (): BrowserAndPages => {
   if (!globalThis[targetPage]) {
