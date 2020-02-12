@@ -287,7 +287,7 @@ export class TextSourceMap {
    * @return {!Array.<string>}
    */
   sourceURLs() {
-    return this._sourceInfos.keysArray();
+    return [...this._sourceInfos.keys()];
   }
 
   /**

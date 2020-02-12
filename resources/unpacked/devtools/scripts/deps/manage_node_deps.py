@@ -33,6 +33,7 @@ DEPS = {
     "@types/chai": "4.2.0",
     "@types/mocha": "5.2.7",
     "@types/puppeteer": "2.0.0",
+    "@types/sinon": "7.5.1",
     "@typescript-eslint/parser": "2.16.0",
     "@typescript-eslint/eslint-plugin": "2.16.0",
     "chai": "4.2.0",
@@ -47,12 +48,14 @@ DEPS = {
     "karma-coverage-istanbul-instrumenter": "1.0.1",
     "karma-coverage-istanbul-reporter": "2.1.0",
     "karma-mocha": "1.3.0",
+    "karma-sinon": "1.0.5",
     "karma-typescript": "4.1.1",
     "license-checker": "25.0.1",
     "mocha": "6.2.0",
     "puppeteer": "2.0.0",
     "recast": "0.18.2",
     "rollup": "1.23.1",
+    "sinon": "8.1.1",
     "typescript": "3.7.5",
     "yargs": "15.0.2"
 }
