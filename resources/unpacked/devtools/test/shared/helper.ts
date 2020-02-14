@@ -96,11 +96,15 @@ export const $ = async (selector: string, root?: puppeteer.JSHandle) => {
     throw new Error('Unable to locate DevTools frontend page. Was it stored first?');
   }
   await collectAllElementsFromPage(root);
-  const element = await frontend.evaluateHandle(selector => {
-    const elements: Element[] = globalThis.__elements;
-    return elements.find(element => element.matches(selector));
-  }, selector);
-  return element;
+  try {
+    const element = await frontend.evaluateHandle(selector => {
+      const elements: Element[] = globalThis.__elements;
+      return elements.find(element => element.matches(selector));
+    }, selector);
+    return element;
+  } catch (e) {
+    throw new Error(`Unable to find element for selector "${selector}": ${e.stack}`);
+  }
 };
 
 // Get a multiple element handles, across Shadow DOM boundaries.
@@ -117,6 +121,8 @@ export const $$ = async (selector: string, root?: puppeteer.JSHandle) => {
   return elements;
 };
 
+export const timeout = (duration: number) => new Promise((resolve) => setTimeout(resolve, duration));
+
 export const waitFor =
     async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
   if (maxTotalTimeout === 0) {
@@ -124,7 +130,6 @@ export const waitFor =
   }
 
   const start = performance.now();
-  const timeout = (duration: number) => new Promise((resolve) => setTimeout(resolve, duration));
   do {
     await timeout(100);
     const element = await $(selector, root);

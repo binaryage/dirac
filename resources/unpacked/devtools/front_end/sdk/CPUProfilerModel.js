@@ -148,7 +148,8 @@ export class CPUProfilerModel extends SDKModel {
   startPreciseCoverage(jsCoveragePerBlock, preciseCoverageDeltaUpdateCallback) {
     const callCount = false;
     this._preciseCoverageDeltaUpdateCallback = preciseCoverageDeltaUpdateCallback;
-    return this._profilerAgent.startPreciseCoverage(callCount, jsCoveragePerBlock);
+    const allowUpdatesTriggeredByBackend = true;
+    return this._profilerAgent.startPreciseCoverage(callCount, jsCoveragePerBlock, allowUpdatesTriggeredByBackend);
   }
 
   /**
@@ -189,3 +190,6 @@ export const Events = {
 };
 
 SDKModel.register(CPUProfilerModel, Capability.JS, true);
+
+/** @typedef {!{id: string, scriptLocation: !DebuggerModel.Location, title: string, cpuProfile: (!Protocol.Profiler.Profile|undefined), cpuProfilerModel: !CPUProfilerModel}} */
+export let EventData;
