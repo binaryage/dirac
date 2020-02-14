@@ -681,6 +681,23 @@ export function registerCommands(inspectorBackend) {
         "type": "boolean",
         "optional": true
     }], ["node"], false);
+    inspectorBackend.registerCommand("DOM.scrollIntoViewIfNeeded", [{
+        "name": "nodeId",
+        "type": "number",
+        "optional": true
+    }, {
+        "name": "backendNodeId",
+        "type": "number",
+        "optional": true
+    }, {
+        "name": "objectId",
+        "type": "string",
+        "optional": true
+    }, {
+        "name": "rect",
+        "type": "object",
+        "optional": true
+    }], [], false);
     inspectorBackend.registerCommand("DOM.disable", [], [], false);
     inspectorBackend.registerCommand("DOM.discardSearchResults", [{
         "name": "searchId",
@@ -1351,6 +1368,11 @@ export function registerCommands(inspectorBackend) {
         "type": "number",
         "optional": true
     }], ["virtualTimeTicksBase"], false);
+    inspectorBackend.registerCommand("Emulation.setLocaleOverride", [{
+        "name": "locale",
+        "type": "string",
+        "optional": true
+    }], [], false);
     inspectorBackend.registerCommand("Emulation.setTimezoneOverride", [{
         "name": "timezoneId",
         "type": "string",
@@ -2635,7 +2657,7 @@ export function registerCommands(inspectorBackend) {
     inspectorBackend.registerCommand("Page.disable", [], [], false);
     inspectorBackend.registerCommand("Page.enable", [], [], false);
     inspectorBackend.registerCommand("Page.getAppManifest", [], ["url", "errors", "data", "parsed"], false);
-    inspectorBackend.registerCommand("Page.getInstallabilityErrors", [], ["errors", "installabilityErrors"], false);
+    inspectorBackend.registerCommand("Page.getInstallabilityErrors", [], ["installabilityErrors"], false);
     inspectorBackend.registerCommand("Page.getManifestIcons", [], ["primaryIcon"], false);
     inspectorBackend.registerCommand("Page.getCookies", [], ["cookies"], false);
     inspectorBackend.registerCommand("Page.getFrameTree", [], ["frameTree"], false);
@@ -3262,7 +3284,11 @@ export function registerCommands(inspectorBackend) {
         "type": "string",
         "optional": true
     }], [], false);
-    inspectorBackend.registerCommand("Target.createBrowserContext", [], ["browserContextId"], false);
+    inspectorBackend.registerCommand("Target.createBrowserContext", [{
+        "name": "disposeOnDetach",
+        "type": "boolean",
+        "optional": true
+    }], ["browserContextId"], false);
     inspectorBackend.registerCommand("Target.getBrowserContexts", [], ["browserContextIds"], false);
     inspectorBackend.registerCommand("Target.createTarget", [{
         "name": "url",
@@ -3773,7 +3799,11 @@ export function registerCommands(inspectorBackend) {
         "type": "string",
         "optional": false
     }], ["callFrames", "asyncStackTrace", "asyncStackTraceId"], false);
-    inspectorBackend.registerCommand("Debugger.resume", [], [], false);
+    inspectorBackend.registerCommand("Debugger.resume", [{
+        "name": "terminateOnResume",
+        "type": "boolean",
+        "optional": true
+    }], [], false);
     inspectorBackend.registerCommand("Debugger.searchInContent", [{
         "name": "scriptId",
         "type": "string",
@@ -3994,6 +4024,10 @@ export function registerCommands(inspectorBackend) {
         "optional": true
     }, {
         "name": "detailed",
+        "type": "boolean",
+        "optional": true
+    }, {
+        "name": "allowTriggeredUpdates",
         "type": "boolean",
         "optional": true
     }], ["timestamp"], false);

@@ -634,7 +634,7 @@ export const generatedProperties = [{
     "name": "contain-intrinsic-block-size"
 }, {
     "name": "contain-intrinsic-height",
-    "keywords": ["auto", "legacy"]
+    "keywords": ["auto"]
 }, {
     "name": "contain-intrinsic-inline-size"
 }, {
@@ -642,7 +642,7 @@ export const generatedProperties = [{
     "name": "contain-intrinsic-size"
 }, {
     "name": "contain-intrinsic-width",
-    "keywords": ["auto", "legacy"]
+    "keywords": ["auto"]
 }, {
     "name": "content"
 }, {
@@ -1509,7 +1509,7 @@ export const generatedPropertyValues = {
         "values": ["horizontal", "vertical"]
     },
     "contain-intrinsic-width": {
-        "values": ["auto", "legacy"]
+        "values": ["auto"]
     },
     "counter-reset": {
         "values": ["none"]
@@ -2049,7 +2049,7 @@ export const generatedPropertyValues = {
         "values": ["auto", "min-content", "max-content"]
     },
     "contain-intrinsic-height": {
-        "values": ["auto", "legacy"]
+        "values": ["auto"]
     },
     "font-variant-ligatures": {
         "values": ["normal", "none", "common-ligatures", "no-common-ligatures", "discretionary-ligatures", "no-discretionary-ligatures", "historical-ligatures", "no-historical-ligatures", "contextual", "no-contextual"]
