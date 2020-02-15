@@ -29,7 +29,7 @@ const globalThis: any = global;
  */
 const collectAllElementsFromPage = async (root?: puppeteer.JSHandle) => {
   const frontend: puppeteer.Page = globalThis[frontEndPage];
-  await frontend.evaluate((root) => {
+  await frontend.evaluate(root => {
     const container = (self as any);
     container.__elements = [];
     const collect = (root: HTMLElement|ShadowRoot) => {
@@ -48,7 +48,7 @@ const collectAllElementsFromPage = async (root?: puppeteer.JSHandle) => {
     };
     collect(root || document.documentElement);
   }, root || '');
-}
+};
 
 export const getElementPosition = async (selector: string, root?: puppeteer.JSHandle) => {
   const element = await $(selector, root);
@@ -121,7 +121,7 @@ export const $$ = async (selector: string, root?: puppeteer.JSHandle) => {
   return elements;
 };
 
-export const timeout = (duration: number) => new Promise((resolve) => setTimeout(resolve, duration));
+export const timeout = (duration: number) => new Promise(resolve => setTimeout(resolve, duration));
 
 export const waitFor =
     async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
@@ -139,10 +139,11 @@ export const waitFor =
   } while (performance.now() - start < maxTotalTimeout);
 
   throw new Error(`Unable to find element with selector ${selector}`);
-}
+};
 
 export const debuggerStatement = (frontend: puppeteer.Page) => {
   return frontend.evaluate(() => {
+    // eslint-disable-next-line no-debugger
     debugger;
   });
 };

@@ -7,6 +7,8 @@ directories=$(find "$scripts_migration_dir/../../front_end/" -type d -maxdepth 1
 
 cd "$scripts_migration_dir"
 
+npm run build
+
 for file in $directories; do
   npm run remove-unused "$file"
 done

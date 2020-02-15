@@ -43,7 +43,7 @@ export class DOMStorageItemsView extends StorageItemsView {
 
     this.element.classList.add('storage-view', 'table');
 
-    const columns = /** @type {!Array<!DataGrid.ColumnDescriptor>} */ ([
+    const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
       {id: 'key', title: Common.UIString.UIString('Key'), sortable: false, editable: true, longText: true, weight: 50},
       {
         id: 'value',
@@ -118,7 +118,7 @@ export class DOMStorageItemsView extends StorageItemsView {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _domStorageItemRemoved(event) {
     if (!this.isShowing() || !this._dataGrid) {
@@ -140,7 +140,7 @@ export class DOMStorageItemsView extends StorageItemsView {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _domStorageItemAdded(event) {
     if (!this.isShowing() || !this._dataGrid) {
@@ -162,7 +162,7 @@ export class DOMStorageItemsView extends StorageItemsView {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _domStorageItemUpdated(event) {
     if (!this.isShowing() || !this._dataGrid) {

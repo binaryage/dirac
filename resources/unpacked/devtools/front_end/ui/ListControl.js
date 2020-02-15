@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+
+import * as ARIAUtils from './ARIAUtils.js';
 import {Events as ListModelEvents, ListModel} from './ListModel.js';  // eslint-disable-line no-unused-vars
 import {measurePreferredSize} from './UIUtils.js';
 
@@ -89,7 +92,7 @@ export class ListControl {
     this.element.tabIndex = -1;
     this.element.addEventListener('click', this._onClick.bind(this), false);
     this.element.addEventListener('keydown', this._onKeyDown.bind(this), false);
-    UI.ARIAUtils.markAsListBox(this.element);
+    ARIAUtils.markAsListBox(this.element);
 
     this._delegate = delegate;
     this._mode = mode || ListMode.EqualHeightItems;
@@ -117,7 +120,7 @@ export class ListControl {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _replacedItemsInRange(event) {
     const data = /** @type {{index: number, removed: !Array<T>, inserted: number}} */ (event.data);
@@ -440,8 +443,8 @@ export class ListControl {
     let element = this._itemToElement.get(item);
     if (!element) {
       element = this._delegate.createElementForItem(item);
-      if (!UI.ARIAUtils.hasRole(element)) {
-        UI.ARIAUtils.markAsOption(element);
+      if (!ARIAUtils.hasRole(element)) {
+        ARIAUtils.markAsOption(element);
       }
       this._itemToElement.set(item, element);
     }
@@ -495,12 +498,12 @@ export class ListControl {
     this._delegate.selectedItemChanged(oldItem, newItem, /** @type {?Element} */ (oldElement), newElement);
     if (!this._delegate.updateSelectedItemARIA(/** @type {?Element} */ (oldElement), newElement)) {
       if (oldElement) {
-        UI.ARIAUtils.setSelected(oldElement, false);
+        ARIAUtils.setSelected(oldElement, false);
       }
       if (newElement) {
-        UI.ARIAUtils.setSelected(newElement, true);
+        ARIAUtils.setSelected(newElement, true);
       }
-      UI.ARIAUtils.setActiveDescendant(this.element, newElement);
+      ARIAUtils.setActiveDescendant(this.element, newElement);
     }
   }
 

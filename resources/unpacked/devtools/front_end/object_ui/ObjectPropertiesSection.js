@@ -1620,7 +1620,7 @@ export class ObjectPropertiesSectionsTreeExpandController {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _elementAttached(event) {
     const element = /** @type {!UI.TreeOutline.TreeElement} */ (event.data);
@@ -1630,7 +1630,7 @@ export class ObjectPropertiesSectionsTreeExpandController {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _elementExpanded(event) {
     const element = /** @type {!UI.TreeOutline.TreeElement} */ (event.data);
@@ -1638,7 +1638,7 @@ export class ObjectPropertiesSectionsTreeExpandController {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _elementCollapsed(event) {
     const element = /** @type {!UI.TreeOutline.TreeElement} */ (event.data);

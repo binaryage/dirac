@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+
+import * as ARIAUtils from './ARIAUtils.js';
 import {Size} from './Geometry.js';
 import {AnchorBehavior, GlassPane, MarginBehavior, PointerEventsBehavior} from './GlassPane.js';
 import {Icon} from './Icon.js';
@@ -31,7 +34,7 @@ export class SoftDropDown {
     this._titleElement = this.element.createChild('span', 'title');
     const dropdownArrowIcon = Icon.create('smallicon-triangle-down');
     this.element.appendChild(dropdownArrowIcon);
-    UI.ARIAUtils.setExpanded(this.element, false);
+    ARIAUtils.setExpanded(this.element, false);
 
     this._glassPane = new GlassPane();
     this._glassPane.setMarginBehavior(MarginBehavior.NoMargin);
@@ -43,9 +46,8 @@ export class SoftDropDown {
     this._rowHeight = 36;
     this._width = 315;
     createShadowRootWithCoreStyles(this._glassPane.contentElement, 'ui/softDropDown.css')
-        .createChild('slot')  // issue #972755
         .appendChild(this._list.element);
-    UI.ARIAUtils.markAsMenu(this._list.element);
+    ARIAUtils.markAsMenu(this._list.element);
 
     this._listWasShowing200msAgo = false;
     this.element.addEventListener('mousedown', event => {
@@ -83,7 +85,7 @@ export class SoftDropDown {
     this._glassPane.setContentAnchorBox(this.element.boxInWindow());
     this._glassPane.show(/** @type {!Document} **/ (this.element.ownerDocument));
     this._list.element.focus();
-    UI.ARIAUtils.setExpanded(this.element, true);
+    ARIAUtils.setExpanded(this.element, true);
     this._updateGlasspaneSize();
     if (this._selectedItem) {
       this._list.selectItem(this._selectedItem);
@@ -105,7 +107,7 @@ export class SoftDropDown {
     setTimeout(() => this._listWasShowing200msAgo = false, 200);
     this._glassPane.hide();
     this._list.selectItem(null);
-    UI.ARIAUtils.setExpanded(this.element, false);
+    ARIAUtils.setExpanded(this.element, false);
     this.element.focus();
     event.consume(true);
   }
@@ -228,7 +230,7 @@ export class SoftDropDown {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _itemsReplaced(event) {
     const removed = /** @type {!Array<T>} */ (event.data.removed);
@@ -267,7 +269,7 @@ export class SoftDropDown {
     element.classList.toggle('disabled', !this._delegate.isItemSelectable(item));
     element.classList.toggle('highlighted', this._list.selectedItem() === item);
 
-    UI.ARIAUtils.markAsMenuItem(element);
+    ARIAUtils.markAsMenuItem(element);
     element.appendChild(this._delegate.createElementForItem(item));
 
     return element;
@@ -306,7 +308,7 @@ export class SoftDropDown {
       toElement.classList.add('highlighted');
     }
 
-    UI.ARIAUtils.setActiveDescendant(this._list.element, toElement);
+    ARIAUtils.setActiveDescendant(this._list.element, toElement);
     this._delegate.highlightedItemChanged(
         from, to, fromElement && fromElement.firstElementChild, toElement && toElement.firstElementChild);
   }

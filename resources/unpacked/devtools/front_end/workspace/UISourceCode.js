@@ -62,7 +62,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     }
 
     this._contentType = contentType;
-    /** @type {?Promise<!Common.DeferredContent>} */
+    /** @type {?Promise<!Common.ContentProvider.DeferredContent>} */
     this._requestContentPromise = null;
     /** @type {?Platform.Multimap<string, !LineMarker>} */
     this._decorations = null;
@@ -70,7 +70,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     /** @type {?Set<!Message>} */
     this._messages = null;
     this._contentLoaded = false;
-    /** @type {?Common.DeferredContent} */
+    /** @type {?Common.ContentProvider.DeferredContent} */
     this._content = null;
     this._forceLoadOnCheckContent = false;
     this._checkingContent = false;
@@ -255,7 +255,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @override
-   * @return {!Promise<!Common.DeferredContent>}
+   * @return {!Promise<!Common.ContentProvider.DeferredContent>}
    */
   requestContent() {
     if (this._requestContentPromise) {
@@ -263,7 +263,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     }
 
     if (this._contentLoaded) {
-      return Promise.resolve(/** @type {!Common.DeferredContent} */ (this._content));
+      return Promise.resolve(/** @type {!Common.ContentProvider.DeferredContent} */ (this._content));
     }
 
 
@@ -272,7 +272,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @returns {!Promise<!Common.DeferredContent>}
+   * @returns {!Promise<!Common.ContentProvider.DeferredContent>}
    */
   async _requestContentImpl() {
     try {
@@ -287,7 +287,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
       this._content = {error: err ? String(err) : '', isEncoded: false};
     }
 
-    return /** @type {!Common.DeferredContent} */ (this._content);
+    return /** @type {!Common.ContentProvider.DeferredContent} */ (this._content);
   }
 
   async checkContentUpdated() {
