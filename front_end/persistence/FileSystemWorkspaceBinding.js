@@ -140,7 +140,7 @@ export class FileSystemWorkspaceBinding {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onFileSystemAdded(event) {
     const fileSystem = /** @type {!PlatformFileSystem} */ (event.data);
@@ -156,7 +156,7 @@ export class FileSystemWorkspaceBinding {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onFileSystemRemoved(event) {
     const fileSystem = /** @type {!PlatformFileSystem} */ (event.data);
@@ -166,7 +166,7 @@ export class FileSystemWorkspaceBinding {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _fileSystemFilesChanged(event) {
     const paths = /** @type {!Persistence.IsolatedFileSystemManager.FilesChangedData} */ (event.data);
@@ -310,7 +310,7 @@ export class FileSystem extends Workspace.Workspace.ProjectStore {
   /**
    * @override
    * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
-   * @returns {!Promise<!Common.DeferredContent>}
+   * @returns {!Promise<!Common.ContentProvider.DeferredContent>}
    */
   requestFileContent(uiSourceCode) {
     const filePath = this._filePathForUISourceCode(uiSourceCode);

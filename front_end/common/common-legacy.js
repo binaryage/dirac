@@ -219,41 +219,9 @@ Common.localize = CommonModule.UIString.localize;
 Common.Worker = CommonModule.Worker.WorkerWrapper;
 
 /**
- * @typedef {{
-  *    content: string,
-  *    isEncoded: boolean,
-  * }|{
-  *    error: string,
-  *    isEncoded: boolean,
-  * }}
-  */
-Common.DeferredContent;
-
-/**
- * @typedef {!{eventTarget: !Common.EventTarget, eventType: (string|symbol), thisObject: (!Object|undefined), listener: function(!Common.Event)}}
- */
-Common.EventTarget.EventDescriptor;
-
-/**
- * @typedef {!{data: *}}
- */
-Common.Event;
-
-/** @typedef {{tooltip: (string|undefined), preventKeyboardFocus: (boolean|undefined)}} */
-Common.Linkifier.Options;
-
-/**
- * @typedef {!{thisObject: (!Object|undefined), listener: function(!Common.Event), disposed: (boolean|undefined)}}
- */
-Common.Object._listenerCallbackTuple;
-
-/**
  * @type {!Common.Settings}
  */
 self.Common.settings;
-
-/** @typedef {function(!Error=)} */
-Common.Throttler.FinishCallback;
 
 /**
  * @param {!Array<string>|string} strings

@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {RowType} from './ChangesView.js';
+import * as TextEditor from '../text_editor/text_editor.js';
+import * as UI from '../ui/ui.js';  // eslint-disable-line no-unused-vars
+
+import {Row, RowType} from './ChangesView.js';  // eslint-disable-line no-unused-vars
 
 /**
- * @extends {TextEditor.CodeMirrorTextEditor}
+ * @extends {TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor}
  */
-export class ChangesTextEditor extends TextEditor.CodeMirrorTextEditor {
+export class ChangesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor {
   /**
    * @param {!UI.TextEditor.Options} options
    */
@@ -34,7 +37,7 @@ export class ChangesTextEditor extends TextEditor.CodeMirrorTextEditor {
   }
 
   /**
-   * @param {!Array<!Changes.ChangesView.Row>} diffRows
+   * @param {!Array<!Row>} diffRows
    */
   updateDiffGutter(diffRows) {
     this.codeMirror().eachLine(line => {

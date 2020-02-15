@@ -31,7 +31,7 @@ export class ProfileView extends UI.View.SimpleView {
     this._searchableView.setPlaceholder(Common.UIString.UIString('Find by cost (>50ms), name or file'));
     this._searchableView.show(this.element);
 
-    const columns = /** @type {!Array<!DataGrid.ColumnDescriptor>} */ ([]);
+    const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([]);
     columns.push({
       id: 'self',
       title: this.columnHeader('self'),
@@ -330,7 +330,7 @@ export class ProfileView extends UI.View.SimpleView {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onEntryInvoked(event) {
     const entryIndex = event.data;
@@ -402,7 +402,7 @@ export class ProfileView extends UI.View.SimpleView {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _focusClicked(event) {
     if (!this.dataGrid.selectedNode) {
@@ -417,7 +417,7 @@ export class ProfileView extends UI.View.SimpleView {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _excludeClicked(event) {
     const selectedNode = this.dataGrid.selectedNode;
@@ -436,7 +436,7 @@ export class ProfileView extends UI.View.SimpleView {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _resetClicked(event) {
     this.resetButton.setEnabled(false);

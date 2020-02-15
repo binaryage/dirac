@@ -184,7 +184,7 @@ export class ApplicationCacheItemsView extends UI.View.SimpleView {
   }
 
   _createDataGrid() {
-    const columns = /** @type {!Array<!DataGrid.ColumnDescriptor>} */ ([
+    const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
       {
         id: 'resource',
         title: Common.UIString.UIString('Resource'),
@@ -252,7 +252,7 @@ export class ApplicationCacheItemsView extends UI.View.SimpleView {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _deleteButtonClicked(event) {
     if (!this._dataGrid || !this._dataGrid.selectedNode) {
