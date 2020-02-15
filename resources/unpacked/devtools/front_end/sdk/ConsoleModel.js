@@ -182,7 +182,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
 
     if (msg.parameters) {
       var firstParam = msg.parameters[0];
-      if (firstParam && firstParam.value == "~~$DIRAC-MSG$~~") {
+      if (firstParam && firstParam.value === "~~$DIRAC-MSG$~~") {
         this.dispatchEventToListeners(SDK.ConsoleModel.Events.DiracMessage, msg);
         return;
       }

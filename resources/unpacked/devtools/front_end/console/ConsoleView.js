@@ -262,8 +262,10 @@ export class ConsoleView extends UI.Widget.VBox {
     this._updateFilterStatus();
     this._timestampsSetting.addChangeListener(this._consoleTimestampsSettingChanged, this);
 
+    /** @type {!Object.<number, !SDK.ConsoleModel.ConsoleMessage>} */
     this._pendingDiracCommands = {};
     this._lastDiracCommandId = 1;
+    /** @type {!Array.<!object>} */
     this._prompts = [];
     this._prompts.push({id: "js",
       prompt: this._prompt,
@@ -279,7 +281,7 @@ export class ConsoleView extends UI.Widget.VBox {
       diracProxyElement.classList.add("console-prompt-dirac-wrapper");
       diracProxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), true);
 
-      this._diracHistorySetting = Common.settings.createLocalSetting("diracHistory", []);
+      this._diracHistorySetting = self.Common.settings.createLocalSetting("diracHistory", []);
       const diracHistoryData = this._diracHistorySetting.get();
       diracPrompt.history().setHistoryData(diracHistoryData);
 
@@ -307,7 +309,7 @@ export class ConsoleView extends UI.Widget.VBox {
     self.UI.context.addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this._executionContextChanged, this);
 
     const defaultPromptIndex = dirac.hostedInExtension?0:1;
-    this._consolePromptIndexSetting = Common.settings.createLocalSetting("consolePromptIndex", defaultPromptIndex);
+    this._consolePromptIndexSetting = self.Common.settings.createLocalSetting("consolePromptIndex", defaultPromptIndex);
 
     this._consoleFeedback = 0;
 
@@ -590,6 +592,9 @@ export class ConsoleView extends UI.Widget.VBox {
     this._switchPromptIfAvail(this._activePromptIndex, this._consolePromptIndexSetting.get());
   }
 
+  /**
+   * @param {!object} event
+   */
   _diracStatusBannerClick(event) {
     if (!event.target || event.target.tagName != "A") {
       return false;
@@ -614,6 +619,9 @@ export class ConsoleView extends UI.Widget.VBox {
     this._diracPromptDescriptor.statusBannerCallback = callback;
   }
 
+  /**
+   * @param {string} style
+   */
   setDiracPromptStatusStyle(style) {
     dirac.feedback("setDiracPromptStatusStyle('"+style+"')");
     const knownStyles = ["error", "info"];
@@ -626,6 +634,9 @@ export class ConsoleView extends UI.Widget.VBox {
     }
   }
 
+  /**
+   * @param {string} mode
+   */
   setDiracPromptMode(mode) {
     dirac.feedback("setDiracPromptMode('"+mode+"')");
     const knownModes = ["edit", "status"];
@@ -641,6 +652,10 @@ export class ConsoleView extends UI.Widget.VBox {
     }
   }
 
+  /**
+   * @param {string} namespace
+   * @param {string | null} compiler
+   */
   _buildPromptPlaceholder(namespace, compiler) {
     const placeholderEl = createElementWithClass("div", "dirac-prompt-placeholder");
     const namespaceEl = createElementWithClass("span", "dirac-prompt-namespace");
@@ -667,6 +682,9 @@ export class ConsoleView extends UI.Widget.VBox {
     promptDescriptor.codeMirror.setOption("placeholder", placeholderEl);
   }
 
+  /**
+   * @param {string} name
+   */
   setDiracPromptNS(name) {
     dirac.feedback("setDiracPromptNS('"+name+"')");
     this._currentNamespace = name;
@@ -676,16 +694,25 @@ export class ConsoleView extends UI.Widget.VBox {
     this._refreshPromptInfo();
   }
 
+  /**
+   * @param {string} name
+   */
   setDiracPromptCompiler(name) {
     //dirac.feedback("setDiracPromptCompiler('"+name+"')");
     this._currentCompiler = name;
     this._refreshPromptInfo();
   }
 
-  onJobStarted(requestId) {
+  /**
+   * @param {number} _requestId
+   */
+  onJobStarted(_requestId) {
     dirac.feedback("repl eval job started");
   }
 
+  /**
+   * @param {number} requestId
+   */
   onJobEnded(requestId) {
     delete this._pendingDiracCommands[requestId];
     dirac.feedback("repl eval job ended");
@@ -706,6 +733,9 @@ export class ConsoleView extends UI.Widget.VBox {
     return this._prompt.text();
   }
 
+  /**
+   * @param {{ parameters: any[]; }} message
+   */
   handleEvalCLJSConsoleDiracMessage(message) {
     const code = message.parameters[2];
     if (code && typeof code.value == 'string') {
@@ -713,6 +743,9 @@ export class ConsoleView extends UI.Widget.VBox {
     }
   }
 
+  /**
+   * @param {{ parameters: any[]; }} message
+   */
   handleEvalJSConsoleDiracMessage(message) {
     const code = message.parameters[2];
     if (code && typeof code.value == 'string') {
@@ -723,11 +756,15 @@ export class ConsoleView extends UI.Widget.VBox {
     }
   }
 
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
   _onConsoleDiracMessage(event) {
     const message = (event.data);
     let command = message.parameters[1];
-    if (command)
+    if (command) {
       command = command.value;
+    }
 
     switch (command) {
       case "eval-cljs":
@@ -742,11 +779,16 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
 
+  /**
+   * @param {SDK.ConsoleModel.ConsoleMessage} message
+   */
   _alterDiracViewMessage(message) {
     var nestingLevel = this._currentGroup.nestingLevel();
 
     message.messageText = "";
-    message.parameters.shift(); // "~~$DIRAC-LOG$~~"
+    if (message.parameters) {
+      message.parameters.shift(); // "~~$DIRAC-LOG$~~"
+    }
 
     // do not display location link
     message.url = undefined;
@@ -755,13 +797,15 @@ export class ConsoleView extends UI.Widget.VBox {
     let requestId = null;
     let kind = "";
     try {
-      requestId = message.parameters.shift().value; // request-id
-      kind = message.parameters.shift().value;
+      if (message.parameters) {
+        requestId = message.parameters.shift().value; // request-id
+        kind = message.parameters.shift().value;
+      }
     } catch (e) {
     }
 
     if (kind === "result") {
-      message.type = SDK.ConsoleMessage.MessageType.Result;
+      message.type = SDK.ConsoleModel.MessageType.Result;
     }
 
     const originatingMessage = this._pendingDiracCommands[requestId];
@@ -773,20 +817,32 @@ export class ConsoleView extends UI.Widget.VBox {
     return kind ? ("dirac-" + kind) : null;
   }
 
+  /**
+   * @param {SDK.ConsoleModel.MessageLevel|null} level
+   * @returns {string}
+   */
   _levelForFeedback(level) {
     return level || "???";
   }
 
+  /**
+   * @param {SDK.ConsoleModel.MessageType} messageType
+   * @param {boolean} isDiracFlavored
+   * @returns {string}
+   */
   _typeForFeedback(messageType, isDiracFlavored) {
     if (isDiracFlavored) {
       return "DF";
     }
-    if (messageType === SDK.ConsoleMessage.MessageType.DiracCommand) {
+    if (messageType === SDK.ConsoleModel.MessageType.DiracCommand) {
       return "DC";
     }
     return "JS";
   }
 
+  /**
+   * @param {SDK.ConsoleModel.ConsoleMessage} message
+   */
   _createViewMessage(message) {
     // this is a HACK to treat REPL messages as Dirac results
     const isDiracFlavoredMessage = message.messageText === "~~$DIRAC-LOG$~~";
@@ -807,13 +863,14 @@ export class ConsoleView extends UI.Widget.VBox {
     }
 
     if (this._consoleFeedback) {
-      try {
-        const levelText = this._levelForFeedback(message.level);
-        const typeText = this._typeForFeedback(message.type, isDiracFlavoredMessage);
-        const messageText = result.contentElement().querySelector(".console-message-text").deepTextContent();
+      const levelText = this._levelForFeedback(message.level);
+      const typeText = this._typeForFeedback(message.type, isDiracFlavoredMessage);
+      const contentEl = result.contentElement();
+      const consoleMessageTextEl = contentEl.querySelector(".console-message-text");
+      if (consoleMessageTextEl) {
+        const messageText = consoleMessageTextEl.deepTextContent();
         const glue = (messageText.indexOf("\n") === -1) ? "> " : ">\n"; // log multi-line log messages on a new line
         dirac.feedback(typeText + "." + levelText + glue + messageText);
-      } catch (e) {
       }
     }
 
@@ -825,27 +882,33 @@ export class ConsoleView extends UI.Widget.VBox {
    * @return {boolean}
    */
   appendDiracMarkup(markup) {
-    const target = SDK.targetManager.mainTarget();
+    const target = self.SDK.targetManager.mainTarget();
     if (!target) {
       return false;
     }
-    const runtimeModel = target.model(SDK.RuntimeModel);
+    const runtimeModel = target.model(self.SDK.RuntimeModel);
     if (!runtimeModel) {
       return false;
     }
-    const source = SDK.ConsoleMessage.MessageSource.Other;
-    const level = SDK.ConsoleMessage.MessageLevel.Info;
-    const type = SDK.ConsoleMessage.MessageType.DiracMarkup;
-    const message = new SDK.ConsoleMessage(runtimeModel, source, level, markup, type);
-    SDK.consoleModel.addMessage(message);
+    const source = SDK.ConsoleModel.MessageSource.Other;
+    const level = SDK.ConsoleModel.MessageLevel.Info;
+    const type = SDK.ConsoleModel.MessageType.DiracMarkup;
+    const message = new self.SDK.ConsoleMessage(runtimeModel, source, level, markup, type);
+    self.SDK.consoleModel.addMessage(message);
     return true;
   }
 
   displayWelcomeMessage() {
     dirac.feedback('displayWelcomeMessage');
+    /**
+     * @param {string} text
+     */
     const wrapCode = (text) => {
       return "<code style='background-color:rgba(0, 0, 0, 0.08);padding:0 2px;border-radius:1px'>" + text + "</code>";
     };
+    /**
+     * @param {string} text
+     */
     const wrapBold = (text) => {
       return "<b>" + text + "</b>";
     };
@@ -860,6 +923,9 @@ export class ConsoleView extends UI.Widget.VBox {
     }
   }
 
+  /**
+   * @param {number} index
+   */
   _normalizePromptIndex(index) {
     const count = this._prompts.length;
     while (index<0) {
@@ -868,6 +934,10 @@ export class ConsoleView extends UI.Widget.VBox {
     return index % count;
   }
 
+  /**
+   * @param {number} oldPromptIndex
+   * @param {number} newPromptIndex
+   */
   _switchPromptIfAvail(oldPromptIndex, newPromptIndex) {
     const oldIndex = this._normalizePromptIndex(oldPromptIndex);
     const newIndex = this._normalizePromptIndex(newPromptIndex);
@@ -878,6 +948,10 @@ export class ConsoleView extends UI.Widget.VBox {
     this._switchPrompt(oldIndex, newIndex);
   }
 
+  /**
+   * @param {number} oldPromptIndex
+   * @param {number} newPromptIndex
+   */
   _switchPrompt(oldPromptIndex, newPromptIndex) {
     const oldPromptDescriptor = this._prompts[this._normalizePromptIndex(oldPromptIndex)];
     const newPromptDescriptor = this._prompts[this._normalizePromptIndex(newPromptIndex)];
@@ -909,6 +983,9 @@ export class ConsoleView extends UI.Widget.VBox {
     this._switchPromptIfAvail(this._activePromptIndex, this._activePromptIndex-1);
   }
 
+  /**
+   * @param {number} id
+   */
   _findPromptIndexById(id) {
     for (let i=0; i<this._prompts.length; i++) {
       const promptDescriptor = this._prompts[i];
@@ -919,6 +996,9 @@ export class ConsoleView extends UI.Widget.VBox {
     return null;
   }
 
+  /**
+   * @param {number} promptId
+   */
   _getPromptDescriptor(promptId) {
     const promptIndex = this._findPromptIndexById(promptId);
     if (promptIndex === null) {
@@ -927,6 +1007,9 @@ export class ConsoleView extends UI.Widget.VBox {
     return this._prompts[promptIndex];
   }
 
+  /**
+   * @param {number} promptId
+   */
   switchPrompt(promptId) {
     const selectedPromptIndex = this._findPromptIndexById(promptId);
     if (selectedPromptIndex === null) {
@@ -956,7 +1039,8 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @return {!Promise}
+   * @param {string} input
+   * @return {!Promise<string>}
    */
   dispatchEventsForPromptInput(input) {
     return new Promise((resolve) => {
@@ -967,7 +1051,8 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @return {!Promise}
+   * @param {string} action
+   * @return {!Promise<string>}
    */
   dispatchEventsForPromptAction(action) {
     return new Promise((resolve) => {
@@ -993,6 +1078,10 @@ export class ConsoleView extends UI.Widget.VBox {
     return this._consoleFeedback;
   }
 
+  /**
+   * @param {string} text
+   * @param {number} id
+   */
   appendDiracCommand(text, id) {
     if (!text)
       return;
@@ -1004,19 +1093,19 @@ export class ConsoleView extends UI.Widget.VBox {
     const command = text;
     const commandId = id;
 
-    const executionContext = UI.context.flavor(SDK.ExecutionContext);
+    const executionContext = self.UI.context.flavor(self.SDK.ExecutionContext);
     if (!executionContext) {
       return;
     }
 
     this._prompt.setText("");
     const runtimeModel = executionContext.runtimeModel;
-    const type = SDK.ConsoleMessage.MessageType.DiracCommand;
-    const source = SDK.ConsoleMessage.MessageSource.JS;
-    const level = SDK.ConsoleMessage.MessageLevel.Info;
-    const commandMessage = new SDK.ConsoleMessage(runtimeModel, source, level, text, type);
+    const type = SDK.ConsoleModel.MessageType.DiracCommand;
+    const source = SDK.ConsoleModel.MessageSource.JS;
+    const level = SDK.ConsoleModel.MessageLevel.Info;
+    const commandMessage = new self.SDK.ConsoleMessage(runtimeModel, source, level, text, type);
     commandMessage.setExecutionContextId(executionContext.id);
-    SDK.consoleModel.addMessage(commandMessage);
+    self.SDK.consoleModel.addMessage(commandMessage);
 
     this._prompt.history().pushHistoryItem(text);
     this._diracHistorySetting.set(this._prompt.history().historyData().slice(-persistedHistorySize));
@@ -1041,6 +1130,9 @@ export class ConsoleView extends UI.Widget.VBox {
     this._addConsoleMessage(message);
   }
 
+  /**
+   * @param {!SDK.ConsoleModel.ConsoleMessage} message
+   */
   _normalizeMessageTimestamp(message) {
     message.timestamp = this._consoleMessages.length ? this._consoleMessages.peekLast().consoleMessage().timestamp : 0;
   }
@@ -1196,10 +1288,10 @@ export class ConsoleView extends UI.Widget.VBox {
     switch (message.type) {
       case SDK.ConsoleModel.MessageType.Command:
         return new ConsoleCommand(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
-      case SDK.ConsoleMessage.MessageType.DiracCommand:
-        return new ConsoleDiracCommand(message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
-      case SDK.ConsoleMessage.MessageType.DiracMarkup:
-        return new ConsoleDiracMarkup(message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
+      case SDK.ConsoleModel.MessageType.DiracCommand:
+        return new ConsoleDiracCommand(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
+      case SDK.ConsoleModel.MessageType.DiracMarkup:
+        return new ConsoleDiracMarkup(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleModel.MessageType.Result:
         return new ConsoleCommandResult(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleModel.MessageType.StartGroupCollapsed:
@@ -1497,11 +1589,11 @@ export class ConsoleView extends UI.Widget.VBox {
 
   _registerShortcuts() {
     this._shortcuts = {};
-    this._shortcuts[UI.KeyboardShortcut.KeyboardShortcut.makeKey('u', UI.KeyboardShortcut.Modifiers.Ctrl)] =
+    this._shortcuts[self.UI.KeyboardShortcut.makeKey('u', self.UI.KeyboardShortcut.Modifiers.Ctrl)] =
         this._clearPromptBackwards.bind(this);
 
-    const section = UI.shortcutsScreen.section(Common.UIString('Console'));
-    const shortcut = UI.KeyboardShortcut;
+    const section = self.UI.shortcutsScreen.section(Common.UIString.UIString('Console'));
+    const shortcut = self.UI.KeyboardShortcut;
     if (dirac.hasREPL) {
       let keys = [
         shortcut.makeDescriptor(shortcut.Keys.Comma, UI.KeyboardShortcut.Modifiers.Ctrl),
@@ -1509,7 +1601,7 @@ export class ConsoleView extends UI.Widget.VBox {
       ];
       this._shortcuts[keys[0].key] = this._selectNextPrompt.bind(this);
       this._shortcuts[keys[1].key] = this._selectPrevPrompt.bind(this);
-      section.addRelatedKeys(keys, Common.UIString("Next/previous prompt"));
+      section.addRelatedKeys(keys, Common.UIString.UIString("Next/previous prompt"));
     }
   }
 
@@ -2021,15 +2113,13 @@ export class ConsoleViewFilter {
 export class ConsoleCommand extends ConsoleViewMessage {
 
   /**
-   * @param {!SDK.ConsoleMessage} consoleMessage
-   * @param {!Components.Linkifier} linkifier
-   * @param {!ProductRegistry.BadgePool} badgePool
+   * @param {!SDK.ConsoleModel.ConsoleMessage} consoleMessage
+   * @param {!Components.Linkifier.Linkifier} linkifier
    * @param {number} nestingLevel
-   * @param {function(!Common.Event)} onResize
+   * @param {function(!Common.EventTarget.EventTargetEvent)} onResize
    */
-  constructor(consoleMessage, linkifier, badgePool, nestingLevel, onResize) {
-    super(consoleMessage, linkifier, badgePool, nestingLevel, onResize);
-    this._contentElement = null;
+  constructor(consoleMessage, linkifier, nestingLevel, onResize) {
+    super(consoleMessage, linkifier, nestingLevel, onResize);
     this._formattedCommand = null;
   }
   /**
@@ -2076,7 +2166,7 @@ class ConsoleDiracCommand extends ConsoleCommand {
   contentElement() {
     if (!this._contentElement) {
       this._contentElement = createElementWithClass("div", "console-user-command");
-      const icon = UI.Icon.create('smallicon-user-command', 'command-result-icon');
+      const icon = UI.Icon.Icon.create('smallicon-user-command', 'command-result-icon');
       this._contentElement.appendChild(icon);
 
       this._contentElement.message = this;

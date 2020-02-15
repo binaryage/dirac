@@ -1082,9 +1082,9 @@ export class DebuggerPlugin extends Plugin {
    */
   _renderDecorations(infoMap, infoIdsPerLine, fromLine, toLine) {
     const formatter = new ObjectUI.RemoteObjectPreviewFormatter.RemoteObjectPreviewFormatter();
-    for (var i = fromLine; i < toLine; ++i) {
-      var infoIds = infoIdsPerLine.get(i);
-      var oldWidget = this._valueWidgets.get(i);
+    for (let i = fromLine; i < toLine; ++i) {
+      const infoIds = infoIdsPerLine.get(i);
+      const oldWidget = this._valueWidgets.get(i);
       if (!infoIds) {
         if (oldWidget) {
           this._valueWidgets.delete(i);
@@ -1102,22 +1102,22 @@ export class DebuggerPlugin extends Plugin {
       widget.__nameToToken = new Map();
 
       let renderedNameCount = 0;
-      for (var infoId of infoIds) {
+      for (let infoId of infoIds) {
         if (renderedNameCount > 10)
           break;
         if (infoIdsPerLine.get(i - 1) && infoIdsPerLine.get(i - 1).has(infoId))
           continue;  // Only render name once in the given continuous block.
         if (renderedNameCount)
           widget.createTextChild(', ');
-        var nameValuePair = widget.createChild('span');
+        const nameValuePair = widget.createChild('span');
         widget.__nameToToken.set(infoId, nameValuePair);
-        var info = infoMap.get(infoId);
+        const info = infoMap.get(infoId);
         nameValuePair.createTextChild(info.name + ' = ');
-        var value = info.value;
-        var propertyCount = value.preview ? value.preview.properties.length : 0;
-        var entryCount = value.preview && value.preview.entries ? value.preview.entries.length : 0;
+        const value = info.value;
+        const propertyCount = value.preview ? value.preview.properties.length : 0;
+        const entryCount = value.preview && value.preview.entries ? value.preview.entries.length : 0;
         if (dirac.hasInlineCFs && value.customPreview()) {
-          var customValueEl = (new ObjectUI.CustomPreviewComponent(value)).element;
+          const customValueEl = (new ObjectUI.CustomPreviewComponent.CustomPreviewComponent(value)).element;
           nameValuePair.appendChild(customValueEl);
         } else if (value.preview && propertyCount + entryCount < 10) {
           formatter.appendObjectPreview(nameValuePair, value.preview, false /* isEntry */);
