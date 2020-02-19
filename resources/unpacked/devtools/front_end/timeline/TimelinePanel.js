@@ -236,9 +236,10 @@ export class TimelinePanel extends UI.Panel.Panel {
     this._panelToolbar.appendToolbarItem(this._clearButton);
 
     // Load / Save
-    this._loadButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Load profile...'), 'largeicon-load');
+    this._loadButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Load profile\u2026'), 'largeicon-load');
     this._loadButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this._selectFileToLoad());
-    this._saveButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Save profile...'), 'largeicon-download');
+    this._saveButton =
+        new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Save profile\u2026'), 'largeicon-download');
     this._saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this._saveToFile());
     this._panelToolbar.appendSeparator();
     this._panelToolbar.appendToolbarItem(this._loadButton);
@@ -717,7 +718,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     this._reset();
     this._setState(State.Recording);
     this._showRecordingStarted();
-    this._statusPane.enableStopButton();
+    this._statusPane.enableAndFocusStopButton();
     this._statusPane.updateStatus(Common.UIString.UIString('Profiling\u2026'));
     this._statusPane.updateProgressBar(Common.UIString.UIString('Buffer usage'), 0);
     this._statusPane.startTimer();
@@ -1218,11 +1219,11 @@ export class StatusPane extends UI.Widget.VBox {
   showPane(parent) {
     this.show(parent);
     parent.classList.add('tinted');
-    this._stopButton.focus();
   }
 
-  enableStopButton() {
+  enableAndFocusStopButton() {
     this._stopButton.disabled = false;
+    this._stopButton.focus();
   }
 
   /**
