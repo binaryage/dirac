@@ -659,6 +659,10 @@ export class NetworkLogView extends UI.Widget.VBox {
     this._filterRequests();
   }
 
+  async resetFilter() {
+    this._textFilterUI.clear();
+  }
+
   _showRecordingHint() {
     this._hideRecordingHint();
     this._recordingHint = this.element.createChild('div', 'network-status-pane fill');
@@ -1671,10 +1675,10 @@ export class NetworkLogView extends UI.Widget.VBox {
   _createSizeFilter(value) {
     let multiplier = 1;
     if (value.endsWith('k')) {
-      multiplier = 1024;
+      multiplier = 1000;
       value = value.substring(0, value.length - 1);
     } else if (value.endsWith('m')) {
-      multiplier = 1024 * 1024;
+      multiplier = 1000 * 1000;
       value = value.substring(0, value.length - 1);
     }
     const quantity = Number(value);
