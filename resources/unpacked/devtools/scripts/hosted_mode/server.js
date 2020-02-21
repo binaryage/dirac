@@ -54,7 +54,7 @@ function requestHandler(request, response) {
       sendResponse(404, '404 - File not found');
       return;
     }
-    fs.readFile(absoluteFilePath, 'binary', readFileCallback);
+    fs.readFile(absoluteFilePath, 'utf8', readFileCallback);
   }
 
   function readFileCallback(err, file) {
@@ -74,20 +74,19 @@ function requestHandler(request, response) {
       return;
     }
 
+    let encoding = 'utf8';
+
     if (path.endsWith('.js')) {
-      response.setHeader('Content-Type', 'text/javascript');
-    }
-
-    if (path.endsWith('.wasm')) {
+      response.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+    } else if (path.endsWith('.wasm')) {
       response.setHeader('Content-Type', 'application/wasm');
-    }
-
-    if (path.endsWith('.svg')) {
-      response.setHeader('Content-Type', 'image/svg+xml');
+      encoding = 'binary'
+    } else if (path.endsWith('.svg')) {
+      response.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
     }
 
     response.writeHead(statusCode);
-    response.write(data, 'binary');
+    response.write(data, encoding);
     response.end();
   }
 
@@ -101,13 +100,18 @@ function requestHandler(request, response) {
     while ((line = lines.shift()) !== undefined) {
       if (line.trim() === '') {
         isHeader = false;
+        if (request.headers['if-none-match'] && response.getHeader('ETag') === request.headers['if-none-match']) {
+          response.writeHead(304);
+          response.end();
+          return;
+        }
         response.writeHead(statusCode);
         continue;
       }
 
       if (isHeader) {
         const firstColon = line.indexOf(':');
-        response.setHeader(line.substring(0, firstColon), line.substring(firstColon + 1));
+        response.setHeader(line.substring(0, firstColon), line.substring(firstColon + 1).trim());
       } else {
         response.write(line);
       }
