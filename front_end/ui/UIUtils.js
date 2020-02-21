@@ -32,6 +32,7 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as Platform from '../platform/platform.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {Dialog} from './Dialog.js';
@@ -711,7 +712,8 @@ export function formatLocalized(format, substitutions) {
     a.appendChild(typeof b === 'string' ? createTextNode(b) : b);
     return a;
   }
-  return String.format(Common.UIString.UIString(format), substitutions, formatters, createElement('span'), append)
+  return Platform.StringUtilities
+      .format(Common.UIString.UIString(format), substitutions, formatters, createElement('span'), append)
       .formattedResult;
 }
 
@@ -1361,14 +1363,10 @@ export class CheckboxLabel extends HTMLSpanElement {
     this.checkboxElement;
     /** @type {!Element} */
     this.textElement;
-    CheckboxLabel._lastId = (CheckboxLabel._lastId || 0) + 1;
-    const id = 'ui-checkbox-label' + CheckboxLabel._lastId;
     this._shadowRoot = createShadowRootWithCoreStyles(this, 'ui/checkboxTextLabel.css');
     this.checkboxElement = /** @type {!HTMLInputElement} */ (this._shadowRoot.createChild('input'));
     this.checkboxElement.type = 'checkbox';
-    this.checkboxElement.setAttribute('id', id);
     this.textElement = this._shadowRoot.createChild('label', 'dt-checkbox-text');
-    this.textElement.setAttribute('for', id);
     this._shadowRoot.createChild('slot');
   }
 
@@ -1386,6 +1384,7 @@ export class CheckboxLabel extends HTMLSpanElement {
     element.checkboxElement.checked = !!checked;
     if (title !== undefined) {
       element.textElement.textContent = title;
+      ARIAUtils.setAccessibleName(element.checkboxElement, title);
       if (subtitle !== undefined) {
         element.textElement.createChild('div', 'dt-checkbox-subtitle').textContent = subtitle;
       }
