@@ -631,17 +631,7 @@ export const generatedProperties = [{
     "name": "contain",
     "keywords": ["none", "strict", "content", "size", "layout", "style", "paint"]
 }, {
-    "name": "contain-intrinsic-block-size"
-}, {
-    "name": "contain-intrinsic-height",
-    "keywords": ["auto"]
-}, {
-    "name": "contain-intrinsic-inline-size"
-}, {
-    "longhands": ["contain-intrinsic-width", "contain-intrinsic-height"],
-    "name": "contain-intrinsic-size"
-}, {
-    "name": "contain-intrinsic-width",
+    "name": "contain-intrinsic-size",
     "keywords": ["auto"]
 }, {
     "name": "content"
@@ -1508,9 +1498,6 @@ export const generatedPropertyValues = {
     "-webkit-box-orient": {
         "values": ["horizontal", "vertical"]
     },
-    "contain-intrinsic-width": {
-        "values": ["auto"]
-    },
     "counter-reset": {
         "values": ["none"]
     },
@@ -1793,9 +1780,6 @@ export const generatedPropertyValues = {
     "-webkit-ruby-position": {
         "values": ["before", "after"]
     },
-    "offset-rotate": {
-        "values": ["auto", "reverse"]
-    },
     "word-spacing": {
         "values": ["normal"]
     },
@@ -1894,6 +1878,9 @@ export const generatedPropertyValues = {
     },
     "background-clip": {
         "values": ["border-box", "padding-box", "content-box"]
+    },
+    "contain-intrinsic-size": {
+        "values": ["auto"]
     },
     "scroll-snap-type": {
         "values": ["none", "x", "y", "block", "inline", "both", "mandatory", "proximity"]
@@ -2048,8 +2035,8 @@ export const generatedPropertyValues = {
     "grid-auto-rows": {
         "values": ["auto", "min-content", "max-content"]
     },
-    "contain-intrinsic-height": {
-        "values": ["auto"]
+    "offset-rotate": {
+        "values": ["auto", "reverse"]
     },
     "font-variant-ligatures": {
         "values": ["normal", "none", "common-ligatures", "no-common-ligatures", "discretionary-ligatures", "no-discretionary-ligatures", "historical-ligatures", "no-historical-ligatures", "contextual", "no-contextual"]

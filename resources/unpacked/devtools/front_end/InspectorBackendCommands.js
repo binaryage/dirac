@@ -3364,10 +3364,6 @@ export function registerCommands(inspectorBackend) {
         "name": "flatten",
         "type": "boolean",
         "optional": true
-    }, {
-        "name": "windowOpen",
-        "type": "boolean",
-        "optional": true
     }], [], false);
     inspectorBackend.registerCommand("Target.setDiscoverTargets", [{
         "name": "discover",
