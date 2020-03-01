@@ -5,42 +5,15 @@
 /* eslint-disable no-console */
 // no-console disabled here as this is a test runner and expects to output to the console
 
-import * as puppeteer from 'puppeteer';
 import {assert} from 'chai';
-import {join} from 'path';
-import * as fs from 'fs';
-import * as rimraf from 'rimraf';
 import * as childProcess from 'child_process';
-import * as os from 'os';
+import * as fs from 'fs';
 import * as path from 'path';
-import {getBrowserAndPages} from './helper.js';
+import {join} from 'path';
+import * as puppeteer from 'puppeteer';
+import * as rimraf from 'rimraf';
 
-let platform: string;
-switch (os.platform()) {
-  case 'darwin':
-    platform = 'mac';
-    break;
-
-  case 'win32':
-    platform = 'win32';
-    break;
-
-  default:
-    platform = 'linux';
-    break;
-}
-
-function mkdirp(root: string, parts: string[]) {
-  let target = root;
-  for (const part of parts) {
-    const newTarget = join(target, part);
-    if (!fs.existsSync(newTarget)) {
-      fs.mkdirSync(newTarget);
-    }
-
-    target = newTarget;
-  }
-}
+import {getBrowserAndPages, mkdirp, platform} from './helper.js';
 
 const goldensScreenshotFolderParts = ['..', 'screenshots', 'goldens', platform];
 const goldensScreenshotFolder = join(__dirname, ...goldensScreenshotFolderParts);
@@ -57,11 +30,28 @@ mkdirp(__dirname, generatedScreenshotFolderParts);
 
 const defaultScreenshotOpts: puppeteer.ScreenshotOptions = {
   type: 'png',
-  fullPage: true,
   encoding: 'binary',
 };
-export const assertScreenshotUnchanged =
-    async (page: puppeteer.Page, fileName: string, options: Partial<puppeteer.ScreenshotOptions> = {}) => {
+
+export const assertElementScreenshotUnchanged = async (element: puppeteer.ElementHandle | null, fileName: string, options: Partial<puppeteer.ScreenshotOptions> = {}) => {
+
+  if (!element) {
+    assert.fail(`Given element for test ${fileName} was not found.`);
+    return;
+  }
+
+  return assertScreenshotUnchanged(element, fileName, options);
+};
+
+export const assertPageScreenshotUnchanged = async (page: puppeteer.Page, fileName: string, options: Partial<puppeteer.ScreenshotOptions> = {}) => {
+  return assertScreenshotUnchanged(page, fileName, {
+    ...options,
+    fullPage: true,
+  });
+};
+
+const assertScreenshotUnchanged =
+    async (elementOrPage: puppeteer.ElementHandle | puppeteer.Page, fileName: string, options: Partial<puppeteer.ScreenshotOptions> = {}) => {
   try {
     const goldensScreenshotPath = join(goldensScreenshotFolder, fileName);
     const generatedScreenshotPath = join(generatedScreenshotFolder, fileName);
@@ -71,7 +61,7 @@ export const assertScreenshotUnchanged =
     }
 
     const opts = {...defaultScreenshotOpts, ...options, path: generatedScreenshotPath};
-    await page.screenshot(opts);
+    await elementOrPage.screenshot(opts);
 
     // In the event that a golden does not exist, assume the generated screenshot is the new golden.
     if (!fs.existsSync(goldensScreenshotPath)) {

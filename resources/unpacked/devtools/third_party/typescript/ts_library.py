@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import argparse
+import errno
 import sys
 import subprocess
 import json
@@ -28,7 +29,7 @@ RESOURCES_INSPECTOR_PATH = path.join(os.getcwd(), 'resources', 'inspector')
 
 
 def runTsc(tsconfig_location):
-    process = subprocess.Popen([NODE_LOCATION, TSC_LOCATION, '-b', tsconfig_location],
+    process = subprocess.Popen([NODE_LOCATION, TSC_LOCATION, '-p', tsconfig_location],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
@@ -97,7 +98,7 @@ def copy_all_typescript_sources(sources, output_directory):
     while path.basename(front_end_output_location) != 'front_end':
         front_end_output_location = path.dirname(front_end_output_location)
     for src in sources:
-        if src.endswith('.ts') or src.endswith('_bridge.js'):
+        if (src.endswith('.ts') and not src.endswith('_test.ts')) or src.endswith('_bridge.js'):
             generated_javascript_location = path.join(output_directory, path.basename(src).replace('.ts', '.js'))
 
             relative_path_from_generated_front_end_folder = path.relpath(generated_javascript_location, front_end_output_location)
@@ -106,6 +107,16 @@ def copy_all_typescript_sources(sources, output_directory):
 
             if path.exists(dest):
                 os.remove(dest)
+            # Make sure that the directory actually exists, otherwise
+            # the copy action will throw an error
+            dest_directory = path.dirname(dest)
+            try:
+                os.makedirs(dest_directory)
+            except OSError as exc:  # Python >2.5
+                if exc.errno == errno.EEXIST and os.path.isdir(dest_directory):
+                    pass
+                else:
+                    raise
             shutil.copy(generated_javascript_location, dest)
 
 

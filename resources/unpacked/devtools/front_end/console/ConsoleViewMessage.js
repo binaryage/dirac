@@ -1145,7 +1145,8 @@ export class ConsoleViewMessage {
       if (this._selectableChildren[focusedChildIndex] === firstVisibleChild && firstVisibleChild) {
         this._element.focus();
         return true;
-      } else if (this._selectNearestVisibleChild(focusedChildIndex - 1, true /* backwards */)) {
+      }
+      if (this._selectNearestVisibleChild(focusedChildIndex - 1, true /* backwards */)) {
         return true;
       }
     }
