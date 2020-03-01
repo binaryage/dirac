@@ -49,20 +49,6 @@ self.mod = function(m, n) {
 };
 
 /**
- * @param {string} string
- * @return {!Array.<number>}
- */
-String.prototype.findAll = function(string) {
-  const matches = [];
-  let i = this.indexOf(string);
-  while (i !== -1) {
-    matches.push(i);
-    i = this.indexOf(string, i + string.length);
-  }
-  return matches;
-};
-
-/**
  * @return {string}
  */
 String.prototype.reverse = function() {
@@ -83,15 +69,6 @@ String.prototype.replaceControlCharacters = function() {
  */
 String.prototype.isWhitespace = function() {
   return /^\s*$/.test(this);
-};
-
-/**
- * @return {!Array.<number>}
- */
-String.prototype.computeLineEndings = function() {
-  const endings = this.findAll('\n');
-  endings.push(this.length);
-  return endings;
 };
 
 /**
@@ -268,9 +245,8 @@ String.naturalOrderComparator = function(a, b) {
     } else {
       if (b) {
         return -1;
-      } else {
-        return 0;
       }
+      return 0;
     }
     chunka = a.match(chunk)[0];
     chunkb = b.match(chunk)[0];
@@ -288,12 +264,10 @@ String.naturalOrderComparator = function(a, b) {
         return diff;
       }
       if (chunka.length !== chunkb.length) {
-        if (!+chunka && !+chunkb)  // chunks are strings of all 0s (special case)
-        {
+        if (!+chunka && !+chunkb) {  // chunks are strings of all 0s (special case)
           return chunka.length - chunkb.length;
-        } else {
-          return chunkb.length - chunka.length;
         }
+        return chunkb.length - chunka.length;
       }
     } else if (chunka !== chunkb) {
       return (chunka < chunkb) ? -1 : 1;
@@ -340,9 +314,8 @@ Number.constrain = function(num, min, max) {
 Number.gcd = function(a, b) {
   if (b === 0) {
     return a;
-  } else {
-    return Number.gcd(b, a % b);
   }
+  return Number.gcd(b, a % b);
 };
 
 /**
@@ -572,23 +545,6 @@ Object.defineProperty(Array.prototype, 'binaryIndexOf', {
   value: function(value, comparator) {
     const index = this.lowerBound(value, comparator);
     return index < this.length && comparator(value, this[index]) === 0 ? index : -1;
-  },
-  configurable: true
-});
-
-Object.defineProperty(Array.prototype, 'select', {
-  /**
-   * @param {string} field
-   * @return {!Array.<!T>}
-   * @this {Array.<!Object.<string,!T>>}
-   * @template T
-   */
-  value: function(field) {
-    const result = new Array(this.length);
-    for (let i = 0; i < this.length; ++i) {
-      result[i] = this[i][field];
-    }
-    return result;
   },
   configurable: true
 });
