@@ -41,7 +41,7 @@ Common.Color.PageHighlight = CommonModule.Color.PageHighlight;
  */
 Common.Color.Generator = CommonModule.Color.Generator;
 
-Common.console = new CommonModule.Console.Console();
+Common.console = CommonModule.Console.Console.instance();
 
 /**
  * @constructor
@@ -224,7 +224,7 @@ Common.Worker = CommonModule.Worker.WorkerWrapper;
 self.Common.settings;
 
 /**
- * @param {!Array<string>|string} strings
+ * @param {!ITemplateArray|string} strings
  * @param {...*} vararg
  * @return {string}
  */

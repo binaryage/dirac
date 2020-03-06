@@ -65,6 +65,7 @@ export class NetworkLogView extends UI.Widget.VBox {
 
     this._networkHideDataURLSetting = self.Common.settings.createSetting('networkHideDataURL', false);
     this._networkShowIssuesOnlySetting = self.Common.settings.createSetting('networkShowIssuesOnly', false);
+    this._networkOnlyBlockedRequestsSetting = self.Common.settings.createSetting('networkOnlyBlockedRequests', false);
     this._networkResourceTypeFiltersSetting = self.Common.settings.createSetting('networkResourceTypeFilters', {});
 
     this._rawRowHeight = 0;
@@ -156,6 +157,13 @@ export class NetworkLogView extends UI.Widget.VBox {
     this._onlyIssuesFilterUI.element().title = ls`Only show requests with blocked response cookies`;
     filterBar.addFilter(this._onlyIssuesFilterUI);
 
+    this._onlyBlockedRequestsUI = new UI.FilterBar.CheckboxFilterUI(
+        'only-show-blocked-requests', ls`Blocked Requests`, true, this._networkOnlyBlockedRequestsSetting);
+    this._onlyBlockedRequestsUI.addEventListener(
+        UI.FilterBar.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+    this._onlyBlockedRequestsUI.element().title = ls`Only show blocked requests`;
+    filterBar.addFilter(this._onlyBlockedRequestsUI);
+
 
     this._filterParser = new TextUtils.TextUtils.FilterParser(_searchKeys);
     this._suggestionBuilder =
@@ -178,7 +186,7 @@ export class NetworkLogView extends UI.Widget.VBox {
     self.Common.settings.moduleSetting('networkColorCodeResourceTypes')
         .addChangeListener(this._invalidateAllItems.bind(this, false), this);
 
-    self.SDK.targetManager.observeModels(SDK.NetworkManager.NetworkManager, this);
+    SDK.SDKModel.TargetManager.instance().observeModels(SDK.NetworkManager.NetworkManager, this);
     self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestAdded, this._onRequestUpdated, this);
     self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestUpdated, this._onRequestUpdated, this);
     self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.Reset, this._reset, this);
@@ -540,7 +548,7 @@ export class NetworkLogView extends UI.Widget.VBox {
    * @param {string} message
    */
   _harLoadFailed(message) {
-    self.Common.console.error('Failed to load HAR file with following error: ' + message);
+    Common.Console.Console.instance().error('Failed to load HAR file with following error: ' + message);
   }
 
   /**
@@ -680,7 +688,7 @@ export class NetworkLogView extends UI.Widget.VBox {
 
     if (this._recording) {
       const recordingText = hintText.createChild('span');
-      recordingText.textContent = Common.UIString.UIString('Recording network activity\u2026');
+      recordingText.textContent = Common.UIString.UIString('Recording network activity…');
       if (reloadShortcutNode) {
         hintText.createChild('br');
         hintText.appendChild(
@@ -1220,6 +1228,7 @@ export class NetworkLogView extends UI.Widget.VBox {
     this._textFilterUI.setValue(filterString);
     this._dataURLFilterUI.setChecked(false);
     this._onlyIssuesFilterUI.setChecked(false);
+    this._onlyBlockedRequestsUI.setChecked(false);
     this._resourceCategoryFilterUI.reset();
   }
 
@@ -1511,7 +1520,7 @@ export class NetworkLogView extends UI.Widget.VBox {
    * @return {!Promise}
    */
   async exportAll() {
-    const url = self.SDK.targetManager.mainTarget().inspectedURL();
+    const url = SDK.SDKModel.TargetManager.instance().mainTarget().inspectedURL();
     const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
     const filename = parsedURL ? parsedURL.host : 'network-log';
     const stream = new Bindings.FileUtils.FileOutputStream();
@@ -1564,6 +1573,9 @@ export class NetworkLogView extends UI.Widget.VBox {
       return false;
     }
     if (this._onlyIssuesFilterUI.checked() && !SDK.IssuesModel.IssuesModel.hasIssues(request)) {
+      return false;
+    }
+    if (this._onlyBlockedRequestsUI.checked() && !request.wasBlocked()) {
       return false;
     }
     if (request.statusText === 'Service Worker Fallback Required') {

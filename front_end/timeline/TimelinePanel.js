@@ -127,7 +127,7 @@ export class TimelinePanel extends UI.Panel.Panel {
 
     this._createFileSelector();
 
-    self.SDK.targetManager.addModelListener(
+    SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._loadEventFired, this);
 
     this._flameChart = new TimelineFlameChartView(this);
@@ -146,7 +146,8 @@ export class TimelinePanel extends UI.Panel.Panel {
 
     self.Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.TraceProviderAdded, this._appendExtensionsToToolbar, this);
-    self.SDK.targetManager.addEventListener(SDK.SDKModel.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
+    SDK.SDKModel.TargetManager.instance().addEventListener(
+        SDK.SDKModel.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
   }
 
   /**
@@ -237,11 +238,13 @@ export class TimelinePanel extends UI.Panel.Panel {
     this._panelToolbar.appendToolbarItem(this._clearButton);
 
     // Load / Save
-    this._loadButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Load profile\u2026'), 'largeicon-load');
+    this._loadButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Load profile…'), 'largeicon-load');
     this._loadButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this._selectFileToLoad());
     this._saveButton =
-        new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Save profile\u2026'), 'largeicon-download');
-    this._saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this._saveToFile());
+        new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Save profile…'), 'largeicon-download');
+    this._saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._saveToFile();
+    });
     this._panelToolbar.appendSeparator();
     this._panelToolbar.appendToolbarItem(this._loadButton);
     this._panelToolbar.appendToolbarItem(this._saveButton);
@@ -408,7 +411,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     if (!error) {
       return;
     }
-    self.Common.console.error(
+    Common.Console.Console.instance().error(
         Common.UIString.UIString('Failed to save timeline: %s (%s, %s)', error.message, error.name, error.code));
   }
 
@@ -555,7 +558,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     const enabledTraceProviders = self.Extensions.extensionServer.traceProviders().filter(
         provider => TimelinePanel._settingForTraceProvider(provider).get());
 
-    const mainTarget = /** @type {!SDK.SDKModel.Target} */ (self.SDK.targetManager.mainTarget());
+    const mainTarget = /** @type {!SDK.SDKModel.Target} */ (SDK.SDKModel.TargetManager.instance().mainTarget());
     if (UIDevtoolsUtils.isUiDevTools()) {
       this._controller = new UIDevtoolsController(mainTarget, this);
     } else {
@@ -574,7 +577,7 @@ export class TimelinePanel extends UI.Panel.Panel {
   async _stopRecording() {
     if (this._statusPane) {
       this._statusPane.finish();
-      this._statusPane.updateStatus(Common.UIString.UIString('Stopping timeline\u2026'));
+      this._statusPane.updateStatus(Common.UIString.UIString('Stopping timeline…'));
       this._statusPane.updateProgressBar(Common.UIString.UIString('Received'), 0);
     }
     this._setState(State.StopPending);
@@ -723,7 +726,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     this._setState(State.Recording);
     this._showRecordingStarted();
     this._statusPane.enableAndFocusStopButton();
-    this._statusPane.updateStatus(Common.UIString.UIString('Profiling\u2026'));
+    this._statusPane.updateStatus(Common.UIString.UIString('Profiling…'));
     this._statusPane.updateProgressBar(Common.UIString.UIString('Buffer usage'), 0);
     this._statusPane.startTimer();
     this._hideLandingPage();
@@ -797,7 +800,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     this._statusPane = new StatusPane({showProgress: true}, this._cancelLoading.bind(this));
     this._statusPane.showPane(this._statusPaneContainer);
-    this._statusPane.updateStatus(Common.UIString.UIString('Loading profile\u2026'));
+    this._statusPane.updateStatus(Common.UIString.UIString('Loading profile…'));
     // FIXME: make loading from backend cancelable as well.
     if (!this._loader) {
       this._statusPane.finish();
@@ -819,7 +822,7 @@ export class TimelinePanel extends UI.Panel.Panel {
    * @override
    */
   processingStarted() {
-    this._statusPane.updateStatus(Common.UIString.UIString('Processing profile\u2026'));
+    this._statusPane.updateStatus(Common.UIString.UIString('Processing profile…'));
   }
 
   /**
@@ -861,7 +864,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     this._statusPane = new StatusPane({showTimer: true, showProgress: true}, this._stopRecording.bind(this));
     this._statusPane.showPane(this._statusPaneContainer);
-    this._statusPane.updateStatus(Common.UIString.UIString('Initializing profiler\u2026'));
+    this._statusPane.updateStatus(Common.UIString.UIString('Initializing profiler…'));
   }
 
   _cancelLoading() {
@@ -933,7 +936,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     const frames = this._performanceModel.frames();
     let index = frames.indexOf(currentFrame);
     console.assert(index >= 0, 'Can\'t find current frame in the frame list');
-    index = Number.constrain(index + offset, 0, frames.length - 1);
+    index = Platform.NumberUtilities.clamp(index + offset, 0, frames.length - 1);
     const frame = frames[index];
     this._revealTimeRange(frame.startTime, frame.endTime);
     this.select(TimelineSelection.fromFrame(frame));

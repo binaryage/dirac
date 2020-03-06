@@ -56,7 +56,7 @@ export class CoverageView extends UI.Widget.VBox {
     this._toggleRecordButton = UI.Toolbar.Toolbar.createActionButton(this._toggleRecordAction);
     toolbar.appendToolbarItem(this._toggleRecordButton);
 
-    const mainTarget = self.SDK.targetManager.mainTarget();
+    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
     const mainTargetSupportsRecordOnReload = mainTarget && mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
     if (mainTargetSupportsRecordOnReload) {
       const startWithReloadAction =
@@ -72,7 +72,9 @@ export class CoverageView extends UI.Widget.VBox {
 
     toolbar.appendSeparator();
     const saveButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Export...'), 'largeicon-download');
-    saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this._exportReport());
+    saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._exportReport();
+    });
     toolbar.appendToolbarItem(saveButton);
 
     /** @type {?RegExp} */
@@ -213,7 +215,7 @@ export class CoverageView extends UI.Widget.VBox {
    */
   async _startRecording(options) {
     this._reset();
-    const mainTarget = self.SDK.targetManager.mainTarget();
+    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
     if (!mainTarget) {
       return;
     }

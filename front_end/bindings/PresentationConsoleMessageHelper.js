@@ -39,7 +39,7 @@ import {LiveLocation, LiveLocationPool} from './LiveLocation.js';  // eslint-dis
  */
 export class PresentationConsoleMessageManager {
   constructor() {
-    self.SDK.targetManager.observeModels(SDK.DebuggerModel.DebuggerModel, this);
+    SDK.SDKModel.TargetManager.instance().observeModels(SDK.DebuggerModel.DebuggerModel, this);
 
     self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
     self.SDK.consoleModel.addEventListener(
@@ -77,7 +77,7 @@ export class PresentationConsoleMessageManager {
   }
 
   _consoleCleared() {
-    for (const debuggerModel of self.SDK.targetManager.models(SDK.DebuggerModel.DebuggerModel)) {
+    for (const debuggerModel of SDK.SDKModel.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
       debuggerModel[PresentationConsoleMessageManager._symbol]._consoleCleared();
     }
   }
@@ -99,8 +99,9 @@ export class PresentationConsoleMessageHelper {
     this._presentationConsoleMessages = [];
 
     // TODO(dgozman): setImmediate because we race with DebuggerWorkspaceBinding on ParsedScriptSource event delivery.
-    debuggerModel.addEventListener(
-        SDK.DebuggerModel.Events.ParsedScriptSource, event => setImmediate(this._parsedScriptSource.bind(this, event)));
+    debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, event => {
+      setImmediate(this._parsedScriptSource.bind(this, event));
+    });
     debuggerModel.addEventListener(SDK.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 
     this._locationPool = new LiveLocationPool();

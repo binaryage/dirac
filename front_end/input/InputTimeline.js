@@ -48,10 +48,12 @@ export class InputTimeline extends UI.Widget.VBox {
     this._panelToolbar.appendSeparator();
 
     // Load / Save
-    this._loadButton = new UI.Toolbar.ToolbarButton(Common.UIString('Load profile\u2026'), 'largeicon-load');
+    this._loadButton = new UI.Toolbar.ToolbarButton(Common.UIString('Load profile…'), 'largeicon-load');
     this._loadButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this._selectFileToLoad());
-    this._saveButton = new UI.Toolbar.ToolbarButton(Common.UIString('Save profile\u2026'), 'largeicon-download');
-    this._saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this._saveToFile());
+    this._saveButton = new UI.Toolbar.ToolbarButton(Common.UIString('Save profile…'), 'largeicon-download');
+    this._saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._saveToFile();
+    });
     this._panelToolbar.appendSeparator();
     this._panelToolbar.appendToolbarItem(this._loadButton);
     this._panelToolbar.appendToolbarItem(this._saveButton);
@@ -185,7 +187,7 @@ export class InputTimeline extends UI.Widget.VBox {
     this._setState(State.StartPending);
 
     this._tracingClient = new InputTimeline.TracingClient(
-        /** @type {!SDK.SDKModel.Target} */ (self.SDK.targetManager.mainTarget()), this);
+        /** @type {!SDK.SDKModel.Target} */ (SDK.SDKModel.TargetManager.instance().mainTarget()), this);
 
     const response = await this._tracingClient.startRecording();
     if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
@@ -245,7 +247,8 @@ export class InputTimeline extends UI.Widget.VBox {
       this._reset();
       return;
     }
-    this._inputModel = new InputModel(/** @type {!SDK.SDKModel.Target} */ (self.SDK.targetManager.mainTarget()));
+    this._inputModel =
+        new InputModel(/** @type {!SDK.SDKModel.Target} */ (SDK.SDKModel.TargetManager.instance().mainTarget()));
     this._tracingModel = tracingModel;
     this._inputModel.setEvents(tracingModel);
 
@@ -360,7 +363,7 @@ export class TracingClient {
     }
 
     await this._waitForTracingToStop(true);
-    await self.SDK.targetManager.resumeAllTargets();
+    await SDK.SDKModel.TargetManager.instance().resumeAllTargets();
     this._tracingModel.tracingComplete();
     this._client.loadingComplete(this._tracingModel);
   }

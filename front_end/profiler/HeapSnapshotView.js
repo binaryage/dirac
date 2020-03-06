@@ -676,7 +676,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     if (node) {
       node.select();
     } else {
-      self.Common.console.error('Cannot find corresponding heap snapshot node');
+      Common.Console.Console.instance().error('Cannot find corresponding heap snapshot node');
     }
   }
 
@@ -1075,13 +1075,13 @@ export class HeapSnapshotProfileType extends ProfileType {
    */
   constructor(id, title) {
     super(id || HeapSnapshotProfileType.TypeId, title || ls`Heap snapshot`);
-    self.SDK.targetManager.observeModels(SDK.HeapProfilerModel.HeapProfilerModel, this);
-    self.SDK.targetManager.addModelListener(
+    SDK.SDKModel.TargetManager.instance().observeModels(SDK.HeapProfilerModel.HeapProfilerModel, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.HeapProfilerModel.HeapProfilerModel, SDK.HeapProfilerModel.Events.ResetProfiles, this._resetProfiles, this);
-    self.SDK.targetManager.addModelListener(
+    SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.HeapProfilerModel.HeapProfilerModel, SDK.HeapProfilerModel.Events.AddHeapSnapshotChunk,
         this._addHeapSnapshotChunk, this);
-    self.SDK.targetManager.addModelListener(
+    SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.HeapProfilerModel.HeapProfilerModel, SDK.HeapProfilerModel.Events.ReportHeapSnapshotProgress,
         this._reportHeapSnapshotProgress, this);
     this._treatGlobalObjectsAsRoots = self.Common.settings.createSetting('treatGlobalObjectsAsRoots', true);
@@ -1204,7 +1204,7 @@ export class HeapSnapshotProfileType extends ProfileType {
     let profile = new HeapProfileHeader(heapProfilerModel, this);
     this.setProfileBeingRecorded(profile);
     this.addProfile(profile);
-    profile.updateStatus(Common.UIString.UIString('Snapshotting\u2026'));
+    profile.updateStatus(Common.UIString.UIString('Snapshotting…'));
 
     await heapProfilerModel.takeHeapSnapshot(true, this._treatGlobalObjectsAsRoots.get());
     // ------------ ASYNC ------------
@@ -1411,13 +1411,13 @@ export class TrackingHeapSnapshotProfileType extends HeapSnapshotProfileType {
     this.profileBeingRecorded()._profileSamples = this._profileSamples;
     this._recording = true;
     this.addProfile(/** @type {!ProfileHeader} */ (this.profileBeingRecorded()));
-    this.profileBeingRecorded().updateStatus(Common.UIString.UIString('Recording\u2026'));
+    this.profileBeingRecorded().updateStatus(Common.UIString.UIString('Recording…'));
     this.dispatchEventToListeners(TrackingHeapSnapshotProfileType.TrackingStarted);
     return heapProfilerModel;
   }
 
   async _stopRecordingProfile() {
-    this.profileBeingRecorded().updateStatus(Common.UIString.UIString('Snapshotting\u2026'));
+    this.profileBeingRecorded().updateStatus(Common.UIString.UIString('Snapshotting…'));
     const stopPromise = this.profileBeingRecorded().heapProfilerModel().stopTrackingHeapObjects(true);
     this._recording = false;
     this.dispatchEventToListeners(TrackingHeapSnapshotProfileType.TrackingStopped);
@@ -1562,7 +1562,7 @@ export class HeapProfileHeader extends ProfileHeader {
   _prepareToLoad() {
     console.assert(!this._receiver, 'Already loading');
     this._setupWorker();
-    this.updateStatus(Common.UIString.UIString('Loading\u2026'), true);
+    this.updateStatus(Common.UIString.UIString('Loading…'), true);
   }
 
   _finishLoad() {
@@ -1615,7 +1615,7 @@ export class HeapProfileHeader extends ProfileHeader {
   _handleWorkerEvent(eventName, data) {
     if (HeapSnapshotModel.HeapSnapshotModel.HeapSnapshotProgressEvent.BrokenSnapshot === eventName) {
       const error = /** @type {string} */ (data);
-      self.Common.console.error(error);
+      Common.Console.Console.instance().error(error);
       return;
     }
 
@@ -1703,14 +1703,14 @@ export class HeapProfileHeader extends ProfileHeader {
         return;
       }
       if (this._failedToCreateTempFile) {
-        self.Common.console.error('Failed to open temp file with heap snapshot');
+        Common.Console.Console.instance().error('Failed to open temp file with heap snapshot');
         fileOutputStream.close();
         return;
       }
       if (this._tempFile) {
         const error = await this._tempFile.copyToOutputStream(fileOutputStream, this._onChunkTransferred.bind(this));
         if (error) {
-          self.Common.console.error('Failed to read heap snapshot from temp file: ' + error.message);
+          Common.Console.Console.instance().error('Failed to read heap snapshot from temp file: ' + error.message);
         }
         this._didCompleteSnapshotTransfer();
         return;
@@ -1733,7 +1733,7 @@ export class HeapProfileHeader extends ProfileHeader {
    */
   _updateSaveProgress(value, total) {
     const percentValue = ((total && value / total) * 100).toFixed(0);
-    this.updateStatus(Common.UIString.UIString('Saving\u2026 %d%%', percentValue));
+    this.updateStatus(Common.UIString.UIString('Saving… %d%%', percentValue));
   }
 
   /**
@@ -1742,7 +1742,7 @@ export class HeapProfileHeader extends ProfileHeader {
    * @return {!Promise<?FileError>}
    */
   async loadFromFile(file) {
-    this.updateStatus(Common.UIString.UIString('Loading\u2026'), true);
+    this.updateStatus(Common.UIString.UIString('Loading…'), true);
     this._setupWorker();
     const reader = new Bindings.FileUtils.ChunkedFileReader(file, 10000000);
     const success = await reader.read(/** @type {!Common.StringOutputStream.OutputStream} */ (this._receiver));

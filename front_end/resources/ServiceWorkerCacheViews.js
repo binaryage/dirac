@@ -5,6 +5,7 @@
 import * as Common from '../common/common.js';
 import * as DataGrid from '../data_grid/data_grid.js';
 import * as Network from '../network/network.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -45,8 +46,9 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
 
     this._deleteSelectedButton =
         new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Delete Selected'), 'largeicon-delete');
-    this._deleteSelectedButton.addEventListener(
-        UI.Toolbar.ToolbarButton.Events.Click, () => this._deleteButtonClicked(null));
+    this._deleteSelectedButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._deleteButtonClicked(null);
+    });
     editorToolbar.appendToolbarItem(this._deleteSelectedButton);
 
     const entryPathFilterBox = new UI.Toolbar.ToolbarInput(ls`Filter by Path`, '', 1);
@@ -144,8 +146,9 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
 
     dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this._sortingChanged, this);
 
-    dataGrid.addEventListener(
-        DataGrid.DataGrid.Events.SelectedNode, event => this._previewCachedResponse(event.data.data), this);
+    dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, event => {
+      this._previewCachedResponse(event.data.data);
+    }, this);
     dataGrid.setStriped(true);
     return dataGrid;
   }
@@ -381,7 +384,7 @@ export class DataGridNode extends DataGrid.DataGrid.DataGridNode {
     this._number = number;
     const parsed = new Common.ParsedURL.ParsedURL(request.url());
     if (parsed.isValid) {
-      this._name = request.url().trimURL(parsed.domain());
+      this._name = Platform.StringUtilities.trimURL(request.url(), parsed.domain());
     } else {
       this._name = request.url();
     }

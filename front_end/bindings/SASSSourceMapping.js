@@ -54,11 +54,23 @@ export class SASSSourceMapping {
 
     this._eventListeners = [
       this._sourceMapManager.addEventListener(
-          SDK.SourceMapManager.Events.SourceMapAttached, this._sourceMapAttached, this),
+          SDK.SourceMapManager.Events.SourceMapAttached,
+          event => {
+            this._sourceMapAttached(event);
+          },
+          this),
       this._sourceMapManager.addEventListener(
-          SDK.SourceMapManager.Events.SourceMapDetached, this._sourceMapDetached, this),
+          SDK.SourceMapManager.Events.SourceMapDetached,
+          event => {
+            this._sourceMapDetached(event);
+          },
+          this),
       this._sourceMapManager.addEventListener(
-          SDK.SourceMapManager.Events.SourceMapChanged, this._sourceMapChanged, this)
+          SDK.SourceMapManager.Events.SourceMapChanged,
+          event => {
+            this._sourceMapChanged(event);
+          },
+          this)
     ];
   }
 
@@ -71,7 +83,7 @@ export class SASSSourceMapping {
   /**
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
-  _sourceMapAttached(event) {
+  async _sourceMapAttached(event) {
     const header = /** @type {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} */ (event.data.client);
     const sourceMap = /** @type {!SDK.SourceMap.TextSourceMap} */ (event.data.sourceMap);
     for (const sassURL of sourceMap.sourceURLs()) {
@@ -94,14 +106,14 @@ export class SASSSourceMapping {
       uiSourceCode[_sourceMapSymbol] = sourceMap;
       this._project.addUISourceCodeWithProvider(uiSourceCode, contentProvider, metadata, mimeType);
     }
-    self.Bindings.cssWorkspaceBinding.updateLocations(header);
+    await self.Bindings.cssWorkspaceBinding.updateLocations(header);
     this._sourceMapAttachedForTest(sourceMap);
   }
 
   /**
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
-  _sourceMapDetached(event) {
+  async _sourceMapDetached(event) {
     const header = /** @type {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} */ (event.data.client);
     const sourceMap = /** @type {!SDK.SourceMap.SourceMap} */ (event.data.sourceMap);
     const headers = this._sourceMapManager.clientsForSourceMap(sourceMap);
@@ -116,13 +128,13 @@ export class SASSSourceMapping {
         this._project.removeFile(sassURL);
       }
     }
-    self.Bindings.cssWorkspaceBinding.updateLocations(header);
+    await self.Bindings.cssWorkspaceBinding.updateLocations(header);
   }
 
   /**
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
-  _sourceMapChanged(event) {
+  async _sourceMapChanged(event) {
     const sourceMap = /** @type {!SDK.SourceMap.SourceMap} */ (event.data.sourceMap);
     const newSources = /** @type {!Map<string, string>} */ (event.data.newSources);
     const headers = this._sourceMapManager.clientsForSourceMap(sourceMap);
@@ -135,9 +147,8 @@ export class SASSSourceMapping {
       const sassText = /** @type {string} */ (newSources.get(sourceURL));
       uiSourceCode.setWorkingCopy(sassText);
     }
-    for (const header of headers) {
-      self.Bindings.cssWorkspaceBinding.updateLocations(header);
-    }
+    const updatePromises = headers.map(header => self.Bindings.cssWorkspaceBinding.updateLocations(header));
+    await Promise.all(updatePromises);
   }
 
   /**

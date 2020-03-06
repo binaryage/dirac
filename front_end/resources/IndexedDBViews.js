@@ -48,7 +48,7 @@ export class IDBDatabaseView extends UI.Widget.VBox {
     super();
 
     this._model = model;
-    const databaseName = database ? database.databaseId.name : ls`Loading\u2026`;
+    const databaseName = database ? database.databaseId.name : ls`Loading…`;
 
     this._reportView = new UI.ReportView.ReportView(databaseName);
     this._reportView.show(this.contentElement);
@@ -133,11 +133,14 @@ export class IDBDataView extends UI.View.SimpleView {
 
     this._deleteSelectedButton =
         new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Delete selected'), 'largeicon-delete');
-    this._deleteSelectedButton.addEventListener(
-        UI.Toolbar.ToolbarButton.Events.Click, () => this._deleteButtonClicked(null));
+    this._deleteSelectedButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._deleteButtonClicked(null);
+    });
 
     this._clearButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Clear object store'), 'largeicon-clear');
-    this._clearButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._clearButtonClicked, this);
+    this._clearButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._clearButtonClicked(event);
+    }, this);
 
     this._needsRefresh = new UI.Toolbar.ToolbarItem(
         UI.UIUtils.createIconLabel(Common.UIString.UIString('Data may be stale'), 'smallicon-warning'));

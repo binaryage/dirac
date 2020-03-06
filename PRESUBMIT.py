@@ -42,6 +42,18 @@ EXCLUSIVE_CHANGE_DIRECTORIES = [
 
 AUTOROLL_ACCOUNT = "devtools-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com"
 
+
+def _ExecuteSubProcess(input_api, output_api, script_path, args, results):
+    process = input_api.subprocess.Popen(
+        [input_api.python_executable, script_path] + args, stdout=input_api.subprocess.PIPE, stderr=input_api.subprocess.STDOUT)
+    out, _ = process.communicate()
+    if process.returncode != 0:
+        results.append(output_api.PresubmitError(out))
+    else:
+        results.append(output_api.PresubmitNotifyResult(out))
+    return results
+
+
 def _CheckChangesAreExclusiveToDirectory(input_api, output_api):
     if input_api.change.DISABLE_THIRD_PARTY_CHECK != None:
         return []
@@ -104,44 +116,12 @@ def _CheckFormat(input_api, output_api):
     def popen(args):
         return input_api.subprocess.Popen(args=args, stdout=input_api.subprocess.PIPE, stderr=input_api.subprocess.STDOUT)
 
-    affected_files = _getAffectedJSFiles(input_api)
-    if len(affected_files) == 0:
-        return results
-    original_sys_path = sys.path
-    try:
-        sys.path = sys.path + [input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts')]
-        import devtools_paths
-    finally:
-        sys.path = original_sys_path
-
-    ignore_files = []
-    eslint_ignore_path = input_api.os_path.join(input_api.PresubmitLocalPath(), '.eslintignore')
-    with open(eslint_ignore_path, 'r') as ignore_manifest:
-        for line in ignore_manifest:
-            if '*' not in line.strip():
-                ignore_files.append(input_api.os_path.normpath(line.strip()))
-    formattable_files = [
-        affected_file for affected_file in affected_files if all(ignore_file not in affected_file for ignore_file in ignore_files)
-    ]
-    if len(formattable_files) == 0:
-        return results
-
-    check_formatting_process = popen(['git', 'cl', 'format', '--js', '--dry-run'] + formattable_files)
-    check_formatting_process.communicate()
-    if check_formatting_process.returncode == 0:
-        return results
-
-    format_args = ['git', 'cl', 'format', '--js'] + formattable_files
+    format_args = ['git', 'cl', 'format', '--js']
     format_process = popen(format_args)
     format_out, _ = format_process.communicate()
     if format_process.returncode != 0:
         results.append(output_api.PresubmitError(format_out))
-        return results
 
-    results.append(output_api.PresubmitError('ERROR: Found formatting violations.\n'
-                                  'Ran clang-format on diff\n'
-                                  'Use git status to check the formatting changes'))
-    results.append(output_api.PresubmitError(format_out))
     return results
 
 
@@ -167,28 +147,15 @@ def _CheckDevtoolsLocalization(input_api, output_api, check_all_files=False):  #
 
         # Scan only added or modified files with specific extensions.
         args = ['--autofix', '--file-list', file_list.name]
-    process = input_api.subprocess.Popen(
-        [input_api.python_executable, script_path] + args, stdout=input_api.subprocess.PIPE, stderr=input_api.subprocess.STDOUT)
-    out, _ = process.communicate()
-    if process.returncode != 0:
-        results.append(output_api.PresubmitError(out))
-    else:
-        results.append(output_api.PresubmitNotifyResult(out))
-    return results
+
+    return _ExecuteSubProcess(input_api, output_api, script_path, args, results)
 
 
 def _CheckDevtoolsStyle(input_api, output_api):
     results = [output_api.PresubmitNotifyResult('Running Devtools Style Check:')]
     lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'test', 'run_lint_check.py')
-    process = input_api.subprocess.Popen([input_api.python_executable, lint_path],
-                                         stdout=input_api.subprocess.PIPE,
-                                         stderr=input_api.subprocess.STDOUT)
-    out, _ = process.communicate()
-    if process.returncode != 0:
-        results.append(output_api.PresubmitError(out))
-    else:
-        results.append(output_api.PresubmitNotifyResult(out))
-    return results
+
+    return _ExecuteSubProcess(input_api, output_api, lint_path, [], results)
 
 
 def _CheckOptimizeSVGHashes(input_api, output_api):
@@ -230,6 +197,38 @@ def _CheckCSSViolations(input_api, output_api):
             if '::shadow' in line:
                 results.append(output_api.PresubmitError(('%s:%d uses ::shadow selector') % (f.LocalPath(), line_number)))
     return results
+
+
+def _CheckGeneratedFiles(input_api, output_api):
+    v8_directory_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'v8')
+    blink_directory_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'third_party', 'blink')
+    protocol_location = input_api.os_path.join(blink_directory_path, 'public', 'devtools_protocol')
+    scripts_build_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'build')
+
+    generated_aria_path = input_api.os_path.join(scripts_build_path, 'generate_aria.py')
+    generated_supported_css_path = input_api.os_path.join(scripts_build_path, 'generate_supported_css.py')
+    generated_protocol_path = input_api.os_path.join(scripts_build_path, 'code_generator_frontend.py')
+    concatenate_protocols_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'third_party', 'inspector_protocol',
+                                                        'concatenate_protocols.py')
+
+    affected_files = _getAffectedFiles(input_api, [
+        v8_directory_path,
+        blink_directory_path,
+        input_api.os_path.join(input_api.PresubmitLocalPath(), 'third_party', 'pyjson5'),
+        generated_aria_path,
+        generated_supported_css_path,
+        concatenate_protocols_path,
+        generated_protocol_path,
+    ], [], ['.pdl', '.json5', '.py'])
+
+    if len(affected_files) == 0:
+        return []
+
+    results = [output_api.PresubmitNotifyResult('Running Generated Files Check:')]
+    generate_protocol_resources_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'deps',
+                                                              'generate_protocol_resources.py')
+
+    return _ExecuteSubProcess(input_api, output_api, generate_protocol_resources_path, [], results)
 
 
 def _CheckNoUncheckedFiles(input_api, output_api):
@@ -283,6 +282,7 @@ def _CommonChecks(input_api, output_api):
     results.extend(input_api.canned_checks.CheckChangeHasNoStrayWhitespace(input_api, output_api))
     results.extend(input_api.canned_checks.CheckGenderNeutral(input_api, output_api))
     results.extend(_CheckBuildGN(input_api, output_api))
+    results.extend(_CheckGeneratedFiles(input_api, output_api))
     results.extend(_CheckJSON(input_api, output_api))
     results.extend(_CheckLicenses(input_api, output_api))
     results.extend(_CheckDevtoolsStyle(input_api, output_api))

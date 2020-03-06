@@ -60,4 +60,79 @@ describe('StringUtilities', () => {
       assert.deepEqual(indexes, [4, 7, 10, 12]);
     });
   });
+
+  describe('isWhitespace', () => {
+    it('correctly recognizes different kinds of whitespace', () => {
+      assert.isTrue(StringUtilities.isWhitespace(''));
+      assert.isTrue(StringUtilities.isWhitespace('  '));
+      assert.isTrue(StringUtilities.isWhitespace('\t'));
+      assert.isTrue(StringUtilities.isWhitespace('\n'));
+
+      assert.isFalse(StringUtilities.isWhitespace('  foo '));
+    });
+  });
+
+  describe('trimURL', () => {
+    it('trims the protocol and an optional domain from URLs', () => {
+      const baseURLDomain = 'www.chromium.org';
+      const fixtures = new Map([
+        ['http://www.chromium.org/foo/bar', '/foo/bar'],
+        ['https://www.CHromium.ORG/BAZ/zoo', '/BAZ/zoo'],
+        ['https://example.com/foo[]', 'example.com/foo[]'],
+      ]);
+      for (const [url, expected] of fixtures) {
+        assert.equal(StringUtilities.trimURL(url, baseURLDomain), expected, url);
+      }
+    });
+  });
+
+  describe('collapseWhitespace', () => {
+    it('collapses consecutive whitespace chars down to a single one', () => {
+      const inputString = 'look                at this!';
+      const outputString = StringUtilities.collapseWhitespace(inputString);
+      assert.equal(outputString, 'look at this!');
+    });
+
+    it('matches globally and collapses all whitespace sections', () => {
+      const inputString = 'a     b           c';
+      const outputString = StringUtilities.collapseWhitespace(inputString);
+      assert.equal(outputString, 'a b c');
+    });
+  });
+
+  describe('reverse', () => {
+    it('reverses the string', () => {
+      const inputString = 'abc';
+      assert.equal(StringUtilities.reverse(inputString), 'cba');
+    });
+
+    it('does nothing to an empty string', () => {
+      assert.equal('', StringUtilities.reverse(''));
+    });
+  });
+
+  describe('replaceControlCharacters', () => {
+    it('replaces C0 and C1 control character sets with the replacement character', () => {
+      const charsThatShouldBeEscaped = [
+        '\0',   '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\b',   '\x0B', '\f',   '\x0E', '\x0F',
+        '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C',
+        '\x1D', '\x1E', '\x1F', '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87', '\x88', '\x89',
+        '\x8A', '\x8B', '\x8C', '\x8D', '\x8E', '\x8F', '\x90', '\x91', '\x92', '\x93', '\x94', '\x95', '\x96',
+        '\x97', '\x98', '\x99', '\x9A', '\x9B', '\x9C', '\x9D', '\x9E', '\x9F',
+      ];
+
+      const inputString = charsThatShouldBeEscaped.join('');
+      const outputString = StringUtilities.replaceControlCharacters(inputString);
+
+      const replacementCharacter = '\uFFFD';
+      const expectedString = charsThatShouldBeEscaped.fill(replacementCharacter).join('');
+      assert.equal(outputString, expectedString);
+    });
+
+    it('does not replace \n \t or \r', () => {
+      const inputString = '\nhello world\t\r';
+      const outputString = StringUtilities.replaceControlCharacters(inputString);
+      assert.equal(inputString, outputString);
+    });
+  });
 });

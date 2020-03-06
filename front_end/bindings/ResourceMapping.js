@@ -184,14 +184,19 @@ class ModelInfo {
       resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, this._resourceAdded, this),
       resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameWillNavigate, this._frameWillNavigate, this),
       resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameDetached, this._frameDetached, this),
-      cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, this._styleSheetChanged, this)
+      cssModel.addEventListener(
+          SDK.CSSModel.Events.StyleSheetChanged,
+          event => {
+            this._styleSheetChanged(event);
+          },
+          this)
     ];
   }
 
   /**
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
-  _styleSheetChanged(event) {
+  async _styleSheetChanged(event) {
     const header = this._cssModel.styleSheetHeaderForId(event.data.styleSheetId);
     if (!header || !header.isInline) {
       return;
@@ -200,7 +205,7 @@ class ModelInfo {
     if (!binding) {
       return;
     }
-    binding._styleSheetChanged(header, event.data.edit);
+    await binding._styleSheetChanged(header, event.data.edit);
   }
 
   /**
@@ -363,7 +368,7 @@ class Binding {
 
     const {content} = await this._uiSourceCode.requestContent();
     if (content !== null) {
-      this._innerStyleSheetChanged(content);
+      await this._innerStyleSheetChanged(content);
     }
     this._edits = [];
   }
@@ -371,7 +376,7 @@ class Binding {
   /**
    * @param {string} content
    */
-  _innerStyleSheetChanged(content) {
+  async _innerStyleSheetChanged(content) {
     const scripts = this._inlineScripts();
     const styles = this._inlineStyles();
     let text = new TextUtils.Text(content);
@@ -387,6 +392,7 @@ class Binding {
       const oldRange = edit.oldRange.relativeFrom(startLocation.startLine, startLocation.startColumn);
       const newRange = edit.newRange.relativeFrom(startLocation.startLine, startLocation.startColumn);
       text = new TextUtils.Text(text.replaceRange(oldRange, edit.newText));
+      const updatePromises = [];
       for (const script of scripts) {
         const scriptOffset =
             script[offsetSymbol] || TextUtils.TextRange.createFromLocation(script.lineOffset, script.columnOffset);
@@ -394,7 +400,7 @@ class Binding {
           continue;
         }
         script[offsetSymbol] = scriptOffset.rebaseAfterTextEdit(oldRange, newRange);
-        self.Bindings.debuggerWorkspaceBinding.updateLocations(script);
+        updatePromises.push(self.Bindings.debuggerWorkspaceBinding.updateLocations(script));
       }
       for (const style of styles) {
         const styleOffset =
@@ -403,8 +409,9 @@ class Binding {
           continue;
         }
         style[offsetSymbol] = styleOffset.rebaseAfterTextEdit(oldRange, newRange);
-        self.Bindings.cssWorkspaceBinding.updateLocations(style);
+        updatePromises.push(self.Bindings.cssWorkspaceBinding.updateLocations(style));
       }
+      await Promise.all(updatePromises);
     }
     this._uiSourceCode.addRevision(text.value());
   }

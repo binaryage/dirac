@@ -32,6 +32,7 @@ import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Persistence from '../persistence/persistence.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as Snippets from '../snippets/snippets.js';
 import * as UI from '../ui/ui.js';
@@ -80,9 +81,10 @@ export class NavigatorView extends UI.Widget.VBox {
         Persistence.Persistence.Events.BindingCreated, this._onBindingChanged, this);
     self.Persistence.persistence.addEventListener(
         Persistence.Persistence.Events.BindingRemoved, this._onBindingChanged, this);
-    self.SDK.targetManager.addEventListener(SDK.SDKModel.Events.NameChanged, this._targetNameChanged, this);
+    SDK.SDKModel.TargetManager.instance().addEventListener(
+        SDK.SDKModel.Events.NameChanged, this._targetNameChanged, this);
 
-    self.SDK.targetManager.observeTargets(this);
+    SDK.SDKModel.TargetManager.instance().observeTargets(this);
     this._resetWorkspace(self.Workspace.workspace);
     this._workspace.uiSourceCodes().forEach(this._addUISourceCode.bind(this));
     self.Bindings.networkProjectManager.addEventListener(
@@ -415,7 +417,7 @@ export class NavigatorView extends UI.Widget.VBox {
     const encoder = new Persistence.Persistence.PathEncoder();
     const reversedPaths = fileSystemProjects.map(project => {
       const fileSystem = /** @type {!Persistence.FileSystemWorkspaceBinding.FileSystem} */ (project);
-      return encoder.encode(fileSystem.fileSystemPath()).reverse();
+      return Platform.StringUtilities.reverse(encoder.encode(fileSystem.fileSystemPath()));
     });
     const reversedIndex = new Common.Trie.Trie();
     for (const reversedPath of reversedPaths) {
@@ -428,7 +430,9 @@ export class NavigatorView extends UI.Widget.VBox {
       reversedIndex.remove(reversedPath);
       const commonPrefix = reversedIndex.longestPrefix(reversedPath, false /* fullWordOnly */);
       reversedIndex.add(reversedPath);
-      const path = encoder.decode(reversedPath.substring(0, commonPrefix.length + 1).reverse());
+      const prefixPath = reversedPath.substring(0, commonPrefix.length + 1);
+      const path = encoder.decode(Platform.StringUtilities.reverse(prefixPath));
+
       const fileSystemNode = this._rootNode.child(project.id());
       if (fileSystemNode) {
         fileSystemNode.setTitle(path);
@@ -594,7 +598,7 @@ export class NavigatorView extends UI.Widget.VBox {
    * @return {!NavigatorTreeNode}
    */
   _targetNode(project, target) {
-    if (target === self.SDK.targetManager.mainTarget()) {
+    if (target === SDK.SDKModel.TargetManager.instance().mainTarget()) {
       return this._rootNode;
     }
 
@@ -795,9 +799,9 @@ export class NavigatorView extends UI.Widget.VBox {
     const project = uiSourceCode.project();
     if (project.type() === Workspace.Workspace.projectTypes.FileSystem) {
       contextMenu.editSection().appendItem(
-          Common.UIString.UIString('Rename\u2026'), this._handleContextMenuRename.bind(this, node));
+          Common.UIString.UIString('Rename…'), this._handleContextMenuRename.bind(this, node));
       contextMenu.editSection().appendItem(
-          Common.UIString.UIString('Make a copy\u2026'),
+          Common.UIString.UIString('Make a copy…'),
           this._handleContextMenuCreate.bind(this, project, '', uiSourceCode));
       contextMenu.editSection().appendItem(
           Common.UIString.UIString('Delete'), this._handleContextMenuDelete.bind(this, uiSourceCode));
@@ -1123,6 +1127,7 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
         'navigator-' + uiSourceCode.contentType().name() + '-tree-item', 'navigator-file-tree-item');
     this.tooltip = uiSourceCode.url();
     UI.ARIAUtils.setAccessibleName(this.listItemElement, `${uiSourceCode.name()}, ${this._nodeType}`);
+    Common.EventTarget.fireEvent('source-tree-file-added', uiSourceCode.fullDisplayName());
     this._navigatorView = navigatorView;
     this._uiSourceCode = uiSourceCode;
     this.updateIcon();

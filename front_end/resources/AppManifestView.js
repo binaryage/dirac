@@ -54,7 +54,7 @@ export class AppManifestView extends UI.Widget.VBox {
     this._displayField = this._presentationSection.appendField(Common.UIString.UIString('Display'));
 
     this._throttler = new Common.Throttler.Throttler(1000);
-    self.SDK.targetManager.observeTargets(this);
+    SDK.SDKModel.TargetManager.instance().observeTargets(this);
   }
 
   /**
@@ -76,9 +76,15 @@ export class AppManifestView extends UI.Widget.VBox {
 
     this._registeredListeners = [
       this._resourceTreeModel.addEventListener(
-          SDK.ResourceTreeModel.Events.DOMContentLoaded, this._updateManifest.bind(this, true)),
+          SDK.ResourceTreeModel.Events.DOMContentLoaded,
+          event => {
+            this._updateManifest(true);
+          }),
       this._serviceWorkerManager.addEventListener(
-          SDK.ServiceWorkerManager.Events.RegistrationUpdated, this._updateManifest.bind(this, false))
+          SDK.ServiceWorkerManager.Events.RegistrationUpdated,
+          event => {
+            this._updateManifest(false);
+          })
     ];
   }
 
@@ -210,7 +216,7 @@ export class AppManifestView extends UI.Widget.VBox {
         continue;
       }
       const {wrapper, image} = result;
-      const sizes = icon['sizes'] ? icon['sizes'].replace('x', '\xD7') + 'px' : '';
+      const sizes = icon['sizes'] ? icon['sizes'].replace('x', '×') + 'px' : '';
       const title = sizes + '\n' + (icon['type'] || '');
       const field = this._iconsSection.appendFlexedField(title);
       if (!icon.sizes) {
@@ -220,8 +226,8 @@ export class AppManifestView extends UI.Widget.VBox {
       } else {
         const [width, height] = icon.sizes.split('x').map(x => parseInt(x, 10));
         if (image.naturalWidth !== width && image.naturalHeight !== height) {
-          imageErrors.push(ls`Actual size (${image.naturalWidth}\xD7${image.naturalHeight})px of icon ${
-              iconUrl} does not match specified size (${width}\xD7${height}px)`);
+          imageErrors.push(ls`Actual size (${image.naturalWidth}×${image.naturalHeight})px of icon ${
+              iconUrl} does not match specified size (${width}×${height}px)`);
         } else if (image.naturalWidth !== width) {
           imageErrors.push(
               ls

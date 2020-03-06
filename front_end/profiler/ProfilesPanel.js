@@ -109,7 +109,8 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
     this._createFileSelectorElement();
     this.element.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), false);
 
-    self.SDK.targetManager.addEventListener(SDK.SDKModel.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
+    SDK.SDKModel.TargetManager.instance().addEventListener(
+        SDK.SDKModel.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
     self.UI.context.addFlavorChangeListener(
         SDK.CPUProfilerModel.CPUProfilerModel, this._updateProfileTypeSpecificUI, this);
     self.UI.context.addFlavorChangeListener(
@@ -166,14 +167,14 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
     const profileType = this._findProfileTypeByExtension(file.name);
     if (!profileType) {
       const extensions = new Set(this._profileTypes.map(type => type.fileExtension()).filter(ext => ext));
-      self.Common.console.error(Common.UIString.UIString(
-          `Can't load file. Supported file extensions: '%s'.`, Array.from(extensions).join(`', '`)));
+      Common.Console.Console.instance().error(Common.UIString.UIString(
+          'Can’t load file. Supported file extensions: `%s`.', Array.from(extensions).join("', '")));
       return;
     }
 
     if (!!profileType.profileBeingRecorded()) {
-      self.Common.console.error(
-          Common.UIString.UIString(`Can't load profile while another profile is being recorded.`));
+      Common.Console.Console.instance().error(
+          Common.UIString.UIString('Can’t load profile while another profile is being recorded.'));
       return;
     }
 
@@ -219,7 +220,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
     const hasSelectedTarget =
         !!(self.UI.context.flavor(SDK.CPUProfilerModel.CPUProfilerModel) ||
            self.UI.context.flavor(SDK.HeapProfilerModel.HeapProfilerModel));
-    const enable = toggled || (!self.SDK.targetManager.allTargetsSuspended() && hasSelectedTarget);
+    const enable = toggled || (!SDK.SDKModel.TargetManager.instance().allTargetsSuspended() && hasSelectedTarget);
     this._toggleRecordAction.setEnabled(enable);
     this._toggleRecordAction.setToggled(toggled);
     if (enable) {
@@ -330,7 +331,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     if (this.panelSidebarElement().isSelfOrAncestor(event.srcElement)) {
       contextMenu.defaultSection().appendItem(
-          Common.UIString.UIString('Load\u2026'), this._fileSelectorElement.click.bind(this._fileSelectorElement));
+          Common.UIString.UIString('Load…'), this._fileSelectorElement.click.bind(this._fileSelectorElement));
     }
     contextMenu.show();
   }

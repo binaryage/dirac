@@ -31,6 +31,7 @@
 import * as Common from '../common/common.js';
 import * as DataGrid from '../data_grid/data_grid.js';
 import * as HeapSnapshotModel from '../heap_snapshot_model/heap_snapshot_model.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -659,7 +660,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
       return fullName;
     }
     const fullURL = fullName.substring(startPos + 1, endPos).trimLeft();
-    let url = fullURL.trimURL();
+    let url = Platform.StringUtilities.trimURL(fullURL);
     if (url.length > 40) {
       url = url.trimMiddle(40);
     }
@@ -692,7 +693,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
         const remoteObject = await this.tryQueryObjectContent(
             /** @type {!SDK.HeapProfilerModel.HeapProfilerModel} */ (heapProfilerModel), '');
         if (!remoteObject) {
-          self.Common.console.error(ls`Preview is not available`);
+          Common.Console.Console.instance().error(ls`Preview is not available`);
         } else {
           await self.SDK.consoleModel.saveToTempVariable(
               self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext), remoteObject);

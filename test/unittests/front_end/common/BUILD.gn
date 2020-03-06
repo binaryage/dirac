@@ -4,7 +4,17 @@ ts_library("common") {
   deps = [
     ":character_id_map",
     ":color",
+    ":console",
+    ":object",
+    ":parsed_url",
+    ":progress",
+    ":resource_type",
+    ":segmented_range",
+    ":string_output_stream",
+    ":text_dictionary",
+    ":throttler",
     ":trie",
+    ":ui_string",
   ]
 }
 
@@ -20,8 +30,68 @@ ts_library("color") {
   deps = [ "../../../../front_end/common" ]
 }
 
+ts_library("console") {
+  sources = [ "Console_test.ts" ]
+
+  deps = [ "../../../../front_end/common" ]
+}
+
+ts_library("object") {
+  sources = [ "Object_test.ts" ]
+
+  deps = [ "../../../../front_end/common" ]
+}
+
+ts_library("parsed_url") {
+  sources = [ "ParsedURL_test.ts" ]
+
+  deps = [ "../../../../front_end/common" ]
+}
+
+ts_library("progress") {
+  sources = [ "Progress_test.ts" ]
+
+  deps = [ "../../../../front_end/common" ]
+}
+
+ts_library("resource_type") {
+  sources = [ "ResourceType_test.ts" ]
+
+  deps = [ "../../../../front_end/common" ]
+}
+
+ts_library("segmented_range") {
+  sources = [ "SegmentedRange_test.ts" ]
+
+  deps = [ "../../../../front_end/common" ]
+}
+
+ts_library("string_output_stream") {
+  sources = [ "StringOutputStream_test.ts" ]
+
+  deps = [ "../../../../front_end/common" ]
+}
+
+ts_library("text_dictionary") {
+  sources = [ "TextDictionary_test.ts" ]
+
+  deps = [ "../../../../front_end/common" ]
+}
+
+ts_library("throttler") {
+  sources = [ "Throttler_test.ts" ]
+
+  deps = [ "../../../../front_end/common" ]
+}
+
 ts_library("trie") {
   sources = [ "Trie_test.ts" ]
+
+  deps = [ "../../../../front_end/common" ]
+}
+
+ts_library("ui_string") {
+  sources = [ "UIString_test.ts" ]
 
   deps = [ "../../../../front_end/common" ]
 }

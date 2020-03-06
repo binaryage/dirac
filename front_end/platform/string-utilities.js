@@ -304,3 +304,53 @@ export const findLineEndingIndexes = inputString => {
   endings.push(inputString.length);
   return endings;
 };
+
+/**
+ * @param {string} inputString
+ * @return {boolean}
+ */
+export const isWhitespace = inputString => {
+  return /^\s*$/.test(inputString);
+};
+
+/**
+ * @param {string} url
+ * @param {?string=} baseURLDomain
+ * @return {string}
+ */
+export const trimURL = (url, baseURLDomain) => {
+  let result = url.replace(/^(https|http|file):\/\//i, '');
+  if (baseURLDomain) {
+    if (result.toLowerCase().startsWith(baseURLDomain.toLowerCase())) {
+      result = result.substr(baseURLDomain.length);
+    }
+  }
+  return result;
+};
+
+/**
+ * @param {string} inputString
+ * @return {string}
+ */
+export const collapseWhitespace = inputString => {
+  return inputString.replace(/[\s\xA0]+/g, ' ');
+};
+
+/**
+ *
+ * @param {string} inputString
+ * @return {string}
+ */
+export const reverse = inputString => {
+  return inputString.split('').reverse().join('');
+};
+
+/**
+ * @param {string} inputString
+ * @return {string}
+ */
+export const replaceControlCharacters = inputString => {
+  // Replace C0 and C1 control character sets with replacement character.
+  // Do not replace '\t', \n' and '\r'.
+  return inputString.replace(/[\0-\x08\x0B\f\x0E-\x1F\x80-\x9F]/g, '\uFFFD');
+};
