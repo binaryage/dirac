@@ -11,9 +11,9 @@
    ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "0.7.559"]
-   ['org.clojure/tools.logging "0.6.0"]
-   ['org.clojure/tools.cli "0.4.2"]
+  [['org.clojure/core.async "1.0.567"]
+   ['org.clojure/tools.logging "1.0.0"]
+   ['org.clojure/tools.cli "1.0.194"]
    ['nrepl/nrepl "0.6.0"]
    ['binaryage/env-config "0.2.2"]
    ['http-kit "2.3.0"]
@@ -32,7 +32,7 @@
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.7.0" :scope "test"]
-   ['binaryage/chromex "0.8.6" :scope "test"]
+   ['binaryage/chromex "0.9.0" :scope "test"]
    ['environ "1.1.0" :scope "test"]
    ['cljs-http "0.1.46" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
@@ -40,7 +40,7 @@
    ['rum "0.11.4" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-   ['org.clojure/tools.namespace "0.3.1" :scope "test"]
+   ['org.clojure/tools.namespace "1.0.0" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
    ['fipp "0.6.22" :scope "test"]
    ['nubank/matcher-combinators "1.3.1" :scope "test"]
