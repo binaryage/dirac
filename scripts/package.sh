@@ -9,16 +9,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$ROOT"
 
-if [[ ! -f "$CSS_PROPERTIES_OUTPUT_FILE" ]]; then
-  echo "'$CSS_PROPERTIES_OUTPUT_FILE' does not exist, run './scripts/regenerate.sh' first"
-  exit 10
-fi
-
-if [[ ! -f "$INSPECTOR_BACKEND_COMMANDS_OUTPUT_FILE" ]]; then
-  echo "'$INSPECTOR_BACKEND_COMMANDS_OUTPUT_FILE' does not exist, run './scripts/regenerate.sh' first"
-  exit 11
-fi
-
 if [[ ! -d "$RELEASE_BUILD" ]]; then
   echo "'$RELEASE_BUILD' does not exist, run 'lein release' first"
   exit 1
