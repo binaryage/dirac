@@ -170,10 +170,10 @@ export class NetworkPanel extends UI.Panel.Panel {
     this._toggleRecordFilmStrip();
     this._updateUI();
 
-    self.SDK.targetManager.addModelListener(
+    SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.WillReloadPage, this._willReloadPage,
         this);
-    self.SDK.targetManager.addModelListener(
+    SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._load, this);
     this._networkLogView.addEventListener(Events.RequestSelected, this._onRequestSelected, this);
     this._networkLogView.addEventListener(Events.RequestActivated, this._onRequestActivated, this);
@@ -218,6 +218,13 @@ export class NetworkPanel extends UI.Panel.Panel {
     this._networkLogView.setWindow(startTime, endTime);
   }
 
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
+  async _searchToggleClick(event) {
+    await self.UI.actionRegistry.action('network.search').execute();
+  }
+
   _setupToolbarButtons(splitWidget) {
     const searchToggle = new UI.Toolbar.ToolbarToggle(ls`Search`, 'largeicon-search');
     function updateSidebarToggle() {
@@ -236,9 +243,9 @@ export class NetworkPanel extends UI.Panel.Panel {
     this._panelToolbar.appendToolbarItem(this._filterBar.filterButton());
     updateSidebarToggle();
     splitWidget.addEventListener(UI.SplitWidget.Events.ShowModeChanged, updateSidebarToggle);
-    searchToggle.addEventListener(
-        UI.Toolbar.ToolbarButton.Events.Click,
-        async () => await self.UI.actionRegistry.action('network.search').execute());
+    searchToggle.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._searchToggleClick(event);
+    });
     this._panelToolbar.appendToolbarItem(searchToggle);
     this._panelToolbar.appendSeparator();
 
@@ -279,8 +286,9 @@ export class NetworkPanel extends UI.Panel.Panel {
         UI.Toolbar.ToolbarButton.Events.Click, () => this._fileSelectorElement.click(), this);
     this._panelToolbar.appendToolbarItem(importHarButton);
     const exportHarButton = new UI.Toolbar.ToolbarButton(ls`Export HAR...`, 'largeicon-download');
-    exportHarButton.addEventListener(
-        UI.Toolbar.ToolbarButton.Events.Click, () => this._networkLogView.exportAll(), this);
+    exportHarButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._networkLogView.exportAll();
+    }, this);
     this._panelToolbar.appendToolbarItem(exportHarButton);
   }
 
@@ -759,7 +767,7 @@ export class FilmStripRecorder {
   startRecording() {
     this._filmStripView.reset();
     this._filmStripView.setStatusText(Common.UIString.UIString('Recording frames...'));
-    const tracingManagers = self.SDK.targetManager.models(SDK.TracingManager.TracingManager);
+    const tracingManagers = SDK.SDKModel.TargetManager.instance().models(SDK.TracingManager.TracingManager);
     if (this._tracingManager || !tracingManagers.length) {
       return;
     }

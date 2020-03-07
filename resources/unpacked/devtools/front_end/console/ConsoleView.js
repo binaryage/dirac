@@ -429,8 +429,8 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   _registerWithMessageSink() {
-    self.Common.console.messages().forEach(this._addSinkMessage, this);
-    self.Common.console.addEventListener(Common.Console.Events.MessageAdded, messageAdded, this);
+    Common.Console.Console.instance().messages().forEach(this._addSinkMessage, this);
+    Common.Console.Console.instance().addEventListener(Common.Console.Events.MessageAdded, messageAdded, this);
 
     /**
      * @param {!Common.EventTarget.EventTargetEvent} event
@@ -1380,7 +1380,7 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   async _saveConsole() {
-    const url = self.SDK.targetManager.mainTarget().inspectedURL();
+    const url = SDK.SDKModel.TargetManager.instance().mainTarget().inspectedURL();
     const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
     const filename = Platform.StringUtilities.sprintf('%s-%d.log', parsedURL ? parsedURL.host : 'console', Date.now());
     const stream = new Bindings.FileUtils.FileOutputStream();
@@ -2136,7 +2136,7 @@ export class ConsoleCommand extends ConsoleViewMessage {
       this._contentElement.message = this;
 
       this._formattedCommand = createElementWithClass('span', 'source-code');
-      this._formattedCommand.textContent = this.text.replaceControlCharacters();
+      this._formattedCommand.textContent = Platform.StringUtilities.replaceControlCharacters(this.text);
       this._contentElement.appendChild(this._formattedCommand);
 
       if (this._formattedCommand.textContent.length < MaxLengthToIgnoreHighlighter) {
@@ -2285,7 +2285,7 @@ export class ActionDelegate {
     switch (actionId) {
       case 'console.show':
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
-        self.Common.console.show();
+        Common.Console.Console.instance().show();
         ConsoleView.instance()._focusPrompt();
         return true;
       case 'console.clear':

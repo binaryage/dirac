@@ -51,7 +51,9 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.FileSystemRemoved, this._onFileSystemRemoved, this);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
-        Host.InspectorFrontendHostAPI.Events.FileSystemAdded, this._onFileSystemAdded, this);
+        Host.InspectorFrontendHostAPI.Events.FileSystemAdded, event => {
+          this._onFileSystemAdded(event);
+        }, this);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.FileSystemFilesChangedAddedRemoved, this._onFileSystemFilesChanged, this);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
@@ -171,7 +173,9 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
     const errorMessage = /** @type {string} */ (event.data['errorMessage']);
     const fileSystem = /** @type {?FileSystem} */ (event.data['fileSystem']);
     if (errorMessage) {
-      self.Common.console.error(Common.UIString.UIString('Unable to add filesystem: %s', errorMessage));
+      if (errorMessage !== '<selection cancelled>') {
+        Common.Console.Console.instance().error(Common.UIString.UIString('Unable to add filesystem: %s', errorMessage));
+      }
       if (!this._fileSystemRequestResolve) {
         return;
       }

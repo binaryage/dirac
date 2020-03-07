@@ -49,29 +49,6 @@ self.mod = function(m, n) {
 };
 
 /**
- * @return {string}
- */
-String.prototype.reverse = function() {
-  return this.split('').reverse().join('');
-};
-
-/**
- * @return {string}
- */
-String.prototype.replaceControlCharacters = function() {
-  // Replace C0 and C1 control character sets with printable character.
-  // Do not replace '\t', \n' and '\r'.
-  return this.replace(/[\0-\x08\x0B\f\x0E-\x1F\x80-\x9F]/g, '\uFFFD');
-};
-
-/**
- * @return {boolean}
- */
-String.prototype.isWhitespace = function() {
-  return /^\s*$/.test(this);
-};
-
-/**
  * @param {string} chars
  * @return {string}
  */
@@ -111,13 +88,6 @@ String.filterRegex = function(query) {
 };
 
 /**
- * @return {string}
- */
-String.prototype.collapseWhitespace = function() {
-  return this.replace(/[\s\xA0]+/g, ' ');
-};
-
-/**
  * @param {number} maxLength
  * @return {string}
  */
@@ -134,7 +104,7 @@ String.prototype.trimMiddle = function(maxLength) {
   if (leftHalf > 0 && this.codePointAt(leftHalf - 1) >= 0x10000) {
     --leftHalf;
   }
-  return this.substr(0, leftHalf) + '\u2026' + this.substr(this.length - rightHalf, rightHalf);
+  return this.substr(0, leftHalf) + '…' + this.substr(this.length - rightHalf, rightHalf);
 };
 
 /**
@@ -145,21 +115,7 @@ String.prototype.trimEndWithMaxLength = function(maxLength) {
   if (this.length <= maxLength) {
     return String(this);
   }
-  return this.substr(0, maxLength - 1) + '\u2026';
-};
-
-/**
- * @param {?string=} baseURLDomain
- * @return {string}
- */
-String.prototype.trimURL = function(baseURLDomain) {
-  let result = this.replace(/^(https|http|file):\/\//i, '');
-  if (baseURLDomain) {
-    if (result.toLowerCase().startsWith(baseURLDomain.toLowerCase())) {
-      result = result.substr(baseURLDomain.length);
-    }
-  }
-  return result;
+  return this.substr(0, maxLength - 1) + '…';
 };
 
 /**
@@ -217,16 +173,6 @@ String.hashCode = function(string) {
   }
   s = (s + zi * (p - 1)) % p;
   return Math.abs(s | 0);
-};
-
-/**
- * @param {string} string
- * @param {number} index
- * @return {boolean}
- */
-String.isDigitAt = function(string, index) {
-  const c = string.charCodeAt(index);
-  return (48 <= c && c <= 57);
 };
 
 /**
@@ -289,33 +235,6 @@ String.caseInsensetiveComparator = function(a, b) {
     return 0;
   }
   return a > b ? 1 : -1;
-};
-
-/**
- * @param {number} num
- * @param {number} min
- * @param {number} max
- * @return {number}
- */
-Number.constrain = function(num, min, max) {
-  if (num < min) {
-    num = min;
-  } else if (num > max) {
-    num = max;
-  }
-  return num;
-};
-
-/**
- * @param {number} a
- * @param {number} b
- * @return {number}
- */
-Number.gcd = function(a, b) {
-  if (b === 0) {
-    return a;
-  }
-  return Number.gcd(b, a % b);
 };
 
 /**

@@ -4,5 +4,14 @@ interface StringConstructor {
 }
 
 interface Array<T> {
-  peekLast(): T|undefined
+  peekLast(): T | undefined;
+  lowerBound(object: T, comparator: {(a:T, b:T):number}): number;
+}
+
+// Type alias for the Closure-supported ITemplateArray which is equivalent
+// to TemplateStringsArray in TypeScript land
+type ITemplateArray = TemplateStringsArray
+
+interface String {
+  trimEndWithMaxLength(maxLength: number): string;
 }

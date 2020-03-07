@@ -19,7 +19,7 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
     this.registerRequiredCSS('css_overview/cssOverview.css');
     this.element.classList.add('css-overview-panel');
 
-    const [model] = self.SDK.targetManager.models(CSSOverviewModel);
+    const [model] = SDK.SDKModel.TargetManager.instance().models(CSSOverviewModel);
     this._model = model;
 
     this._controller = new OverviewController();
@@ -27,7 +27,9 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
     this._processingView = new CSSOverviewProcessingView(this._controller);
     this._completedView = new CSSOverviewCompletedView(this._controller, model.target());
 
-    this._controller.addEventListener(Events.RequestOverviewStart, this._startOverview, this);
+    this._controller.addEventListener(Events.RequestOverviewStart, event => {
+      this._startOverview();
+    }, this);
     this._controller.addEventListener(Events.RequestOverviewCancel, this._cancelOverview, this);
     this._controller.addEventListener(Events.OverviewCompleted, this._overviewCompleted, this);
     this._controller.addEventListener(Events.Reset, this._reset, this);

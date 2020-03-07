@@ -37,7 +37,7 @@ import {LogModel} from './LogModel.js';
 import {RemoteObject} from './RemoteObject.js';
 import {Events as ResourceTreeModelEvents, ResourceTreeModel} from './ResourceTreeModel.js';
 import {Events as RuntimeModelEvents, ExecutionContext, RuntimeModel} from './RuntimeModel.js';  // eslint-disable-line no-unused-vars
-import {Observer, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import {Observer, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
 const _events = Symbol('SDK.ConsoleModel.events');
 
@@ -57,7 +57,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
     this._violations = 0;
     this._pageLoadSequenceNumber = 0;
 
-    self.SDK.targetManager.observeTargets(this);
+    TargetManager.instance().observeTargets(this);
   }
 
   /**
@@ -152,7 +152,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
     if (result.error) {
       return;
     }
-    await self.Common.console.showPromise();
+    await Common.Console.Console.instance().showPromise();
     this.dispatchEventToListeners(
         Events.CommandEvaluated,
         {result: result.object, commandMessage: originatingMessage, exceptionDetails: result.exceptionDetails});
@@ -286,7 +286,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
    */
   _mainFrameNavigated(event) {
     if (self.Common.settings.moduleSetting('preserveConsoleLog').get()) {
-      self.Common.console.log(Common.UIString.UIString('Navigated to %s', event.data.url));
+      Common.Console.Console.instance().log(Common.UIString.UIString('Navigated to %s', event.data.url));
     }
   }
 
@@ -357,10 +357,10 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   requestClearMessages() {
-    for (const logModel of self.SDK.targetManager.models(LogModel)) {
+    for (const logModel of TargetManager.instance().models(LogModel)) {
       logModel.requestClear();
     }
-    for (const runtimeModel of self.SDK.targetManager.models(RuntimeModel)) {
+    for (const runtimeModel of TargetManager.instance().models(RuntimeModel)) {
       runtimeModel.discardConsoleEntries();
     }
     this._clear();
@@ -452,7 +452,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
       if (result) {
         message += ' ' + result.description;
       }
-      self.Common.console.error(message);
+      Common.Console.Console.instance().error(message);
     }
   }
 }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 import * as UI from '../ui/ui.js';
 
 import {PerformanceModel} from './PerformanceModel.js';  // eslint-disable-line no-unused-vars
@@ -97,7 +98,7 @@ export class TimelineHistoryManager {
     }
     const index = this._recordings.indexOf(model);
     if (index < 0) {
-      console.assert(false, `selected recording not found`);
+      console.assert(false, 'selected recording not found');
       return null;
     }
     this._setCurrentModel(model);
@@ -120,7 +121,7 @@ export class TimelineHistoryManager {
     if (index < 0) {
       return null;
     }
-    const newIndex = Number.constrain(index + direction, 0, this._recordings.length - 1);
+    const newIndex = Platform.NumberUtilities.clamp(index + direction, 0, this._recordings.length - 1);
     const model = this._recordings[newIndex];
     this._setCurrentModel(model);
     return model;

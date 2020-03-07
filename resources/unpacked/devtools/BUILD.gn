@@ -5,6 +5,7 @@
 import("//third_party/blink/public/public_features.gni")
 
 all_devtools_files = [
+  "front_end/shell.js",
   "front_end/accessibility_test_runner/AccessibilityPaneTestRunner.js",
   "front_end/accessibility_test_runner/module.json",
   "front_end/accessibility/accessibilityNode.css",
@@ -700,6 +701,9 @@ all_devtools_modules = [
   "front_end/formatter/FormatterWorkerPool.js",
   "front_end/formatter/ScriptFormatter.js",
   "front_end/formatter/SourceFormatter.js",
+  "front_end/generated/ARIAProperties.js",
+  "front_end/generated/InspectorBackendCommands.js",
+  "front_end/generated/SupportedCSSProperties.js",
   "front_end/har_importer/har_importer.js",
   "front_end/har_importer/har_importer-legacy.js",
   "front_end/har_importer/HARFormat.js",
@@ -855,6 +859,7 @@ all_devtools_modules = [
   "front_end/platform/platform.js",
   "front_end/platform/utilities.js",
   "front_end/platform/string-utilities.js",
+  "front_end/platform/number-utilities.js",
   "front_end/profiler/profiler.js",
   "front_end/profiler/profiler-legacy.js",
   "front_end/profiler/TopDownProfileDataGrid.js",
@@ -884,6 +889,7 @@ all_devtools_modules = [
   "front_end/issues/issues.js",
   "front_end/issues/issues-legacy.js",
   "front_end/issues/IssuesPane.js",
+  "front_end/issues/IssueRevealer.js",
   "front_end/protocol/InspectorBackend.js",
   "front_end/protocol/NodeURL.js",
   "front_end/protocol/protocol.js",
@@ -915,7 +921,6 @@ all_devtools_modules = [
   "front_end/resources/ApplicationCacheModel.js",
   "front_end/resources/ApplicationCacheItemsView.js",
   "front_end/resources/AppManifestView.js",
-  "front_end/root.js",
   "front_end/root.js",
   "front_end/Runtime.js",
   "front_end/screencast/InputModel.js",
@@ -1368,14 +1373,6 @@ devtools_image_files = [
 
 resources_out_dir = "$root_out_dir/resources/inspector"
 
-generated_scripts = [
-  "$resources_out_dir/InspectorBackendCommands.js",
-  "$resources_out_dir/SupportedCSSProperties.js",
-]
-
-generated_aria_properties =
-    [ "$resources_out_dir/accessibility/ARIAProperties.js" ]
-
 application_templates = [
   "front_end/devtools_app.html",
   "front_end/inspector.html",
@@ -1641,6 +1638,9 @@ copied_devtools_modules = [
   "$resources_out_dir/formatter_worker/JavaScriptFormatter.js",
   "$resources_out_dir/formatter_worker/JavaScriptOutline.js",
   "$resources_out_dir/formatter_worker/RelaxedJSONParser.js",
+  "$resources_out_dir/generated/ARIAProperties.js",
+  "$resources_out_dir/generated/InspectorBackendCommands.js",
+  "$resources_out_dir/generated/SupportedCSSProperties.js",
   "$resources_out_dir/har_importer/har_importer.js",
   "$resources_out_dir/har_importer/har_importer-legacy.js",
   "$resources_out_dir/har_importer/HARFormat.js",
@@ -1796,6 +1796,7 @@ copied_devtools_modules = [
   "$resources_out_dir/platform/platform.js",
   "$resources_out_dir/platform/utilities.js",
   "$resources_out_dir/platform/string-utilities.js",
+  "$resources_out_dir/platform/number-utilities.js",
   "$resources_out_dir/profiler/profiler.js",
   "$resources_out_dir/profiler/profiler-legacy.js",
   "$resources_out_dir/profiler/TopDownProfileDataGrid.js",
@@ -1822,6 +1823,7 @@ copied_devtools_modules = [
   "$resources_out_dir/issues/issues.js",
   "$resources_out_dir/issues/issues-legacy.js",
   "$resources_out_dir/issues/IssuesPane.js",
+  "$resources_out_dir/issues/IssueRevealer.js",
   "$resources_out_dir/protocol_monitor/protocol_monitor.js",
   "$resources_out_dir/protocol_monitor/protocol_monitor-legacy.js",
   "$resources_out_dir/protocol_monitor/ProtocolMonitor.js",
@@ -2277,7 +2279,6 @@ devtools_typescript_deps = [
 ]
 
 devtools_frontend_resources_deps = devtools_typescript_deps + [
-                                     ":aria_properties",
                                      ":build_release_devtools",
                                      ":copy_devtools_modules",
                                      ":copy_embedder_scripts",
@@ -2287,16 +2288,10 @@ devtools_frontend_resources_deps = devtools_typescript_deps + [
                                      ":copy_lighthouse_locale_files",
                                      ":copy_wasm_deps",
                                      ":devtools_extension_api",
-                                     ":frontend_protocol_sources",
-                                     ":supported_css_properties",
                                    ]
 
 if (debug_devtools) {
-  devtools_frontend_resources_deps += [
-    ":build_debug_devtools",
-    ":copy_aria_properties",
-    ":copy_generated_scripts",
-  ]
+  devtools_frontend_resources_deps += [ ":build_debug_devtools" ]
 }
 
 # It is unclear why, but the Android Ninja configuration starts warning about
@@ -2347,7 +2342,9 @@ copy("copy_emulated_devices_images") {
 
 copy("copy_lighthouse_locale_files") {
   sources = lighthouse_locale_files
-  outputs = [ "$resources_out_dir/third_party/lighthouse/locales/{{source_file_part}}" ]
+  outputs = [
+    "$resources_out_dir/third_party/lighthouse/locales/{{source_file_part}}",
+  ]
 }
 
 copy("copy_wasm_deps") {
@@ -2363,8 +2360,8 @@ action("generate_devtools_grd") {
 
   grd_files =
       copied_devtools_modules + generated_applications +
-      generated_aria_properties + generated_non_autostart_non_remote_modules +
-      devtools_embedder_scripts + generated_scripts + generated_worker_bundles +
+      generated_non_autostart_non_remote_modules + devtools_embedder_scripts +
+      generated_worker_bundles +
       [
         "$resources_out_dir/devtools_extension_api.js",
         "$resources_out_dir/sdk/wasm_source_map/pkg/wasm_source_map_bg.wasm",
@@ -2404,50 +2401,8 @@ action("devtools_extension_api") {
          rebase_path(devtools_extension_api_files, root_build_dir)
 }
 
-action("supported_css_properties") {
-  script = "scripts/build/generate_supported_css.py"
-
-  inputs = [ "//third_party/blink/renderer/core/css/css_properties.json5" ]
-
-  outputs = [ "$resources_out_dir/SupportedCSSProperties.js" ]
-
-  args =
-      rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
-}
-
-action("aria_properties") {
-  script = "scripts/build/generate_aria.py"
-
-  inputs = [ "//third_party/blink/renderer/core/html/aria_properties.json5" ]
-
-  outputs = [ "$resources_out_dir/accessibility/ARIAProperties.js" ]
-
-  args =
-      rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
-}
-
-action("frontend_protocol_sources") {
-  script = "scripts/build/code_generator_frontend.py"
-  deps = [ "//third_party/blink/public/devtools_protocol:protocol_version" ]
-  inputs = [
-    "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
-  ]
-  outputs = [ "$resources_out_dir/InspectorBackendCommands.js" ]
-
-  args = rebase_path(inputs, root_build_dir) + [
-           "--output_js_dir",
-           rebase_path(resources_out_dir, root_build_dir),
-         ]
-}
-
 action("build_release_devtools") {
   script = "scripts/build/build_release_applications.py"
-
-  deps = [
-    ":aria_properties",
-    ":frontend_protocol_sources",
-    ":supported_css_properties",
-  ]
 
   helper_scripts = [
     "scripts/build/modular_build.py",
@@ -2455,7 +2410,6 @@ action("build_release_devtools") {
   ]
 
   inputs = helper_scripts + all_devtools_files + devtools_test_files +
-           generated_scripts + generated_aria_properties +
            application_templates + all_worker_entrypoints +
            # In `build_release_applications` we sometimes include
            # the content of Runtime.js into the build output.
@@ -2509,28 +2463,6 @@ if (debug_devtools) {
       "--build_stamp",
       rebase_path(stamp, root_build_dir),
     ]
-  }
-
-  copy("copy_generated_scripts") {
-    deps = [
-      ":build_debug_devtools",
-      ":build_release_devtools",
-      ":frontend_protocol_sources",
-      ":supported_css_properties",
-    ]
-    sources = generated_scripts
-    outputs = [ "$resources_out_debug_dir/{{source_file_part}}" ]
-  }
-
-  copy("copy_aria_properties") {
-    deps = [
-      ":aria_properties",
-      ":build_debug_devtools",
-    ]
-
-    sources = generated_aria_properties
-
-    outputs = [ "$resources_out_debug_dir/accessibility/{{source_file_part}}" ]
   }
 }
 

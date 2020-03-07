@@ -221,7 +221,7 @@ export class TextSourceMap {
     if (this._json.sections) {
       const sectionWithURL = !!this._json.sections.find(section => !!section.url);
       if (sectionWithURL) {
-        self.Common.console.warn(
+        Common.Console.Console.instance().warn(
             `SourceMap "${sourceMappingURL}" contains unsupported "URL" field in one of its sections.`);
       }
     }
@@ -741,7 +741,7 @@ export class WasmSourceMap {
    */
   findEntry(lineNumber, columnNumber) {
     if (lineNumber !== 0) {
-      console.warn(new Error(`Invalid non-zero line number.`));
+      console.warn(new Error('Invalid non-zero line number.'));
     }
     return this._resolver.resolve(columnNumber);
   }

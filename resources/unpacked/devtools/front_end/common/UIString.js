@@ -114,11 +114,10 @@ export class UIStringFormat {
 const _substitutionStrings = new WeakMap();
 
 /**
- * @param {!Array<string>|string} strings
- * @param {...*} vararg
+ * @param {!ITemplateArray|string} strings
  * @return {string}
  */
-export function ls(strings, vararg) {
+export function ls(strings) {
   if (typeof strings === 'string') {
     return strings;
   }

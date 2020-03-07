@@ -7,7 +7,7 @@ import * as Common from '../common/common.js';
 import {DebuggerModel, Events as DebuggerModelEvents} from './DebuggerModel.js';
 import {DeferredDOMNode, DOMModel, DOMNode} from './DOMModel.js';  // eslint-disable-line no-unused-vars
 import {RemoteObject} from './RemoteObject.js';                    // eslint-disable-line no-unused-vars
-import {Capability, SDKModel, Target} from './SDKModel.js';        // eslint-disable-line no-unused-vars
+import {Capability, SDKModel, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @implements {Protocol.OverlayDispatcher}
@@ -27,13 +27,16 @@ export class OverlayModel extends SDKModel {
     if (this._debuggerModel) {
       self.Common.settings.moduleSetting('disablePausedStateOverlay')
           .addChangeListener(this._updatePausedInDebuggerMessage, this);
-      this._debuggerModel.addEventListener(
-          DebuggerModelEvents.DebuggerPaused, this._updatePausedInDebuggerMessage, this);
-      this._debuggerModel.addEventListener(
-          DebuggerModelEvents.DebuggerResumed, this._updatePausedInDebuggerMessage, this);
+      this._debuggerModel.addEventListener(DebuggerModelEvents.DebuggerPaused, event => {
+        this._updatePausedInDebuggerMessage();
+      }, this);
+      this._debuggerModel.addEventListener(DebuggerModelEvents.DebuggerResumed, event => {
+        this._updatePausedInDebuggerMessage();
+      }, this);
       // TODO(dgozman): we should get DebuggerResumed on navigations instead of listening to GlobalObjectCleared.
-      this._debuggerModel.addEventListener(
-          DebuggerModelEvents.GlobalObjectCleared, this._updatePausedInDebuggerMessage, this);
+      this._debuggerModel.addEventListener(DebuggerModelEvents.GlobalObjectCleared, event => {
+        this._updatePausedInDebuggerMessage();
+      }, this);
     }
 
     this._inspectModeEnabled = false;
@@ -68,17 +71,17 @@ export class OverlayModel extends SDKModel {
   }
 
   static hideDOMNodeHighlight() {
-    for (const overlayModel of self.SDK.targetManager.models(OverlayModel)) {
+    for (const overlayModel of TargetManager.instance().models(OverlayModel)) {
       overlayModel._delayedHideHighlight(0);
     }
   }
 
   static async muteHighlight() {
-    return Promise.all(self.SDK.targetManager.models(OverlayModel).map(model => model.suspendModel()));
+    return Promise.all(TargetManager.instance().models(OverlayModel).map(model => model.suspendModel()));
   }
 
   static async unmuteHighlight() {
-    return Promise.all(self.SDK.targetManager.models(OverlayModel).map(model => model.resumeModel()));
+    return Promise.all(TargetManager.instance().models(OverlayModel).map(model => model.resumeModel()));
   }
 
   /**
@@ -158,18 +161,15 @@ export class OverlayModel extends SDKModel {
     this._overlayAgent.setShowViewportSizeOnResize(show);
   }
 
-  /**
-   * @return {!Promise}
-   */
   _updatePausedInDebuggerMessage() {
     if (this.target().suspended()) {
-      return Promise.resolve();
+      return;
     }
     const message =
         this._debuggerModel.isPaused() && !self.Common.settings.moduleSetting('disablePausedStateOverlay').get() ?
         Common.UIString.UIString('Paused in debugger') :
         undefined;
-    return this._overlayAgent.setPausedInDebuggerMessage(message);
+    this._overlayAgent.setPausedInDebuggerMessage(message);
   }
 
   /**

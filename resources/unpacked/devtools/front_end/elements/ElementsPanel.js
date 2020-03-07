@@ -93,16 +93,16 @@ export class ElementsPanel extends UI.Panel.Panel {
     self.Common.settings.moduleSetting('sidebarPosition').addChangeListener(this._updateSidebarPosition.bind(this));
     this._updateSidebarPosition();
 
-    /** @type {!Array.<!ElementsTreeOutline>} */
-    this._treeOutlines = [];
+    /** @type {!Set.<!ElementsTreeOutline>} */
+    this._treeOutlines = new Set();
     /** @type {!Map<!ElementsTreeOutline, !Element>} */
     this._treeOutlineHeaders = new Map();
-    self.SDK.targetManager.observeModels(SDK.DOMModel.DOMModel, this);
-    self.SDK.targetManager.addEventListener(
+    SDK.SDKModel.TargetManager.instance().observeModels(SDK.DOMModel.DOMModel, this);
+    SDK.SDKModel.TargetManager.instance().addEventListener(
         SDK.SDKModel.Events.NameChanged,
         event => this._targetNameChanged(/** @type {!SDK.SDKModel.Target} */ (event.data)));
     self.Common.settings.moduleSetting('showUAShadowDOM').addChangeListener(this._showUAShadowDOMChanged.bind(this));
-    self.SDK.targetManager.addModelListener(
+    SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.DOMModel.DOMModel, SDK.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
     self.Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
@@ -161,7 +161,7 @@ export class ElementsPanel extends UI.Panel.Panel {
       treeOutline.addEventListener(
           ElementsTreeOutline.Events.ElementsTreeUpdated, this._updateBreadcrumbIfNeeded, this);
       new ElementsTreeElementHighlighter(treeOutline);
-      this._treeOutlines.push(treeOutline);
+      this._treeOutlines.add(treeOutline);
       if (domModel.target().parentTarget()) {
         this._treeOutlineHeaders.set(treeOutline, createElementWithClass('div', 'elements-tree-header'));
         this._targetNameChanged(domModel.target());
@@ -185,7 +185,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     if (domModel.parentModel()) {
       return;
     }
-    this._treeOutlines.remove(treeOutline);
+    this._treeOutlines.delete(treeOutline);
     const header = this._treeOutlineHeaders.get(treeOutline);
     if (header) {
       header.remove();
@@ -216,7 +216,7 @@ export class ElementsPanel extends UI.Panel.Panel {
   }
 
   _updateTreeOutlineVisibleWidth() {
-    if (!this._treeOutlines.length) {
+    if (!this._treeOutlines.size) {
       return;
     }
 
@@ -224,8 +224,8 @@ export class ElementsPanel extends UI.Panel.Panel {
     if (this._splitWidget.isVertical()) {
       width -= this._splitWidget.sidebarSize();
     }
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      this._treeOutlines[i].setVisibleWidth(width);
+    for (const treeOutline of this._treeOutlines) {
+      treeOutline.setVisibleWidth(width);
     }
 
     this._breadcrumbs.updateSizes();
@@ -235,8 +235,8 @@ export class ElementsPanel extends UI.Panel.Panel {
    * @override
    */
   focus() {
-    if (this._treeOutlines.length) {
-      this._treeOutlines[0].focus();
+    if (this._treeOutlines.size) {
+      this._treeOutlines.values().next().value.focus();
     }
   }
 
@@ -254,8 +254,7 @@ export class ElementsPanel extends UI.Panel.Panel {
   wasShown() {
     self.UI.context.setFlavor(ElementsPanel, this);
 
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      const treeOutline = this._treeOutlines[i];
+    for (const treeOutline of this._treeOutlines) {
       // Attach heavy component lazily
       if (treeOutline.element.parentElement !== this._contentElement) {
         const header = this._treeOutlineHeaders.get(treeOutline);
@@ -268,7 +267,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     super.wasShown();
     this._breadcrumbs.update();
 
-    const domModels = self.SDK.targetManager.models(SDK.DOMModel.DOMModel);
+    const domModels = SDK.SDKModel.TargetManager.instance().models(SDK.DOMModel.DOMModel);
     for (const domModel of domModels) {
       if (domModel.parentModel()) {
         continue;
@@ -292,8 +291,7 @@ export class ElementsPanel extends UI.Panel.Panel {
    */
   willHide() {
     SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      const treeOutline = this._treeOutlines[i];
+    for (const treeOutline of this._treeOutlines) {
       treeOutline.setVisible(false);
       // Detach heavy component on hide
       this._contentElement.removeChild(treeOutline.element);
@@ -463,7 +461,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     this._searchConfig = searchConfig;
 
     const showUAShadowDOM = self.Common.settings.moduleSetting('showUAShadowDOM').get();
-    const domModels = self.SDK.targetManager.models(SDK.DOMModel.DOMModel);
+    const domModels = SDK.SDKModel.TargetManager.instance().models(SDK.DOMModel.DOMModel);
     const promises = domModels.map(domModel => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
     Promise.all(promises).then(resultCountCallback.bind(this));
 
@@ -503,8 +501,8 @@ export class ElementsPanel extends UI.Panel.Panel {
   _domWordWrapSettingChanged(event) {
     // FIXME: crbug.com/425984
     this._contentElement.classList.toggle('elements-wrap', event.data);
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      this._treeOutlines[i].setWordWrap(/** @type {boolean} */ (event.data));
+    for (const treeOutline of this._treeOutlines) {
+      treeOutline.setWordWrap(/** @type {boolean} */ (event.data));
     }
   }
 
@@ -642,8 +640,7 @@ export class ElementsPanel extends UI.Panel.Panel {
    * @return {?SDK.DOMModel.DOMNode}
    */
   selectedDOMNode() {
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      const treeOutline = this._treeOutlines[i];
+    for (const treeOutline of this._treeOutlines) {
       if (treeOutline.selectedDOMNode()) {
         return treeOutline.selectedDOMNode();
       }
@@ -743,8 +740,8 @@ export class ElementsPanel extends UI.Panel.Panel {
   }
 
   _showUAShadowDOMChanged() {
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      this._treeOutlines[i].update();
+    for (const treeOutline of this._treeOutlines) {
+      treeOutline.update();
     }
   }
 
@@ -773,7 +770,7 @@ export class ElementsPanel extends UI.Panel.Panel {
       stylePaneWrapperElement.style.setProperty('left', `${- 1 * largeLength}px`);
       stylePaneWrapperElement.style.setProperty('padding-left', `${largeLength}px`);
       stylePaneWrapperElement.style.setProperty('width', `calc(100% + ${largeLength}px)`);
-      stylePaneWrapperElement.style.setProperty('position', `fixed`);
+      stylePaneWrapperElement.style.setProperty('position', 'fixed');
 
       stylePaneWrapperElement.window().addEventListener('blur', uninstallHackBound);
       stylePaneWrapperElement.window().addEventListener('contextmenu', uninstallHackBound, true);
@@ -1030,7 +1027,7 @@ export class DOMNodeRevealer {
         const isDocument = node instanceof SDK.DOMModel.DOMDocument;
         if (!isDocument && isDetached) {
           const msg = ls`Node cannot be found in the current page.`;
-          self.Common.console.warn(msg);
+          Common.Console.Console.instance().warn(msg);
           reject(new Error(msg));
           return;
         }

@@ -445,6 +445,7 @@
     ],
     "scripts": [],
     "modules": [
+        "../generated/SupportedCSSProperties.js",
         "sdk.js",
         "sdk-legacy.js",
         "SDKModel.js",
@@ -496,13 +497,11 @@
         "PaintProfiler.js",
         "HeapProfilerModel.js",
         "PerformanceMetricsModel.js",
-        "../SupportedCSSProperties.js",
         "FilmStripModel.js",
         "ConsoleModel.js",
         "wasm_source_map/pkg/wasm_source_map.js"
     ],
     "skip_compilation": [
-        "../SupportedCSSProperties.js",
         "wasm_source_map/pkg/wasm_source_map.js"
     ]
 }

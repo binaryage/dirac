@@ -5,6 +5,7 @@
 import * as ColorPicker from '../color_picker/color_picker.js';
 import * as Common from '../common/common.js';
 import * as InlineEditor from '../inline_editor/inline_editor.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
@@ -731,8 +732,9 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     this._prompt = new CSSPropertyPrompt(this, isEditingName);
     this._prompt.setAutocompletionTimeout(0);
 
-    this._prompt.addEventListener(
-        UI.TextPrompt.Events.TextChanged, this._applyFreeFlowStyleTextEdit.bind(this, context));
+    this._prompt.addEventListener(UI.TextPrompt.Events.TextChanged, event => {
+      this._applyFreeFlowStyleTextEdit(context);
+    });
 
     const proxyElement = this._prompt.attachAndStartEditing(selectElement, blurListener.bind(this, context));
     this._navigateToSource(selectElement, true);
@@ -973,7 +975,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
 
     // Make the Changes and trigger the moveToNextCallback after updating.
     let moveToIndex = moveTo && this.treeOutline ? this.treeOutline.rootElement().indexOfChild(moveTo) : -1;
-    const blankInput = userInput.isWhitespace();
+    const blankInput = Platform.StringUtilities.isWhitespace(userInput);
     const shouldCommitNewProperty = this._newProperty &&
         (isPropertySplitPaste || moveToOther || (!moveDirection && !isEditingName) || (isEditingName && blankInput) ||
          nameValueEntered);
@@ -982,7 +984,8 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
       let propertyText;
       if (nameValueEntered) {
         propertyText = this.nameElement.textContent;
-      } else if (blankInput || (this._newProperty && this.valueElement.textContent.isWhitespace())) {
+      } else if (
+          blankInput || (this._newProperty && Platform.StringUtilities.isWhitespace(this.valueElement.textContent))) {
         propertyText = '';
       } else {
         if (isEditingName) {

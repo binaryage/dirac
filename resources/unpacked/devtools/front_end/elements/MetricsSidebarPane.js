@@ -284,7 +284,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
             'dblclick', this.startEditing.bind(this, heightElement, 'height', 'height', style), false);
 
         boxElement.appendChild(widthElement);
-        boxElement.createTextChild(' \u00D7 ');
+        boxElement.createTextChild(' × ');
         boxElement.appendChild(heightElement);
       } else {
         const suffix = (name === 'border' ? '-width' : '');
@@ -424,7 +424,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
 
     if (computedStyle.get('box-sizing') === 'border-box' && (styleProperty === 'width' || styleProperty === 'height')) {
       if (!userInput.match(/px$/)) {
-        self.Common.console.error(
+        Common.Console.Console.instance().error(
             'For elements with box-sizing: border-box, only absolute content area dimensions can be applied');
         return;
       }

@@ -44,7 +44,8 @@ import {NavigatorUISourceCodeTreeNode, NavigatorView} from './NavigatorView.js';
 export class NetworkNavigatorView extends NavigatorView {
   constructor() {
     super();
-    self.SDK.targetManager.addEventListener(SDK.SDKModel.Events.InspectedURLChanged, this._inspectedURLChanged, this);
+    SDK.SDKModel.TargetManager.instance().addEventListener(
+        SDK.SDKModel.Events.InspectedURLChanged, this._inspectedURLChanged, this);
 
     // Record the sources tool load time after the file navigator has loaded.
     Host.userMetrics.panelLoaded('sources', 'DevTools.Launch.Sources');
@@ -63,7 +64,7 @@ export class NetworkNavigatorView extends NavigatorView {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _inspectedURLChanged(event) {
-    const mainTarget = self.SDK.targetManager.mainTarget();
+    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
     if (event.data !== mainTarget) {
       return;
     }
@@ -83,7 +84,7 @@ export class NetworkNavigatorView extends NavigatorView {
    * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   uiSourceCodeAdded(uiSourceCode) {
-    const mainTarget = self.SDK.targetManager.mainTarget();
+    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
     const inspectedURL = mainTarget && mainTarget.inspectedURL();
     if (!inspectedURL) {
       return;
@@ -198,7 +199,9 @@ export class OverridesNavigatorView extends NavigatorView {
     }
     const title = Common.UIString.UIString('Select folder for overrides');
     const setupButton = new UI.Toolbar.ToolbarButton(title, 'largeicon-add', title);
-    setupButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._setupNewWorkspace, this);
+    setupButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._setupNewWorkspace();
+    }, this);
     this._toolbar.appendToolbarItem(setupButton);
   }
 
@@ -261,7 +264,9 @@ export class SnippetsNavigatorView extends NavigatorView {
 
     const toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
     const newButton = new UI.Toolbar.ToolbarButton('', 'largeicon-add', Common.UIString.UIString('New snippet'));
-    newButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this.create(self.Snippets.project, ''));
+    newButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this.create(self.Snippets.project, '');
+    });
     toolbar.appendToolbarItem(newButton);
     this.contentElement.insertBefore(toolbar.element, this.contentElement.firstChild);
   }
@@ -295,7 +300,7 @@ export class SnippetsNavigatorView extends NavigatorView {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.headerSection().appendItem(
         Common.UIString.UIString('Run'), () => Snippets.ScriptSnippetFileSystem.evaluateScriptSnippet(uiSourceCode));
-    contextMenu.editSection().appendItem(Common.UIString.UIString('Rename\u2026'), () => this.rename(node, false));
+    contextMenu.editSection().appendItem(Common.UIString.UIString('Rename…'), () => this.rename(node, false));
     contextMenu.editSection().appendItem(
         Common.UIString.UIString('Remove'), () => uiSourceCode.project().deleteFile(uiSourceCode));
     contextMenu.saveSection().appendItem(
