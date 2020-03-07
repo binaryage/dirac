@@ -177,5 +177,10 @@
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
-(runonce
+(defn ^:export init-implant []
+  (js/console.log "initializing dirac implant...")
   (init-implant!))
+
+; this is for dev mode where implant is required later
+(if (gget "initDiracImplantAfterLoad")
+  (init-implant))

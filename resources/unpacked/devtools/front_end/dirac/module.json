@@ -1,22 +1,21 @@
 {
-    "dependencies": [
-        "platform",
-        "common",
-        "host"
-    ],
-    "scripts": [
-        "parinfer.js",
-        "parinfer-codemirror.js",
-        "keysim.js",
-        "dirac.js",
-        "require-implant.js"
-    ],
-    "skip_compilation": [
-        "parinfer.js",
-        "parinfer-codemirror.js",
-        "keysim.js",
-        "require-implant.js"
-    ],
-    "resources": [
-    ]
+  "dependencies": [
+    "platform",
+    "common",
+    "host"
+  ],
+  "modules": [
+    "dirac.js",
+    "parinfer.js",
+    "parinfer-codemirror.js",
+    "keysim.js"
+  ],
+  "scripts": [
+    "require-implant.js"
+  ],
+  "skip_compilation": [
+    "require-implant.js"
+  ],
+  "resources": [
+  ]
 }

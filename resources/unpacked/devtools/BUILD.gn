@@ -1196,6 +1196,11 @@ all_devtools_modules = [
   "front_end/console/ConsoleDiracPrompt.js",
   "front_end/cm/placeholder.js",
   "front_end/cm/runmode.js",
+
+  "front_end/dirac/parinfer.js",
+  "front_end/dirac/parinfer-codemirror.js",
+  "front_end/dirac/keysim.js",
+  "front_end/dirac/dirac.js",
   # dirac - end
 ]
 
@@ -2128,6 +2133,13 @@ copied_devtools_modules = [
   "$resources_out_dir/workspace/workspace.js",
   "$resources_out_dir/workspace/workspace-legacy.js",
   "$resources_out_dir/workspace/WorkspaceImpl.js",
+
+  # dirac - start
+  "$resources_out_dir/dirac/parinfer.js",
+  "$resources_out_dir/dirac/parinfer-codemirror.js",
+  "$resources_out_dir/dirac/keysim.js",
+  "$resources_out_dir/dirac/dirac.js",
+  # dirac - end
 ]
 
 generated_applications = [

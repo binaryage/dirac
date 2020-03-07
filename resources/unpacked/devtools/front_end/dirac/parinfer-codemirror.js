@@ -20,7 +20,7 @@
   else {
     root.parinferCodeMirror = factory(root.parinfer);
   }
-}(this, function(parinfer) { // start module anonymous scope
+}(self, function(parinfer) { // start module anonymous scope
   "use strict";
 
 //------------------------------------------------------------------------------

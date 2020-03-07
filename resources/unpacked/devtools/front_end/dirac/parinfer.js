@@ -25,7 +25,7 @@
   else {
     root.parinfer = factory();
   }
-}(this, function() { // start module anonymous scope
+}(self, function() { // start module anonymous scope
   "use strict";
 
 //------------------------------------------------------------------------------
