@@ -12,6 +12,8 @@ cd "$ROOT"
 
 set -x
 
+rm -rf target
+
 "$SCRIPTS/check-versions.sh"
 "$SCRIPTS/depot-sync.sh"
 "$SCRIPTS/depot-clean.sh"
