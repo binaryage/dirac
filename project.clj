@@ -379,11 +379,12 @@
                                            "src/logging"
                                            "src/project"
                                            "src/implant"]
-                            :compiler     {:output-to     "target/resources/release/devtools/front_end/dirac/.compiled/implant/implant.js"
-                                           :output-dir    "target/resources/release/devtools/front_end/dirac/.compiled/implant"
-                                           :main          dirac.implant
-                                           :optimizations :advanced
-                                           :elide-asserts true}}
+                            :compiler     {:output-to      "target/resources/release/devtools/front_end/dirac/.compiled/implant/implant.js"
+                                           :output-dir     "target/resources/release/devtools/front_end/dirac/.compiled/implant"
+                                           :main           dirac.implant
+                                           :optimizations  :advanced
+                                           :output-wrapper "(function(){%s};).call(window);"
+                                           :elide-asserts  true}}
                            :dirac-background
                            {:source-paths ["src/settings"
                                            "src/shared"
