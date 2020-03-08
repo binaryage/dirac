@@ -21,8 +21,8 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 source _config.sh
 
 # prepare oracle
-mkdir -p "$ROOT_TMP_DIR"
-ORACLE_CHECKOUT_DIR="$ROOT_TMP_DIR/docker-chromium-oraculum"
+mkdir -p "$DIRAC_CACHE_DIR"
+ORACLE_CHECKOUT_DIR="$DIRAC_CACHE_DIR/docker-chromium-oraculum"
 if [[ -d "$ORACLE_CHECKOUT_DIR" ]]; then
   cd "$ORACLE_CHECKOUT_DIR"
   git fetch
@@ -30,7 +30,7 @@ if [[ -d "$ORACLE_CHECKOUT_DIR" ]]; then
   git reset --hard origin/master
   git clean -fd
 else
-  cd "$ROOT_TMP_DIR"
+  cd "$DIRAC_CACHE_DIR"
   git clone https://github.com/binaryage/docker-chromium-oraculum.git
 fi
 

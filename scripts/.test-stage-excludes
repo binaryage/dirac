@@ -5,6 +5,7 @@
 /.cpcache
 /.test-dirac-chrome-profile
 /.tmp
+/.ws
 /releases
 /target
 /out

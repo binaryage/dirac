@@ -7,7 +7,7 @@ SPAWN_DIR=$(pwd)
 SPAWN_COMMAND="$0"
 SPAWN_ARGS="$@"
 
-pushd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null
+pushd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null
 
 source "lib/utils.sh"
 source "lib/tools.sh"
@@ -15,7 +15,7 @@ source "lib/tools.sh"
 cd ..
 
 ROOT=$(pwd -P)
-DIRAC_WORKSPACE_DIR=$(portable_realpath "$ROOT/..")
+DIRAC_WORKSPACE_DIR=${DIRAC_WORKSPACE_DIR:-"$ROOT/.ws"}
 CHROMIUM_MIRROR_DIR=${CHROMIUM_MIRROR_DIR:-"$DIRAC_WORKSPACE_DIR/chromium-mirror"}
 export DIRAC_CHROMIUM_MIRROR_DIR=${CHROMIUM_MIRROR_DIR}
 DEVTOOLS_BRANCH="devtools"
@@ -54,16 +54,15 @@ DIRAC_USE_CUSTOM_CHROME=${DIRAC_USE_CUSTOM_CHROME}
 DIRAC_AGENT_PORT=${DIRAC_AGENT_PORT}
 DIRAC_TEST_STAGE_DIR=${DIRAC_TEST_STAGE_DIR:-"$DIRAC_WORKSPACE_DIR/.test_stage"}
 DIRAC_DOCKER_TEST_STAGE_DIR=${DIRAC_DOCKER_TEST_STAGE_DIR:-"$DIRAC_WORKSPACE_DIR/.docker_test_stage"}
-DIRAC_TEST_STAGE_RSYNC_EXCLUDE_FILE="$ROOT/.test-stage-excludes"
+DIRAC_TEST_STAGE_RSYNC_EXCLUDE_FILE="$ROOT/scripts/.test-stage-excludes"
 ACTUAL_TRANSCRIPTS_PATH="test/browser/transcripts/_actual_"
 EXPECTED_TRANSCRIPTS_PATH="test/browser/transcripts/expected"
 DOCKER_TESTS_DIR="$ROOT/test/docker"
-ROOT_TMP_DIR_RELATIVE=".tmp"
-ROOT_TMP_DIR="$ROOT/$ROOT_TMP_DIR_RELATIVE"
+DIRAC_CACHE_DIR="$DIRAC_WORKSPACE_DIR/.cache"
 TRAVIS_CHROMEDRIVER_VERSION=${TRAVIS_CHROMEDRIVER_VERSION:-VIA_CHROMIUM_DOWNLOAD_URL}
 EXAMPLES_LEININGEN_PROJECT_FILE="examples/leiningen/project.clj"
 EXAMPLES_FIGMAIN_DEPS_FILE="examples/figwheel-main/deps.edn"
 DEPOT_DIR="$DIRAC_WORKSPACE_DIR/.depot"
 DIRAC_MAIN_CLI_FILE="src/main/dirac/main/cli.clj"
 
-popd
+popd >/dev/null

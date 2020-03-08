@@ -13,12 +13,24 @@ mkdir -p "$DEPOT_DIR"
 
 cd "$DEPOT_DIR"
 
-ln -s "../dirac" dirac
-ln -s "../dirac/resources/unpacked/devtools" "devtools-frontend"
-## this is a workaround for https://github.com/binaryage/dirac/commit/655b5b89c95529c611dc180da7bc9ab21bf8015d
-#ln -s "../dirac/resources/unpacked/devtools/buildtools" buildtools
+# this is to mimic https://github.com/ChromeDevTools/devtools-frontend#standalone-workflow
+ln -s "$ROOT/resources/unpacked/devtools" "devtools-frontend"
+sleep 1
 
-gclient config https://github.com/binaryage/dirac.git --unmanaged --deps-file="resources/unpacked/devtools/DEPS"
+# this would be output of `fetch devtools-frontend` or gclient config ...
+# but we symlink devtools-frontend from dirac and fake the file
+cat >.gclient <<EOF
+solutions = [
+  {
+    "url": "https://chromium.googlesource.com/devtools/devtools-frontend.git",
+    "managed": False,
+    "name": "devtools-frontend",
+    "deps_file": "DEPS",
+    "cache_dir": "${DIRAC_CACHE_DIR}/.depot-cache-dir",
+    "custom_deps": {"devtools-frontend": None}, # this should prevent gclient fetching devtools-frontend
+  },
+]
+EOF
 
 # do initial sync
 "$SCRIPTS/depot-sync.sh"

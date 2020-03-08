@@ -10,12 +10,17 @@ cd "$DOCKER_TESTS_DIR"
 cd "$DOCKER_TESTS_DIR"
 
 # shellcheck disable=SC2143
-if [[ -n "$(docker volume ls | grep 'dirac-data-root$')" ]]; then
-  docker volume rm -f "dirac-data-root"
+if [[ -n "$(docker volume ls | grep 'dirac-data-home$')" ]]; then
+  docker volume rm -f "dirac-data-home"
 fi
 
 # shellcheck disable=SC2143
-if [[ -n "$(docker volume ls | grep 'dirac-data-var-cache&&pt$')" ]]; then
+if [[ -n "$(docker volume ls | grep 'dirac-data-ws$')" ]]; then
+  docker volume rm -f "dirac-data-ws"
+fi
+
+# shellcheck disable=SC2143
+if [[ -n "$(docker volume ls | grep 'dirac-data-var-cache-apt$')" ]]; then
   docker volume rm -f "dirac-data-var-cache-apt"
 fi
 
