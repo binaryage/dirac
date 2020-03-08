@@ -4,7 +4,7 @@
             [clj-sub-command.core :refer [parse-cmds]]))
 
 (def cli-name "dirac")
-(def cli-version "1.5.8")
+(def cli-version "1.5.9")
 (def cli-description "A command-line tool for Dirac DevTools.")
 
 ; -- options ----------------------------------------------------------------------------------------------------------------
