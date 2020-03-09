@@ -28,6 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as UI from '../ui/ui.js';
+
 import {Calculator, TimelineGrid} from './TimelineGrid.js';  // eslint-disable-line no-unused-vars
 
 /**
@@ -104,7 +108,7 @@ export class OverviewGrid {
 
   /**
    * @param {symbol} eventType
-   * @param {function(!Common.Event)} listener
+   * @param {function(!Common.EventTarget.EventTargetEvent)} listener
    * @param {!Object=} thisObject
    * @return {!Common.EventTarget.EventDescriptor}
    */
@@ -143,7 +147,7 @@ export const OffsetFromWindowEnds = 10;
 /**
  * @unrestricted
  */
-export class Window extends Common.Object {
+export class Window extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!Element} parentElement
    * @param {!Element=} dividersLabelBarElement
@@ -157,25 +161,25 @@ export class Window extends Common.Object {
 
     UI.ARIAUtils.setAccessibleName(this._parentElement, ls`Overview grid window`);
 
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this._parentElement, this._startWindowSelectorDragging.bind(this), this._windowSelectorDragging.bind(this),
         this._endWindowSelectorDragging.bind(this), 'text', null);
     if (dividersLabelBarElement) {
-      UI.installDragHandle(
+      UI.UIUtils.installDragHandle(
           dividersLabelBarElement, this._startWindowDragging.bind(this), this._windowDragging.bind(this), null,
           '-webkit-grabbing', '-webkit-grab');
     }
 
     this._parentElement.addEventListener('mousewheel', this._onMouseWheel.bind(this), true);
     this._parentElement.addEventListener('dblclick', this._resizeWindowMaximum.bind(this), true);
-    UI.appendStyle(this._parentElement, 'perf_ui/overviewGrid.css');
+    UI.Utils.appendStyle(this._parentElement, 'perf_ui/overviewGrid.css');
 
     this._leftResizeElement = parentElement.createChild('div', 'overview-grid-window-resizer');
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this._leftResizeElement, this._resizerElementStartDragging.bind(this),
         this._leftResizeElementDragging.bind(this), null, 'ew-resize');
     this._rightResizeElement = parentElement.createChild('div', 'overview-grid-window-resizer');
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this._rightResizeElement, this._resizerElementStartDragging.bind(this),
         this._rightResizeElementDragging.bind(this), null, 'ew-resize');
 
@@ -408,9 +412,8 @@ export class Window extends Common.Object {
     const valueSpan = this._calculator.maximumBoundary() - minimumValue;
     if (leftSlider) {
       return minimumValue + valueSpan * this.windowLeft;
-    } else {
-      return minimumValue + valueSpan * this.windowRight;
     }
+    return minimumValue + valueSpan * this.windowRight;
   }
 
   /**
@@ -566,10 +569,10 @@ export class Window extends Common.Object {
       factor = newWindowSize / windowSize;
     }
     left = reference + (left - reference) * factor;
-    left = Number.constrain(left, 0, 1 - newWindowSize);
+    left = Platform.NumberUtilities.clamp(left, 0, 1 - newWindowSize);
 
     right = reference + (right - reference) * factor;
-    right = Number.constrain(right, newWindowSize, 1);
+    right = Platform.NumberUtilities.clamp(right, newWindowSize, 1);
     this._setWindow(left, right);
   }
 }

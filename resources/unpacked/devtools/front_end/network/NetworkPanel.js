@@ -32,6 +32,7 @@ import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
+import * as PerfUI from '../perf_ui/perf_ui.js';
 import * as SDK from '../sdk/sdk.js';
 import * as Search from '../search/search.js';
 import * as UI from '../ui/ui.js';
@@ -64,7 +65,7 @@ export class NetworkPanel extends UI.Panel.Panel {
     this._pendingStopTimer;
     /** @type {?NetworkItemView} */
     this._networkItemView = null;
-    /** @type {?PerfUI.FilmStripView} */
+    /** @type {?PerfUI.FilmStripView.FilmStripView} */
     this._filmStripView = null;
     /** @type {?FilmStripRecorder} */
     this._filmStripRecorder = null;
@@ -91,7 +92,7 @@ export class NetworkPanel extends UI.Panel.Panel {
     this._filmStripPlaceholderElement = panel.contentElement.createChild('div', 'network-film-strip-placeholder');
 
     // Create top overview component.
-    this._overviewPane = new PerfUI.TimelineOverviewPane('network');
+    this._overviewPane = new PerfUI.TimelineOverviewPane.TimelineOverviewPane('network');
     this._overviewPane.addEventListener(
         PerfUI.TimelineOverviewPane.Events.WindowChanged, this._onWindowChanged.bind(this));
     this._overviewPane.element.id = 'network-overview-panel';
@@ -169,10 +170,10 @@ export class NetworkPanel extends UI.Panel.Panel {
     this._toggleRecordFilmStrip();
     this._updateUI();
 
-    self.SDK.targetManager.addModelListener(
+    SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.WillReloadPage, this._willReloadPage,
         this);
-    self.SDK.targetManager.addModelListener(
+    SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._load, this);
     this._networkLogView.addEventListener(Events.RequestSelected, this._onRequestSelected, this);
     this._networkLogView.addEventListener(Events.RequestActivated, this._onRequestActivated, this);
@@ -209,12 +210,19 @@ export class NetworkPanel extends UI.Panel.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onWindowChanged(event) {
     const startTime = Math.max(this._calculator.minimumBoundary(), event.data.startTime / 1000);
     const endTime = Math.min(this._calculator.maximumBoundary(), event.data.endTime / 1000);
     this._networkLogView.setWindow(startTime, endTime);
+  }
+
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
+  async _searchToggleClick(event) {
+    await self.UI.actionRegistry.action('network.search').execute();
   }
 
   _setupToolbarButtons(splitWidget) {
@@ -235,9 +243,9 @@ export class NetworkPanel extends UI.Panel.Panel {
     this._panelToolbar.appendToolbarItem(this._filterBar.filterButton());
     updateSidebarToggle();
     splitWidget.addEventListener(UI.SplitWidget.Events.ShowModeChanged, updateSidebarToggle);
-    searchToggle.addEventListener(
-        UI.Toolbar.ToolbarButton.Events.Click,
-        async () => await self.UI.actionRegistry.action('network.search').execute());
+    searchToggle.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._searchToggleClick(event);
+    });
     this._panelToolbar.appendToolbarItem(searchToggle);
     this._panelToolbar.appendSeparator();
 
@@ -278,8 +286,9 @@ export class NetworkPanel extends UI.Panel.Panel {
         UI.Toolbar.ToolbarButton.Events.Click, () => this._fileSelectorElement.click(), this);
     this._panelToolbar.appendToolbarItem(importHarButton);
     const exportHarButton = new UI.Toolbar.ToolbarButton(ls`Export HAR...`, 'largeicon-download');
-    exportHarButton.addEventListener(
-        UI.Toolbar.ToolbarButton.Events.Click, () => this._networkLogView.exportAll(), this);
+    exportHarButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._networkLogView.exportAll();
+    }, this);
     this._panelToolbar.appendToolbarItem(exportHarButton);
   }
 
@@ -354,7 +363,7 @@ export class NetworkPanel extends UI.Panel.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _willReloadPage(event) {
     this._toggleRecord(true);
@@ -368,7 +377,7 @@ export class NetworkPanel extends UI.Panel.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _load(event) {
     if (this._filmStripRecorder && this._filmStripRecorder.isRecording()) {
@@ -398,7 +407,7 @@ export class NetworkPanel extends UI.Panel.Panel {
   _toggleRecordFilmStrip() {
     const toggled = this._networkRecordFilmStripSetting.get();
     if (toggled && !this._filmStripRecorder) {
-      this._filmStripView = new PerfUI.FilmStripView();
+      this._filmStripView = new PerfUI.FilmStripView.FilmStripView();
       this._filmStripView.setMode(PerfUI.FilmStripView.Modes.FrameBased);
       this._filmStripView.element.classList.add('network-film-strip');
       this._filmStripRecorder = new FilmStripRecorder(this._networkLogView.timeCalculator(), this._filmStripView);
@@ -472,21 +481,21 @@ export class NetworkPanel extends UI.Panel.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _handleFilterChanged(event) {
     this._hideRequestPanel();
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onRowSizeChanged(event) {
     this._updateUI();
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onRequestSelected(event) {
     const request = /** @type {?SDK.NetworkRequest.NetworkRequest} */ (event.data);
@@ -496,7 +505,7 @@ export class NetworkPanel extends UI.Panel.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onRequestActivated(event) {
     const showPanel = /** @type {boolean} */ (event.data);
@@ -564,7 +573,7 @@ export class NetworkPanel extends UI.Panel.Panel {
      * @this {NetworkPanel}
      */
     function reveal(request) {
-      self.UI.viewManager.showView('network').then(this.revealAndHighlightRequest.bind(this, request));
+      self.UI.viewManager.showView('network').then(this._networkLogView.resetFilter.bind(this._networkLogView)).then(this.revealAndHighlightRequest.bind(this, request));
     }
 
     /**
@@ -607,7 +616,7 @@ export class NetworkPanel extends UI.Panel.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onFilmFrameSelected(event) {
     const timestamp = /** @type {number} */ (event.data);
@@ -615,7 +624,7 @@ export class NetworkPanel extends UI.Panel.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onFilmFrameEnter(event) {
     const timestamp = /** @type {number} */ (event.data);
@@ -624,7 +633,7 @@ export class NetworkPanel extends UI.Panel.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onFilmFrameExit(event) {
     this._networkOverview.clearFilmStripFrame();
@@ -632,7 +641,7 @@ export class NetworkPanel extends UI.Panel.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onUpdateRequest(event) {
     const request = /** @type {!SDK.NetworkRequest.NetworkRequest} */ (event.data);
@@ -699,7 +708,7 @@ export class RequestRevealer {
 export class FilmStripRecorder {
   /**
    * @param {!NetworkTimeCalculator} timeCalculator
-   * @param {!PerfUI.FilmStripView} filmStripView
+   * @param {!PerfUI.FilmStripView.FilmStripView} filmStripView
    */
   constructor(timeCalculator, filmStripView) {
     /** @type {?SDK.TracingManager.TracingManager} */
@@ -758,7 +767,7 @@ export class FilmStripRecorder {
   startRecording() {
     this._filmStripView.reset();
     this._filmStripView.setStatusText(Common.UIString.UIString('Recording frames...'));
-    const tracingManagers = self.SDK.targetManager.models(SDK.TracingManager.TracingManager);
+    const tracingManagers = SDK.SDKModel.TargetManager.instance().models(SDK.TracingManager.TracingManager);
     if (this._tracingManager || !tracingManagers.length) {
       return;
     }

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as ProtocolModule from '../protocol/protocol.js';
+
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
  * @suppress {accessControls}
@@ -97,31 +100,7 @@ export function completeTest() {
   _innerCompleteTest();
 }
 
-self.TestRunner = self.TestRunner || {_startupTestSetupFinished: () => {}};
-
-let _initializeTargetForStartupTest;
-
-export function setInitializeTargetForStartupTest(updatedInitializeTargetForStartupTest) {
-  _initializeTargetForStartupTest = updatedInitializeTargetForStartupTest;
-}
-
-/**
- * Only tests in web_tests/http/tests/devtools/startup/ need to call
- * this method because these tests need certain activities to be exercised
- * in the inspected page prior to the DevTools session.
- * @param {string} path
- * @return {!Promise<undefined>}
- */
-export function setupStartupTest(path) {
-  const absoluteURL = url(path);
-  const promise = new Promise(f => TestRunner._startupTestSetupFinished = () => {
-    _initializeTargetForStartupTest();
-    delete TestRunner._startupTestSetupFinished;
-    f();
-  });
-  self.testRunner.navigateSecondaryWindow(absoluteURL);
-  return promise;
-}
+self.TestRunner = self.TestRunner || {};
 
 /**
  * @suppressGlobalPropertiesCheck
@@ -444,7 +423,7 @@ export async function _evaluateInPage(code) {
     code += `//# sourceURL=${sourceURL}`;
   }
   const response = await TestRunner.RuntimeAgent.invoke_evaluate({expression: code, objectGroup: 'console'});
-  const error = response[Protocol.Error];
+  const error = response[ProtocolModule.InspectorBackend.ProtocolError];
   if (error) {
     addResult('Error: ' + error);
     completeTest();
@@ -463,7 +442,7 @@ export async function _evaluateInPage(code) {
 export async function evaluateInPageAnonymously(code, userGesture) {
   const response =
       await TestRunner.RuntimeAgent.invoke_evaluate({expression: code, objectGroup: 'console', userGesture});
-  if (!response[Protocol.Error]) {
+  if (!response[ProtocolModule.InspectorBackend.ProtocolError]) {
     return response.result.value;
   }
   addResult(
@@ -488,7 +467,7 @@ export async function evaluateInPageAsync(code) {
   const response = await TestRunner.RuntimeAgent.invoke_evaluate(
       {expression: code, objectGroup: 'console', includeCommandLineAPI: false, awaitPromise: true});
 
-  const error = response[Protocol.Error];
+  const error = response[ProtocolModule.InspectorBackend.ProtocolError];
   if (!error && !response.exceptionDetails) {
     return response.result.value;
   }
@@ -913,7 +892,7 @@ export function dumpObjectPropertyTreeElement(treeElement) {
 
 /**
  * @param {symbol} eventName
- * @param {!Common.Object} obj
+ * @param {!Common.ObjectWrapper.ObjectWrapper} obj
  * @param {function(?):boolean=} condition
  * @return {!Promise}
  */
@@ -925,7 +904,7 @@ export function waitForEvent(eventName, obj, condition) {
     obj.addEventListener(eventName, onEventFired);
 
     /**
-     * @param {!Common.Event} event
+     * @param {!Common.EventTarget.EventTargetEvent} event
      */
     function onEventFired(event) {
       if (!condition(event.data)) {
@@ -1404,12 +1383,62 @@ export function dumpSyntaxHighlight(str, mimeType) {
   }
 }
 
+/* this code exists in Platform.StringUtilities but these layout tests
+* cannot import ES modules so we copy the required code in directly as
+* these layout tests are going to be removed in favour of e2e so it's
+* not worth adding ESM support here
+*/
+
+/**
+ *
+ * @param {string} inputString
+ * @param {string} searchString
+ * @return {!Array.<number>}
+ */
+const findIndexesOfSubString = function(inputString, searchString) {
+  const matches = [];
+  let i = inputString.indexOf(searchString);
+  while (i !== -1) {
+    matches.push(i);
+    i = inputString.indexOf(searchString, i + searchString.length);
+  }
+  return matches;
+};
+
+/**
+ *
+ * @param {string} inputString
+ * @return {!Array.<number>}
+ */
+export const findLineEndingIndexes = function(inputString) {
+  const endings = findIndexesOfSubString(inputString, '\n');
+  endings.push(inputString.length);
+  return endings;
+};
+
 /**
  * @param {string} querySelector
  */
 export async function dumpInspectedPageElementText(querySelector) {
   const value = await evaluateInPageAsync(`document.querySelector('${querySelector}').innerText`);
   addResult(value);
+}
+
+/**
+ * This method blocks until all currently queued live location update handlers are done.
+ *
+ * Creating and updating live locations causes the update handler of each live location
+ * to run. These update handlers are potentially asynchronous and usually cause re-rendering or
+ * UI updates. Web tests then check for these updates.
+ * To give tests more control, waitForPendingLiveLocationUpdates returns a promise that resolves
+ * once all currently-pending updates (at call time) are completed.
+ */
+export async function waitForPendingLiveLocationUpdates() {
+  // TODO(chromium:1032016): Implement once the frontend has the actual methods in the bindings.
+  //
+  //                         This empty function is here so we can prepare affected web
+  //                         tests and than asyncify the frontend without needing to disable the
+  //                         affected web tests inbetween.
 }
 
 /** @type {!{logToStderr: function(), navigateSecondaryWindow: function(string), notifyDone: function()}|undefined} */
@@ -1420,7 +1449,6 @@ TestRunner.MockSetting = MockSetting;
 
 TestRunner.formatters = formatters;
 
-TestRunner.setupStartupTest = setupStartupTest;
 TestRunner.flushResults = flushResults;
 TestRunner.completeTest = completeTest;
 TestRunner.addResult = addResult;
@@ -1490,6 +1518,8 @@ TestRunner.evaluateInPageAsync = evaluateInPageAsync;
 TestRunner.deprecatedInitAsync = deprecatedInitAsync;
 TestRunner.runAsyncTestSuite = runAsyncTestSuite;
 TestRunner.dumpInspectedPageElementText = dumpInspectedPageElementText;
+TestRunner.waitForPendingLiveLocationUpdates = waitForPendingLiveLocationUpdates;
+TestRunner.findLineEndingIndexes = findLineEndingIndexes;
 
 /**
  * @typedef {!Object<string, string>}

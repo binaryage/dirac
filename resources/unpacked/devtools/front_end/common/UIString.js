@@ -29,18 +29,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Platform from '../platform/platform.js';
+
 /**
  * @param {string} string
  * @param {...*} vararg
  * @return {string}
  */
 export function UIString(string, vararg) {
-  return String.vsprintf(localize(string), Array.prototype.slice.call(arguments, 1));
+  return Platform.StringUtilities.vsprintf(localize(string), Array.prototype.slice.call(arguments, 1));
 }
 
 /**
  * @param {string} string
- * @param {?ArrayLike} values
+ * @param {?ArrayLike<*>} values
  * @return {string}
  */
 export function serializeUIString(string, values = []) {
@@ -50,7 +52,7 @@ export function serializeUIString(string, values = []) {
 }
 
 /**
- * @param {string} serializedMessage
+ * @param {string=} serializedMessage
  * @return {*}
  */
 export function deserializeUIString(serializedMessage) {
@@ -80,7 +82,8 @@ export class UIStringFormat {
     /** @type {string} */
     this._localizedFormat = localize(format);
     /** @type {!Array.<!Object>} */
-    this._tokenizedFormat = String.tokenizeFormatString(this._localizedFormat, String.standardFormatters);
+    this._tokenizedFormat = Platform.StringUtilities.tokenizeFormatString(
+        this._localizedFormat, Platform.StringUtilities.standardFormatters);
   }
 
   /**
@@ -97,9 +100,12 @@ export class UIStringFormat {
    * @return {string}
    */
   format(vararg) {
-    return String
+    return Platform.StringUtilities
         .format(
-            this._localizedFormat, arguments, String.standardFormatters, '', UIStringFormat._append,
+          // the code here uses odd generics that Closure likes but TS doesn't
+          // so rather than fight to typecheck this in a dodgy way we just let TS ignore it
+          // @ts-ignore
+            this._localizedFormat, arguments, Platform.StringUtilities.standardFormatters, '', UIStringFormat._append,
             this._tokenizedFormat)
         .formattedResult;
   }
@@ -108,11 +114,10 @@ export class UIStringFormat {
 const _substitutionStrings = new WeakMap();
 
 /**
- * @param {!Array<string>|string} strings
- * @param {...*} vararg
+ * @param {!ITemplateArray|string} strings
  * @return {string}
  */
-export function ls(strings, vararg) {
+export function ls(strings) {
   if (typeof strings === 'string') {
     return strings;
   }
@@ -121,5 +126,6 @@ export function ls(strings, vararg) {
     substitutionString = strings.join('%s');
     _substitutionStrings.set(strings, substitutionString);
   }
+  // @ts-ignore TS gets confused with the arguments slicing
   return UIString(substitutionString, ...Array.prototype.slice.call(arguments, 1));
 }

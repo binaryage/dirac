@@ -12,6 +12,7 @@ cd "$ROOT"
 
 set -x
 
+"$SCRIPTS/clean-target.sh"
 "$SCRIPTS/check-versions.sh"
 "$SCRIPTS/depot-sync.sh"
 "$SCRIPTS/depot-clean.sh"

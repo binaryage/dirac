@@ -90,6 +90,7 @@ select.toolbar-item:disabled + .toolbar-dropdown-arrow {
 .toolbar-has-dropdown {
     justify-content: space-between;
     padding: 0 3px 0 5px;
+    border: 1px solid transparent;
 }
 
 .toolbar-has-dropdown .toolbar-text {
@@ -208,7 +209,7 @@ select.toolbar-item:disabled + .toolbar-dropdown-arrow {
 select.toolbar-item {
     min-width: 38px;
     -webkit-appearance: none;
-    border: 0;
+    border: 1px solid transparent;
     border-radius: 0;
     padding: 0 13px 0 5px;
     margin-right: -10px;
@@ -327,7 +328,7 @@ select.toolbar-item[data-keyboard-focus="true"]:focus > * {
 }
 
 input[is=history-input] {
-    border: none;
+    border: 1px solid transparent;
     line-height: 16px;
     padding: 1px;
 }
@@ -346,19 +347,17 @@ input[is=history-input]:not(:placeholder-shown) {
 }
 
 @media (forced-colors: active) {
-    select.toolbar-item {
-        border: 1px solid ButtonText;
-    }
     select.toolbar-item:disabled,
     select.toolbar-item:disabled + .toolbar-dropdown-arrow {
         opacity: 1;
-        background-color: Graytext !important;
+        background-color: Graytext;
     }
     :not(.toolbar-render-as-links) .toolbar-button:enabled:hover .toolbar-glyph,
     :not(.toolbar-render-as-links) .toolbar-button:enabled:focus .toolbar-glyph,
+    :not(.toolbar-render-as-links) .toolbar-button:enabled:hover:not(:active) .toolbar-glyph,
     .toolbar-button:enabled:hover [is=ui-icon].icon-mask,
     .toolbar-button:enabled:focus [is=ui-icon].icon-mask {
-        background-color: HighlightText !important;
+        background-color: HighlightText;
     }
     :not(.toolbar-render-as-links) .toolbar-button:enabled:hover:not(:active) .toolbar-text,
     :not(.toolbar-render-as-links) .toolbar-button:enabled:focus:not(:active) .toolbar-text {
@@ -369,27 +368,35 @@ input[is=history-input]:not(:placeholder-shown) {
     .toolbar-button:focus,
     .toolbar-toggled-gray:not(.toolbar-render-as-links) .toolbar-button:not(.toolbar-has-glyph):not(.toolbar-has-dropdown):not(.largeicon-menu):hover {
         forced-color-adjust: none;
-        background-color: Highlight !important;
-    }
-    .toolbar-button[data-keyboard-focus="true"]:focus {
-        box-shadow: 0 0 0 1px ButtonText inset;
+        background-color: Highlight;
     }
     .toolbar-button:disabled {
         opacity: 1;
     }
     :not(.toolbar-render-as-links) .toolbar-button:disabled .toolbar-glyph,
     .toolbar-button:disabled [is=ui-icon].icon-mask {
-        background-color: GrayText !important;
+        background-color: GrayText;
         color: GrayText;
     }
-    .toolbar-has-dropdown:disabled {
-        opacity: 1;
-        border: 1px solid GrayText;
+    .toolbar-item,
+    .toolbar-text {
+        color: ButtonText;
+    }
+    .toolbar-input {
+        forced-color-adjust: none;
+        background: Canvas;
+        box-shadow: var(--focus-ring-inactive-shadow);
     }
     .toolbar-input.focused,
     .toolbar-input:not(.toolbar-input-empty) {
         forced-color-adjust: none;
-        background: Canvas !important;
-        box-shadow: 0 0 0 1px Highlight inset !important;
+        background: Canvas;
+        box-shadow: var(--focus-ring-active-shadow);
+    }
+    .toolbar-input:hover {
+        box-shadow: var(--focus-ring-active-shadow);
+    }
+    .toolbar-item .devtools-link {
+        color: LinkText;
     }
 }

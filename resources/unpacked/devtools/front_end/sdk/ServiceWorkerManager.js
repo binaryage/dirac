@@ -31,7 +31,7 @@
 import * as Common from '../common/common.js';
 
 import {Events as RuntimeModelEvents, ExecutionContext, RuntimeModel} from './RuntimeModel.js';  // eslint-disable-line no-unused-vars
-import {Capability, SDKModel, Target, Type} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import {Capability, SDKModel, Target, TargetManager, Type} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
@@ -451,9 +451,11 @@ export class ServiceWorkerVersion {
   mode() {
     if (this.isNew() || this.isInstalling()) {
       return ServiceWorkerVersion.Modes.Installing;
-    } else if (this.isInstalled()) {
+    }
+    if (this.isInstalled()) {
       return ServiceWorkerVersion.Modes.Waiting;
-    } else if (this.isActivating() || this.isActivated()) {
+    }
+    if (this.isActivating() || this.isActivated()) {
       return ServiceWorkerVersion.Modes.Active;
     }
     return ServiceWorkerVersion.Modes.Redundant;
@@ -604,19 +606,18 @@ class ServiceWorkerContextNamer {
     this._versionByTargetId = new Map();
     serviceWorkerManager.addEventListener(Events.RegistrationUpdated, this._registrationsUpdated, this);
     serviceWorkerManager.addEventListener(Events.RegistrationDeleted, this._registrationsUpdated, this);
-    self.SDK.targetManager.addModelListener(
+    TargetManager.instance().addModelListener(
         RuntimeModel, RuntimeModelEvents.ExecutionContextCreated, this._executionContextCreated, this);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _registrationsUpdated(event) {
     this._versionByTargetId.clear();
-    const registrations = this._serviceWorkerManager.registrations().valuesArray();
+    const registrations = this._serviceWorkerManager.registrations().values();
     for (const registration of registrations) {
-      const versions = registration.versions.valuesArray();
-      for (const version of versions) {
+      for (const version of registration.versions.values()) {
         if (version.targetId) {
           this._versionByTargetId.set(version.targetId, version);
         }
@@ -626,7 +627,7 @@ class ServiceWorkerContextNamer {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _executionContextCreated(event) {
     const executionContext = /** @type {!ExecutionContext} */ (event.data);
@@ -649,7 +650,7 @@ class ServiceWorkerContextNamer {
   }
 
   _updateAllContextLabels() {
-    for (const target of self.SDK.targetManager.targets()) {
+    for (const target of TargetManager.instance().targets()) {
       const serviceWorkerTargetId = this._serviceWorkerTargetId(target);
       if (!serviceWorkerTargetId) {
         continue;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 import * as UI from '../ui/ui.js';
 
 import {BezierUI} from './BezierUI.js';
@@ -107,7 +108,7 @@ export class BezierEditor extends UI.Widget.VBox {
     this._mouseDownPosition = new UI.Geometry.Point(event.x, event.y);
     const ui = this._curveUI;
     this._controlPosition = new UI.Geometry.Point(
-        Number.constrain((event.offsetX - ui.radius) / ui.curveWidth(), 0, 1),
+        Platform.NumberUtilities.clamp((event.offsetX - ui.radius) / ui.curveWidth(), 0, 1),
         (ui.curveHeight() + ui.marginTop + ui.radius - event.offsetY) / ui.curveHeight());
 
     const firstControlPointIsCloser = this._controlPosition.distanceTo(this._bezier.controlPoints[0]) <
@@ -130,7 +131,7 @@ export class BezierEditor extends UI.Widget.VBox {
     const deltaX = (mouseX - this._mouseDownPosition.x) / this._curveUI.curveWidth();
     const deltaY = (mouseY - this._mouseDownPosition.y) / this._curveUI.curveHeight();
     const newPosition = new UI.Geometry.Point(
-        Number.constrain(this._controlPosition.x + deltaX, 0, 1), this._controlPosition.y - deltaY);
+        Platform.NumberUtilities.clamp(this._controlPosition.x + deltaX, 0, 1), this._controlPosition.y - deltaY);
     this._bezier.controlPoints[this._selectedPoint] = newPosition;
   }
 
@@ -153,7 +154,7 @@ export class BezierEditor extends UI.Widget.VBox {
 
   /**
    * @param {!Array<{name: string, value: string}>} presetGroup
-   * @return {!InlineEditor.BezierEditor.PresetCategory}
+   * @return {!PresetCategory}
    */
   _createCategory(presetGroup) {
     const presetElement = createElementWithClass('div', 'bezier-preset-category');
@@ -188,7 +189,7 @@ export class BezierEditor extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!InlineEditor.BezierEditor.PresetCategory} category
+   * @param {!PresetCategory} category
    * @param {!Event=} event
    */
   _presetCategorySelected(category, event) {
@@ -278,3 +279,6 @@ export const Presets = [
     {name: 'Out · Back', value: 'cubic-bezier(0.18, 0.89, 0.32, 1.28)'}
   ]
 ];
+
+/** @typedef {{presets: !Array.<{name: string, value: string}>, icon: !Element, presetIndex: number}} */
+export let PresetCategory;

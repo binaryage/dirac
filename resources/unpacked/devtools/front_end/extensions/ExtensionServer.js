@@ -32,6 +32,7 @@ import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as Host from '../host/host.js';
+import * as Platform from '../platform/platform.js';
 import * as ProtocolModule from '../protocol/protocol.js';  // eslint-disable-line no-unused-vars
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
@@ -52,7 +53,8 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     super();
     this._clientObjects = {};
     this._handlers = {};
-    this._subscribers = {};
+    /** @type {!Map<string, !Set<!MessagePort>>} */
+    this._subscribers = new Map();
     this._subscriptionStartHandlers = {};
     this._subscriptionStopHandlers = {};
     this._extraHeaders = {};
@@ -151,7 +153,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   _inspectedURLChanged(event) {
-    if (event.data !== self.SDK.targetManager.mainTarget()) {
+    if (event.data !== SDK.SDKModel.TargetManager.instance().mainTarget()) {
       return;
     }
     this._requests = {};
@@ -181,7 +183,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
    * @return {boolean}
    */
   hasSubscribers(type) {
-    return !!this._subscribers[type];
+    return this._subscribers.has(type);
   }
 
   /**
@@ -189,22 +191,22 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
    * @param {...*} vararg
    */
   _postNotification(type, vararg) {
-    const subscribers = this._subscribers[type];
+    const subscribers = this._subscribers.get(type);
     if (!subscribers) {
       return;
     }
     const message = {command: 'notify-' + type, arguments: Array.prototype.slice.call(arguments, 1)};
-    for (let i = 0; i < subscribers.length; ++i) {
-      subscribers[i].postMessage(message);
+    for (const subscriber of subscribers) {
+      subscriber.postMessage(message);
     }
   }
 
   _onSubscribe(message, port) {
-    const subscribers = this._subscribers[message.type];
+    const subscribers = this._subscribers.get(message.type);
     if (subscribers) {
-      subscribers.push(port);
+      subscribers.add(port);
     } else {
-      this._subscribers[message.type] = [port];
+      this._subscribers.set(message.type, new Set([port]));
       if (this._subscriptionStartHandlers[message.type]) {
         this._subscriptionStartHandlers[message.type]();
       }
@@ -212,13 +214,13 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   _onUnsubscribe(message, port) {
-    const subscribers = this._subscribers[message.type];
+    const subscribers = this._subscribers.get(message.type);
     if (!subscribers) {
       return;
     }
-    subscribers.remove(port);
-    if (!subscribers.length) {
-      delete this._subscribers[message.type];
+    subscribers.delete(port);
+    if (!subscribers.size) {
+      this._subscribers.delete(message.type);
       if (this._subscriptionStopHandlers[message.type]) {
         this._subscriptionStopHandlers[message.type]();
       }
@@ -506,10 +508,11 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     uiSourceCodes = uiSourceCodes.concat(
         self.Workspace.workspace.uiSourceCodesForProjectType(Workspace.Workspace.projectTypes.ContentScripts));
     uiSourceCodes.forEach(pushResourceData.bind(this));
-    for (const resourceTreeModel of self.SDK.targetManager.models(SDK.ResourceTreeModel.ResourceTreeModel)) {
+    for (const resourceTreeModel of SDK.SDKModel.TargetManager.instance().models(
+             SDK.ResourceTreeModel.ResourceTreeModel)) {
       resourceTreeModel.forAllResources(pushResourceData.bind(this));
     }
-    return resources.valuesArray();
+    return [...resources.values()];
   }
 
   /**
@@ -667,7 +670,8 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         onElementsSubscriptionStopped.bind(this));
     this._registerResourceContentCommittedHandler(this._notifyUISourceCodeContentCommitted);
 
-    self.SDK.targetManager.addEventListener(SDK.SDKModel.Events.InspectedURLChanged, this._inspectedURLChanged, this);
+    SDK.SDKModel.TargetManager.instance().addEventListener(
+        SDK.SDKModel.Events.InspectedURLChanged, this._inspectedURLChanged, this);
   }
 
   _notifyResourceAdded(event) {
@@ -707,7 +711,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _setInspectedTabId(event) {
     this._inspectedTabId = /** @type {string} */ (event.data);
@@ -797,7 +801,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
    * @param {string} eventTopic
    * @param {!Object} eventTarget
    * @param {symbol} frontendEventType
-   * @param {function(!Common.Event)} handler
+   * @param {function(!Common.EventTarget.EventTargetEvent)} handler
    */
   _registerAutosubscriptionHandler(eventTopic, eventTarget, frontendEventType, handler) {
     this._registerSubscriptionHandler(
@@ -809,15 +813,15 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
    * @param {string} eventTopic
    * @param {!Function} modelClass
    * @param {symbol} frontendEventType
-   * @param {function(!Common.Event)} handler
+   * @param {function(!Common.EventTarget.EventTargetEvent)} handler
    */
   _registerAutosubscriptionTargetManagerHandler(eventTopic, modelClass, frontendEventType, handler) {
     this._registerSubscriptionHandler(
         eventTopic,
-        self.SDK.targetManager.addModelListener.bind(
-            self.SDK.targetManager, modelClass, frontendEventType, handler, this),
-        self.SDK.targetManager.removeModelListener.bind(
-            self.SDK.targetManager, modelClass, frontendEventType, handler, this));
+        SDK.SDKModel.TargetManager.instance().addModelListener.bind(
+            SDK.SDKModel.TargetManager.instance(), modelClass, frontendEventType, handler, this),
+        SDK.SDKModel.TargetManager.instance().removeModelListener.bind(
+            SDK.SDKModel.TargetManager.instance(), modelClass, frontendEventType, handler, this));
   }
 
   _registerResourceContentCommittedHandler(handler) {
@@ -902,7 +906,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     if (options.frameURL) {
       frame = resolveURLToFrame(options.frameURL);
     } else {
-      const target = self.SDK.targetManager.mainTarget();
+      const target = SDK.SDKModel.TargetManager.instance().mainTarget();
       const resourceTreeModel = target && target.model(SDK.ResourceTreeModel.ResourceTreeModel);
       frame = resourceTreeModel && resourceTreeModel.mainFrame;
     }
@@ -1027,7 +1031,7 @@ export class ExtensionStatus {
       const status = {code: code, description: description, details: details};
       if (code !== 'OK') {
         status.isError = true;
-        console.error('Extension server error: ' + String.vsprintf(description, details));
+        console.error('Extension server error: ' + Platform.StringUtilities.vsprintf(description, details));
       }
       return status;
     }

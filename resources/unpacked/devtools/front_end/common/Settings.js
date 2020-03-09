@@ -28,8 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {Color, Format} from './Color.js';  // eslint-disable-line no-unused-vars
+import {Color, Format} from './Color.js';                            // eslint-disable-line no-unused-vars
+import {EventDescriptor, EventTargetEvent} from './EventTarget.js';  // eslint-disable-line no-unused-vars
 import {ObjectWrapper} from './Object.js';
+import {Console} from './Console.js';
 
 /**
  * @unrestricted
@@ -236,7 +238,7 @@ export class SettingsStorage {
   }
 
   _dumpSizes() {
-    self.Common.console.log('Ten largest settings: ');
+    Console.instance().log('Ten largest settings: ');
 
     const sizes = {__proto__: null};
     for (const key in this._object) {
@@ -251,7 +253,7 @@ export class SettingsStorage {
     keys.sort(comparator);
 
     for (let i = 0; i < 10 && i < keys.length; ++i) {
-      self.Common.console.log('Setting: \'' + keys[i] + '\', size: ' + sizes[keys[i]]);
+      Console.instance().log('Setting: \'' + keys[i] + '\', size: ' + sizes[keys[i]]);
     }
   }
 }
@@ -280,16 +282,16 @@ export class Setting {
   }
 
   /**
-   * @param {function(!Common.Event)} listener
+   * @param {function(!EventTargetEvent)} listener
    * @param {!Object=} thisObject
-   * @return {!Common.EventTarget.EventDescriptor}
+   * @return {!EventDescriptor}
    */
   addChangeListener(listener, thisObject) {
     return this._eventSupport.addEventListener(this._name, listener, thisObject);
   }
 
   /**
-   * @param {function(!Common.Event)} listener
+   * @param {function(!EventTargetEvent)} listener
    * @param {!Object=} thisObject
    */
   removeChangeListener(listener, thisObject) {
@@ -358,7 +360,7 @@ export class Setting {
         this._printSettingsSavingError(e.message, this._name, settingString);
       }
     } catch (e) {
-      self.Common.console.error('Cannot stringify setting with name: ' + this._name + ', error: ' + e.message);
+      Console.instance().error('Cannot stringify setting with name: ' + this._name + ', error: ' + e.message);
     }
     this._eventSupport.dispatchEventToListeners(this._name, value);
   }
@@ -385,7 +387,7 @@ export class Setting {
     const errorMessage =
         'Error saving setting with name: ' + this._name + ', value length: ' + value.length + '. Error: ' + message;
     console.error(errorMessage);
-    self.Common.console.error(errorMessage);
+    Console.instance().error(errorMessage);
     this._storage._dumpSizes();
   }
 }
@@ -889,6 +891,40 @@ export class VersionController {
     if (setting.get() === 'default') {
       setting.set('systemPreferred');
     }
+  }
+
+  _updateVersionFrom28To29() {
+    /**
+     * @param {string} settingName
+     * @param {string} from
+     * @param {string} to
+     */
+    function renameKeyInObjectSetting(settingName, from, to) {
+      const setting = self.Common.settings.createSetting(settingName, {});
+      const value = setting.get();
+      if (from in value) {
+        value[to] = value[from];
+        delete value[from];
+        setting.set(value);
+      }
+    }
+
+    /**
+     * @param {string} settingName
+     * @param {string} from
+     * @param {string} to
+     */
+    function renameInStringSetting(settingName, from, to) {
+      const setting = self.Common.settings.createSetting(settingName, '');
+      const value = setting.get();
+      if (value === from) {
+        setting.set(to);
+      }
+    }
+
+    renameKeyInObjectSetting('panel-tabOrder', 'audits', 'lighthouse');
+    renameKeyInObjectSetting('panel-closeableTabs', 'audits', 'lighthouse');
+    renameInStringSetting('panel-selectedTab', 'audits', 'lighthouse');
   }
 
   _migrateSettingsFromLocalStorage() {

@@ -37,7 +37,7 @@ import {CSSModel} from './CSSModel.js';
 import {OverlayModel} from './OverlayModel.js';
 import {RemoteObject} from './RemoteObject.js';  // eslint-disable-line no-unused-vars
 import {RuntimeModel} from './RuntimeModel.js';
-import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import {Capability, SDKModel, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
@@ -89,8 +89,8 @@ export class DOMNode {
 
     this._shadowRoots = [];
 
-    this._attributes = [];
-    this._attributesMap = {};
+    /** @type {!Map<string, !Attribute>} */
+    this._attributes = new Map();
     if (payload.attributes) {
       this._setAttributesPayload(payload.attributes);
     }
@@ -128,7 +128,7 @@ export class DOMNode {
       this._contentDocument.parentNode = this;
       this._children = [];
     } else if ((payload.nodeName === 'IFRAME' || payload.nodeName === 'PORTAL') && payload.frameId) {
-      const childTarget = self.SDK.targetManager.targetById(payload.frameId);
+      const childTarget = TargetManager.instance().targetById(payload.frameId);
       const childModel = childTarget ? childTarget.model(DOMModel) : null;
       if (childModel) {
         this._childDocumentPromiseForTesting = childModel.requestDocument();
@@ -215,7 +215,7 @@ export class DOMNode {
    * @return {boolean}
    */
   hasAttributes() {
-    return this._attributes.length > 0;
+    return this._attributes.size > 0;
   }
 
   /**
@@ -479,10 +479,10 @@ export class DOMNode {
 
   /**
    * @param {string} name
-   * @return {string}
+   * @return {string|undefined}
    */
   getAttribute(name) {
-    const attr = this._attributesMap[name];
+    const attr = this._attributes.get(name);
     return attr ? attr.value : undefined;
   }
 
@@ -528,10 +528,10 @@ export class DOMNode {
   }
 
   /**
-   * @return {!Array<!SDK.DOMNode.Attribute>}
+   * @return {!Array<!Attribute>}
    */
   attributes() {
-    return this._attributes;
+    return [...this._attributes.values()];
   }
 
   /**
@@ -543,11 +543,7 @@ export class DOMNode {
     if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
       return;
     }
-    delete this._attributesMap[name];
-    const index = this._attributes.findIndex(attr => attr.name === name);
-    if (index !== -1) {
-      this._attributes.splice(index, 1);
-    }
+    this._attributes.delete(name);
     this._domModel.markUndoableState();
   }
 
@@ -688,11 +684,10 @@ export class DOMNode {
    * @return {boolean}
    */
   _setAttributesPayload(attrs) {
-    let attributesChanged = !this._attributes || attrs.length !== this._attributes.length * 2;
-    const oldAttributesMap = this._attributesMap || {};
+    let attributesChanged = !this._attributes || attrs.length !== this._attributes.size * 2;
+    const oldAttributesMap = this._attributes || new Map();
 
-    this._attributes = [];
-    this._attributesMap = {};
+    this._attributes = new Map();
 
     for (let i = 0; i < attrs.length; i += 2) {
       const name = attrs[i];
@@ -703,7 +698,7 @@ export class DOMNode {
         continue;
       }
 
-      if (!oldAttributesMap[name] || oldAttributesMap[name].value !== value) {
+      if (!oldAttributesMap.has(name) || oldAttributesMap.get(name).value !== value) {
         attributesChanged = true;
       }
     }
@@ -713,7 +708,7 @@ export class DOMNode {
   /**
    * @param {!DOMNode} prev
    * @param {!Protocol.DOM.Node} payload
-   * @return {!SDK.DOMNode}
+   * @return {!DOMNode}
    */
   _insertChild(prev, payload) {
     const node = DOMNode.create(this._domModel, this.ownerDocument, this._isInShadowTree, payload);
@@ -809,8 +804,7 @@ export class DOMNode {
    */
   _addAttribute(name, value) {
     const attr = {name: name, value: value, _node: this};
-    this._attributesMap[name] = attr;
-    this._attributes.push(attr);
+    this._attributes.set(name, attr);
   }
 
   /**
@@ -818,7 +812,7 @@ export class DOMNode {
    * @param {string} value
    */
   _setAttribute(name, value) {
-    const attr = this._attributesMap[name];
+    const attr = this._attributes.get(name);
     if (attr) {
       attr.value = value;
     } else {
@@ -830,16 +824,12 @@ export class DOMNode {
    * @param {string} name
    */
   _removeAttribute(name) {
-    const attr = this._attributesMap[name];
-    if (attr) {
-      this._attributes.remove(attr);
-      delete this._attributesMap[name];
-    }
+    this._attributes.delete(name);
   }
 
   /**
    * @param {!DOMNode} targetNode
-   * @param {?SDK.DOMNode} anchorNode
+   * @param {?DOMNode} anchorNode
    * @param {function(?ProtocolModule.InspectorBackend.ProtocolError, !Protocol.DOM.NodeId=)=} callback
    */
   copyTo(targetNode, anchorNode, callback) {
@@ -858,7 +848,7 @@ export class DOMNode {
 
   /**
    * @param {!DOMNode} targetNode
-   * @param {?SDK.DOMNode} anchorNode
+   * @param {?DOMNode} anchorNode
    * @param {function(?ProtocolModule.InspectorBackend.ProtocolError, ?SDK.DOMNode)=} callback
    */
   moveTo(targetNode, anchorNode, callback) {
@@ -1242,7 +1232,7 @@ export class DOMModel extends SDKModel {
   }
 
   static cancelSearch() {
-    for (const domModel of self.SDK.targetManager.models(DOMModel)) {
+    for (const domModel of TargetManager.instance().models(DOMModel)) {
       domModel._cancelSearch();
     }
   }
@@ -1355,7 +1345,7 @@ export class DOMModel extends SDKModel {
    */
   async pushNodesByBackendIdsToFrontend(backendNodeIds) {
     await this.requestDocument();
-    const backendNodeIdsArray = backendNodeIds.valuesArray();
+    const backendNodeIdsArray = [...backendNodeIds];
     const nodeIds = await this._agent.pushNodesByBackendIdsToFrontend(backendNodeIdsArray);
     if (!nodeIds) {
       return null;
@@ -2020,3 +2010,6 @@ export class DOMModelUndoStack {
 }
 
 SDKModel.register(DOMModel, Capability.DOM, true);
+
+/** @typedef {{name: string, value: string, _node: DOMNode}} */
+export let Attribute;

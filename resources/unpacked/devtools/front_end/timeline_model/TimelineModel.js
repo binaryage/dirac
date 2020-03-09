@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';
 
 import {TimelineJSProfileProcessor} from './TimelineJSProfile.js';
@@ -172,8 +173,8 @@ export class TimelineModelImpl {
   targetByEvent(event) {
     // FIXME: Consider returning null for loaded traces.
     const workerId = this._workerIdByThread.get(event.thread);
-    const mainTarget = self.SDK.targetManager.mainTarget();
-    return workerId ? self.SDK.targetManager.targetById(workerId) : mainTarget;
+    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    return workerId ? SDK.SDKModel.TargetManager.instance().targetById(workerId) : mainTarget;
   }
 
   /**
@@ -225,7 +226,7 @@ export class TimelineModelImpl {
 
   /**
    * @param {!SDK.TracingModel.TracingModel} tracingModel
-   * @param {!TimelineModel.TimelineModel.MetadataEvents} metadataEvents
+   * @param {!MetadataEvents} metadataEvents
    */
   _processMetadataAndThreads(tracingModel, metadataEvents) {
     let startTime = 0;
@@ -351,7 +352,7 @@ export class TimelineModelImpl {
 
   /**
    * @param {!SDK.TracingModel.TracingModel} tracingModel
-   * @return {?TimelineModel.TimelineModel.MetadataEvents}
+   * @return {?MetadataEvents}
    */
   _processMetadataEvents(tracingModel) {
     const metadataEvents = tracingModel.devToolsMetadataEvents();
@@ -405,9 +406,9 @@ export class TimelineModelImpl {
       workers: workersDevToolsMetadataEvents.sort(SDK.TracingModel.Event.compareStartTime)
     };
     if (mismatchingIds.size) {
-      self.Common.console.error(
+      Common.Console.Console.instance().error(
           'Timeline recording was started in more than one page simultaneously. Session id mismatch: ' +
-          this._sessionId + ' and ' + mismatchingIds.valuesArray() + '.');
+          this._sessionId + ' and ' + [...mismatchingIds] + '.');
     }
     return result;
   }
@@ -489,7 +490,7 @@ export class TimelineModelImpl {
       target = this.targetByEvent(cpuProfileEvent);
       const profileGroup = tracingModel.profileGroup(cpuProfileEvent);
       if (!profileGroup) {
-        self.Common.console.error('Invalid CPU profile format.');
+        Common.Console.Console.instance().error('Invalid CPU profile format.');
         return null;
       }
       cpuProfile = /** @type {!Protocol.Profiler.Profile} */ ({
@@ -516,7 +517,7 @@ export class TimelineModelImpl {
         cpuProfile.samples.push(...samples);
         cpuProfile.timeDeltas.push(...(eventData['timeDeltas'] || []));
         if (cpuProfile.samples.length !== cpuProfile.timeDeltas.length) {
-          self.Common.console.error('Failed to parse CPU profile.');
+          Common.Console.Console.instance().error('Failed to parse CPU profile.');
           return null;
         }
       }
@@ -530,7 +531,7 @@ export class TimelineModelImpl {
       this._cpuProfiles.push(jsProfileModel);
       return jsProfileModel;
     } catch (e) {
-      self.Common.console.error('Failed to parse CPU profile.');
+      Common.Console.Console.instance().error('Failed to parse CPU profile.');
     }
     return null;
   }
@@ -1486,7 +1487,7 @@ TimelineModelImpl.DevToolsMetadataEvent = {
 };
 
 TimelineModelImpl.Thresholds = {
-  LongTask: 200,
+  LongTask: 50,
   Handler: 150,
   RecurringHandler: 50,
   ForcedLayout: 30,
@@ -1830,7 +1831,7 @@ export class InvalidationTrackingEvent {
     this.extraData = eventData['extraData'];
     /** @type {?Array.<!Object.<string, number>>} */
     this.invalidationList = eventData['invalidationList'];
-    /** @type {!TimelineModel.InvalidationCause} */
+    /** @type {!InvalidationCause} */
     this.cause = {reason: eventData['reason'], stackTrace: eventData['stackTrace']};
 
     // FIXME: Move this to TimelineUIUtils.js.
@@ -2233,3 +2234,9 @@ export class TimelineData {
 }
 
 TimelineData._symbol = Symbol('timelineData');
+
+/** @typedef {{reason: string, stackTrace: ?Array<!Protocol.Runtime.CallFrame>}} */
+export let InvalidationCause;
+
+/** @typedef {!{page: !Array<!SDK.TracingModel.Event>, workers: !Array<!SDK.TracingModel.Event>}} */
+export let MetadataEvents;

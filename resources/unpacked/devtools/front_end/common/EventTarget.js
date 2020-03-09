@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 /**
- * @typedef {!{eventTarget: !Common.EventTarget, eventType: (string|symbol), thisObject: (!Object|undefined), listener: function(!Common.Event)}}
+ * @typedef {!{eventTarget: !EventTarget, eventType: (string|symbol), thisObject: (!Object|undefined), listener: function(!EventTargetEvent):void}}
  */
+// @ts-ignore TS can't pick up that EventDescriptor is of this type
 export let EventDescriptor;
 
 /**
- * @param {!Array<!Common.EventTarget.EventDescriptor>} eventList
+ * @param {!Array<!EventDescriptor>} eventList
  */
 export function removeEventListeners(eventList) {
   for (const eventInfo of eventList) {
@@ -24,26 +25,29 @@ export function removeEventListeners(eventList) {
 export class EventTarget {
   /**
    * @param {symbol} eventType
-   * @param {function(!Common.Event)} listener
+   * @param {function(!EventTargetEvent):void} listener
    * @param {!Object=} thisObject
-   * @return {!Common.EventTarget.EventDescriptor}
+   * @return {!EventDescriptor}
    */
   addEventListener(eventType, listener, thisObject) {
-  }
-
-  /**
-   * @param {symbol} eventType
-   * @return {!Promise<*>}
-   */
-  once(eventType) {
+    throw new Error('not implemented');
   }
 
   /**
    * @param {string|symbol} eventType
-   * @param {function(!Common.Event)} listener
+   * @return {!Promise<*>}
+   */
+  once(eventType) {
+    throw new Error('not implemented');
+  }
+
+  /**
+   * @param {string|symbol} eventType
+   * @param {function(!EventTargetEvent):void} listener
    * @param {!Object=} thisObject
    */
   removeEventListener(eventType, listener, thisObject) {
+    throw new Error('not implemented');
   }
 
   /**
@@ -51,6 +55,7 @@ export class EventTarget {
    * @return {boolean}
    */
   hasEventListeners(eventType) {
+    throw new Error('not implemented');
   }
 
   /**
@@ -62,3 +67,19 @@ export class EventTarget {
 }
 
 EventTarget.removeEventListeners = removeEventListeners;
+
+/**
+ * @param {string} name
+ * @param {*} detail
+ * @param {!HTMLElement | !Window} target
+ */
+export function fireEvent(name, detail = {}, target = window) {
+  const evt = new CustomEvent(name, {bubbles: true, cancelable: true, detail});
+  target.dispatchEvent(evt);
+}
+
+/**
+ * @typedef {!{data: *}}
+ */
+// @ts-ignore TS can't pick up that EventTargetEvent is of this type
+export let EventTargetEvent;

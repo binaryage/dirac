@@ -24,6 +24,7 @@
  */
 
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 import * as UI from '../ui/ui.js';
 
 /**
@@ -32,7 +33,7 @@ import * as UI from '../ui/ui.js';
  */
 export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
   /**
-   * @param {!DataGrid.Parameters} dataGridParameters
+   * @param {!Parameters} dataGridParameters
    */
   constructor(dataGridParameters) {
     super();
@@ -43,7 +44,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
     this.element.addEventListener('keydown', this._keyDown.bind(this), false);
     this.element.addEventListener('contextmenu', this._contextMenu.bind(this), true);
     this.element.addEventListener('focusin', event => {
-      this.updateGridAccessibleName(/* text */ undefined, /* readGridName */ true);
+      this.updateGridAccessibleNameOnFocus();
       event.consume(true);
     });
     this.element.addEventListener('focusout', event => {
@@ -85,11 +86,11 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
     /** @type {boolean} */
     this._inline = false;
 
-    /** @type {!Array.<!DataGrid.ColumnDescriptor>} */
+    /** @type {!Array.<!ColumnDescriptor>} */
     this._columnsArray = [];
-    /** @type {!Object.<string, !DataGrid.ColumnDescriptor>} */
+    /** @type {!Object.<string, !ColumnDescriptor>} */
     this._columns = {};
-    /** @type {!Array.<!DataGrid.ColumnDescriptor>} */
+    /** @type {!Array.<!ColumnDescriptor>} */
     this.visibleColumnsArray = columnsArray;
 
     columnsArray.forEach(column => this._innerAddColumn(column));
@@ -227,6 +228,9 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
    */
   setFocusable(focusable) {
     this.element.tabIndex = focusable ? 0 : -1;
+    if (focusable === false) {
+      UI.ARIAUtils.removeRole(this.element);
+    }
   }
 
   /**
@@ -239,27 +243,30 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {string=} text
-   * @param {boolean=} readGridName
    */
-  updateGridAccessibleName(text, readGridName) {
-    // If text provided, update and return
-    if (typeof text !== 'undefined') {
-      this._ariaLiveLabel.textContent = text;
-      return;
-    }
-    // readGridName: When navigating to the grid from a different element,
-    // append the displayname of the grid for SR context.
+  updateGridAccessibleName(text) {
+    // Update the label with the provided text or the current selected node
+    const accessibleText = (this.selectedNode && this.selectedNode.existingElement()) ? this.selectedNode.nodeAccessibleText : '';
+    this._ariaLiveLabel.textContent = text ? text : accessibleText;
+  }
+
+  updateGridAccessibleNameOnFocus() {
+    // When a grid gets focus
+    // 1) If an item is selected - Read the content of the row
     let accessibleText;
     if (this.selectedNode && this.selectedNode.existingElement()) {
       let expandText = '';
       if (this.selectedNode.hasChildren()) {
         expandText = this.selectedNode.expanded ? ls`expanded` : ls`collapsed`;
       }
-      const rowHeader = readGridName ? ls`${this._displayName} Row ${expandText}` : expandText;
+      const rowHeader = ls`${this._displayName} Row ${expandText}`;
       accessibleText = `${rowHeader} ${this.selectedNode.nodeAccessibleText}`;
     } else {
+      // 2) If there is no selected item - Read the name of the grid and give instructions
+      const children = this._enumerateChildren(this._rootNode, [], 1);
+      const items = ls`Rows: ${children.length}`;
       accessibleText = ls`${
-          this._displayName}, use the up and down arrow keys to navigate and interact with the rows of the table; Use browse mode to read cell by cell.`;
+          this._displayName} ${items}, use the up and down arrow keys to navigate and interact with the rows of the table; Use browse mode to read cell by cell.`;
     }
     this._ariaLiveLabel.textContent = accessibleText;
   }
@@ -272,7 +279,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {!DataGrid.ColumnDescriptor} column
+   * @param {!ColumnDescriptor} column
    * @param {number=} position
    */
   _innerAddColumn(column, position) {
@@ -321,7 +328,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {!DataGrid.ColumnDescriptor} column
+   * @param {!ColumnDescriptor} column
    * @param {number=} position
    */
   addColumn(column, position) {
@@ -486,7 +493,8 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
           hasChanged = true;
           return this._editingCommitted(
               element, checkboxElement.checked, initialValue, undefined, event.shiftKey ? 'backward' : 'forward');
-        } else if (event.key === ' ') {
+        }
+        if (event.key === ' ') {
           event.consume(true);
           checkboxElement.checked = !checkboxElement.checked;
         } else if (event.key === 'Enter') {
@@ -1320,15 +1328,15 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
           Common.UIString.UIString('Reset Columns'), this._resetColumnWeights.bind(this));
       contextMenu.show();
       return;
-    } else {
-      // Add header context menu to a subsection available from the body
-      const headerSubMenu = contextMenu.defaultSection().appendSubMenuItem(ls`Header Options`);
-      if (this._headerContextMenuCallback) {
-        this._headerContextMenuCallback(headerSubMenu);
-      }
-      headerSubMenu.defaultSection().appendItem(
-          Common.UIString.UIString('Reset Columns'), this._resetColumnWeights.bind(this));
     }
+
+    // Add header context menu to a subsection available from the body
+    const headerSubMenu = contextMenu.defaultSection().appendSubMenuItem(ls`Header Options`);
+    if (this._headerContextMenuCallback) {
+      this._headerContextMenuCallback(headerSubMenu);
+    }
+    headerSubMenu.defaultSection().appendItem(
+        Common.UIString.UIString('Reset Columns'), this._resetColumnWeights.bind(this));
 
     const isContextMenuKey = (event.button === 0);
     const gridNode = isContextMenuKey ? this.selectedNode : this.dataGridNodeFromNode(target);
@@ -1466,7 +1474,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
 
-    dragPoint = Number.constrain(dragPoint, leftMinimum, rightMaximum);
+    dragPoint = Platform.NumberUtilities.clamp(dragPoint, leftMinimum, rightMaximum);
 
     const position = (dragPoint - CenterResizerOverBorderAdjustment);
     resizer.__position = position;
@@ -2290,7 +2298,7 @@ export class DataGridNode extends Common.ObjectWrapper.ObjectWrapper {
     if (this._element) {
       this._element.classList.remove('selected');
       this.dataGrid.setHasSelection(false);
-      this.dataGrid.updateGridAccessibleName();
+      this.dataGrid.updateGridAccessibleName('');
     }
 
     if (!supressDeselectedEvent) {
@@ -2480,6 +2488,7 @@ export class DataGridWidget extends UI.Widget.VBox {
     super();
     this._dataGrid = dataGrid;
     this.element.appendChild(dataGrid.element);
+    this.setDefaultFocusedElement(dataGrid.element);
   }
 
   /**
@@ -2522,3 +2531,34 @@ export class DataGridWidget extends UI.Widget.VBox {
     this._dataGrids = [];
   }
 }
+
+/**
+ * @typedef {{
+ *   displayName: string,
+ *   columns: !Array.<!ColumnDescriptor>,
+ *   editCallback: (function(!Object, string, *, *)|undefined),
+ *   deleteCallback: (function(!Object)|undefined|function(string)),
+ *   refreshCallback: (function()|undefined)
+ * }}
+ */
+export let Parameters;
+
+/**
+ * @typedef {{
+ *   id: string,
+ *   title: (string|undefined),
+ *   titleDOMFragment: (?DocumentFragment|undefined),
+ *   sortable: boolean,
+ *   sort: (?Order|undefined),
+ *   align: (?Align|undefined),
+ *   fixedWidth: (boolean|undefined),
+ *   editable: (boolean|undefined),
+ *   nonSelectable: (boolean|undefined),
+ *   longText: (boolean|undefined),
+ *   disclosure: (boolean|undefined),
+ *   weight: (number|undefined),
+ *   allowInSortByEvenWhenHidden: (boolean|undefined),
+ *   dataType: (?DataType|undefined)
+ * }}
+ */
+export let ColumnDescriptor;

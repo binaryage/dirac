@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as PerfUI from '../perf_ui/perf_ui.js';
+import * as Platform from '../platform/platform.js';
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  */
-export class HeapTimelineOverview extends UI.VBox {
+export class HeapTimelineOverview extends UI.Widget.VBox {
   constructor() {
     super();
     this.element.id = 'heap-recording-view';
@@ -13,7 +17,7 @@ export class HeapTimelineOverview extends UI.VBox {
 
     this._overviewCalculator = new OverviewCalculator();
     this._overviewContainer = this.element.createChild('div', 'heap-overview-container');
-    this._overviewGrid = new PerfUI.OverviewGrid('heap-recording', this._overviewCalculator);
+    this._overviewGrid = new PerfUI.OverviewGrid.OverviewGrid('heap-recording', this._overviewCalculator);
     this._overviewGrid.element.classList.add('fill');
 
     this._overviewCanvas = this._overviewContainer.createChild('canvas', 'heap-recording-overview-canvas');
@@ -271,7 +275,7 @@ export class SmoothScale {
       const maxChangePerSec = 20;
       const maxChangePerDelta = Math.pow(maxChangePerSec, timeDeltaMs / 1000);
       const scaleChange = target / this._currentScale;
-      this._currentScale *= Number.constrain(scaleChange, 1 / maxChangePerDelta, maxChangePerDelta);
+      this._currentScale *= Platform.NumberUtilities.clamp(scaleChange, 1 / maxChangePerDelta, maxChangePerDelta);
     } else {
       this._currentScale = target;
     }

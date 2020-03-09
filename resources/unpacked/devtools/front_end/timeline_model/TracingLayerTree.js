@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as SDK from '../sdk/sdk.js';
+import * as Common from '../common/common.js';
 
 import {LayerPaintEvent} from './TimelineFrameModel.js';  // eslint-disable-line no-unused-vars
 
@@ -15,14 +16,14 @@ export class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
    */
   constructor(target) {
     super(target);
-    /** @type {!Map.<string, !TimelineModel.TracingLayerTile>} */
+    /** @type {!Map.<string, !TracingLayerTile>} */
     this._tileById = new Map();
     this._paintProfilerModel = target && target.model(SDK.PaintProfiler.PaintProfilerModel);
   }
 
   /**
-   * @param {?TimelineModel.TracingLayerPayload} root
-   * @param {?Array<!TimelineModel.TracingLayerPayload>} layers
+   * @param {?TracingLayerPayload} root
+   * @param {?Array<!TracingLayerPayload>} layers
    * @param {!Array<!LayerPaintEvent>} paints
    * @return {!Promise}
    */
@@ -60,7 +61,7 @@ export class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
   }
 
   /**
-   * @param {!Array.<!TimelineModel.TracingLayerTile>} tiles
+   * @param {!Array.<!TracingLayerTile>} tiles
    */
   setTiles(tiles) {
     this._tileById = new Map();
@@ -76,12 +77,12 @@ export class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
   pictureForRasterTile(tileId) {
     const tile = this._tileById.get('cc::Tile/' + tileId);
     if (!tile) {
-      self.Common.console.error(`Tile ${tileId} is missing`);
+      Common.Console.Console.instance().error(`Tile ${tileId} is missing`);
       return /** @type {!Promise<?SDK.PaintProfiler.SnapshotWithRect>} */ (Promise.resolve(null));
     }
     const layer = /** @type {?TracingLayer} */ (this.layerById(tile.layer_id));
     if (!layer) {
-      self.Common.console.error(`Layer ${tile.layer_id} for tile ${tileId} is not found`);
+      Common.Console.Console.instance().error(`Layer ${tile.layer_id} for tile ${tileId} is not found`);
       return /** @type {!Promise<?SDK.PaintProfiler.SnapshotWithRect>} */ (Promise.resolve(null));
     }
     return layer._pictureForRect(tile.content_rect);
@@ -101,7 +102,7 @@ export class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
 
   /**
    * @param {!Object<(string|number), !SDK.LayerTreeBase.Layer>} oldLayersById
-   * @param {!TimelineModel.TracingLayerPayload} payload
+   * @param {!TracingLayerPayload} payload
    * @return {!TracingLayer}
    */
   _innerSetLayers(oldLayersById, payload) {
@@ -127,7 +128,7 @@ export class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
   /**
    * @param {!Set<number>} nodeIdsToResolve
    * @param {!Object} seenNodeIds
-   * @param {!TimelineModel.TracingLayerPayload} payload
+   * @param {!TracingLayerPayload} payload
    */
   _extractNodeIdsToResolve(nodeIdsToResolve, seenNodeIds, payload) {
     const backendNodeId = payload.owner_node;
@@ -147,7 +148,7 @@ export class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
 export class TracingLayer {
   /**
    * @param {?SDK.PaintProfiler.PaintProfilerModel} paintProfilerModel
-   * @param {!TimelineModel.TracingLayerPayload} payload
+   * @param {!TracingLayerPayload} payload
    */
   constructor(paintProfilerModel, payload) {
     this._paintProfilerModel = paintProfilerModel;
@@ -155,7 +156,7 @@ export class TracingLayer {
   }
 
   /**
-   * @param {!TimelineModel.TracingLayerPayload} payload
+   * @param {!TracingLayerPayload} payload
    */
   _reset(payload) {
     /** @type {?SDK.DOMModel.DOMNode} */
@@ -435,7 +436,7 @@ export class TracingLayer {
   }
 
   /**
-   * @param {!TimelineModel.TracingLayerPayload} payload
+   * @param {!TracingLayerPayload} payload
    */
   _createScrollRects(payload) {
     this._scrollRects = [];
@@ -481,3 +482,28 @@ export class TracingLayer {
     return this._drawsContent;
   }
 }
+
+/** @typedef {!{
+ bounds: {height: number, width: number},
+ children: Array.<!TracingLayerPayload>,
+ layer_id: number,
+ position: Array.<number>,
+ scroll_offset: Array.<number>,
+ layer_quad: Array.<number>,
+ draws_content: number,
+ gpu_memory_usage: number,
+ transform: Array.<number>,
+ owner_node: number,
+ compositing_reasons: Array.<string>
+}}
+*/
+export let TracingLayerPayload;
+
+/** @typedef {!{
+ id: string,
+ layer_id: string,
+ gpu_memory_usage: number,
+ content_rect: !Array.<number>
+}}
+*/
+export let TracingLayerTile;

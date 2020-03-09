@@ -36,7 +36,7 @@ import {Events as NetworkManagerEvents, NetworkManager} from './NetworkManager.j
 import {NetworkRequest} from './NetworkRequest.js';  // eslint-disable-line no-unused-vars
 import {Resource} from './Resource.js';
 import {ExecutionContext, RuntimeModel} from './RuntimeModel.js';
-import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import {Capability, SDKModel, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 import {SecurityOriginManager} from './SecurityOriginManager.js';
 
 export class ResourceTreeModel extends SDKModel {
@@ -86,9 +86,9 @@ export class ResourceTreeModel extends SDKModel {
    * @return {!Array.<!ResourceTreeFrame>}
    */
   static frames() {
-    let result = [];
-    for (const resourceTreeModel of self.SDK.targetManager.models(ResourceTreeModel)) {
-      result = result.concat(resourceTreeModel._frames.valuesArray());
+    const result = [];
+    for (const resourceTreeModel of TargetManager.instance().models(ResourceTreeModel)) {
+      result.push(...resourceTreeModel._frames.values());
     }
     return result;
   }
@@ -98,7 +98,7 @@ export class ResourceTreeModel extends SDKModel {
    * @return {?Resource}
    */
   static resourceForURL(url) {
-    for (const resourceTreeModel of self.SDK.targetManager.models(ResourceTreeModel)) {
+    for (const resourceTreeModel of TargetManager.instance().models(ResourceTreeModel)) {
       const mainFrame = resourceTreeModel.mainFrame;
       const result = mainFrame ? mainFrame.resourceForURL(url) : null;
       if (result) {
@@ -113,7 +113,7 @@ export class ResourceTreeModel extends SDKModel {
    * @param {string=} scriptToEvaluateOnLoad
    */
   static reloadAllPages(bypassCache, scriptToEvaluateOnLoad) {
-    for (const resourceTreeModel of self.SDK.targetManager.models(ResourceTreeModel)) {
+    for (const resourceTreeModel of TargetManager.instance().models(ResourceTreeModel)) {
       if (!resourceTreeModel.target().parentTarget()) {
         resourceTreeModel.reloadPage(bypassCache, scriptToEvaluateOnLoad);
       }
@@ -259,7 +259,7 @@ export class ResourceTreeModel extends SDKModel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onRequestFinished(event) {
     if (!this._cachedResourcesProcessed) {
@@ -278,7 +278,7 @@ export class ResourceTreeModel extends SDKModel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onRequestUpdateDropped(event) {
     if (!this._cachedResourcesProcessed) {
@@ -325,7 +325,7 @@ export class ResourceTreeModel extends SDKModel {
    * @return {!Array<!ResourceTreeFrame>}
    */
   frames() {
-    return this._frames.valuesArray();
+    return [...this._frames.values()];
   }
 
   /**
@@ -469,7 +469,7 @@ export class ResourceTreeModel extends SDKModel {
 
   /**
    * @param {!ExecutionContext} a
-   * @param {!SDK.ExecutionContext} b
+   * @param {!ExecutionContext} b
    * @return {number}
    */
   _executionContextComparator(a, b) {
@@ -518,7 +518,7 @@ export class ResourceTreeModel extends SDKModel {
   }
 
   /**
-   * @return {!SDK.ResourceTreeModel.SecurityOriginData}
+   * @return {!SecurityOriginData}
    */
   _getSecurityOriginData() {
     /** @type {!Set<string>} */
@@ -935,6 +935,14 @@ export class PageDispatcher {
    * @param {!Protocol.Page.Frame} frame
    */
   frameNavigated(frame) {
+    const url = new URL(frame.url);
+    if (url.protocol === 'chrome-error:') {
+      // Skip navigation to chrome-error interstitials to
+      // allow developers to see resources of the origin they
+      // originally intended to see.
+      return;
+    }
+
     this._resourceTreeModel._frameNavigated(frame);
   }
 
@@ -1086,3 +1094,12 @@ export class PageDispatcher {
 }
 
 SDKModel.register(ResourceTreeModel, Capability.DOM, true);
+
+/**
+ * @typedef {{
+  *      securityOrigins: !Set<string>,
+  *      mainSecurityOrigin: ?string,
+  *      unreachableMainSecurityOrigin: ?string
+  * }}
+  */
+export let SecurityOriginData;

@@ -28,8 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
+import * as PerfUI from '../perf_ui/perf_ui.js';
+import * as UI from '../ui/ui.js';
+
 /**
- * @implements {PerfUI.FlameChartDataProvider}
+ * @implements {PerfUI.FlameChart.FlameChartDataProvider}
  * @unrestricted
  */
 export class ProfileFlameChartDataProvider {
@@ -127,7 +132,7 @@ export class ProfileFlameChartDataProvider {
    */
   entryTitle(entryIndex) {
     const node = this._entryNodes[entryIndex];
-    return UI.beautifyFunctionName(node.functionName);
+    return UI.UIUtils.beautifyFunctionName(node.functionName);
   }
 
   /**
@@ -137,7 +142,7 @@ export class ProfileFlameChartDataProvider {
    */
   entryFont(entryIndex) {
     if (!this._font) {
-      this._font = '11px ' + Host.fontFamily();
+      this._font = '11px ' + Host.Platform.fontFamily();
       this._boldFont = 'bold ' + this._font;
     }
     const node = this._entryNodes[entryIndex];
@@ -192,12 +197,12 @@ export class ProfileFlameChartDataProvider {
 
 
 /**
- * @implements {UI.Searchable}
+ * @implements {UI.SearchableView.Searchable}
  * @unrestricted
  */
-export class CPUProfileFlameChart extends UI.VBox {
+export class CPUProfileFlameChart extends UI.Widget.VBox {
   /**
-   * @param {!UI.SearchableView} searchableView
+   * @param {!UI.SearchableView.SearchableView} searchableView
    * @param {!ProfileFlameChartDataProvider} dataProvider
    */
   constructor(searchableView, dataProvider) {
@@ -208,7 +213,7 @@ export class CPUProfileFlameChart extends UI.VBox {
     this._overviewPane = new OverviewPane(dataProvider);
     this._overviewPane.show(this.element);
 
-    this._mainPane = new PerfUI.FlameChart(dataProvider, this._overviewPane);
+    this._mainPane = new PerfUI.FlameChart.FlameChart(dataProvider, this._overviewPane);
     this._mainPane.setBarHeight(15);
     this._mainPane.setTextBaseline(4);
     this._mainPane.setTextPadding(2);
@@ -230,7 +235,7 @@ export class CPUProfileFlameChart extends UI.VBox {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onWindowChanged(event) {
     const windowLeft = event.data.windowTimeLeft;
@@ -247,7 +252,7 @@ export class CPUProfileFlameChart extends UI.VBox {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onEntrySelected(event) {
     if (event.data) {
@@ -265,7 +270,7 @@ export class CPUProfileFlameChart extends UI.VBox {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onEntryInvoked(event) {
     this._onEntrySelected(event);
@@ -424,19 +429,19 @@ export class OverviewCalculator {
 }
 
 /**
- * @implements {PerfUI.FlameChartDelegate}
+ * @implements {PerfUI.FlameChart.FlameChartDelegate}
  * @unrestricted
  */
-export class OverviewPane extends UI.VBox {
+export class OverviewPane extends UI.Widget.VBox {
   /**
-   * @param {!PerfUI.FlameChartDataProvider} dataProvider
+   * @param {!PerfUI.FlameChart.FlameChartDataProvider} dataProvider
    */
   constructor(dataProvider) {
     super();
     this.element.classList.add('cpu-profile-flame-chart-overview-pane');
     this._overviewContainer = this.element.createChild('div', 'cpu-profile-flame-chart-overview-container');
     this._overviewCalculator = new OverviewCalculator(dataProvider);
-    this._overviewGrid = new PerfUI.OverviewGrid('cpu-profile-flame-chart', this._overviewCalculator);
+    this._overviewGrid = new PerfUI.OverviewGrid.OverviewGrid('cpu-profile-flame-chart', this._overviewCalculator);
     this._overviewGrid.element.classList.add('fill');
     this._overviewCanvas = this._overviewContainer.createChild('canvas', 'cpu-profile-flame-chart-overview-canvas');
     this._overviewContainer.appendChild(this._overviewGrid.element);
@@ -463,7 +468,7 @@ export class OverviewPane extends UI.VBox {
 
   /**
    * @override
-   * @param {!PerfUI.FlameChart} flameChart
+   * @param {!PerfUI.FlameChart.FlameChart} flameChart
    * @param {?PerfUI.FlameChart.Group} group
    */
   updateSelectedGroup(flameChart, group) {
@@ -480,7 +485,7 @@ export class OverviewPane extends UI.VBox {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onWindowChanged(event) {
     const windowPosition = {windowTimeLeft: event.data.rawStartValue, windowTimeRight: event.data.rawEndValue};

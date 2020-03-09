@@ -2,20 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as puppeteer from 'puppeteer';
+import * as fs from 'fs';
+import {join} from 'path';
 import {performance} from 'perf_hooks';
+import * as puppeteer from 'puppeteer';
+import * as os from 'os';
+
+export let platform: string;
+switch (os.platform()) {
+  case 'darwin':
+    platform = 'mac';
+    break;
+
+  case 'win32':
+    platform = 'win32';
+    break;
+
+  default:
+    platform = 'linux';
+    break;
+}
 
 interface BrowserAndPages {
   browser: puppeteer.Browser;
   target: puppeteer.Page;
   frontend: puppeteer.Page;
+  screenshot?: puppeteer.Page;
 }
 
 const targetPage = Symbol('TargetPage');
 const frontEndPage = Symbol('DevToolsPage');
+const screenshotPage = Symbol('ScreenshotPage');
 const browserInstance = Symbol('BrowserInstance');
 
-export let resetPages: (...enabledExperiments: string[]) => void;
+interface ResetPages {
+  (opts?: {enabledExperiments?: string[], selectedPanel?: {name: string, selector?: string}}): void
+}
+
+export let resetPages: ResetPages;
 
 // TODO: Remove once Chromium updates its version of Node.js to 12+.
 const globalThis: any = global;
@@ -29,7 +53,7 @@ const globalThis: any = global;
  */
 const collectAllElementsFromPage = async (root?: puppeteer.JSHandle) => {
   const frontend: puppeteer.Page = globalThis[frontEndPage];
-  await frontend.evaluate((root) => {
+  await frontend.evaluate(root => {
     const container = (self as any);
     container.__elements = [];
     const collect = (root: HTMLElement|ShadowRoot) => {
@@ -47,8 +71,8 @@ const collectAllElementsFromPage = async (root?: puppeteer.JSHandle) => {
       } while (walker.nextNode());
     };
     collect(root || document.documentElement);
-  }, root);
-}
+  }, root || '');
+};
 
 export const getElementPosition = async (selector: string, root?: puppeteer.JSHandle) => {
   const element = await $(selector, root);
@@ -75,7 +99,7 @@ export const click =
   if (!frontend) {
     throw new Error('Unable to locate DevTools frontend page. Was it stored first?');
   }
-  const clickableElement = await getElementPosition(selector, options?.root);
+  const clickableElement = await getElementPosition(selector, options && options.root);
 
   if (!clickableElement) {
     throw new Error(`Unable to locate clickable element "${selector}".`);
@@ -86,7 +110,7 @@ export const click =
   // a 'mousedown' event (not the 'click' event). To avoid attaching the test behavior
   // to a specific event we instead locate the button in question and ask Puppeteer to
   // click on it instead.
-  await frontend.mouse.click(clickableElement.x, clickableElement.y, options?.clickOptions);
+  await frontend.mouse.click(clickableElement.x, clickableElement.y, options && options.clickOptions);
 };
 
 // Get a single element handle, across Shadow DOM boundaries.
@@ -96,11 +120,15 @@ export const $ = async (selector: string, root?: puppeteer.JSHandle) => {
     throw new Error('Unable to locate DevTools frontend page. Was it stored first?');
   }
   await collectAllElementsFromPage(root);
-  const element = await frontend.evaluateHandle(selector => {
-    const elements: Element[] = globalThis.__elements;
-    return elements.find(element => element.matches(selector));
-  }, selector);
-  return element;
+  try {
+    const element = await frontend.evaluateHandle(selector => {
+      const elements: Element[] = globalThis.__elements;
+      return elements.find(element => element.matches(selector));
+    }, selector);
+    return element;
+  } catch (e) {
+    throw new Error(`Unable to find element for selector "${selector}": ${e.stack}`);
+  }
 };
 
 // Get a multiple element handles, across Shadow DOM boundaries.
@@ -117,37 +145,52 @@ export const $$ = async (selector: string, root?: puppeteer.JSHandle) => {
   return elements;
 };
 
-export const waitFor =
-    async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
+export const timeout = (duration: number) => new Promise(resolve => setTimeout(resolve, duration));
+
+export const waitFor = async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
+  return waitForFunction(async () => {
+    const element = await $(selector, root);
+    if (element.asElement()) {
+      return element;
+    }
+    return undefined;
+  }, `Unable to find element with selector ${selector}`, maxTotalTimeout);
+};
+
+export const waitForFunction =
+    async<T>(fn: () => Promise<T>, errorMessage: string, maxTotalTimeout = 0): Promise<T> => {
   if (maxTotalTimeout === 0) {
     maxTotalTimeout = Number.POSITIVE_INFINITY;
   }
 
   const start = performance.now();
-  const timeout = (duration: number) => new Promise((resolve) => setTimeout(resolve, duration));
   do {
     await timeout(100);
-    const element = await $(selector, root);
-    if (element.asElement()) {
-      return element;
+    const result = await fn();
+    if (result) {
+      return result;
     }
   } while (performance.now() - start < maxTotalTimeout);
 
-  throw new Error(`Unable to find element with selector ${selector}`);
-}
+  throw new Error(errorMessage);
+};
 
 export const debuggerStatement = (frontend: puppeteer.Page) => {
   return frontend.evaluate(() => {
+    // eslint-disable-next-line no-debugger
     debugger;
   });
 };
 
-export const store = (browser, target, frontend, reset) => {
-  globalThis[browserInstance] = browser;
-  globalThis[targetPage] = target;
-  globalThis[frontEndPage] = frontend;
-  resetPages = reset;
-};
+export const store =
+    (browser: puppeteer.Browser, target: puppeteer.Page, frontend: puppeteer.Page, screenshot: puppeteer.Page | undefined,
+     reset: ResetPages) => {
+      globalThis[browserInstance] = browser;
+      globalThis[targetPage] = target;
+      globalThis[frontEndPage] = frontend;
+      globalThis[screenshotPage] = screenshot;
+      resetPages = reset;
+    };
 
 export const getBrowserAndPages = (): BrowserAndPages => {
   if (!globalThis[targetPage]) {
@@ -166,7 +209,20 @@ export const getBrowserAndPages = (): BrowserAndPages => {
     browser: globalThis[browserInstance],
     target: globalThis[targetPage],
     frontend: globalThis[frontEndPage],
+    screenshot: globalThis[screenshotPage],
   };
 };
 
 export const resourcesPath = 'http://localhost:8090/test/e2e/resources';
+
+export function mkdirp(root: string, parts: string[]) {
+  let target = root;
+  for (const part of parts) {
+    const newTarget = join(target, part);
+    if (!fs.existsSync(newTarget)) {
+      fs.mkdirSync(newTarget);
+    }
+
+    target = newTarget;
+  }
+}

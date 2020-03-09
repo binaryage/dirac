@@ -10,7 +10,6 @@ var utils = require('../utils');
 
 const remoteDebuggingPort = parseInt(process.env.REMOTE_DEBUGGING_PORT, 10) || 9222;
 const serverPort = parseInt(process.env.PORT, 10) || 8090;
-const localProtocolPath = process.env.LOCAL_PROTOCOL_PATH;
 const devtoolsFolder = path.resolve(path.join(__dirname, '../..'));
 
 http.createServer(requestHandler).listen(serverPort);
@@ -54,7 +53,13 @@ function requestHandler(request, response) {
       sendResponse(404, '404 - File not found');
       return;
     }
-    fs.readFile(absoluteFilePath, 'binary', readFileCallback);
+
+    let encoding = 'utf8';
+    if (absoluteFilePath.endsWith('.png') || absoluteFilePath.endsWith('.jpg')) {
+      encoding = 'binary';
+    }
+
+    fs.readFile(absoluteFilePath, encoding, readFileCallback);
   }
 
   function readFileCallback(err, file) {
@@ -74,20 +79,26 @@ function requestHandler(request, response) {
       return;
     }
 
+    let encoding = 'utf8';
     if (path.endsWith('.js')) {
-      response.setHeader('Content-Type', 'text/javascript');
-    }
-
-    if (path.endsWith('.wasm')) {
+      response.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+    } else if (path.endsWith('.css')) {
+      response.setHeader('Content-Type', 'text/css; charset=utf-8');
+    } else if (path.endsWith('.wasm')) {
       response.setHeader('Content-Type', 'application/wasm');
-    }
-
-    if (path.endsWith('.svg')) {
-      response.setHeader('Content-Type', 'image/svg+xml');
+      encoding = 'binary'
+    } else if (path.endsWith('.svg')) {
+      response.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+    } else if (path.endsWith('.png')) {
+      response.setHeader('Content-Type', 'image/png');
+      encoding = 'binary';
+    } else if (path.endsWith('.jpg')) {
+      response.setHeader('Content-Type', 'image/jpg');
+      encoding = 'binary';
     }
 
     response.writeHead(statusCode);
-    response.write(data, 'binary');
+    response.write(data, encoding);
     response.end();
   }
 
@@ -101,13 +112,18 @@ function requestHandler(request, response) {
     while ((line = lines.shift()) !== undefined) {
       if (line.trim() === '') {
         isHeader = false;
+        if (request.headers['if-none-match'] && response.getHeader('ETag') === request.headers['if-none-match']) {
+          response.writeHead(304);
+          response.end();
+          return;
+        }
         response.writeHead(statusCode);
         continue;
       }
 
       if (isHeader) {
         const firstColon = line.indexOf(':');
-        response.setHeader(line.substring(0, firstColon), line.substring(firstColon + 1));
+        response.setHeader(line.substring(0, firstColon), line.substring(firstColon + 1).trim());
       } else {
         response.write(line);
       }
@@ -118,48 +134,19 @@ function requestHandler(request, response) {
 }
 
 var proxyFilePathToURL = {
-  '/front_end/SupportedCSSProperties.js': cloudURL.bind(null, 'SupportedCSSProperties.js'),
-  '/front_end/InspectorBackendCommands.js': cloudURL.bind(null, 'InspectorBackendCommands.js'),
   '/favicon.ico': () => 'https://chrome-devtools-frontend.appspot.com/favicon.ico',
-  '/front_end/accessibility/ARIAProperties.js': cloudURL.bind(null, 'accessibility/ARIAProperties.js'),
 };
-
-function cloudURL(path, commitHash) {
-  return `https://chrome-devtools-frontend.appspot.com/serve_file/@${commitHash}/${path}`;
-}
 
 var proxyFileCache = new Map();
 
 function proxy(filePath) {
   if (!(filePath in proxyFilePathToURL))
     return null;
-  if (localProtocolPath && filePath === '/front_end/InspectorBackendCommands.js')
-    return serveLocalProtocolFile();
   if (process.env.CHROMIUM_COMMIT)
     return onProxyFileURL(proxyFilePathToURL[filePath](process.env.CHROMIUM_COMMIT));
   return utils.fetch(`http://localhost:${remoteDebuggingPort}/json/version`)
       .then(onBrowserMetadata)
       .then(onProxyFileURL);
-
-  function serveLocalProtocolFile() {
-    return new Promise((resolve, reject) => {
-      fs.exists(localProtocolPath, fsExistsCallback);
-      function fsExistsCallback(fileExists) {
-        if (!fileExists) {
-          reject(new Error(`Cannot find local protocol file ${localProtocolPath}`));
-          return;
-        }
-        fs.readFile(localProtocolPath, 'binary', readFileCallback);
-      }
-      function readFileCallback(err, file) {
-        if (err) {
-          reject(new Error(`Unable to read local protocol file ${localProtocolPath}`));
-          return;
-        }
-        return resolve(file);
-      }
-    });
-  }
 
   function onBrowserMetadata(metadata) {
     var metadataObject = JSON.parse(metadata);

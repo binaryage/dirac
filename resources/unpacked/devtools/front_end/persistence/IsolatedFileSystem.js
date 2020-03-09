@@ -138,7 +138,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
    * @return {!Array<string>}
    */
   initialFilePaths() {
-    return this._initialFilePaths.valuesArray();
+    return [...this._initialFilePaths];
   }
 
   /**
@@ -146,7 +146,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
    * @return {!Array<string>}
    */
   initialGitFolders() {
-    return this._initialGitFolders.valuesArray();
+    return [...this._initialGitFolders];
   }
 
   /**
@@ -345,7 +345,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
   /**
    * @override
    * @param {string} path
-   * @returns {!Promise<!Common.DeferredContent>}
+   * @returns {!Promise<!Common.ContentProvider.DeferredContent>}
    */
   requestFileContent(path) {
     return this._serializedFileOperation(path, () => this._innerRequestFileContent(path));
@@ -353,7 +353,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
 
   /**
    * @param {string} path
-   * @return {!Promise<!Common.DeferredContent>}
+   * @return {!Promise<!Common.ContentProvider.DeferredContent>}
    */
   async _innerRequestFileContent(path) {
     const blob = await this.requestFileBlob(path);
@@ -577,7 +577,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
 
   _saveExcludedFolders() {
     const settingValue = this._excludedFoldersSetting.get();
-    settingValue[this.path()] = this._excludedFolders.valuesArray();
+    settingValue[this.path()] = [...this._excludedFolders];
     this._excludedFoldersSetting.set(settingValue);
   }
 

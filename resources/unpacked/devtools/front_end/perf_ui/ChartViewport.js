@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Platform from '../platform/platform.js';
+import * as UI from '../ui/ui.js';
+
 import {MinimalTimeWindowMs} from './FlameChart.js';
 
 /**
@@ -36,7 +39,7 @@ export class ChartViewportDelegate {
 /**
  * @unrestricted
  */
-export class ChartViewport extends UI.VBox {
+export class ChartViewport extends UI.Widget.VBox {
   /**
    * @param {!ChartViewportDelegate} delegate
    */
@@ -53,10 +56,10 @@ export class ChartViewport extends UI.VBox {
     this.viewportElement.addEventListener('keydown', this._onChartKeyDown.bind(this), false);
     this.viewportElement.addEventListener('keyup', this._onChartKeyUp.bind(this), false);
 
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this.viewportElement, this._startDragging.bind(this), this._dragging.bind(this), this._endDragging.bind(this),
         '-webkit-grabbing', null);
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this.viewportElement, this._startRangeSelection.bind(this), this._rangeSelectionDragging.bind(this),
         this._endRangeSelection.bind(this), 'text', null);
 
@@ -311,7 +314,7 @@ export class ChartViewport extends UI.VBox {
    * @param {!MouseEvent} event
    */
   _rangeSelectionDragging(event) {
-    const x = Number.constrain(event.pageX + this._selectionOffsetShiftX, 0, this._offsetWidth);
+    const x = Platform.NumberUtilities.clamp(event.pageX + this._selectionOffsetShiftX, 0, this._offsetWidth);
     const start = this.pixelToTime(this._selectionStartX);
     const end = this.pixelToTime(x);
     this.setRangeSelection(start, end);
@@ -319,8 +322,10 @@ export class ChartViewport extends UI.VBox {
 
   _updateRangeSelectionOverlay() {
     const /** @const */ margin = 100;
-    const left = Number.constrain(this.timeToPosition(this._rangeSelectionStart), -margin, this._offsetWidth + margin);
-    const right = Number.constrain(this.timeToPosition(this._rangeSelectionEnd), -margin, this._offsetWidth + margin);
+    const left = Platform.NumberUtilities.clamp(
+        this.timeToPosition(this._rangeSelectionStart), -margin, this._offsetWidth + margin);
+    const right = Platform.NumberUtilities.clamp(
+        this.timeToPosition(this._rangeSelectionEnd), -margin, this._offsetWidth + margin);
     const style = this._selectionOverlay.style;
     style.left = left + 'px';
     style.width = (right - left) + 'px';
@@ -405,7 +410,7 @@ export class ChartViewport extends UI.VBox {
    * @param {!Event} e
    */
   _handleZoomPanKeys(e) {
-    if (!UI.KeyboardShortcut.hasNoModifiers(e)) {
+    if (!UI.KeyboardShortcut.KeyboardShortcut.hasNoModifiers(e)) {
       return;
     }
     const zoomFactor = e.shiftKey ? 0.8 : 0.3;
@@ -446,7 +451,7 @@ export class ChartViewport extends UI.VBox {
    */
   _handlePanGesture(offset, animate) {
     const bounds = {left: this._targetLeftTime, right: this._targetRightTime};
-    const timeOffset = Number.constrain(
+    const timeOffset = Platform.NumberUtilities.clamp(
         this.pixelToTimeOffset(offset), this._minimumBoundary - bounds.left,
         this._totalTime + this._minimumBoundary - bounds.right);
     bounds.left += timeOffset;
@@ -514,7 +519,7 @@ export class ChartViewport extends UI.VBox {
     }
     this._targetLeftTime = startTime;
     this._targetRightTime = endTime;
-    this._cancelWindowTimesAnimation = UI.animateFunction(
+    this._cancelWindowTimesAnimation = UI.UIUtils.animateFunction(
         this.element.window(), animateWindowTimes.bind(this),
         [{from: this._visibleLeftTime, to: startTime}, {from: this._visibleRightTime, to: endTime}], 100,
         () => this._cancelWindowTimesAnimation = null);

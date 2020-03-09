@@ -26,6 +26,18 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+// @ts-nocheck
+
+/* the long term goal here is to remove all functions in this file and
+ * replace them with ES Module functions rather than prototype
+ * extensions but in the mean time if an old func in here depends on one
+ * that has been migrated it will need to be imported
+ */
+import * as StringUtilities from './string-utilities.js';
+
+
+// Still used in the test runners that can't use ES modules :(
+String.sprintf = StringUtilities.sprintf;
 
 /**
  * @param {number} m
@@ -37,79 +49,9 @@ self.mod = function(m, n) {
 };
 
 /**
- * @param {string} string
- * @return {!Array.<number>}
- */
-String.prototype.findAll = function(string) {
-  const matches = [];
-  let i = this.indexOf(string);
-  while (i !== -1) {
-    matches.push(i);
-    i = this.indexOf(string, i + string.length);
-  }
-  return matches;
-};
-
-/**
- * @return {string}
- */
-String.prototype.reverse = function() {
-  return this.split('').reverse().join('');
-};
-
-/**
- * @return {string}
- */
-String.prototype.replaceControlCharacters = function() {
-  // Replace C0 and C1 control character sets with printable character.
-  // Do not replace '\t', \n' and '\r'.
-  return this.replace(/[\0-\x08\x0B\f\x0E-\x1F\x80-\x9F]/g, '\uFFFD');
-};
-
-/**
- * @return {boolean}
- */
-String.prototype.isWhitespace = function() {
-  return /^\s*$/.test(this);
-};
-
-/**
- * @return {!Array.<number>}
- */
-String.prototype.computeLineEndings = function() {
-  const endings = this.findAll('\n');
-  endings.push(this.length);
-  return endings;
-};
-
-/**
  * @param {string} chars
  * @return {string}
  */
-String.prototype.escapeCharacters = function(chars) {
-  let foundChar = false;
-  for (let i = 0; i < chars.length; ++i) {
-    if (this.indexOf(chars.charAt(i)) !== -1) {
-      foundChar = true;
-      break;
-    }
-  }
-
-  if (!foundChar) {
-    return String(this);
-  }
-
-  let result = '';
-  for (let i = 0; i < this.length; ++i) {
-    if (chars.indexOf(this.charAt(i)) !== -1) {
-      result += '\\';
-    }
-    result += this.charAt(i);
-  }
-
-  return result;
-};
-
 /**
  * @return {string}
  */
@@ -118,10 +60,11 @@ String.regexSpecialCharacters = function() {
 };
 
 /**
+ * @this {string}
  * @return {string}
  */
 String.prototype.escapeForRegExp = function() {
-  return this.escapeCharacters(String.regexSpecialCharacters());
+  return StringUtilities.escapeCharacters(this, String.regexSpecialCharacters());
 };
 
 /**
@@ -145,36 +88,6 @@ String.filterRegex = function(query) {
 };
 
 /**
- * @return {string}
- */
-String.prototype.escapeHTML = function() {
-  return this.replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');  // " doublequotes just for editor
-};
-
-/**
- * @return {string}
- */
-String.prototype.unescapeHTML = function() {
-  return this.replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&#58;/g, ':')
-      .replace(/&quot;/g, '"')
-      .replace(/&#60;/g, '<')
-      .replace(/&#62;/g, '>')
-      .replace(/&amp;/g, '&');
-};
-
-/**
- * @return {string}
- */
-String.prototype.collapseWhitespace = function() {
-  return this.replace(/[\s\xA0]+/g, ' ');
-};
-
-/**
  * @param {number} maxLength
  * @return {string}
  */
@@ -191,7 +104,7 @@ String.prototype.trimMiddle = function(maxLength) {
   if (leftHalf > 0 && this.codePointAt(leftHalf - 1) >= 0x10000) {
     --leftHalf;
   }
-  return this.substr(0, leftHalf) + '\u2026' + this.substr(this.length - rightHalf, rightHalf);
+  return this.substr(0, leftHalf) + '…' + this.substr(this.length - rightHalf, rightHalf);
 };
 
 /**
@@ -202,21 +115,7 @@ String.prototype.trimEndWithMaxLength = function(maxLength) {
   if (this.length <= maxLength) {
     return String(this);
   }
-  return this.substr(0, maxLength - 1) + '\u2026';
-};
-
-/**
- * @param {?string=} baseURLDomain
- * @return {string}
- */
-String.prototype.trimURL = function(baseURLDomain) {
-  let result = this.replace(/^(https|http|file):\/\//i, '');
-  if (baseURLDomain) {
-    if (result.toLowerCase().startsWith(baseURLDomain.toLowerCase())) {
-      result = result.substr(baseURLDomain.length);
-    }
-  }
-  return result;
+  return this.substr(0, maxLength - 1) + '…';
 };
 
 /**
@@ -277,53 +176,6 @@ String.hashCode = function(string) {
 };
 
 /**
- * @param {string} string
- * @param {number} index
- * @return {boolean}
- */
-String.isDigitAt = function(string, index) {
-  const c = string.charCodeAt(index);
-  return (48 <= c && c <= 57);
-};
-
-/**
- * @return {string}
- */
-String.prototype.toBase64 = function() {
-  /**
-   * @param {number} b
-   * @return {number}
-   */
-  function encodeBits(b) {
-    return b < 26 ? b + 65 : b < 52 ? b + 71 : b < 62 ? b - 4 : b === 62 ? 43 : b === 63 ? 47 : 65;
-  }
-  const encoder = new TextEncoder();
-  const data = encoder.encode(this.toString());
-  const n = data.length;
-  let encoded = '';
-  if (n === 0) {
-    return encoded;
-  }
-  let shift;
-  let v = 0;
-  for (let i = 0; i < n; i++) {
-    shift = i % 3;
-    v |= data[i] << (16 >>> shift & 24);
-    if (shift === 2) {
-      encoded += String.fromCharCode(
-          encodeBits(v >>> 18 & 63), encodeBits(v >>> 12 & 63), encodeBits(v >>> 6 & 63), encodeBits(v & 63));
-      v = 0;
-    }
-  }
-  if (shift === 0) {
-    encoded += String.fromCharCode(encodeBits(v >>> 18 & 63), encodeBits(v >>> 12 & 63), 61, 61);
-  } else if (shift === 1) {
-    encoded += String.fromCharCode(encodeBits(v >>> 18 & 63), encodeBits(v >>> 12 & 63), encodeBits(v >>> 6 & 63), 61);
-  }
-  return encoded;
-};
-
-/**
  * @param {string} a
  * @param {string} b
  * @return {number}
@@ -339,9 +191,8 @@ String.naturalOrderComparator = function(a, b) {
     } else {
       if (b) {
         return -1;
-      } else {
-        return 0;
       }
+      return 0;
     }
     chunka = a.match(chunk)[0];
     chunkb = b.match(chunk)[0];
@@ -359,12 +210,10 @@ String.naturalOrderComparator = function(a, b) {
         return diff;
       }
       if (chunka.length !== chunkb.length) {
-        if (!+chunka && !+chunkb)  // chunks are strings of all 0s (special case)
-        {
+        if (!+chunka && !+chunkb) {  // chunks are strings of all 0s (special case)
           return chunka.length - chunkb.length;
-        } else {
-          return chunkb.length - chunka.length;
         }
+        return chunkb.length - chunka.length;
       }
     } else if (chunka !== chunkb) {
       return (chunka < chunkb) ? -1 : 1;
@@ -386,34 +235,6 @@ String.caseInsensetiveComparator = function(a, b) {
     return 0;
   }
   return a > b ? 1 : -1;
-};
-
-/**
- * @param {number} num
- * @param {number} min
- * @param {number} max
- * @return {number}
- */
-Number.constrain = function(num, min, max) {
-  if (num < min) {
-    num = min;
-  } else if (num > max) {
-    num = max;
-  }
-  return num;
-};
-
-/**
- * @param {number} a
- * @param {number} b
- * @return {number}
- */
-Number.gcd = function(a, b) {
-  if (b === 0) {
-    return a;
-  } else {
-    return Number.gcd(b, a % b);
-  }
 };
 
 /**
@@ -647,23 +468,6 @@ Object.defineProperty(Array.prototype, 'binaryIndexOf', {
   configurable: true
 });
 
-Object.defineProperty(Array.prototype, 'select', {
-  /**
-   * @param {string} field
-   * @return {!Array.<!T>}
-   * @this {Array.<!Object.<string,!T>>}
-   * @template T
-   */
-  value: function(field) {
-    const result = new Array(this.length);
-    for (let i = 0; i < this.length; ++i) {
-      result[i] = this[i][field];
-    }
-    return result;
-  },
-  configurable: true
-});
-
 Object.defineProperty(Array.prototype, 'peekLast', {
   /**
    * @return {!T|undefined}
@@ -742,210 +546,6 @@ Object.defineProperty(Array.prototype, 'peekLast', {
 })();
 
 /**
- * @param {string} format
- * @param {...*} var_arg
- * @return {string}
- */
-String.sprintf = function(format, var_arg) {
-  return String.vsprintf(format, Array.prototype.slice.call(arguments, 1));
-};
-
-/**
- * @param {string} format
- * @param {!Object.<string, function(string, ...):*>} formatters
- * @return {!Array.<!Object>}
- */
-String.tokenizeFormatString = function(format, formatters) {
-  const tokens = [];
-
-  function addStringToken(str) {
-    if (!str) {
-      return;
-    }
-    if (tokens.length && tokens[tokens.length - 1].type === 'string') {
-      tokens[tokens.length - 1].value += str;
-    } else {
-      tokens.push({type: 'string', value: str});
-    }
-  }
-
-  function addSpecifierToken(specifier, precision, substitutionIndex) {
-    tokens.push({type: 'specifier', specifier: specifier, precision: precision, substitutionIndex: substitutionIndex});
-  }
-
-  function addAnsiColor(code) {
-    const types = {3: 'color', 9: 'colorLight', 4: 'bgColor', 10: 'bgColorLight'};
-    const colorCodes = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'lightGray', '', 'default'];
-    const colorCodesLight =
-        ['darkGray', 'lightRed', 'lightGreen', 'lightYellow', 'lightBlue', 'lightMagenta', 'lightCyan', 'white', ''];
-    const colors = {color: colorCodes, colorLight: colorCodesLight, bgColor: colorCodes, bgColorLight: colorCodesLight};
-    const type = types[Math.floor(code / 10)];
-    if (!type) {
-      return;
-    }
-    const color = colors[type][code % 10];
-    if (!color) {
-      return;
-    }
-    tokens.push({
-      type: 'specifier',
-      specifier: 'c',
-      value: {description: (type.startsWith('bg') ? 'background : ' : 'color: ') + color}
-    });
-  }
-
-  let textStart = 0;
-  let substitutionIndex = 0;
-  const re =
-      new RegExp(`%%|%(?:(\\d+)\\$)?(?:\\.(\\d*))?([${Object.keys(formatters).join('')}])|\\u001b\\[(\\d+)m`, 'g');
-  for (let match = re.exec(format); !!match; match = re.exec(format)) {
-    const matchStart = match.index;
-    if (matchStart > textStart) {
-      addStringToken(format.substring(textStart, matchStart));
-    }
-
-    if (match[0] === '%%') {
-      addStringToken('%');
-    } else if (match[0].startsWith('%')) {
-      // eslint-disable-next-line no-unused-vars
-      const [_, substitionString, precisionString, specifierString] = match;
-      if (substitionString && Number(substitionString) > 0) {
-        substitutionIndex = Number(substitionString) - 1;
-      }
-      const precision = precisionString ? Number(precisionString) : -1;
-      addSpecifierToken(specifierString, precision, substitutionIndex);
-      ++substitutionIndex;
-    } else {
-      const code = Number(match[4]);
-      addAnsiColor(code);
-    }
-    textStart = matchStart + match[0].length;
-  }
-  addStringToken(format.substring(textStart));
-  return tokens;
-};
-
-String.standardFormatters = {
-  /**
-   * @return {number}
-   */
-  d: function(substitution) {
-    return !isNaN(substitution) ? substitution : 0;
-  },
-
-  /**
-   * @return {number}
-   */
-  f: function(substitution, token) {
-    if (substitution && token.precision > -1) {
-      substitution = substitution.toFixed(token.precision);
-    }
-    return !isNaN(substitution) ? substitution : (token.precision > -1 ? Number(0).toFixed(token.precision) : 0);
-  },
-
-  /**
-   * @return {string}
-   */
-  s: function(substitution) {
-    return substitution;
-  }
-};
-
-/**
- * @param {string} format
- * @param {!Array.<*>} substitutions
- * @return {string}
- */
-String.vsprintf = function(format, substitutions) {
-  return String
-      .format(
-          format, substitutions, String.standardFormatters, '',
-          function(a, b) {
-            return a + b;
-          })
-      .formattedResult;
-};
-
-/**
- * @param {string} format
- * @param {?ArrayLike} substitutions
- * @param {!Object.<string, function(string, ...):Q>} formatters
- * @param {!T} initialValue
- * @param {function(T, Q): T|undefined} append
- * @param {!Array.<!Object>=} tokenizedFormat
- * @return {!{formattedResult: T, unusedSubstitutions: ?ArrayLike}};
- * @template T, Q
- */
-String.format = function(format, substitutions, formatters, initialValue, append, tokenizedFormat) {
-  if (!format || ((!substitutions || !substitutions.length) && format.search(/\u001b\[(\d+)m/) === -1)) {
-    return {formattedResult: append(initialValue, format), unusedSubstitutions: substitutions};
-  }
-
-  function prettyFunctionName() {
-    return 'String.format("' + format + '", "' + Array.prototype.join.call(substitutions, '", "') + '")';
-  }
-
-  function warn(msg) {
-    console.warn(prettyFunctionName() + ': ' + msg);
-  }
-
-  function error(msg) {
-    console.error(prettyFunctionName() + ': ' + msg);
-  }
-
-  let result = initialValue;
-  const tokens = tokenizedFormat || String.tokenizeFormatString(format, formatters);
-  const usedSubstitutionIndexes = {};
-
-  for (let i = 0; i < tokens.length; ++i) {
-    const token = tokens[i];
-
-    if (token.type === 'string') {
-      result = append(result, token.value);
-      continue;
-    }
-
-    if (token.type !== 'specifier') {
-      error('Unknown token type "' + token.type + '" found.');
-      continue;
-    }
-
-    if (!token.value && token.substitutionIndex >= substitutions.length) {
-      // If there are not enough substitutions for the current substitutionIndex
-      // just output the format specifier literally and move on.
-      error(
-          'not enough substitution arguments. Had ' + substitutions.length + ' but needed ' +
-          (token.substitutionIndex + 1) + ', so substitution was skipped.');
-      result = append(result, '%' + (token.precision > -1 ? token.precision : '') + token.specifier);
-      continue;
-    }
-
-    if (!token.value) {
-      usedSubstitutionIndexes[token.substitutionIndex] = true;
-    }
-
-    if (!(token.specifier in formatters)) {
-      // Encountered an unsupported format character, treat as a string.
-      warn('unsupported format character \u201C' + token.specifier + '\u201D. Treating as a string.');
-      result = append(result, token.value ? '' : substitutions[token.substitutionIndex]);
-      continue;
-    }
-
-    result = append(result, formatters[token.specifier](token.value || substitutions[token.substitutionIndex], token));
-  }
-
-  const unusedSubstitutions = [];
-  for (let i = 0; i < substitutions.length; ++i) {
-    if (i in usedSubstitutionIndexes) {
-      continue;
-    }
-    unusedSubstitutions.push(substitutions[i]);
-  }
-
-  return {formattedResult: result, unusedSubstitutions: unusedSubstitutions};
-};
-
-/**
  * @param {string} query
  * @param {boolean} caseSensitive
  * @param {boolean} isRegex
@@ -990,24 +590,6 @@ self.createPlainTextSearchRegex = function(query, flags) {
 };
 
 /**
- * @param {!RegExp} regex
- * @param {string} content
- * @return {number}
- */
-self.countRegexMatches = function(regex, content) {
-  let text = content;
-  let result = 0;
-  let match;
-  while (text && (match = regex.exec(text))) {
-    if (match[0].length > 0) {
-      ++result;
-    }
-    text = text.substring(match.index + 1);
-  }
-  return result;
-};
-
-/**
  * @param {number} spacesCount
  * @return {string}
  */
@@ -1024,14 +606,6 @@ self.numberToStringWithSpacesPadding = function(value, symbolsCount) {
   const numberString = value.toString();
   const paddingLength = Math.max(0, symbolsCount - numberString.length);
   return self.spacesPadding(paddingLength) + numberString;
-};
-
-/**
- * @return {!Array.<T>}
- * @template T
- */
-Set.prototype.valuesArray = function() {
-  return Array.from(this.values());
 };
 
 /**
@@ -1056,20 +630,6 @@ Set.prototype.addAll = function(iterable) {
 };
 
 /**
- * @param {!Iterable<T>|!Array<!T>} iterable
- * @return {boolean}
- * @template T
- */
-Set.prototype.containsAll = function(iterable) {
-  for (const e of iterable) {
-    if (!this.has(e)) {
-      return false;
-    }
-  }
-  return true;
-};
-
-/**
  * @return {T}
  * @template T
  */
@@ -1077,20 +637,6 @@ Map.prototype.remove = function(key) {
   const value = this.get(key);
   this.delete(key);
   return value;
-};
-
-/**
- * @return {!Array<!VALUE>}
- */
-Map.prototype.valuesArray = function() {
-  return Array.from(this.values());
-};
-
-/**
- * @return {!Array<!KEY>}
- */
-Map.prototype.keysArray = function() {
-  return Array.from(this.keys());
 };
 
 /**
@@ -1108,7 +654,7 @@ Map.prototype.inverse = function() {
 /**
  * @template K, V
  */
-const Multimap = class {
+export class Multimap {
   constructor() {
     /** @type {!Map.<K, !Set.<!V>>} */
     this._map = new Map();
@@ -1191,7 +737,7 @@ const Multimap = class {
    * @return {!Array.<K>}
    */
   keysArray() {
-    return this._map.keysArray();
+    return [...this._map.keys()];
   }
 
   /**
@@ -1199,9 +745,8 @@ const Multimap = class {
    */
   valuesArray() {
     const result = [];
-    const keys = this.keysArray();
-    for (let i = 0; i < keys.length; ++i) {
-      result.push(...this.get(keys[i]).valuesArray());
+    for (const set of this._map.values()) {
+      result.push(...set.values());
     }
     return result;
   }
@@ -1209,7 +754,7 @@ const Multimap = class {
   clear() {
     this._map.clear();
   }
-};
+}
 
 /**
  * @param {string} url
@@ -1256,19 +801,6 @@ self.setImmediate = function(callback) {
 };
 
 /**
- * @param {function(...?)} callback
- * @return {!Promise.<T>}
- * @template T
- */
-Promise.prototype.spread = function(callback) {
-  return this.then(spreadPromise);
-
-  function spreadPromise(arg) {
-    return callback.apply(null, arg);
-  }
-};
-
-/**
  * @param {T} defaultValue
  * @return {!Promise.<T>}
  * @template T
@@ -1281,53 +813,9 @@ Promise.prototype.catchException = function(defaultValue) {
 };
 
 /**
- * @param {!Map<number, ?>} other
- * @param {function(!VALUE,?):boolean} isEqual
- * @return {!{removed: !Array<!VALUE>, added: !Array<?>, equal: !Array<!VALUE>}}
- * @this {Map<number, VALUE>}
- */
-Map.prototype.diff = function(other, isEqual) {
-  const leftKeys = this.keysArray();
-  const rightKeys = other.keysArray();
-  leftKeys.sort((a, b) => a - b);
-  rightKeys.sort((a, b) => a - b);
-
-  const removed = [];
-  const added = [];
-  const equal = [];
-  let leftIndex = 0;
-  let rightIndex = 0;
-  while (leftIndex < leftKeys.length && rightIndex < rightKeys.length) {
-    const leftKey = leftKeys[leftIndex];
-    const rightKey = rightKeys[rightIndex];
-    if (leftKey === rightKey && isEqual(this.get(leftKey), other.get(rightKey))) {
-      equal.push(this.get(leftKey));
-      ++leftIndex;
-      ++rightIndex;
-      continue;
-    }
-    if (leftKey <= rightKey) {
-      removed.push(this.get(leftKey));
-      ++leftIndex;
-      continue;
-    }
-    added.push(other.get(rightKey));
-    ++rightIndex;
-  }
-  while (leftIndex < leftKeys.length) {
-    const leftKey = leftKeys[leftIndex++];
-    removed.push(this.get(leftKey));
-  }
-  while (rightIndex < rightKeys.length) {
-    const rightKey = rightKeys[rightIndex++];
-    added.push(other.get(rightKey));
-  }
-  return {added: added, removed: removed, equal: equal};
-};
-
-/**
  * TODO: move into its own module
  * @param {function()} callback
+ * @suppressGlobalPropertiesCheck
  */
 self.runOnWindowLoad = function(callback) {
   /**

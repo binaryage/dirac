@@ -32,7 +32,7 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as ProtocolModule from '../protocol/protocol.js';
 
-import {DebuggerModel} from './DebuggerModel.js';
+import {DebuggerModel, FunctionDetails} from './DebuggerModel.js';  // eslint-disable-line no-unused-vars
 import {HeapProfilerModel} from './HeapProfilerModel.js';
 import {RemoteFunction, RemoteObject,
         RemoteObjectImpl,  // eslint-disable-line no-unused-vars
@@ -93,7 +93,7 @@ export class RuntimeModel extends SDKModel {
   }
 
   /**
-   * @param {!SDK.RuntimeModel.EvaluationResult} response
+   * @param {!EvaluationResult} response
    * @return {boolean}
    */
   static isSideEffectFailure(response) {
@@ -121,7 +121,7 @@ export class RuntimeModel extends SDKModel {
    * @return {!Array.<!ExecutionContext>}
    */
   executionContexts() {
-    return this._executionContextById.valuesArray().sort(this.executionContextComparator());
+    return [...this._executionContextById.values()].sort(this.executionContextComparator());
   }
 
   /**
@@ -255,7 +255,7 @@ export class RuntimeModel extends SDKModel {
   }
 
   /**
-   * @param {!SDK.RuntimeModel.EvaluationResult} result
+   * @param {!EvaluationResult} result
    */
   releaseEvaluationResult(result) {
     if (result.object) {
@@ -273,7 +273,7 @@ export class RuntimeModel extends SDKModel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _customFormattersStateChanged(event) {
     const enabled = /** @type {boolean} */ (event.data);
@@ -293,7 +293,7 @@ export class RuntimeModel extends SDKModel {
    * @param {string} sourceURL
    * @param {boolean} persistScript
    * @param {number} executionContextId
-   * @return {!Promise<?SDK.RuntimeModel.CompileScriptResult>}
+   * @return {!Promise<?CompileScriptResult>}
    */
   async compileScript(expression, sourceURL, persistScript, executionContextId) {
     const response = await this._agent.invoke_compileScript({
@@ -319,7 +319,7 @@ export class RuntimeModel extends SDKModel {
    * @param {boolean=} returnByValue
    * @param {boolean=} generatePreview
    * @param {boolean=} awaitPromise
-   * @return {!Promise<!SDK.RuntimeModel.EvaluationResult>}
+   * @return {!Promise<!EvaluationResult>}
    */
   async runScript(
       scriptId, executionContextId, objectGroup, silent, includeCommandLineAPI, returnByValue, generatePreview,
@@ -345,7 +345,7 @@ export class RuntimeModel extends SDKModel {
 
   /**
    * @param {!RemoteObject} prototype
-   * @return {!Promise<!SDK.RuntimeModel.QueryObjectResult>}
+   * @return {!Promise<!QueryObjectResult>}
    */
   async queryObjects(prototype) {
     if (!prototype.objectId) {
@@ -404,7 +404,7 @@ export class RuntimeModel extends SDKModel {
     }
 
     /**
-     * @param {?SDK.DebuggerModel.FunctionDetails} response
+     * @param {?FunctionDetails} response
      */
     function didGetDetails(response) {
       object.release();
@@ -456,7 +456,7 @@ export class RuntimeModel extends SDKModel {
     const result = await this.queryObjects(object);
     object.release();
     if (result.error) {
-      self.Common.console.error(result.error);
+      Common.Console.Console.instance().error(result.error);
       return;
     }
     this.dispatchEventToListeners(Events.QueryObjectRequested, {objects: result.objects});
@@ -727,7 +727,7 @@ export class ExecutionContext {
 
     /**
      * @param {!Target} target
-     * @return {!Array<!SDK.Target>}
+     * @return {!Array<!Target>}
      */
     function targetPath(target) {
       let currentTarget = target;
@@ -777,10 +777,10 @@ export class ExecutionContext {
   }
 
   /**
-   * @param {!SDK.RuntimeModel.EvaluationOptions} options
+   * @param {!EvaluationOptions} options
    * @param {boolean} userGesture
    * @param {boolean} awaitPromise
-   * @return {!Promise<!SDK.RuntimeModel.EvaluationResult>}
+   * @return {!Promise<!EvaluationResult>}
    */
   evaluate(options, userGesture, awaitPromise) {
     // FIXME: It will be moved to separate ExecutionContext.
@@ -793,7 +793,7 @@ export class ExecutionContext {
       return this._evaluateGlobal(options, userGesture, awaitPromise);
     }
 
-    /** @type {!SDK.RuntimeModel.EvaluationResult} */
+    /** @type {!EvaluationResult} */
     const unsupportedError = {error: 'Side-effect checks not supported by backend.'};
     if (this.runtimeModel.hasSideEffectSupport() === false) {
       return Promise.resolve(unsupportedError);
@@ -810,7 +810,7 @@ export class ExecutionContext {
   /**
    * @param {string} objectGroup
    * @param {boolean} generatePreview
-   * @return {!Promise<!SDK.RuntimeModel.EvaluationResult>}
+   * @return {!Promise<!EvaluationResult>}
    */
   globalObject(objectGroup, generatePreview) {
     return this._evaluateGlobal(
@@ -826,10 +826,10 @@ export class ExecutionContext {
   }
 
   /**
-   * @param {!SDK.RuntimeModel.EvaluationOptions} options
+   * @param {!EvaluationOptions} options
    * @param {boolean} userGesture
    * @param {boolean} awaitPromise
-   * @return {!Promise<!SDK.RuntimeModel.EvaluationResult>}
+   * @return {!Promise<!EvaluationResult>}
    */
   async _evaluateGlobal(options, userGesture, awaitPromise) {
     if (!options.expression) {
@@ -906,7 +906,36 @@ SDKModel.register(RuntimeModel, Capability.JS, true);
 /** @typedef {{
  *    object: (!RemoteObject|undefined),
  *    exceptionDetails: (!Protocol.Runtime.ExceptionDetails|undefined),
- *    error: (!Protocol.Error|undefined)}
+ *    error: (!ProtocolModule.InspectorBackend.ProtocolError|undefined)}
  *  }}
  */
 export let EvaluationResult;
+
+/** @typedef {{
+ *    scriptId: (Protocol.Runtime.ScriptId|undefined),
+ *    exceptionDetails: (!Protocol.Runtime.ExceptionDetails|undefined)
+ *  }}
+ */
+export let CompileScriptResult;
+
+/** @typedef {{
+ *    expression: string,
+ *    objectGroup: (string|undefined),
+ *    includeCommandLineAPI: (boolean|undefined),
+ *    silent: (boolean|undefined),
+ *    returnByValue: (boolean|undefined),
+ *    generatePreview: (boolean|undefined),
+ *    throwOnSideEffect: (boolean|undefined),
+ *    timeout: (number|undefined),
+ *    disableBreaks: (boolean|undefined),
+ *    replMode: (boolean|undefined)
+ *  }}
+ */
+export let EvaluationOptions;
+
+/** @typedef {{
+ *    objects: (!RemoteObject|undefined),
+ *    error: (!ProtocolModule.InspectorBackend.ProtocolError|undefined)}
+ *  }}
+ */
+export let QueryObjectResult;

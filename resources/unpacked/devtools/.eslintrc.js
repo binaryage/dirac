@@ -7,6 +7,7 @@ module.exports = {
 
   'plugins': [
     '@typescript-eslint',
+    'mocha',
   ],
 
   'parserOptions': {'ecmaVersion': 9, 'sourceType': 'module'},
@@ -27,7 +28,7 @@ module.exports = {
 
 
     // syntax preferences
-    'quotes': [2, 'single', {'avoidEscape': true, 'allowTemplateLiterals': true}],
+    'quotes': [2, 'single', {'avoidEscape': true, 'allowTemplateLiterals': false}],
     'semi': 2,
     'no-extra-semi': 2,
     'comma-style': [2, 'last'],
@@ -42,28 +43,29 @@ module.exports = {
     'eol-last': 2,
 
     // anti-patterns
-    'no-with': 2,
-    'no-multi-str': 2,
     'no-caller': 2,
+    'no-cond-assign': 2,
+    'no-console': [2, {'allow': ['assert', 'context', 'error', 'timeStamp', 'time', 'timeEnd', 'warn']}],
+    'no-debugger': 2,
+    'no-dupe-keys': 2,
+    'no-duplicate-case': 2,
+    'no-else-return': [2, {'allowElseIf': false}],
+    'no-empty-character-class': 2,
     'no-implied-eval': 2,
     'no-labels': 2,
+    'no-multi-str': 2,
     'no-new-object': 2,
     'no-octal-escape': 2,
     'no-self-compare': 2,
     'no-shadow-restricted-names': 2,
-    'no-cond-assign': 2,
-    'no-debugger': 2,
-    'no-console': [2, {'allow': ['assert', 'context', 'error', 'timeStamp', 'time', 'timeEnd', 'warn']}],
-    'no-dupe-keys': 2,
-    'no-duplicate-case': 2,
-    'no-empty-character-class': 2,
     'no-unreachable': 2,
     'no-unsafe-negation': 2,
+    'no-unused-vars': [2, {'args': 'none', 'vars': 'local'}],
+    'no-var': 2,
+    'no-with': 2,
+    'prefer-const': 2,
     'radix': 2,
     'valid-typeof': 2,
-    'no-var': 2,
-    'prefer-const': 2,
-    'no-unused-vars': [2, {'args': 'none', 'vars': 'local'}],
 
     // es2015 features
     'require-yield': 2,
@@ -114,6 +116,11 @@ module.exports = {
 
     '@typescript-eslint/interface-name-prefix': [2, {'prefixWithI': 'never'}],
     '@typescript-eslint/explicit-member-accessibility': [0],
+
+    // errors on it('test') with no body
+    'mocha/no-pending-tests': 2,
+    // errors on {describe, it}.only
+    'mocha/no-exclusive-tests': 2,
   },
   'overrides': [{
     'files': ['*.ts'],

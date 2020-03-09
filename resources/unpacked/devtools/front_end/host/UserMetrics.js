@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+
 /**
  * @unrestricted
  */
@@ -47,6 +49,7 @@ export class UserMetrics {
     const code = PanelCodes[panelName] || 0;
     const size = Object.keys(PanelCodes).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.PanelShown', code, size);
+    Common.EventTarget.fireEvent('DevTools.PanelShown', {value: code});
     // Store that the user has changed the panel so we know launch histograms should not be fired.
     this._panelChangedSinceLaunch = true;
   }
@@ -64,6 +67,7 @@ export class UserMetrics {
   actionTaken(action) {
     const size = Object.keys(Action).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.ActionTaken', action, size);
+    Common.EventTarget.fireEvent('DevTools.ActionTaken', {value: action});
   }
 
   /**
@@ -91,6 +95,7 @@ export class UserMetrics {
         // This fires the event for the appropriate launch histogram.
         // The duration is measured as the time elapsed since the time origin of the document.
         InspectorFrontendHostInstance.recordPerformanceHistogram(histogramName, performance.now());
+        Common.EventTarget.fireEvent('DevTools.PanelLoaded', {value: {panelName, histogramName}});
       }, 0);
     });
   }
@@ -102,6 +107,16 @@ export class UserMetrics {
     // Store the panel name that we should use for the launch histogram.
     // Other calls to panelLoaded will be ignored if the name does not match the one set here.
     this._launchPanelName = panelName;
+  }
+
+  /**
+   * @param {string} actionId
+   */
+  keyboardShortcutFired(actionId) {
+    const size = Object.keys(KeyboardShortcutAction).length + 1;
+    const action = KeyboardShortcutAction[actionId] || KeyboardShortcutAction.OtherShortcut;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.KeyboardShortcutFired', action, size);
+    Common.EventTarget.fireEvent('DevTools.KeyboardShortcutFired', {value: action});
   }
 }
 
@@ -140,10 +155,10 @@ export const Action = {
   ChangeInspectedNodeInElementsPanel: 26,
   StyleRuleCopied: 27,
   CoverageStarted: 28,
-  AuditsStarted: 29,
-  AuditsFinished: 30,
+  LighthouseStarted: 29,
+  LighthouseFinished: 30,
   ShowedThirdPartyBadges: 31,
-  AuditsViewTrace: 32,
+  LighthouseViewTrace: 32,
   FilmStripStartedRecording: 33,
   CoverageReportFiltered: 34,
   CoverageStartedPerBlock: 35,
@@ -168,7 +183,7 @@ export const PanelCodes = {
   'drawer-sources.search': 15,
   security: 16,
   js_profiler: 17,
-  audits: 18,
+  lighthouse: 18,
   'drawer-coverage': 19,
   'drawer-protocol-monitor': 20,
   'drawer-remote-devices': 21,
@@ -179,4 +194,32 @@ export const PanelCodes = {
   'drawer-live_heap_profile': 26,
   'drawer-sources.quick': 27,
   'drawer-network.blocked-urls': 28,
+};
+
+/** @enum {number} */
+export const KeyboardShortcutAction = {
+  OtherShortcut: 0,
+  'commandMenu.show': 1,
+  'console.clear': 2,
+  'console.show': 3,
+  'debugger.step': 4,
+  'debugger.step-into': 5,
+  'debugger.step-out': 6,
+  'debugger.step-over': 7,
+  'debugger.toggle-breakpoint': 8,
+  'debugger.toggle-breakpoint-enabled': 9,
+  'debugger.toggle-pause': 10,
+  'elements.edit-as-html': 11,
+  'elements.hide-element': 12,
+  'elements.redo': 13,
+  'elements.toggle-element-search': 14,
+  'elements.undo': 15,
+  'main.search-in-panel.find': 16,
+  'main.toggle-drawer': 17,
+  'network.hide-request-details': 18,
+  'network.search': 19,
+  'network.toggle-recording': 20,
+  'quickOpen.show': 21,
+  'settings.show': 22,
+  'sources.search': 23,
 };

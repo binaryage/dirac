@@ -111,7 +111,7 @@ export class Project {
 
   /**
    * @param {!UISourceCode} uiSourceCode
-   * @returns {!Promise<!Common.DeferredContent>}
+   * @returns {!Promise<!Common.ContentProvider.DeferredContent>}
    */
   requestFileContent(uiSourceCode) {
   }
@@ -457,7 +457,7 @@ export class WorkspaceImpl extends Common.ObjectWrapper.ObjectWrapper {
    * @return {!Array.<!Project>}
    */
   projects() {
-    return this._projects.valuesArray();
+    return [...this._projects.values()];
   }
 
   /**

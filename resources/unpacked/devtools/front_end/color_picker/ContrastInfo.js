@@ -6,7 +6,7 @@ import * as Common from '../common/common.js';
 
 export class ContrastInfo extends Common.ObjectWrapper.ObjectWrapper {
   /**
-   * @param {?SDK.CSSModel.ContrastInfo} contrastInfo
+   * @param {?ContrastInfoType} contrastInfo
    */
   constructor(contrastInfo) {
     super();
@@ -141,9 +141,8 @@ export class ContrastInfo extends Common.ObjectWrapper.ObjectWrapper {
     const fontSizePt = fontSizePx * 72 / 96;
     if (isBold) {
       return fontSizePt >= 14;
-    } else {
-      return fontSizePt >= 18;
     }
+    return fontSizePt >= 18;
   }
 }
 
@@ -156,3 +155,6 @@ const _ContrastThresholds = {
   largeFont: {aa: 3.0, aaa: 4.5},
   normalFont: {aa: 4.5, aaa: 7.0}
 };
+
+/** @typedef {{backgroundColors: ?Array<string>, computedFontSize: string, computedFontWeight: string}} */
+export let ContrastInfoType;

@@ -41,7 +41,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
     this._splitWidget = new UI.SplitWidget.SplitWidget(false, true, 'resourceWebSocketFrameSplitViewState');
     this._splitWidget.show(this.element);
 
-    const columns = /** @type {!Array<!DataGrid.ColumnDescriptor>} */ ([
+    const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
       {id: 'data', title: Common.UIString.UIString('Data'), sortable: false, weight: 88}, {
         id: 'length',
         title: Common.UIString.UIString('Length'),
@@ -64,7 +64,9 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
     this._dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this._sortItems, this);
 
     this._dataGrid.setName('ResourceWebSocketFrameView');
-    this._dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, this._onFrameSelected, this);
+    this._dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, event => {
+      this._onFrameSelected(event);
+    }, this);
     this._dataGrid.addEventListener(DataGrid.DataGrid.Events.DeselectedNode, this._onFrameDeselected, this);
 
     this._mainToolbar = new UI.Toolbar.Toolbar('');
@@ -149,7 +151,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _frameAdded(event) {
     const frame = /** @type {!SDK.NetworkRequest.WebSocketFrame} */ (event.data);
@@ -185,7 +187,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
   }
 
   /**
-  * @param {!Common.Event} event
+  * @param {!Common.EventTarget.EventTargetEvent} event
    */
   async _onFrameSelected(event) {
     this._currentSelectedNode = /** @type {!ResourceWebSocketFrameNode} */ (event.data);
@@ -209,7 +211,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onFrameDeselected(event) {
     this._currentSelectedNode = null;

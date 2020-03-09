@@ -2,30 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as Diff from '../diff/diff.js';
+import * as UI from '../ui/ui.js';
+import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
+import * as WorkspaceDiff from '../workspace_diff/workspace_diff.js';
+
 import {ChangesSidebar, Events} from './ChangesSidebar.js';
 import {ChangesTextEditor} from './ChangesTextEditor.js';
 
-export class ChangesView extends UI.VBox {
+export class ChangesView extends UI.Widget.VBox {
   constructor() {
     super(true);
     this.registerRequiredCSS('changes/changesView.css');
-    const splitWidget = new UI.SplitWidget(true /* vertical */, false /* sidebar on left */);
-    const mainWidget = new UI.Widget();
+    const splitWidget = new UI.SplitWidget.SplitWidget(true /* vertical */, false /* sidebar on left */);
+    const mainWidget = new UI.Widget.Widget();
     splitWidget.setMainWidget(mainWidget);
     splitWidget.show(this.contentElement);
 
-    this._emptyWidget = new UI.EmptyWidget('');
+    this._emptyWidget = new UI.EmptyWidget.EmptyWidget('');
     this._emptyWidget.show(mainWidget.element);
 
-    this._workspaceDiff = WorkspaceDiff.workspaceDiff();
+    this._workspaceDiff = WorkspaceDiff.WorkspaceDiff.workspaceDiff();
     this._changesSidebar = new ChangesSidebar(this._workspaceDiff);
     this._changesSidebar.addEventListener(Events.SelectedUISourceCodeChanged, this._selectedUISourceCodeChanged, this);
     splitWidget.setSidebarWidget(this._changesSidebar);
 
-    /** @type {?Workspace.UISourceCode} */
+    /** @type {?Workspace.UISourceCode.UISourceCode} */
     this._selectedUISourceCode = null;
 
-    /** @type {!Array<!Changes.ChangesView.Row>} */
+    /** @type {!Array<!Row>} */
     this._diffRows = [];
 
     this._maxLineDigits = 1;
@@ -44,11 +50,11 @@ export class ChangesView extends UI.VBox {
 
     self.onInvokeElement(this._editor.element, this._click.bind(this));
 
-    this._toolbar = new UI.Toolbar('changes-toolbar', mainWidget.element);
-    const revertButton = new UI.ToolbarButton(ls`Revert all changes to current file`, 'largeicon-undo');
-    revertButton.addEventListener(UI.ToolbarButton.Events.Click, this._revert.bind(this));
+    this._toolbar = new UI.Toolbar.Toolbar('changes-toolbar', mainWidget.element);
+    const revertButton = new UI.Toolbar.ToolbarButton(ls`Revert all changes to current file`, 'largeicon-undo');
+    revertButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._revert.bind(this));
     this._toolbar.appendToolbarItem(revertButton);
-    this._diffStats = new UI.ToolbarText('');
+    this._diffStats = new UI.Toolbar.ToolbarText('');
     this._toolbar.appendToolbarItem(this._diffStats);
     this._toolbar.setEnabled(false);
 
@@ -83,7 +89,7 @@ export class ChangesView extends UI.VBox {
   }
 
   /**
-   * @param {?Workspace.UISourceCode} uiSourceCode
+   * @param {?Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   _revealUISourceCode(uiSourceCode) {
     if (this._selectedUISourceCode === uiSourceCode) {
@@ -217,7 +223,7 @@ export class ChangesView extends UI.VBox {
       this._editor.setHighlightMode({
         name: 'devtools-diff',
         diffRows: this._diffRows,
-        mimeType: /** @type {!Workspace.UISourceCode} */ (this._selectedUISourceCode).mimeType(),
+        mimeType: /** @type {!Workspace.UISourceCode.UISourceCode} */ (this._selectedUISourceCode).mimeType(),
         baselineLines: originalLines,
         currentLines: currentLines
       });
@@ -230,7 +236,7 @@ export class ChangesView extends UI.VBox {
      * @param {!Array<string>} lines
      * @param {boolean} atStart
      * @param {boolean} atEnd
-     * @return {!Array<!Changes.ChangesView.Row>}}
+     * @return {!Array<!Row>}}
      */
     function createEqualRows(lines, atStart, atEnd) {
       const equalRows = [];
@@ -240,7 +246,7 @@ export class ChangesView extends UI.VBox {
         }
         if (lines.length > paddingLines * 2 + 1 && !atEnd) {
           equalRows.push(createRow(
-              Common.UIString('( \u2026 Skipping %d matching lines \u2026 )', lines.length - paddingLines * 2),
+              Common.UIString.UIString('( … Skipping %d matching lines … )', lines.length - paddingLines * 2),
               RowType.Spacer));
         }
       }
@@ -265,10 +271,10 @@ export class ChangesView extends UI.VBox {
     /**
      * @param {string} before
      * @param {string} after
-     * @return {!Array<!Changes.ChangesView.Row>}}
+     * @return {!Array<!Row>}}
      */
     function createModifyRows(before, after) {
-      const internalDiff = Diff.Diff.charDiff(before, after, true /* cleanup diff */);
+      const internalDiff = Diff.Diff.DiffWrapper.charDiff(before, after, true /* cleanup diff */);
       const deletionRows = [createRow('', RowType.Deletion)];
       const insertionRows = [createRow('', RowType.Addition)];
 
@@ -301,7 +307,7 @@ export class ChangesView extends UI.VBox {
     /**
      * @param {string} text
      * @param {!RowType} type
-     * @return {!Changes.ChangesView.Row}
+     * @return {!Row}
      */
     function createRow(text, type) {
       if (type === RowType.Addition) {
@@ -348,7 +354,7 @@ export const RowType = {
 };
 
 /**
- * @implements {Common.Revealer}
+ * @implements {Common.Revealer.Revealer}
  */
 export class DiffUILocationRevealer {
   /**
@@ -358,7 +364,7 @@ export class DiffUILocationRevealer {
    * @return {!Promise}
    */
   async reveal(diffUILocation, omitFocus) {
-    if (!(diffUILocation instanceof WorkspaceDiff.DiffUILocation)) {
+    if (!(diffUILocation instanceof WorkspaceDiff.WorkspaceDiff.DiffUILocation)) {
       throw new Error('Internal error: not a diff ui location');
     }
     /** @type {!ChangesView} */
@@ -367,3 +373,13 @@ export class DiffUILocationRevealer {
     changesView._changesSidebar.selectUISourceCode(diffUILocation.uiSourceCode, omitFocus);
   }
 }
+
+/**
+ * @typedef {!{
+ *  baselineLineNumber: number,
+ *  currentLineNumber: number,
+ *  tokens: !Array<!{text: string, className: string}>,
+ *  type: !RowType
+ * }}
+ */
+export let Row;

@@ -28,13 +28,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Host from '../host/host.js';
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  */
 export class TimelineGrid {
   constructor() {
     this.element = createElement('div');
-    UI.appendStyle(this.element, 'perf_ui/timelineGrid.css');
+    UI.Utils.appendStyle(this.element, 'perf_ui/timelineGrid.css');
 
     this._dividersElement = this.element.createChild('div', 'resources-dividers');
 
@@ -48,7 +51,7 @@ export class TimelineGrid {
   /**
    * @param {!Calculator} calculator
    * @param {number=} freeZoneAtLeft
-   * @return {!PerfUI.TimelineGrid.DividersData}
+   * @return {!DividersData}
    */
   static calculateGridOffsets(calculator, freeZoneAtLeft) {
     /** @const */ const minGridSlicePx = 64;  // minimal distance between grid lines.
@@ -99,14 +102,14 @@ export class TimelineGrid {
 
   /**
    * @param {!CanvasRenderingContext2D} context
-   * @param {!PerfUI.TimelineGrid.DividersData} dividersData
+   * @param {!DividersData} dividersData
    */
   static drawCanvasGrid(context, dividersData) {
     context.save();
     context.scale(window.devicePixelRatio, window.devicePixelRatio);
     const height = Math.floor(context.canvas.height / window.devicePixelRatio);
     context.strokeStyle =
-        self.UI.themeSupport.patchColorText('rgba(0, 0, 0, 0.1)', UI.ThemeSupport.ColorUsage.Foreground);
+        self.UI.themeSupport.patchColorText('rgba(0, 0, 0, 0.1)', UI.UIUtils.ThemeSupport.ColorUsage.Foreground);
     context.lineWidth = 1;
 
     context.translate(0.5, 0.5);
@@ -121,7 +124,7 @@ export class TimelineGrid {
 
   /**
    * @param {!CanvasRenderingContext2D} context
-   * @param {!PerfUI.TimelineGrid.DividersData} dividersData
+   * @param {!DividersData} dividersData
    * @param {function(number):string} formatTimeFunction
    * @param {number} paddingTop
    * @param {number} headerHeight
@@ -134,12 +137,12 @@ export class TimelineGrid {
 
     context.beginPath();
     context.fillStyle =
-        self.UI.themeSupport.patchColorText('rgba(255, 255, 255, 0.5)', UI.ThemeSupport.ColorUsage.Background);
+        self.UI.themeSupport.patchColorText('rgba(255, 255, 255, 0.5)', UI.UIUtils.ThemeSupport.ColorUsage.Background);
     context.fillRect(0, 0, width, headerHeight);
 
-    context.fillStyle = self.UI.themeSupport.patchColorText('#333', UI.ThemeSupport.ColorUsage.Foreground);
+    context.fillStyle = self.UI.themeSupport.patchColorText('#333', UI.UIUtils.ThemeSupport.ColorUsage.Foreground);
     context.textBaseline = 'hanging';
-    context.font = '11px ' + Host.fontFamily();
+    context.font = '11px ' + Host.Platform.fontFamily();
 
     const paddingRight = 4;
     for (const offsetInfo of dividersData.offsets) {
@@ -304,3 +307,6 @@ export class Calculator {
   /** @return {number} */
   boundarySpan() {}
 }
+
+/** @typedef {!{offsets: !Array<!{position: number, time: number}>, precision: number}} */
+export let DividersData;

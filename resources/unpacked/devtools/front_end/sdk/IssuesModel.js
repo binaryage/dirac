@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+
 import {CookieModel} from './CookieModel.js';
 import {Issue} from './Issue.js';
-import {Events, NetworkManager} from './NetworkManager.js';
+import {Events as NetworkManagerEvents, NetworkManager} from './NetworkManager.js';
 import {NetworkRequest,  // eslint-disable-line no-unused-vars
         setCookieBlockedReasonToAttribute, setCookieBlockedReasonToUiString,} from './NetworkRequest.js';
+import {Events as ResourceTreeModelEvents, ResourceTreeModel} from './ResourceTreeModel.js';
 import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
 const connectedIssuesSymbol = Symbol('issues');
@@ -29,8 +32,25 @@ export class IssuesModel extends SDKModel {
 
     const networkManager = target.model(NetworkManager);
     if (networkManager) {
-      networkManager.addEventListener(Events.RequestFinished, this._handleRequestFinished, this);
+      networkManager.addEventListener(NetworkManagerEvents.RequestFinished, this._handleRequestFinished, this);
     }
+
+    const resourceTreeModel = /** @type {?ResourceTreeModel} */ (target.model(ResourceTreeModel));
+    if (resourceTreeModel) {
+      resourceTreeModel.addEventListener(
+        ResourceTreeModelEvents.MainFrameNavigated, this._onMainFrameNavigated, this);
+    }
+  }
+
+  _onMainFrameNavigated() {
+    this._clearIssues();
+  }
+
+  _clearIssues() {
+    this._issues = [];
+    this._browserIssues = [];
+    this._browserIssuesByCode = new Map();
+    this.dispatchEventToListeners(Events.AllIssuesCleared);
   }
 
   ensureEnabled() {
@@ -52,10 +72,10 @@ export class IssuesModel extends SDKModel {
     if (!this._browserIssuesByCode.has(payload.code)) {
       const issue = new Issue(payload.code);
       this._browserIssuesByCode.set(payload.code, issue);
-      this.dispatchEventToListeners(IssuesModel.Events.IssueAdded, issue);
+      this.dispatchEventToListeners(Events.IssueAdded, issue);
     } else {
       const issue = this._browserIssuesByCode.get(payload.code);
-      this.dispatchEventToListeners(IssuesModel.Events.IssueUpdated, issue);
+      this.dispatchEventToListeners(Events.IssueUpdated, issue);
     }
   }
 
@@ -64,6 +84,13 @@ export class IssuesModel extends SDKModel {
    */
   issues() {
     return this._browserIssuesByCode.values();
+  }
+
+   /**
+   * @return {number}
+   */
+  size() {
+    return this._browserIssuesByCode.size;
   }
 
   /**
@@ -94,7 +121,7 @@ export class IssuesModel extends SDKModel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _handleRequestFinished(event) {
     const request = /** @type {!NetworkRequest} */ (event.data);
@@ -121,10 +148,11 @@ export class IssuesModel extends SDKModel {
 }
 
 /** @enum {symbol} */
-IssuesModel.Events = {
+export const Events = {
   Updated: Symbol('Updated'),
   IssueAdded: Symbol('IssueAdded'),
   IssueUpdated: Symbol('IssueUpdated'),
+  AllIssuesCleared: Symbol('AllIssuesCleared'),
 };
 
 SDKModel.register(IssuesModel, Capability.None, true);

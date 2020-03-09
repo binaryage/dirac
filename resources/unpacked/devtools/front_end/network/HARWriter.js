@@ -29,6 +29,7 @@
  */
 
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 
 export class HARWriter {
@@ -55,7 +56,7 @@ export class HARWriter {
    */
   static async _harStringForRequests(requests, compositeProgress) {
     const progress = compositeProgress.createSubProgress();
-    progress.setTitle(Common.UIString.UIString('Collecting content\u2026'));
+    progress.setTitle(Common.UIString.UIString('Collecting content…'));
     progress.setTotalWork(requests.length);
 
     const harLog = await SDK.HARLog.HARLog.build(requests);
@@ -99,7 +100,7 @@ export class HARWriter {
       if (contentData.content !== null) {
         let content = contentData.content;
         if (content && !encoded && needsEncoding(content)) {
-          content = content.toBase64();
+          content = Platform.StringUtilities.toBase64(content);
           encoded = true;
         }
         entry.response.content.text = content;
@@ -118,7 +119,7 @@ export class HARWriter {
    */
   static async _writeToStream(stream, compositeProgress, fileContent) {
     const progress = compositeProgress.createSubProgress();
-    progress.setTitle(Common.UIString.UIString('Writing file\u2026'));
+    progress.setTitle(Common.UIString.UIString('Writing file…'));
     progress.setTotalWork(fileContent.length);
     for (let i = 0; i < fileContent.length && !progress.isCanceled(); i += _chunkSize) {
       const chunk = fileContent.substr(i, _chunkSize);

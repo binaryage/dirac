@@ -1200,13 +1200,6 @@ const createSearchRegex = function(query, caseSensitive, isRegex) {};
 const createPlainTextSearchRegex = function(query, flags) {};
 
 /**
- * @param {!RegExp} regex
- * @param {string} content
- * @return {number}
- */
-const countRegexMatches = function(regex, content) {};
-
-/**
  * @param {number} spacesCount
  * @return {string}
  */
@@ -1458,22 +1451,15 @@ DetailsRenderer.SourceLocationDetailsJSON;
  */
 DetailsRenderer.OpportunitySummary;
 
-const Lighthouse = {};
-
-Lighthouse.ReportGenerator = {};
-
-/**
- * @param {!ReportRenderer.ReportJSON} lhr
- * @return {string}
- */
-Lighthouse.ReportGenerator.generateReportHtml;
-
-/**
- * @param {string} source
- * @param {Array<{search: string, replacement: string}>} replacements
- * @return {string}
- */
-Lighthouse.ReportGenerator.replaceStrings;
+const LighthouseReportGenerator = class {
+  /**
+   * @param {!ReportRenderer.ReportJSON} lhr
+   * @return {string}
+   */
+  generateReportHtml(lhr) {
+    return '';
+  }
+};
 
 /** @interface */
 class InspectorFrontendHostAPI {

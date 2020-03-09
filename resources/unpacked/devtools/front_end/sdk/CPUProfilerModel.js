@@ -110,7 +110,7 @@ export class CPUProfilerModel extends SDKModel {
   _dispatchProfileEvent(eventName, id, scriptLocation, title, cpuProfile) {
     const debuggerLocation = Location.fromPayload(this._debuggerModel, scriptLocation);
     const globalId = this.target().id() + '.' + id;
-    const data = /** @type {!SDK.CPUProfilerModel.EventData} */ (
+    const data = /** @type {!EventData} */ (
         {id: globalId, scriptLocation: debuggerLocation, cpuProfile: cpuProfile, title: title, cpuProfilerModel: this});
     this.dispatchEventToListeners(eventName, data);
   }
@@ -148,7 +148,8 @@ export class CPUProfilerModel extends SDKModel {
   startPreciseCoverage(jsCoveragePerBlock, preciseCoverageDeltaUpdateCallback) {
     const callCount = false;
     this._preciseCoverageDeltaUpdateCallback = preciseCoverageDeltaUpdateCallback;
-    return this._profilerAgent.startPreciseCoverage(callCount, jsCoveragePerBlock);
+    const allowUpdatesTriggeredByBackend = true;
+    return this._profilerAgent.startPreciseCoverage(callCount, jsCoveragePerBlock, allowUpdatesTriggeredByBackend);
   }
 
   /**
@@ -189,3 +190,6 @@ export const Events = {
 };
 
 SDKModel.register(CPUProfilerModel, Capability.JS, true);
+
+/** @typedef {!{id: string, scriptLocation: !DebuggerModel.Location, title: string, cpuProfile: (!Protocol.Profiler.Profile|undefined), cpuProfilerModel: !CPUProfilerModel}} */
+export let EventData;

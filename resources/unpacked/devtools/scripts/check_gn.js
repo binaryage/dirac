@@ -58,7 +58,7 @@ function checkNonAutostartNonRemoteModules() {
   if (missingModules.length)
     errors.push(`Check that you've included [${missingModules.join(', ')}] modules in: ` + gnVariable);
 
-  // e.g. "$resources_out_dir/audits/audits_module.js" => "audits"
+  // e.g. "$resources_out_dir/lighthouse/lighthouse_module.js" => "lighthouse"
   const mapLineToModuleName = line => line.split('/')[2].split('_module')[0];
 
   const extraneousModules = lines.map(mapLineToModuleName).filter(module => !utils.includes(modules, module));
@@ -104,9 +104,7 @@ function checkCopiedDevToolsModules() {
 
 function checkGNVariable(gnVariable, obtainFiles, obtainRelativePath) {
   const errors = [];
-  const excludedFiles =
-      ['InspectorBackendCommands.js', 'SupportedCSSProperties.js', 'ARIAProperties.js', 'axe.js', 'formatter_worker/']
-      .map(path.normalize);
+  const excludedFiles = ['axe.js', 'formatter_worker/', 'third_party/lighthouse/'].map(path.normalize);
   const lines = selectGNLines(`${gnVariable} = [`, ']').map(path.normalize);
   if (!lines.length) {
     return [

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Platform from '../platform/platform.js';
+
+import * as ARIAUtils from './ARIAUtils.js';
 import {Events as ListModelEvents, ListModel} from './ListModel.js';  // eslint-disable-line no-unused-vars
 import {measurePreferredSize} from './UIUtils.js';
 
@@ -89,7 +93,7 @@ export class ListControl {
     this.element.tabIndex = -1;
     this.element.addEventListener('click', this._onClick.bind(this), false);
     this.element.addEventListener('keydown', this._onKeyDown.bind(this), false);
-    UI.ARIAUtils.markAsListBox(this.element);
+    ARIAUtils.markAsListBox(this.element);
 
     this._delegate = delegate;
     this._mode = mode || ListMode.EqualHeightItems;
@@ -117,7 +121,7 @@ export class ListControl {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _replacedItemsInRange(event) {
     const data = /** @type {{index: number, removed: !Array<T>, inserted: number}} */ (event.data);
@@ -183,7 +187,8 @@ export class ListControl {
     const scrollTop = this.element.scrollTop;
     const viewportHeight = this.element.offsetHeight;
     this._clearViewport();
-    this._updateViewport(Number.constrain(scrollTop, 0, this._totalHeight() - viewportHeight), viewportHeight);
+    this._updateViewport(
+        Platform.NumberUtilities.clamp(scrollTop, 0, this._totalHeight() - viewportHeight), viewportHeight);
   }
 
   invalidateItemHeight() {
@@ -357,7 +362,8 @@ export class ListControl {
     const viewportHeight = this.element.offsetHeight;
     if (center) {
       const scrollTo = (top + bottom) / 2 - viewportHeight / 2;
-      this._updateViewport(Number.constrain(scrollTo, 0, this._totalHeight() - viewportHeight), viewportHeight);
+      this._updateViewport(
+          Platform.NumberUtilities.clamp(scrollTo, 0, this._totalHeight() - viewportHeight), viewportHeight);
       return;
     }
 
@@ -440,8 +446,8 @@ export class ListControl {
     let element = this._itemToElement.get(item);
     if (!element) {
       element = this._delegate.createElementForItem(item);
-      if (!UI.ARIAUtils.hasRole(element)) {
-        UI.ARIAUtils.markAsOption(element);
+      if (!ARIAUtils.hasRole(element)) {
+        ARIAUtils.markAsOption(element);
       }
       this._itemToElement.set(item, element);
     }
@@ -495,12 +501,12 @@ export class ListControl {
     this._delegate.selectedItemChanged(oldItem, newItem, /** @type {?Element} */ (oldElement), newElement);
     if (!this._delegate.updateSelectedItemARIA(/** @type {?Element} */ (oldElement), newElement)) {
       if (oldElement) {
-        UI.ARIAUtils.setSelected(oldElement, false);
+        ARIAUtils.setSelected(oldElement, false);
       }
       if (newElement) {
-        UI.ARIAUtils.setSelected(newElement, true);
+        ARIAUtils.setSelected(newElement, true);
       }
-      UI.ARIAUtils.setActiveDescendant(this.element, newElement);
+      ARIAUtils.setActiveDescendant(this.element, newElement);
     }
   }
 
@@ -592,7 +598,7 @@ export class ListControl {
 
     if (this._renderedHeight < viewportHeight || totalHeight < viewportHeight) {
       this._clearViewport();
-      this._updateViewport(Number.constrain(scrollTop, 0, totalHeight - viewportHeight), viewportHeight);
+      this._updateViewport(Platform.NumberUtilities.clamp(scrollTop, 0, totalHeight - viewportHeight), viewportHeight);
       return;
     }
 
@@ -620,7 +626,7 @@ export class ListControl {
     // TODO(dgozman): try to keep visible scrollTop the same
     // when invalidating after firstIndex but before first visible element.
     this._clearViewport();
-    this._updateViewport(Number.constrain(scrollTop, 0, totalHeight - viewportHeight), viewportHeight);
+    this._updateViewport(Platform.NumberUtilities.clamp(scrollTop, 0, totalHeight - viewportHeight), viewportHeight);
   }
 
   /**

@@ -27,13 +27,15 @@ export class RemoteObjectPreviewFormatter {
       const internalName = _internalName;
       if (property.name === internalName.PromiseStatus) {
         return 1;
-      } else if (property.name === internalName.PromiseValue) {
+      }
+      if (property.name === internalName.PromiseValue) {
         return 2;
-      } else if (property.name === internalName.GeneratorStatus || property.name === internalName.PrimitiveValue) {
+      }
+      if (property.name === internalName.GeneratorStatus || property.name === internalName.PrimitiveValue) {
         return 3;
       }
       // TODO(einbinder) expose whether preview properties are actually private.
-      else if (property.type !== 'function' && !property.name.startsWith('#')) {
+      if (property.type !== 'function' && !property.name.startsWith('#')) {
         return 4;
       }
       return 5;
@@ -79,7 +81,7 @@ export class RemoteObjectPreviewFormatter {
       this._appendObjectPropertiesPreview(propertiesElement, preview);
     }
     if (preview.overflow) {
-      const ellipsisText = propertiesElement.textContent.length > 1 ? ',\xA0\u2026' : '\u2026';
+      const ellipsisText = propertiesElement.textContent.length > 1 ? ',\xA0…' : '…';
       propertiesElement.createChild('span').textContent = ellipsisText;
     }
     propertiesElement.createTextChild(isArrayOrTypedArray ? ']' : '}');
@@ -294,7 +296,7 @@ export class RemoteObjectPreviewFormatter {
     if (type === 'object' && !subtype) {
       let preview = this._abbreviateFullQualifiedClassName(description);
       if (preview === 'Object') {
-        preview = '{\u2026}';
+        preview = '{…}';
       }
       span.textContent = preview;
       span.title = description;

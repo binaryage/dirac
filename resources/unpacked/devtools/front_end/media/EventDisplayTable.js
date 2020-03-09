@@ -2,29 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as DataGrid from '../data_grid/data_grid.js';
+import * as UI from '../ui/ui.js';
+import * as MediaModel from './MediaModel.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @typedef {{
  *     id: string,
  *     title: string,
  *     sortable: boolean,
  *     weight: (number|undefined),
- *     sortingFunction: (!function(!Media.EventNode, !Media.EventNode):number|undefined),
+ *     sortingFunction: (!function(!EventNode, !EventNode):number|undefined),
  * }}
  */
-Media.EventDisplayColumnConfig;
-
-/**
- * @typedef {{
- *     name: string,
- *     value: *,
- *     timestamp: (number|string|undefined),
- *     displayTimestamp: string
- * }}
- */
-Media.Event;
+export let EventDisplayColumnConfig;
 
 /** @enum {string} */
-Media.MediaEventColumnKeys = {
+export const MediaEventColumnKeys = {
   Timestamp: 'displayTimestamp',
   Event: 'event',
   Value: 'value'
@@ -33,12 +27,13 @@ Media.MediaEventColumnKeys = {
 /**
  * @unrestricted
  */
-Media.EventNode = class extends DataGrid.SortableDataGridNode {
+export class EventNode extends DataGrid.DataGrid.DataGridNode {
   /**
-   * @param {!Media.Event} event
+   * @param {!MediaModel.Event} event
    */
   constructor(event) {
     super(event, false);
+    this._expandableElement = null;
   }
 
   /**
@@ -49,30 +44,23 @@ Media.EventNode = class extends DataGrid.SortableDataGridNode {
   createCell(columnId) {
     const cell = this.createTD(columnId);
     const cellData = /** @type string */ (this.data[columnId]);
-    if (columnId === Media.MediaEventColumnKeys.Value) {
-      const area = new SourceFrame.JSONView(new SourceFrame.ParsedJSON(cellData, '', ''), true);
-      area.markAsRoot();
-      area.show(cell);
+    if (columnId === MediaEventColumnKeys.Value) {
+      const enclosed = cell.createChild('div', 'event-display-table-contents-json-wrapper');
+      this._expandableElement = new SourceFrame.JSONView(new SourceFrame.ParsedJSON(cellData, '', ''), true);
+      this._expandableElement.markAsRoot();
+      this._expandableElement.show(enclosed);
     } else {
       cell.classList.add('event-display-table-basic-text-table-entry');
       cell.createTextChild(cellData);
     }
     return cell;
   }
-
-  /**
-   * @override
-   * @return {number}
-   */
-  nodeSelfHeight() {
-    return 20;
-  }
-};
+}
 
 /**
  * @unrestricted
  */
-Media.PlayerEventsView = class extends UI.VBox {
+export class PlayerEventsView extends UI.Widget.VBox {
   constructor() {
     super();
 
@@ -80,20 +68,17 @@ Media.PlayerEventsView = class extends UI.VBox {
     this.registerRequiredCSS('media/eventDisplayTable.css');
     this.contentElement.classList.add('event-display-table-contents-table-container');
 
-    this._dataGrid = this._createDataGrid(
-        [
-          {
-            id: Media.MediaEventColumnKeys.Timestamp,
-            title: ls`Timestamp`,
-            weight: 1,
-            sortable: true,
-            sortingFunction:
-                DataGrid.SortableDataGrid.NumericComparator.bind(null, Media.MediaEventColumnKeys.Timestamp)
-          },
-          {id: Media.MediaEventColumnKeys.Event, title: ls`Event Name`, weight: 2, sortable: false},
-          {id: Media.MediaEventColumnKeys.Value, title: ls`Value`, weight: 7, sortable: false}
-        ],
-        Media.MediaEventColumnKeys.Timestamp);
+    this._dataGrid = this._createDataGrid([
+      {
+        id: MediaEventColumnKeys.Timestamp,
+        title: ls`Timestamp`,
+        weight: 1,
+        sortingFunction: DataGrid.SortableDataGrid.SortableDataGrid.NumericComparator.bind(
+            null, MediaEventColumnKeys.Timestamp)
+      },
+      {id: MediaEventColumnKeys.Event, title: ls`Event Name`, weight: 2},
+      {id: MediaEventColumnKeys.Value, title: ls`Value`, weight: 7}
+    ]);
 
     this._firstEventTime = 0;
     this._dataGrid.setStriped(true);
@@ -101,42 +86,27 @@ Media.PlayerEventsView = class extends UI.VBox {
   }
 
   /**
-   * @param {!Array.<!Media.EventDisplayColumnConfig>} headers
-   * @param {?string|undefined} default_sort
+   * @param {!Array.<!EventDisplayColumnConfig>} headers
    * @return !DataGrid.SortableDataGrid
    */
-  _createDataGrid(headers, default_sort) {
+  _createDataGrid(headers) {
     const gridColumnDescs = [];
-    const sortFunctionMap = new Map();
     for (const headerDesc of headers) {
-      gridColumnDescs.push(Media.PlayerEventsView._convertToGridDescriptor(headerDesc));
-      if (headerDesc.sortable) {
-        sortFunctionMap.set(headerDesc.id, headerDesc.sortingFunction);
-        if (!default_sort) {
-          default_sort = headerDesc.id;
-        }
-      }
+      gridColumnDescs.push(PlayerEventsView._convertToGridDescriptor(headerDesc));
     }
 
-    const datagrid = new DataGrid.SortableDataGrid({displayName: ls`Event Display`, columns: gridColumnDescs});
-    if (default_sort) {
-      datagrid.sortNodes(sortFunctionMap.get(default_sort), !datagrid.isSortOrderAscending());
-
-      function sortGrid() {
-        const comparator = sortFunctionMap.get(datagrid.sortColumnId());
-        datagrid.sortNodes(comparator, !datagrid.isSortOrderAscending());
-      }
-
-      datagrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, sortGrid);
-    }
+    // TODO(tmathmeyer) SortableDataGrid doesn't play nice with nested JSON
+    // renderers, since they can change size, and this breaks the visible
+    // element computation in ViewportDataGrid.
+    const datagrid = new DataGrid.DataGrid.DataGridImpl({displayName: ls`Event Display`, columns: gridColumnDescs});
     datagrid.asWidget().contentElement.classList.add('no-border-top-datagrid');
     return datagrid;
   }
 
   /**
    * @param {string} playerID
-   * @param {!Array.<!Media.Event>} changes
-   * @param {!Media.MediaModel.MediaChangeTypeKeys} change_type
+   * @param {!Array.<!MediaModel.Event>} changes
+   * @param {!MediaModel.MediaChangeTypeKeys} change_type
    */
   renderChanges(playerID, changes, change_type) {
     if (this._firstEventTime === 0 && changes.length > 0) {
@@ -149,7 +119,7 @@ Media.PlayerEventsView = class extends UI.VBox {
   }
 
   /**
-   * @param {!Media.Event} event
+   * @param {!MediaModel.Event} event
    */
   addEvent(event) {
     if (event.type === 'triggeredEvent') {
@@ -160,8 +130,8 @@ Media.PlayerEventsView = class extends UI.VBox {
       event.event = json.event;
       delete json['event'];
       event.value = json;
-      const node = new Media.EventNode(event);
-      this._dataGrid.rootNode().insertChildOrdered(node);
+      const node = new EventNode(event);
+      this._dataGrid.rootNode().appendChild(node);
     }
 
     if (event.type === 'systemEvent') {
@@ -169,13 +139,13 @@ Media.PlayerEventsView = class extends UI.VBox {
       // https://chromium-review.googlesource.com/c/chromium/src/+/2006249
       // is merged.
       event.event = event.name;
-      const node = new Media.EventNode(event);
-      this._dataGrid.rootNode().insertChildOrdered(node);
+      const node = new EventNode(event);
+      this._dataGrid.rootNode().appendChild(node);
     }
   }
 
   /**
-   * @param {!Media.Event} event
+   * @param {!MediaModel.Event} event
    */
   _subtractFirstEventTime(event) {
     event.displayTimestamp = (event.timestamp - this._firstEventTime).toFixed(3);
@@ -183,11 +153,11 @@ Media.PlayerEventsView = class extends UI.VBox {
   }
 
   /**
-   * @param {!Media.EventDisplayColumnConfig} columnConfig
-   * @return {!DataGrid.ColumnDescriptor}
+   * @param {!EventDisplayColumnConfig} columnConfig
+   * @return {!DataGrid.DataGrid.ColumnDescriptor}
    */
   static _convertToGridDescriptor(columnConfig) {
-    return /** @type {!DataGrid.ColumnDescriptor} */ ({
+    return /** @type {!DataGrid.DataGrid.ColumnDescriptor} */ ({
       id: columnConfig.id,
       title: columnConfig.title,
       sortable: columnConfig.sortable,
@@ -195,4 +165,4 @@ Media.PlayerEventsView = class extends UI.VBox {
       sort: DataGrid.DataGrid.Order.Ascending
     });
   }
-};
+}

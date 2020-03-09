@@ -28,17 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  */
 export class PieChart {
   /**
-   * @param {!PerfUI.PieChartOptions} options
+   * @param {!PieChartOptions} options
    */
   constructor(options) {
     const {size, formatter, showLegend, chartName} = options;
     this.element = createElement('div');
-    this._shadowRoot = UI.createShadowRootWithCoreStyles(this.element, 'perf_ui/pieChart.css');
+    this._shadowRoot = UI.Utils.createShadowRootWithCoreStyles(this.element, 'perf_ui/pieChart.css');
     const root = this._shadowRoot.createChild('div', 'root');
     UI.ARIAUtils.markAsGroup(root);
     UI.ARIAUtils.setAccessibleName(root, chartName);
@@ -175,3 +177,6 @@ export class PieChart {
     return node;
   }
 }
+
+/** @typedef {{size: number, formatter: function(number):string, showLegend: (boolean|undefined), chartName: string}} */
+export let PieChartOptions;

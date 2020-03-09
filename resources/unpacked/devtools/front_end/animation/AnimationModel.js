@@ -2,28 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as SDK from '../sdk/sdk.js';
+
 /**
  * @unrestricted
  */
-export class AnimationModel extends SDK.SDKModel {
+export class AnimationModel extends SDK.SDKModel.SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   constructor(target) {
     super(target);
-    this._runtimeModel = /** @type {!SDK.RuntimeModel} */ (target.model(SDK.RuntimeModel));
+    this._runtimeModel = /** @type {!SDK.RuntimeModel.RuntimeModel} */ (target.model(SDK.RuntimeModel.RuntimeModel));
     this._agent = target.animationAgent();
     target.registerAnimationDispatcher(new AnimationDispatcher(this));
     /** @type {!Map.<string, !AnimationImpl>} */
     this._animationsById = new Map();
     /** @type {!Map.<string, !AnimationGroup>} */
     this._animationGroups = new Map();
-    /** @type {!Array.<string>} */
-    this._pendingAnimations = [];
+    /** @type {!Set.<string>} */
+    this._pendingAnimations = new Set();
     this._playbackRate = 1;
-    const resourceTreeModel = /** @type {!SDK.ResourceTreeModel} */ (target.model(SDK.ResourceTreeModel));
+    const resourceTreeModel =
+        /** @type {!SDK.ResourceTreeModel.ResourceTreeModel} */ (target.model(SDK.ResourceTreeModel.ResourceTreeModel));
     resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.MainFrameNavigated, this._reset, this);
-    const screenCaptureModel = target.model(SDK.ScreenCaptureModel);
+    const screenCaptureModel = target.model(SDK.ScreenCaptureModel.ScreenCaptureModel);
     if (screenCaptureModel) {
       this._screenshotCapture = new ScreenshotCapture(this, screenCaptureModel);
     }
@@ -32,7 +35,7 @@ export class AnimationModel extends SDK.SDKModel {
   _reset() {
     this._animationsById.clear();
     this._animationGroups.clear();
-    this._pendingAnimations = [];
+    this._pendingAnimations.clear();
     this.dispatchEventToListeners(Events.ModelReset);
   }
 
@@ -40,14 +43,14 @@ export class AnimationModel extends SDK.SDKModel {
    * @param {string} id
    */
   animationCreated(id) {
-    this._pendingAnimations.push(id);
+    this._pendingAnimations.add(id);
   }
 
   /**
    * @param {string} id
    */
   _animationCanceled(id) {
-    this._pendingAnimations.remove(id);
+    this._pendingAnimations.delete(id);
     this._flushPendingAnimationsIfNeeded();
   }
 
@@ -64,12 +67,10 @@ export class AnimationModel extends SDK.SDKModel {
 
     // Ignore Web Animations custom effects & groups.
     if (animation.type() === 'WebAnimation' && animation.source().keyframesRule().keyframes().length === 0) {
-      this._pendingAnimations.remove(animation.id());
+      this._pendingAnimations.delete(animation.id());
     } else {
       this._animationsById.set(animation.id(), animation);
-      if (this._pendingAnimations.indexOf(animation.id()) === -1) {
-        this._pendingAnimations.push(animation.id());
-      }
+      this._pendingAnimations.add(animation.id());
     }
 
     this._flushPendingAnimationsIfNeeded();
@@ -82,7 +83,7 @@ export class AnimationModel extends SDK.SDKModel {
       }
     }
 
-    while (this._pendingAnimations.length) {
+    while (this._pendingAnimations.size) {
       this._matchExistingGroups(this._createGroupFromPendingAnimations());
     }
   }
@@ -115,19 +116,24 @@ export class AnimationModel extends SDK.SDKModel {
    * @return {!AnimationGroup}
    */
   _createGroupFromPendingAnimations() {
-    console.assert(this._pendingAnimations.length);
-    const groupedAnimations = [this._animationsById.get(this._pendingAnimations.shift())];
-    const remainingAnimations = [];
+    console.assert(this._pendingAnimations.size);
+    const firstAnimationId = this._pendingAnimations.values().next().value;
+    this._pendingAnimations.delete(firstAnimationId);
+
+    const firstAnimation = this._animationsById.get(firstAnimationId);
+    const groupedAnimations = [firstAnimation];
+    const groupStartTime = firstAnimation.startTime();
+    const remainingAnimations = new Set();
     for (const id of this._pendingAnimations) {
       const anim = this._animationsById.get(id);
-      if (anim.startTime() === groupedAnimations[0].startTime()) {
+      if (anim.startTime() === groupStartTime) {
         groupedAnimations.push(anim);
       } else {
-        remainingAnimations.push(id);
+        remainingAnimations.add(id);
       }
     }
     this._pendingAnimations = remainingAnimations;
-    return new AnimationGroup(this, groupedAnimations[0].id(), groupedAnimations);
+    return new AnimationGroup(this, firstAnimationId, groupedAnimations);
   }
 
   /**
@@ -330,7 +336,7 @@ export class AnimationImpl {
   /**
    * @param {number} duration
    * @param {number} delay
-   * @param {!SDK.DOMNode} node
+   * @param {!SDK.DOMModel.DOMNode} node
    */
   _updateNodeStyle(duration, delay, node) {
     let animationPrefix;
@@ -348,7 +354,7 @@ export class AnimationImpl {
   }
 
   /**
-   * @return {!Promise<?SDK.RemoteObject>}
+   * @return {!Promise<?SDK.RemoteObject.RemoteObject>}
    */
   remoteObjectPromise() {
     return this._animationModel._agent.resolveAnimation(this.id()).then(
@@ -442,20 +448,20 @@ export class AnimationEffect {
   }
 
   /**
-   * @return {!Promise.<!SDK.DOMNode>}
+   * @return {!Promise.<!SDK.DOMModel.DOMNode>}
    */
   node() {
     if (!this._deferredNode) {
-      this._deferredNode = new SDK.DeferredDOMNode(this._animationModel.target(), this.backendNodeId());
+      this._deferredNode = new SDK.DOMModel.DeferredDOMNode(this._animationModel.target(), this.backendNodeId());
     }
     return this._deferredNode.resolvePromise();
   }
 
   /**
-   * @return {!SDK.DeferredDOMNode}
+   * @return {!SDK.DOMModel.DeferredDOMNode}
    */
   deferredNode() {
-    return new SDK.DeferredDOMNode(this._animationModel.target(), this.backendNodeId());
+    return new SDK.DOMModel.DeferredDOMNode(this._animationModel.target(), this.backendNodeId());
   }
 
   /**
@@ -679,9 +685,8 @@ export class AnimationGroup {
     function extractId(anim) {
       if (anim.type() === Type.WebAnimation) {
         return anim.type() + anim.id();
-      } else {
-        return anim._cssId();
       }
+      return anim._cssId();
     }
 
     if (this._animations.length !== group._animations.length) {
@@ -759,7 +764,7 @@ export class AnimationDispatcher {
 export class ScreenshotCapture {
   /**
    * @param {!AnimationModel} animationModel
-   * @param {!SDK.ScreenCaptureModel} screenCaptureModel
+   * @param {!SDK.ScreenCaptureModel.ScreenCaptureModel} screenCaptureModel
    */
   constructor(animationModel, screenCaptureModel) {
     /** @type {!Array<!Animation.AnimationModel.ScreenshotCapture.Request>} */
@@ -829,4 +834,4 @@ export class ScreenshotCapture {
   }
 }
 
-SDK.SDKModel.register(AnimationModel, SDK.Target.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(AnimationModel, SDK.SDKModel.Capability.DOM, false);

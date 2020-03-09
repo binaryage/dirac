@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
@@ -28,7 +29,7 @@ export class MediaQueryInspector extends UI.Widget.Widget {
     this._setWidthCallback = setWidthCallback;
     this._scale = 1;
 
-    self.SDK.targetManager.observeModels(SDK.CSSModel.CSSModel, this);
+    SDK.SDKModel.TargetManager.instance().observeModels(SDK.CSSModel.CSSModel, this);
     self.UI.zoomManager.addEventListener(UI.ZoomManager.Events.ZoomChanged, this._renderMediaQueries.bind(this), this);
   }
 
@@ -122,12 +123,12 @@ export class MediaQueryInspector extends UI.Widget.Widget {
       if (!uiLocation) {
         continue;
       }
-      const descriptor = String.sprintf(
+      const descriptor = Platform.StringUtilities.sprintf(
           '%s:%d:%d', uiLocation.uiSourceCode.url(), uiLocation.lineNumber + 1, uiLocation.columnNumber + 1);
       uiLocations.set(descriptor, uiLocation);
     }
 
-    const contextMenuItems = uiLocations.keysArray().sort();
+    const contextMenuItems = [...uiLocations.keys()].sort();
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     const subMenuItem =
         contextMenu.defaultSection().appendSubMenuItem(Common.UIString.UIString('Reveal in source code'));

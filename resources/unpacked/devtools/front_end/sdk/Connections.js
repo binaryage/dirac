@@ -6,6 +6,8 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as ProtocolModule from '../protocol/protocol.js';
 
+import {TargetManager} from './SDKModel.js';
+
 /**
  * @implements {ProtocolModule.InspectorBackend.Connection}
  */
@@ -50,7 +52,7 @@ export class MainConnection {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _dispatchMessage(event) {
     if (this._onMessage) {
@@ -59,7 +61,7 @@ export class MainConnection {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _dispatchMessageChunk(event) {
     const messageChunk = /** @type {string} */ (event.data['messageChunk']);
@@ -330,7 +332,7 @@ export async function initMainConnection(createMainTarget, websocketConnectionLo
   Host.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
   Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
       Host.InspectorFrontendHostAPI.Events.ReattachMainTarget, () => {
-        self.SDK.targetManager.mainTarget().router().connection().disconnect();
+        TargetManager.instance().mainTarget().router().connection().disconnect();
         createMainTarget();
       });
   return Promise.resolve();
@@ -346,7 +348,8 @@ export function _createMainConnection(websocketConnectionLost) {
   if (wsParam || wssParam) {
     const ws = wsParam ? `ws://${decodeURIComponent(wsParam)}` : `wss://${decodeURIComponent(/** @type {string} */(wssParam))}`;
     return new WebSocketConnection(ws, websocketConnectionLost);
-  } else if (Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
+  }
+  if (Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
     return new StubConnection();
   }
 

@@ -54,8 +54,9 @@ export class BinaryResourceView extends UI.Widget.VBox {
     this._toolbar.appendToolbarItem(this._binaryViewTypeCombobox);
 
     const copyButton = new UI.Toolbar.ToolbarButton(ls`Copy to clipboard`, 'largeicon-copy');
-    copyButton.addEventListener(
-        UI.Toolbar.ToolbarButton.Events.Click, this._copySelectedViewToClipboard.bind(this), this);
+    copyButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._copySelectedViewToClipboard();
+    }, this);
     this._toolbar.appendToolbarItem(copyButton);
 
     this._copiedText = new UI.Toolbar.ToolbarText();
@@ -171,7 +172,7 @@ export class BinaryViewObject {
    * @param {string} label
    * @param {string} copiedMessage
    * @param {function():!UI.Widget.Widget} createViewFn
-   * @param {function():Promise<!Common.DeferredContent>} deferredContent
+   * @param {function():Promise<!Common.ContentProvider.DeferredContent>} deferredContent
    */
   constructor(type, label, copiedMessage, createViewFn, deferredContent) {
     this.type = type;

@@ -31,8 +31,11 @@
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 
+import * as ARIAUtils from './ARIAUtils.js';
+import {Icon} from './Icon.js';
 import {KeyboardShortcut, Modifiers} from './KeyboardShortcut.js';
 import {bindCheckbox} from './SettingsUI.js';
+import {Suggestions} from './SuggestBox.js';  // eslint-disable-line no-unused-vars
 import {Events, TextPrompt} from './TextPrompt.js';
 import {ToolbarButton, ToolbarSettingToggle} from './Toolbar.js';  // eslint-disable-line no-unused-vars
 import {CheckboxLabel} from './UIUtils.js';
@@ -96,7 +99,7 @@ export class FilterBar extends HBox {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _filterChanged(event) {
     this._updateFilterButton();
@@ -196,7 +199,8 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
     this._filterElement = createElement('div');
     this._filterElement.className = 'filter-text-filter';
 
-    this._filterInputElement = this._filterElement.createChild('span', 'filter-input-field');
+    const container = this._filterElement.createChild('div', 'filter-input-container');
+    this._filterInputElement = container.createChild('span', 'filter-input-field');
 
     this._prompt = new TextPrompt();
     this._prompt.initialize(this._completions.bind(this), ' ');
@@ -205,15 +209,23 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
     this._prompt.setPlaceholder(Common.UIString.UIString('Filter'));
     this._prompt.addEventListener(Events.TextChanged, this._valueChanged.bind(this));
 
-    /** @type {?function(string, string, boolean=):!Promise<!UI.SuggestBox.Suggestions>} */
+    /** @type {?function(string, string, boolean=):!Promise<!Suggestions>} */
     this._suggestionProvider = null;
+
+    const clearButton = container.createChild('div', 'filter-input-clear-button');
+    clearButton.appendChild(Icon.create('mediumicon-gray-cross-hover', 'filter-cancel-button'));
+    clearButton.addEventListener('click', () => {
+      this.clear();
+      this.focus();
+    });
+    this._updateEmptyStyles();
   }
 
   /**
    * @param {string} expression
    * @param {string} prefix
    * @param {boolean=} force
-   * @return {!Promise<!UI.SuggestBox.Suggestions>}
+   * @return {!Promise<!Suggestions>}
    */
   _completions(expression, prefix, force) {
     if (this._suggestionProvider) {
@@ -257,7 +269,7 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {(function(string, string, boolean=):!Promise<!UI.SuggestBox.Suggestions>)} suggestionProvider
+   * @param {(function(string, string, boolean=):!Promise<!Suggestions>)} suggestionProvider
    */
   setSuggestionProvider(suggestionProvider) {
     this._prompt.clearAutocomplete();
@@ -266,6 +278,15 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
 
   _valueChanged() {
     this.dispatchEventToListeners(FilterUI.Events.FilterChanged, null);
+    this._updateEmptyStyles();
+  }
+
+  _updateEmptyStyles() {
+    this._filterElement.classList.toggle('filter-text-empty', !this._prompt.text());
+  }
+
+  clear() {
+    this.setValue('');
   }
 }
 
@@ -281,8 +302,8 @@ export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
   constructor(items, setting) {
     super();
     this._filtersElement = createElementWithClass('div', 'filter-bitset-filter');
-    UI.ARIAUtils.markAsListBox(this._filtersElement);
-    UI.ARIAUtils.markAsMultiSelectable(this._filtersElement);
+    ARIAUtils.markAsListBox(this._filtersElement);
+    ARIAUtils.markAsMultiSelectable(this._filtersElement);
     this._filtersElement.title = Common.UIString.UIString(
         '%sClick to select multiple types', KeyboardShortcut.shortcutToString('', Modifiers.CtrlOrMeta));
 
@@ -354,7 +375,7 @@ export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
       const typeName = element.typeName;
       const active = !!this._allowedTypes[typeName];
       element.classList.toggle('selected', active);
-      UI.ARIAUtils.setSelected(element, active);
+      ARIAUtils.setSelected(element, active);
     }
     this.dispatchEventToListeners(FilterUI.Events.FilterChanged, null);
   }
@@ -369,7 +390,7 @@ export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
     typeFilterElement.tabIndex = -1;
     typeFilterElement.typeName = name;
     typeFilterElement.createTextChild(label);
-    UI.ARIAUtils.markAsOption(typeFilterElement);
+    ARIAUtils.markAsOption(typeFilterElement);
     if (title) {
       typeFilterElement.title = title;
     }

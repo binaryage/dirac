@@ -4,6 +4,8 @@
 
 import * as Common from '../common/common.js';
 
+import {NameValue} from './NetworkRequest.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
@@ -20,7 +22,7 @@ export class ServerTiming {
   }
 
   /**
-   * @param {!Array<!SDK.NetworkRequest.NameValue>} headers
+   * @param {!Array<!NameValue>} headers
    * @return {?Array<!ServerTiming>}
    */
   static parseHeaders(headers) {
@@ -196,6 +198,6 @@ export class ServerTiming {
    * @param {string} msg
    */
   static showWarning(msg) {
-    self.Common.console.warn(Common.UIString.UIString(`ServerTiming: ${msg}`));
+    Common.Console.Console.instance().warn(Common.UIString.UIString(`ServerTiming: ${msg}`));
   }
 }

@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 import * as Host from '../host/host.js';
+
 import {Action} from './Action.js';                  // eslint-disable-line no-unused-vars
 import {ActionRegistry} from './ActionRegistry.js';  // eslint-disable-line no-unused-vars
 import {Context} from './Context.js';
 import {Dialog} from './Dialog.js';
-import {KeyboardShortcut, Modifiers} from './KeyboardShortcut.js';
+import {Descriptor, KeyboardShortcut, Modifiers} from './KeyboardShortcut.js';  // eslint-disable-line no-unused-vars
 import {isEditing} from './UIUtils.js';
 
 /**
@@ -22,7 +23,7 @@ export class ShortcutRegistry {
     this._actionRegistry = actionRegistry;
     /** @type {!Platform.Multimap.<string, string>} */
     this._defaultKeyToActions = new Platform.Multimap();
-    /** @type {!Platform.Multimap.<string, !UI.KeyboardShortcut.Descriptor>} */
+    /** @type {!Platform.Multimap.<string, !Descriptor>} */
     this._defaultActionToShortcut = new Platform.Multimap();
     this._registerBindings(document);
   }
@@ -32,7 +33,7 @@ export class ShortcutRegistry {
    * @return {!Array.<!Action>}
    */
   _applicableActions(key) {
-    return this._actionRegistry.applicableActions(this._defaultActionsForKey(key).valuesArray(), self.UI.context);
+    return this._actionRegistry.applicableActions([...this._defaultActionsForKey(key)], self.UI.context);
   }
 
   /**
@@ -49,7 +50,7 @@ export class ShortcutRegistry {
   globalShortcutKeys() {
     const keys = [];
     for (const key of this._defaultKeyToActions.keysArray()) {
-      const actions = this._defaultKeyToActions.get(key).valuesArray();
+      const actions = [...this._defaultKeyToActions.get(key)];
       const applicableActions = this._actionRegistry.applicableActions(actions, new Context());
       if (applicableActions.length) {
         keys.push(Number(key));
@@ -60,10 +61,10 @@ export class ShortcutRegistry {
 
   /**
    * @param {string} actionId
-   * @return {!Array.<!UI.KeyboardShortcut.Descriptor>}
+   * @return {!Array.<!Descriptor>}
    */
   shortcutDescriptorsForAction(actionId) {
-    return this._defaultActionToShortcut.get(actionId).valuesArray();
+    return [...this._defaultActionToShortcut.get(actionId)];
   }
 
   /**
@@ -107,7 +108,7 @@ export class ShortcutRegistry {
   eventMatchesAction(event, actionId) {
     console.assert(this._defaultActionToShortcut.has(actionId), 'Unknown action ' + actionId);
     const key = KeyboardShortcut.makeKeyFromEvent(event);
-    return this._defaultActionToShortcut.get(actionId).valuesArray().some(descriptor => descriptor.key === key);
+    return [...this._defaultActionToShortcut.get(actionId)].some(descriptor => descriptor.key === key);
   }
 
   /**
@@ -147,6 +148,7 @@ export class ShortcutRegistry {
       try {
         const result = await action.execute();
         if (result) {
+          Host.userMetrics.keyboardShortcutFired(action.id());
           return;
         }
       } catch (e) {

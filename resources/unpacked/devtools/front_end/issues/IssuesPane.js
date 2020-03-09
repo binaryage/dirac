@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-class IssueView extends UI.Widget {
+import * as UI from '../ui/ui.js';
+import * as SDK from '../sdk/sdk.js';
+
+class IssueView extends UI.Widget.Widget {
   constructor(parent, issue) {
     super(false);
     this._parent = parent;
@@ -18,8 +21,8 @@ class IssueView extends UI.Widget {
 
   appendHeader() {
     const header = createElementWithClass('div', 'header');
-    header.addEventListener('click', this._handleSelect.bind(this));
-    const icon = UI.Icon.create('largeicon-breaking-change', 'icon');
+    header.addEventListener('click', this._handleClick.bind(this));
+    const icon = UI.Icon.Icon.create('largeicon-breaking-change', 'icon');
     header.appendChild(icon);
 
     const title = createElementWithClass('div', 'title');
@@ -49,10 +52,10 @@ class IssueView extends UI.Widget {
     code.innerText = this._issue.code;
     body.appendChild(code);
 
-    const link = UI.XLink.create(this._details.link, 'Read more · ' + this._details.linkTitle, 'link');
+    const link = UI.XLink.XLink.create(this._details.link, 'Read more · ' + this._details.linkTitle, 'link');
     body.appendChild(link);
 
-    const linkIcon = UI.Icon.create('largeicon-link', 'link-icon');
+    const linkIcon = UI.Icon.Icon.create('largeicon-link', 'link-icon');
     link.prepend(linkIcon);
 
     const bodyWrapper = createElementWithClass('div', 'body-wrapper');
@@ -60,49 +63,104 @@ class IssueView extends UI.Widget {
     this.contentElement.appendChild(bodyWrapper);
   }
 
-  _handleSelect() {
+  _handleClick() {
     this._parent.handleSelect(this);
   }
 
-  toggle() {
-    this.contentElement.classList.toggle('collapsed');
+  /**
+   * @param {(boolean|undefined)=} expand - Expands the issue if `true`, collapses if `false`, toggles collapse if undefined
+   */
+  toggle(expand) {
+    if (expand === undefined) {
+      this.contentElement.classList.toggle('collapsed');
+    } else {
+      this.contentElement.classList.toggle('collapsed', !expand);
+    }
+  }
+
+  reveal() {
+    this.toggle(true);
+    this.contentElement.scrollIntoView(true);
   }
 }
 
-export class IssuesPaneImpl extends UI.VBox {
+export class IssuesPaneImpl extends UI.Widget.VBox {
   constructor() {
     super(true);
     this.registerRequiredCSS('issues/issuesPane.css');
 
-    const mainTarget = SDK.targetManager.mainTarget();
-    this._model = mainTarget.model(SDK.IssuesModel);
-    this._model.addEventListener(SDK.IssuesModel.Events.IssueAdded, this._issueAdded.bind(this));
+    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    this._model = mainTarget.model(SDK.IssuesModel.IssuesModel);
+    this._model.addEventListener(SDK.IssuesModel.Events.IssueAdded, this._issueAdded, this);
+    this._model.addEventListener(SDK.IssuesModel.Events.AllIssuesCleared, this._issuesCleared, this);
     this._model.ensureEnabled();
 
-    this._issues = new Map();
     this._issueViews = new Map();
-
     this._selectedIssue = null;
 
-    const issues = this._model.issues();
-    for (const issue of issues) {
-      this._issueAdded(issue);
+    const issuesToolbarContainer = this.contentElement.createChild('div', 'issues-toolbar-container');
+    new UI.Toolbar.Toolbar('issues-toolbar-left', issuesToolbarContainer);
+    const rightToolbar = new UI.Toolbar.Toolbar('issues-toolbar-right', issuesToolbarContainer);
+    rightToolbar.appendSeparator();
+    const toolbarWarnings = new UI.Toolbar.ToolbarItem(createElement('div'));
+    const breakingChangeIcon = UI.Icon.Icon.create('largeicon-breaking-change');
+    toolbarWarnings.element.appendChild(breakingChangeIcon);
+    this._toolbarIssuesCount = toolbarWarnings.element.createChild('span', 'warnings-count-label');
+    this._updateIssuesCount();
+    rightToolbar.appendToolbarItem(toolbarWarnings);
+
+    for (const issue of this._model.issues()) {
+      this._addIssueView(issue);
     }
   }
 
   _issueAdded(event) {
-    if (!(event.data.code in issueDetails)) {
-      console.warn('Received issue with unknow code:', event.data.code);
+    this._addIssueView(event.data);
+  }
+
+  /**
+   * @param {!SDK.Issue.Issue} issue
+   */
+  _addIssueView(issue) {
+    if (!(issue.code in issueDetails)) {
+      console.warn('Received issue with unknown code:', issue.code);
       return;
     }
 
-    const view = new IssueView(this, event.data);
+    const view = new IssueView(this, issue);
     view.show(this.contentElement);
-    this._issueViews.set(event.data.code, view);
+    this._issueViews.set(issue.code, view);
+    this._updateIssuesCount();
   }
 
-  handleSelect(issue) {
-    issue.toggle();
+  _issuesCleared() {
+    for (const view of this._issueViews.values()) {
+      view.detach();
+    }
+    this._issueViews.clear();
+    this._selectedIssue = null;
+    this._updateIssuesCount();
+  }
+
+  _updateIssuesCount() {
+    this._toolbarIssuesCount.textContent = this._model.size();
+  }
+
+  /**
+   * @param {!IssueView} issueView
+   */
+  handleSelect(issueView) {
+    issueView.toggle();
+  }
+
+  /**
+   * @param {string} code
+   */
+  revealByCode(code) {
+    const issueView = this._issueViews.get(code);
+    if (issueView) {
+      issueView.reveal();
+    }
   }
 }
 

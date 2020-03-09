@@ -28,13 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Coverage from '../coverage/coverage.js';
+import * as PerfUI from '../perf_ui/perf_ui.js';
+import * as Platform from '../platform/platform.js';
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+import * as TimelineModel from '../timeline_model/timeline_model.js';
+import * as UI from '../ui/ui.js';
+
 import {PerformanceModel} from './PerformanceModel.js';  // eslint-disable-line no-unused-vars
 import {EventDispatchTypeDescriptor, TimelineUIUtils} from './TimelineUIUtils.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
  */
-export class TimelineEventOverview extends PerfUI.TimelineOverviewBase {
+export class TimelineEventOverview extends PerfUI.TimelineOverviewPane.TimelineOverviewBase {
   /**
    * @param {string} id
    * @param {?string} title
@@ -118,8 +126,9 @@ export class TimelineEventOverviewInput extends TimelineEventOverview {
           if (!descriptor || descriptor.priority !== priority) {
             continue;
           }
-          const start = Number.constrain(Math.floor((event.startTime - timeOffset) * scale), 0, canvasWidth);
-          const end = Number.constrain(Math.ceil((event.endTime - timeOffset) * scale), 0, canvasWidth);
+          const start =
+              Platform.NumberUtilities.clamp(Math.floor((event.startTime - timeOffset) * scale), 0, canvasWidth);
+          const end = Platform.NumberUtilities.clamp(Math.ceil((event.endTime - timeOffset) * scale), 0, canvasWidth);
           const width = Math.max(end - start, minWidth);
           this._renderBar(start, start + width, 0, height, descriptor.color);
         }
@@ -133,7 +142,7 @@ export class TimelineEventOverviewInput extends TimelineEventOverview {
  */
 export class TimelineEventOverviewNetwork extends TimelineEventOverview {
   constructor() {
-    super('network', Common.UIString('NET'));
+    super('network', Common.UIString.UIString('NET'));
   }
 
   /**
@@ -176,7 +185,7 @@ export class TimelineEventOverviewNetwork extends TimelineEventOverview {
  */
 export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
   constructor() {
-    super('cpu-activity', Common.UIString('CPU'));
+    super('cpu-activity', Common.UIString.UIString('CPU'));
     this._backgroundCanvas = this.element.createChild('canvas', 'fill background');
   }
 
@@ -271,7 +280,7 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
         quantizer.appendInterval(e.endTime, categoryIndexStack.pop());
       }
 
-      TimelineModel.TimelineModel.forEachEvent(events, onEventStart, onEventEnd);
+      TimelineModel.TimelineModel.TimelineModelImpl.forEachEvent(events, onEventStart, onEventEnd);
       quantizer.appendInterval(timeOffset + timeSpan + quantTime, idleIndex);  // Kick drawing the last bucket.
       for (let i = categoryOrder.length - 1; i > 0; --i) {
         paths[i].lineTo(width, height);
@@ -335,7 +344,7 @@ export class TimelineEventOverviewResponsiveness extends TimelineEventOverview {
     for (const track of this._model.timelineModel().tracks()) {
       const events = track.events;
       for (let i = 0; i < events.length; ++i) {
-        if (!TimelineModel.TimelineData.forEvent(events[i]).warning) {
+        if (!TimelineModel.TimelineModel.TimelineData.forEvent(events[i]).warning) {
           continue;
         }
         paintWarningDecoration(events[i].startTime, events[i].duration);
@@ -405,7 +414,7 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
   _imageByFrame(frame) {
     let imagePromise = this._frameToImagePromise.get(frame);
     if (!imagePromise) {
-      imagePromise = frame.imageDataPromise().then(data => UI.loadImageFromData(data));
+      imagePromise = frame.imageDataPromise().then(data => UI.UIUtils.loadImageFromData(data));
       this._frameToImagePromise.set(frame, imagePromise);
     }
     return imagePromise;
@@ -511,7 +520,7 @@ TimelineFilmStripOverview.Padding = 2;
  */
 export class TimelineEventOverviewFrames extends TimelineEventOverview {
   constructor() {
-    super('framerate', Common.UIString('FPS'));
+    super('framerate', Common.UIString.UIString('FPS'));
   }
 
   /**
@@ -571,7 +580,7 @@ export class TimelineEventOverviewFrames extends TimelineEventOverview {
  */
 export class TimelineEventOverviewMemory extends TimelineEventOverview {
   constructor() {
-    super('memory', Common.UIString('HEAP'));
+    super('memory', Common.UIString.UIString('HEAP'));
     this._heapSizeLabel = this.element.createChild('div', 'memory-graph-label');
   }
 
@@ -689,8 +698,8 @@ export class TimelineEventOverviewMemory extends TimelineEventOverview {
     ctx.strokeStyle = 'hsl(220, 90%, 70%)';
     ctx.stroke();
 
-    this._heapSizeLabel.textContent =
-        Common.UIString('%s \u2013 %s', Number.bytesToString(minUsedHeapSize), Number.bytesToString(maxUsedHeapSize));
+    this._heapSizeLabel.textContent = Common.UIString.UIString(
+        '%s \u2013 %s', Number.bytesToString(minUsedHeapSize), Number.bytesToString(maxUsedHeapSize));
   }
 }
 
@@ -744,7 +753,7 @@ export class Quantizer {
  */
 export class TimelineEventOverviewCoverage extends TimelineEventOverview {
   constructor() {
-    super('coverage', Common.UIString('COVERAGE'));
+    super('coverage', Common.UIString.UIString('COVERAGE'));
     this._heapSizeLabel = this.element.createChild('div', 'timeline-overview-coverage-label');
   }
 
@@ -759,7 +768,7 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
   setModel(model) {
     super.setModel(model);
     if (this._model) {
-      this._coverageModel = model.mainTarget().model(Coverage.CoverageModel);
+      this._coverageModel = model.mainTarget().model(Coverage.CoverageModel.CoverageModel);
     }
   }
 
@@ -776,9 +785,9 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
 
     let total = 0;
     let total_used = 0;
-    /** @type {!Map<!Coverage.CoverageInfo>} */
+    /** @type {!Map<!Coverage.CoverageModel.CoverageInfo>} */
     const usedByTimestamp = new Map();
-    /** @type {!Map<!Coverage.CoverageInfo>} */
+    /** @type {!Map<!Coverage.CoverageModel.CoverageInfo>} */
     const totalByTimestamp = new Map();
     for (const urlInfo of this._coverageModel.entries()) {
       for (const info of urlInfo.entries()) {
@@ -800,7 +809,7 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
       }
     }
 
-    /** @type {!Set<!Coverage.CoverageInfo>} */
+    /** @type {!Set<!Coverage.CoverageModel.CoverageInfo>} */
     const seen = new Set();
     /** @type {!Map<number, number>} */
     const coverageByTimestamp = new Map();

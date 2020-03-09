@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
+import * as Platform from '../platform/platform.js';
+import * as UI from '../ui/ui.js';
+
 import {ChartViewport, ChartViewportDelegate} from './ChartViewport.js';  // eslint-disable-line no-unused-vars
 import {Calculator, TimelineGrid} from './TimelineGrid.js';               // eslint-disable-line no-unused-vars
 
@@ -52,7 +57,7 @@ export class FlameChartDelegate {
 
   /**
    * @param {!FlameChart} flameChart
-   * @param {?PerfUI.FlameChart.Group} group
+   * @param {?Group} group
    */
   updateSelectedGroup(flameChart, group) {
   }
@@ -63,11 +68,11 @@ export class FlameChartDelegate {
  * @implements {Calculator}
  * @implements {ChartViewportDelegate}
  */
-export class FlameChart extends UI.VBox {
+export class FlameChart extends UI.Widget.VBox {
   /**
    * @param {!FlameChartDataProvider} dataProvider
    * @param {!FlameChartDelegate} flameChartDelegate
-   * @param {!Common.Setting=} groupExpansionSetting
+   * @param {!Common.Settings.Setting=} groupExpansionSetting
    */
   constructor(dataProvider, flameChartDelegate, groupExpansionSetting) {
     super(true);
@@ -82,6 +87,9 @@ export class FlameChart extends UI.VBox {
     this._chartViewport.show(this.contentElement);
 
     this._dataProvider = dataProvider;
+
+    this._candyStripeCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement('canvas'));
+    this._createCandyStripePattern();
 
     this._viewportElement = this._chartViewport.viewportElement;
     if (this._useWebGL) {
@@ -112,7 +120,7 @@ export class FlameChart extends UI.VBox {
       this._selectedElement.classList.add('flame-chart-unfocused-selected-element');
     }, false);
 
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this._viewportElement, this._startDragging.bind(this), this._dragging.bind(this), this._endDragging.bind(this),
         null);
 
@@ -152,10 +160,10 @@ export class FlameChart extends UI.VBox {
     // Keyboard focused group is used to navigate groups irrespective of whether they are selectable or not
     this._keyboardFocusedGroup = -1;
 
-    this._selectedGroupBackroundColor =
-        self.UI.themeSupport.patchColorText(Colors.SelectedGroupBackground, UI.ThemeSupport.ColorUsage.Background);
+    this._selectedGroupBackroundColor = self.UI.themeSupport.patchColorText(
+        Colors.SelectedGroupBackground, UI.UIUtils.ThemeSupport.ColorUsage.Background);
     this._selectedGroupBorderColor =
-        self.UI.themeSupport.patchColorText(Colors.SelectedGroupBorder, UI.ThemeSupport.ColorUsage.Background);
+        self.UI.themeSupport.patchColorText(Colors.SelectedGroupBorder, UI.UIUtils.ThemeSupport.ColorUsage.Background);
   }
 
   /**
@@ -221,6 +229,25 @@ export class FlameChart extends UI.VBox {
     this._highlightedEntryIndex = -1;
     this._updateElementPosition(this._highlightElement, this._highlightedEntryIndex);
     this.dispatchEventToListeners(Events.EntryHighlighted, -1);
+  }
+
+  _createCandyStripePattern() {
+    // Set the candy stripe pattern to 17px so it repeats well.
+    const size = 17;
+    this._candyStripeCanvas.width = size;
+    this._candyStripeCanvas.height = size;
+
+    const ctx = this._candyStripeCanvas.getContext('2d');
+
+    // Rotate the stripe by 45deg to the right.
+    ctx.translate(size * 0.5, size * 0.5);
+    ctx.rotate(Math.PI * 0.25);
+    ctx.translate(-size * 0.5, -size * 0.5);
+
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
+    for (let x = -size; x < size * 2; x += 3) {
+      ctx.fillRect(x, -size, 1, size * 3);
+    }
   }
 
   _resetCanvas() {
@@ -426,8 +453,8 @@ export class FlameChart extends UI.VBox {
     for (let quadrant = 0; quadrant < 4; ++quadrant) {
       const dx = quadrant & 2 ? -offsetX - infoWidth : offsetX;
       const dy = quadrant & 1 ? -offsetY - infoHeight : offsetY;
-      x = Number.constrain(mouseX + dx, 0, parentWidth - infoWidth);
-      y = Number.constrain(mouseY + dy, 0, parentHeight - infoHeight);
+      x = Platform.NumberUtilities.clamp(mouseX + dx, 0, parentWidth - infoWidth);
+      y = Platform.NumberUtilities.clamp(mouseY + dy, 0, parentHeight - infoHeight);
       if (x >= mouseX || mouseX >= x + infoWidth || y >= mouseY || mouseY >= y + infoHeight) {
         break;
       }
@@ -588,7 +615,7 @@ export class FlameChart extends UI.VBox {
    * @param {!Event} e
    */
   _onKeyDown(e) {
-    if (!UI.KeyboardShortcut.hasNoModifiers(e) || !this._timelineData()) {
+    if (!UI.KeyboardShortcut.KeyboardShortcut.hasNoModifiers(e) || !this._timelineData()) {
       return;
     }
 
@@ -974,8 +1001,10 @@ export class FlameChart extends UI.VBox {
     context.fillStyle = 'rgba(0, 0, 0, 0)';
     context.fillRect(0, 0, width, height);
     context.translate(0, -top);
-    const defaultFont = '11px ' + Host.fontFamily();
+    const defaultFont = '11px ' + Host.Platform.fontFamily();
     context.font = defaultFont;
+
+    const candyStripePattern = context.createPattern(this._candyStripeCanvas, 'repeat');
 
     const entryTotalTimes = timelineData.entryTotalTimes;
     const entryStartTimes = timelineData.entryStartTimes;
@@ -985,12 +1014,29 @@ export class FlameChart extends UI.VBox {
     const titleIndices = [];
     const markerIndices = [];
     const textPadding = this._textPadding;
-    const minTextWidth = 2 * textPadding + UI.measureTextWidth(context, '\u2026');
+    const minTextWidth = 2 * textPadding + UI.UIUtils.measureTextWidth(context, '…');
     const minTextWidthDuration = this._chartViewport.pixelToTimeOffset(minTextWidth);
     const minVisibleBarLevel = Math.max(this._visibleLevelOffsets.upperBound(top) - 1, 0);
     this._markerPositions.clear();
 
-    /** @type {!Map<string, !Array<number>>} */
+    let mainThreadTopLevel = -1;
+
+    // Find the main thread so that we can mark tasks longer than 50ms.
+    if ('groups' in timelineData && Array.isArray(timelineData.groups)) {
+      const mainThread = timelineData.groups.find(v => {
+        if (!v._track) {
+          return false;
+        }
+
+        return v._track.name === 'CrRendererMain';
+      });
+
+      if (mainThread) {
+        mainThreadTopLevel = mainThread.startLevel;
+      }
+    }
+
+    /** @type {!Map<string, {indexes: !Array<number>, showLongDurations: boolean}>} */
     const colorBuckets = new Map();
     for (let level = minVisibleBarLevel; level < this._dataProvider.maxStackDepth(); ++level) {
       if (this._levelToOffset(level) > top + height) {
@@ -1037,10 +1083,10 @@ export class FlameChart extends UI.VBox {
         const color = this._entryColorsCache[entryIndex];
         let bucket = colorBuckets.get(color);
         if (!bucket) {
-          bucket = [];
+          bucket = {indexes: [], showLongDurations: level === mainThreadTopLevel};
           colorBuckets.set(color, bucket);
         }
-        bucket.push(entryIndex);
+        bucket.indexes.push(entryIndex);
       }
     }
 
@@ -1056,7 +1102,7 @@ export class FlameChart extends UI.VBox {
       });
       context.restore();
 
-      for (const [color, indexes] of colorBuckets) {
+      for (const [color, {indexes, showLongDurations}] of colorBuckets) {
         context.beginPath();
         for (let i = 0; i < indexes.length; ++i) {
           const entryIndex = indexes[i];
@@ -1074,6 +1120,37 @@ export class FlameChart extends UI.VBox {
           context.rect(barX, barY, barWidth - 0.4, barHeight - 1);
         }
         context.fillStyle = color;
+        context.fill();
+
+        // Draw long task regions.
+        context.beginPath();
+        for (let i = 0; i < indexes.length; ++i) {
+          const entryIndex = indexes[i];
+          const duration = entryTotalTimes[entryIndex];
+
+          if (!showLongDurations) {
+            continue;
+          }
+
+          if (isNaN(duration)) {
+            continue;
+          }
+
+          if (duration < 50) {
+            continue;
+          }
+
+          const entryStartTime = entryStartTimes[entryIndex];
+          const barX = this._timeToPositionClipped(entryStartTime + 50);
+          const barLevel = entryLevels[entryIndex];
+          const barHeight = this._levelHeight(barLevel);
+          const barY = this._levelToOffset(barLevel);
+          const barRight = this._timeToPositionClipped(entryStartTime + duration);
+          const barWidth = Math.max(barRight - barX, 1);
+          context.rect(barX, barY, barWidth - 0.4, barHeight - 1);
+        }
+
+        context.fillStyle = candyStripePattern;
         context.fill();
       }
     }
@@ -1098,7 +1175,7 @@ export class FlameChart extends UI.VBox {
       const y = this._levelToOffset(level);
       const h = this._levelHeight(level);
       const padding = 4;
-      const width = Math.ceil(UI.measureTextWidth(context, title)) + 2 * padding;
+      const width = Math.ceil(UI.UIUtils.measureTextWidth(context, title)) + 2 * padding;
       lastMarkerX = x + width + 1;
       lastMarkerLevel = level;
       this._markerPositions.set(entryIndex, {x, width});
@@ -1121,7 +1198,7 @@ export class FlameChart extends UI.VBox {
       let text = this._dataProvider.entryTitle(entryIndex);
       if (text && text.length) {
         context.font = this._dataProvider.entryFont(entryIndex) || defaultFont;
-        text = UI.trimTextMiddle(context, text, barWidth - 2 * textPadding);
+        text = UI.UIUtils.trimTextMiddle(context, text, barWidth - 2 * textPadding);
       }
       const unclippedBarX = this._chartViewport.timeToPosition(entryStartTime);
       const barHeight = this._levelHeight(barLevel);
@@ -1283,7 +1360,7 @@ export class FlameChart extends UI.VBox {
       }
       let colorIndex = parsedColorCache.get(color);
       if (colorIndex === undefined) {
-        const rgba = Common.Color.parse(color).canonicalRGBA();
+        const rgba = Common.Color.Color.parse(color).canonicalRGBA();
         rgba[3] = Math.round(rgba[3] * 255);
         colorIndex = colors.length / 4;
         colors.push(...rgba);
@@ -1394,12 +1471,12 @@ export class FlameChart extends UI.VBox {
 
     const groupOffsets = this._groupOffsets;
     const lastGroupOffset = Array.prototype.peekLast.call(groupOffsets);
-    const colorUsage = UI.ThemeSupport.ColorUsage;
+    const colorUsage = UI.UIUtils.ThemeSupport.ColorUsage;
 
     context.save();
     context.scale(ratio, ratio);
     context.translate(0, -top);
-    const defaultFont = '11px ' + Host.fontFamily();
+    const defaultFont = '11px ' + Host.Platform.fontFamily();
     context.font = defaultFont;
 
     context.fillStyle = self.UI.themeSupport.patchColorText('#fff', colorUsage.Background);
@@ -1455,7 +1532,7 @@ export class FlameChart extends UI.VBox {
         if (this._isGroupFocused(index)) {
           context.fillStyle = this._selectedGroupBackroundColor;
         } else {
-          context.fillStyle = Common.Color.parse(group.style.backgroundColor).setAlpha(0.8).asString(null);
+          context.fillStyle = Common.Color.Color.parse(group.style.backgroundColor).setAlpha(0.8).asString(null);
         }
 
         context.fillRect(
@@ -1525,7 +1602,7 @@ export class FlameChart extends UI.VBox {
   }
 
   /**
-   * @param {function(number, number, !PerfUI.FlameChart.Group, boolean, number)} callback
+   * @param {function(number, number, !Group, boolean, number)} callback
    */
   _forEachGroup(callback) {
     const groups = this._rawTimelineData.groups || [];
@@ -1555,7 +1632,7 @@ export class FlameChart extends UI.VBox {
   }
 
   /**
-   * @param {function(number, number, !PerfUI.FlameChart.Group, boolean, number)} callback
+   * @param {function(number, number, !Group, boolean, number)} callback
    */
   _forEachGroupInViewport(callback) {
     const top = this._chartViewport.scrollOffset();
@@ -1572,21 +1649,21 @@ export class FlameChart extends UI.VBox {
 
   /**
    * @param {!CanvasRenderingContext2D} context
-   * @param {!PerfUI.FlameChart.Group} group
+   * @param {!Group} group
    * @return {number}
    */
   _labelWidthForGroup(context, group) {
-    return UI.measureTextWidth(context, group.name) + this._expansionArrowIndent * (group.style.nestingLevel + 1) +
-        2 * this._headerLabelXPadding;
+    return UI.UIUtils.measureTextWidth(context, group.name) +
+        this._expansionArrowIndent * (group.style.nestingLevel + 1) + 2 * this._headerLabelXPadding;
   }
 
   /**
-   * @param {!PerfUI.FlameChart.Group} group
+   * @param {!Group} group
    * @param {number} y
    * @param {number} endLevel
    */
   _drawCollapsedOverviewForGroup(group, y, endLevel) {
-    const range = new Common.SegmentedRange(mergeCallback);
+    const range = new Common.SegmentedRange.SegmentedRange(mergeCallback);
     const timeWindowLeft = this._chartViewport.windowLeftTime();
     const timeWindowRight = this._chartViewport.windowRightTime();
     const context = /** @type {!CanvasRenderingContext2D} */ (this._canvas.getContext('2d'));
@@ -1625,7 +1702,7 @@ export class FlameChart extends UI.VBox {
               entryIndex, context, '', barX, y, barWidth, barHeight, unclippedBarX, timeToPixel);
           continue;
         }
-        range.append(new Common.Segment(barX, endBarX, color));
+        range.append(new Common.SegmentedRange.Segment(barX, endBarX, color));
       }
     }
 
@@ -1645,9 +1722,9 @@ export class FlameChart extends UI.VBox {
     context.fill();
 
     /**
-     * @param {!Common.Segment} a
-     * @param {!Common.Segment} b
-     * @return {?Common.Segment}
+     * @param {!Common.SegmentedRange.Segment} a
+     * @param {!Common.SegmentedRange.Segment} b
+     * @return {?Common.SegmentedRange.Segment}
      */
     function mergeCallback(a, b) {
       return a.data === b.data && a.end + 0.4 > b.end ? a : null;
@@ -1980,7 +2057,7 @@ export class FlameChart extends UI.VBox {
    * @return {number}
    */
   _timeToPositionClipped(time) {
-    return Number.constrain(this._chartViewport.timeToPosition(time), 0, this._offsetWidth);
+    return Platform.NumberUtilities.clamp(this._chartViewport.timeToPosition(time), 0, this._offsetWidth);
   }
 
   /**
@@ -2116,7 +2193,7 @@ export class TimelineData {
    * @param {!Array<number>|!Uint16Array} entryLevels
    * @param {!Array<number>|!Float32Array} entryTotalTimes
    * @param {!Array<number>|!Float64Array} entryStartTimes
-   * @param {?Array<!PerfUI.FlameChart.Group>} groups
+   * @param {?Array<!Group>} groups
    */
   constructor(entryLevels, entryTotalTimes, entryStartTimes, groups) {
     this.entryLevels = entryLevels;
@@ -2129,7 +2206,7 @@ export class TimelineData {
     this.flowStartLevels = [];
     this.flowEndTimes = [];
     this.flowEndLevels = [];
-    /** @type {?PerfUI.FlameChart.Group} */
+    /** @type {?Group} */
     this.selectedGroup = null;
   }
 }
@@ -2279,3 +2356,31 @@ export const Colors = {
   SelectedGroupBackground: 'hsl(215, 85%, 98%)',
   SelectedGroupBorder: 'hsl(216, 68%, 54%)',
 };
+
+/**
+ * @typedef {!{
+  *     name: string,
+  *     startLevel: number,
+  *     expanded: (boolean|undefined),
+  *     selectable: (boolean|undefined),
+  *     style: !GroupStyle
+  * }}
+  */
+export let Group;
+
+/**
+  * @typedef {!{
+    *     height: number,
+    *     padding: number,
+    *     collapsible: boolean,
+    *     font: string,
+    *     color: string,
+    *     backgroundColor: string,
+    *     nestingLevel: number,
+    *     itemsHeight: (number|undefined),
+    *     shareHeaderLine: (boolean|undefined),
+    *     useFirstLineForOverview: (boolean|undefined),
+    *     useDecoratorsForOverview: (boolean|undefined)
+    * }}
+    */
+export let GroupStyle;

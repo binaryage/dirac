@@ -26,6 +26,13 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import * as Common from '../common/common.js';
+import * as Components from '../components/components.js';
+import * as InlineEditor from '../inline_editor/inline_editor.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
 import {ComputedStyle, ComputedStyleModel, Events} from './ComputedStyleModel.js';  // eslint-disable-line no-unused-vars
 import {PlatformFontsWidget} from './PlatformFontsWidget.js';
 import {StylePropertiesSection, StylesSidebarPane, StylesSidebarPropertyRenderer} from './StylesSidebarPane.js';
@@ -33,7 +40,7 @@ import {StylePropertiesSection, StylesSidebarPane, StylesSidebarPropertyRenderer
 /**
  * @unrestricted
  */
-export class ComputedStyleWidget extends UI.ThrottledWidget {
+export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
   constructor() {
     super(true);
     this.registerRequiredCSS('elements/computedStyleSidebarPane.css');
@@ -50,18 +57,18 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
     const hbox = this.contentElement.createChild('div', 'hbox styles-sidebar-pane-toolbar');
     const filterContainerElement = hbox.createChild('div', 'styles-sidebar-pane-filter-box');
     const filterInput = StylesSidebarPane.createPropertyFilterElement(ls`Filter`, hbox, filterCallback.bind(this));
-    UI.ARIAUtils.setAccessibleName(filterInput, Common.UIString('Filter Computed Styles'));
+    UI.ARIAUtils.setAccessibleName(filterInput, Common.UIString.UIString('Filter Computed Styles'));
     filterContainerElement.appendChild(filterInput);
     this.setDefaultFocusedElement(filterInput);
 
-    const toolbar = new UI.Toolbar('styles-pane-toolbar', hbox);
-    toolbar.appendToolbarItem(new UI.ToolbarSettingCheckbox(
-        this._showInheritedComputedStylePropertiesSetting, undefined, Common.UIString('Show all')));
+    const toolbar = new UI.Toolbar.Toolbar('styles-pane-toolbar', hbox);
+    toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(
+        this._showInheritedComputedStylePropertiesSetting, undefined, Common.UIString.UIString('Show all')));
 
     this._noMatchesElement = this.contentElement.createChild('div', 'gray-info-message');
     this._noMatchesElement.textContent = ls`No matching property`;
 
-    this._propertiesOutline = new UI.TreeOutlineInShadow();
+    this._propertiesOutline = new UI.TreeOutline.TreeOutlineInShadow();
     this._propertiesOutline.hideOverflow();
     this._propertiesOutline.setShowSelectionOnKeyboardFocus(true);
     this._propertiesOutline.setFocusable(true);
@@ -69,7 +76,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
     this._propertiesOutline.element.classList.add('monospace', 'computed-properties');
     this.contentElement.appendChild(this._propertiesOutline.element);
 
-    this._linkifier = new Components.Linkifier(_maxLinkLength);
+    this._linkifier = new Components.Linkifier.Linkifier(_maxLinkLength);
 
     /**
      * @param {?RegExp} regex
@@ -100,25 +107,26 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
    * @override
    * @return {!Promise.<?>}
    */
-  doUpdate() {
+  async doUpdate() {
     const promises = [this._computedStyleModel.fetchComputedStyle(), this._fetchMatchedCascade()];
-    return Promise.all(promises).spread(this._innerRebuildUpdate.bind(this));
+    const [nodeStyles, matchedStyles] = await Promise.all(promises);
+    this._innerRebuildUpdate(nodeStyles, matchedStyles);
   }
 
   /**
-   * @return {!Promise.<?SDK.CSSMatchedStyles>}
+   * @return {!Promise.<?SDK.CSSMatchedStyles.CSSMatchedStyles>}
    */
   _fetchMatchedCascade() {
     const node = this._computedStyleModel.node();
     if (!node || !this._computedStyleModel.cssModel()) {
-      return Promise.resolve(/** @type {?SDK.CSSMatchedStyles} */ (null));
+      return Promise.resolve(/** @type {?SDK.CSSMatchedStyles.CSSMatchedStyles} */ (null));
     }
 
     return this._computedStyleModel.cssModel().cachedMatchedCascadeForNode(node).then(validateStyles.bind(this));
 
     /**
-     * @param {?SDK.CSSMatchedStyles} matchedStyles
-     * @return {?SDK.CSSMatchedStyles}
+     * @param {?SDK.CSSMatchedStyles.CSSMatchedStyles} matchedStyles
+     * @return {?SDK.CSSMatchedStyles.CSSMatchedStyles}
      * @this {ComputedStyleWidget}
      */
     function validateStyles(matchedStyles) {
@@ -131,11 +139,11 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
    * @return {!Node}
    */
   _processColor(text) {
-    const color = Common.Color.parse(text);
+    const color = Common.Color.Color.parse(text);
     if (!color) {
       return createTextNode(text);
     }
-    const swatch = InlineEditor.ColorSwatch.create();
+    const swatch = InlineEditor.ColorSwatch.ColorSwatch.create();
     swatch.setColor(color);
     swatch.setFormat(Common.Settings.detectColorFormat(color));
     return swatch;
@@ -143,7 +151,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
 
   /**
    * @param {?ComputedStyle} nodeStyle
-   * @param {?SDK.CSSMatchedStyles} matchedStyles
+   * @param {?SDK.CSSMatchedStyles.CSSMatchedStyles} matchedStyles
    */
   _innerRebuildUpdate(nodeStyle, matchedStyles) {
     /** @type {!Set<string>} */
@@ -164,7 +172,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
       return;
     }
 
-    const uniqueProperties = nodeStyle.computedStyle.keysArray();
+    const uniqueProperties = [...nodeStyle.computedStyle.keys()];
     uniqueProperties.sort(propertySorter);
 
     const propertyTraces = this._computePropertyTraces(matchedStyles);
@@ -173,7 +181,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
     for (let i = 0; i < uniqueProperties.length; ++i) {
       const propertyName = uniqueProperties[i];
       const propertyValue = nodeStyle.computedStyle.get(propertyName);
-      const canonicalName = SDK.cssMetadata().canonicalPropertyName(propertyName);
+      const canonicalName = SDK.CSSMetadata.cssMetadata().canonicalPropertyName(propertyName);
       const inherited = !inhertiedProperties.has(canonicalName);
       if (!showInherited && inherited && !(propertyName in this._alwaysShowComputedProperties)) {
         continue;
@@ -209,7 +217,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
       semicolon.textContent = ';';
       propertyValueElement.appendChild(semicolon);
 
-      const treeElement = new UI.TreeElement();
+      const treeElement = new UI.TreeOutline.TreeElement();
       treeElement.title = propertyElement;
       treeElement[_propertySymbol] = {name: propertyName, value: propertyValue};
       const isOdd = this._propertiesOutline.rootElement().children().length % 2 === 0;
@@ -227,7 +235,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
         treeElement.listItemElement.addEventListener('click', handleClick.bind(null, treeElement), false);
         treeElement.listItemElement.addEventListener(
             'contextmenu', this._handleContextMenuEvent.bind(this, matchedStyles, activeProperty));
-        const gotoSourceElement = UI.Icon.create('mediumicon-arrow-in-circle', 'goto-source-icon');
+        const gotoSourceElement = UI.Icon.Icon.create('mediumicon-arrow-in-circle', 'goto-source-icon');
         gotoSourceElement.addEventListener('click', this._navigateToSource.bind(this, activeProperty));
         propertyValueElement.appendChild(gotoSourceElement);
         if (expandedProperties.has(propertyName)) {
@@ -250,13 +258,13 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
       if (a.startsWith('-webkit') ^ b.startsWith('-webkit')) {
         return a.startsWith('-webkit') ? 1 : -1;
       }
-      const canonical1 = SDK.cssMetadata().canonicalPropertyName(a);
-      const canonical2 = SDK.cssMetadata().canonicalPropertyName(b);
+      const canonical1 = SDK.CSSMetadata.cssMetadata().canonicalPropertyName(a);
+      const canonical2 = SDK.CSSMetadata.cssMetadata().canonicalPropertyName(b);
       return canonical1.compareTo(canonical2);
     }
 
     /**
-     * @param {!UI.TreeElement} treeElement
+     * @param {!UI.TreeOutline.TreeElement} treeElement
      * @param {!Event} event
      */
     function handleClick(treeElement, event) {
@@ -270,7 +278,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
   }
 
   /**
-   * @param {!SDK.CSSProperty} cssProperty
+   * @param {!SDK.CSSProperty.CSSProperty} cssProperty
    * @param {!Event} event
    */
   _navigateToSource(cssProperty, event) {
@@ -279,12 +287,12 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
   }
 
   /**
-   * @param {!SDK.CSSModel} cssModel
-   * @param {!SDK.CSSMatchedStyles} matchedStyles
-   * @param {!SDK.DOMNode} node
-   * @param {!UI.TreeElement} rootTreeElement
-   * @param {!Array<!SDK.CSSProperty>} tracedProperties
-   * @return {!SDK.CSSProperty}
+   * @param {!SDK.CSSModel.CSSModel} cssModel
+   * @param {!SDK.CSSMatchedStyles.CSSMatchedStyles} matchedStyles
+   * @param {!SDK.DOMModel.DOMNode} node
+   * @param {!UI.TreeOutline.TreeElement} rootTreeElement
+   * @param {!Array<!SDK.CSSProperty.CSSProperty>} tracedProperties
+   * @return {!SDK.CSSProperty.CSSProperty}
    */
   _renderPropertyTrace(cssModel, matchedStyles, node, rootTreeElement, tracedProperties) {
     let activeProperty = null;
@@ -303,7 +311,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
       const valueElement = renderer.renderValue();
       valueElement.classList.add('property-trace-value');
       valueElement.addEventListener('click', this._navigateToSource.bind(this, property), false);
-      const gotoSourceElement = UI.Icon.create('mediumicon-arrow-in-circle', 'goto-source-icon');
+      const gotoSourceElement = UI.Icon.Icon.create('mediumicon-arrow-in-circle', 'goto-source-icon');
       gotoSourceElement.addEventListener('click', this._navigateToSource.bind(this, property));
       valueElement.insertBefore(gotoSourceElement, valueElement.firstChild);
 
@@ -319,23 +327,23 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
         linkSpan.appendChild(StylePropertiesSection.createRuleOriginNode(matchedStyles, this._linkifier, rule));
       }
 
-      const traceTreeElement = new UI.TreeElement();
+      const traceTreeElement = new UI.TreeOutline.TreeElement();
       traceTreeElement.title = trace;
 
       traceTreeElement.listItemElement.addEventListener(
           'contextmenu', this._handleContextMenuEvent.bind(this, matchedStyles, property));
       rootTreeElement.appendChild(traceTreeElement);
     }
-    return /** @type {!SDK.CSSProperty} */ (activeProperty);
+    return /** @type {!SDK.CSSProperty.CSSProperty} */ (activeProperty);
   }
 
   /**
-   * @param {!SDK.CSSMatchedStyles} matchedStyles
-   * @param {!SDK.CSSProperty} property
+   * @param {!SDK.CSSMatchedStyles.CSSMatchedStyles} matchedStyles
+   * @param {!SDK.CSSProperty.CSSProperty} property
    * @param {!Event} event
    */
   _handleContextMenuEvent(matchedStyles, property, event) {
-    const contextMenu = new UI.ContextMenu(event);
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
     const rule = property.ownerStyle.parentRule;
 
     if (rule) {
@@ -352,8 +360,8 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
   }
 
   /**
-   * @param {!SDK.CSSMatchedStyles} matchedStyles
-   * @return {!Map<string, !Array<!SDK.CSSProperty>>}
+   * @param {!SDK.CSSMatchedStyles.CSSMatchedStyles} matchedStyles
+   * @return {!Map<string, !Array<!SDK.CSSProperty.CSSProperty>>}
    */
   _computePropertyTraces(matchedStyles) {
     const result = new Map();
@@ -373,7 +381,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
   }
 
   /**
-   * @param {!SDK.CSSMatchedStyles} matchedStyles
+   * @param {!SDK.CSSMatchedStyles.CSSMatchedStyles} matchedStyles
    * @return {!Set<string>}
    */
   _computeInheritedProperties(matchedStyles) {
@@ -383,7 +391,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget {
         if (!matchedStyles.propertyState(property)) {
           continue;
         }
-        result.add(SDK.cssMetadata().canonicalPropertyName(property.name));
+        result.add(SDK.CSSMetadata.cssMetadata().canonicalPropertyName(property.name));
       }
     }
     return result;

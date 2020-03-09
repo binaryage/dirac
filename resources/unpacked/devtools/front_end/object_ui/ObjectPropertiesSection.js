@@ -27,6 +27,7 @@
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';  // eslint-disable-line no-unused-vars
 import * as Host from '../host/host.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
@@ -89,9 +90,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         ObjectPropertiesSection.defaultObjectPropertiesSection(object, linkifier, skipProto, readOnly);
     if (!object.hasChildren) {
       return objectPropertiesSection.titleElement;
-    } else {
-      return objectPropertiesSection.element;
     }
+    return objectPropertiesSection.element;
   }
 
   /**
@@ -281,7 +281,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
       if (defaultName) {
         abbreviation = defaultName + '()';
       } else if (text.length > maxArrowFunctionCharacterLength) {
-        abbreviation = text.substring(0, firstArrowIndex + 2) + ' {\u2026}';
+        abbreviation = text.substring(0, firstArrowIndex + 2) + ' {…}';
       }
       addElements('', text, abbreviation);
     } else {
@@ -556,7 +556,7 @@ export const maxRenderableStringLength = 10000;
 
 export class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.TreeOutlineInShadow {
   /**
-   * @param {?ObjectUI.ObjectPropertiesSectionsTreeOutlineOptions=} options
+   * @param {?TreeOutlineOptions=} options
    */
   constructor(options) {
     super();
@@ -1277,7 +1277,7 @@ export class ArrayGroupingTreeElement extends UI.TreeOutline.TreeElement {
    * @param {!Components.Linkifier.Linkifier=} linkifier
    */
   constructor(object, fromIndex, toIndex, propertyCount, linkifier) {
-    super(String.sprintf('[%d \u2026 %d]', fromIndex, toIndex), true);
+    super(Platform.StringUtilities.sprintf('[%d … %d]', fromIndex, toIndex), true);
     this.toggleOnClick = true;
     this._fromIndex = fromIndex;
     this._toIndex = toIndex;
@@ -1620,7 +1620,7 @@ export class ObjectPropertiesSectionsTreeExpandController {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _elementAttached(event) {
     const element = /** @type {!UI.TreeOutline.TreeElement} */ (event.data);
@@ -1630,7 +1630,7 @@ export class ObjectPropertiesSectionsTreeExpandController {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _elementExpanded(event) {
     const element = /** @type {!UI.TreeOutline.TreeElement} */ (event.data);
@@ -1638,7 +1638,7 @@ export class ObjectPropertiesSectionsTreeExpandController {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _elementCollapsed(event) {
     const element = /** @type {!UI.TreeOutline.TreeElement} */ (event.data);
@@ -1807,3 +1807,10 @@ export class ExpandableTextPropertyValue extends ObjectPropertyValue {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this._text);
   }
 }
+
+/**
+ * @typedef {{
+ *   readOnly: (boolean|undefined),
+ * }}
+ */
+export let TreeOutlineOptions;

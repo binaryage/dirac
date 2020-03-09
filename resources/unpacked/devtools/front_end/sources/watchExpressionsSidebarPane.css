@@ -21,13 +21,13 @@
     opacity: 1;
 }
 
+.watch-expression-header:hover {
+    padding-right: 26px;
+}
+
 .watch-expressions {
     overflow-x: hidden;
     min-height: 26px;
-}
-
-.watch-expressions .dimmed {
-    opacity: 0.6;
 }
 
 .watch-expression-title {
@@ -107,4 +107,22 @@ li.watch-expression-tree-item {
 
 li.watch-expression-editing::before {
     background-color: transparent;
+}
+
+@media (forced-colors: active) {
+    .watch-expression-header:hover .watch-expression-delete-button,
+    .watch-expressions .dimmed {
+        opacity: 1;
+    }
+    li.watch-expression-tree-item * {
+        forced-color-adjust: none;
+        color: ButtonText;
+    }
+    li.watch-expression-tree-item:hover {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+    li.watch-expression-tree-item:hover * {
+        color: HighlightText;
+    }
 }

@@ -21,11 +21,6 @@ config.gypi
 karma-coverage
 npm-debug.log
 
-# These are generated for build and would be put in the symlinked folder (thus this folder)
-/front_end/InspectorBackendCommands.js
-/front_end/SupportedCSSProperties.js
-/front_end/accessibility/ARIAProperties.js
-
 /build
 /buildtools
 /out
@@ -36,4 +31,16 @@ npm-debug.log
 !/third_party/typescript
 
 test/e2e/**/*.js
+!test/e2e/resources/**/*.js
+test/e2e/**/*.tsbuildinfo
 test/shared/**/*.js
+test/shared/**/helper.d.ts
+test/shared/**/screenshot.d.ts
+test/shared/**/*.tsbuildinfo
+test/screenshots/**/*.js
+!test/screenshots/**/interactive.js
+test/screenshots/**/*.tsbuildinfo
+test/screenshots/.generated
+test/perf/.generated
+test/perf/**/*.js
+test/perf/**/*.tsbuildinfo

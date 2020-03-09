@@ -139,7 +139,8 @@ export class ResourceScriptMapping {
     const script = scriptFile._script;
     if (script.isWasmDisassembly()) {
       return [script.wasmByteLocation(lineNumber)];
-    } else if (script.isInlineScriptWithSourceURL()) {
+    }
+    if (script.isInlineScriptWithSourceURL()) {
       return [this._debuggerModel.createRawLocation(
           script, lineNumber + script.lineOffset, lineNumber ? columnNumber : columnNumber + script.columnOffset)];
     }
@@ -165,7 +166,7 @@ export class ResourceScriptMapping {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _parsedScriptSource(event) {
     const script = /** @type {!SDK.Script.Script} */ (event.data);
@@ -225,7 +226,7 @@ export class ResourceScriptMapping {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _executionContextDestroyed(event) {
     const executionContext = /** @type {!SDK.RuntimeModel.ExecutionContext} */ (event.data);
@@ -236,7 +237,7 @@ export class ResourceScriptMapping {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _globalObjectCleared(event) {
     const scripts = Array.from(this._acceptedScripts);
@@ -333,14 +334,14 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _workingCopyChanged(event) {
     this._update();
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _workingCopyCommitted(event) {
     if (this._uiSourceCode.project().canSetFileContent()) {
@@ -373,7 +374,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
         return;
       }
       if (!exceptionDetails) {
-        self.Common.console.addMessage(
+        Common.Console.Console.instance().addMessage(
             Common.UIString.UIString('LiveEdit failed: %s', error), Common.Console.MessageLevel.Warning);
         return;
       }

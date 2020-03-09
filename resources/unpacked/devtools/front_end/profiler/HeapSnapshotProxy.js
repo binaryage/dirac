@@ -28,12 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as HeapSnapshotModel from '../heap_snapshot_model/heap_snapshot_model.js';  // eslint-disable-line no-unused-vars
+
 import {ChildrenProvider} from './ChildrenProvider.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
  */
-export class HeapSnapshotWorkerProxy extends Common.Object {
+export class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {function(string, *)} eventHandler
    */
@@ -46,7 +49,7 @@ export class HeapSnapshotWorkerProxy extends Common.Object {
     this._callbacks = new Map();
     /** @type {!Set<number>} */
     this._previousCallbacks = new Set();
-    this._worker = new Common.Worker('heap_snapshot_worker_entrypoint');
+    this._worker = new Common.Worker.WorkerWrapper('heap_snapshot_worker_entrypoint');
     this._worker.onmessage = this._messageReceived.bind(this);
   }
 
@@ -115,17 +118,16 @@ export class HeapSnapshotWorkerProxy extends Common.Object {
         newObjectId: newObjectId
       });
       return null;
-    } else {
-      this._postMessage({
-        callId: callId,
-        disposition: 'factory',
-        objectId: objectId,
-        methodName: methodName,
-        methodArguments: methodArguments,
-        newObjectId: newObjectId
-      });
-      return new proxyConstructor(this, newObjectId);
     }
+    this._postMessage({
+      callId: callId,
+      disposition: 'factory',
+      objectId: objectId,
+      methodName: methodName,
+      methodArguments: methodArguments,
+      newObjectId: newObjectId
+    });
+    return new proxyConstructor(this, newObjectId);
   }
 
   /**
@@ -164,7 +166,7 @@ export class HeapSnapshotWorkerProxy extends Common.Object {
     }
     const hasLongRunningCalls = !!this._previousCallbacks.size;
     this.dispatchEventToListeners(HeapSnapshotWorkerProxy.Events.Wait, hasLongRunningCalls);
-    for (const callId of this._callbacks.keysArray()) {
+    for (const callId of this._callbacks.keys()) {
       this._previousCallbacks.add(callId);
     }
   }
@@ -182,10 +184,10 @@ export class HeapSnapshotWorkerProxy extends Common.Object {
     }
     if (data.error) {
       if (data.errorMethodName) {
-        self.Common.console.error(
-            Common.UIString('An error occurred when a call to method \'%s\' was requested', data.errorMethodName));
+        Common.Console.Console.instance().error(Common.UIString.UIString(
+            'An error occurred when a call to method \'%s\' was requested', data.errorMethodName));
       }
-      self.Common.console.error(data['errorCallStack']);
+      Common.Console.Console.instance().error(data['errorCallStack']);
       this._callbacks.delete(data.callId);
       return;
     }
@@ -261,7 +263,7 @@ export class HeapSnapshotProxyObject {
 }
 
 /**
- * @implements {Common.OutputStream}
+ * @implements {Common.StringOutputStream.OutputStream}
  * @unrestricted
  */
 export class HeapSnapshotLoaderProxy extends HeapSnapshotProxyObject {
@@ -310,13 +312,13 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
    */
   constructor(worker, objectId) {
     super(worker, objectId);
-    /** @type {?HeapSnapshotModel.StaticData} */
+    /** @type {?HeapSnapshotModel.HeapSnapshotModel.StaticData} */
     this._staticData = null;
   }
 
   /**
-   * @param {!HeapSnapshotModel.SearchConfig} searchConfig
-   * @param {!HeapSnapshotModel.NodeFilter} filter
+   * @param {!HeapSnapshotModel.HeapSnapshotModel.SearchConfig} searchConfig
+   * @param {!HeapSnapshotModel.HeapSnapshotModel.NodeFilter} filter
    * @return {!Promise<!Array<number>>}
    */
   search(searchConfig, filter) {
@@ -324,15 +326,15 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
   }
 
   /**
-   * @param {!HeapSnapshotModel.NodeFilter} filter
-   * @return {!Promise<!Object<string, !HeapSnapshotModel.Aggregate>>}
+   * @param {!HeapSnapshotModel.HeapSnapshotModel.NodeFilter} filter
+   * @return {!Promise<!Object<string, !HeapSnapshotModel.HeapSnapshotModel.Aggregate>>}
    */
   aggregatesWithFilter(filter) {
     return this._callMethodPromise('aggregatesWithFilter', filter);
   }
 
   /**
-   * @return {!Promise<!Object.<string, !HeapSnapshotModel.AggregateForDiff>>}
+   * @return {!Promise<!Object.<string, !HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>>}
    */
   aggregatesForDiff() {
     return this._callMethodPromise('aggregatesForDiff');
@@ -340,8 +342,8 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
 
   /**
    * @param {string} baseSnapshotId
-   * @param {!Object<string, !HeapSnapshotModel.AggregateForDiff>} baseSnapshotAggregates
-   * @return {!Promise<!Object<string, !HeapSnapshotModel.Diff>>}
+   * @param {!Object<string, !HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>} baseSnapshotAggregates
+   * @return {!Promise<!Object<string, !HeapSnapshotModel.HeapSnapshotModel.Diff>>}
    */
   calculateSnapshotDiff(baseSnapshotId, baseSnapshotAggregates) {
     return this._callMethodPromise('calculateSnapshotDiff', baseSnapshotId, baseSnapshotAggregates);
@@ -399,7 +401,7 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
 
   /**
    * @param {string} className
-   * @param {!HeapSnapshotModel.NodeFilter} nodeFilter
+   * @param {!HeapSnapshotModel.HeapSnapshotModel.NodeFilter} nodeFilter
    * @return {?HeapSnapshotProviderProxy}
    */
   createNodesProviderForClass(className, nodeFilter) {
@@ -408,7 +410,7 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
   }
 
   /**
-   * @return {!Promise<!Array<!HeapSnapshotModel.SerializedAllocationNode>>}
+   * @return {!Promise<!Array<!HeapSnapshotModel.HeapSnapshotModel.SerializedAllocationNode>>}
    */
   allocationTracesTops() {
     return this._callMethodPromise('allocationTracesTops');
@@ -416,7 +418,7 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
 
   /**
    * @param {number} nodeId
-   * @return {!Promise<!HeapSnapshotModel.AllocationNodeCallers>}
+   * @return {!Promise<!HeapSnapshotModel.HeapSnapshotModel.AllocationNodeCallers>}
    */
   allocationNodeCallers(nodeId) {
     return this._callMethodPromise('allocationNodeCallers', nodeId);
@@ -424,7 +426,7 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
 
   /**
    * @param {number} nodeIndex
-   * @return {!Promise<?Array<!HeapSnapshotModel.AllocationStackFrame>>}
+   * @return {!Promise<?Array<!HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame>>}
    */
   allocationStack(nodeIndex) {
     return this._callMethodPromise('allocationStack', nodeIndex);
@@ -453,7 +455,7 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
   }
 
   /**
-   * @return {!Promise<!HeapSnapshotModel.Statistics>}
+   * @return {!Promise<!HeapSnapshotModel.HeapSnapshotModel.Statistics>}
    */
   getStatistics() {
     return this._callMethodPromise('getStatistics');
@@ -461,14 +463,14 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
 
   /**
    * @param {number} nodeIndex
-   * @return {!Promise<?HeapSnapshotModel.Location>}
+   * @return {!Promise<?HeapSnapshotModel.HeapSnapshotModel.Location>}
    */
   getLocation(nodeIndex) {
     return this._callMethodPromise('getLocation', nodeIndex);
   }
 
   /**
-   * @return {!Promise.<?HeapSnapshotModel.Samples>}
+   * @return {!Promise.<?HeapSnapshotModel.HeapSnapshotModel.Samples>}
    */
   getSamples() {
     return this._callMethodPromise('getSamples');
@@ -528,7 +530,7 @@ export class HeapSnapshotProviderProxy extends HeapSnapshotProxyObject {
    * @override
    * @param {number} startPosition
    * @param {number} endPosition
-   * @return {!Promise<!HeapSnapshotModel.ItemsRange>}
+   * @return {!Promise<!HeapSnapshotModel.HeapSnapshotModel.ItemsRange>}
    */
   serializeItemsRange(startPosition, endPosition) {
     return this._callMethodPromise('serializeItemsRange', startPosition, endPosition);
@@ -536,7 +538,7 @@ export class HeapSnapshotProviderProxy extends HeapSnapshotProxyObject {
 
   /**
    * @override
-   * @param {!HeapSnapshotModel.ComparatorConfig} comparator
+   * @param {!HeapSnapshotModel.HeapSnapshotModel.ComparatorConfig} comparator
    * @return {!Promise}
    */
   sortAndRewind(comparator) {

@@ -19,10 +19,9 @@ declare global {
   }
 
   interface String {
-    trimURL(base: string): string;
-    toBase64(): string;
     trimMiddle(maxLength: number): string;
     repeat(length: number): string;
+    escapeForRegExp(): string;
   }
 
   interface StringConstructor {
@@ -268,32 +267,10 @@ describe('Utilities', () => {
     assert.isTrue(hashA + 1 !== hashA);
   });
 
-  it('trims URLs', () => {
-    const baseURLDomain = 'www.chromium.org';
-    const fixtures = new Map([
-      ['http://www.chromium.org/foo/bar', '/foo/bar'],
-      ['https://www.CHromium.ORG/BAZ/zoo', '/BAZ/zoo'],
-      ['https://example.com/foo[]', 'example.com/foo[]'],
-    ]);
-    for (const [url, expected] of fixtures) {
-      assert.equal(expected, url.trimURL(baseURLDomain), url);
-    }
-  });
-
-  it('converts to base64', () => {
-    const fixtures = new Map([
-      ['', ''],
-      ['a', 'YQ=='],
-      ['bc', 'YmM='],
-      ['def', 'ZGVm'],
-      ['ghij', 'Z2hpag=='],
-      ['klmno', 'a2xtbm8='],
-      ['pqrstu', 'cHFyc3R1'],
-      ['\u0444\u5555\u6666\u7777', '0YTllZXmmabnnbc='],
-    ]);
-    for (const [string, encodedString] of fixtures) {
-      assert.equal(encodedString, string.toBase64());
-    }
+  it('escapes regex characters', () => {
+    const inputString = '^[]{}()\\.^$*+?|-';
+    const outputString = inputString.escapeForRegExp();
+    assert.equal(outputString, '\\^\\[\\]\\{\\}\\(\\)\\\\\\.\\^\\$\\*\\+\\?\\|\\-');
   });
 
   it('trims the middle of strings', () => {

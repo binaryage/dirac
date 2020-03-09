@@ -27,6 +27,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Platform from '../platform/platform.js';
+
 /** @type {?Map<string, string>} */
 let _rgbaToNickname;
 
@@ -234,9 +236,11 @@ export class Color {
 
     if (value.indexOf('turn') !== -1) {
       return number % 1;
-    } else if (value.indexOf('grad') !== -1) {
+    }
+    if (value.indexOf('grad') !== -1) {
       return (number / 400) % 1;
-    } else if (value.indexOf('rad') !== -1) {
+    }
+    if (value.indexOf('rad') !== -1) {
       return (number / (2 * Math.PI)) % 1;
     }
     return (number / 360) % 1;
@@ -308,13 +312,14 @@ export class Color {
 
       if ((h * 6) < 1) {
         return p + (q - p) * h * 6;
-      } else if ((h * 2) < 1) {
-        return q;
-      } else if ((h * 3) < 2) {
-        return p + (q - p) * ((2 / 3) - h) * 6;
-      } else {
-        return p;
       }
+      if ((h * 2) < 1) {
+        return q;
+      }
+      if ((h * 3) < 2) {
+        return p + (q - p) * ((2 / 3) - h) * 6;
+      }
+      return p;
     }
 
     if (s < 0) {
@@ -423,9 +428,8 @@ export class Color {
     function computeLuminance() {
       if (lighter) {
         return (luminance + 0.05) * contrast - 0.05;
-      } else {
-        return (luminance + 0.05) / contrast - 0.05;
       }
+      return (luminance + 0.05) / contrast - 0.05;
     }
     let desiredLuminance = computeLuminance();
     if (desiredLuminance < 0 || desiredLuminance > 1) {
@@ -535,7 +539,7 @@ export class Color {
   }
 
   /**
-   * @param {?string} format
+   * @param {?string=} format
    * @return {?string}
    */
   asString(format) {
@@ -579,10 +583,10 @@ export class Color {
         if (this.hasAlpha()) {
           return null;
         }
-        return String.sprintf(
+        return Platform.StringUtilities.sprintf(
             'rgb(%d, %d, %d)', toRgbValue(this._rgba[0]), toRgbValue(this._rgba[1]), toRgbValue(this._rgba[2]));
       case Format.RGBA:
-        return String.sprintf(
+        return Platform.StringUtilities.sprintf(
             'rgba(%d, %d, %d, %f)', toRgbValue(this._rgba[0]), toRgbValue(this._rgba[1]), toRgbValue(this._rgba[2]),
             this._rgba[3]);
       case Format.HSL:
@@ -590,15 +594,15 @@ export class Color {
           return null;
         }
         const hsl = this.hsla();
-        return String.sprintf(
+        return Platform.StringUtilities.sprintf(
             'hsl(%d, %d%, %d%)', Math.round(hsl[0] * 360), Math.round(hsl[1] * 100), Math.round(hsl[2] * 100));
       case Format.HSLA:
         const hsla = this.hsla();
-        return String.sprintf(
+        return Platform.StringUtilities.sprintf(
             'hsla(%d, %d%, %d%, %f)', Math.round(hsla[0] * 360), Math.round(hsla[1] * 100), Math.round(hsla[2] * 100),
             hsla[3]);
       case Format.HEXA:
-        return String
+        return Platform.StringUtilities
             .sprintf(
                 '#%s%s%s%s', toHexValue(this._rgba[0]), toHexValue(this._rgba[1]), toHexValue(this._rgba[2]),
                 toHexValue(this._rgba[3]))
@@ -607,7 +611,7 @@ export class Color {
         if (this.hasAlpha()) {
           return null;
         }
-        return String
+        return Platform.StringUtilities
             .sprintf('#%s%s%s', toHexValue(this._rgba[0]), toHexValue(this._rgba[1]), toHexValue(this._rgba[2]))
             .toLowerCase();
       case Format.ShortHEXA:
@@ -615,7 +619,7 @@ export class Color {
         if (hexFormat !== Format.ShortHEXA && hexFormat !== Format.ShortHEX) {
           return null;
         }
-        return String
+        return Platform.StringUtilities
             .sprintf(
                 '#%s%s%s%s', toShortHexValue(this._rgba[0]), toShortHexValue(this._rgba[1]),
                 toShortHexValue(this._rgba[2]), toShortHexValue(this._rgba[3]))
@@ -627,7 +631,7 @@ export class Color {
         if (this.detectHEXFormat() !== Format.ShortHEX) {
           return null;
         }
-        return String
+        return Platform.StringUtilities
             .sprintf(
                 '#%s%s%s', toShortHexValue(this._rgba[0]), toShortHexValue(this._rgba[1]),
                 toShortHexValue(this._rgba[2]))

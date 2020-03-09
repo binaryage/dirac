@@ -92,7 +92,7 @@ export class RequestTimingView extends UI.Widget.VBox {
   /**
    * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @param {number} navigationStart
-   * @return {!Array.<!Network.RequestTimeRange>}
+   * @return {!Array.<!RequestTimeRange>}
    */
   static calculateRequestTimeRanges(request, navigationStart) {
     const result = [];
@@ -287,9 +287,6 @@ export class RequestTimingView extends UI.Widget.VBox {
     footer.createChild('td').createTextChild(Number.secondsToString(totalDuration, true));
 
     const serverTimings = request.serverTimings;
-    if (!serverTimings) {
-      return tableElement;
-    }
 
     const lastTimingRightEdge = right === undefined ? 100 : right;
 
@@ -301,6 +298,18 @@ export class RequestTimingView extends UI.Widget.VBox {
     serverHeader.createChild('td').createTextChild(Common.UIString.UIString('Server Timing'));
     serverHeader.createChild('td');
     serverHeader.createChild('td').createTextChild(Common.UIString.UIString('TIME'));
+
+    if (!serverTimings) {
+      const informationRow = tableElement.createChild('tr');
+      const information = informationRow.createChild('td');
+      information.colSpan = 3;
+
+      const link = UI.XLink.XLink.create('https://web.dev/custom-metrics/#server-timing-api', ls`the Server Timing API`);
+      information.appendChild(UI.UIUtils.formatLocalized(
+          'During development, you can use %s to add insights into the server-side timing of this request.', [link]));
+
+      return tableElement;
+    }
 
     serverTimings.filter(item => item.metric.toLowerCase() !== 'total')
         .forEach(item => addTiming(item, lastTimingRightEdge));
@@ -407,3 +416,6 @@ export const ConnectionSetupRangeNames = new Set([
   RequestTimeRangeNames.Queueing, RequestTimeRangeNames.Blocking, RequestTimeRangeNames.Connecting,
   RequestTimeRangeNames.DNS, RequestTimeRangeNames.Proxy, RequestTimeRangeNames.SSL
 ]);
+
+/** @typedef {{name: !RequestTimeRangeNames, start: number, end: number}} */
+export let RequestTimeRange;

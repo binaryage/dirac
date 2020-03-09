@@ -220,7 +220,7 @@ export class Target extends ProtocolModule.InspectorBackend.TargetBase {
   dispose(reason) {
     super.dispose(reason);
     this._targetManager.removeTarget(this);
-    for (const model of this._modelByConstructor.valuesArray()) {
+    for (const model of this._modelByConstructor.values()) {
       model.dispose();
     }
   }
@@ -248,7 +248,7 @@ export class Target extends ProtocolModule.InspectorBackend.TargetBase {
   }
 
   /**
-   * @return {!Map<function(new:SDKModel, !Target), !SDK.SDKModel>}
+   * @return {!Map<function(new:SDKModel, !Target), !SDKModel>}
    */
   models() {
     return this._modelByConstructor;
@@ -346,18 +346,37 @@ export const Type = {
   Browser: 'browser',
 };
 
+/**
+ * @type {!TargetManager}
+ */
+let targetManagerInstance;
+
 export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
+  /**
+   * @private
+   */
   constructor() {
     super();
-    /** @type {!Array.<!Target>} */
-    this._targets = [];
-    /** @type {!Array.<!Observer>} */
-    this._observers = [];
-    /** @type {!Platform.Multimap<symbol, !{modelClass: !Function, thisObject: (!Object|undefined), listener: function(!Common.Event)}>} */
+    /** @type {!Set.<!Target>} */
+    this._targets = new Set();
+    /** @type {!Set.<!Observer>} */
+    this._observers = new Set();
+    /** @type {!Platform.Multimap<symbol, !{modelClass: !Function, thisObject: (!Object|undefined), listener: function(!Common.EventTarget.EventTargetEvent)}>} */
     this._modelListeners = new Platform.Multimap();
     /** @type {!Platform.Multimap<function(new:SDKModel, !Target), !SDKModelObserver>} */
     this._modelObservers = new Platform.Multimap();
     this._isSuspended = false;
+  }
+
+  /**
+   * @param {{forceNew: boolean}} opts
+   */
+  static instance({forceNew} = {forceNew: false}) {
+    if (!targetManagerInstance || forceNew) {
+      targetManagerInstance = new TargetManager();
+    }
+
+    return targetManagerInstance;
   }
 
   /**
@@ -370,7 +389,8 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     this._isSuspended = true;
     this.dispatchEventToListeners(Events.SuspendStateChanged);
-    return Promise.all(this._targets.map(target => target.suspend(reason)));
+    const suspendPromises = Array.from(this._targets.values(), target => target.suspend(reason));
+    return Promise.all(suspendPromises);
   }
 
   /**
@@ -382,7 +402,8 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     this._isSuspended = false;
     this.dispatchEventToListeners(Events.SuspendStateChanged);
-    return Promise.all(this._targets.map(target => target.resume()));
+    const resumePromises = Array.from(this._targets.values(), target => target.resume());
+    return Promise.all(resumePromises);
   }
 
   /**
@@ -399,8 +420,8 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
    */
   models(modelClass) {
     const result = [];
-    for (let i = 0; i < this._targets.length; ++i) {
-      const model = this._targets[i].model(modelClass);
+    for (const target of this._targets) {
+      const model = target.model(modelClass);
       if (model) {
         result.push(model);
       }
@@ -412,7 +433,8 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
    * @return {string}
    */
   inspectedURL() {
-    return this._targets[0] ? this._targets[0].inspectedURL() : '';
+    const mainTarget = this.mainTarget();
+    return mainTarget ? mainTarget.inspectedURL() : '';
   }
 
   /**
@@ -439,22 +461,22 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {!Target} target
-   * @param {function(new:SDKModel,!SDK.Target)} modelClass
-   * @param {!SDK.SDKModel} model
+   * @param {function(new:SDKModel,!Target)} modelClass
+   * @param {!SDKModel} model
    */
   modelAdded(target, modelClass, model) {
-    for (const observer of this._modelObservers.get(modelClass).valuesArray()) {
+    for (const observer of this._modelObservers.get(modelClass).values()) {
       observer.modelAdded(model);
     }
   }
 
   /**
    * @param {!Target} target
-   * @param {function(new:SDKModel,!SDK.Target)} modelClass
-   * @param {!SDK.SDKModel} model
+   * @param {function(new:SDKModel,!Target)} modelClass
+   * @param {!SDKModel} model
    */
   _modelRemoved(target, modelClass, model) {
-    for (const observer of this._modelObservers.get(modelClass).valuesArray()) {
+    for (const observer of this._modelObservers.get(modelClass).values()) {
       observer.modelRemoved(model);
     }
   }
@@ -462,15 +484,12 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!Function} modelClass
    * @param {symbol} eventType
-   * @param {function(!Common.Event)} listener
+   * @param {function(!Common.EventTarget.EventTargetEvent)} listener
    * @param {!Object=} thisObject
    */
   addModelListener(modelClass, eventType, listener, thisObject) {
-    for (let i = 0; i < this._targets.length; ++i) {
-      const model = this._targets[i].model(modelClass);
-      if (model) {
-        model.addEventListener(eventType, listener, thisObject);
-      }
+    for (const model of this.models(modelClass)) {
+      model.addEventListener(eventType, listener, thisObject);
     }
     this._modelListeners.set(eventType, {modelClass: modelClass, thisObject: thisObject, listener: listener});
   }
@@ -478,7 +497,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!Function} modelClass
    * @param {symbol} eventType
-   * @param {function(!Common.Event)} listener
+   * @param {function(!Common.EventTarget.EventTargetEvent)} listener
    * @param {!Object=} thisObject
    */
   removeModelListener(modelClass, eventType, listener, thisObject) {
@@ -486,11 +505,8 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
 
-    for (let i = 0; i < this._targets.length; ++i) {
-      const model = this._targets[i].model(modelClass);
-      if (model) {
-        model.removeEventListener(eventType, listener, thisObject);
-      }
+    for (const model of this.models(modelClass)) {
+      model.removeEventListener(eventType, listener, thisObject);
     }
 
     for (const info of this._modelListeners.get(eventType)) {
@@ -504,20 +520,20 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
    * @param {!Observer} targetObserver
    */
   observeTargets(targetObserver) {
-    if (this._observers.indexOf(targetObserver) !== -1) {
+    if (this._observers.has(targetObserver)) {
       throw new Error('Observer can only be registered once');
     }
     for (const target of this._targets) {
       targetObserver.targetAdded(target);
     }
-    this._observers.push(targetObserver);
+    this._observers.add(targetObserver);
   }
 
   /**
    * @param {!Observer} targetObserver
    */
   unobserveTargets(targetObserver) {
-    this._observers.remove(targetObserver);
+    this._observers.delete(targetObserver);
   }
 
   /**
@@ -528,7 +544,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
    * @param {string=} sessionId
    * @param {boolean=} waitForDebuggerInPage
    * @param {!ProtocolModule.InspectorBackend.Connection=} connection
-   * @return {!SDK.Target}
+   * @return {!Target}
    */
   createTarget(id, name, type, parentTarget, sessionId, waitForDebuggerInPage, connection) {
     const target =
@@ -537,10 +553,10 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
       target.pageAgent().waitForDebugger();
     }
     target.createModels(new Set(this._modelObservers.keysArray()));
-    this._targets.push(target);
+    this._targets.add(target);
 
-    const copy = this._observers.slice(0);
-    for (const observer of copy) {
+    // Iterate over a copy. _observers might be modified during iteration.
+    for (const observer of [...this._observers]) {
       observer.targetAdded(target);
     }
 
@@ -564,17 +580,17 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
    * @param {!Target} target
    */
   removeTarget(target) {
-    if (!this._targets.includes(target)) {
+    if (!this._targets.has(target)) {
       return;
     }
 
-    this._targets.remove(target);
+    this._targets.delete(target);
     for (const modelClass of target.models().keys()) {
       this._modelRemoved(target, modelClass, target.models().get(modelClass));
     }
 
-    const copy = this._observers.slice(0);
-    for (const observer of copy) {
+    // Iterate over a copy. _observers might be modified during iteration.
+    for (const observer of [...this._observers]) {
       observer.targetRemoved(target);
     }
 
@@ -592,7 +608,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
    * @return {!Array.<!Target>}
    */
   targets() {
-    return this._targets.slice();
+    return [...this._targets];
   }
 
   /**
@@ -601,19 +617,14 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
    */
   targetById(id) {
     // TODO(dgozman): add a map id -> target.
-    for (let i = 0; i < this._targets.length; ++i) {
-      if (this._targets[i].id() === id) {
-        return this._targets[i];
-      }
-    }
-    return null;
+    return this.targets().find(target => target.id() === id) || null;
   }
 
   /**
    * @return {?Target}
    */
   mainTarget() {
-    return this._targets[0] || null;
+    return this._targets.size ? this._targets.values().next().value : null;
   }
 }
 

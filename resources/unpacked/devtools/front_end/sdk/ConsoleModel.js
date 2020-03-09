@@ -31,13 +31,13 @@
 import * as Common from '../common/common.js';
 import * as HostModule from '../host/host.js';
 
-import {CPUProfilerModel, Events as CPUProfilerModelEvents} from './CPUProfilerModel.js';
+import {CPUProfilerModel, EventData, Events as CPUProfilerModelEvents} from './CPUProfilerModel.js';  // eslint-disable-line no-unused-vars
 import {Events as DebuggerModelEvents, Location} from './DebuggerModel.js';  // eslint-disable-line no-unused-vars
 import {LogModel} from './LogModel.js';
 import {RemoteObject} from './RemoteObject.js';
 import {Events as ResourceTreeModelEvents, ResourceTreeModel} from './ResourceTreeModel.js';
 import {Events as RuntimeModelEvents, ExecutionContext, RuntimeModel} from './RuntimeModel.js';  // eslint-disable-line no-unused-vars
-import {Observer, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import {Observer, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
 const _events = Symbol('SDK.ConsoleModel.events');
 
@@ -57,7 +57,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
     this._violations = 0;
     this._pageLoadSequenceNumber = 0;
 
-    self.SDK.targetManager.observeTargets(this);
+    TargetManager.instance().observeTargets(this);
   }
 
   /**
@@ -152,7 +152,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
     if (result.error) {
       return;
     }
-    await self.Common.console.showPromise();
+    await Common.Console.Console.instance().showPromise();
     this.dispatchEventToListeners(
         Events.CommandEvaluated,
         {result: result.object, commandMessage: originatingMessage, exceptionDetails: result.exceptionDetails});
@@ -182,7 +182,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
 
     if (msg.parameters) {
       var firstParam = msg.parameters[0];
-      if (firstParam && firstParam.value == "~~$DIRAC-MSG$~~") {
+      if (firstParam && firstParam.value === "~~$DIRAC-MSG$~~") {
         this.dispatchEventToListeners(SDK.ConsoleModel.Events.DiracMessage, msg);
         return;
       }
@@ -204,10 +204,10 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {!RuntimeModel} runtimeModel
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _exceptionThrown(runtimeModel, event) {
-    const exceptionWithTimestamp = /** @type {!SDK.RuntimeModel.ExceptionWithTimestamp} */ (event.data);
+    const exceptionWithTimestamp = /** @type {!ExceptionWithTimestamp} */ (event.data);
     const consoleMessage = ConsoleMessage.fromException(
         runtimeModel, exceptionWithTimestamp.details, undefined, exceptionWithTimestamp.timestamp, undefined);
     consoleMessage.setExceptionId(exceptionWithTimestamp.details.exceptionId);
@@ -216,7 +216,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {!RuntimeModel} runtimeModel
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _exceptionRevoked(runtimeModel, event) {
     const exceptionId = /** @type {number} */ (event.data);
@@ -232,10 +232,10 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {!RuntimeModel} runtimeModel
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _consoleAPICalled(runtimeModel, event) {
-    const call = /** @type {!SDK.RuntimeModel.ConsoleAPICall} */ (event.data);
+    const call = /** @type {!ConsoleAPICall} */ (event.data);
     let level = MessageLevel.Info;
     if (call.type === MessageType.Debug) {
       level = MessageLevel.Verbose;
@@ -265,7 +265,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {!RuntimeModel} runtimeModel
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _queryObjectRequested(runtimeModel, event) {
     const consoleMessage = new ConsoleMessage(
@@ -282,20 +282,20 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _mainFrameNavigated(event) {
     if (self.Common.settings.moduleSetting('preserveConsoleLog').get()) {
-      self.Common.console.log(Common.UIString.UIString('Navigated to %s', event.data.url));
+      Common.Console.Console.instance().log(Common.UIString.UIString('Navigated to %s', event.data.url));
     }
   }
 
   /**
    * @param {!CPUProfilerModel} cpuProfilerModel
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _consoleProfileStarted(cpuProfilerModel, event) {
-    const data = /** @type {!SDK.CPUProfilerModel.EventData} */ (event.data);
+    const data = /** @type {!EventData} */ (event.data);
     this._addConsoleProfileMessage(
         cpuProfilerModel, MessageType.Profile, data.scriptLocation,
         Common.UIString.UIString('Profile \'%s\' started.', data.title));
@@ -303,10 +303,10 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {!CPUProfilerModel} cpuProfilerModel
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _consoleProfileFinished(cpuProfilerModel, event) {
-    const data = /** @type {!SDK.CPUProfilerModel.EventData} */ (event.data);
+    const data = /** @type {!EventData} */ (event.data);
     this._addConsoleProfileMessage(
         cpuProfilerModel, MessageType.ProfileEnd, data.scriptLocation,
         Common.UIString.UIString('Profile \'%s\' finished.', data.title));
@@ -357,10 +357,10 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   requestClearMessages() {
-    for (const logModel of self.SDK.targetManager.models(LogModel)) {
+    for (const logModel of TargetManager.instance().models(LogModel)) {
       logModel.requestClear();
     }
-    for (const runtimeModel of self.SDK.targetManager.models(RuntimeModel)) {
+    for (const runtimeModel of TargetManager.instance().models(RuntimeModel)) {
       runtimeModel.discardConsoleEntries();
     }
     this._clear();
@@ -452,7 +452,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
       if (result) {
         message += ' ' + result.description;
       }
-      self.Common.console.error(message);
+      Common.Console.Console.instance().error(message);
     }
   }
 }
@@ -758,3 +758,17 @@ export const MessageSourceDisplayName = new Map([
   [MessageSource.Intervention, 'intervention'], [MessageSource.Recommendation, 'recommendation'],
   [MessageSource.Other, 'other']
 ]);
+
+/**
+ * @typedef {{
+  *    type: string,
+  *    args: !Array<!Protocol.Runtime.RemoteObject>,
+  *    executionContextId: number,
+  *    timestamp: number,
+  *    stackTrace: (!Protocol.Runtime.StackTrace|undefined)
+  * }}
+  */
+export let ConsoleAPICall;
+
+/** @typedef {{timestamp: number, details: !Protocol.Runtime.ExceptionDetails}} */
+export let ExceptionWithTimestamp;

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/* eslint-disable no-console */
+// no-console disabled here as this is a test runner and expects to output to the console
+
 import * as Mocha from 'mocha';
 import * as puppeteer from 'puppeteer';
 import {spawn} from 'child_process';
@@ -13,6 +16,8 @@ const envChromeBinary = process.env['CHROME_BIN'];
 const envDebug = !!process.env['DEBUG'];
 const envPort = process.env['PORT'] || 9222;
 const envNoShuffle = !!process.env['NO_SHUFFLE'];
+const envInteractive = !!process.env['INTERACTIVE'];
+const interactivePage = 'http://localhost:8090/test/screenshots/interactive/index.html';
 const blankPage = 'data:text/html,';
 const headless = !envDebug;
 const width = 1280;
@@ -45,11 +50,16 @@ process.on('SIGTERM', interruptionHandler);
 process.on('uncaughtException', interruptionHandler);
 process.stdin.resume();
 
+if (!testListPath) {
+  throw new Error('Must specify a list of tests in the "TEST_LIST" environment variable.');
+}
+
+const launchArgs = [`--remote-debugging-port=${envPort}`];
+
 // 1. Launch Chromium.
 const opts: puppeteer.LaunchOptions = {
   headless,
   executablePath: envChromeBinary,
-  args: [`--remote-debugging-port=${envPort}`],
   defaultViewport: null,
 };
 
@@ -58,16 +68,17 @@ if (headless) {
   opts.defaultViewport = {width, height};
 }
 else {
-  opts.args.push(`--window-size=${width},${height}`);
+  launchArgs.push(`--window-size=${width},${height}`);
 }
+
+opts.args = launchArgs;
 
 const launchedBrowser = puppeteer.launch(opts);
 const pages: puppeteer.Page[] = [];
 
 // 2. Start DevTools hosted mode.
-function handleHostedModeError(data) {
-  console.log('Hosted mode server:');
-  console.log(data.toString());
+function handleHostedModeError(data: Error) {
+  console.log(`Hosted mode server: ${data}`);
   interruptionHandler();
 }
 
@@ -75,13 +86,30 @@ console.log('Spawning hosted mode server');
 const serverScriptPath = join(__dirname, '..', '..', 'scripts', 'hosted_mode', 'server.js');
 const cwd = join(__dirname, '..', '..');
 const {execPath} = process;
-const hostedModeServer = spawn(execPath, [serverScriptPath], { cwd, shell: true, detached: true });
+const hostedModeServer = spawn(execPath, [serverScriptPath], { cwd });
 hostedModeServer.on('error', handleHostedModeError);
 hostedModeServer.stderr.on('data', handleHostedModeError);
+
+interface DevToolsTarget {
+  url: string;
+  id: string;
+}
 
 // 3. Spin up the test environment
 (async function() {
   try {
+    let screenshotPage: puppeteer.Page | undefined;
+    if (envInteractive) {
+      const screenshotBrowser = await puppeteer.launch({
+        headless: false,
+        executablePath: envChromeBinary,
+        defaultViewport: null,
+        args: [`--window-size=${width},${height}`],
+      });
+      screenshotPage = await screenshotBrowser.newPage();
+      await screenshotPage.goto(interactivePage, {waitUntil: ['domcontentloaded']});
+    }
+
     const browser = await launchedBrowser;
 
     // Load the target page.
@@ -96,8 +124,13 @@ hostedModeServer.stderr.on('data', handleHostedModeError);
     // Find the appropriate item to inspect the target page.
     const listing = await devtools.$('pre');
     const json = await devtools.evaluate(listing => listing.textContent, listing);
-    const targets = JSON.parse(json);
-    const {id} = targets.find((target) => target.url === blankPage);
+    const targets: DevToolsTarget[] = JSON.parse(json);
+    const target = targets.find(target => target.url === blankPage);
+    if (!target) {
+      throw new Error(`Unable to find target page: ${blankPage}`);
+    }
+
+    const {id} = target;
     await devtools.close();
 
     // Connect to the DevTools frontend.
@@ -105,27 +138,61 @@ hostedModeServer.stderr.on('data', handleHostedModeError);
     const frontendUrl = `http://localhost:8090/front_end/devtools_app.html?ws=localhost:${envPort}/devtools/page/${id}`;
     await frontend.goto(frontendUrl, {waitUntil: ['networkidle2', 'domcontentloaded']});
 
+    frontend.on('error', err => {
+      console.log('Error in Frontend');
+      console.log(err);
+    });
+
+    frontend.on('pageerror', err => {
+      console.log('Page Error in Frontend');
+      console.log(err);
+    });
+
     const resetPages =
-        async (...enabledExperiments: string[]) => {
+        async (opts: {enabledExperiments?: string[], selectedPanel?: {name: string, selector?: string}} = {}) => {
       // Reload the target page.
       await srcPage.goto(blankPage, {waitUntil: ['domcontentloaded']});
 
       // Clear any local storage settings.
       await frontend.evaluate(() => localStorage.clear());
 
-      await frontend.evaluate((enabledExperiments) => {
+      const { enabledExperiments } = opts;
+      let { selectedPanel } = opts;
+      await frontend.evaluate(enabledExperiments => {
         for (const experiment of enabledExperiments) {
+          // @ts-ignore
           globalThis.Root.Runtime.experiments.setEnabled(experiment, true);
         }
-      }, enabledExperiments);
+      }, enabledExperiments || []);
+
+      if (selectedPanel) {
+        await frontend.evaluate(name => {
+          // @ts-ignore
+          globalThis.localStorage.setItem('panel-selectedTab', `"${name}"`);
+        }, selectedPanel.name);
+      }
 
       // Reload the DevTools frontend and await the elements panel.
       await frontend.goto(blankPage, {waitUntil: ['domcontentloaded']});
-      await frontend.goto(frontendUrl, {waitUntil: ['networkidle2', 'domcontentloaded']});
-      await frontend.waitForSelector('.elements');
-    }
+      await frontend.goto(frontendUrl, {waitUntil: ['domcontentloaded']});
 
-    store(browser, srcPage, frontend, resetPages);
+      // Default to elements if no other panel is defined.
+      if (!selectedPanel) {
+        selectedPanel = {
+          name: 'elements',
+          selector: '.elements',
+        };
+      }
+
+      if (!selectedPanel.selector) {
+        return;
+      }
+
+      // For the unspecified case wait for loading, then wait for the elements panel.
+      await frontend.waitForSelector(selectedPanel.selector);
+    };
+
+    store(browser, srcPage, frontend, screenshotPage, resetPages);
 
     // 3. Run tests.
     do {
@@ -148,7 +215,7 @@ hostedModeServer.stderr.on('data', handleHostedModeError);
 })();
 
 async function waitForInput() {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (!envDebug) {
       resolve();
       return;
@@ -156,7 +223,7 @@ async function waitForInput() {
 
     process.stdin.setRawMode(true);
     process.stdin.resume();
-    process.stdin.on('data', async (str) => {
+    process.stdin.on('data', async str => {
       // Listen for ctrl+c to exit.
       if (str.toString() === '\x03') {
         interruptionHandler();
@@ -167,17 +234,17 @@ async function waitForInput() {
 }
 
 async function runTests() {
-  const {testList} = await import(testListPath);
+  const {testList} = await import(testListPath!);
   const shuffledTests = shuffleTestFiles(testList);
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const mocha = new Mocha();
     for (const test of shuffledTests) {
       mocha.addFile(test);
     }
     mocha.ui('bdd');
     mocha.reporter('list');
-    mocha.timeout(envDebug ? 100000 : 4000);
+    mocha.timeout((envDebug || envInteractive) ? 300000 : 4000);
 
     mochaRun = mocha.run();
     mochaRun.on('end', () => {
@@ -195,6 +262,9 @@ function logHelp() {
   console.log('Running in debug mode.');
   console.log(' - Press any key to run the test suite.');
   console.log(' - Press ctrl + c to quit.');
+  hostedModeServer.stdout.on('data', (message: any) => {
+    console.log(`Hosted mode server: ${message}`);
+  });
 }
 
 function shuffleTestFiles(files: string[]) {
@@ -203,11 +273,11 @@ function shuffleTestFiles(files: string[]) {
     return files;
   }
 
-  const swap = (arr, a, b) => {
+  const swap = (arr: string[], a: number, b: number) => {
     const temp = arr[a];
     arr[a] = arr[b];
     arr[b] = temp;
-  }
+  };
 
   for (let i = files.length; i >= 0; i--) {
     const a = Math.floor(Math.random() * files.length);

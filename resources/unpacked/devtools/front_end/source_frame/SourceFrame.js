@@ -30,6 +30,7 @@
 
 import * as Common from '../common/common.js';
 import * as Formatter from '../formatter/formatter.js';
+import * as Platform from '../platform/platform.js';
 import * as TextEditor from '../text_editor/text_editor.js';  // eslint-disable-line no-unused-vars
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
@@ -45,7 +46,7 @@ import {Events, SourcesTextEditor, SourcesTextEditorDelegate} from './SourcesTex
  */
 export class SourceFrameImpl extends UI.View.SimpleView {
   /**
-   * @param {function(): !Promise<!Common.DeferredContent>} lazyContent
+   * @param {function(): !Promise<!Common.ContentProvider.DeferredContent>} lazyContent
    * @param {!UI.TextEditor.Options=} codeMirrorOptions
    */
   constructor(lazyContent, codeMirrorOptions) {
@@ -66,6 +67,8 @@ export class SourceFrameImpl extends UI.View.SimpleView {
     });
     this._shouldAutoPrettyPrint = false;
     this._prettyToggle.setVisible(false);
+
+    this._progressToolbarItem = new UI.Toolbar.ToolbarItem(createElement('div'));
 
     this._textEditor = new SourcesTextEditor(this, codeMirrorOptions);
     this._textEditor.show(this.element);
@@ -107,7 +110,7 @@ export class SourceFrameImpl extends UI.View.SimpleView {
     this._loaded = false;
     this._contentRequested = false;
     this._highlighterType = '';
-    /** @type {!SourceFrame.Transformer} */
+    /** @type {!Transformer} */
     this._transformer = {
       /**
        * @param {number} editorLineNumber
@@ -200,7 +203,7 @@ export class SourceFrameImpl extends UI.View.SimpleView {
   }
 
   /**
-   * @return {!SourceFrame.Transformer}
+   * @return {!Transformer}
    */
   transformer() {
     return this._transformer;
@@ -271,7 +274,7 @@ export class SourceFrameImpl extends UI.View.SimpleView {
    * @return {!Promise<!Array<!UI.Toolbar.ToolbarItem>>}
    */
   async toolbarItems() {
-    return [this._prettyToggle, this._sourcePosition];
+    return [this._prettyToggle, this._sourcePosition, this._progressToolbarItem];
   }
 
   get loaded() {
@@ -292,7 +295,17 @@ export class SourceFrameImpl extends UI.View.SimpleView {
   async _ensureContentLoaded() {
     if (!this._contentRequested) {
       this._contentRequested = true;
+
+      const progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
+      progressIndicator.setTitle(Common.UIString.UIString('Loading…'));
+      progressIndicator.setTotalWork(1);
+      this._progressToolbarItem.element.appendChild(progressIndicator.element);
+
       const {content, error} = (await this._lazyContent());
+
+      progressIndicator.setWorked(1);
+      progressIndicator.done();
+
       this._rawContent = error || content || '';
       this._formattedContentPromise = null;
       this._formattedMap = null;
@@ -744,7 +757,7 @@ export class SourceFrameImpl extends UI.View.SimpleView {
     const currentRangeIndex = ranges.lowerBound(this._textEditor.selection(), TextUtils.TextRange.TextRange.comparator);
     const lastRangeIndex = mod(currentRangeIndex - 1, ranges.length);
     const lastRange = ranges[lastRangeIndex];
-    const replacementLineEndings = replacement.computeLineEndings();
+    const replacementLineEndings = Platform.StringUtilities.findLineEndingIndexes(replacement);
     const replacementLineCount = replacementLineEndings.length;
     const lastLineNumber = lastRange.startLine + replacementLineEndings.length - 1;
     let lastColumnNumber = lastRange.startColumn;
@@ -840,3 +853,11 @@ export class LineDecorator {
    */
   decorate(uiSourceCode, textEditor, type) {}
 }
+
+/**
+ * @typedef {{
+ *  editorToRawLocation: function(number, number=):!Array<number>,
+ *  rawToEditorLocation: function(number, number=):!Array<number>
+ * }}
+ */
+export let Transformer;

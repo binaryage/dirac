@@ -29,6 +29,7 @@
  */
 
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 
 import {EventDescriptors, Events} from './InspectorFrontendHostAPI.js';
 import {streamWrite as resourceLoaderStreamWrite} from './ResourceLoader.js';
@@ -180,7 +181,7 @@ export class InspectorFrontendHostStub {
       document.execCommand('copy');
       document.body.removeChild(input);
     } else {
-      self.Common.console.error('Clipboard is not enabled in hosted mode. Please inspect using chrome://inspect');
+      Common.Console.Console.instance().error('Clipboard is not enabled in hosted mode. Please inspect using chrome://inspect');
     }
   }
 
@@ -197,7 +198,7 @@ export class InspectorFrontendHostStub {
    * @param {string} fileSystemPath
    */
   showItemInFolder(fileSystemPath) {
-    self.Common.console.error(
+    Common.Console.Console.instance().error(
         'Show item in folder is not enabled in hosted mode. Please inspect using chrome://inspect');
   }
 
@@ -235,7 +236,7 @@ export class InspectorFrontendHostStub {
   close(url) {
     const buffer = this._urlsBeingSaved.get(url);
     this._urlsBeingSaved.delete(url);
-    const fileName = url ? url.trimURL().removeURLFragment() : '';
+    const fileName = url ? Platform.StringUtilities.trimURL(url).removeURLFragment() : '';
     const link = createElement('a');
     link.download = fileName;
     const blob = new Blob([buffer.join('')], {type: 'text/plain'});

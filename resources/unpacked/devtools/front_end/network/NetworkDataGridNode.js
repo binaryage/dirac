@@ -33,6 +33,7 @@ import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as DataGrid from '../data_grid/data_grid.js';
 import * as Host from '../host/host.js';
+import * as PerfUI from '../perf_ui/perf_ui.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -272,21 +273,26 @@ export class NetworkNode extends DataGrid.SortableDataGrid.SortableDataGridNode 
 
     if (this.selected && hasFocus && isSelected && isFailed) {
       return bgColors.FocusSelectedHasError;
-    } else if (this.selected && hasFocus && isSelected) {
-      return bgColors.FocusSelected;
-    } else if (this.selected) {
-      return bgColors.Selected;
-    } else if (this.hovered()) {
-      return bgColors.Hovered;
-    } else if (this.isOnInitiatorPath()) {
-      return bgColors.InitiatorPath;
-    } else if (this.isOnInitiatedPath()) {
-      return bgColors.InitiatedPath;
-    } else if (this.isStriped()) {
-      return bgColors.Stripe;
-    } else {
-      return bgColors.Default;
     }
+    if (this.selected && hasFocus && isSelected) {
+      return bgColors.FocusSelected;
+    }
+    if (this.selected) {
+      return bgColors.Selected;
+    }
+    if (this.hovered()) {
+      return bgColors.Hovered;
+    }
+    if (this.isOnInitiatorPath()) {
+      return bgColors.InitiatorPath;
+    }
+    if (this.isOnInitiatedPath()) {
+      return bgColors.InitiatedPath;
+    }
+    if (this.isStriped()) {
+      return bgColors.Stripe;
+    }
+    return bgColors.Default;
   }
 
   updateBackgroundColor() {
@@ -639,10 +645,10 @@ export class NetworkRequestNode extends NetworkNode {
       return !aRequest ? -1 : 1;
     }
     const aPriority = aRequest.priority();
-    let aScore = aPriority ? PerfUI.networkPriorityWeight(aPriority) : 0;
+    let aScore = aPriority ? PerfUI.NetworkPriorities.networkPriorityWeight(aPriority) : 0;
     aScore = aScore || 0;
     const bPriority = bRequest.priority();
-    let bScore = bPriority ? PerfUI.networkPriorityWeight(bPriority) : 0;
+    let bScore = bPriority ? PerfUI.NetworkPriorities.networkPriorityWeight(bPriority) : 0;
     bScore = bScore || 0;
 
     return aScore - bScore || aRequest.indentityCompare(bRequest);
@@ -874,6 +880,22 @@ export class NetworkRequestNode extends NetworkNode {
   }
 
   /**
+   * @param {!Element} element
+   * @param {string} cellText
+   * @param {string} linkText
+   * @param {function()} handler
+   */
+  _setTextAndTitleAndLink(element, cellText, linkText, handler) {
+    element.createTextChild(cellText);
+    element.createChild('span', 'separator-in-cell');
+    const link = createElementWithClass('span', 'devtools-link');
+    link.textContent = linkText;
+    link.addEventListener('click', handler);
+    element.appendChild(link);
+    element.title = cellText;
+  }
+
+  /**
    * @override
    * @param {!Element} cell
    * @param {string} columnId
@@ -915,7 +937,7 @@ export class NetworkRequestNode extends NetworkNode {
         break;
       case 'priority':
         const priority = this._request.priority();
-        this._setTextAndTitle(cell, priority ? PerfUI.uiLabelForNetworkPriority(priority) : '');
+        this._setTextAndTitle(cell, priority ? PerfUI.NetworkPriorities.uiLabelForNetworkPriority(priority) : '');
         break;
       case 'connectionid':
         this._setTextAndTitle(cell, this._request.connectionId);
@@ -1060,6 +1082,7 @@ export class NetworkRequestNode extends NetworkNode {
       this._setTextAndTitle(cell, Common.UIString.UIString('(canceled)'));
     } else if (this._request.wasBlocked()) {
       let reason = Common.UIString.UIString('other');
+      let displayShowHeadersLink = false;
       switch (this._request.blockedReason()) {
         case Protocol.Network.BlockedReason.Other:
           reason = Common.UIString.UIString('other');
@@ -1085,8 +1108,34 @@ export class NetworkRequestNode extends NetworkNode {
         case Protocol.Network.BlockedReason.CollapsedByClient:
           reason = Common.UIString.UIString('extension');
           break;
+        case Protocol.Network.BlockedReason.CoepFrameResourceNeedsCoepHeader:
+          displayShowHeadersLink = true;
+          reason = Common.UIString.UIString('CoepFrameResourceNeedsCoepHeader');
+          break;
+        case Protocol.Network.BlockedReason.CoopSandboxedIframeCannotNavigateToCoopPage:
+          displayShowHeadersLink = true;
+          reason = Common.UIString.UIString('CoopSandboxedIframeCannotNavigateToCoopPage');
+          break;
+        case Protocol.Network.BlockedReason.CorpNotSameOrigin:
+          displayShowHeadersLink = true;
+          reason = Common.UIString.UIString('NotSameOrigin');
+          break;
+        case Protocol.Network.BlockedReason.CorpNotSameSite:
+          displayShowHeadersLink = true;
+          reason = Common.UIString.UIString('NotSameSite');
+          break;
+        case Protocol.Network.BlockedReason.CorpNotSameOriginAfterDefaultedToSameOriginByCoep:
+          displayShowHeadersLink = true;
+          reason = Common.UIString.UIString('NotSameOriginAfterDefaultedToSameOriginByCoep');
+          break;
       }
-      this._setTextAndTitle(cell, Common.UIString.UIString('(blocked:%s)', reason));
+      if (displayShowHeadersLink) {
+        this._setTextAndTitleAndLink(cell, Common.UIString.UIString('(blocked:%s)', reason), 'View Headers', () => {
+          this.parentView().dispatchEventToListeners(Events.RequestActivated, /* showPanel */ true);
+        });
+      } else {
+        this._setTextAndTitle(cell, Common.UIString.UIString('(blocked:%s)', reason));
+      }
     } else if (this._request.finished) {
       this._setTextAndTitle(cell, Common.UIString.UIString('Finished'));
     } else {

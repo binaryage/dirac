@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+
+import {EventPayload} from './TracingManager.js';  // eslint-disable-line no-unused-vars
+
 export class TracingModel {
   /**
    * @param {!BackingStorage} backingStorage
@@ -72,7 +76,7 @@ export class TracingModel {
   }
 
   /**
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    * @return {string|undefined}
    */
   static _extractId(payload) {
@@ -123,7 +127,7 @@ export class TracingModel {
     if (tracingStartedInBrowser.length === 1) {
       return tracingStartedInBrowser[0].thread;
     }
-    self.Common.console.error('Failed to find browser main thread in trace, some timeline features may be unavailable');
+    Common.Console.Console.instance().error('Failed to find browser main thread in trace, some timeline features may be unavailable');
     return null;
   }
 
@@ -135,7 +139,7 @@ export class TracingModel {
   }
 
   /**
-   * @param {!Array.<!SDK.TracingManager.EventPayload>} events
+   * @param {!Array.<!EventPayload>} events
    */
   addEvents(events) {
     for (let i = 0; i < events.length; ++i) {
@@ -186,7 +190,7 @@ export class TracingModel {
   }
 
   /**
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    */
   _addEvent(payload) {
     let process = this._processById.get(payload.pid);
@@ -298,7 +302,7 @@ export class TracingModel {
    * @return {!Array.<!Process>}
    */
   sortedProcesses() {
-    return NamedObject._sort(this._processById.valuesArray());
+    return NamedObject._sort([...this._processById.values()]);
   }
 
   /**
@@ -555,7 +559,7 @@ export class Event {
 
   /**
    * @this {null}
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    * @param {!Thread} thread
    * @return {!Event}
    */
@@ -671,7 +675,7 @@ export class ObjectSnapshot extends Event {
   /**
    * @override
    * @this {null}
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    * @param {!Thread} thread
    * @return {!ObjectSnapshot}
    */
@@ -713,7 +717,7 @@ export class ObjectSnapshot extends Event {
         const payload = JSON.parse(result);
         callback(payload['args']['snapshot']);
       } catch (e) {
-        self.Common.console.error('Malformed event data in backing storage');
+        Common.Console.Console.instance().error('Malformed event data in backing storage');
         callback(null);
       }
     }
@@ -886,7 +890,7 @@ export class Process extends NamedObject {
   }
 
   /**
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    * @return {?Event} event
    */
   _addEvent(payload) {
@@ -897,7 +901,7 @@ export class Process extends NamedObject {
    * @return {!Array.<!Thread>}
    */
   sortedThreads() {
-    return NamedObject._sort(this._threads.valuesArray());
+    return NamedObject._sort([...this._threads.values()]);
   }
 }
 
@@ -950,7 +954,7 @@ export class Thread extends NamedObject {
   }
 
   /**
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    * @return {?Event} event
    */
   _addEvent(payload) {

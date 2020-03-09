@@ -38,6 +38,7 @@ DEPS = {
     "chai": "4.2.0",
     "escodegen": "1.12.0",
     "eslint": "6.0.1",
+    "eslint-plugin-mocha": "6.2.2",
     "esprima": "git+https://git@github.com/ChromeDevTools/esprima.git#4d0f0e18bd8d3731e5f931bf573af3394cbf7cbe",
     "handlebars": "4.3.1",
     "istanbul-diff": "2.0.0",
@@ -52,8 +53,9 @@ DEPS = {
     "mocha": "6.2.0",
     "puppeteer": "2.0.0",
     "recast": "0.18.2",
+    "rimraf": "3.0.2",
     "rollup": "1.23.1",
-    "typescript": "3.7.5",
+    "typescript": "3.8.3",
     "yargs": "15.0.2"
 }
 

@@ -5,6 +5,7 @@
 import * as Common from '../common/common.js';
 import * as ProtocolModule from '../protocol/protocol.js';
 
+import {NameValue} from './NetworkRequest.js';               // eslint-disable-line no-unused-vars
 import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 import {Events as SecurityOriginManagerEvents, SecurityOriginManager} from './SecurityOriginManager.js';
 
@@ -95,7 +96,7 @@ export class ServiceWorkerCacheModel extends SDKModel {
     if (!response[ProtocolModule.InspectorBackend.ProtocolError]) {
       return;
     }
-    self.Common.console.error(Common.UIString.UIString(
+    Common.Console.Console.instance().error(Common.UIString.UIString(
         'ServiceWorkerCacheAgent error deleting cache entry %s in cache: %s', cache.toString(),
         response[ProtocolModule.InspectorBackend.ProtocolError]));
   }
@@ -228,7 +229,7 @@ export class ServiceWorkerCacheModel extends SDKModel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _securityOriginAdded(event) {
     const securityOrigin = /** @type {string} */ (event.data);
@@ -236,7 +237,7 @@ export class ServiceWorkerCacheModel extends SDKModel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _securityOriginRemoved(event) {
     const securityOrigin = /** @type {string} */ (event.data);
@@ -374,7 +375,7 @@ export class Cache {
 
   /**
    * @param {string} url
-   * @param {!Array.<!SDK.NetworkRequest.NameValue>} requestHeaders
+   * @param {!Array.<!NameValue>} requestHeaders
    * @return {!Promise<?Protocol.CacheStorage.CachedResponse>}
    */
   requestCachedResponse(url, requestHeaders) {

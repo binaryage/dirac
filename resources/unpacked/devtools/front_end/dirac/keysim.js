@@ -2,7 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
         typeof define === 'function' && define.amd ? define(['exports'], factory) :
             factory((global.Keysim = {}))
-}(this, function(exports) {
+}(self, function(exports) {
     'use strict';
 
     var _createClass = (function() {

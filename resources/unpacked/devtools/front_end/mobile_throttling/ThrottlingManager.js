@@ -9,7 +9,7 @@ import * as UI from '../ui/ui.js';
 
 import {MobileThrottlingSelector} from './MobileThrottlingSelector.js';
 import {NetworkThrottlingSelector} from './NetworkThrottlingSelector.js';
-import {cpuThrottlingPresets, CPUThrottlingRates, CustomConditions} from './ThrottlingPresets.js';
+import {Conditions, ConditionsList, cpuThrottlingPresets, CPUThrottlingRates, CustomConditions, MobileThrottlingConditionsGroup, NetworkThrottlingConditionsGroup} from './ThrottlingPresets.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.EmulationModel.EmulationModel>}
@@ -35,7 +35,7 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
           this._currentNetworkThrottlingConditions = self.SDK.multitargetNetworkManager.networkConditions();
         });
 
-    self.SDK.targetManager.observeModels(SDK.EmulationModel.EmulationModel, this);
+    SDK.SDKModel.TargetManager.instance().observeModels(SDK.EmulationModel.EmulationModel, this);
   }
 
 
@@ -50,7 +50,7 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
     return selector;
 
     /**
-     * @param {!Array.<!MobileThrottling.NetworkThrottlingConditionsGroup>} groups
+     * @param {!Array.<!NetworkThrottlingConditionsGroup>} groups
      * @return {!Array<?SDK.NetworkManager.Conditions>}
      */
     function populate(groups) {
@@ -68,7 +68,7 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
           options.push(conditions);
         }
         if (i === groups.length - 1) {
-          const option = new Option(ls`Add\u2026`, ls`Add\u2026`);
+          const option = new Option(ls`Add…`, ls`Add…`);
           UI.ARIAUtils.setAccessibleName(option, ls`Add ${group.title}`);
           groupElement.appendChild(option);
           options.push(null);
@@ -137,7 +137,7 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
     button.turnIntoSelect();
     button.setDarkText();
 
-    /** @type {!MobileThrottling.ConditionsList} */
+    /** @type {!ConditionsList} */
     let options = [];
     let selectedIndex = -1;
     const selector = new MobileThrottlingSelector(populate, select);
@@ -157,14 +157,13 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
         }
         contextMenu.defaultSection().appendCheckboxItem(
             Common.UIString.UIString(conditions.title),
-            selector.optionSelected.bind(selector, /** @type {!MobileThrottling.Conditions} */ (conditions)),
-            selectedIndex === index);
+            selector.optionSelected.bind(selector, /** @type {!Conditions} */ (conditions)), selectedIndex === index);
       }
     }
 
     /**
-     * @param {!Array.<!MobileThrottling.MobileThrottlingConditionsGroup>} groups
-     * @return {!MobileThrottling.ConditionsList}
+     * @param {!Array.<!MobileThrottlingConditionsGroup>} groups
+     * @return {!ConditionsList}
      */
     function populate(groups) {
       options = [];
@@ -199,7 +198,7 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
    */
   setCPUThrottlingRate(rate) {
     this._cpuThrottlingRate = rate;
-    for (const emulationModel of self.SDK.targetManager.models(SDK.EmulationModel.EmulationModel)) {
+    for (const emulationModel of SDK.SDKModel.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
       emulationModel.setCPUThrottlingRate(this._cpuThrottlingRate);
     }
     let icon = null;
@@ -245,7 +244,7 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
     for (let i = 0; i < this._cpuThrottlingRates.length; ++i) {
       const rate = this._cpuThrottlingRates[i];
       const title =
-          rate === 1 ? Common.UIString.UIString('No throttling') : Common.UIString.UIString('%d\xD7 slowdown', rate);
+          rate === 1 ? Common.UIString.UIString('No throttling') : Common.UIString.UIString('%d× slowdown', rate);
       const option = control.createOption(title);
       control.addOption(option);
       if (currentRate === rate) {

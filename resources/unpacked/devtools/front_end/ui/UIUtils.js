@@ -29,9 +29,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as Platform from '../platform/platform.js';
 
+import * as ARIAUtils from './ARIAUtils.js';
 import {Dialog} from './Dialog.js';
 import {Size} from './Geometry.js';
 import {GlassPane, PointerEventsBehavior, SizeBehavior} from './GlassPane.js';
@@ -410,7 +413,7 @@ function _modifiedHexValue(hexString, event) {
 
   // Increase hex value by 1 and clamp from 0 ... maxValue.
   const maxValue = Math.pow(16, hexStrLen) - 1;
-  const result = Number.constrain(number + delta, 0, maxValue);
+  const result = Platform.NumberUtilities.clamp(number + delta, 0, maxValue);
 
   // Ensure the result length is the same as the original hex value.
   let resultString = result.toString(16).toUpperCase();
@@ -661,23 +664,22 @@ Number.secondsToString = function(seconds, higherResolution) {
  */
 Number.bytesToString = function(bytes) {
   if (bytes < 1000) {
-    return Common.UIString.UIString('%.0f\xa0B', bytes);
+    return Common.UIString.UIString('%.0f\xA0B', bytes);
   }
 
   const kilobytes = bytes / 1000;
   if (kilobytes < 100) {
-    return Common.UIString.UIString('%.1f\xa0kB', kilobytes);
+    return Common.UIString.UIString('%.1f\xA0kB', kilobytes);
   }
   if (kilobytes < 1000) {
-    return Common.UIString.UIString('%.0f\xa0kB', kilobytes);
+    return Common.UIString.UIString('%.0f\xA0kB', kilobytes);
   }
 
   const megabytes = kilobytes / 1000;
   if (megabytes < 100) {
-    return Common.UIString.UIString('%.1f\xa0MB', megabytes);
-  } else {
-    return Common.UIString.UIString('%.0f\xa0MB', megabytes);
+    return Common.UIString.UIString('%.1f\xA0MB', megabytes);
   }
+  return Common.UIString.UIString('%.0f\xA0MB', megabytes);
 };
 
 /**
@@ -688,7 +690,7 @@ Number.withThousandsSeparator = function(num) {
   let str = num + '';
   const re = /(\d+)(\d{3})/;
   while (str.match(re)) {
-    str = str.replace(re, '$1\xa0$2');
+    str = str.replace(re, '$1\xA0$2');
   }  // \xa0 is a non-breaking space
   return str;
 };
@@ -709,7 +711,8 @@ export function formatLocalized(format, substitutions) {
     a.appendChild(typeof b === 'string' ? createTextNode(b) : b);
     return a;
   }
-  return String.format(Common.UIString.UIString(format), substitutions, formatters, createElement('span'), append)
+  return Platform.StringUtilities
+      .format(Common.UIString.UIString(format), substitutions, formatters, createElement('span'), append)
       .formattedResult;
 }
 
@@ -742,7 +745,8 @@ export function asyncStackTraceLabel(description) {
   if (description) {
     if (description === 'Promise.resolve') {
       return ls`Promise resolved (async)`;
-    } else if (description === 'Promise.reject') {
+    }
+    if (description === 'Promise.reject') {
       return ls`Promise rejected (async)`;
     }
     return ls`${description} (async)`;
@@ -1059,14 +1063,11 @@ class InvokeOnceHandlers {
   }
 
   _invoke() {
-    const handlers = this._handlers;
+    const handlers = this._handlers || new Map();  // Make closure happy. This should not be null.
     this._handlers = null;
-    const keys = handlers.keysArray();
-    for (let i = 0; i < keys.length; ++i) {
-      const object = keys[i];
-      const methods = handlers.get(object).valuesArray();
-      for (let j = 0; j < methods.length; ++j) {
-        methods[j].call(object);
+    for (const [object, methods] of handlers) {
+      for (const method of methods) {
+        method.call(object);
       }
     }
   }
@@ -1113,7 +1114,7 @@ export function animateFunction(window, func, params, duration, animationComplet
   let raf = window.requestAnimationFrame(animationStep);
 
   function animationStep(timestamp) {
-    const progress = Number.constrain((timestamp - start) / duration, 0, 1);
+    const progress = Platform.NumberUtilities.clamp((timestamp - start) / duration, 0, 1);
     func(...params.map(p => p.from + (p.to - p.from) * progress));
     if (progress < 1) {
       raf = window.requestAnimationFrame(animationStep);
@@ -1228,6 +1229,11 @@ export class LongClickController extends Common.ObjectWrapper.ObjectWrapper {
 
 LongClickController.TIME_MS = 200;
 
+function _trackKeyboardFocus() {
+  UI._keyboardFocus = true;
+  document.defaultView.requestAnimationFrame(() => void(UI._keyboardFocus = false));
+}
+
 /**
  * @param {!Document} document
  * @param {!Common.Settings.Setting} themeSetting
@@ -1237,10 +1243,12 @@ export function initializeUIUtils(document, themeSetting) {
   document.defaultView.addEventListener('focus', _windowFocused.bind(UI, document), false);
   document.defaultView.addEventListener('blur', _windowBlurred.bind(UI, document), false);
   document.addEventListener('focus', focusChanged.bind(UI), true);
-  document.addEventListener('keydown', event => {
-    UI._keyboardFocus = true;
-    document.defaultView.requestAnimationFrame(() => void(UI._keyboardFocus = false));
-  }, true);
+
+  // Track which focus changes occur due to keyboard input.
+  // When focus changes from tab navigation (keydown).
+  // When focus() is called in keyboard initiated click events (keyup).
+  document.addEventListener('keydown', _trackKeyboardFocus, true);
+  document.addEventListener('keyup', _trackKeyboardFocus, true);
 
   if (!self.UI.themeSupport) {
     self.UI.themeSupport = new ThemeSupport(themeSetting);
@@ -1309,7 +1317,7 @@ export function createLabel(title, className, associatedControl) {
   const element = createElementWithClass('label', className || '');
   element.textContent = title;
   if (associatedControl) {
-    UI.ARIAUtils.bindLabelToControl(element, associatedControl);
+    ARIAUtils.bindLabelToControl(element, associatedControl);
   }
 
   return element;
@@ -1390,6 +1398,7 @@ export class CheckboxLabel extends HTMLSpanElement {
     element.checkboxElement.checked = !!checked;
     if (title !== undefined) {
       element.textElement.textContent = title;
+      ARIAUtils.setAccessibleName(element.checkboxElement, title);
       if (subtitle !== undefined) {
         element.textElement.createChild('div', 'dt-checkbox-subtitle').textContent = subtitle;
       }
@@ -1525,8 +1534,8 @@ registerCustomElement('div', 'dt-close-button', class extends HTMLDivElement {
     super();
     const root = createShadowRootWithCoreStyles(this, 'ui/closeButton.css');
     this._buttonElement = root.createChild('div', 'close-button');
-    UI.ARIAUtils.setAccessibleName(this._buttonElement, ls`Close`);
-    UI.ARIAUtils.markAsButton(this._buttonElement);
+    ARIAUtils.setAccessibleName(this._buttonElement, ls`Close`);
+    ARIAUtils.markAsButton(this._buttonElement);
     const regularIcon = Icon.create('smallicon-cross', 'default-icon');
     this._hoverIcon = Icon.create('mediumicon-red-cross-hover', 'hover-icon');
     this._activeIcon = Icon.create('mediumicon-red-cross-active', 'active-icon');
@@ -1554,7 +1563,7 @@ registerCustomElement('div', 'dt-close-button', class extends HTMLDivElement {
    * @this {Element}
    */
   setAccessibleName(name) {
-    UI.ARIAUtils.setAccessibleName(this._buttonElement, name);
+    ARIAUtils.setAccessibleName(this._buttonElement, name);
   }
 
   /**
@@ -1677,7 +1686,7 @@ export function trimText(context, text, maxWidth, trimFunction) {
     }
   }
   text = trimFunction(text, l);
-  return text !== '\u2026' ? text : '';
+  return text !== '…' ? text : '';
 }
 
 /**
@@ -1981,10 +1990,10 @@ export class ThemeSupport {
 
         break;
     }
-    hsla[0] = Number.constrain(hue, 0, 1);
-    hsla[1] = Number.constrain(sat, 0, 1);
-    hsla[2] = Number.constrain(lit, 0, 1);
-    hsla[3] = Number.constrain(alpha, 0, 1);
+    hsla[0] = Platform.NumberUtilities.clamp(hue, 0, 1);
+    hsla[1] = Platform.NumberUtilities.clamp(sat, 0, 1);
+    hsla[2] = Platform.NumberUtilities.clamp(lit, 0, 1);
+    hsla[3] = Platform.NumberUtilities.clamp(alpha, 0, 1);
   }
 }
 
@@ -2086,7 +2095,7 @@ export class ConfirmDialog {
     const dialog = new Dialog();
     dialog.setSizeBehavior(SizeBehavior.MeasureContent);
     dialog.setDimmed(true);
-    UI.ARIAUtils.setAccessibleName(dialog.contentElement, message);
+    ARIAUtils.setAccessibleName(dialog.contentElement, message);
     const shadowRoot = createShadowRootWithCoreStyles(dialog.contentElement, 'ui/confirmDialog.css');
     const content = shadowRoot.createChild('div', 'widget');
     content.createChild('div', 'message').createChild('span').textContent = message;
@@ -2128,7 +2137,7 @@ export function createInlineButton(toolbarButton) {
 export class Renderer {
   /**
    * @param {!Object} object
-   * @param {!UI.Renderer.Options=} options
+   * @param {!Options=} options
    * @return {!Promise<?{node: !Node, tree: ?TreeOutline}>}
    */
   render(object, options) {
@@ -2137,7 +2146,7 @@ export class Renderer {
 
 /**
    * @param {!Object} object
-   * @param {!UI.Renderer.Options=} options
+   * @param {!Options=} options
    * @return {!Promise<?{node: !Node, tree: ?TreeOutline}>}
    */
 Renderer.render = async function(object, options) {

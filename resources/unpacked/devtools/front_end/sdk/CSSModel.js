@@ -123,7 +123,7 @@ export class CSSModel extends SDKModel {
     return locations;
     /**
      * @param {!CSSStyleSheetHeader} a
-     * @param {!SDK.CSSStyleSheetHeader} b
+     * @param {!CSSStyleSheetHeader} b
      * @return {number}
      */
     function stylesheetComparator(a, b) {
@@ -335,7 +335,7 @@ export class CSSModel extends SDKModel {
 
   /**
    * @param {number} nodeId
-   * @return {!Promise<?CSSModel.ContrastInfo>}
+   * @return {!Promise<?ContrastInfo>}
    */
   async backgroundColorsPromise(nodeId) {
     const response = this._agent.invoke_getBackgroundColors({nodeId});
@@ -358,16 +358,17 @@ export class CSSModel extends SDKModel {
    * @return {!Array.<!CSSStyleSheetHeader>}
    */
   allStyleSheets() {
-    const values = this._styleSheetIdToHeader.valuesArray();
+    const values = [...this._styleSheetIdToHeader.values()];
     /**
      * @param {!CSSStyleSheetHeader} a
-     * @param {!SDK.CSSStyleSheetHeader} b
+     * @param {!CSSStyleSheetHeader} b
      * @return {number}
      */
     function styleSheetComparator(a, b) {
       if (a.sourceURL < b.sourceURL) {
         return -1;
-      } else if (a.sourceURL > b.sourceURL) {
+      }
+      if (a.sourceURL > b.sourceURL) {
         return 1;
       }
       return a.startLine - b.startLine || a.startColumn - b.startColumn;
@@ -487,7 +488,7 @@ export class CSSModel extends SDKModel {
    */
   async requestViaInspectorStylesheet(node) {
     const frameId = node.frameId() || (this._resourceTreeModel ? this._resourceTreeModel.mainFrame.id : '');
-    const headers = this._styleSheetIdToHeader.valuesArray();
+    const headers = [...this._styleSheetIdToHeader.values()];
     const styleSheetHeader = headers.find(header => header.frameId === frameId && header.isViaInspector());
     if (styleSheetHeader) {
       return styleSheetHeader;
@@ -521,7 +522,7 @@ export class CSSModel extends SDKModel {
    * @return {!Array.<!CSSStyleSheetHeader>}
    */
   styleSheetHeaders() {
-    return this._styleSheetIdToHeader.valuesArray();
+    return [...this._styleSheetIdToHeader.values()];
   }
 
   /**
@@ -681,12 +682,12 @@ export class CSSModel extends SDKModel {
   }
 
   _resetStyleSheets() {
-    const headers = this._styleSheetIdToHeader.valuesArray();
+    const headers = [...this._styleSheetIdToHeader.values()];
     this._styleSheetIdsForURL.clear();
     this._styleSheetIdToHeader.clear();
-    for (let i = 0; i < headers.length; ++i) {
-      this._sourceMapManager.detachSourceMap(headers[i]);
-      this.dispatchEventToListeners(Events.StyleSheetRemoved, headers[i]);
+    for (const header of headers) {
+      this._sourceMapManager.detachSourceMap(header);
+      this.dispatchEventToListeners(Events.StyleSheetRemoved, header);
     }
   }
 
@@ -908,7 +909,7 @@ class ComputedStyleLoader {
 export class InlineStyleResult {
   /**
    * @param {?CSSStyleDeclaration} inlineStyle
-   * @param {?SDK.CSSStyleDeclaration} attributesStyle
+   * @param {?CSSStyleDeclaration} attributesStyle
    */
   constructor(inlineStyle, attributesStyle) {
     this.inlineStyle = inlineStyle;
@@ -917,3 +918,6 @@ export class InlineStyleResult {
 }
 
 SDKModel.register(CSSModel, Capability.DOM, true);
+
+/** @typedef {{backgroundColors: ?Array<string>, computedFontSize: string, computedFontWeight: string}} */
+export let ContrastInfo;

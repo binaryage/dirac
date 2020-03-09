@@ -68,28 +68,6 @@ def concatenated_module_filename(module_name, output_dir):
     return join(output_dir, module_name + '/' + module_name + '_module.js')
 
 
-def symlink_or_copy_file(src, dest, safe=False):
-    if safe and path.exists(dest):
-        os.remove(dest)
-    if hasattr(os, 'symlink'):
-        os.symlink(src, dest)
-    else:
-        shutil.copy(src, dest)
-
-
-def symlink_or_copy_dir(src, dest):
-    if path.exists(dest):
-        shutil.rmtree(dest)
-    for src_dir, dirs, files in os.walk(src):
-        subpath = path.relpath(src_dir, src)
-        dest_dir = path.normpath(join(dest, subpath))
-        os.mkdir(dest_dir)
-        for name in files:
-            src_name = join(os.getcwd(), src_dir, name)
-            dest_name = join(dest_dir, name)
-            symlink_or_copy_file(src_name, dest_name)
-
-
 # Outputs:
 #   <app_name>.html
 #   <app_name>.js
@@ -121,36 +99,12 @@ class ReleaseBuilder(object):
 
     def build_app(self):
         if self.descriptors.has_html:
-            self._build_html()
+            html_entrypoint = self.app_file('html')
+            write_file(join(self.output_dir, html_entrypoint), read_file(join(self.application_dir, html_entrypoint)))
         self._build_app_script()
         for module in filter(lambda desc: (not desc.get('type') or desc.get('type') == 'remote'),
                              self.descriptors.application.values()):
             self._concatenate_dynamic_module(module['name'])
-
-    def _write_include_tags(self, descriptors, output):
-        if descriptors.extends:
-            self._write_include_tags(descriptors.extends, output)
-        output.write(self._generate_include_tag(descriptors.application_name + '.js'))
-
-    def _build_html(self):
-        html_name = self.app_file('html')
-        output = StringIO()
-        with open(join(self.application_dir, html_name), 'r') as app_input_html:
-            for line in app_input_html:
-                if ('<script ' in line and 'type="module"' not in line) or '<link ' in line:
-                    continue
-                if '</head>' in line:
-                    self._write_include_tags(self.descriptors, output)
-                    js_file = join(self.application_dir, self.app_file('js'))
-                    if path.exists(js_file):
-                        boot_js_file = self.app_file('boot.js')
-                        minified_js = minify_js(read_file(js_file))
-                        output.write('    <script type="module" src="%s"></script>\n' % boot_js_file)
-                        write_file(join(self.output_dir, boot_js_file), minified_js)
-                output.write(line)
-
-        write_file(join(self.output_dir, html_name), output.getvalue())
-        output.close()
 
     def _build_app_script(self):
         script_name = self.app_file('js')
@@ -158,12 +112,6 @@ class ReleaseBuilder(object):
         self._concatenate_application_script(output)
         write_file(join(self.output_dir, script_name), minify_js(output.getvalue()))
         output.close()
-
-    def _generate_include_tag(self, resource_path):
-        if resource_path.endswith('.js'):
-            return '    <script defer src="%s"></script>\n' % resource_path
-        else:
-            assert resource_path
 
     def _release_module_descriptors(self):
         module_descriptors = self.descriptors.modules
@@ -213,40 +161,20 @@ class ReleaseBuilder(object):
                 if len(non_autostart_deps):
                     bail_error(
                         'Non-autostart dependencies specified for the autostarted module "%s": %s' % (name, non_autostart_deps))
-                namespace = self._map_module_to_namespace(name)
-                output.write('\n/* Module %s */\n' % name)
-                output.write('\nself[\'%s\'] = self[\'%s\'] || {};\n' % (namespace, namespace))
-                modular_build.concatenate_scripts(desc.get('scripts'), join(self.application_dir, name), self.output_dir, output)
             else:
                 non_autostart.add(name)
 
-    def _map_module_to_namespace(self, module):
-        camel_case_namespace = "".join(map(lambda x: x[0].upper() + x[1:], module.split('_')))
-        return self._special_case_namespaces.get(module, camel_case_namespace)
-
     def _concatenate_application_script(self, output):
-        if not self.descriptors.extends:
-            output.write('Root.allDescriptors.push(...%s);' % self._release_module_descriptors())
-            output.write('/* Application descriptor %s */\n' % self.app_file('json'))
-            output.write('Root.applicationDescriptor = %s;' % self.descriptors.application_json())
-        else:
-            output.write('/* Additional descriptors */\n')
-            output.write('Root.allDescriptors.push(...%s);' % self._release_module_descriptors())
-            output.write('/* Additional descriptors %s */\n' % self.app_file('json'))
+        output.write('Root.allDescriptors.push(...%s);' % self._release_module_descriptors())
+        if self.descriptors.extends:
             output.write('Root.applicationDescriptor.modules.push(...%s);' % json.dumps(self.descriptors.application.values()))
-
-        output.write('\n/* Autostart modules */\n')
-        if (self.descriptors.worker):
-            output.write(minify_js(read_file(join(self.application_dir, self.app_file('js')))))
         else:
-            self._concatenate_autostart_modules(output)
-        output.write(';\n/* Autostart resources */\n')
+            output.write('Root.applicationDescriptor = %s;' % self.descriptors.application_json())
+
+        output.write(minify_js(read_file(join(self.application_dir, self.app_file('js')))))
+        self._concatenate_autostart_modules(output)
+
         self._write_module_resources(self.autorun_resource_names(), output)
-        if not self.descriptors.has_html and not self.descriptors.worker:
-            js_file = join(self.application_dir, self.app_file('js'))
-            if path.exists(js_file):
-                output.write(';\n/* Autostart script for worker */\n')
-                output.write(read_file(js_file))
 
     def _concatenate_dynamic_module(self, module_name):
         module = self.descriptors.modules[module_name]

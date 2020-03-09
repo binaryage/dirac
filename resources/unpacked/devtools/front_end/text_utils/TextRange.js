@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Platform from '../platform/platform.js';
+
 /**
  * @unrestricted
  */
@@ -81,7 +83,8 @@ export class TextRange {
   static fromEdit(oldRange, newText) {
     let endLine = oldRange.startLine;
     let endColumn = oldRange.startColumn + newText.length;
-    const lineEndings = newText.computeLineEndings();
+
+    const lineEndings = Platform.StringUtilities.findLineEndingIndexes(newText);
     if (lineEndings.length > 1) {
       endLine = oldRange.startLine + lineEndings.length - 1;
       const len = lineEndings.length;
@@ -98,7 +101,7 @@ export class TextRange {
   }
 
   /**
-   * @param {!TextRange} range
+   * @param {!TextRange=} range
    * @return {boolean}
    */
   immediatelyPrecedes(range) {
@@ -109,7 +112,7 @@ export class TextRange {
   }
 
   /**
-   * @param {!TextRange} range
+   * @param {!TextRange=} range
    * @return {boolean}
    */
   immediatelyFollows(range) {
@@ -154,9 +157,8 @@ export class TextRange {
   normalize() {
     if (this.startLine > this.endLine || (this.startLine === this.endLine && this.startColumn > this.endColumn)) {
       return new TextRange(this.endLine, this.endColumn, this.startLine, this.startColumn);
-    } else {
-      return this.clone();
     }
+    return this.clone();
   }
 
   /**

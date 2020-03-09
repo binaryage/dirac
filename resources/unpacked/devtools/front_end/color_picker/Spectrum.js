@@ -28,6 +28,7 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -247,7 +248,7 @@ export class Spectrum extends UI.Widget.VBox {
       const hueAlphaLeft = this._hueElement.getBoundingClientRect().left;
       const positionFraction = (sliderPosition - hueAlphaLeft) / this._hueAlphaWidth;
       const newHue = 1 - positionFraction;
-      hsva[0] = Number.constrain(newHue, 0, 1);
+      hsva[0] = Platform.NumberUtilities.clamp(newHue, 0, 1);
       this._innerSetColor(hsva, '', undefined /* colorName */, undefined, ChangeSource.Other);
       const colorValues = this._color().canonicalHSLA();
       UI.ARIAUtils.setValueNow(this._hueElement, colorValues[0]);
@@ -263,7 +264,7 @@ export class Spectrum extends UI.Widget.VBox {
       const hueAlphaLeft = this._hueElement.getBoundingClientRect().left;
       const positionFraction = (sliderPosition - hueAlphaLeft) / this._hueAlphaWidth;
       const newAlpha = Math.round(positionFraction * 100) / 100;
-      hsva[3] = Number.constrain(newAlpha, 0, 1);
+      hsva[3] = Platform.NumberUtilities.clamp(newAlpha, 0, 1);
       this._innerSetColor(hsva, '', undefined /* colorName */, undefined, ChangeSource.Other);
       const colorValues = this._color().canonicalHSLA();
       UI.ARIAUtils.setValueText(this._alphaElement, colorValues[3]);
@@ -277,8 +278,8 @@ export class Spectrum extends UI.Widget.VBox {
       const hsva = this._hsv.slice();
       const colorPosition = getUpdatedColorPosition(this._colorDragElement, event);
       this._colorOffset = this._colorElement.totalOffset();
-      hsva[1] = Number.constrain((colorPosition.x - this._colorOffset.left) / this.dragWidth, 0, 1);
-      hsva[2] = Number.constrain(1 - (colorPosition.y - this._colorOffset.top) / this.dragHeight, 0, 1);
+      hsva[1] = Platform.NumberUtilities.clamp((colorPosition.x - this._colorOffset.left) / this.dragWidth, 0, 1);
+      hsva[2] = Platform.NumberUtilities.clamp(1 - (colorPosition.y - this._colorOffset.top) / this.dragHeight, 0, 1);
 
       this._innerSetColor(hsva, '', undefined /* colorName */, undefined, ChangeSource.Other);
     }
@@ -414,7 +415,8 @@ export class Spectrum extends UI.Widget.VBox {
    */
   _createPaletteColor(colorText, colorName, animationDelay) {
     const element = createElementWithClass('div', 'spectrum-palette-color');
-    element.style.background = String.sprintf('linear-gradient(%s, %s), url(Images/checker.png)', colorText, colorText);
+    element.style.background =
+        Platform.StringUtilities.sprintf('linear-gradient(%s, %s), url(Images/checker.png)', colorText, colorText);
     if (animationDelay) {
       element.animate([{opacity: 0}, {opacity: 1}], {duration: 100, delay: animationDelay, fill: 'backwards'});
     }
@@ -1018,8 +1020,8 @@ export class Spectrum extends UI.Widget.VBox {
     this._colorDragElement.style.backgroundColor =
         /** @type {string} */ (this._color().asString(Common.Color.Format.RGBA));
     const noAlpha = Common.Color.Color.fromHSVA(this._hsv.slice(0, 3).concat(1));
-    this._alphaElementBackground.style.backgroundImage =
-        String.sprintf('linear-gradient(to right, rgba(0,0,0,0), %s)', noAlpha.asString(Common.Color.Format.RGB));
+    this._alphaElementBackground.style.backgroundImage = Platform.StringUtilities.sprintf(
+        'linear-gradient(to right, rgba(0,0,0,0), %s)', noAlpha.asString(Common.Color.Format.RGB));
   }
 
   _formatViewSwitch() {
@@ -1061,7 +1063,7 @@ export class Spectrum extends UI.Widget.VBox {
     } else {
       const format = this._colorFormat === cf.RGB ? 'rgba' : 'hsla';
       const values = this._textValues.map(elementValue).join(', ');
-      colorString = String.sprintf('%s(%s)', format, values);
+      colorString = Platform.StringUtilities.sprintf('%s(%s)', format, values);
     }
 
     const color = Common.Color.Color.parse(colorString);
@@ -1109,7 +1111,7 @@ export class Spectrum extends UI.Widget.VBox {
 
   /**
    * @param {boolean=} enabled
-   * @param {!Common.Event=} event
+   * @param {!Common.EventTarget.EventTargetEvent=} event
    */
   _toggleColorPicker(enabled, event) {
     if (enabled === undefined) {
@@ -1134,7 +1136,7 @@ export class Spectrum extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _colorPicked(event) {
     const rgbColor = /** @type {!{r: number, g: number, b: number, a: number}} */ (event.data);
@@ -1170,7 +1172,7 @@ export class PaletteGenerator {
     /** @type {!Map.<string, number>} */
     this._frequencyMap = new Map();
     const stylesheetPromises = [];
-    for (const cssModel of self.SDK.targetManager.models(SDK.CSSModel.CSSModel)) {
+    for (const cssModel of SDK.SDKModel.TargetManager.instance().models(SDK.CSSModel.CSSModel)) {
       for (const stylesheet of cssModel.allStyleSheets()) {
         stylesheetPromises.push(this._processStylesheet(stylesheet));
       }
@@ -1216,7 +1218,7 @@ export class PaletteGenerator {
       return (hsvb[0] + 0.94) % 1 - (hsva[0] + 0.94) % 1;
     }
 
-    let colors = this._frequencyMap.keysArray();
+    let colors = [...this._frequencyMap.keys()];
     colors = colors.sort(this._frequencyComparator.bind(this));
     /** @type {!Map.<string, !Common.Color.Color>} */
     const paletteColors = new Map();
@@ -1232,7 +1234,7 @@ export class PaletteGenerator {
 
     this._callback({
       title: GeneratedPaletteTitle,
-      colors: paletteColors.keysArray().sort(hueComparator),
+      colors: [...paletteColors.keys()].sort(hueComparator),
       colorNames: [],
       mutable: false
     });
@@ -1358,3 +1360,6 @@ export class Swatch {
     UI.ARIAUtils.setPressed(this._swatchOverlayElement, false);
   }
 }
+
+/** @typedef {{ title: string, colors: !Array<string>, colorNames: !Array<string>, mutable: boolean }} */
+export let Palette;

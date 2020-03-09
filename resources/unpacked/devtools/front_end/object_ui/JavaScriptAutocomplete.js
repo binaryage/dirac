@@ -4,6 +4,7 @@
 
 import * as Common from '../common/common.js';
 import * as Formatter from '../formatter/formatter.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
@@ -14,9 +15,9 @@ export class JavaScriptAutocomplete {
     this._expressionCache = new Map();
     self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.CommandEvaluated, this._clearCache, this);
     self.UI.context.addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this._clearCache, this);
-    self.SDK.targetManager.addModelListener(
+    SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._clearCache, this);
-    self.SDK.targetManager.addModelListener(
+    SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._clearCache, this);
   }
 
@@ -369,7 +370,7 @@ export class JavaScriptAutocomplete {
     /**
      * @this {JavaScriptAutocomplete}
      * @param {!SDK.RuntimeModel.EvaluationResult} result
-     * @return {!Promise<!Array<!ObjectUI.JavaScriptAutocomplete.CompletionGroup>>}
+     * @return {!Promise<!Array<!CompletionGroup>>}
      */
     async function completionsOnGlobal(result) {
       if (result.error || !!result.exceptionDetails || !result.object) {
@@ -509,7 +510,7 @@ export class JavaScriptAutocomplete {
   }
 
   /**
-   * @param {?Array<!ObjectUI.JavaScriptAutocomplete.CompletionGroup>} propertyGroups
+   * @param {?Array<!CompletionGroup>} propertyGroups
    * @param {boolean} dotNotation
    * @param {boolean} bracketNotation
    * @param {string} expressionString
@@ -557,7 +558,7 @@ export class JavaScriptAutocomplete {
      * @param {boolean} bracketNotation
      * @param {string} expressionString
      * @param {string} query
-     * @param {!Array<!ObjectUI.JavaScriptAutocomplete.CompletionGroup>} propertyGroups
+     * @param {!Array<!CompletionGroup>} propertyGroups
      * @return {!UI.SuggestBox.Suggestions}
      */
   _completionsForQuery(dotNotation, bracketNotation, expressionString, query, propertyGroups) {
@@ -601,7 +602,7 @@ export class JavaScriptAutocomplete {
 
         if (bracketNotation) {
           if (!/^[0-9]+$/.test(property)) {
-            property = quoteUsed + property.escapeCharacters(quoteUsed + '\\') + quoteUsed;
+            property = quoteUsed + Platform.StringUtilities.escapeCharacters(property, quoteUsed + '\\') + quoteUsed;
           }
           property += ']';
         }
@@ -787,3 +788,6 @@ export class JavaScriptAutocompleteConfig {
     return tooltip;
   }
 }
+
+/** @typedef {{title:(string|undefined), items:Array<string>}} */
+export let CompletionGroup;

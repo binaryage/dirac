@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as SDK from '../sdk/sdk.js';
+import * as Common from '../common/common.js';
 
 /**
  * @param {!SDK.RemoteObject.RemoteObject} object
@@ -226,7 +227,7 @@ export function frameworkEventListeners(object) {
    * @param {!SDK.RemoteObject.RemoteObject} errorString
    */
   function printErrorString(errorString) {
-    self.Common.console.error(String(errorString.value));
+    Common.Console.Console.instance().error(String(errorString.value));
   }
 
   /**
@@ -386,12 +387,11 @@ export function frameworkEventListeners(object) {
         }
         if (!errorString) {
           return {type: type, useCapture: useCapture, passive: passive, once: once, handler: handler, remove: remove};
-        } else {
-          errorLines.push(errorString.substr(0, errorString.length - 2));
-          return null;
         }
-      } catch (e) {
-        errorLines.push(toString(e));
+        errorLines.push(errorString.substr(0, errorString.length - 2));
+        return null;
+      } catch (error) {
+        errorLines.push(toString(error));
         return null;
       }
     }
