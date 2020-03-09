@@ -6,7 +6,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$DEPOT_DIR"
 
-"$SCRIPTS/depot-ensure.sh"
+if [[ -d "$DEPOT_DIR" ]]; then
+  exit 0
+fi
 
 set -x
-exec gclient sync --no-history
+exec "$SCRIPTS/depot-bootstrap.sh"
