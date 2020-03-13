@@ -23,7 +23,7 @@
    ['com.rpl/specter "1.1.3"]
    ['progrock "0.1.2"]
    ['me.raynes/conch "0.8.0"]
-   ['clj-sub-command "0.5.1"]
+   ['clj-sub-command "0.6.0"]
    ['ring/ring-core "1.8.0"]
    ['ring/ring-defaults "0.3.2"]
    ['binaryage/devtools "1.0.0"]])
@@ -43,7 +43,7 @@
    ['org.clojure/tools.namespace "1.0.0" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
    ['fipp "0.6.22" :scope "test"]
-   ['nubank/matcher-combinators "1.3.1" :scope "test"]
+   ['nubank/matcher-combinators "1.4.0" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
