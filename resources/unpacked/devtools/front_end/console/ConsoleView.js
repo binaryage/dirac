@@ -103,7 +103,7 @@ export class ConsoleView extends UI.Widget.VBox {
     this._groupableMessageTitle = new Map();
 
     /**
-     * @type {!Array.<!Console.ConsoleView.RegexMatchRange>}
+     * @type {!Array.<!RegexMatchRange>}
      */
     this._regexMatchRanges = [];
 
@@ -1838,7 +1838,7 @@ export class ConsoleView extends UI.Widget.VBox {
           .classList.remove(UI.UIUtils.highlightedCurrentSearchResultClassName);
     }
 
-    index = mod(index, this._regexMatchRanges.length);
+    index = Platform.NumberUtilities.mod(index, this._regexMatchRanges.length);
     this._currentMatchRangeIndex = index;
     this._searchableView.updateCurrentMatchIndex(index);
     matchRange = this._regexMatchRanges[index];
@@ -2311,3 +2311,8 @@ const _messageSortingTimeSymbol = Symbol('messageSortingTime');
  * @type {number}
  */
 const MaxLengthToIgnoreHighlighter = 10000;
+
+/**
+ * @typedef {{messageIndex: number, matchIndex: number}}
+ */
+export let RegexMatchRange;

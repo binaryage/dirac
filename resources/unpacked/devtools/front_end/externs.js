@@ -1031,6 +1031,8 @@ ESTree.Node = function() {
   /** @type {string} */
   this.type;
   /** @type {(!ESTree.Node|undefined)} */
+  this.key;
+  /** @type {(!ESTree.Node|undefined)} */
   this.body;
   /** @type {(!Array.<!ESTree.Node>|undefined)} */
   this.declarations;
@@ -1211,12 +1213,6 @@ const spacesPadding = function(spacesCount) {};
  * @return {string}
  */
 const numberToStringWithSpacesPadding = function(value, symbolsCount) {};
-
-/**
- * @param {string} url
- * @return {!Promise.<string>}
- */
-const loadXHR = function(url) {};
 
 /**
  * @param {*} value

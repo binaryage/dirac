@@ -35,3 +35,4 @@ chromium-latest-linux/
 .depot
 *.pyc
 .ws/
+.tmp/

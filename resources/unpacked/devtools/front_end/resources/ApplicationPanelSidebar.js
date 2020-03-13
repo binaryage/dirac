@@ -30,6 +30,7 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
 import * as UI from '../ui/ui.js';
@@ -464,7 +465,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     if (wasSelected) {
       parentListTreeElement.select();
     }
-    this._domStorageTreeElements.remove(domStorage);
+    this._domStorageTreeElements.delete(domStorage);
   }
 
   /**
@@ -1000,8 +1001,8 @@ export class ServiceWorkerCacheTreeElement extends StorageCategoryTreeElement {
    * @param {?SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel} model
    */
   _initialize(model) {
-    /** @type {!Array.<!SWCacheTreeElement>} */
-    this._swCacheTreeElements = [];
+    /** @type {!Set.<!SWCacheTreeElement>} */
+    this._swCacheTreeElements = new Set();
     this._swCacheModel = model;
     if (model) {
       for (const cache of model.caches()) {
@@ -1051,7 +1052,7 @@ export class ServiceWorkerCacheTreeElement extends StorageCategoryTreeElement {
    */
   _addCache(model, cache) {
     const swCacheTreeElement = new SWCacheTreeElement(this._storagePanel, model, cache);
-    this._swCacheTreeElements.push(swCacheTreeElement);
+    this._swCacheTreeElements.add(swCacheTreeElement);
     this.appendChild(swCacheTreeElement);
   }
 
@@ -1068,7 +1069,7 @@ export class ServiceWorkerCacheTreeElement extends StorageCategoryTreeElement {
     }
 
     this.removeChild(swCacheTreeElement);
-    this._swCacheTreeElements.remove(swCacheTreeElement);
+    this._swCacheTreeElements.delete(swCacheTreeElement);
     this.setExpandable(this.childCount() > 0);
   }
 
@@ -1078,16 +1079,10 @@ export class ServiceWorkerCacheTreeElement extends StorageCategoryTreeElement {
    * @return {?SWCacheTreeElement}
    */
   _cacheTreeElement(model, cache) {
-    let index = -1;
-    let i;
-    for (i = 0; i < this._swCacheTreeElements.length; ++i) {
-      if (this._swCacheTreeElements[i]._cache.equals(cache) && this._swCacheTreeElements[i]._model === model) {
-        index = i;
-        break;
+    for (const cacheTreeElement of this._swCacheTreeElements) {
+      if (cacheTreeElement._cache.equals(cache) && cacheTreeElement._model === model) {
+        return cacheTreeElement;
       }
-    }
-    if (index !== -1) {
-      return this._swCacheTreeElements[i];
     }
     return null;
   }
@@ -1285,6 +1280,8 @@ export class IndexedDBTreeElement extends StorageCategoryTreeElement {
         IndexedDBModel, IndexedDBModelEvents.DatabaseLoaded, this._indexedDBLoaded, this);
     SDK.SDKModel.TargetManager.instance().addModelListener(
         IndexedDBModel, IndexedDBModelEvents.IndexedDBContentUpdated, this._indexedDBContentUpdated, this);
+    // TODO(szuend): Replace with a Set once two web tests no longer directly access this private
+    //               variable (indexeddb/live-update-indexeddb-content.js, indexeddb/delete-entry.js).
     /** @type {!Array.<!IDBDatabaseTreeElement>} */
     this._idbDatabaseTreeElements = [];
 
@@ -1367,7 +1364,7 @@ export class IndexedDBTreeElement extends StorageCategoryTreeElement {
   _removeIDBDatabaseTreeElement(idbDatabaseTreeElement) {
     idbDatabaseTreeElement.clear();
     this.removeChild(idbDatabaseTreeElement);
-    this._idbDatabaseTreeElements.remove(idbDatabaseTreeElement);
+    Platform.ArrayUtilities.removeElement(this._idbDatabaseTreeElements, idbDatabaseTreeElement);
     this.setExpandable(this.childCount() > 0);
   }
 
@@ -2106,7 +2103,7 @@ export class ResourcesSection {
       return;
     }
 
-    this._treeElementForFrameId.remove(frame.id);
+    this._treeElementForFrameId.delete(frame.id);
     if (frameTreeElement.parent) {
       frameTreeElement.parent.removeChild(frameTreeElement);
     }

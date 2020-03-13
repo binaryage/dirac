@@ -33,20 +33,10 @@
  * extensions but in the mean time if an old func in here depends on one
  * that has been migrated it will need to be imported
  */
-import * as StringUtilities from './string-utilities.js';
-
+import {escapeCharacters, sprintf} from './string-utilities.js';
 
 // Still used in the test runners that can't use ES modules :(
-String.sprintf = StringUtilities.sprintf;
-
-/**
- * @param {number} m
- * @param {number} n
- * @return {number}
- */
-self.mod = function(m, n) {
-  return ((m % n) + n) % n;
-};
+String.sprintf = sprintf;
 
 /**
  * @param {string} chars
@@ -64,7 +54,7 @@ String.regexSpecialCharacters = function() {
  * @return {string}
  */
 String.prototype.escapeForRegExp = function() {
-  return StringUtilities.escapeCharacters(this, String.regexSpecialCharacters());
+  return escapeCharacters(this, String.regexSpecialCharacters());
 };
 
 /**
@@ -270,34 +260,6 @@ Date.prototype.toISO8601Compact = function() {
   return this.getFullYear() + leadZero(this.getMonth() + 1) + leadZero(this.getDate()) + 'T' +
       leadZero(this.getHours()) + leadZero(this.getMinutes()) + leadZero(this.getSeconds());
 };
-
-Object.defineProperty(Array.prototype, 'remove', {
-  /**
-   * @param {!T} value
-   * @param {boolean=} firstOnly
-   * @return {boolean}
-   * @this {Array.<!T>}
-   * @template T
-   */
-  value: function(value, firstOnly) {
-    let index = this.indexOf(value);
-    if (index === -1) {
-      return false;
-    }
-    if (firstOnly) {
-      this.splice(index, 1);
-      return true;
-    }
-    for (let i = index + 1, n = this.length; i < n; ++i) {
-      if (this[i] !== value) {
-        this[index++] = this[i];
-      }
-    }
-    this.length = index;
-    return true;
-  },
-  configurable: true
-});
 
 (function() {
 const partition = {
@@ -630,16 +592,6 @@ Set.prototype.addAll = function(iterable) {
 };
 
 /**
- * @return {T}
- * @template T
- */
-Map.prototype.remove = function(key) {
-  const value = this.get(key);
-  this.delete(key);
-  return value;
-};
-
-/**
  * @return {!Platform.Multimap<!KEY, !VALUE>}
  */
 Map.prototype.inverse = function() {
@@ -757,35 +709,6 @@ export class Multimap {
 }
 
 /**
- * @param {string} url
- * @return {!Promise.<string>}
- */
-self.loadXHR = function(url) {
-  return new Promise(load);
-
-  function load(successCallback, failureCallback) {
-    function onReadyStateChanged() {
-      if (xhr.readyState !== XMLHttpRequest.DONE) {
-        return;
-      }
-      if (xhr.status !== 200) {
-        xhr.onreadystatechange = null;
-        failureCallback(new Error(xhr.status));
-        return;
-      }
-      xhr.onreadystatechange = null;
-      successCallback(xhr.responseText);
-    }
-
-    const xhr = new XMLHttpRequest();
-    xhr.withCredentials = false;
-    xhr.open('GET', url, true);
-    xhr.onreadystatechange = onReadyStateChanged;
-    xhr.send(null);
-  }
-};
-
-/**
  * @param {*} value
  */
 self.suppressUnused = function(value) {};
@@ -798,18 +721,6 @@ self.setImmediate = function(callback) {
   const args = [...arguments].slice(1);
   Promise.resolve().then(() => callback(...args));
   return 0;
-};
-
-/**
- * @param {T} defaultValue
- * @return {!Promise.<T>}
- * @template T
- */
-Promise.prototype.catchException = function(defaultValue) {
-  return this.catch(function(error) {
-    console.error(error);
-    return defaultValue;
-  });
 };
 
 /**

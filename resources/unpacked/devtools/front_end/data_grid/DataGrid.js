@@ -1602,6 +1602,8 @@ export class DataGridNode extends Common.ObjectWrapper.ObjectWrapper {
     this._dirty = false;
     /** @type {boolean} */
     this._inactive = false;
+    /** @type {string} */
+    this.key;
     /** @type {number|undefined} */
     this._depth;
     /** @type {boolean|undefined} */
@@ -2110,7 +2112,7 @@ export class DataGridNode extends Common.ObjectWrapper.ObjectWrapper {
 
     child._detach();
     child.resetNode();
-    this.children.remove(child, true);
+    Platform.ArrayUtilities.removeElement(this.children, child, true);
 
     if (this.children.length <= 0) {
       this.setHasChildren(false);

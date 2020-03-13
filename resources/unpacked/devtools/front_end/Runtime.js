@@ -730,6 +730,11 @@ class RuntimeExtensionDescriptor {
      * @type {!Array.<string>|undefined}
      */
     this.contextTypes;
+
+    /**
+     * @type {string|undefined}
+     */
+    this.bindings;
   }
 }
 
