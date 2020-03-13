@@ -107,13 +107,6 @@ def _CheckJSON(input_api, output_api):
     return results
 
 
-def _CheckLicenses(input_api, output_api):
-    results = [output_api.PresubmitNotifyResult('Running License Header Check:')]
-    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'test', 'run_license_header_check.js')
-    results.extend(_checkWithNodeScript(input_api, output_api, script_path))
-    return results
-
-
 def _CheckFormat(input_api, output_api):
     results = [output_api.PresubmitNotifyResult('Running Format Checks:')]
 
@@ -150,7 +143,37 @@ def _CheckDevtoolsStyle(input_api, output_api):
     results = [output_api.PresubmitNotifyResult('Running Devtools Style Check:')]
     lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'test', 'run_lint_check.py')
 
-    return _ExecuteSubProcess(input_api, output_api, lint_path, [], results)
+    front_end_directory = input_api.os_path.join(input_api.PresubmitLocalPath(), 'front_end')
+    test_directory = input_api.os_path.join(input_api.PresubmitLocalPath(), 'test')
+    scripts_directory = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts')
+
+    default_linted_directories = [front_end_directory, test_directory, scripts_directory]
+
+    eslint_related_files = [
+        input_api.os_path.join(input_api.PresubmitLocalPath(), '.eslintrc.js'),
+        input_api.os_path.join(input_api.PresubmitLocalPath(), '.eslintignore'),
+        input_api.os_path.join(scripts_directory, 'test', 'run_lint_check.py'),
+        input_api.os_path.join(scripts_directory, '.eslintrc.js'),
+        input_api.os_path.join(scripts_directory, 'eslint_rules'),
+    ]
+
+    affected_files = _getAffectedFiles(input_api, eslint_related_files, [], ['.js', '.py', '.eslintignore'])
+
+    # We are changing the ESLint configuration, make sure to run the full check
+    if len(affected_files) is not 0:
+        results.append(output_api.PresubmitNotifyResult('Running full ESLint check'))
+        affected_files = default_linted_directories
+    else:
+        # Only run ESLint on files that are relevant, to save PRESUBMIT time
+        affected_files = _getAffectedFiles(input_api, default_linted_directories, ['D'], ['.js', '.ts'])
+
+        # If we have not changed any lintable files, then we should bail out.
+        # Otherwise, `run_lint_check.py` will lint *all* files.
+        if len(affected_files) is 0:
+            results.append(output_api.PresubmitNotifyResult('No affected files for ESLint check'))
+            return results
+
+    return _ExecuteSubProcess(input_api, output_api, lint_path, affected_files, results)
 
 
 def _CheckOptimizeSVGHashes(input_api, output_api):
@@ -221,7 +244,15 @@ def _CheckNoUncheckedFiles(input_api, output_api):
                                          stderr=input_api.subprocess.STDOUT)
     out, _ = process.communicate()
     if process.returncode != 0:
-        return [output_api.PresubmitError('You have changed files that need to be committed.')]
+        files_changed_process = input_api.subprocess.Popen(['git', 'diff', '--name-only'],
+                                                           stdout=input_api.subprocess.PIPE,
+                                                           stderr=input_api.subprocess.STDOUT)
+        files_changed, _ = files_changed_process.communicate()
+
+        return [
+            output_api.PresubmitError('You have changed files that need to be committed:'),
+            output_api.PresubmitError(files_changed)
+        ]
     return []
 
 def _CheckForTooLargeFiles(input_api, output_api):
@@ -267,7 +298,6 @@ def _CommonChecks(input_api, output_api):
     results.extend(_CheckBuildGN(input_api, output_api))
     results.extend(_CheckGeneratedFiles(input_api, output_api))
     results.extend(_CheckJSON(input_api, output_api))
-    results.extend(_CheckLicenses(input_api, output_api))
     results.extend(_CheckDevtoolsStyle(input_api, output_api))
     results.extend(_CheckFormat(input_api, output_api))
     results.extend(_CheckOptimizeSVGHashes(input_api, output_api))

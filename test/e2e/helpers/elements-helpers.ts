@@ -3,17 +3,62 @@
 // found in the LICENSE file.
 import {assert} from 'chai';
 
-import {$, waitFor} from '../../shared/helper.js';
+import {$, click, getBrowserAndPages, waitFor} from '../../shared/helper.js';
 
 const SELECTED_TREE_ELEMENT_SELECTOR = '.selected[role="treeitem"]';
 
-export async function assertContentOfSelectedElementsNode(expectedTextContent: string) {
+export const assertContentOfSelectedElementsNode = async (expectedTextContent: string) => {
   const selectedNode = await $(SELECTED_TREE_ELEMENT_SELECTOR);
   const selectedTextContent = await selectedNode.evaluate(node => node.textContent);
   assert.equal(selectedTextContent, expectedTextContent);
-}
+};
 
-export async function
-waitForChildrenOfSelectedElementNode() {
+export const waitForChildrenOfSelectedElementNode = async () => {
   await waitFor(`${SELECTED_TREE_ELEMENT_SELECTOR} + ol > li`);
-}
+};
+
+export const waitForElementsStyleSection = async () => {
+  // Wait for the file to be loaded and selectors to be shown
+  await waitFor('.styles-selector');
+};
+
+export const forcePseudoState = async (pseudoState: string) => {
+  // Open element state pane and wait for it to be loaded asynchronously
+  await click('[aria-label="Toggle Element State"]');
+  await waitFor(`[aria-label="${pseudoState}"]`);
+
+  await click(`[aria-label="${pseudoState}"]`);
+};
+
+export const removePseudoState = async (pseudoState: string) => {
+  await click(`[aria-label="${pseudoState}"]`);
+};
+
+export const obtainComputedStylesForDOMNode = async (elementSelector: string, styleAttribute: string) => {
+  const {target} = getBrowserAndPages();
+
+  return target.evaluate((elementSelector, styleAttribute) => {
+    const element = document.querySelector(elementSelector);
+    if (!element) {
+      throw new Error(`${elementSelector} could not be found`);
+    }
+    return getComputedStyle(element)[styleAttribute];
+  }, elementSelector, styleAttribute);
+};
+
+export const waitForDOMNodeToBeShown = async (elementSelector: string) => {
+  const {target} = getBrowserAndPages();
+
+  // DevTools will force Blink to make the hover shown, so we have
+  // to wait for the element to be DOM-visible (e.g. no `display: none;`)
+  await target.waitForSelector(elementSelector, {visible: true});
+};
+
+export const waitForDOMNodeToBeHidden = async (elementSelector: string) => {
+  const {target} = getBrowserAndPages();
+  await target.waitForSelector(elementSelector, {hidden: true});
+};
+
+export const ensureGutterDecorationForDOMNodeExists = async () => {
+  await waitFor('.elements-gutter-decoration');
+};
