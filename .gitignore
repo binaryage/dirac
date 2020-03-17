@@ -36,3 +36,4 @@ chromium-latest-linux/
 *.pyc
 .ws/
 .tmp/
+dirac.iml
