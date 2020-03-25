@@ -40,7 +40,9 @@ cd "$ORACLE_CHECKOUT_DIR"
 ./oraculum.sh build
 CHROMIUM_REVISION=$(./oraculum.sh latest-revision)
 CHROMIUM_VERSION=$(./oraculum.sh version "${CHROMIUM_REVISION}")
-CHROMIUM_REPO_URL=$(./oraculum.sh describe "${CHROMIUM_REVISION}" redirect_url)
+# this is flaky (build server may be behind and returns {"error": {"message": "commit not found."}}
+#CHROMIUM_REPO_URL=$(./oraculum.sh describe "${CHROMIUM_REVISION}" redirect_url)
+CHROMIUM_REPO_URL="https://cr-rev.appspot.com/${CHROMIUM_REVISION}"
 CHROMIUM_DOWNLOAD_URL=$(./oraculum.sh download-link "${CHROMIUM_REVISION}")
 
 # checkout or create health-check branch
