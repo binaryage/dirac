@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as PerfUI from '../perf_ui/perf_ui.js';
 import * as Platform from '../platform/platform.js';
@@ -39,13 +40,13 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     /** @type {!Array<!Common.EventTarget.EventDescriptor>} */
     this._eventListeners = [];
 
-    this._showMemoryGraphSetting = self.Common.settings.createSetting('timelineShowMemory', false);
+    this._showMemoryGraphSetting = Common.Settings.Settings.instance().createSetting('timelineShowMemory', false);
 
     // Create main and network flamecharts.
     this._networkSplitWidget = new UI.SplitWidget.SplitWidget(false, false, 'timelineFlamechartMainView', 150);
 
     const mainViewGroupExpansionSetting =
-        self.Common.settings.createSetting('timelineFlamechartMainViewGroupExpansion', {});
+        Common.Settings.Settings.instance().createSetting('timelineFlamechartMainViewGroupExpansion', {});
     this._mainDataProvider = new TimelineFlameChartDataProvider();
     this._mainDataProvider.addEventListener(
         TimelineFlameChartDataProviderEvents.DataChanged, () => this._mainFlameChart.scheduleUpdate());
@@ -55,7 +56,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     this._mainFlameChart.enableRuler(false);
 
     this._networkFlameChartGroupExpansionSetting =
-        self.Common.settings.createSetting('timelineFlamechartNetworkViewGroupExpansion', {});
+        Common.Settings.Settings.instance().createSetting('timelineFlamechartNetworkViewGroupExpansion', {});
     this._networkDataProvider = new TimelineFlameChartNetworkDataProvider();
     this._networkFlameChart =
         new PerfUI.FlameChart.FlameChart(this._networkDataProvider, this, this._networkFlameChartGroupExpansionSetting);
@@ -103,8 +104,8 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     this._selectedTrack = null;
 
     this._mainDataProvider.setEventColorMapping(TimelineUIUtils.eventColor);
-    this._groupBySetting =
-        self.Common.settings.createSetting('timelineTreeGroupBy', AggregatedTimelineTreeView.GroupBy.None);
+    this._groupBySetting = Common.Settings.Settings.instance().createSetting(
+        'timelineTreeGroupBy', AggregatedTimelineTreeView.GroupBy.None);
     this._groupBySetting.addChangeListener(this._updateColorMapper, this);
     this._updateColorMapper();
   }
@@ -265,7 +266,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
   willHide() {
     this._networkFlameChartGroupExpansionSetting.removeChangeListener(this.resizeToPreferredHeights, this);
     this._showMemoryGraphSetting.removeChangeListener(this._updateCountersGraphToggle, this);
-    self.Bindings.blackboxManager.removeChangeListener(this._boundRefresh);
+    Bindings.BlackboxManager.BlackboxManager.instance().removeChangeListener(this._boundRefresh);
   }
 
   /**
@@ -274,7 +275,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
   wasShown() {
     this._networkFlameChartGroupExpansionSetting.addChangeListener(this.resizeToPreferredHeights, this);
     this._showMemoryGraphSetting.addChangeListener(this._updateCountersGraphToggle, this);
-    self.Bindings.blackboxManager.addChangeListener(this._boundRefresh);
+    Bindings.BlackboxManager.BlackboxManager.instance().addChangeListener(this._boundRefresh);
     if (this._needsResizeToPreferredHeights) {
       this.resizeToPreferredHeights();
     }

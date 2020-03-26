@@ -35,7 +35,7 @@ import * as Extensions from '../extensions/extensions.js';
 import * as Host from '../host/host.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as PerfUI from '../perf_ui/perf_ui.js';
-import * as ProtocolModule from '../protocol/protocol.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TimelineModel from '../timeline_model/timeline_model.js';
 import * as UI from '../ui/ui.js';
@@ -79,28 +79,28 @@ export class TimelinePanel extends UI.Panel.Panel {
     /** @type {?PerformanceModel} */
     this._performanceModel = null;
 
-    this._viewModeSetting = self.Common.settings.createSetting('timelineViewMode', ViewMode.FlameChart);
+    this._viewModeSetting = Common.Settings.Settings.instance().createSetting('timelineViewMode', ViewMode.FlameChart);
 
-    this._disableCaptureJSProfileSetting = self.Common.settings.createSetting('timelineDisableJSSampling', false);
+    this._disableCaptureJSProfileSetting =
+        Common.Settings.Settings.instance().createSetting('timelineDisableJSSampling', false);
     this._disableCaptureJSProfileSetting.setTitle(Common.UIString.UIString('Disable JavaScript samples'));
     this._captureLayersAndPicturesSetting =
-        self.Common.settings.createSetting('timelineCaptureLayersAndPictures', false);
+        Common.Settings.Settings.instance().createSetting('timelineCaptureLayersAndPictures', false);
     this._captureLayersAndPicturesSetting.setTitle(
         Common.UIString.UIString('Enable advanced paint instrumentation (slow)'));
 
-    this._showScreenshotsSetting = self.Common.settings.createSetting('timelineShowScreenshots', true);
+    this._showScreenshotsSetting = Common.Settings.Settings.instance().createSetting('timelineShowScreenshots', true);
     this._showScreenshotsSetting.setTitle(Common.UIString.UIString('Screenshots'));
     this._showScreenshotsSetting.addChangeListener(this._updateOverviewControls, this);
 
-    this._startCoverage = self.Common.settings.createSetting('timelineStartCoverage', false);
+    this._startCoverage = Common.Settings.Settings.instance().createSetting('timelineStartCoverage', false);
     this._startCoverage.setTitle(ls`Coverage`);
 
     if (!Root.Runtime.experiments.isEnabled('recordCoverageWithPerformanceTracing')) {
       this._startCoverage.set(false);
     }
 
-
-    this._showMemorySetting = self.Common.settings.createSetting('timelineShowMemory', false);
+    this._showMemorySetting = Common.Settings.Settings.instance().createSetting('timelineShowMemory', false);
     this._showMemorySetting.setTitle(Common.UIString.UIString('Memory'));
     this._showMemorySetting.addChangeListener(this._onModeChanged, this);
 
@@ -279,7 +279,8 @@ export class TimelinePanel extends UI.Panel.Panel {
   }
 
   _createSettingsPane() {
-    this._showSettingsPaneSetting = self.Common.settings.createSetting('timelineShowSettingsToolbar', false);
+    this._showSettingsPaneSetting =
+        Common.Settings.Settings.instance().createSetting('timelineShowSettingsToolbar', false);
     this._showSettingsPaneButton = new UI.Toolbar.ToolbarSettingToggle(
         this._showSettingsPaneSetting, 'largeicon-settings-gear', Common.UIString.UIString('Capture settings'));
     self.SDK.multitargetNetworkManager.addEventListener(
@@ -342,7 +343,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     let setting = traceProvider[traceProviderSettingSymbol];
     if (!setting) {
       const providerId = traceProvider.persistentIdentifier();
-      setting = self.Common.settings.createSetting(providerId, false);
+      setting = Common.Settings.Settings.instance().createSetting(providerId, false);
       setting.setTitle(traceProvider.shortDisplayName());
       traceProvider[traceProviderSettingSymbol] = setting;
     }
@@ -548,8 +549,9 @@ export class TimelinePanel extends UI.Panel.Panel {
     };
 
     if (recordingOptions.startCoverage) {
-      await self.UI.viewManager.showView('coverage')
-          .then(() => self.UI.viewManager.view('coverage').widget())
+      await UI.ViewManager.ViewManager.instance()
+          .showView('coverage')
+          .then(() => UI.ViewManager.ViewManager.instance().view('coverage').widget())
           .then(widget => widget.ensureRecordingStarted());
     }
 
@@ -567,8 +569,8 @@ export class TimelinePanel extends UI.Panel.Panel {
     this._setUIControlsEnabled(false);
     this._hideLandingPage();
     const response = await this._controller.startRecording(recordingOptions, enabledTraceProviders);
-    if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
-      this._recordingFailed(response[ProtocolModule.InspectorBackend.ProtocolError]);
+    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
+      this._recordingFailed(response[ProtocolClient.InspectorBackend.ProtocolError]);
     } else {
       this._recordingStarted();
     }
@@ -582,8 +584,9 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     this._setState(State.StopPending);
     if (this._startCoverage.get()) {
-      await self.UI.viewManager.showView('coverage')
-          .then(() => self.UI.viewManager.view('coverage').widget())
+      await UI.ViewManager.ViewManager.instance()
+          .showView('coverage')
+          .then(() => UI.ViewManager.ViewManager.instance().view('coverage').widget())
           .then(widget => widget.stopRecording());
     }
     const model = await this._controller.stopRecording();
@@ -600,14 +603,14 @@ export class TimelinePanel extends UI.Panel.Panel {
     if (this._statusPane) {
       this._statusPane.hide();
     }
-    this._statusPane = new StatusPane({description: error}, () => this.loadingComplete(null));
+    this._statusPane = new StatusPane(
+        {description: error, buttonText: ls`Close`, buttonDisabled: false}, () => this.loadingComplete(null));
     this._statusPane.showPane(this._statusPaneContainer);
     this._statusPane.updateStatus(ls`Recording failed`);
-    this._statusPane.updateButton(ls`Close`);
 
     this._setState(State.RecordingFailed);
     this._performanceModel = null;
-    this._setUIControlsEnabled(false);
+    this._setUIControlsEnabled(true);
     this._controller.dispose();
     this._controller = null;
   }
@@ -725,7 +728,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     this._reset();
     this._setState(State.Recording);
     this._showRecordingStarted();
-    this._statusPane.enableAndFocusStopButton();
+    this._statusPane.enableAndFocusButton();
     this._statusPane.updateStatus(Common.UIString.UIString('Profiling…'));
     this._statusPane.updateProgressBar(Common.UIString.UIString('Buffer usage'), 0);
     this._statusPane.startTimer();
@@ -851,8 +854,9 @@ export class TimelinePanel extends UI.Panel.Panel {
     this._historyManager.addRecording(this._performanceModel);
 
     if (this._startCoverage.get()) {
-      self.UI.viewManager.showView('coverage')
-          .then(() => self.UI.viewManager.view('coverage').widget())
+      UI.ViewManager.ViewManager.instance()
+          .showView('coverage')
+          .then(() => UI.ViewManager.ViewManager.instance().view('coverage').widget())
           .then(widget => widget.processBacklog())
           .then(() => this._updateOverviewControls());
     }
@@ -1167,14 +1171,16 @@ export class TimelineModeViewDelegate {
  */
 export class StatusPane extends UI.Widget.VBox {
   /**
-   * @param {!{showTimer: (boolean|undefined), showProgress: (boolean|undefined), description: (string|undefined)}} options - a collection of options controlling the appearance of the pane.
+   * @param {!{showTimer: (boolean|undefined), showProgress: (boolean|undefined), description: (string|undefined), buttonText: (string|undefined), buttonDisabled: (boolean|undefined)}} options - a collection of options controlling the appearance of the pane.
    *   The options object can have the following properties:
    *   - **showTimer** - `{boolean}` - Display seconds since dialog opened
    *   - **showProgress** - `{boolean}` - Display a progress bar
    *   - **description** - `{string}` - Display this string in a description line
-   * @param {function()} stopCallback
+   *   - **buttonText** - `{string}` - The localized text to display on the button
+   *   - **buttonDisabled** - `{string}` - Whether the button starts disabled or not - defaults to true
+   * @param {function(): undefined|function(): !Promise<undefined>} buttonCallback
    */
-  constructor(options, stopCallback) {
+  constructor(options, buttonCallback) {
     super(true);
     this.registerRequiredCSS('timeline/timelineStatusDialog.css');
     this.contentElement.classList.add('timeline-status-dialog');
@@ -1204,15 +1210,16 @@ export class StatusPane extends UI.Widget.VBox {
       this._description.innerText = options.description;
     }
 
-    this._stopButton = UI.UIUtils.createTextButton(Common.UIString.UIString('Stop'), stopCallback, '', true);
+    const buttonText = options.buttonText || ls`Stop`;
+    this._button = UI.UIUtils.createTextButton(buttonText, buttonCallback, '', true);
     // Profiling can't be stopped during initialization.
-    this._stopButton.disabled = true;
-    this.contentElement.createChild('div', 'stop-button').appendChild(this._stopButton);
+    this._button.disabled = !options.buttonDisabled === false;
+    this.contentElement.createChild('div', 'stop-button').appendChild(this._button);
   }
 
   finish() {
     this._stopTimer();
-    this._stopButton.disabled = true;
+    this._button.disabled = true;
   }
 
   hide() {
@@ -1228,9 +1235,9 @@ export class StatusPane extends UI.Widget.VBox {
     parent.classList.add('tinted');
   }
 
-  enableAndFocusStopButton() {
-    this._stopButton.disabled = false;
-    this._stopButton.focus();
+  enableAndFocusButton() {
+    this._button.disabled = false;
+    this._button.focus();
   }
 
   /**
@@ -1249,13 +1256,6 @@ export class StatusPane extends UI.Widget.VBox {
     this._progressBar.style.width = percent.toFixed(1) + '%';
     UI.ARIAUtils.setValueNow(this._progressBar, percent);
     this._updateTimer();
-  }
-
-  /**
-   * @param {string} caption
-   */
-  updateButton(caption) {
-    this._stopButton.innerText = caption;
   }
 
   startTimer() {
@@ -1296,7 +1296,7 @@ export class LoadTimelineHandler {
    * @param {string} value
    */
   handleQueryParam(value) {
-    self.UI.viewManager.showView('timeline').then(() => {
+    UI.ViewManager.ViewManager.instance().showView('timeline').then(() => {
       TimelinePanel.instance()._loadFromURL(window.decodeURIComponent(value));
     });
   }

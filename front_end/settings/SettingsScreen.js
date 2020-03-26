@@ -53,8 +53,8 @@ export class SettingsScreen extends UI.Widget.VBox {
     UI.ARIAUtils.markAsHeading(settingsTitleElement, 1);
     settingsTitleElement.textContent = ls`Settings`;
 
-    this._tabbedLocation =
-        self.UI.viewManager.createTabbedLocation(() => SettingsScreen._showSettingsScreen(), 'settings-view');
+    this._tabbedLocation = UI.ViewManager.ViewManager.instance().createTabbedLocation(
+        () => SettingsScreen._showSettingsScreen(), 'settings-view');
     const tabbedPane = this._tabbedLocation.tabbedPane();
     tabbedPane.leftToolbar().appendToolbarItem(new UI.Toolbar.ToolbarItem(settingsLabelElement));
     tabbedPane.setShrinkableTabs(false);
@@ -105,7 +105,7 @@ export class SettingsScreen extends UI.Widget.VBox {
    * @param {string} name
    */
   _selectTab(name) {
-    self.UI.viewManager.showView(name);
+    UI.ViewManager.ViewManager.instance().showView(name);
   }
 }
 
@@ -165,10 +165,13 @@ export class GenericSettingsTab extends SettingsTab {
     self.runtime.extensions(UI.SettingsUI.SettingUI).forEach(this._addSettingUI.bind(this));
 
     this._appendSection().appendChild(
-        UI.UIUtils.createTextButton(Common.UIString.UIString('Restore defaults and reload'), restoreAndReload));
+        UI.UIUtils.createTextButton(Common.UIString.UIString('Reload DevTools'), Components.Reload.reload));
+
+    this._appendSection().appendChild(UI.UIUtils.createTextButton(
+        Common.UIString.UIString('Restore defaults and reload DevTools'), restoreAndReload));
 
     function restoreAndReload() {
-      self.Common.settings.clearAll();
+      Common.Settings.Settings.instance().clearAll();
       Components.Reload.reload();
     }
   }
@@ -196,7 +199,7 @@ export class GenericSettingsTab extends SettingsTab {
       return;
     }
     const sectionElement = this._sectionElement(extension.descriptor()['category']);
-    const setting = self.Common.settings.moduleSetting(extension.descriptor()['settingName']);
+    const setting = Common.Settings.Settings.instance().moduleSetting(extension.descriptor()['settingName']);
     const settingControl = UI.SettingsUI.createControlForSetting(setting);
     if (settingControl) {
       sectionElement.appendChild(settingControl);

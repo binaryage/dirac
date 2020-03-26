@@ -251,6 +251,7 @@ export class EventListenersTreeElement extends UI.TreeOutline.TreeElement {
     this.toggleOnClick = true;
     this._linkifier = linkifier;
     this._changeCallback = changeCallback;
+    UI.ARIAUtils.setAccessibleName(this.listItemElement, `${type}, event listener`);
   }
 
   /**
@@ -352,6 +353,9 @@ export class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
       const menu = new UI.ContextMenu.ContextMenu(event);
       if (event.target !== linkElement) {
         menu.appendApplicableItems(linkElement);
+      }
+      if (object.subtype === 'node') {
+        menu.defaultSection().appendItem(ls`Reveal in Elements panel`, () => Common.Revealer.reveal(object));
       }
       menu.defaultSection().appendItem(
           ls`Delete event listener`, this._removeListener.bind(this), !this._eventListener.canRemove());

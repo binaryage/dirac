@@ -35,7 +35,7 @@ import * as Extensions from '../extensions/extensions.js';
 import * as Host from '../host/host.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Platform from '../platform/platform.js';
-import * as ProtocolModule from '../protocol/protocol.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -76,7 +76,7 @@ export class MainImpl {
 
   async _loaded() {
     console.timeStamp('Main._loaded');
-    await Root.Runtime.appStarted();
+    await Runtime.appStarted;
     Root.Runtime.setPlatform(Host.Platform.platform());
     Root.Runtime.setL10nCallback(ls);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.getPreferences(this._gotPreferences.bind(this));
@@ -120,7 +120,10 @@ export class MainImpl {
         prefs, Host.InspectorFrontendHost.InspectorFrontendHostInstance.setPreference,
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.removePreference,
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.clearPreferences, storagePrefix);
-    self.Common.settings = new Common.Settings.Settings(globalStorage, localStorage);
+    Common.Settings.Settings.instance({forceNew: true, globalStorage, localStorage});
+
+    self.Common.settings = Common.Settings.Settings.instance();
+
     if (!Host.InspectorFrontendHost.isUnderTest()) {
       new Common.Settings.VersionController().updateVersion();
     }
@@ -191,27 +194,27 @@ export class MainImpl {
   async _createAppUI() {
     MainImpl.time('Main._createAppUI');
 
-    self.UI.viewManager = new UI.ViewManager.ViewManager();
+    self.UI.viewManager = UI.ViewManager.ViewManager.instance();
 
     // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
-    self.Persistence.isolatedFileSystemManager = new Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager();
+    self.Persistence.isolatedFileSystemManager =
+        Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
 
-    const themeSetting = self.Common.settings.createSetting('uiTheme', 'systemPreferred');
+    const themeSetting = Common.Settings.Settings.instance().createSetting('uiTheme', 'systemPreferred');
     UI.UIUtils.initializeUIUtils(document, themeSetting);
-    themeSetting.addChangeListener(Components.Reload.reload.bind(Components));
 
     UI.UIUtils.installComponentRootStyles(/** @type {!Element} */ (document.body));
 
     this._addMainEventListeners(document);
 
     const canDock = !!Root.Runtime.queryParam('can_dock');
-    self.UI.zoomManager =
-        new UI.ZoomManager.ZoomManager(window, Host.InspectorFrontendHost.InspectorFrontendHostInstance);
+    self.UI.zoomManager = UI.ZoomManager.ZoomManager.instance(
+        {forceNew: true, win: window, frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance});
     self.UI.inspectorView = UI.InspectorView.InspectorView.instance();
     UI.ContextMenu.ContextMenu.initialize();
     UI.ContextMenu.ContextMenu.installHandler(document);
     UI.Tooltip.Tooltip.installHandler(document);
-    self.SDK.consoleModel = new SDK.ConsoleModel.ConsoleModel();
+    self.SDK.consoleModel = SDK.ConsoleModel.ConsoleModel.instance();
     self.Components.dockController = new Components.DockController.DockController(canDock);
     self.SDK.multitargetNetworkManager = new SDK.NetworkManager.MultitargetNetworkManager();
     self.SDK.domDebuggerManager = new SDK.DOMDebuggerModel.DOMDebuggerManager();
@@ -226,30 +229,46 @@ export class MainImpl {
     self.UI.shortcutsScreen.section(Common.UIString.UIString('Console'));
 
     self.Workspace.fileManager = new Workspace.FileManager.FileManager();
-    self.Workspace.workspace = new Workspace.Workspace.WorkspaceImpl();
+    self.Workspace.workspace = Workspace.Workspace.WorkspaceImpl.instance();
 
-    self.Bindings.networkProjectManager = new Bindings.NetworkProject.NetworkProjectManager();
-    self.Bindings.resourceMapping =
-        new Bindings.ResourceMapping.ResourceMapping(SDK.SDKModel.TargetManager.instance(), self.Workspace.workspace);
+    self.Bindings.networkProjectManager = Bindings.NetworkProject.NetworkProjectManager.instance();
+    self.Bindings.resourceMapping = Bindings.ResourceMapping.ResourceMapping.instance({
+      forceNew: true,
+      targetManager: SDK.SDKModel.TargetManager.instance(),
+      workspace: Workspace.Workspace.WorkspaceImpl.instance()
+    });
     new Bindings.PresentationConsoleMessageHelper.PresentationConsoleMessageManager();
-    self.Bindings.cssWorkspaceBinding = new Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding(
-        SDK.SDKModel.TargetManager.instance(), self.Workspace.workspace);
-    self.Bindings.debuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding(
-        SDK.SDKModel.TargetManager.instance(), self.Workspace.workspace);
-    self.Bindings.breakpointManager = new Bindings.BreakpointManager.BreakpointManager(
-        self.Workspace.workspace, SDK.SDKModel.TargetManager.instance(), self.Bindings.debuggerWorkspaceBinding);
+    self.Bindings.cssWorkspaceBinding = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({
+      forceNew: true,
+      targetManager: SDK.SDKModel.TargetManager.instance(),
+      workspace: Workspace.Workspace.WorkspaceImpl.instance()
+    });
+    self.Bindings.debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+      forceNew: true,
+      targetManager: SDK.SDKModel.TargetManager.instance(),
+      workspace: Workspace.Workspace.WorkspaceImpl.instance()
+    });
+    self.Bindings.breakpointManager = Bindings.BreakpointManager.BreakpointManager.instance({
+      forceNew: true,
+      workspace: Workspace.Workspace.WorkspaceImpl.instance(),
+      targetManager: SDK.SDKModel.TargetManager.instance(),
+      debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+    });
     self.Extensions.extensionServer = new Extensions.ExtensionServer.ExtensionServer();
 
     new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(
-        self.Persistence.isolatedFileSystemManager, self.Workspace.workspace);
-    self.Persistence.persistence =
-        new Persistence.Persistence.PersistenceImpl(self.Workspace.workspace, self.Bindings.breakpointManager);
-    self.Persistence.networkPersistenceManager =
-        new Persistence.NetworkPersistenceManager.NetworkPersistenceManager(self.Workspace.workspace);
+        Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance(),
+        Workspace.Workspace.WorkspaceImpl.instance());
+    self.Persistence.persistence = new Persistence.Persistence.PersistenceImpl(
+        Workspace.Workspace.WorkspaceImpl.instance(), Bindings.BreakpointManager.BreakpointManager.instance());
+    self.Persistence.networkPersistenceManager = new Persistence.NetworkPersistenceManager.NetworkPersistenceManager(
+        Workspace.Workspace.WorkspaceImpl.instance());
 
     new ExecutionContextSelector(SDK.SDKModel.TargetManager.instance(), self.UI.context);
-    self.Bindings.blackboxManager =
-        new Bindings.BlackboxManager.BlackboxManager(self.Bindings.debuggerWorkspaceBinding);
+    self.Bindings.blackboxManager = Bindings.BlackboxManager.BlackboxManager.instance({
+      forceNew: true,
+      debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+    });
 
     new PauseListener();
 
@@ -332,7 +351,7 @@ export class MainImpl {
     const promises = [];
     for (const extension of extensions) {
       const setting = extension.descriptor()['setting'];
-      if (!setting || self.Common.settings.moduleSetting(setting).get()) {
+      if (!setting || Common.Settings.Settings.instance().moduleSetting(setting).get()) {
         promises.push(
             extension.instance().then(instance => (/** @type {!Common.Runnable.Runnable} */ (instance)).run()));
         continue;
@@ -344,10 +363,10 @@ export class MainImpl {
         if (!event.data) {
           return;
         }
-        self.Common.settings.moduleSetting(setting).removeChangeListener(changeListener);
+        Common.Settings.Settings.instance().moduleSetting(setting).removeChangeListener(changeListener);
         (/** @type {!Common.Runnable.Runnable} */ (await extension.instance())).run();
       }
-      self.Common.settings.moduleSetting(setting).addChangeListener(changeListener);
+      Common.Settings.Settings.instance().moduleSetting(setting).addChangeListener(changeListener);
     }
     this._lateInitDonePromise = Promise.all(promises);
     MainImpl.timeEnd('Main._lateInitialization');
@@ -392,7 +411,7 @@ export class MainImpl {
     const lineNumber = /** @type {number} */ (event.data['lineNumber']);
     const columnNumber = /** @type {number} */ (event.data['columnNumber']);
 
-    const uiSourceCode = self.Workspace.workspace.uiSourceCodeForURL(url);
+    const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
     if (uiSourceCode) {
       Common.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
       return;
@@ -405,11 +424,13 @@ export class MainImpl {
       const uiSourceCode = /** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data);
       if (uiSourceCode.url() === url) {
         Common.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
-        self.Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
+        Workspace.Workspace.WorkspaceImpl.instance().removeEventListener(
+            Workspace.Workspace.Events.UISourceCodeAdded, listener);
       }
     }
 
-    self.Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
+    Workspace.Workspace.WorkspaceImpl.instance().addEventListener(
+        Workspace.Workspace.Events.UISourceCodeAdded, listener);
   }
 
   _registerShortcuts() {
@@ -696,7 +717,8 @@ export class MainMenuItem {
         continue;
       }
       moreTools.defaultSection().appendItem(
-          extension.title(), self.UI.viewManager.showView.bind(self.UI.viewManager, descriptor['id']));
+          extension.title(),
+          UI.ViewManager.ViewManager.instance().showView.bind(UI.ViewManager.ViewManager.instance(), descriptor['id']));
     }
 
     const helpSubMenu = contextMenu.footerSection().appendSubMenuItem(Common.UIString.UIString('Help'));
@@ -733,7 +755,7 @@ export class PauseListener {
  */
 export function sendOverProtocol(method, params) {
   return new Promise((resolve, reject) => {
-    ProtocolModule.InspectorBackend.test.sendRawMessage(method, params, (err, ...results) => {
+    ProtocolClient.InspectorBackend.test.sendRawMessage(method, params, (err, ...results) => {
       if (err) {
         return reject(err);
       }

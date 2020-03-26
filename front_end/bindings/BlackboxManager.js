@@ -9,11 +9,17 @@ import * as Workspace from '../workspace/workspace.js';
 import {DebuggerWorkspaceBinding} from './DebuggerWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
 
 /**
+ * @type {!BlackboxManager}
+ */
+let blackboxManagerInstance;
+
+/**
  * @unrestricted
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.DebuggerModel.DebuggerModel>}
  */
 export class BlackboxManager {
   /**
+   * @private
    * @param {!DebuggerWorkspaceBinding} debuggerWorkspaceBinding
    */
   constructor(debuggerWorkspaceBinding) {
@@ -22,8 +28,12 @@ export class BlackboxManager {
     SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared,
         this._clearCacheIfNeeded.bind(this), this);
-    self.Common.settings.moduleSetting('skipStackFramesPattern').addChangeListener(this._patternChanged.bind(this));
-    self.Common.settings.moduleSetting('skipContentScripts').addChangeListener(this._patternChanged.bind(this));
+    Common.Settings.Settings.instance()
+        .moduleSetting('skipStackFramesPattern')
+        .addChangeListener(this._patternChanged.bind(this));
+    Common.Settings.Settings.instance()
+        .moduleSetting('skipContentScripts')
+        .addChangeListener(this._patternChanged.bind(this));
 
     /** @type {!Set<function()>} */
     this._listeners = new Set();
@@ -32,6 +42,24 @@ export class BlackboxManager {
     this._isBlackboxedURLCache = new Map();
 
     SDK.SDKModel.TargetManager.instance().observeModels(SDK.DebuggerModel.DebuggerModel, this);
+  }
+
+  /**
+   * @param {{forceNew: ?boolean, debuggerWorkspaceBinding: ?DebuggerWorkspaceBinding}} opts
+   */
+  static instance(opts = {forceNew: null, debuggerWorkspaceBinding: null}) {
+    const {forceNew, debuggerWorkspaceBinding} = opts;
+    if (!blackboxManagerInstance || forceNew) {
+      if (!debuggerWorkspaceBinding) {
+        throw new Error(
+            `Unable to create settings: targetManager, workspace, and debuggerWorkspaceBinding must be provided: ${
+                new Error().stack}`);
+      }
+
+      blackboxManagerInstance = new BlackboxManager(debuggerWorkspaceBinding);
+    }
+
+    return blackboxManagerInstance;
   }
 
   /**
@@ -81,7 +109,7 @@ export class BlackboxManager {
    * @return {!Promise<boolean>}
    */
   _setBlackboxPatterns(debuggerModel) {
-    const regexPatterns = self.Common.settings.moduleSetting('skipStackFramesPattern').getAsArray();
+    const regexPatterns = Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').getAsArray();
     const patterns = /** @type {!Array<string>} */ ([]);
     for (const item of regexPatterns) {
       if (!item.disabled && item.pattern) {
@@ -98,7 +126,7 @@ export class BlackboxManager {
   isBlackboxedUISourceCode(uiSourceCode) {
     const projectType = uiSourceCode.project().type();
     const isContentScript = projectType === Workspace.Workspace.projectTypes.ContentScripts;
-    if (isContentScript && self.Common.settings.moduleSetting('skipContentScripts').get()) {
+    if (isContentScript && Common.Settings.Settings.instance().moduleSetting('skipContentScripts').get()) {
       return true;
     }
     const url = this._uiSourceCodeURL(uiSourceCode);
@@ -114,10 +142,10 @@ export class BlackboxManager {
     if (this._isBlackboxedURLCache.has(url)) {
       return !!this._isBlackboxedURLCache.get(url);
     }
-    if (isContentScript && self.Common.settings.moduleSetting('skipContentScripts').get()) {
+    if (isContentScript && Common.Settings.Settings.instance().moduleSetting('skipContentScripts').get()) {
       return true;
     }
-    const regex = self.Common.settings.moduleSetting('skipStackFramesPattern').asRegExp();
+    const regex = Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').asRegExp();
     const isBlackboxed = (regex && regex.test(url)) || false;
     this._isBlackboxedURLCache.set(url, isBlackboxed);
     return isBlackboxed;
@@ -147,7 +175,7 @@ export class BlackboxManager {
    */
   async _updateScriptRanges(script, sourceMap) {
     let hasBlackboxedMappings = false;
-    if (!self.Bindings.blackboxManager.isBlackboxedURL(script.sourceURL, script.isContentScript())) {
+    if (!BlackboxManager.instance().isBlackboxedURL(script.sourceURL, script.isContentScript())) {
       hasBlackboxedMappings = sourceMap ? sourceMap.sourceURLs().some(url => this.isBlackboxedURL(url)) : false;
     }
     if (!hasBlackboxedMappings) {
@@ -234,18 +262,18 @@ export class BlackboxManager {
   }
 
   blackboxContentScripts() {
-    self.Common.settings.moduleSetting('skipContentScripts').set(true);
+    Common.Settings.Settings.instance().moduleSetting('skipContentScripts').set(true);
   }
 
   unblackboxContentScripts() {
-    self.Common.settings.moduleSetting('skipContentScripts').set(false);
+    Common.Settings.Settings.instance().moduleSetting('skipContentScripts').set(false);
   }
 
   /**
    * @param {string} url
    */
   _blackboxURL(url) {
-    const regexPatterns = self.Common.settings.moduleSetting('skipStackFramesPattern').getAsArray();
+    const regexPatterns = Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').getAsArray();
     const regexValue = this._urlToRegExpString(url);
     if (!regexValue) {
       return;
@@ -262,15 +290,15 @@ export class BlackboxManager {
     if (!found) {
       regexPatterns.push({pattern: regexValue});
     }
-    self.Common.settings.moduleSetting('skipStackFramesPattern').setAsArray(regexPatterns);
+    Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').setAsArray(regexPatterns);
   }
 
   /**
    * @param {string} url
    */
   _unblackboxURL(url) {
-    let regexPatterns = self.Common.settings.moduleSetting('skipStackFramesPattern').getAsArray();
-    const regexValue = self.Bindings.blackboxManager._urlToRegExpString(url);
+    let regexPatterns = Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').getAsArray();
+    const regexValue = BlackboxManager.instance()._urlToRegExpString(url);
     if (!regexValue) {
       return;
     }
@@ -290,7 +318,7 @@ export class BlackboxManager {
       } catch (e) {
       }
     }
-    self.Common.settings.moduleSetting('skipStackFramesPattern').setAsArray(regexPatterns);
+    Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').setAsArray(regexPatterns);
   }
 
   async _patternChanged() {

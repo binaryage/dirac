@@ -185,7 +185,7 @@ export class OverridesNavigatorView extends NavigatorView {
     const project = self.Persistence.networkPersistenceManager.project();
     if (project) {
       const enableCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
-          self.Common.settings.moduleSetting('persistenceNetworkOverridesEnabled'));
+          Common.Settings.Settings.instance().moduleSetting('persistenceNetworkOverridesEnabled'));
       this._toolbar.appendToolbarItem(enableCheckbox);
 
       this._toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSeparator(true));
@@ -206,11 +206,12 @@ export class OverridesNavigatorView extends NavigatorView {
   }
 
   async _setupNewWorkspace() {
-    const fileSystem = await self.Persistence.isolatedFileSystemManager.addFileSystem('overrides');
+    const fileSystem =
+        await Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem('overrides');
     if (!fileSystem) {
       return;
     }
-    self.Common.settings.moduleSetting('persistenceNetworkOverridesEnabled').set(true);
+    Common.Settings.Settings.instance().moduleSetting('persistenceNetworkOverridesEnabled').set(true);
   }
 
   /**
@@ -263,7 +264,8 @@ export class SnippetsNavigatorView extends NavigatorView {
     `);
 
     const toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
-    const newButton = new UI.Toolbar.ToolbarButton('', 'largeicon-add', Common.UIString.UIString('New snippet'));
+    const newButton =
+        new UI.Toolbar.ToolbarButton(ls`New snippet`, 'largeicon-add', Common.UIString.UIString('New snippet'));
     newButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
       this.create(self.Snippets.project, '');
     });
@@ -335,7 +337,7 @@ export class ActionDelegate {
         self.Snippets.project.createFile('', null, '').then(uiSourceCode => Common.Revealer.reveal(uiSourceCode));
         return true;
       case 'sources.add-folder-to-workspace':
-        self.Persistence.isolatedFileSystemManager.addFileSystem();
+        Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem();
         return true;
     }
     return false;

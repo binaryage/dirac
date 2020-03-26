@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Bindings from '../bindings/bindings.js';
 import * as ColorPicker from '../color_picker/color_picker.js';
 import * as Common from '../common/common.js';
 import * as InlineEditor from '../inline_editor/inline_editor.js';
@@ -269,7 +270,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
       return createTextNode(propertyValue);
     }
 
-    const indent = self.Common.settings.moduleSetting('textEditorIndent').get();
+    const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
     const container = createDocumentFragment();
     for (const result of splitResult) {
       const value = result.value.trim();
@@ -480,7 +481,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
       return;
     }
 
-    const indent = self.Common.settings.moduleSetting('textEditorIndent').get();
+    const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
     this.listItemElement.createChild('span', 'styles-clipboard-only')
         .createTextChild(indent + (this.property.disabled ? '/* ' : ''));
     this.listItemElement.appendChild(this.nameElement);
@@ -585,7 +586,8 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
       return;
     }
     const propertyNameClicked = element === this.nameElement;
-    const uiLocation = self.Bindings.cssWorkspaceBinding.propertyUILocation(this.property, propertyNameClicked);
+    const uiLocation = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().propertyUILocation(
+        this.property, propertyNameClicked);
     if (uiLocation) {
       Common.Revealer.reveal(uiLocation, omitFocus);
     }

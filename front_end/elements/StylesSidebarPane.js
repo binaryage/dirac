@@ -49,8 +49,8 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     this.setMinimumSize(96, 26);
     this.registerRequiredCSS('elements/stylesSidebarPane.css');
 
-    self.Common.settings.moduleSetting('colorFormat').addChangeListener(this.update.bind(this));
-    self.Common.settings.moduleSetting('textEditorIndent').addChangeListener(this.update.bind(this));
+    Common.Settings.Settings.instance().moduleSetting('colorFormat').addChangeListener(this.update.bind(this));
+    Common.Settings.Settings.instance().moduleSetting('textEditorIndent').addChangeListener(this.update.bind(this));
 
     /** @type {?UI.Widget.Widget} */
     this._currentToolbarPane = null;
@@ -241,11 +241,12 @@ export class StylesSidebarPane extends ElementsSidebarPane {
 
     switch (event.key) {
       case 'ArrowUp':
-      case 'ArrowLeft':
+      case 'ArrowLeft': {
         const sectionToFocus = section.previousSibling() || section.lastSibling();
         sectionToFocus.element.focus();
         event.consume(true);
         break;
+      }
       case 'ArrowDown':
       case 'ArrowRight': {
         const sectionToFocus = section.nextSibling() || section.firstSibling();
@@ -253,14 +254,16 @@ export class StylesSidebarPane extends ElementsSidebarPane {
         event.consume(true);
         break;
       }
-      case 'Home':
+      case 'Home': {
         section.firstSibling().element.focus();
         event.consume(true);
         break;
-      case 'End':
+      }
+      case 'End': {
         section.lastSibling().element.focus();
         event.consume(true);
         break;
+      }
     }
   }
 
@@ -909,6 +912,7 @@ export class StylePropertiesSection {
 
     const rule = style.parentRule;
     this.element = createElementWithClass('div', 'styles-section matched-styles monospace');
+    UI.ARIAUtils.setAccessibleName(this.element, `${this._headerText()}, css selector`);
     this.element.tabIndex = -1;
     UI.ARIAUtils.markAsTreeitem(this.element);
     this.element.addEventListener('keydown', this._onKeyDown.bind(this), false);
@@ -1412,10 +1416,11 @@ export class StylePropertiesSection {
       const mediaTextElement = mediaContainerElement.createChild('span', 'media-text');
       switch (media.source) {
         case SDK.CSSMedia.Source.LINKED_SHEET:
-        case SDK.CSSMedia.Source.INLINE_SHEET:
-          mediaTextElement.textContent = 'media="' + media.text + '"';
+        case SDK.CSSMedia.Source.INLINE_SHEET: {
+          mediaTextElement.textContent = `media="${media.text}"`;
           break;
-        case SDK.CSSMedia.Source.MEDIA_RULE:
+        }
+        case SDK.CSSMedia.Source.MEDIA_RULE: {
           const decoration = mediaContainerElement.createChild('span');
           mediaContainerElement.insertBefore(decoration, mediaTextElement);
           decoration.textContent = '@media ';
@@ -1426,9 +1431,11 @@ export class StylePropertiesSection {
                 'click', this._handleMediaRuleClick.bind(this, media, mediaTextElement), false);
           }
           break;
-        case SDK.CSSMedia.Source.IMPORT_RULE:
-          mediaTextElement.textContent = '@import ' + media.text;
+        }
+        case SDK.CSSMedia.Source.IMPORT_RULE: {
+          mediaTextElement.textContent = `@import ${media.text}`;
           break;
+        }
       }
     }
   }
@@ -1771,7 +1778,7 @@ export class StylePropertiesSection {
         event.consume(true);
         return;
       }
-      const uiLocation = self.Bindings.cssWorkspaceBinding.rawLocationToUILocation(location);
+      const uiLocation = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().rawLocationToUILocation(location);
       if (uiLocation) {
         Common.Revealer.reveal(uiLocation);
       }
@@ -1906,7 +1913,7 @@ export class StylePropertiesSection {
    * @param {boolean} focus
    */
   static _revealSelectorSource(rawLocation, focus) {
-    const uiLocation = self.Bindings.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
+    const uiLocation = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().rawLocationToUILocation(rawLocation);
     if (uiLocation) {
       Common.Revealer.reveal(uiLocation, !focus);
     }

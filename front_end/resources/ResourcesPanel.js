@@ -20,7 +20,8 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     super('resources');
     this.registerRequiredCSS('resources/resourcesPanel.css');
 
-    this._resourcesLastSelectedItemSetting = self.Common.settings.createSetting('resourcesLastSelectedElementPath', []);
+    this._resourcesLastSelectedItemSetting =
+        Common.Settings.Settings.instance().createSetting('resourcesLastSelectedElementPath', []);
 
     /** @type {?UI.Widget.Widget} */
     this.visibleView = null;
@@ -213,7 +214,7 @@ export class ResourceRevealer {
       return Promise.reject(new Error('Internal error: not a resource'));
     }
     const sidebar = ResourcesPanel._instance()._sidebar;
-    await self.UI.viewManager.showView('resources');
+    await UI.ViewManager.ViewManager.instance().showView('resources');
     await sidebar.showResource(resource);
   }
 }
@@ -233,7 +234,7 @@ export class CookieReferenceRevealer {
     }
 
     const sidebar = ResourcesPanel._instance()._sidebar;
-    await self.UI.viewManager.showView('resources');
+    await UI.ViewManager.ViewManager.instance().showView('resources');
     await sidebar.cookieListTreeElement.select();
 
     const contextUrl = cookie.contextUrl();

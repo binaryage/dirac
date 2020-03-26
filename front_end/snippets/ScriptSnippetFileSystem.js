@@ -5,13 +5,15 @@
 import * as Common from '../common/common.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as SDK from '../sdk/sdk.js';
+import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
 import * as Workspace from '../workspace/workspace.js';
 
 class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFileSystem {
   constructor() {
     super('snippet://', 'snippets');
-    this._lastSnippetIdentifierSetting = self.Common.settings.createSetting('scriptSnippets_lastIdentifier', 0);
-    this._snippetsSetting = self.Common.settings.createSetting('scriptSnippets', []);
+    this._lastSnippetIdentifierSetting =
+        Common.Settings.Settings.instance().createSetting('scriptSnippets_lastIdentifier', 0);
+    this._snippetsSetting = Common.Settings.Settings.instance().createSetting('scriptSnippets', []);
   }
 
   /**
@@ -60,7 +62,7 @@ class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFileSyste
   /**
    * @override
    * @param {string} path
-   * @returns {!Promise<!Common.ContentProvider.DeferredContent>}
+   * @returns {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   async requestFileContent(path) {
     const name = unescape(path.substring(1));
@@ -189,7 +191,7 @@ export async function evaluateScriptSnippet(uiSourceCode) {
       /* awaitPromise */ true);
 
   if (result.exceptionDetails) {
-    self.SDK.consoleModel.addMessage(SDK.ConsoleModel.ConsoleMessage.fromException(
+    SDK.ConsoleModel.ConsoleModel.instance().addMessage(SDK.ConsoleModel.ConsoleMessage.fromException(
         runtimeModel, result.exceptionDetails, /* messageType */ undefined, /* timestamp */ undefined, url));
     return;
   }
@@ -199,7 +201,7 @@ export async function evaluateScriptSnippet(uiSourceCode) {
 
   const scripts = executionContext.debuggerModel.scriptsForSourceURL(url);
   const scriptId = scripts[scripts.length - 1].scriptId;
-  self.SDK.consoleModel.addMessage(new SDK.ConsoleModel.ConsoleMessage(
+  SDK.ConsoleModel.ConsoleModel.instance().addMessage(new SDK.ConsoleModel.ConsoleMessage(
       runtimeModel, SDK.ConsoleModel.MessageSource.JS, SDK.ConsoleModel.MessageLevel.Info, '',
       SDK.ConsoleModel.MessageType.Result, url, undefined, undefined, [result.object], undefined, undefined,
       executionContext.id, scriptId));
@@ -222,4 +224,5 @@ export function isSnippetsProject(project) {
       Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) === 'snippets';
 }
 
-self.Persistence.isolatedFileSystemManager.addPlatformFileSystem('snippet://', new SnippetFileSystem());
+Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addPlatformFileSystem(
+    'snippet://', new SnippetFileSystem());

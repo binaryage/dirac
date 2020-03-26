@@ -33,7 +33,8 @@ export class CoverageView extends UI.Widget.VBox {
 
     this._coverageType = null;
     this._coverageTypeComboBox = new UI.Toolbar.ToolbarComboBox(
-        null, ls`Choose coverage granularity: Per function has low overhead, per block has significant overhead.`);
+        this._onCoverageTypeComboBoxSelectionChanged.bind(this),
+        ls`Choose coverage granularity: Per function has low overhead, per block has significant overhead.`);
     const coverageTypes = [
       {
         label: ls`Per function`,
@@ -47,7 +48,8 @@ export class CoverageView extends UI.Widget.VBox {
     for (const type of coverageTypes) {
       this._coverageTypeComboBox.addOption(this._coverageTypeComboBox.createOption(type.label, type.value));
     }
-    this._coverageTypeComboBox.setSelectedIndex(0);
+    this._coverageTypeComboBoxSetting = self.Common.settings.createSetting('coverageViewCoverageType', 0);
+    this._coverageTypeComboBox.setSelectedIndex(this._coverageTypeComboBoxSetting.get());
     this._coverageTypeComboBox.setEnabled(true);
     toolbar.appendToolbarItem(this._coverageTypeComboBox);
 
@@ -113,7 +115,7 @@ export class CoverageView extends UI.Widget.VBox {
     toolbar.appendToolbarItem(this._filterByTypeComboBox);
 
     toolbar.appendSeparator();
-    this._showContentScriptsSetting = self.Common.settings.createSetting('showContentScripts', false);
+    this._showContentScriptsSetting = Common.Settings.Settings.instance().createSetting('showContentScripts', false);
     this._showContentScriptsSetting.addChangeListener(this._onFilterChanged, this);
     const contentScriptsCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
         this._showContentScriptsSetting, Common.UIString.UIString('Include extension content scripts'),
@@ -196,6 +198,10 @@ export class CoverageView extends UI.Widget.VBox {
   _selectCoverageType(jsCoveragePerBlock) {
     const selectedIndex = jsCoveragePerBlock ? 1 : 0;
     this._coverageTypeComboBox.setSelectedIndex(selectedIndex);
+  }
+
+  _onCoverageTypeComboBoxSelectionChanged() {
+    this._coverageTypeComboBoxSetting.set(this._coverageTypeComboBox.selectedIndex());
   }
 
   async ensureRecordingStarted() {
@@ -415,8 +421,9 @@ export class ActionDelegate {
    */
   handleAction(context, actionId) {
     const coverageViewId = 'coverage';
-    self.UI.viewManager.showView(coverageViewId, /** userGesture= */ false, /** omitFocus= */ true)
-        .then(() => self.UI.viewManager.view(coverageViewId).widget())
+    UI.ViewManager.ViewManager.instance()
+        .showView(coverageViewId, /** userGesture= */ false, /** omitFocus= */ true)
+        .then(() => UI.ViewManager.ViewManager.instance().view(coverageViewId).widget())
         .then(widget => this._innerHandleAction(/** @type !CoverageView} */ (widget), actionId));
 
     return true;
@@ -500,8 +507,9 @@ export class LineDecorator {
         return;
       }
       const coverageViewId = 'coverage';
-      self.UI.viewManager.showView(coverageViewId)
-          .then(() => self.UI.viewManager.view(coverageViewId).widget())
+      UI.ViewManager.ViewManager.instance()
+          .showView(coverageViewId)
+          .then(() => UI.ViewManager.ViewManager.instance().view(coverageViewId).widget())
           .then(widget => {
             const matchFormattedSuffix = url.match(/(.*):formatted$/);
             const urlWithoutFormattedSuffix = (matchFormattedSuffix && matchFormattedSuffix[1]) || url;

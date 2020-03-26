@@ -19,7 +19,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
     this._originalResponseContentPromiseSymbol = Symbol('OriginalResponsePromise');
     this._savingSymbol = Symbol('SavingForOverrides');
 
-    this._enabledSetting = self.Common.settings.moduleSetting('persistenceNetworkOverridesEnabled');
+    this._enabledSetting = Common.Settings.Settings.instance().moduleSetting('persistenceNetworkOverridesEnabled');
     this._enabledSetting.addChangeListener(this._enabledChanged, this);
 
     this._workspace = workspace;
@@ -85,22 +85,22 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
     this._enabled = this._enabledSetting.get();
     if (this._enabled) {
       this._eventDescriptors = [
-        self.Workspace.workspace.addEventListener(
+        Workspace.Workspace.WorkspaceImpl.instance().addEventListener(
             Workspace.Workspace.Events.UISourceCodeRenamed,
             event => {
               this._uiSourceCodeRenamedListener(event);
             }),
-        self.Workspace.workspace.addEventListener(
+        Workspace.Workspace.WorkspaceImpl.instance().addEventListener(
             Workspace.Workspace.Events.UISourceCodeAdded,
             event => {
               this._uiSourceCodeAdded(event);
             }),
-        self.Workspace.workspace.addEventListener(
+        Workspace.Workspace.WorkspaceImpl.instance().addEventListener(
             Workspace.Workspace.Events.UISourceCodeRemoved,
             event => {
               this._uiSourceCodeRemovedListener(event);
             }),
-        self.Workspace.workspace.addEventListener(
+        Workspace.Workspace.WorkspaceImpl.instance().addEventListener(
             Workspace.Workspace.Events.WorkingCopyCommitted,
             event => this._onUISourceCodeWorkingCopyCommitted(
                 /** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data.uiSourceCode)))

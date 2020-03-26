@@ -7,14 +7,21 @@ import * as SDK from '../sdk/sdk.js';
 import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
 
 import {LiveLocation as LiveLocationInterface, LiveLocationPool, LiveLocationWithPool,} from './LiveLocation.js';  // eslint-disable-line no-unused-vars
+import {ResourceMapping} from './ResourceMapping.js';
 import {SASSSourceMapping} from './SASSSourceMapping.js';
 import {StylesSourceMapping} from './StylesSourceMapping.js';
+
+/**
+ * @type {!CSSWorkspaceBinding}
+ */
+let cssWorkspaceBindingInstance;
 
 /**
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.CSSModel.CSSModel>}
  */
 export class CSSWorkspaceBinding {
   /**
+   * @private
    * @param {!SDK.SDKModel.TargetManager} targetManager
    * @param {!Workspace.Workspace.WorkspaceImpl} workspace
    */
@@ -26,6 +33,26 @@ export class CSSWorkspaceBinding {
     /** @type {!Array<!SourceMapping>} */
     this._sourceMappings = [];
     targetManager.observeModels(SDK.CSSModel.CSSModel, this);
+
+    /** @type {!Set.<!Promise>} */
+    this._liveLocationPromises = new Set();
+  }
+
+  /**
+   * @param {{forceNew: ?boolean, targetManager: ?SDK.SDKModel.TargetManager, workspace: ?Workspace.Workspace.WorkspaceImpl}} opts
+   */
+  static instance(opts = {forceNew: null, targetManager: null, workspace: null}) {
+    const {forceNew, targetManager, workspace} = opts;
+    if (!cssWorkspaceBindingInstance || forceNew) {
+      if (!targetManager || !workspace) {
+        throw new Error(
+            `Unable to create settings: targetManager and workspace must be provided: ${new Error().stack}`);
+      }
+
+      cssWorkspaceBindingInstance = new CSSWorkspaceBinding(targetManager, workspace);
+    }
+
+    return cssWorkspaceBindingInstance;
   }
 
   /**
@@ -46,20 +73,46 @@ export class CSSWorkspaceBinding {
   }
 
   /**
-   * @param {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} header
+   * The promise returned by this function is resolved once all *currently*
+   * pending LiveLocations are processed.
+   *
+   * @return {!Promise}
    */
-  updateLocations(header) {
-    this._modelToInfo.get(header.cssModel())._updateLocations(header);
+  pendingLiveLocationChangesPromise() {
+    return Promise.all(this._liveLocationPromises);
+  }
+
+  /**
+   * @param {!Promise} promise
+   */
+  _recordLiveLocationChange(promise) {
+    promise.then(() => {
+      this._liveLocationPromises.delete(promise);
+    });
+    this._liveLocationPromises.add(promise);
+  }
+
+  /**
+   * @param {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} header
+   * @return {!Promise}
+   */
+  async updateLocations(header) {
+    const updatePromise = this._modelToInfo.get(header.cssModel())._updateLocations(header);
+    this._recordLiveLocationChange(updatePromise);
+    await updatePromise;
   }
 
   /**
    * @param {!SDK.CSSModel.CSSLocation} rawLocation
    * @param {function(!LiveLocationInterface)} updateDelegate
    * @param {!LiveLocationPool} locationPool
-   * @return {!LiveLocation}
+   * @return {!Promise<!LiveLocation>}
    */
   createLiveLocation(rawLocation, updateDelegate, locationPool) {
-    return this._modelToInfo.get(rawLocation.cssModel())._createLiveLocation(rawLocation, updateDelegate, locationPool);
+    const locationPromise =
+        this._modelToInfo.get(rawLocation.cssModel())._createLiveLocation(rawLocation, updateDelegate, locationPool);
+    this._recordLiveLocationChange(locationPromise);
+    return locationPromise;
   }
 
   /**
@@ -155,8 +208,18 @@ export class ModelInfo {
    */
   constructor(cssModel, workspace) {
     this._eventListeners = [
-      cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, this._styleSheetAdded, this),
-      cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this)
+      cssModel.addEventListener(
+          SDK.CSSModel.Events.StyleSheetAdded,
+          event => {
+            this._styleSheetAdded(event);
+          },
+          this),
+      cssModel.addEventListener(
+          SDK.CSSModel.Events.StyleSheetRemoved,
+          event => {
+            this._styleSheetRemoved(event);
+          },
+          this)
     ];
 
     this._stylesSourceMapping = new StylesSourceMapping(cssModel, workspace);
@@ -173,15 +236,15 @@ export class ModelInfo {
    * @param {!SDK.CSSModel.CSSLocation} rawLocation
    * @param {function(!LiveLocationInterface)} updateDelegate
    * @param {!LiveLocationPool} locationPool
-   * @return {!LiveLocation}
+   * @return {!Promise<!LiveLocation>}
    */
-  _createLiveLocation(rawLocation, updateDelegate, locationPool) {
+  async _createLiveLocation(rawLocation, updateDelegate, locationPool) {
     const location = new LiveLocation(rawLocation, this, updateDelegate, locationPool);
     const header = rawLocation.header();
     if (header) {
       location._header = header;
       this._locations.set(header, location);
-      location.update();
+      await location.update();
     } else {
       this._unboundLocations.set(rawLocation.url, location);
     }
@@ -203,38 +266,44 @@ export class ModelInfo {
    * @param {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} header
    */
   _updateLocations(header) {
+    const promises = [];
     for (const location of this._locations.get(header)) {
-      location.update();
+      promises.push(location.update());
     }
+    return Promise.all(promises);
   }
 
   /**
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
-  _styleSheetAdded(event) {
+  async _styleSheetAdded(event) {
     const header = /** @type {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} */ (event.data);
     if (!header.sourceURL) {
       return;
     }
 
+    const promises = [];
     for (const location of this._unboundLocations.get(header.sourceURL)) {
       location._header = header;
       this._locations.set(header, location);
-      location.update();
+      promises.push(location.update());
     }
+    await Promise.all(promises);
     this._unboundLocations.deleteAll(header.sourceURL);
   }
 
   /**
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
-  _styleSheetRemoved(event) {
+  async _styleSheetRemoved(event) {
     const header = /** @type {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} */ (event.data);
+    const promises = [];
     for (const location of this._locations.get(header)) {
       location._header = null;
       this._unboundLocations.set(location._url, location);
-      location.update();
+      promises.push(location.update());
     }
+    await Promise.all(promises);
     this._locations.deleteAll(header);
   }
 
@@ -246,7 +315,7 @@ export class ModelInfo {
     let uiLocation = null;
     uiLocation = uiLocation || this._sassSourceMapping.rawLocationToUILocation(rawLocation);
     uiLocation = uiLocation || this._stylesSourceMapping.rawLocationToUILocation(rawLocation);
-    uiLocation = uiLocation || self.Bindings.resourceMapping.cssLocationToUILocation(rawLocation);
+    uiLocation = uiLocation || ResourceMapping.instance().cssLocationToUILocation(rawLocation);
     return uiLocation;
   }
 
@@ -263,7 +332,7 @@ export class ModelInfo {
     if (rawLocations.length) {
       return rawLocations;
     }
-    return self.Bindings.resourceMapping.uiLocationToCSSLocations(uiLocation);
+    return ResourceMapping.instance().uiLocationToCSSLocations(uiLocation);
   }
 
   _dispose() {
@@ -294,14 +363,14 @@ export class LiveLocation extends LiveLocationWithPool {
 
   /**
    * @override
-   * @return {?Workspace.UISourceCode.UILocation}
+   * @return {!Promise<?Workspace.UISourceCode.UILocation>}
    */
-  uiLocation() {
+  async uiLocation() {
     if (!this._header) {
       return null;
     }
     const rawLocation = new SDK.CSSModel.CSSLocation(this._header, this._lineNumber, this._columnNumber);
-    return self.Bindings.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
+    return CSSWorkspaceBinding.instance().rawLocationToUILocation(rawLocation);
   }
 
   /**
@@ -314,9 +383,9 @@ export class LiveLocation extends LiveLocationWithPool {
 
   /**
    * @override
-   * @return {boolean}
+   * @return {!Promise<boolean>}
    */
-  isBlackboxed() {
+  async isBlackboxed() {
     return false;
   }
 }

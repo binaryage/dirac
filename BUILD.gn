@@ -122,8 +122,8 @@ all_devtools_files = [
   "front_end/emulation/deviceModeToolbar.css",
   "front_end/emulation/deviceModeView.css",
   "front_end/emulation/devicesSettingsTab.css",
-  "front_end/emulation/geolocationsSettingsTab.css",
   "front_end/emulation/inspectedPagePlaceholder.css",
+  "front_end/emulation/locationsSettingsTab.css",
   "front_end/emulation/mediaQueryInspector.css",
   "front_end/emulation/module.json",
   "front_end/emulation/sensors.css",
@@ -236,7 +236,7 @@ all_devtools_files = [
   "front_end/issues/issuesPane.css",
   "front_end/protocol_monitor/module.json",
   "front_end/protocol_monitor/protocolMonitor.css",
-  "front_end/protocol/module.json",
+  "front_end/protocol_client/module.json",
   "front_end/quick_open/filteredListWidget.css",
   "front_end/quick_open/module.json",
   "front_end/resources/appManifestView.css",
@@ -249,6 +249,7 @@ all_devtools_files = [
   "front_end/resources/resourcesSidebar.css",
   "front_end/resources/serviceWorkerCacheViews.css",
   "front_end/resources/serviceWorkersView.css",
+  "front_end/root/module.json",
   "front_end/screencast/module.json",
   "front_end/screencast/screencastView.css",
   "front_end/sdk_test_runner/module.json",
@@ -430,7 +431,7 @@ all_devtools_files += lighthouse_locale_files
 
 devtools_module_entrypoints = [
   "root.js",
-  "Runtime.js",
+  "RuntimeInstantiator.js",
   "accessibility/accessibility.js",
   "accessibility/accessibility-legacy.js",
   "animation/animation.js",
@@ -529,14 +530,16 @@ devtools_module_entrypoints = [
   "platform/platform.js",
   "profiler/profiler.js",
   "profiler/profiler-legacy.js",
-  "protocol/protocol.js",
-  "protocol/protocol-legacy.js",
+  "protocol_client/protocol_client.js",
+  "protocol_client/protocol_client-legacy.js",
   "protocol_monitor/protocol_monitor.js",
   "protocol_monitor/protocol_monitor-legacy.js",
   "quick_open/quick_open.js",
   "quick_open/quick_open-legacy.js",
   "resources/resources.js",
   "resources/resources-legacy.js",
+  "root/root.js",
+  "root/root-legacy.js",
   "screencast/screencast.js",
   "screencast/screencast-legacy.js",
   "sdk/sdk.js",
@@ -700,7 +703,9 @@ devtools_image_files = [
   "front_end/Images/accelerometer-top.png",
   "front_end/Images/lighthouse_logo.svg",
   "front_end/Images/breakpoint.svg",
-  "front_end/Images/breakpointConditional.svg",
+  "front_end/Images/breakpoint-conditional.svg",
+  "front_end/Images/breakpoint-conditional-disabled.svg",
+  "front_end/Images/breakpoint-disabled.svg",
   "front_end/Images/checkboxCheckmark.svg",
   "front_end/Images/checker.png",
   "front_end/Images/chevrons.svg",
@@ -716,6 +721,8 @@ devtools_image_files = [
   "front_end/Images/ic_info_black_18dp.svg",
   "front_end/Images/ic_warning_black_18dp.svg",
   "front_end/Images/largeIcons.svg",
+  "front_end/Images/logpoint.svg",
+  "front_end/Images/logpoint-disabled.svg",
   "front_end/Images/mediumIcons.svg",
   "front_end/Images/navigationControls_2x.png",
   "front_end/Images/navigationControls.png",
@@ -914,9 +921,14 @@ group("devtools_all_files") {
 }
 
 devtools_typescript_deps = [
+  "front_end/bindings",
   "front_end/common:common",
   "front_end/formatter_worker",
+  "front_end/host",
+  "front_end/protocol_client",
+  "front_end/root",
   "front_end/sdk:sdk",
+  "front_end/workspace",
 ]
 
 devtools_frontend_resources_deps = devtools_typescript_deps + [
@@ -945,12 +957,7 @@ devtools_frontend_resources_data_test_deps = devtools_frontend_resources_deps
 # builds. Since we don't run these tests on Android any case, we disable
 # the generation of the tests on Android.
 if (!is_android) {
-  devtools_frontend_resources_data_test_deps += [
-    ":copy_karma_conf",
-    "test/unittests/front_end/common",
-    "test/unittests/front_end/formatter_worker",
-    "test/unittests/front_end/platform",
-  ]
+  devtools_frontend_resources_data_test_deps += [ "test" ]
 }
 
 group("devtools_frontend_resources") {
@@ -966,11 +973,6 @@ group("devtools_frontend_resources_data") {
 copy("copy_embedder_scripts") {
   sources = devtools_embedder_scripts
   outputs = [ "$resources_out_dir/{{source_file_part}}" ]
-}
-
-copy("copy_karma_conf") {
-  sources = [ "test/unittests/front_end/karma.conf.js" ]
-  outputs = [ "$target_gen_dir/karma.conf.js" ]
 }
 
 copy("copy_htaccess") {
@@ -1094,7 +1096,6 @@ all_devtools_modules = [
   "common/CharacterIdMap.js",
   "common/Color.js",
   "common/Console.js",
-  "common/ContentProvider.js",
   "common/EventTarget.js",
   "common/JavaScriptMetaData.js",
   "common/Linkifier.js",
@@ -1107,7 +1108,6 @@ all_devtools_modules = [
   "common/Runnable.js",
   "common/SegmentedRange.js",
   "common/Settings.js",
-  "common/StaticContentProvider.js",
   "common/StringOutputStream.js",
   "common/TextDictionary.js",
   "common/Throttler.js",
@@ -1180,8 +1180,8 @@ all_devtools_modules = [
   "emulation/DeviceModeWrapper.js",
   "emulation/DevicesSettingsTab.js",
   "emulation/EmulatedDevices.js",
-  "emulation/GeolocationsSettingsTab.js",
   "emulation/InspectedPagePlaceholder.js",
+  "emulation/LocationsSettingsTab.js",
   "emulation/MediaQueryInspector.js",
   "emulation/SensorsView.js",
   "event_listeners/EventListenersUtils.js",
@@ -1348,8 +1348,8 @@ all_devtools_modules = [
   "protocol_monitor/ProtocolMonitor.js",
   "issues/IssuesPane.js",
   "issues/IssueRevealer.js",
-  "protocol/InspectorBackend.js",
-  "protocol/NodeURL.js",
+  "protocol_client/InspectorBackend.js",
+  "protocol_client/NodeURL.js",
   "quick_open/CommandMenu.js",
   "quick_open/FilteredListWidget.js",
   "quick_open/HelpQuickOpen.js",
@@ -1373,6 +1373,7 @@ all_devtools_modules = [
   "resources/ApplicationCacheModel.js",
   "resources/ApplicationCacheItemsView.js",
   "resources/AppManifestView.js",
+  "root/Runtime.js",
   "screencast/InputModel.js",
   "screencast/ScreencastApp.js",
   "screencast/ScreencastView.js",
@@ -1403,6 +1404,7 @@ all_devtools_modules = [
   "sdk/IsolateManager.js",
   "sdk/Issue.js",
   "sdk/IssuesModel.js",
+  "sdk/RelatedIssue.js",
   "sdk/LayerTreeBase.js",
   "sdk/LogModel.js",
   "sdk/NetworkLog.js",
@@ -1486,6 +1488,8 @@ all_devtools_modules = [
   "text_editor/CodeMirrorTextEditor.js",
   "text_editor/CodeMirrorUtils.js",
   "text_editor/TextEditorAutocompleteController.js",
+  "text_utils/ContentProvider.js",
+  "text_utils/StaticContentProvider.js",
   "text_utils/Text.js",
   "text_utils/TextCursor.js",
   "text_utils/TextRange.js",

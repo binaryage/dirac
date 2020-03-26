@@ -1795,6 +1795,13 @@ export class ThemeSupport {
   }
 
   /**
+   * @return {boolean}
+   */
+  isForcedColorsMode() {
+    return window.matchMedia('(forced-colors: active)').matches;
+  }
+
+  /**
    * @param {string} sheetText
    */
   addCustomStylesheet(sheetText) {
@@ -1805,7 +1812,7 @@ export class ThemeSupport {
    * @param {!Document} document
    */
   applyTheme(document) {
-    if (!this.hasTheme()) {
+    if (!this.hasTheme() || this.isForcedColorsMode()) {
       return;
     }
 
@@ -1832,7 +1839,7 @@ export class ThemeSupport {
    * @suppressGlobalPropertiesCheck
    */
   themeStyleSheet(id, text) {
-    if (!this.hasTheme() || this._injectingStyleSheet) {
+    if (!this.hasTheme() || this._injectingStyleSheet || this.isForcedColorsMode()) {
       return '';
     }
 
@@ -1975,7 +1982,7 @@ export class ThemeSupport {
     const alpha = hsla[3];
 
     switch (this._themeName) {
-      case 'dark':
+      case 'dark': {
         const minCap = colorUsage & ThemeSupport.ColorUsage.Background ? 0.14 : 0;
         const maxCap = colorUsage & ThemeSupport.ColorUsage.Foreground ? 0.9 : 1;
         lit = 1 - lit;
@@ -1984,8 +1991,8 @@ export class ThemeSupport {
         } else if (lit > 2 * maxCap - 1) {
           lit = maxCap - 1 / 2 + lit / 2;
         }
-
         break;
+      }
     }
     hsla[0] = Platform.NumberUtilities.clamp(hue, 0, 1);
     hsla[1] = Platform.NumberUtilities.clamp(sat, 0, 1);

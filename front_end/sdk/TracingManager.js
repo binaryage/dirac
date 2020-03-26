@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as ProtocolModule from '../protocol/protocol.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
 
 import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
@@ -15,11 +15,14 @@ export class TracingManager extends SDKModel {
    */
   constructor(target) {
     super(target);
+    // @ts-ignore TODO(1063322): Domain-specific CDP generated method.
     this._tracingAgent = target.tracingAgent();
+    // @ts-ignore TODO(1063322): Domain-specific CDP generated method.
     target.registerTracingDispatcher(new TracingDispatcher(this));
 
     /** @type {?TracingManagerClient} */
     this._activeClient = null;
+    /** @type {?number} */
     this._eventBufferSize = 0;
     this._eventsRetrieved = 0;
   }
@@ -30,14 +33,19 @@ export class TracingManager extends SDKModel {
    * @param {number=} percentFull
    */
   _bufferUsage(usage, eventCount, percentFull) {
-    this._eventBufferSize = eventCount;
-    this._activeClient.tracingBufferUsage(usage || percentFull || 0);
+    this._eventBufferSize = eventCount === undefined ? null : eventCount;
+    if (this._activeClient) {
+      this._activeClient.tracingBufferUsage(usage || percentFull || 0);
+    }
   }
 
   /**
    * @param {!Array.<!EventPayload>} events
    */
   _eventsCollected(events) {
+    if (!this._activeClient) {
+      return;
+    }
     this._activeClient.traceEventsCollected(events);
     this._eventsRetrieved += events.length;
     if (!this._eventBufferSize) {
@@ -54,8 +62,10 @@ export class TracingManager extends SDKModel {
   _tracingComplete() {
     this._eventBufferSize = 0;
     this._eventsRetrieved = 0;
-    this._activeClient.tracingComplete();
-    this._activeClient = null;
+    if (this._activeClient) {
+      this._activeClient.tracingComplete();
+      this._activeClient = null;
+    }
     this._finishing = false;
   }
 
@@ -78,7 +88,7 @@ export class TracingManager extends SDKModel {
       transferMode: TransferMode.ReportEvents
     };
     const response = await this._tracingAgent.invoke_start(args);
-    if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
+    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
       this._activeClient = null;
     }
     return response;
@@ -181,4 +191,5 @@ SDKModel.register(TracingManager, Capability.Tracing, false);
         s: string
     }}
  */
+// @ts-ignore typedef
 export let EventPayload;

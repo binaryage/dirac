@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as fs from 'fs';
-import {join} from 'path';
 import {performance} from 'perf_hooks';
 import * as puppeteer from 'puppeteer';
 import * as os from 'os';
@@ -135,12 +133,12 @@ export const $ = async (selector: string, root?: puppeteer.JSHandle) => {
       return elements.find(element => element.matches(selector));
     }, selector);
     return element;
-  } catch (e) {
-    throw new Error(`Unable to find element for selector "${selector}": ${e.stack}`);
+  } catch (error) {
+    throw new Error(`Unable to find element for selector "${selector}": ${error.stack}`);
   }
 };
 
-// Get a multiple element handles, across Shadow DOM boundaries.
+// Get multiple element handles, across Shadow DOM boundaries.
 export const $$ = async (selector: string, root?: puppeteer.JSHandle) => {
   const frontend: puppeteer.Page = globalThis[frontEndPage];
   if (!frontend) {
@@ -233,15 +231,3 @@ export const getBrowserAndPages = (): BrowserAndPages => {
 };
 
 export const resourcesPath = 'http://localhost:8090/test/e2e/resources';
-
-export function mkdirp(root: string, parts: string[]) {
-  let target = root;
-  for (const part of parts) {
-    const newTarget = join(target, part);
-    if (!fs.existsSync(newTarget)) {
-      fs.mkdirSync(newTarget);
-    }
-
-    target = newTarget;
-  }
-}

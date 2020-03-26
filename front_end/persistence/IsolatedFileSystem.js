@@ -30,6 +30,7 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
 
 import {Events, IsolatedFileSystemManager} from './IsolatedFileSystemManager.js';  // eslint-disable-line no-unused-vars
 import {PlatformFileSystem} from './PlatformFileSystem.js';
@@ -42,7 +43,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
    * @param {!IsolatedFileSystemManager} manager
    * @param {string} path
    * @param {string} embedderPath
-   * @param {!DOMFileSystem} domFileSystem
+   * @param {!FileSystem} domFileSystem
    * @param {string} type
    */
   constructor(manager, path, embedderPath, domFileSystem, type) {
@@ -50,7 +51,8 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     this._manager = manager;
     this._embedderPath = embedderPath;
     this._domFileSystem = domFileSystem;
-    this._excludedFoldersSetting = self.Common.settings.createLocalSetting('workspaceExcludedFolders', {});
+    this._excludedFoldersSetting =
+        Common.Settings.Settings.instance().createLocalSetting('workspaceExcludedFolders', {});
     /** @type {!Set<string>} */
     this._excludedFolders = new Set(this._excludedFoldersSetting.get()[path] || []);
     /** @type {!Array<string>} */
@@ -345,7 +347,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
   /**
    * @override
    * @param {string} path
-   * @returns {!Promise<!Common.ContentProvider.DeferredContent>}
+   * @returns {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   requestFileContent(path) {
     return this._serializedFileOperation(path, () => this._innerRequestFileContent(path));
@@ -353,7 +355,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
 
   /**
    * @param {string} path
-   * @return {!Promise<!Common.ContentProvider.DeferredContent>}
+   * @return {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   async _innerRequestFileContent(path) {
     const blob = await this.requestFileBlob(path);

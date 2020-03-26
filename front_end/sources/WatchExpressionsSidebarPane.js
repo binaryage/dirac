@@ -55,7 +55,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
     //               to an e2e test or no longer accesses this variable directly.
     /** @type {!Array.<!WatchExpression>} */
     this._watchExpressions = [];
-    this._watchExpressionsSetting = self.Common.settings.createLocalSetting('watchExpressions', []);
+    this._watchExpressionsSetting = Common.Settings.Settings.instance().createLocalSetting('watchExpressions', []);
 
     this._addButton = new UI.Toolbar.ToolbarButton(ls`Add watch expression`, 'largeicon-add');
     this._addButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
@@ -117,7 +117,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
   }
 
   async _addButtonClicked() {
-    await self.UI.viewManager.showView('sources.watch');
+    await UI.ViewManager.ViewManager.instance().showView('sources.watch');
     this._createWatchExpression(null).startEditing();
   }
 
@@ -225,7 +225,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
    * @param {string} expression
    */
   _focusAndAddExpressionToWatch(expression) {
-    self.UI.viewManager.showView('sources.watch');
+    UI.ViewManager.ViewManager.instance().showView('sources.watch');
     this.doUpdate();
     this._addExpressionToWatch(expression);
   }

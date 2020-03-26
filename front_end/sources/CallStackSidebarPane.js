@@ -407,11 +407,11 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.FileSystem) {
       return;
     }
-    const canBlackbox = self.Bindings.blackboxManager.canBlackboxUISourceCode(uiSourceCode);
-    const isBlackboxed = self.Bindings.blackboxManager.isBlackboxedUISourceCode(uiSourceCode);
+    const canBlackbox = Bindings.BlackboxManager.BlackboxManager.instance().canBlackboxUISourceCode(uiSourceCode);
+    const isBlackboxed = Bindings.BlackboxManager.BlackboxManager.instance().isBlackboxedUISourceCode(uiSourceCode);
     const isContentScript = uiSourceCode.project().type() === Workspace.Workspace.projectTypes.ContentScripts;
 
-    const manager = self.Bindings.blackboxManager;
+    const manager = Bindings.BlackboxManager.BlackboxManager.instance();
     if (canBlackbox) {
       if (isBlackboxed) {
         contextMenu.defaultSection().appendItem(
@@ -507,7 +507,7 @@ export class Item {
    */
   static async createForDebuggerCallFrame(frame, locationPool, updateDelegate) {
     const item = new Item(UI.UIUtils.beautifyFunctionName(frame.functionName), updateDelegate);
-    await self.Bindings.debuggerWorkspaceBinding.createCallFrameLiveLocation(
+    await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createCallFrameLiveLocation(
         frame.location(), item._update.bind(item), locationPool);
     return item;
   }
@@ -537,8 +537,9 @@ export class Item {
         item.linkText = (frame.url || '<unknown>') + ':' + (frame.lineNumber + 1);
         item.updateDelegate(item);
       } else {
-        liveLocationPromises.push(self.Bindings.debuggerWorkspaceBinding.createCallFrameLiveLocation(
-            rawLocation, item._update.bind(item), locationPool));
+        liveLocationPromises.push(
+            Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createCallFrameLiveLocation(
+                rawLocation, item._update.bind(item), locationPool));
       }
       asyncFrameItems.push(item);
     }
@@ -585,9 +586,9 @@ export class Item {
   /**
    * @param {!Bindings.LiveLocation.LiveLocation} liveLocation
    */
-  _update(liveLocation) {
-    const uiLocation = liveLocation.uiLocation();
-    this.isBlackboxed = liveLocation.isBlackboxed();
+  async _update(liveLocation) {
+    const uiLocation = await liveLocation.uiLocation();
+    this.isBlackboxed = await liveLocation.isBlackboxed();
     this.linkText = uiLocation ? uiLocation.linkText() : '';
     this.uiLocation = uiLocation;
     this.updateDelegate(this);
