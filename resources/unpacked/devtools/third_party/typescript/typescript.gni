@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (defined(use_devtools_typescript) && use_devtools_typescript) {
-  devtools_location = ""
-} else {
-  devtools_location = "third_party/devtools-frontend/src"
+if (!defined(devtools_location)) {
+  if (defined(use_devtools_typescript) && use_devtools_typescript) {
+    devtools_location = ""
+  } else {
+    devtools_location = "third_party/devtools-frontend/src"
+  }
 }
 
 # Defines a target that compiles .ts files using TypeScript.
@@ -45,8 +47,11 @@ template("ts_library") {
                            ])
 
     inputs = [
-      "//$devtools_location/tsconfig.json",
+      "//$devtools_location/tsconfig.base.json",
       "//$devtools_location/node_modules/typescript/lib/tsc.js",
+      "//$devtools_location/front_end/legacy/legacy-defs.d.ts",
+      "//$devtools_location/front_end/generated/protocol.d.ts",
+      "//$devtools_location/node_modules/@types/filesystem/index.d.ts",
     ]
 
     args = [
@@ -107,7 +112,10 @@ template("ts_library") {
           # Any file checked by TypeScript that is jsdoc-typed will be also
           # generating a js file in the gen folder
         } else if (_extension == "js" || _extension == "ts") {
-          output_files += [ "$target_gen_dir/$_fileName.js" ]
+          output_files += [
+            "$target_gen_dir/$_fileName.js",
+            "$target_gen_dir/$_fileName.js.map",
+          ]
 
           # check that the file is TypeScript and not a unittest file
           # add it to the outputs

@@ -35,7 +35,7 @@ export class ConsolePrompt extends UI.Widget.Widget {
     this.element.appendChild(this._promptIcon);
     this._iconThrottler = new Common.Throttler.Throttler(0);
 
-    this._eagerEvalSetting = self.Common.settings.moduleSetting('consoleEagerEval');
+    this._eagerEvalSetting = Common.Settings.Settings.instance().moduleSetting('consoleEagerEval');
     this._eagerEvalSetting.addChangeListener(this._eagerSettingChanged.bind(this));
     this._eagerPreviewElement.classList.toggle('hidden', !this._eagerEvalSetting.get());
 
@@ -214,7 +214,7 @@ export class ConsolePrompt extends UI.Widget.Widget {
     const cursorY = this._editor.visualCoordinates(selection.endLine, selection.endColumn).y;
 
     switch (keyboardEvent.keyCode) {
-      case UI.KeyboardShortcut.Keys.Up.code:
+      case UI.KeyboardShortcut.Keys.Up.code: {
         const startY = this._editor.visualCoordinates(0, 0).y;
         if (keyboardEvent.shiftKey || !selection.isEmpty() || cursorY !== startY) {
           break;
@@ -222,7 +222,8 @@ export class ConsolePrompt extends UI.Widget.Widget {
         newText = this._history.previous(this.text());
         isPrevious = true;
         break;
-      case UI.KeyboardShortcut.Keys.Down.code:
+      }
+      case UI.KeyboardShortcut.Keys.Down.code: {
         const fullRange = this._editor.fullRange();
         const endY = this._editor.visualCoordinates(fullRange.endLine, fullRange.endColumn).y;
         if (keyboardEvent.shiftKey || !selection.isEmpty() || cursorY !== endY) {
@@ -230,27 +231,32 @@ export class ConsolePrompt extends UI.Widget.Widget {
         }
         newText = this._history.next();
         break;
-      case UI.KeyboardShortcut.Keys.P.code:  // Ctrl+P = Previous
+      }
+      case UI.KeyboardShortcut.Keys.P.code: {  // Ctrl+P = Previous
         if (Host.Platform.isMac() && keyboardEvent.ctrlKey && !keyboardEvent.metaKey && !keyboardEvent.altKey &&
             !keyboardEvent.shiftKey) {
           newText = this._history.previous(this.text());
           isPrevious = true;
         }
         break;
-      case UI.KeyboardShortcut.Keys.N.code:  // Ctrl+N = Next
+      }
+      case UI.KeyboardShortcut.Keys.N.code: {  // Ctrl+N = Next
         if (Host.Platform.isMac() && keyboardEvent.ctrlKey && !keyboardEvent.metaKey && !keyboardEvent.altKey &&
             !keyboardEvent.shiftKey) {
           newText = this._history.next();
         }
         break;
-      case UI.KeyboardShortcut.Keys.Enter.code:
+      }
+      case UI.KeyboardShortcut.Keys.Enter.code: {
         this._enterKeyPressed(keyboardEvent);
         break;
-      case UI.KeyboardShortcut.Keys.Tab.code:
+      }
+      case UI.KeyboardShortcut.Keys.Tab.code: {
         if (!this.text()) {
           keyboardEvent.consume();
         }
         break;
+      }
     }
 
     if (newText === undefined) {
@@ -319,11 +325,10 @@ export class ConsolePrompt extends UI.Widget.Widget {
     const currentExecutionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
     if (currentExecutionContext) {
       const executionContext = currentExecutionContext;
-      const message = self.SDK.consoleModel.addCommandMessage(executionContext, text);
+      const message = SDK.ConsoleModel.ConsoleModel.instance().addCommandMessage(executionContext, text);
       const expression = ObjectUI.JavaScriptREPL.JavaScriptREPL.preprocessExpression(text);
-      self.SDK.consoleModel.evaluateCommandInConsole(
-          executionContext, message, expression, useCommandLineAPI,
-          /* awaitPromise */ false);
+      SDK.ConsoleModel.ConsoleModel.instance().evaluateCommandInConsole(
+          executionContext, message, expression, useCommandLineAPI);
       if (ConsolePanel.instance().isShowing()) {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.CommandEvaluatedInConsolePanel);
       }

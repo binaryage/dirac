@@ -30,7 +30,7 @@ export class SourcesView extends UI.Widget.VBox {
     this.element.id = 'sources-panel-sources-view';
     this.setMinimumAndPreferredSizes(88, 52, 150, 100);
 
-    const workspace = self.Workspace.workspace;
+    const workspace = Workspace.Workspace.WorkspaceImpl.instance();
 
     this._searchableView = new UI.SearchableView.SearchableView(this, 'sourcesViewSearchConfig');
     this._searchableView.setMinimalSearchQuerySize(0);
@@ -40,8 +40,8 @@ export class SourcesView extends UI.Widget.VBox {
     this._sourceViewByUISourceCode = new Map();
 
     this._editorContainer = new TabbedEditorContainer(
-        this, self.Common.settings.createLocalSetting('previouslyViewedFiles', []), this._placeholderElement(),
-        this._focusedPlaceholderElement);
+        this, Common.Settings.Settings.instance().createLocalSetting('previouslyViewedFiles', []),
+        this._placeholderElement(), this._focusedPlaceholderElement);
     this._editorContainer.show(this._searchableView.element);
     this._editorContainer.addEventListener(TabbedEditorContainerEvents.EditorSelected, this._editorSelected, this);
     this._editorContainer.addEventListener(TabbedEditorContainerEvents.EditorClosed, this._editorClosed, this);
@@ -86,7 +86,8 @@ export class SourcesView extends UI.Widget.VBox {
       }
 
       let unsavedSourceCodes = [];
-      const projects = self.Workspace.workspace.projectsForType(Workspace.Workspace.projectTypes.FileSystem);
+      const projects =
+          Workspace.Workspace.WorkspaceImpl.instance().projectsForType(Workspace.Workspace.projectTypes.FileSystem);
       for (let i = 0; i < projects.length; ++i) {
         unsavedSourceCodes =
             unsavedSourceCodes.concat(projects[i].uiSourceCodes().filter(sourceCode => sourceCode.isDirty()));
@@ -97,7 +98,7 @@ export class SourcesView extends UI.Widget.VBox {
       }
 
       event.returnValue = Common.UIString.UIString('DevTools have unsaved changes that will be permanently lost.');
-      self.UI.viewManager.showView('sources');
+      UI.ViewManager.ViewManager.instance().showView('sources');
       for (let i = 0; i < unsavedSourceCodes.length; ++i) {
         Common.Revealer.reveal(unsavedSourceCodes[i]);
       }

@@ -5,7 +5,7 @@
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Extensions from '../extensions/extensions.js';  // eslint-disable-line no-unused-vars
-import * as ProtocolModule from '../protocol/protocol.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TimelineModel from '../timeline_model/timeline_model.js';
 
@@ -80,7 +80,7 @@ export class TimelineController {
     }
     if (!Root.Runtime.queryParam('timelineTracingJSProfileDisabled') && options.enableJSSampling) {
       categoriesArray.push(disabledByDefault('v8.cpu_profiler'));
-      if (self.Common.settings.moduleSetting('highResolutionCpuProfiling').get()) {
+      if (Common.Settings.Settings.instance().moduleSetting('highResolutionCpuProfiling').get()) {
         categoriesArray.push(disabledByDefault('v8.cpu_profiler.hires'));
       }
     }
@@ -101,8 +101,9 @@ export class TimelineController {
     this._extensionSessions.forEach(session => session.start());
     this._performanceModel.setRecordStartTime(Date.now());
     const response = await this._startRecordingWithCategories(categoriesArray.join(','), options.enableJSSampling);
-    if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
+    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
       await this._waitForTracingToStop(false);
+      await SDK.SDKModel.TargetManager.instance().resumeAllTargets();
     }
     return response;
   }
@@ -217,7 +218,8 @@ export class TimelineController {
       return;
     }
 
-    const samplingFrequencyHz = self.Common.settings.moduleSetting('highResolutionCpuProfiling').get() ? 10000 : 1000;
+    const samplingFrequencyHz =
+        Common.Settings.Settings.instance().moduleSetting('highResolutionCpuProfiling').get() ? 10000 : 1000;
     const options = 'sampling-frequency=' + samplingFrequencyHz;
     return this._tracingManager.start(this, categories, options);
   }

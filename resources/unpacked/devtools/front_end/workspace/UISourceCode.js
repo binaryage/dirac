@@ -29,11 +29,13 @@
  */
 
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 
 import {Events as WorkspaceImplEvents, Project, projectTypes} from './WorkspaceImpl.js';  // eslint-disable-line no-unused-vars
 
 /**
- * @implements {Common.ContentProvider.ContentProvider}
+ * @implements {TextUtils.ContentProvider.ContentProvider}
  * @unrestricted
  */
 export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
@@ -45,6 +47,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
   constructor(project, url, contentType) {
     super();
     this._project = project;
+    /** @type {string} */
     this._url = url;
 
     const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
@@ -62,7 +65,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     }
 
     this._contentType = contentType;
-    /** @type {?Promise<!Common.ContentProvider.DeferredContent>} */
+    /** @type {?Promise<!TextUtils.ContentProvider.DeferredContent>} */
     this._requestContentPromise = null;
     /** @type {?Platform.Multimap<string, !LineMarker>} */
     this._decorations = null;
@@ -70,7 +73,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     /** @type {?Set<!Message>} */
     this._messages = null;
     this._contentLoaded = false;
-    /** @type {?Common.ContentProvider.DeferredContent} */
+    /** @type {?TextUtils.ContentProvider.DeferredContent} */
     this._content = null;
     this._forceLoadOnCheckContent = false;
     this._checkingContent = false;
@@ -80,6 +83,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     this._workingCopy = null;
     /** @type {?function() : string} */
     this._workingCopyGetter = null;
+    this._disableEdit = false;
   }
 
   /**
@@ -175,6 +179,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
    * @return {!Promise<boolean>}
    */
   rename(newName) {
+    /** @type {function(boolean):void} */
     let fulfill;
     const promise = new Promise(x => fulfill = x);
     this._project.rename(this, newName, innerCallback.bind(this));
@@ -255,7 +260,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @override
-   * @return {!Promise<!Common.ContentProvider.DeferredContent>}
+   * @return {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   requestContent() {
     if (this._requestContentPromise) {
@@ -263,7 +268,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     }
 
     if (this._contentLoaded) {
-      return Promise.resolve(/** @type {!Common.ContentProvider.DeferredContent} */ (this._content));
+      return Promise.resolve(/** @type {!TextUtils.ContentProvider.DeferredContent} */ (this._content));
     }
 
 
@@ -272,7 +277,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @returns {!Promise<!Common.ContentProvider.DeferredContent>}
+   * @returns {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   async _requestContentImpl() {
     try {
@@ -287,7 +292,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
       this._content = {error: err ? String(err) : '', isEncoded: false};
     }
 
-    return /** @type {!Common.ContentProvider.DeferredContent} */ (this._content);
+    return /** @type {!TextUtils.ContentProvider.DeferredContent} */ (this._content);
   }
 
   async checkContentUpdated() {
@@ -301,6 +306,9 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
 
     this._checkingContent = true;
     const updatedContent = await this._project.requestFileContent(this);
+    if ('error' in updatedContent) {
+      return;
+    }
     this._checkingContent = false;
     if (updatedContent.content === null) {
       const workingCopy = this.workingCopy();
@@ -312,7 +320,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
 
-    if (this._content && this._content.content === updatedContent.content) {
+    if (this._content && 'content' in this._content && this._content.content === updatedContent.content) {
       this._lastAcceptedContent = null;
       return;
     }
@@ -395,7 +403,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     if (this.isDirty()) {
       return /** @type {string} */ (this._workingCopy);
     }
-    return (this._content && this._content.content) || '';
+    return (this._content && 'content' in this._content && this._content.content) || '';
   }
 
   resetWorkingCopy() {
@@ -475,14 +483,14 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
    * @return {string}
    */
   content() {
-    return (this._content && this._content.content) || '';
+    return (this._content && 'content' in this._content && this._content.content) || '';
   }
 
   /**
    * @return {?string}
    */
   loadError() {
-    return (this._content && this._content.error);
+    return (this._content && 'error' in this._content && this._content.error) || null;
   }
 
   /**
@@ -490,14 +498,14 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
    * @param {string} query
    * @param {boolean} caseSensitive
    * @param {boolean} isRegex
-   * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
+   * @return {!Promise<!Array<!TextUtils.ContentProvider.SearchMatch>>}
    */
   searchInContent(query, caseSensitive, isRegex) {
     const content = this.content();
     if (!content) {
       return this._project.searchInFileContent(this, query, caseSensitive, isRegex);
     }
-    return Promise.resolve(Common.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex));
+    return Promise.resolve(TextUtils.TextUtils.performSearchInContent(content, query, caseSensitive, isRegex));
   }
 
   /**
@@ -535,13 +543,13 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
    */
   addLineMessage(level, text, lineNumber, columnNumber) {
     return this.addMessage(
-        level, text, new TextUtils.TextRange(lineNumber, columnNumber || 0, lineNumber, columnNumber || 0));
+        level, text, new TextUtils.TextRange.TextRange(lineNumber, columnNumber || 0, lineNumber, columnNumber || 0));
   }
 
   /**
    * @param {!Message.Level} level
    * @param {string} text
-   * @param {!TextUtils.TextRange} range
+   * @param {!TextUtils.TextRange.TextRange} range
    * @return {!Message} message
    */
   addMessage(level, text, range) {
@@ -579,11 +587,11 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
    * @param {?} data
    */
   addLineDecoration(lineNumber, type, data) {
-    this.addDecoration(TextUtils.TextRange.createFromLocation(lineNumber, 0), type, data);
+    this.addDecoration(TextUtils.TextRange.TextRange.createFromLocation(lineNumber, 0), type, data);
   }
 
   /**
-   * @param {!TextUtils.TextRange} range
+   * @param {!TextUtils.TextRange.TextRange} range
    * @param {string} type
    * @param {?} data
    */
@@ -632,6 +640,17 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
    */
   decorationsForType(type) {
     return this._decorations ? this._decorations.get(type) : null;
+  }
+
+  disableEdit() {
+    this._disableEdit = true;
+  }
+
+  /**
+   * @return {boolean}
+   */
+  editDisabled() {
+    return this._disableEdit;
   }
 }
 
@@ -720,7 +739,7 @@ export class Message {
    * @param {!UISourceCode} uiSourceCode
    * @param {!Message.Level} level
    * @param {string} text
-   * @param {!TextUtils.TextRange} range
+   * @param {!TextUtils.TextRange.TextRange} range
    */
   constructor(uiSourceCode, level, text, range) {
     this._uiSourceCode = uiSourceCode;
@@ -751,7 +770,7 @@ export class Message {
   }
 
   /**
-   * @return {!TextUtils.TextRange}
+   * @return {!TextUtils.TextRange.TextRange}
    */
   range() {
     return this._range;
@@ -798,7 +817,7 @@ Message.Level = {
  */
 export class LineMarker {
   /**
-   * @param {!TextUtils.TextRange} range
+   * @param {!TextUtils.TextRange.TextRange} range
    * @param {string} type
    * @param {?} data
    */
@@ -809,7 +828,7 @@ export class LineMarker {
   }
 
   /**
-   * @return {!TextUtils.TextRange}
+   * @return {!TextUtils.TextRange.TextRange}
    */
   range() {
     return this._range;

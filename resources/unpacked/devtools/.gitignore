@@ -13,7 +13,6 @@
 *.xcodeproj*
 /.dev_profile
 /.test_cache
-/front_end/*/jsconfig.json
 /front_end/protocol_externs.js
 /release
 /scripts/visualize_deps/out
@@ -36,6 +35,11 @@ test/e2e/**/*.js
 test/e2e/**/*.tsbuildinfo
 test/shared/**/*.js
 test/shared/**/helper.d.ts
+test/shared/**/runner.d.ts
+test/shared/**/master.d.ts
+test/shared/**/worker-task.d.ts
+test/shared/**/worker.d.ts
+test/shared/**/text-color.d.ts
 test/shared/**/screenshot.d.ts
 test/shared/**/*.tsbuildinfo
 test/screenshots/**/*.js

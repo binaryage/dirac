@@ -154,7 +154,20 @@ export class RequestHeadersView extends UI.Widget.VBox {
           exampleNode.createChild('span', 'comment').textContent = example.comment;
         }
       }
-      if (header.details.link) {
+
+      if (Root.Runtime.experiments.isEnabled('issuesPane') &&
+          SDK.RelatedIssue.hasIssueOfCategory(
+              this._request, SDK.RelatedIssue.IssueCategory.CrossOriginEmbedderPolicy)) {
+        const link = createElementWithClass('div', 'devtools-link');
+        link.onclick = () => {
+          SDK.RelatedIssue.reveal(this._request, SDK.RelatedIssue.IssueCategory.CrossOriginEmbedderPolicy);
+        };
+        const text = createElementWithClass('span', 'devtools-link');
+        text.textContent = 'Learn more in the issues panel';
+        link.appendChild(text);
+        link.prepend(UI.Icon.Icon.create('largeicon-breaking-change', 'icon'));
+        callToActionBody.appendChild(link);
+      } else if (header.details.link) {
         const link = UI.XLink.XLink.create(header.details.link.url, ls`Learn more`, 'link');
         link.prepend(UI.Icon.Icon.create('largeicon-link', 'link-icon'));
         callToActionBody.appendChild(link);
@@ -872,7 +885,8 @@ export class Category extends UI.TreeOutline.TreeElement {
     super(title || '', true);
     this.toggleOnClick = true;
     this.hidden = true;
-    this._expandedSetting = self.Common.settings.createSetting('request-info-' + name + '-category-expanded', true);
+    this._expandedSetting =
+        Common.Settings.Settings.instance().createSetting('request-info-' + name + '-category-expanded', true);
     this.expanded = this._expandedSetting.get();
     root.appendChild(this);
   }

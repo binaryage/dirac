@@ -72,7 +72,7 @@ export class NavigatorView extends UI.Widget.VBox {
     self.UI.shortcutRegistry.addShortcutListener(
         this.contentElement, 'sources.rename', this._renameShortcut.bind(this), true);
 
-    this._navigatorGroupByFolderSetting = self.Common.settings.moduleSetting('navigatorGroupByFolder');
+    this._navigatorGroupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigatorGroupByFolder');
     this._navigatorGroupByFolderSetting.addChangeListener(this._groupingChanged.bind(this));
 
     this._initGrouping();
@@ -85,11 +85,11 @@ export class NavigatorView extends UI.Widget.VBox {
         SDK.SDKModel.Events.NameChanged, this._targetNameChanged, this);
 
     SDK.SDKModel.TargetManager.instance().observeTargets(this);
-    this._resetWorkspace(self.Workspace.workspace);
+    this._resetWorkspace(Workspace.Workspace.WorkspaceImpl.instance());
     this._workspace.uiSourceCodes().forEach(this._addUISourceCode.bind(this));
-    self.Bindings.networkProjectManager.addEventListener(
+    Bindings.NetworkProject.NetworkProjectManager.instance().addEventListener(
         Bindings.NetworkProject.Events.FrameAttributionAdded, this._frameAttributionAdded, this);
-    self.Bindings.networkProjectManager.addEventListener(
+    Bindings.NetworkProject.NetworkProjectManager.instance().addEventListener(
         Bindings.NetworkProject.Events.FrameAttributionRemoved, this._frameAttributionRemoved, this);
   }
 

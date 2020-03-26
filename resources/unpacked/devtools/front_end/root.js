@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './Runtime.js';
+import './RuntimeInstantiator.js';
 import './platform/platform.js';
 import './dom_extension/dom_extension.js';
 import './common/common-legacy.js';
 import './host/host-legacy.js';
-import './protocol/protocol-legacy.js';
+import './protocol_client/protocol_client-legacy.js';
 import './sdk/sdk-legacy.js';
 import './ui/ui-legacy.js';
-
 import './services/services-legacy.js';
 import './workspace/workspace-legacy.js';
 import './bindings/bindings-legacy.js';

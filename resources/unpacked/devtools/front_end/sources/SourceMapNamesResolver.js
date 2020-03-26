@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Bindings from '../bindings/bindings.js';
 import * as Formatter from '../formatter/formatter.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
@@ -76,7 +76,7 @@ export const scopeIdentifiers = function(scope) {
   return script.requestContent().then(onContent);
 
   /**
-   * @param {!Common.ContentProvider.DeferredContent} deferredContent
+   * @param {!TextUtils.ContentProvider.DeferredContent} deferredContent
    * @return {!Promise<!Array<!Identifier>>}
    */
   function onContent(deferredContent) {
@@ -130,7 +130,7 @@ export const resolveScope = function(scope) {
   }
 
   const script = scope.callFrame().script;
-  const sourceMap = self.Bindings.debuggerWorkspaceBinding.sourceMapForScript(script);
+  const sourceMap = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().sourceMapForScript(script);
   if (!sourceMap) {
     return Promise.resolve([]);
   }
@@ -197,8 +197,9 @@ export const resolveScope = function(scope) {
     const sourceTextRange = new TextUtils.TextRange.TextRange(
         startEntry.sourceLineNumber, startEntry.sourceColumnNumber, endEntry.sourceLineNumber,
         endEntry.sourceColumnNumber);
-    const uiSourceCode = self.Bindings.debuggerWorkspaceBinding.uiSourceCodeForSourceMapSourceURL(
-        script.debuggerModel, startEntry.sourceURL, script.isContentScript());
+    const uiSourceCode =
+        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiSourceCodeForSourceMapSourceURL(
+            script.debuggerModel, startEntry.sourceURL, script.isContentScript());
     if (!uiSourceCode) {
       return Promise.resolve(/** @type {?NameDescriptor} */null);
     }
@@ -348,8 +349,9 @@ export const resolveExpression = function(
  */
 export const resolveExpressionAsync =
     async function(debuggerModel, uiSourceCode, lineNumber, startColumnNumber, endColumnNumber) {
-  const rawLocations = await self.Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(
-      uiSourceCode, lineNumber, startColumnNumber);
+  const rawLocations =
+      await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiLocationToRawLocations(
+          uiSourceCode, lineNumber, startColumnNumber);
   const rawLocation = rawLocations.find(location => location.debuggerModel === debuggerModel);
   if (!rawLocation) {
     return '';
@@ -360,7 +362,8 @@ export const resolveExpressionAsync =
     return '';
   }
   const sourceMap =
-      /** @type {!SDK.SourceMap.TextSourceMap} */ (self.Bindings.debuggerWorkspaceBinding.sourceMapForScript(script));
+      /** @type {!SDK.SourceMap.TextSourceMap} */ (
+          Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().sourceMapForScript(script));
   if (!sourceMap) {
     return '';
   }
@@ -368,7 +371,7 @@ export const resolveExpressionAsync =
   return script.requestContent().then(onContent);
 
   /**
-   * @param {!Common.ContentProvider.DeferredContent} deferredContent
+   * @param {!TextUtils.ContentProvider.DeferredContent} deferredContent
    * @return {!Promise<string>}
    */
   function onContent(deferredContent) {

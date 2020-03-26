@@ -32,6 +32,7 @@ import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';
 import * as Workspace from '../workspace/workspace.js';
 
+import {BreakpointManager} from './BreakpointManager.js';
 import {ContentProviderBasedProject} from './ContentProviderBasedProject.js';
 import {DebuggerSourceMapping, DebuggerWorkspaceBinding} from './DebuggerWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
 import {NetworkProject} from './NetworkProject.js';
@@ -120,7 +121,8 @@ export class ResourceScriptMapping {
     }
     let lineNumber = rawLocation.lineNumber - (script.isInlineScriptWithSourceURL() ? script.lineOffset : 0);
     let columnNumber = rawLocation.columnNumber || 0;
-    if (script.isWasmDisassembly()) {
+    if (script.hasWasmDisassembly()) {
+      // TODO(chromium:1056632) This produces the wrong result when the disassembly is not loaded yet.
       lineNumber = script.wasmDisassemblyLine(columnNumber);
       columnNumber = 0;
     } else if (script.isInlineScriptWithSourceURL() && !lineNumber && columnNumber) {
@@ -142,7 +144,7 @@ export class ResourceScriptMapping {
       return [];
     }
     const script = scriptFile._script;
-    if (script.isWasmDisassembly()) {
+    if (script.hasWasmDisassembly()) {
       return [script.wasmByteLocation(lineNumber)];
     }
     if (script.isInlineScriptWithSourceURL()) {
@@ -356,7 +358,8 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
     const debuggerModel = this._resourceScriptMapping._debuggerModel;
-    const breakpoints = self.Bindings.breakpointManager.breakpointLocationsForUISourceCode(this._uiSourceCode)
+    const breakpoints = BreakpointManager.instance()
+                            .breakpointLocationsForUISourceCode(this._uiSourceCode)
                             .map(breakpointLocation => breakpointLocation.breakpoint);
     const source = this._uiSourceCode.workingCopy();
     debuggerModel.setScriptSource(this._script.scriptId, source, scriptSourceWasSet.bind(this));

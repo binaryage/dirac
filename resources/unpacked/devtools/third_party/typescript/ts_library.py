@@ -23,7 +23,7 @@ finally:
 NODE_LOCATION = devtools_paths.node_path()
 
 ROOT_DIRECTORY_OF_REPOSITORY = path.join(_CURRENT_DIR, '..', '..')
-ROOT_TS_CONFIG_LOCATION = path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'tsconfig.json')
+BASE_TS_CONFIG_LOCATION = path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'tsconfig.base.json')
 TYPES_NODE_MODULES_DIRECTORY = path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'node_modules', '@types')
 RESOURCES_INSPECTOR_PATH = path.join(os.getcwd(), 'resources', 'inspector')
 
@@ -32,6 +32,8 @@ GLOBAL_TYPESCRIPT_DEFINITION_FILES = [
     path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'legacy', 'legacy-defs.d.ts'),
     # generated protocol definitions
     path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'generated', 'protocol.d.ts'),
+    # Types for W3C FileSystem API
+    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'node_modules', '@types', 'filesystem', 'index.d.ts'),
 ]
 
 
@@ -54,8 +56,7 @@ def main():
     parser.set_defaults(test_only=False)
 
     opts = parser.parse_args()
-
-    with open(ROOT_TS_CONFIG_LOCATION) as root_tsconfig:
+    with open(BASE_TS_CONFIG_LOCATION) as root_tsconfig:
         try:
             tsconfig = json.loads(root_tsconfig.read())
         except Exception as e:
@@ -78,8 +79,11 @@ def main():
         tsconfig['references'] = [{'path': src} for src in opts.deps]
     tsconfig['compilerOptions']['declaration'] = True
     tsconfig['compilerOptions']['composite'] = True
+    tsconfig['compilerOptions']['sourceMap'] = True
     tsconfig['compilerOptions']['rootDir'] = get_relative_path_from_output_directory(opts.front_end_directory)
-    tsconfig['compilerOptions']['typeRoots'] = [get_relative_path_from_output_directory(TYPES_NODE_MODULES_DIRECTORY)]
+    tsconfig['compilerOptions']['typeRoots'] = opts.test_only and [
+        get_relative_path_from_output_directory(TYPES_NODE_MODULES_DIRECTORY)
+    ] or []
     tsconfig['compilerOptions']['outDir'] = '.'
     tsconfig['compilerOptions']['tsBuildInfoFile'] = tsbuildinfo_name
     with open(tsconfig_output_location, 'w') as generated_tsconfig:
@@ -92,7 +96,7 @@ def main():
     found_errors, stderr = runTsc(tsconfig_location=tsconfig_output_location)
     if found_errors:
         print('')
-        print('TypeScript compilation failed. Used tsconfig %s' % tsconfig_output_location)
+        print('TypeScript compilation failed. Used tsconfig %s' % opts.tsconfig_output_location)
         print('')
         print(stderr)
         print('')

@@ -6,13 +6,19 @@ import * as Common from '../common/common.js';  // eslint-disable-line no-unused
 import * as SDK from '../sdk/sdk.js';
 import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
 
+import {BlackboxManager} from './BlackboxManager.js';
 import {CompilerScriptMapping} from './CompilerScriptMapping.js';
 import {DebuggerLanguagePluginManager} from './DebuggerLanguagePlugins.js';
 import {DefaultScriptMapping} from './DefaultScriptMapping.js';
 import {CXXDWARFLanguagePlugin} from './language_plugins/CXXDWARFLanguagePlugin.js';
 import {LiveLocation, LiveLocationPool, LiveLocationWithPool} from './LiveLocation.js';  // eslint-disable-line no-unused-vars
+import {ResourceMapping} from './ResourceMapping.js';
 import {ResourceScriptFile, ResourceScriptMapping} from './ResourceScriptMapping.js';  // eslint-disable-line no-unused-vars
 
+/**
+ * @type {!DebuggerWorkspaceBinding}
+ */
+let debuggerWorkspaceBindingInstance;
 
 /**
  * @unrestricted
@@ -20,6 +26,7 @@ import {ResourceScriptFile, ResourceScriptMapping} from './ResourceScriptMapping
  */
 export class DebuggerWorkspaceBinding {
   /**
+   * @private
    * @param {!SDK.SDKModel.TargetManager} targetManager
    * @param {!Workspace.Workspace.WorkspaceImpl} workspace
    */
@@ -36,6 +43,26 @@ export class DebuggerWorkspaceBinding {
     targetManager.addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._debuggerResumed, this);
     targetManager.observeModels(SDK.DebuggerModel.DebuggerModel, this);
+
+    /** @type {!Set.<!Promise>} */
+    this._liveLocationPromises = new Set();
+  }
+
+  /**
+   * @param {{forceNew: ?boolean, targetManager: ?SDK.SDKModel.TargetManager, workspace: ?Workspace.Workspace.WorkspaceImpl}} opts
+   */
+  static instance(opts = {forceNew: null, targetManager: null, workspace: null}) {
+    const {forceNew, targetManager, workspace} = opts;
+    if (!debuggerWorkspaceBindingInstance || forceNew) {
+      if (!targetManager || !workspace) {
+        throw new Error(
+            `Unable to create settings: targetManager and workspace must be provided: ${new Error().stack}`);
+      }
+
+      debuggerWorkspaceBindingInstance = new DebuggerWorkspaceBinding(targetManager, workspace);
+    }
+
+    return debuggerWorkspaceBindingInstance;
   }
 
   /**
@@ -75,14 +102,35 @@ export class DebuggerWorkspaceBinding {
     return modelData.pluginManager;
   }
 
+  /**
+   * The promise returned by this function is resolved once all *currently*
+   * pending LiveLocations are processed.
+   *
+   * @return {!Promise}
+   */
+  pendingLiveLocationChangesPromise() {
+    return Promise.all(this._liveLocationPromises);
+  }
+
+  /**
+   * @param {!Promise} promise
+   */
+  _recordLiveLocationChange(promise) {
+    promise.then(() => {
+      this._liveLocationPromises.delete(promise);
+    });
+    this._liveLocationPromises.add(promise);
+  }
 
   /**
    * @param {!SDK.Script.Script} script
    */
-  updateLocations(script) {
+  async updateLocations(script) {
     const modelData = this._debuggerModelToData.get(script.debuggerModel);
     if (modelData) {
-      modelData._updateLocations(script);
+      const updatePromise = modelData._updateLocations(script);
+      this._recordLiveLocationChange(updatePromise);
+      await updatePromise;
     }
   }
 
@@ -90,56 +138,61 @@ export class DebuggerWorkspaceBinding {
    * @param {!SDK.DebuggerModel.Location} rawLocation
    * @param {function(!LiveLocation)} updateDelegate
    * @param {!LiveLocationPool} locationPool
-   * @return {!Location}
+   * @return {!Promise<!Location>}
    */
   createLiveLocation(rawLocation, updateDelegate, locationPool) {
     const modelData = this._debuggerModelToData.get(rawLocation.script().debuggerModel);
-    return modelData._createLiveLocation(rawLocation, updateDelegate, locationPool);
+    const liveLocationPromise = modelData._createLiveLocation(rawLocation, updateDelegate, locationPool);
+    this._recordLiveLocationChange(liveLocationPromise);
+    return liveLocationPromise;
   }
 
   /**
    * @param {!Array<!SDK.DebuggerModel.Location>} rawLocations
    * @param {function(!LiveLocation)} updateDelegate
    * @param {!LiveLocationPool} locationPool
-   * @return {!Bindings.LiveLocation}
+   * @return {!Promise<!Bindings.LiveLocation>}
    */
-  createStackTraceTopFrameLiveLocation(rawLocations, updateDelegate, locationPool) {
+  async createStackTraceTopFrameLiveLocation(rawLocations, updateDelegate, locationPool) {
     console.assert(rawLocations.length);
-    const location = new StackTraceTopFrameLocation(rawLocations, this, updateDelegate, locationPool);
-    location.update();
-    return location;
+    const locationPromise =
+        StackTraceTopFrameLocation.createStackTraceTopFrameLocation(rawLocations, this, updateDelegate, locationPool);
+    this._recordLiveLocationChange(locationPromise);
+    return locationPromise;
   }
 
   /**
    * @param {!SDK.DebuggerModel.Location} location
    * @param {function(!LiveLocation)} updateDelegate
    * @param {!LiveLocationPool} locationPool
-   * @return {?Location}
+   * @return {!Promise<?Location>}
    */
-  createCallFrameLiveLocation(location, updateDelegate, locationPool) {
+  async createCallFrameLiveLocation(location, updateDelegate, locationPool) {
     const script = location.script();
     if (!script) {
       return null;
     }
     const debuggerModel = location.debuggerModel;
-    const liveLocation = this.createLiveLocation(location, updateDelegate, locationPool);
+    const liveLocationPromise = this.createLiveLocation(location, updateDelegate, locationPool);
+    this._recordLiveLocationChange(liveLocationPromise);
+    const liveLocation = await liveLocationPromise;
     this._registerCallFrameLiveLocation(debuggerModel, liveLocation);
     return liveLocation;
   }
 
   /**
    * @param {!SDK.DebuggerModel.Location} rawLocation
-   * @return {?Workspace.UISourceCode.UILocation}
+   * @return {!Promise<?Workspace.UISourceCode.UILocation>}
    */
-  rawLocationToUILocation(rawLocation) {
-    for (let i = 0; i < this._sourceMappings.length; ++i) {
-      const uiLocation = this._sourceMappings[i].rawLocationToUILocation(rawLocation);
+  async rawLocationToUILocation(rawLocation) {
+    for (const sourceMapping of this._sourceMappings) {
+      const uiLocation = sourceMapping.rawLocationToUILocation(rawLocation);
       if (uiLocation) {
         return uiLocation;
       }
     }
     const modelData = this._debuggerModelToData.get(rawLocation.debuggerModel);
-    return modelData._rawLocationToUILocation(rawLocation);
+    return modelData ? modelData._rawLocationToUILocation(rawLocation) : null;
   }
 
   /**
@@ -199,7 +252,7 @@ export class DebuggerWorkspaceBinding {
     const rawLocations =
         await this.uiLocationToRawLocations(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
     for (const location of rawLocations) {
-      const uiLocationCandidate = this.rawLocationToUILocation(location);
+      const uiLocationCandidate = await this.rawLocationToUILocation(location);
       if (uiLocationCandidate) {
         return uiLocationCandidate;
       }
@@ -330,14 +383,14 @@ class ModelData {
    * @param {!SDK.DebuggerModel.Location} rawLocation
    * @param {function(!LiveLocation)} updateDelegate
    * @param {!LiveLocationPool} locationPool
-   * @return {!Location}
+   * @return {!Promise<!Location>}
    */
-  _createLiveLocation(rawLocation, updateDelegate, locationPool) {
+  async _createLiveLocation(rawLocation, updateDelegate, locationPool) {
     const script = /** @type {!SDK.Script.Script} */ (rawLocation.script());
     console.assert(script);
     const location = new Location(script, rawLocation, this._debuggerWorkspaceBinding, updateDelegate, locationPool);
     this._locations.set(script, location);
-    location.update();
+    await location.update();
     return location;
   }
 
@@ -351,24 +404,26 @@ class ModelData {
   /**
    * @param {!SDK.Script.Script} script
    */
-  _updateLocations(script) {
+  async _updateLocations(script) {
+    const promises = [];
     for (const location of this._locations.get(script)) {
-      location.update();
+      promises.push(location.update());
     }
+    return Promise.all(promises);
   }
 
   /**
    * @param {!SDK.DebuggerModel.Location} rawLocation
-   * @return {?Workspace.UISourceCode.UILocation}
+   * @return {!Promise<?Workspace.UISourceCode.UILocation>}
    */
-  _rawLocationToUILocation(rawLocation) {
+  async _rawLocationToUILocation(rawLocation) {
     let uiLocation = null;
     if (Root.Runtime.experiments.isEnabled('wasmDWARFDebugging')) {
-      uiLocation = this._pluginManager.rawLocationToUILocation(rawLocation);
+      uiLocation = await this._pluginManager.rawLocationToUILocation(rawLocation);
     }
     uiLocation = uiLocation || this._compilerMapping.rawLocationToUILocation(rawLocation);
     uiLocation = uiLocation || this._resourceMapping.rawLocationToUILocation(rawLocation);
-    uiLocation = uiLocation || self.Bindings.resourceMapping.jsLocationToUILocation(rawLocation);
+    uiLocation = uiLocation || ResourceMapping.instance().jsLocationToUILocation(rawLocation);
     uiLocation = uiLocation || this._defaultMapping.rawLocationToUILocation(rawLocation);
     return /** @type {!Workspace.UISourceCode.UILocation} */ (uiLocation);
   }
@@ -401,7 +456,7 @@ class ModelData {
         this._resourceMapping.uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber);
     locations = locations.length ?
         locations :
-        self.Bindings.resourceMapping.uiLocationToJSLocations(uiSourceCode, lineNumber, columnNumber);
+        ResourceMapping.instance().uiLocationToJSLocations(uiSourceCode, lineNumber, columnNumber);
     locations = locations.length ?
         locations :
         this._defaultMapping.uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber);
@@ -449,9 +504,9 @@ class Location extends LiveLocationWithPool {
 
   /**
    * @override
-   * @return {?Workspace.UISourceCode.UILocation}
+   * @return {!Promise<?Workspace.UISourceCode.UILocation>}
    */
-  uiLocation() {
+  async uiLocation() {
     const debuggerModelLocation = this._rawLocation;
     return this._binding.rawLocationToUILocation(debuggerModelLocation);
   }
@@ -466,44 +521,58 @@ class Location extends LiveLocationWithPool {
 
   /**
    * @override
-   * @return {boolean}
+   * @return {!Promise<boolean>}
    */
-  isBlackboxed() {
-    const uiLocation = this.uiLocation();
-    return uiLocation ? self.Bindings.blackboxManager.isBlackboxedUISourceCode(uiLocation.uiSourceCode) : false;
+  async isBlackboxed() {
+    const uiLocation = await this.uiLocation();
+    return uiLocation ? BlackboxManager.instance().isBlackboxedUISourceCode(uiLocation.uiSourceCode) : false;
   }
 }
 
 class StackTraceTopFrameLocation extends LiveLocationWithPool {
   /**
+   * @param {function(!LiveLocation)} updateDelegate
+   * @param {!LiveLocationPool} locationPool
+   */
+  constructor(updateDelegate, locationPool) {
+    super(updateDelegate, locationPool);
+    this._updateScheduled = true;
+    /** @type {?LiveLocation} */
+    this._current = null;
+    /** @type {?Array<!LiveLocation>} */
+    this._locations = null;
+  }
+
+  /**
    * @param {!Array<!SDK.DebuggerModel.Location>} rawLocations
    * @param {!DebuggerWorkspaceBinding} binding
    * @param {function(!LiveLocation)} updateDelegate
    * @param {!LiveLocationPool} locationPool
+   * @return {!Promise<!StackTraceTopFrameLocation>}
    */
-  constructor(rawLocations, binding, updateDelegate, locationPool) {
-    super(updateDelegate, locationPool);
-    this._updateScheduled = true;
-    this._current = null;
-    this._locations = rawLocations.map(
-        location => binding.createLiveLocation(location, this._scheduleUpdate.bind(this), locationPool));
-    this._updateLocation();
+  static async createStackTraceTopFrameLocation(rawLocations, binding, updateDelegate, locationPool) {
+    const location = new StackTraceTopFrameLocation(updateDelegate, locationPool);
+    const locationsPromises = rawLocations.map(
+        rawLocation => binding.createLiveLocation(rawLocation, location._scheduleUpdate.bind(location), locationPool));
+    location._locations = await Promise.all(locationsPromises);
+    await location._updateLocation();
+    return location;
   }
 
   /**
    * @override
-   * @return {?Workspace.UISourceCode.UILocation}
+   * @return {!Promise<?Workspace.UISourceCode.UILocation>}
    */
-  uiLocation() {
-    return this._current.uiLocation();
+  async uiLocation() {
+    return this._current ? this._current.uiLocation() : null;
   }
 
   /**
    * @override
-   * @return {boolean}
+   * @return {!Promise<boolean>}
    */
-  isBlackboxed() {
-    return this._current.isBlackboxed();
+  async isBlackboxed() {
+    return this._current ? this._current.isBlackboxed() : false;
   }
 
   /**
@@ -511,8 +580,10 @@ class StackTraceTopFrameLocation extends LiveLocationWithPool {
    */
   dispose() {
     super.dispose();
-    for (const location of this._locations) {
-      location.dispose();
+    if (this._locations) {
+      for (const location of this._locations) {
+        location.dispose();
+      }
     }
     this._locations = null;
     this._current = null;
@@ -526,12 +597,19 @@ class StackTraceTopFrameLocation extends LiveLocationWithPool {
     setImmediate(this._updateLocation.bind(this));
   }
 
-  _updateLocation() {
+  async _updateLocation() {
     this._updateScheduled = false;
-    if (!this._locations) {
+    if (!this._locations || this._locations.length === 0) {
       return;
     }
-    this._current = this._locations.find(location => !location.isBlackboxed()) || this._locations[0];
+
+    this._current = this._locations[0];
+    for (const location of this._locations) {
+      if (!(await location.isBlackboxed())) {
+        this._current = location;
+        break;
+      }
+    }
     this.update();
   }
 }

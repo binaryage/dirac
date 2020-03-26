@@ -65,6 +65,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
         event.consume(true);
       }
     });
+    labelNode.checkboxElement.addEventListener('focus', () => treeElement.listItemElement.focus());
     UI.ARIAUtils.setChecked(treeElement.listItemElement, false);
     this._categoriesTreeOutline.appendChild(treeElement);
 
@@ -87,6 +88,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
         event.consume(true);
       }
     });
+    labelNode.checkboxElement.addEventListener('focus', () => treeElement.listItemElement.focus());
     UI.ARIAUtils.setChecked(treeElement.listItemElement, false);
     treeElement.listItemElement.createChild('div', 'breakpoint-hit-marker');
     this._categories.get(breakpoint.category()).element.appendChild(treeElement);
@@ -114,7 +116,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
       return;
     }
 
-    self.UI.viewManager.showView('sources.eventListenerBreakpoints');
+    UI.ViewManager.ViewManager.instance().showView('sources.eventListenerBreakpoints');
     this._categories.get(breakpoint.category()).element.expand();
     this._highlightedElement = this._breakpoints.get(breakpoint).element.listItemElement;
     UI.ARIAUtils.setDescription(this._highlightedElement, ls`breakpoint hit`);

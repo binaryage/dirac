@@ -55,9 +55,11 @@ export class NetworkPanel extends UI.Panel.Panel {
     super('network');
     this.registerRequiredCSS('network/networkPanel.css');
 
-    this._networkLogShowOverviewSetting = self.Common.settings.createSetting('networkLogShowOverview', true);
-    this._networkLogLargeRowsSetting = self.Common.settings.createSetting('networkLogLargeRows', false);
-    this._networkRecordFilmStripSetting = self.Common.settings.createSetting('networkRecordFilmStripSetting', false);
+    this._networkLogShowOverviewSetting =
+        Common.Settings.Settings.instance().createSetting('networkLogShowOverview', true);
+    this._networkLogLargeRowsSetting = Common.Settings.Settings.instance().createSetting('networkLogLargeRows', false);
+    this._networkRecordFilmStripSetting =
+        Common.Settings.Settings.instance().createSetting('networkRecordFilmStripSetting', false);
     this._toggleRecordAction =
         /** @type {!UI.Action.Action }*/ (self.UI.actionRegistry.action('network.toggle-recording'));
 
@@ -85,7 +87,8 @@ export class NetworkPanel extends UI.Panel.Panel {
     this._settingsPane = new UI.Widget.HBox();
     this._settingsPane.element.classList.add('network-settings-pane');
     this._settingsPane.show(panel.contentElement);
-    this._showSettingsPaneSetting = self.Common.settings.createSetting('networkShowSettingsToolbar', false);
+    this._showSettingsPaneSetting =
+        Common.Settings.Settings.instance().createSetting('networkShowSettingsToolbar', false);
     this._showSettingsPaneSetting.addChangeListener(this._updateSettingsPaneVisibility.bind(this));
     this._updateSettingsPaneVisibility();
 
@@ -113,8 +116,8 @@ export class NetworkPanel extends UI.Panel.Panel {
     splitWidget.hideSidebar();
     splitWidget.enableShowModeSaving();
     splitWidget.show(this.element);
-    this._sidebarLocation = self.UI.viewManager.createTabbedLocation(async () => {
-      self.UI.viewManager.showView('network');
+    this._sidebarLocation = UI.ViewManager.ViewManager.instance().createTabbedLocation(async () => {
+      UI.ViewManager.ViewManager.instance().showView('network');
       splitWidget.showBoth();
     }, 'network-sidebar', true);
     const tabbedPane = this._sidebarLocation.tabbedPane();
@@ -159,7 +162,7 @@ export class NetworkPanel extends UI.Panel.Panel {
     this._networkLogLargeRowsSetting.addChangeListener(this._toggleLargerRequests, this);
     this._networkRecordFilmStripSetting.addChangeListener(this._toggleRecordFilmStrip, this);
 
-    this._preserveLogSetting = self.Common.settings.moduleSetting('network_log.preserve-log');
+    this._preserveLogSetting = Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log');
 
     this._throttlingSelect = this._createThrottlingConditionsSelect();
     this._setupToolbarButtons(splitWidget);
@@ -192,7 +195,7 @@ export class NetworkPanel extends UI.Panel.Panel {
       filterString += `${filter.filterType}:${filter.filterValue} `;
     }
     panel._networkLogView.setTextFilterValue(filterString);
-    self.UI.viewManager.showView('network');
+    UI.ViewManager.ViewManager.instance().showView('network');
   }
 
   /**
@@ -254,7 +257,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         Common.UIString.UIString('Preserve log')));
 
     const disableCacheCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
-        self.Common.settings.moduleSetting('cacheDisabled'),
+        Common.Settings.Settings.instance().moduleSetting('cacheDisabled'),
         Common.UIString.UIString('Disable cache (while DevTools is open)'), Common.UIString.UIString('Disable cache'));
     this._panelToolbar.appendToolbarItem(disableCacheCheckbox);
 
@@ -276,8 +279,8 @@ export class NetworkPanel extends UI.Panel.Panel {
     const settingsToolbarRight = new UI.Toolbar.Toolbar('', this._settingsPane.element);
     settingsToolbarRight.makeVertical();
     settingsToolbarRight.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(
-        self.Common.settings.moduleSetting('network.group-by-frame'), ls`Group requests by top level request frame`,
-        ls`Group by frame`));
+        Common.Settings.Settings.instance().moduleSetting('network.group-by-frame'),
+        ls`Group requests by top level request frame`, ls`Group by frame`));
     settingsToolbarRight.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(
         this._networkRecordFilmStripSetting, ls`Capture screenshots when loading a page`, ls`Capture screenshots`));
 
@@ -476,7 +479,7 @@ export class NetworkPanel extends UI.Panel.Panel {
    * @return {!Promise<?NetworkItemView>}
    */
   async selectRequest(request) {
-    await self.UI.viewManager.showView('network');
+    await UI.ViewManager.ViewManager.instance().showView('network');
     this._networkLogView.selectRequest(request);
     return this._networkItemView;
   }
@@ -580,7 +583,10 @@ export class NetworkPanel extends UI.Panel.Panel {
      * @this {NetworkPanel}
      */
     function reveal(request) {
-      self.UI.viewManager.showView('network').then(this._networkLogView.resetFilter.bind(this._networkLogView)).then(this.revealAndHighlightRequest.bind(this, request));
+      UI.ViewManager.ViewManager.instance()
+          .showView('network')
+          .then(this._networkLogView.resetFilter.bind(this._networkLogView))
+          .then(this.revealAndHighlightRequest.bind(this, request));
     }
 
     /**
@@ -705,7 +711,8 @@ export class RequestRevealer {
       return Promise.reject(new Error('Internal error: not a network request'));
     }
     const panel = NetworkPanel._instance();
-    return self.UI.viewManager.showView('network').then(panel.revealAndHighlightRequest.bind(panel, request));
+    return UI.ViewManager.ViewManager.instance().showView('network').then(
+        panel.revealAndHighlightRequest.bind(panel, request));
   }
 }
 
@@ -828,17 +835,19 @@ export class ActionDelegate {
     const panel = self.UI.context.flavor(NetworkPanel);
     console.assert(panel && panel instanceof NetworkPanel);
     switch (actionId) {
-      case 'network.toggle-recording':
+      case 'network.toggle-recording': {
         panel._toggleRecording();
         return true;
-      case 'network.hide-request-details':
+      }
+      case 'network.hide-request-details': {
         if (!panel._networkItemView) {
           return false;
         }
         panel._hideRequestPanel();
         panel._networkLogView.resetFocus();
         return true;
-      case 'network.search':
+      }
+      case 'network.search': {
         const selection = self.UI.inspectorView.element.window().getSelection();
         let queryCandidate = '';
         if (selection.rangeCount) {
@@ -846,6 +855,7 @@ export class ActionDelegate {
         }
         SearchNetworkView.openSearch(queryCandidate);
         return true;
+      }
     }
     return false;
   }
@@ -889,7 +899,7 @@ export class SearchNetworkView extends Search.SearchView.SearchView {
    * @return {!Promise<!Search.SearchView.SearchView>}
    */
   static async openSearch(query, searchImmediately) {
-    await self.UI.viewManager.showView('network.search-network-tab');
+    await UI.ViewManager.ViewManager.instance().showView('network.search-network-tab');
     const searchView =
         /** @type {!SearchNetworkView} */ (self.runtime.sharedInstance(SearchNetworkView));
     searchView.toggle(query, !!searchImmediately);

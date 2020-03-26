@@ -49,7 +49,7 @@ export class CommandMenu {
   static createSettingCommand(extension, title, value) {
     const category = extension.descriptor()['category'] || '';
     const tags = extension.descriptor()['tags'] || '';
-    const setting = self.Common.settings.moduleSetting(extension.descriptor()['settingName']);
+    const setting = Common.Settings.Settings.instance().moduleSetting(extension.descriptor()['settingName']);
     return CommandMenu.createCommand(ls(category), tags, title, '', setting.set.bind(setting, value), availableHandler);
 
     /**
@@ -77,7 +77,8 @@ export class CommandMenu {
    */
   static createRevealViewCommand(extension, category) {
     const viewId = extension.descriptor()['id'];
-    const executeHandler = self.UI.viewManager.showView.bind(self.UI.viewManager, viewId);
+    const executeHandler =
+        UI.ViewManager.ViewManager.instance().showView.bind(UI.ViewManager.ViewManager.instance(), viewId);
     const tags = extension.descriptor()['tags'] || '';
     return CommandMenu.createCommand(
         category, tags, Common.UIString.UIString('Show %s', extension.title()), '', executeHandler);

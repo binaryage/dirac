@@ -32,6 +32,7 @@ import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as SDK from '../sdk/sdk.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
 
@@ -188,14 +189,20 @@ export class Linkifier {
       return fallbackAnchor;
     }
 
-    const anchor = Linkifier._createLink('', className, options);
+    // Not initialising the anchor element with 'zero width space' (\u200b) causes a crash
+    // in the layout engine.
+    // TODO(szuend): Remove comment and workaround once the crash is fixed.
+    const anchor = Linkifier._createLink('\u200b', className, options);
     const info = Linkifier._linkInfo(anchor);
     info.enableDecorator = this._useLinkDecorator;
     info.fallback = fallbackAnchor;
-    info.liveLocation = self.Bindings.debuggerWorkspaceBinding.createLiveLocation(
-        rawLocation, this._updateAnchor.bind(this, anchor),
-        /** @type {!Bindings.LiveLocation.LiveLocationPool} */
-        (this._locationPoolByTarget.get(rawLocation.debuggerModel.target())));
+
+    const pool = this._locationPoolByTarget.get(rawLocation.debuggerModel.target());
+    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+        .createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor), pool)
+        .then(liveLocation => {
+          info.liveLocation = liveLocation;
+        });
 
     const anchors = /** @type {!Array<!Element>} */ (this._anchorsByTarget.get(rawLocation.debuggerModel.target()));
     anchors.push(anchor);
@@ -263,13 +270,20 @@ export class Linkifier {
       return fallbackAnchor;
     }
 
-    const anchor = Linkifier._createLink('', classes || '');
+    // Not initialising the anchor element with 'zero width space' (\u200b) causes a crash
+    // in the layout engine.
+    // TODO(szuend): Remove comment and workaround once the crash is fixed.
+    const anchor = Linkifier._createLink('\u200b', classes || '');
     const info = Linkifier._linkInfo(anchor);
     info.enableDecorator = this._useLinkDecorator;
     info.fallback = fallbackAnchor;
-    info.liveLocation = self.Bindings.debuggerWorkspaceBinding.createStackTraceTopFrameLiveLocation(
-        rawLocations, this._updateAnchor.bind(this, anchor),
-        /** @type {!Bindings.LiveLocation.LiveLocationPool} */ (this._locationPoolByTarget.get(target)));
+
+    const pool = this._locationPoolByTarget.get(target);
+    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+        .createStackTraceTopFrameLiveLocation(rawLocations, this._updateAnchor.bind(this, anchor), pool)
+        .then(liveLocation => {
+          info.liveLocation = liveLocation;
+        });
 
     const anchors = /** @type {!Array<!Element>} */ (this._anchorsByTarget.get(target));
     anchors.push(anchor);
@@ -282,13 +296,19 @@ export class Linkifier {
    * @return {!Element}
    */
   linkifyCSSLocation(rawLocation, classes) {
-    const anchor = Linkifier._createLink('', classes || '');
+    // Not initialising the anchor element with 'zero width space' (\u200b) causes a crash
+    // in the layout engine.
+    // TODO(szuend): Remove comment and workaround once the crash is fixed.
+    const anchor = Linkifier._createLink('\u200b', classes || '');
     const info = Linkifier._linkInfo(anchor);
     info.enableDecorator = this._useLinkDecorator;
-    info.liveLocation = self.Bindings.cssWorkspaceBinding.createLiveLocation(
-        rawLocation, this._updateAnchor.bind(this, anchor),
-        /** @type {!Bindings.LiveLocation.LiveLocationPool} */
-        (this._locationPoolByTarget.get(rawLocation.cssModel().target())));
+
+    const pool = this._locationPoolByTarget.get(rawLocation.cssModel().target());
+    Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance()
+        .createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor), pool)
+        .then(liveLocation => {
+          info.liveLocation = liveLocation;
+        });
 
     const anchors = /** @type {!Array<!Element>} */ (this._anchorsByTarget.get(rawLocation.cssModel().target()));
     anchors.push(anchor);
@@ -316,9 +336,9 @@ export class Linkifier {
    * @param {!Element} anchor
    * @param {!Bindings.LiveLocation.LiveLocation} liveLocation
    */
-  _updateAnchor(anchor, liveLocation) {
+  async _updateAnchor(anchor, liveLocation) {
     Linkifier._unbindUILocation(anchor);
-    const uiLocation = liveLocation.uiLocation();
+    const uiLocation = await liveLocation.uiLocation();
     if (!uiLocation) {
       return;
     }
@@ -332,7 +352,7 @@ export class Linkifier {
       titleText += ':' + (uiLocation.lineNumber + 1);
     }
     anchor.title = titleText;
-    anchor.classList.toggle('webkit-html-blackbox-link', liveLocation.isBlackboxed());
+    anchor.classList.toggle('webkit-html-blackbox-link', await liveLocation.isBlackboxed());
     Linkifier._updateLinkDecorations(anchor);
   }
 
@@ -505,7 +525,7 @@ export class Linkifier {
    * @param {string} string
    */
   static _appendTextWithoutHashes(link, string) {
-    const hashSplit = TextUtils.TextUtils.splitStringByRegexes(string, [/[a-f0-9]{20,}/g]);
+    const hashSplit = TextUtils.TextUtils.Utils.splitStringByRegexes(string, [/[a-f0-9]{20,}/g]);
     for (const match of hashSplit) {
       if (match.regexIndex === -1) {
         link.createTextChild(match.value);
@@ -571,7 +591,8 @@ export class Linkifier {
    */
   static _linkHandlerSetting() {
     if (!Linkifier._linkHandlerSettingInstance) {
-      Linkifier._linkHandlerSettingInstance = self.Common.settings.createSetting('openLinkHandler', ls`auto`);
+      Linkifier._linkHandlerSettingInstance =
+          Common.Settings.Settings.instance().createSetting('openLinkHandler', ls`auto`);
     }
     return Linkifier._linkHandlerSettingInstance;
   }
@@ -620,8 +641,9 @@ export class Linkifier {
       url = uiLocation.uiSourceCode.contentURL();
     } else if (info.url) {
       url = info.url;
-      const uiSourceCode = self.Workspace.workspace.uiSourceCodeForURL(url) ||
-          self.Workspace.workspace.uiSourceCodeForURL(Common.ParsedURL.ParsedURL.urlWithoutHash(url));
+      const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url) ||
+          Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(
+              Common.ParsedURL.ParsedURL.urlWithoutHash(url));
       uiLocation = uiSourceCode ? uiSourceCode.uiLocation(info.lineNumber || 0, info.columnNumber || 0) : null;
     }
     const resource = url ? Bindings.ResourceUtils.resourceForURL(url) : null;
@@ -784,7 +806,7 @@ export class ContentProviderContextMenuProvider {
    * @param {!Object} target
    */
   appendApplicableItems(event, contextMenu, target) {
-    const contentProvider = /** @type {!Common.ContentProvider.ContentProvider} */ (target);
+    const contentProvider = /** @type {!TextUtils.ContentProvider.ContentProvider} */ (target);
     if (!contentProvider.contentURL()) {
       return;
     }
@@ -858,6 +880,6 @@ export let LinkifyOptions;
 export let _CreateLinkOptions;
 
 /**
- * @typedef {function(!Common.ContentProvider.ContentProvider, number):void}
+ * @typedef {function(!TextUtils.ContentProvider.ContentProvider, number):void}
  */
 export let LinkHandler;

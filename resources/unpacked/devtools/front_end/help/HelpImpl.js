@@ -29,7 +29,7 @@ export function latestReleaseNote() {
 export function showReleaseNoteIfNeeded() {
   innerShowReleaseNoteIfNeeded(
       Help._releaseNoteVersionSetting.get(), latestReleaseNote().version,
-      self.Common.settings.moduleSetting('help.show-release-note').get());
+      Common.Settings.Settings.instance().moduleSetting('help.show-release-note').get());
 }
 
 /**
@@ -49,7 +49,7 @@ export function innerShowReleaseNoteIfNeeded(lastSeenVersion, latestVersion, sho
     return;
   }
   Help._releaseNoteVersionSetting.set(latestVersion);
-  self.UI.viewManager.showView(releaseNoteViewId, true);
+  UI.ViewManager.ViewManager.instance().showView(releaseNoteViewId, true);
 }
 
 /**

@@ -27,13 +27,14 @@
  */
 
 import * as Common from '../common/common.js';
-import * as ProtocolModule from '../protocol/protocol.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 
 import {Events, NetworkRequest} from './NetworkRequest.js';                   // eslint-disable-line no-unused-vars
 import {ResourceTreeFrame, ResourceTreeModel} from './ResourceTreeModel.js';  // eslint-disable-line no-unused-vars
 
 /**
- * @implements {Common.ContentProvider.ContentProvider}
+ * @implements {TextUtils.ContentProvider.ContentProvider}
  * @unrestricted
  */
 export class Resource {
@@ -201,7 +202,7 @@ export class Resource {
 
   /**
    * @override
-   * @return {!Promise<!Common.ContentProvider.DeferredContent>}
+   * @return {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   requestContent() {
     if (typeof this._content !== 'undefined') {
@@ -229,7 +230,7 @@ export class Resource {
    * @param {string} query
    * @param {boolean} caseSensitive
    * @param {boolean} isRegex
-   * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
+   * @return {!Promise<!Array<!TextUtils.ContentProvider.SearchMatch>>}
    */
   async searchInContent(query, caseSensitive, isRegex) {
     if (!this.frameId) {
@@ -249,7 +250,7 @@ export class Resource {
   async populateImageSource(image) {
     const {content} = await this.requestContent();
     const encoded = this._contentEncoded;
-    image.src = Common.ContentProvider.contentAsDataURL(content, this._mimeType, encoded) || this._url;
+    image.src = TextUtils.ContentProvider.contentAsDataURL(content, this._mimeType, encoded) || this._url;
   }
 
   _requestFinished() {
@@ -265,7 +266,7 @@ export class Resource {
     }
     this._contentRequested = true;
 
-    /** @type {!Common.ContentProvider.DeferredContent} */
+    /** @type {!TextUtils.ContentProvider.DeferredContent} */
     let loadResult;
     if (this.request) {
       const contentData = await this.request.contentData();
@@ -275,10 +276,10 @@ export class Resource {
     } else {
       const response = await this._resourceTreeModel.target().pageAgent().invoke_getResourceContent(
           {frameId: this.frameId, url: this.url});
-      if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
-        this._contentLoadError = response[ProtocolModule.InspectorBackend.ProtocolError];
+      if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
+        this._contentLoadError = response[ProtocolClient.InspectorBackend.ProtocolError];
         this._content = null;
-        loadResult = {error: response[ProtocolModule.InspectorBackend.ProtocolError], isEncoded: false};
+        loadResult = {error: response[ProtocolClient.InspectorBackend.ProtocolError], isEncoded: false};
       } else {
         this._content = response.content;
         this._contentLoadError = null;

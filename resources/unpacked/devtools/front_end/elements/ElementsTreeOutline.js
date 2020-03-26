@@ -30,7 +30,7 @@
 
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
-import * as ProtocolModule from '../protocol/protocol.js';  // eslint-disable-line no-unused-vars
+import * as ProtocolClient from '../protocol_client/protocol_client.js';  // eslint-disable-line no-unused-vars
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -97,7 +97,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
     /** @type {!Set<!ElementsTreeElement>} */
     this._treeElementsBeingUpdated = new Set();
 
-    this._showHTMLCommentsSetting = self.Common.settings.moduleSetting('showHTMLComments');
+    this._showHTMLCommentsSetting = Common.Settings.Settings.instance().moduleSetting('showHTMLComments');
     this._showHTMLCommentsSetting.addChangeListener(this._onShowHTMLCommentsChange.bind(this));
     this.useLightSelectionColor();
   }
@@ -299,7 +299,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
     }
 
     /**
-     * @param {?ProtocolModule.InspectorBackend.ProtocolError} error
+     * @param {?ProtocolClient.InspectorBackend.ProtocolError} error
      * @param {!Protocol.DOM.NodeId} nodeId
      * @this {ElementsTreeOutline}
      */
@@ -846,7 +846,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
    */
   async _saveNodeToTempVariable(node) {
     const remoteObjectForConsole = await node.resolveToObject();
-    await self.SDK.consoleModel.saveToTempVariable(
+    await SDK.ConsoleModel.ConsoleModel.instance().saveToTempVariable(
         self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext), remoteObjectForConsole);
   }
 
@@ -940,7 +940,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
 
   /**
    * @param {boolean} wasExpanded
-   * @param {?ProtocolModule.InspectorBackend.ProtocolError} error
+   * @param {?ProtocolClient.InspectorBackend.ProtocolError} error
    * @param {?SDK.DOMModel.DOMNode} newNode
    * @return {?ElementsTreeElement} nodeId
    */

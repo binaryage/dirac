@@ -30,7 +30,7 @@
 
 import * as Common from '../common/common.js';
 
-import {ConsoleMessage, MessageLevel, MessageSource} from './ConsoleModel.js';
+import {ConsoleMessage, ConsoleModel, MessageLevel, MessageSource} from './ConsoleModel.js';
 import {Events as NetworkManagerEvents, Message, NetworkManager} from './NetworkManager.js';  // eslint-disable-line no-unused-vars
 import {Events as NetworkRequestEvents, InitiatorType, NetworkRequest} from './NetworkRequest.js';  // eslint-disable-line no-unused-vars
 import {Events as ResourceTreeModelEvents, ResourceTreeFrame, ResourceTreeModel} from './ResourceTreeModel.js';  // eslint-disable-line no-unused-vars
@@ -306,7 +306,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   _willReloadPage() {
-    if (!self.Common.settings.moduleSetting('network_log.preserve-log').get()) {
+    if (!Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log').get()) {
       this.reset();
     }
   }
@@ -370,7 +370,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
       this.dispatchEventToListeners(Events.RequestAdded, request);
     }
 
-    if (self.Common.settings.moduleSetting('network_log.preserve-log').get()) {
+    if (Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log').get()) {
       for (const request of oldRequestsSet) {
         this._requests.push(request);
         this._requestsSet.add(request);
@@ -477,7 +477,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
         networkManager.target().model(RuntimeModel), MessageSource.Network,
         message.warning ? MessageLevel.Warning : MessageLevel.Info, message.message);
     this.associateConsoleMessageWithRequest(consoleMessage, message.requestId);
-    self.SDK.consoleModel.addMessage(consoleMessage);
+    ConsoleModel.instance().addMessage(consoleMessage);
   }
 
   /**

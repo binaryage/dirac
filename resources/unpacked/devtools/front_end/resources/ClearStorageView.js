@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
-import * as ProtocolModule from '../protocol/protocol.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -40,7 +40,7 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
 
     this._settings = new Map();
     for (const type of AllStorageTypes) {
-      this._settings.set(type, self.Common.settings.createSetting('clear-storage-' + type, true));
+      this._settings.set(type, Common.Settings.Settings.instance().createSetting('clear-storage-' + type, true));
     }
 
     const quota = this._reportView.appendSection(Common.UIString.UIString('Usage'));
@@ -237,7 +237,7 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
 
     const securityOrigin = /** @type {string} */ (this._securityOrigin);
     const response = await this._target.storageAgent().invoke_getUsageAndQuota({origin: securityOrigin});
-    if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
+    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
       this._quotaRow.textContet = '';
       this._resetPieChart(0);
       return;
@@ -272,7 +272,7 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
    * @param {number} total
    */
   _resetPieChart(total) {
-    this._pieChart.setTotal(total);
+    this._pieChart.initializeWithTotal(total);
   }
 
   /**
