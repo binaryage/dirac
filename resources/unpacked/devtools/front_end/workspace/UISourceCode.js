@@ -150,6 +150,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
       } else {
         name = decodeURI(name);
       }
+      // @ts-ignore
       if (dirac.hasCleanUrls) {
         // strip all after ? in the name
         const qmarkIndex = name.indexOf("?");
