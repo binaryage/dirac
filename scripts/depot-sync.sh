@@ -8,6 +8,5 @@ cd "$DEPOT_DIR"
 
 "$SCRIPTS/depot-ensure.sh"
 
-# we don't need to run hooks for our purposes
 set -x
-exec gclient sync --no-history --nohooks
+exec gclient sync --no-history
