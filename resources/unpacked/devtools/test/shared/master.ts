@@ -8,18 +8,15 @@
 import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
 import * as cluster from 'cluster';
 import {join} from 'path';
+
+import {getEnvVar} from './config.js';
 import {WorkerMessage} from './worker-message.js';
 
-let envJobs = Number(process.env['JOBS']);
-if (Number.isNaN(envJobs) || envJobs < 1) {
-  envJobs = 4;
-}
+const envDebug = getEnvVar('DEBUG');
 
-// Multiple workers in debug mode is difficult to manage, so drop to a single worker.
-const envDebug = !!process.env['DEBUG'];
-if (envDebug) {
-  envJobs = 1;
-}
+// Lock to one worker to avoid flakiness.
+// TODO: unlock when it's clear why there are flakes.
+const envJobs = getEnvVar('JOBS', envDebug ? 1 : 1);
 
 const workerCount = envJobs;
 const taskList: string[] = [];
@@ -72,6 +69,11 @@ export function init() {
     const worker = cluster.fork({silent: true});
     worker.on('message', onWorkerMessage);
     worker.on('exit', onWorkerDisconnect);
+
+    // Pipe through all errors.
+    if (worker.process.stderr) {
+      worker.process.stderr.pipe(process.stderr);
+    }
 
     ports.set(worker, 9222 + w);
   }
@@ -130,7 +132,7 @@ function locateWorkerByPid(pid: number): cluster.Worker {
   return cluster.workers[workerName] as cluster.Worker;
 }
 
-const envVerbose = !!process.env['VERBOSE'];
+const envVerbose = getEnvVar('VERBOSE');
 function log(pid: number, msg: string, alwaysShow = false) {
   const showMessages = envVerbose || alwaysShow;
   if (!showMessages) {

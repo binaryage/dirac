@@ -2,15 +2,52 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import {assert} from 'chai';
+import {performance} from 'perf_hooks';
+import * as puppeteer from 'puppeteer';
 
-import {$, $$, click, getBrowserAndPages, waitFor} from '../../shared/helper.js';
+import {$, $$, click, getBrowserAndPages, timeout, waitFor} from '../../shared/helper.js';
 
 const SELECTED_TREE_ELEMENT_SELECTOR = '.selected[role="treeitem"]';
+const CSS_PROPERTY_NAME_SELECTOR = '.webkit-css-property';
 
 export const assertContentOfSelectedElementsNode = async (expectedTextContent: string) => {
   const selectedNode = await $(SELECTED_TREE_ELEMENT_SELECTOR);
   const selectedTextContent = await selectedNode.evaluate(node => node.textContent);
   assert.equal(selectedTextContent, expectedTextContent);
+};
+
+/**
+ * Gets the text content of the currently selected element.
+ */
+export const getContentOfSelectedNode = async () => {
+  const selectedNode = await $(SELECTED_TREE_ELEMENT_SELECTOR);
+  return await selectedNode.evaluate(node => node.textContent);
+};
+
+export const waitForSelectedNodeChange = async (maxTotalTimeout = 1000) => {
+  if (maxTotalTimeout === 0) {
+    maxTotalTimeout = Number.POSITIVE_INFINITY;
+  }
+
+  const start = performance.now();
+  const initialNodeContent = await getContentOfSelectedNode();
+  do {
+    const currentContent = await getContentOfSelectedNode();
+    if (currentContent !== initialNodeContent) {
+      return currentContent;
+    }
+
+    await timeout(30);
+
+  } while (performance.now() - start < maxTotalTimeout);
+
+  throw new Error(`Selected element did not change in ${maxTotalTimeout}`);
+};
+
+export const assertSelectedElementsNodeTextIncludes = async (expectedTextContent: string) => {
+  const selectedNode = await $(SELECTED_TREE_ELEMENT_SELECTOR);
+  const selectedTextContent = await selectedNode.evaluate(node => node.textContent);
+  assert.include(selectedTextContent, expectedTextContent);
 };
 
 export const waitForChildrenOfSelectedElementNode = async () => {
@@ -20,6 +57,18 @@ export const waitForChildrenOfSelectedElementNode = async () => {
 export const waitForElementsStyleSection = async () => {
   // Wait for the file to be loaded and selectors to be shown
   await waitFor('.styles-selector');
+};
+
+export const expandSelectedNodeRecursively = async () => {
+  const EXPAND_RECURSIVELY = '[aria-label="Expand recursively"]';
+
+  // Find the selected node, right click.
+  const selectedNode = await $(SELECTED_TREE_ELEMENT_SELECTOR);
+  await click(selectedNode, {clickOptions: {button: 'right'}});
+
+  // Wait for the 'expand recursively' option, and click it.
+  await waitFor(EXPAND_RECURSIVELY);
+  await click(EXPAND_RECURSIVELY);
 };
 
 export const forcePseudoState = async (pseudoState: string) => {
@@ -63,18 +112,32 @@ export const assertGutterDecorationForDomNodeExists = async () => {
   await waitFor('.elements-gutter-decoration');
 };
 
-const EVENT_LISTENERS_PANEL_LINK = '[aria-label="Event Listeners"]';
-const EVENT_LISTENERS_SELECTOR = '[aria-label$="event listener"]';
+export const getAriaLabelSelectorFromPropertiesSelector = (selectorForProperties: string) =>
+    `[aria-label="${selectorForProperties}, css selector"]`;
 
-export const openEventListenersPaneAndWaitForListeners = async () => {
-  await click(EVENT_LISTENERS_PANEL_LINK);
-  await waitFor(EVENT_LISTENERS_SELECTOR);
+export const getDisplayedCSSPropertyNames = async (propertiesSection: puppeteer.JSHandle<any>) => {
+  const listNodesContent = (nodes: Element[]) => {
+    const rawContent = nodes.map(node => node.textContent);
+    const filteredContent = rawContent.filter(content => !!content);
+    return filteredContent;
+  };
+  const cssPropertyNames = await $$(CSS_PROPERTY_NAME_SELECTOR, propertiesSection);
+  const propertyNamesText = await cssPropertyNames.evaluate(listNodesContent);
+  return propertyNamesText;
 };
 
-export const getDisplayedEventListenerNames = async(): Promise<string[]> => {
-  const eventListeners = await $$(EVENT_LISTENERS_SELECTOR);
-  const eventListenerNames = await eventListeners.evaluate(nodes => {
-    return nodes.map((listener: HTMLElement) => listener.textContent);
+export const getBreadcrumbsTextContent = async () => {
+  const crumbs = await $$('span.crumb');
+
+  const crumbsAsText: string[] = await crumbs.evaluate((nodes: HTMLElement[]) => {
+    return nodes.map((node: HTMLElement) => node.textContent || '');
   });
-  return eventListenerNames;
+
+  return crumbsAsText;
+};
+
+export const getSelectedBreadcrumbTextContent = async () => {
+  const selectedCrumb = await $('span.crumb.selected');
+  const text = selectedCrumb.evaluate((node: HTMLElement) => node.textContent || '');
+  return text;
 };

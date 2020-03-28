@@ -6,6 +6,7 @@
             "actionId": "settings.show",
             "title": "Settings",
             "className": "Settings.SettingsScreen.ActionDelegate",
+            "iconClass": "largeicon-settings-gear",
             "bindings": [
                 {
                     "shortcut": "F1 Shift+?"
@@ -44,9 +45,9 @@
             "actionId": "settings.documentation"
         },
         {
-            "type": "context-menu-item",
-            "location": "mainMenu/footer",
-            "actionId": "settings.show"
+            "type": "view",
+            "id": "settings-default",
+            "title": "Settings"
         },
         {
             "type": "view",
@@ -74,6 +75,15 @@
             "className": "Settings.FrameworkBlackboxSettingsTab"
         },
         {
+            "type": "view",
+            "location": "settings-view",
+            "id": "keybinds",
+            "title": "Custom Shortcuts",
+            "order": 100,
+            "experiment": "customKeyboardShortcuts",
+            "className": "Settings.KeybindsSettingsTab"
+        },
+        {
             "type": "@UI.ViewLocationResolver",
             "name": "settings-view",
             "category": "Settings",
@@ -88,10 +98,12 @@
         "settings.js",
         "settings-legacy.js",
         "SettingsScreen.js",
-        "FrameworkBlackboxSettingsTab.js"
+        "FrameworkBlackboxSettingsTab.js",
+        "KeybindsSettingsTab.js"
     ],
     "resources": [
         "frameworkBlackboxSettingsTab.css",
-        "settingsScreen.css"
+        "settingsScreen.css",
+        "keybindsSettingsTab.css"
     ]
 }
