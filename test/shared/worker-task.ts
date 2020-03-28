@@ -8,7 +8,8 @@
 import * as Mocha from 'mocha';
 import * as puppeteer from 'puppeteer';
 
-import {store} from './helper.js';
+import {getEnvVar} from './config.js';
+import {logToStdOut, store} from './helper.js';
 import {color, TextColor} from './text-color.js';
 
 interface DevToolsTarget {
@@ -16,9 +17,21 @@ interface DevToolsTarget {
   id: string;
 }
 
-const envChromeBinary = process.env['CHROME_BIN'];
-const envInteractive = !!process.env['INTERACTIVE'];
-const envDebug = !!process.env['DEBUG'];
+const envStress = getEnvVar('STRESS');
+const envSlowMo = getEnvVar('SLOWMO', envStress ? 50 : undefined);
+const envChromeBinary = getEnvVar('CHROME_BIN');
+const envInteractive = getEnvVar('INTERACTIVE');
+const envDebug = getEnvVar('DEBUG');
+
+let defaultTimeout = 5000;
+if (envDebug || envInteractive) {
+  defaultTimeout = 300000;
+} else if (envStress) {
+  defaultTimeout = 10000;
+}
+
+const envTimeout = getEnvVar('TIMEOUT', defaultTimeout);
+const envThrottleRate = getEnvVar('THROTTLE', envStress ? 3 : 1);
 
 const interactivePage = 'http://localhost:8090/test/screenshots/interactive/index.html';
 const blankPage = 'data:text/html,';
@@ -37,6 +50,7 @@ export async function initBrowser(port: number) {
     headless,
     executablePath: envChromeBinary,
     defaultViewport: null,
+    slowMo: envSlowMo,
   };
 
   // Toggle either viewport or window size depending on headless vs not.
@@ -88,12 +102,12 @@ export async function initBrowser(port: number) {
     await frontend.goto(frontendUrl, {waitUntil: ['networkidle2', 'domcontentloaded']});
 
     frontend.on('error', err => {
-      console.log('Error in Frontend');
+      console.log(color('Error in Frontend', TextColor.RED));
       console.log(err);
     });
 
     frontend.on('pageerror', err => {
-      console.log('Page Error in Frontend');
+      console.log(color('Page Error in Frontend', TextColor.RED));
       console.log(err);
     });
 
@@ -139,6 +153,18 @@ export async function initBrowser(port: number) {
 
       // For the unspecified case wait for loading, then wait for the elements panel.
       await frontend.waitForSelector(selectedPanel.selector);
+
+      // Under stress conditions throttle the CPU down.
+      if (envThrottleRate !== 1) {
+        logToStdOut(`${color('Throttling CPU:', TextColor.MAGENTA)} ${envThrottleRate}x slowdown`);
+
+        const client = await frontend.target().createCDPSession();
+        await client.send('Emulation.setCPUThrottlingRate', {rate: envThrottleRate});
+      }
+
+      if (envSlowMo) {
+        logToStdOut(`${color('Slow mo:', TextColor.MAGENTA)} ${envSlowMo}ms per step`);
+      }
     };
 
     store(launchedBrowser, srcPage, frontend, screenshotPage, resetPages);
@@ -192,8 +218,13 @@ function formatTestResult(suiteTitle: string, timeout: number, testResult: TestR
   output += '\n';
 
   if (testResult.err) {
-    const {message, stack} = testResult.err;
-    output += `\n${color(capitalize(message), TextColor.RED)}\n${stack}`;
+    const {message, stack, actual, expected} = testResult.err;
+    output += `\n${color(capitalize(message), TextColor.RED)}\n${stack}\n\n`;
+
+    if (actual && expected) {
+      output += color(`Actual: ${actual}\n\n`, TextColor.RED);
+      output += color(`Expected: ${expected}\n`, TextColor.GREEN);
+    }
   }
 
   return output;
@@ -203,13 +234,12 @@ export async function runTest(test: string): Promise<{code: number, output: stri
   let output = color(`Worker (${process.pid}): ${test}\n`, TextColor.DIM);
   let suiteTitle = '';
   let code = 0;
-  const timeout = (envDebug || envInteractive) ? 300000 : 4000;
   return new Promise(resolve => {
     const mocha = new Mocha();
     mocha.addFile(test);
     mocha.ui('bdd');
     mocha.reporter('list');
-    mocha.timeout(timeout);
+    mocha.timeout(envTimeout);
 
     mochaRun = mocha.run();
     mochaRun.on('end', () => {
@@ -222,7 +252,7 @@ export async function runTest(test: string): Promise<{code: number, output: stri
     });
 
     mochaRun.on('test end', (testResult: TestResult) => {
-      output += formatTestResult(suiteTitle, timeout, testResult);
+      output += formatTestResult(suiteTitle, envTimeout, testResult);
     });
 
     mochaRun.on('fail', (testResult: TestResult) => {
