@@ -29,6 +29,7 @@
 import * as Common from '../common/common.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
+import * as UI from '../ui/ui.js';
 import {Icon} from './Icon.js';                            // eslint-disable-line no-unused-vars
 import {Config, InplaceEditor} from './InplaceEditor.js';  // eslint-disable-line no-unused-vars
 import {Keys} from './KeyboardShortcut.js';
@@ -383,7 +384,7 @@ export class TreeOutlineInShadow extends TreeOutline {
     // Redefine element to the external one.
     this.element = createElement('div');
     this._shadowRoot = createShadowRootWithCoreStyles(this.element, 'ui/treeoutline.css');
-    UI.appendStyle(this._shadowRoot, "ui/treeoutline-dirac.css");
+    UI.Utils.appendStyle(this._shadowRoot, "ui/treeoutline-dirac.css");
     this._disclosureElement = this._shadowRoot.createChild('div', 'tree-outline-disclosure');
     this._disclosureElement.appendChild(this.contentElement);
     this._renderSelection = true;
