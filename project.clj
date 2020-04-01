@@ -11,7 +11,7 @@
    ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "1.0.567"]
+  [['org.clojure/core.async "1.1.582"]
    ['org.clojure/tools.logging "1.0.0"]
    ['org.clojure/tools.cli "1.0.194"]
    ['nrepl/nrepl "0.7.0"]
