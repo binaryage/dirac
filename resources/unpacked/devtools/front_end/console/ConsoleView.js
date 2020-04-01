@@ -1595,15 +1595,15 @@ export class ConsoleView extends UI.Widget.VBox {
 
   _registerShortcuts() {
     this._shortcuts = {};
-    this._shortcuts[self.UI.KeyboardShortcut.makeKey('u', self.UI.KeyboardShortcut.Modifiers.Ctrl)] =
+    this._shortcuts[UI.KeyboardShortcut.KeyboardShortcut.makeKey('u', UI.KeyboardShortcut.Modifiers.Ctrl)] =
         this._clearPromptBackwards.bind(this);
 
     const section = self.UI.shortcutsScreen.section(Common.UIString.UIString('Console'));
-    const shortcut = self.UI.KeyboardShortcut;
+    const shortcut = UI.KeyboardShortcut.KeyboardShortcut;
     if (dirac.hasREPL) {
       let keys = [
-        shortcut.makeDescriptor(shortcut.Keys.Comma, UI.KeyboardShortcut.Modifiers.Ctrl),
-        shortcut.makeDescriptor(shortcut.Keys.Period, UI.KeyboardShortcut.Modifiers.Ctrl)
+        shortcut.makeDescriptor(UI.KeyboardShortcut.Keys.Comma, UI.KeyboardShortcut.Modifiers.Ctrl),
+        shortcut.makeDescriptor(UI.KeyboardShortcut.Keys.Period, UI.KeyboardShortcut.Modifiers.Ctrl)
       ];
       this._shortcuts[keys[0].key] = this._selectNextPrompt.bind(this);
       this._shortcuts[keys[1].key] = this._selectPrevPrompt.bind(this);

@@ -1,9 +1,10 @@
 import {ConsoleHistoryManager} from './ConsolePrompt.js';
+import * as UI from '../ui/ui.js';
 
 /**
  * @unrestricted
  */
-export class ConsoleDiracPrompt extends UI.TextPrompt {
+export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
 
   /**
    * @param {!CodeMirror} codeMirrorInstance
@@ -402,7 +403,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt {
   }
 
   /**
-   * @param {number} requestId
+   * @param {number} requestIdonKeyDown
    * @param {string} input
    * @param {boolean} force
    * @param {function(string, string, !Array.<string>, number=)} completionsReadyCallback
@@ -417,7 +418,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt {
       }
       return;
     }
-    const executionContext = UI.context.flavor(SDK.ExecutionContext);
+    const executionContext = self.UI.context.flavor(SDK.ExecutionContext);
     if (!executionContext) {
       if (dirac._DEBUG_COMPLETIONS) {
         console.warn("no execution context available");
@@ -931,7 +932,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt {
 
     try {
       dirac.ignoreEnter = true; // a workaround for https://github.com/binaryage/dirac/issues/72
-      UI.TextPrompt.prototype.onKeyDown.apply(this, arguments);
+      UI.TextPrompt.TextPrompt.prototype.onKeyDown.apply(this, arguments);
     } finally {
       dirac.ignoreEnter = false;
     }

@@ -10,7 +10,7 @@ Object.assign(window.dirac, (function() {
   // --- eval support -----------------------------------------------------------------------------------------------------
 
   function lookupCurrentContext() {
-    return UI.context.flavor(SDK.ExecutionContext);
+    return self.UI.context.flavor(SDK.ExecutionContext);
   }
 
   function evalInContext(context, code, silent, callback) {
