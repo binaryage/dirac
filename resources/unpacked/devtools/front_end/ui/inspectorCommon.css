@@ -294,6 +294,7 @@ input::placeholder {
 :not(.platform-mac).-theme-with-dark-background ::-webkit-scrollbar-track,
 :host-context(:not(.platform-mac).-theme-with-dark-background) ::-webkit-scrollbar-track {
     -webkit-box-shadow: inset 0 0 1px rgba(255,255,255,0.3);
+    background: rgb(36, 36, 36);
 }
 
 :not(.platform-mac).-theme-with-dark-background ::-webkit-scrollbar-thumb,
@@ -449,11 +450,6 @@ span[is=dt-icon-label] {
 .-theme-with-dark-background *::selection,
 :host-context(.-theme-with-dark-background) *::selection {
     background-color: #9e9e9e;
-}
-
-.reload-warning {
-    align-self: center;
-    margin-left: 10px;
 }
 
 button.link {

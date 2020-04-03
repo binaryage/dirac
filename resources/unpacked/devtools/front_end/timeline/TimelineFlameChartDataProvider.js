@@ -70,11 +70,15 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     this._headerLevel2 = this._buildGroupStyle({padding: 2, nestingLevel: 1, collapsible: false});
     this._staticHeader = this._buildGroupStyle({collapsible: false});
     this._framesHeader = this._buildGroupStyle({useFirstLineForOverview: true});
-    this._timingsHeader = this._buildGroupStyle({shareHeaderLine: true, useFirstLineForOverview: true});
+    this._collapsibleTimingsHeader =
+        this._buildGroupStyle({shareHeaderLine: true, useFirstLineForOverview: true, collapsible: true});
+    this._timingsHeader =
+        this._buildGroupStyle({shareHeaderLine: true, useFirstLineForOverview: true, collapsible: false});
     this._screenshotsHeader =
         this._buildGroupStyle({useFirstLineForOverview: true, nestingLevel: 1, collapsible: false, itemsHeight: 150});
     this._interactionsHeaderLevel1 = this._buildGroupStyle({useFirstLineForOverview: true});
     this._interactionsHeaderLevel2 = this._buildGroupStyle({padding: 2, nestingLevel: 1});
+    this._experienceHeader = this._buildGroupStyle({collapsible: false});
 
     /** @type {!Map<string, number>} */
     this._flowEventIndexById = new Map();
@@ -276,16 +280,18 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
           return 2;
         case TimelineModel.TimelineModel.TrackType.Console:
           return 3;
+        case TimelineModel.TimelineModel.TrackType.Experience:
+          return 4;
         case TimelineModel.TimelineModel.TrackType.MainThread:
-          return track.forMainFrame ? 4 : 5;
+          return track.forMainFrame ? 5 : 6;
         case TimelineModel.TimelineModel.TrackType.Worker:
-          return 6;
-        case TimelineModel.TimelineModel.TrackType.Raster:
           return 7;
-        case TimelineModel.TimelineModel.TrackType.GPU:
+        case TimelineModel.TimelineModel.TrackType.Raster:
           return 8;
-        case TimelineModel.TimelineModel.TrackType.Other:
+        case TimelineModel.TimelineModel.TrackType.GPU:
           return 9;
+        case TimelineModel.TimelineModel.TrackType.Other:
+          return 10;
       }
     };
 
@@ -309,11 +315,11 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
 
         case TimelineModel.TimelineModel.TrackType.Timings: {
-          const group = this._appendHeader(ls`Timings`, this._timingsHeader, true /* selectable */);
+          const style = track.asyncEvents.length > 0 ? this._collapsibleTimingsHeader : this._timingsHeader;
+          const group = this._appendHeader(ls`Timings`, style, true /* selectable */);
           group._track = track;
           this._appendPageMetrics();
-          this._appendAsyncEventsGroup(
-              track, null, track.asyncEvents, this._timingsHeader, eventEntryType, true /* selectable */);
+          this._appendAsyncEventsGroup(track, null, track.asyncEvents, style, eventEntryType, true /* selectable */);
           break;
         }
 
@@ -368,6 +374,12 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
               track, track.events, track.name || ls`Thread`, this._headerLevel1, eventEntryType, true /* selectable */);
           this._appendAsyncEventsGroup(
               track, track.name, track.asyncEvents, this._headerLevel1, eventEntryType, true /* selectable */);
+          break;
+        }
+
+        case TimelineModel.TimelineModel.TrackType.Experience: {
+          this._appendSyncEvents(
+              track, track.events, ls`Experience`, this._experienceHeader, eventEntryType, true /* selectable */);
           break;
         }
       }
@@ -458,6 +470,33 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
     for (let i = 0; i < events.length; ++i) {
       const e = events[i];
+      // Skip Layout Shifts when dealing with the main thread.
+      if (track && track.type === TimelineModel.TimelineModel.TrackType.MainThread && this._performanceModel &&
+          this._performanceModel.timelineModel().isLayoutShiftEvent(e)) {
+        continue;
+      }
+
+      if (this._performanceModel && this._performanceModel.timelineModel().isLayoutShiftEvent(e)) {
+        // Expand layout shift events to the size of the frame in which it is situated.
+        for (const frame of this._performanceModel.frames()) {
+          // Locate the correct frame and expand the event accordingly.
+          if (typeof e.endTime === 'undefined') {
+            e.setEndTime(e.startTime);
+          }
+
+          const isAfterStartTime = e.startTime >= frame.startTime;
+          const isBeforeEndTime = e.endTime && e.endTime <= frame.endTime;
+          const eventIsInFrame = isAfterStartTime && isBeforeEndTime;
+
+          if (!eventIsInFrame) {
+            continue;
+          }
+
+          e.startTime = frame.startTime;
+          e.setEndTime(frame.endTime);
+        }
+      }
+
       if (!isExtension && this._performanceModel.timelineModel().isMarkerEvent(e)) {
         this._markers.push(new TimelineFlameChartMarker(
             e.startTime, e.startTime - this._model.minimumRecordTime(), TimelineUIUtils.markerStyleForEvent(e)));
@@ -712,6 +751,13 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         title = this.entryTitle(entryIndex);
       }
       warning = TimelineUIUtils.eventWarning(event);
+
+      if (this._model && this._model.isLayoutShiftEvent(event)) {
+        // TODO: Update this to be dynamic when the trace data supports it.
+        const occurrences = 1;
+        time = ls`Occurrences: ${occurrences}`;
+      }
+
     } else if (type === EntryType.Frame) {
       const frame = /** @type {!TimelineModel.TimelineFrameModel.TimelineFrame} */ (this._entryData[entryIndex]);
       time = Common.UIString.UIString(
@@ -724,6 +770,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     } else {
       return null;
     }
+
     const element = createElement('div');
     const root = UI.Utils.createShadowRootWithCoreStyles(element, 'timeline/timelineFlamechartPopover.css');
     const contents = root.createChild('div', 'timeline-flamechart-popover');

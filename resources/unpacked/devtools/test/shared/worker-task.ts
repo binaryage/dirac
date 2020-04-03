@@ -9,7 +9,7 @@ import * as Mocha from 'mocha';
 import * as puppeteer from 'puppeteer';
 
 import {getEnvVar} from './config.js';
-import {logToStdOut, store} from './helper.js';
+import {logFailure, logToStdOut, store} from './helper.js';
 import {color, TextColor} from './text-color.js';
 
 interface DevToolsTarget {
@@ -22,6 +22,7 @@ const envSlowMo = getEnvVar('SLOWMO', envStress ? 50 : undefined);
 const envChromeBinary = getEnvVar('CHROME_BIN');
 const envInteractive = getEnvVar('INTERACTIVE');
 const envDebug = getEnvVar('DEBUG');
+const envChromeFeatures = getEnvVar('CHROME_FEATURES');
 
 let defaultTimeout = 5000;
 if (envDebug || envInteractive) {
@@ -58,6 +59,10 @@ export async function initBrowser(port: number) {
     opts.defaultViewport = {width, height};
   } else {
     launchArgs.push(`--window-size=${width},${height}`);
+  }
+
+  if (envChromeFeatures !== undefined) {
+    launchArgs.push(envChromeFeatures);
   }
 
   opts.args = launchArgs;
@@ -104,11 +109,13 @@ export async function initBrowser(port: number) {
     frontend.on('error', err => {
       console.error(color('Error in Frontend', TextColor.RED));
       console.error(err);
+      logFailure();
     });
 
     frontend.on('pageerror', err => {
       console.error(color('Page Error in Frontend', TextColor.RED));
       console.error(err);
+      logFailure();
     });
 
     const resetPages =
