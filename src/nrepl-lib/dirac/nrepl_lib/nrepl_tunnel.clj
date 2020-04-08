@@ -93,10 +93,10 @@
        "\n"
        "Also double check Dirac installation instructions: " nrepl-setup-doc-url "."))
 
-(def ^:dynamic expected-nrepl-version "0.6.0")
+(def ^:dynamic expected-nrepl-version "0.7.0")
 (def ^:dynamic expected-nrepl-middleware-ops
   (list :clone :close :describe :dirac-devtools-request :eval :identify-dirac-nrepl-middleware :interrupt :load-file
-        :ls-sessions :stdin))
+        :ls-sessions :sideloader-provide :sideloader-start :stdin))
 
 ; -- NREPLTunnel constructor ------------------------------------------------------------------------------------------------
 
