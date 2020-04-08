@@ -30,7 +30,7 @@
 }
 
 .locations-list-item {
-  padding: 3px 5px 3px 5px;
+  padding: 3px 6px;
   height: 30px;
   display: flex;
   align-items: center;
@@ -41,22 +41,16 @@
 .locations-list-text {
   white-space: nowrap;
   text-overflow: ellipsis;
-  flex: 0 0 70px;
+  flex-basis: 170px;
   user-select: none;
   color: #222;
   text-align: end;
   position: relative;
-}
-
-.locations-list-text-timezone {
-  flex-basis: 170px;
+  overflow: hidden;
 }
 
 .locations-list-title {
   text-align: start;
-  flex: auto;
-  display: flex;
-  align-items: flex-start;
 }
 
 .locations-list-title-text {
@@ -79,7 +73,6 @@
 }
 
 .locations-edit-row {
-  flex: none;
   display: flex;
   flex-direction: row;
   margin: 6px 5px;
@@ -88,4 +81,8 @@
 .locations-edit-row input {
   width: 100%;
   text-align: inherit;
+}
+
+.locations-input-container {
+  padding: 1px;
 }
