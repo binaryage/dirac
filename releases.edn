@@ -4,6 +4,7 @@
  {; we match most recent Chromium version from the list below
   ; see https://github.com/binaryage/dirac/blob/master/src/home/dirac/home/chromium/mapping.clj
   ; ...
+  "84.0.4110" "1.5.10"
   "82.0.4080" "1.5.9"
   ; deploy of version 1.5.8 is broken on clojars
   "82.0.4052" "1.5.7"
