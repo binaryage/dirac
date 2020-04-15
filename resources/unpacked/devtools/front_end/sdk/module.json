@@ -1,11 +1,11 @@
 {
-    "dependencies": [
-        "common",
-        "host",
-        "platform",
-        "protocol_client",
-        "dirac"
-    ],
+  "dependencies": [
+    "common",
+    "host",
+    "platform",
+    "protocol_client",
+    "dirac"
+  ],
     "extensions": [
         {
             "type": "setting",
