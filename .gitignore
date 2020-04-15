@@ -37,3 +37,4 @@ chromium-latest-linux/
 .ws/
 .tmp/
 dirac.iml
+.venv
