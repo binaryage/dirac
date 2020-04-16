@@ -20,7 +20,8 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     super('resources');
     this.registerRequiredCSS('resources/resourcesPanel.css');
 
-    this._resourcesLastSelectedItemSetting = self.Common.settings.createSetting('resourcesLastSelectedElementPath', []);
+    this._resourcesLastSelectedItemSetting =
+        Common.Settings.Settings.instance().createSetting('resourcesLastSelectedElementPath', []);
 
     /** @type {?UI.Widget.Widget} */
     this.visibleView = null;
@@ -213,7 +214,49 @@ export class ResourceRevealer {
       return Promise.reject(new Error('Internal error: not a resource'));
     }
     const sidebar = ResourcesPanel._instance()._sidebar;
-    await self.UI.viewManager.showView('resources');
+    await UI.ViewManager.ViewManager.instance().showView('resources');
     await sidebar.showResource(resource);
+  }
+}
+
+/**
+ * @implements {Common.Revealer.Revealer}
+ */
+export class CookieReferenceRevealer {
+  /**
+   * @override
+   * @param {!Object} cookie
+   * @return {!Promise}
+   */
+  async reveal(cookie) {
+    if (!(cookie instanceof SDK.Cookie.CookieReference)) {
+      throw new Error('Internal error: not a cookie reference');
+    }
+
+    const sidebar = ResourcesPanel._instance()._sidebar;
+    await UI.ViewManager.ViewManager.instance().showView('resources');
+    await sidebar.cookieListTreeElement.select();
+
+    const contextUrl = cookie.contextUrl();
+    if (contextUrl && await this._revealByDomain(sidebar, contextUrl)) {
+      return;
+    }
+    // Fallback: try to reveal the cookie using its domain as context, which may not work, because the
+    // Application Panel shows cookies grouped by context, see crbug.com/1060563.
+    this._revealByDomain(sidebar, cookie.domain());
+  }
+
+  /**
+   * @param {!ApplicationPanelSidebar} sidebar
+   * @param {string} domain
+   * @returns {!Promise<boolean>}
+   */
+  async _revealByDomain(sidebar, domain) {
+    const item = sidebar.cookieListTreeElement.children().find(c => c._cookieDomain.endsWith(domain));
+    if (item) {
+      await item.revealAndSelect();
+      return true;
+    }
+    return false;
   }
 }

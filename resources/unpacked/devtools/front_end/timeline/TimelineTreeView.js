@@ -5,6 +5,7 @@
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as DataGrid from '../data_grid/data_grid.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TimelineModel from '../timeline_model/timeline_model.js';
 import * as UI from '../ui/ui.js';
@@ -84,7 +85,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
         new TimelineModel.TimelineModelFilter.ExclusiveNameFilter([TimelineModel.TimelineModel.RecordType.Task]);
     this._textFilter = new TimelineRegExp();
 
-    this._currentThreadSetting = self.Common.settings.createSetting('timelineTreeCurrentThread', 0);
+    this._currentThreadSetting = Common.Settings.Settings.instance().createSetting('timelineTreeCurrentThread', 0);
     this._currentThreadSetting.addChangeListener(this.refreshTree, this);
 
     const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([]);
@@ -485,7 +486,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
       return;
     }
     this.selectProfileNode(this._searchResults[this._currentResult], false);
-    this._currentResult = mod(this._currentResult + 1, this._searchResults.length);
+    this._currentResult = Platform.NumberUtilities.mod(this._currentResult + 1, this._searchResults.length);
   }
 
   /**
@@ -496,7 +497,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
       return;
     }
     this.selectProfileNode(this._searchResults[this._currentResult], false);
-    this._currentResult = mod(this._currentResult - 1, this._searchResults.length);
+    this._currentResult = Platform.NumberUtilities.mod(this._currentResult - 1, this._searchResults.length);
   }
 
   /**
@@ -681,8 +682,8 @@ TreeGridNode._gridNodeSymbol = Symbol('treeGridNode');
 export class AggregatedTimelineTreeView extends TimelineTreeView {
   constructor() {
     super();
-    this._groupBySetting =
-        self.Common.settings.createSetting('timelineTreeGroupBy', AggregatedTimelineTreeView.GroupBy.None);
+    this._groupBySetting = Common.Settings.Settings.instance().createSetting(
+        'timelineTreeGroupBy', AggregatedTimelineTreeView.GroupBy.None);
     this._groupBySetting.addChangeListener(this.refreshTree.bind(this));
     this.init();
     this._stackView = new TimelineStackView(this);

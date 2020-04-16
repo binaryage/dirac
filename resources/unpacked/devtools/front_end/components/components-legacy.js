@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
+
 import * as ComponentsModule from './components.js';
 
 self.Components = self.Components || {};
@@ -53,67 +55,3 @@ Components.TargetDetachedDialog = ComponentsModule.TargetDetachedDialog.TargetDe
  * @type {!Components.DockController}
  */
 Components.dockController;
-
-/**
- * @typedef {{
-  *     icon: ?UI.Icon,
-  *     enableDecorator: boolean,
-  *     uiLocation: ?Workspace.UILocation,
-  *     liveLocation: ?Bindings.LiveLocation,
-  *     url: ?string,
-  *     lineNumber: ?number,
-  *     columnNumber: ?number,
-  *     revealable: ?Object,
-  *     fallback: ?Element
-  * }}
-  */
-Components._LinkInfo;
-
-/**
- * @typedef {{
- *     text: (string|undefined),
- *     className: (string|undefined),
- *     lineNumber: (number|undefined),
- *     columnNumber: (number|undefined),
- *     preventClick: (boolean|undefined),
- *     maxLength: (number|undefined),
- *     tabStop: (boolean|undefined),
- *     bypassURLTrimming: (boolean|undefined)
- * }}
- */
-Components.LinkifyURLOptions;
-
-/**
- * @typedef {{
- *     className: (string|undefined),
- *     columnNumber: (number|undefined),
- *     tabStop: (boolean|undefined)
- * }}
- */
-Components.LinkifyOptions;
-
-/**
- * @typedef {{
- *     maxLength: (number|undefined),
- *     title: (string|undefined),
- *     href: (string|undefined),
- *     preventClick: (boolean|undefined),
- *     tabStop: (boolean|undefined),
- *     bypassURLTrimming: (boolean|undefined)
- * }}
- */
-Components._CreateLinkOptions;
-
-/**
- * @typedef {function(!Common.ContentProvider, number)}
- */
-Components.Linkifier.LinkHandler;
-
-/**
- * @typedef {{
- *   stackTrace: (!Protocol.Runtime.StackTrace|undefined),
- *   contentUpdated: (function()|undefined),
- *   tabStops: (boolean|undefined)
- * }}
- */
-Components.JSPresentationUtils.Options;

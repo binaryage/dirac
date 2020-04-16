@@ -176,18 +176,6 @@ const bigint = null;
 /** @typedef {Array|NodeList|Arguments|{length: number}} */
 let ArrayLike;
 
-// File System API
-/**
- * @constructor
- */
-function DOMFileSystem() {
-}
-
-/**
- * @type {DirectoryEntry}
- */
-DOMFileSystem.prototype.root = null;
-
 /**
  * @type {*}
  */
@@ -256,7 +244,7 @@ DevToolsHost.isHostedMode = function() {};
 /**
  * @param {string} fileSystemId
  * @param {string} registeredName
- * @return {?DOMFileSystem}
+ * @return {?FileSystem}
  */
 DevToolsHost.isolatedFileSystem = function(fileSystemId, registeredName) {};
 
@@ -1031,6 +1019,8 @@ ESTree.Node = function() {
   /** @type {string} */
   this.type;
   /** @type {(!ESTree.Node|undefined)} */
+  this.key;
+  /** @type {(!ESTree.Node|undefined)} */
   this.body;
   /** @type {(!Array.<!ESTree.Node>|undefined)} */
   this.declarations;
@@ -1168,7 +1158,7 @@ const isEnterOrSpaceKey = function(event) {};
 const isEscKey = function(event) {};
 
 /**
- * @param {!ExtensionDescriptor} extensionInfo
+ * @param {!{startPage: string, name: string, exposeExperimentalAPIs: boolean}} extensionInfo
  * @param {string} inspectedTabId
  * @param {string} themeName
  * @param {!Array<number>} keysToForward
@@ -1211,12 +1201,6 @@ const spacesPadding = function(spacesCount) {};
  * @return {string}
  */
 const numberToStringWithSpacesPadding = function(value, symbolsCount) {};
-
-/**
- * @param {string} url
- * @return {!Promise.<string>}
- */
-const loadXHR = function(url) {};
 
 /**
  * @param {*} value
@@ -1582,7 +1566,7 @@ class InspectorFrontendHostAPI {
   /**
    * @param {string} fileSystemId
    * @param {string} registeredName
-   * @return {?DOMFileSystem}
+   * @return {?FileSystem}
    */
   isolatedFileSystem(fileSystemId, registeredName) {
   }

@@ -5,8 +5,8 @@
 import {assert} from 'chai';
 import {describe, it} from 'mocha';
 
-import {obtainConsoleMessages, showVerboseMessages} from '../helpers/console-helpers.js';
 import {resetPages} from '../../shared/helper.js';
+import {getConsoleMessages, showVerboseMessages} from '../helpers/console-helpers.js';
 
 describe('The Console Tab', async () => {
   beforeEach(async () => {
@@ -14,7 +14,7 @@ describe('The Console Tab', async () => {
   });
 
   it('shows BigInts formatted', async () => {
-    const messages = await obtainConsoleMessages('big-int');
+    const messages = await getConsoleMessages('big-int');
 
     assert.deepEqual(messages, [
       '1n',
@@ -26,21 +26,21 @@ describe('The Console Tab', async () => {
   });
 
   it('shows uncaught promises', async () => {
-    const messages = await obtainConsoleMessages('uncaught-promise');
+    const messages = await getConsoleMessages('uncaught-promise');
 
     assert.deepEqual(messages, [
       `Uncaught (in promise) Error: err1
-    at uncaught-promise.html:15`,
+    at uncaught-promise.html:7`,
       `Uncaught (in promise) Error: err2
-    at uncaught-promise.html:33`,
+    at uncaught-promise.html:25`,
       `Uncaught (in promise) DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-    at throwDOMException (http://localhost:8090/test/e2e/resources/console/uncaught-promise.html:48:11)
-    at catcher (http://localhost:8090/test/e2e/resources/console/uncaught-promise.html:41:9)`,
+    at throwDOMException (http://localhost:8090/test/e2e/resources/console/uncaught-promise.html:40:7)
+    at catcher (http://localhost:8090/test/e2e/resources/console/uncaught-promise.html:33:5)`,
     ]);
   });
 
   it('shows structured objects', async () => {
-    const messages = await obtainConsoleMessages('structured-objects');
+    const messages = await getConsoleMessages('structured-objects');
 
     assert.deepEqual(messages, [
       '{}',
@@ -56,7 +56,7 @@ describe('The Console Tab', async () => {
   });
 
   it('escapes and substitutes correctly', async () => {
-    const messages = await obtainConsoleMessages('escaping');
+    const messages = await getConsoleMessages('escaping');
 
     assert.deepEqual(messages, [
       'Test for zero "0" in formatter',
@@ -72,31 +72,24 @@ describe('The Console Tab', async () => {
   });
 
   it('shows built-in objects', async () => {
-    const messages = await obtainConsoleMessages('built-ins');
+    const messages = await getConsoleMessages('built-ins');
 
     assert.deepEqual(messages, [
       '/^url\\(\\s*(?:(?:\"(?:[^\\\\\\\"]|(?:\\\\[\\da-f]{1,6}\\s?|\\.))*\"|\'(?:[^\\\\\\\']|(?:\\\\[\\da-f]{1,6}\\s?|\\.))*\')|(?:[!#$%&*-~\\w]|(?:\\\\[\\da-f]{1,6}\\s?|\\.))*)\\s*\\)/i',
       '/foo\\\\bar\\sbaz/i',
-      `Error
-    at built-ins.html:21`,
-      `Error: My error message
-    at built-ins.html:24`,
-      `Error: my multiline
-error message
-    at built-ins.html:27`,
+      'Error\n    at built-ins.html:13',
+      'Error: My error message\n    at built-ins.html:16',
+      'Error: my multiline\nerror message\n    at built-ins.html:19',
       'ƒ () { return 1; }',
-      `ƒ () {
-        return 2;
-      }`,
-      `ƒ ( /**/ foo/**/, /*/**/bar,
-      /**/baz) {}`,
+      'ƒ () {\n    return 2;\n  }',
+      'ƒ ( /**/ foo/**/, /*/**/bar,\n  /**/baz) {}',
       'Arguments(2)\xA0[1, "2", callee: (...), Symbol(Symbol.iterator): ƒ]',
       'Uint8Array\xA0[3]',
       'Uint8Array(400)\xA0[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]',
       'Uint8Array(400000000)\xA0[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]',
       'Uint16Array(3)\xA0[1, 2, 3]',
       'Promise\xA0{<rejected>: -0}',
-      'Promise\xA0{<resolved>: 1}',
+      'Promise\xA0{<fulfilled>: 1}',
       'Promise\xA0{<pending>}',
       'Symbol()',
       'Symbol(a)',
@@ -115,7 +108,7 @@ error message
   });
 
   it('shows primitives', async () => {
-    const messages = await obtainConsoleMessages('primitives');
+    const messages = await getConsoleMessages('primitives');
 
     assert.deepEqual(messages, [
       'null',
@@ -137,7 +130,7 @@ error message
   });
 
   it('can handle prototype fields', async () => {
-    const messages = await obtainConsoleMessages('prototypes');
+    const messages = await getConsoleMessages('prototypes');
 
     assert.deepEqual(messages, [
       '{enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ,\xA0…}',
@@ -157,7 +150,7 @@ error message
   });
 
   it('can show DOM interactions', async () => {
-    const messages = await obtainConsoleMessages('dom-interactions');
+    const messages = await getConsoleMessages('dom-interactions');
 
     assert.deepEqual(messages, [
       '',
@@ -166,9 +159,9 @@ error message
       '',
       '#text',
       'HTMLCollection\xA0[select, sel: select]',
-      'HTMLCollection(3)\xA0[meta, meta, title, viewport: meta]',
+      'HTMLCollection\xA0[]',
       'HTMLOptionsCollection(2)\xA0[option, option, selectedIndex: 0]',
-      'HTMLAllCollection(15)\xA0[html, head, meta, meta, title, body, div#first-child.c1.c2.c3, div#p, form, select, option, option, input, input, script, viewport: meta, first-child: div#first-child.c1.c2.c3, p: div#p, sel: select, input: HTMLCollection(2)]',
+      'HTMLAllCollection(12)\xA0[html, head, body, div#first-child.c1.c2.c3, div#p, form, select, option, option, input, input, script, first-child: div#first-child.c1.c2.c3, p: div#p, sel: select, input: HTMLCollection(2)]',
       'HTMLFormControlsCollection(3)\xA0[select, input, input, sel: select, input: RadioNodeList(2)]',
       'RadioNodeList(2)\xA0[input, input, value: ""]',
       'DOMTokenList(3)\xA0["c1", "c2", "c3", value: "c1 c2 c3"]',
@@ -177,17 +170,17 @@ error message
   });
 
   it('can handle sourceURLs in exceptions', async () => {
-    const messages = await obtainConsoleMessages('source-url-exceptions');
+    const messages = await getConsoleMessages('source-url-exceptions');
 
     assert.deepEqual(messages, [
       `Uncaught ReferenceError: FAIL is not defined
     at foo (foo2.js:1)
-    at source-url-exceptions.html:17`,
+    at source-url-exceptions.html:9`,
     ]);
   });
 
   it('can show stackoverflow exceptions', async () => {
-    const messages = await obtainConsoleMessages('stack-overflow');
+    const messages = await getConsoleMessages('stack-overflow');
 
     assert.deepEqual(messages, [
       `Uncaught RangeError: Maximum call stack size exceeded
@@ -205,7 +198,7 @@ error message
   });
 
   it('can show document.write messages', async () => {
-    const messages = await obtainConsoleMessages('document-write');
+    const messages = await getConsoleMessages('document-write');
 
     assert.deepEqual(messages, [
       'script element',
@@ -214,21 +207,21 @@ error message
   });
 
   it('can show verbose promise unhandledrejections', async () => {
-    const messages = await obtainConsoleMessages('onunhandledrejection', showVerboseMessages);
+    const messages = await getConsoleMessages('onunhandledrejection', showVerboseMessages);
 
     assert.deepEqual(messages, [
       'onunhandledrejection1',
       'onrejectionhandled1',
       'onunhandledrejection2',
       `Uncaught (in promise) Error: e
-    at runSecondPromiseRejection (onunhandledrejection.html:31)`,
+    at runSecondPromiseRejection (onunhandledrejection.html:23)`,
       'onrejectionhandled2',
     ]);
   });
 
   describe('shows messages from before', async () => {
     it('iframe removal', async () => {
-      const messages = await obtainConsoleMessages('navigation/after-removal');
+      const messages = await getConsoleMessages('navigation/after-removal');
 
       assert.deepEqual(messages, [
         'A message with first argument string Second argument which should not be discarded',
@@ -238,7 +231,7 @@ error message
     });
 
     it('and after iframe navigation', async () => {
-      const messages = await obtainConsoleMessages('navigation/after-navigation');
+      const messages = await getConsoleMessages('navigation/after-navigation');
 
       assert.deepEqual(messages, [
         'A message with first argument string Second argument which should not be discarded',

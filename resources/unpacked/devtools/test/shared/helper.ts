@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as fs from 'fs';
-import {join} from 'path';
 import {performance} from 'perf_hooks';
 import * as puppeteer from 'puppeteer';
 import * as os from 'os';
@@ -74,8 +72,14 @@ const collectAllElementsFromPage = async (root?: puppeteer.JSHandle) => {
   }, root || '');
 };
 
-export const getElementPosition = async (selector: string, root?: puppeteer.JSHandle) => {
-  const element = await $(selector, root);
+export const getElementPosition = async (selector: string|puppeteer.JSHandle, root?: puppeteer.JSHandle) => {
+  let element: puppeteer.JSHandle;
+  if (typeof selector === 'string') {
+    element = await $(selector, root);
+  } else {
+    element = selector;
+  }
+
   const position = await element.evaluate(element => {
     if (!element) {
       return {};
@@ -93,8 +97,9 @@ export const getElementPosition = async (selector: string, root?: puppeteer.JSHa
   return position;
 };
 
-export const click =
-    async (selector: string, options?: {root?: puppeteer.JSHandle, clickOptions?: puppeteer.ClickOptions}) => {
+export const click = async (
+    selector: string|puppeteer.JSHandle,
+    options?: {root?: puppeteer.JSHandle, clickOptions?: puppeteer.ClickOptions}) => {
   const frontend: puppeteer.Page = globalThis[frontEndPage];
   if (!frontend) {
     throw new Error('Unable to locate DevTools frontend page. Was it stored first?');
@@ -113,6 +118,28 @@ export const click =
   await frontend.mouse.click(clickableElement.x, clickableElement.y, options && options.clickOptions);
 };
 
+export const doubleClick =
+    async (selector: string, options?: {root?: puppeteer.JSHandle, clickOptions?: puppeteer.ClickOptions}) => {
+  const passedClickOptions = options && options.clickOptions || {};
+  const clickOptionsWithDoubleClick: puppeteer.ClickOptions = {
+    ...passedClickOptions,
+    clickCount: 2,
+  };
+  return click(selector, {
+    ...options,
+    clickOptions: clickOptionsWithDoubleClick,
+  });
+};
+
+export const typeText = async (text: string) => {
+  const frontend: puppeteer.Page = globalThis[frontEndPage];
+  if (!frontend) {
+    throw new Error('Unable to locate DevTools frontend page. Was it stored first?');
+  }
+
+  await frontend.keyboard.type(text);
+};
+
 // Get a single element handle, across Shadow DOM boundaries.
 export const $ = async (selector: string, root?: puppeteer.JSHandle) => {
   const frontend: puppeteer.Page = globalThis[frontEndPage];
@@ -126,12 +153,12 @@ export const $ = async (selector: string, root?: puppeteer.JSHandle) => {
       return elements.find(element => element.matches(selector));
     }, selector);
     return element;
-  } catch (e) {
-    throw new Error(`Unable to find element for selector "${selector}": ${e.stack}`);
+  } catch (error) {
+    throw new Error(`Unable to find element for selector "${selector}": ${error.stack}`);
   }
 };
 
-// Get a multiple element handles, across Shadow DOM boundaries.
+// Get multiple element handles, across Shadow DOM boundaries.
 export const $$ = async (selector: string, root?: puppeteer.JSHandle) => {
   const frontend: puppeteer.Page = globalThis[frontEndPage];
   if (!frontend) {
@@ -143,6 +170,29 @@ export const $$ = async (selector: string, root?: puppeteer.JSHandle) => {
     return elements.filter(element => element.matches(selector));
   }, selector);
   return elements;
+};
+
+/**
+ * Search for an element based on its textContent.
+ *
+ * @param textContent The text content to search for.
+ * @param root The root of the search.
+ */
+export const $textContent = async (textContent: string, root?: puppeteer.JSHandle) => {
+  const frontend: puppeteer.Page = globalThis[frontEndPage];
+  if (!frontend) {
+    throw new Error('Unable to locate DevTools frontend page. Was it stored first?');
+  }
+  await collectAllElementsFromPage(root);
+  try {
+    const element = await frontend.evaluateHandle((textContent: string) => {
+      const elements: Element[] = globalThis.__elements;
+      return elements.find(element => ('textContent' in element && element.textContent === textContent));
+    }, textContent);
+    return element;
+  } catch (error) {
+    throw new Error(`Unable to find element with textContent "${textContent}": ${error.stack}`);
+  }
 };
 
 export const timeout = (duration: number) => new Promise(resolve => setTimeout(resolve, duration));
@@ -157,8 +207,28 @@ export const waitFor = async (selector: string, root?: puppeteer.JSHandle, maxTo
   }, `Unable to find element with selector ${selector}`, maxTotalTimeout);
 };
 
+export const waitForNone = async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
+  return waitForFunction(async () => {
+    const elements = await $$(selector, root);
+    if (elements.evaluate(list => list.length === 0)) {
+      return true;
+    }
+    return false;
+  }, `At least one element with selector ${selector} still exists`, maxTotalTimeout);
+};
+
+export const waitForElementWithTextContent = (textContent: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
+  return waitForFunction(async () => {
+    const element = await $textContent(textContent, root);
+    if (element.asElement()) {
+      return element;
+    }
+    return undefined;
+  }, `No element with content ${textContent} exists`, maxTotalTimeout);
+};
+
 export const waitForFunction =
-    async<T>(fn: () => Promise<T>, errorMessage: string, maxTotalTimeout = 0): Promise<T> => {
+    async<T>(fn: () => Promise<T|undefined>, errorMessage: string, maxTotalTimeout = 0): Promise<T> => {
   if (maxTotalTimeout === 0) {
     maxTotalTimeout = Number.POSITIVE_INFINITY;
   }
@@ -179,6 +249,28 @@ export const debuggerStatement = (frontend: puppeteer.Page) => {
   return frontend.evaluate(() => {
     // eslint-disable-next-line no-debugger
     debugger;
+  });
+};
+
+export const logToStdOut = (msg: string) => {
+  if (!process.send) {
+    return;
+  }
+
+  process.send({
+    pid: process.pid,
+    details: msg,
+  });
+};
+
+export const logFailure = () => {
+  if (!process.send) {
+    return;
+  }
+
+  process.send({
+    pid: process.pid,
+    details: 'failure',
   });
 };
 
@@ -214,15 +306,3 @@ export const getBrowserAndPages = (): BrowserAndPages => {
 };
 
 export const resourcesPath = 'http://localhost:8090/test/e2e/resources';
-
-export function mkdirp(root: string, parts: string[]) {
-  let target = root;
-  for (const part of parts) {
-    const newTarget = join(target, part);
-    if (!fs.existsSync(newTarget)) {
-      fs.mkdirSync(newTarget);
-    }
-
-    target = newTarget;
-  }
-}

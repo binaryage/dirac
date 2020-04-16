@@ -42,9 +42,17 @@ import {Observer, Target, TargetManager} from './SDKModel.js';  // eslint-disabl
 const _events = Symbol('SDK.ConsoleModel.events');
 
 /**
+ * @type {!ConsoleModel}
+ */
+let settingsInstance;
+
+/**
  * @implements {Observer}
  */
 export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
+  /**
+   * @private
+   */
   constructor() {
     super();
 
@@ -58,6 +66,18 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
     this._pageLoadSequenceNumber = 0;
 
     TargetManager.instance().observeTargets(this);
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!settingsInstance || forceNew) {
+      settingsInstance = new ConsoleModel();
+    }
+
+    return settingsInstance;
   }
 
   /**
@@ -133,10 +153,8 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
    * @param {!ConsoleMessage} originatingMessage
    * @param {string} expression
    * @param {boolean} useCommandLineAPI
-   * @param {boolean} awaitPromise
    */
-  async evaluateCommandInConsole(executionContext, originatingMessage, expression, useCommandLineAPI, awaitPromise) {
-    // TODO(crbug/1021921): Remove {awaitPromise} argument. {awaitPromise} is hard-coded to false by all call-sites.
+  async evaluateCommandInConsole(executionContext, originatingMessage, expression, useCommandLineAPI) {
     const result = await executionContext.evaluate(
         {
           expression: expression,
@@ -147,7 +165,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
           generatePreview: true,
           replMode: true
         },
-        self.Common.settings.moduleSetting('consoleUserActivationEval').get(), awaitPromise);
+        Common.Settings.Settings.instance().moduleSetting('consoleUserActivationEval').get(), /* awaitPromise */ false);
     HostModule.userMetrics.actionTaken(Host.UserMetrics.Action.ConsoleEvaluated);
     if (result.error) {
       return;
@@ -275,7 +293,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   _clearIfNecessary() {
-    if (!self.Common.settings.moduleSetting('preserveConsoleLog').get()) {
+    if (!Common.Settings.Settings.instance().moduleSetting('preserveConsoleLog').get()) {
       this._clear();
     }
     ++this._pageLoadSequenceNumber;
@@ -285,7 +303,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _mainFrameNavigated(event) {
-    if (self.Common.settings.moduleSetting('preserveConsoleLog').get()) {
+    if (Common.Settings.Settings.instance().moduleSetting('preserveConsoleLog').get()) {
       Common.Console.Console.instance().log(Common.UIString.UIString('Navigated to %s', event.data.url));
     }
   }
@@ -422,8 +440,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
     } else {
       const text = /** @type {string} */ (callFunctionResult.object.value);
       const message = this.addCommandMessage(executionContext, text);
-      this.evaluateCommandInConsole(
-          executionContext, message, text, /* useCommandLineAPI */ false, /* awaitPromise */ false);
+      this.evaluateCommandInConsole(executionContext, message, text, /* useCommandLineAPI */ false);
     }
     if (callFunctionResult.object) {
       callFunctionResult.object.release();

@@ -9,11 +9,14 @@ import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 
+const DEFAULT_TIMEOUT = 500;
+
 export class JavaScriptAutocomplete {
   constructor() {
     /** @type {!Map<string, {date: number, value: !Promise<?Object>}>} */
     this._expressionCache = new Map();
-    self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.CommandEvaluated, this._clearCache, this);
+    SDK.ConsoleModel.ConsoleModel.instance().addEventListener(
+        SDK.ConsoleModel.Events.CommandEvaluated, this._clearCache, this);
     self.UI.context.addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this._clearCache, this);
     SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._clearCache, this);
@@ -60,8 +63,8 @@ export class JavaScriptAutocomplete {
           silent: true,
           returnByValue: false,
           generatePreview: false,
-          throwOnSideEffect: functionCall.possibleSideEffects,
-          timeout: functionCall.possibleSideEffects ? 500 : undefined
+          throwOnSideEffect: true,
+          timeout: DEFAULT_TIMEOUT
         },
         /* userGesture */ false, /* awaitPromise */ false);
     if (!result || result.exceptionDetails || !result.object || result.object.type !== 'function') {
@@ -78,8 +81,8 @@ export class JavaScriptAutocomplete {
             silent: true,
             returnByValue: false,
             generatePreview: false,
-            throwOnSideEffect: functionCall.possibleSideEffects,
-            timeout: functionCall.possibleSideEffects ? 500 : undefined
+            throwOnSideEffect: true,
+            timeout: DEFAULT_TIMEOUT
           },
           /* userGesture */ false, /* awaitPromise */ false);
       return (result && !result.exceptionDetails && result.object) ? result.object : null;
@@ -210,14 +213,14 @@ export class JavaScriptAutocomplete {
 
     const result = await executionContext.evaluate(
         {
-          expression: expression.baseExpression,
+          expression,
           objectGroup: 'mapCompletion',
           includeCommandLineAPI: true,
           silent: true,
           returnByValue: false,
           generatePreview: false,
-          throwOnSideEffect: expression.possibleSideEffects,
-          timeout: expression.possibleSideEffects ? 500 : undefined
+          throwOnSideEffect: true,
+          timeout: DEFAULT_TIMEOUT,
         },
         /* userGesture */ false, /* awaitPromise */ false);
     if (result.error || !!result.exceptionDetails || result.object.subtype !== 'map') {
@@ -319,12 +322,10 @@ export class JavaScriptAutocomplete {
       if (fullText.endsWith('.')) {
         return [];
       }
-      expression = {baseExpression: '', possibleSideEffects: false};
+      expression = '';
     }
-    const needsNoSideEffects = expression.possibleSideEffects;
-    const expressionString = expression.baseExpression;
 
-
+    const expressionString = expression;
     const dotNotation = fullText.endsWith('.');
     const bracketNotation = !!expressionString && fullText.endsWith('[');
 
@@ -356,8 +357,8 @@ export class JavaScriptAutocomplete {
             silent: true,
             returnByValue: false,
             generatePreview: false,
-            throwOnSideEffect: needsNoSideEffects,
-            timeout: needsNoSideEffects ? 500 : undefined
+            throwOnSideEffect: true,
+            timeout: DEFAULT_TIMEOUT
           },
           /* userGesture */ false, /* awaitPromise */ false);
       cache = {date: Date.now(), value: resultPromise.then(result => completionsOnGlobal.call(this, result))};
@@ -673,7 +674,7 @@ export class JavaScriptAutocomplete {
     }
     const result =
         await currentExecutionContext.runtimeModel.compileScript(expression, '', false, currentExecutionContext.id);
-    if (!result.exceptionDetails) {
+    if (!result || !result.exceptionDetails) {
       return true;
     }
     const description = result.exceptionDetails.exception.description;

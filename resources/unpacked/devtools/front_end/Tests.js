@@ -577,7 +577,7 @@
     this._waitForTargets(1, callback.bind(this));
 
     function callback() {
-      Protocol.test.deprecatedRunAfterPendingDispatches(this.releaseControl.bind(this));
+      ProtocolClient.test.deprecatedRunAfterPendingDispatches(this.releaseControl.bind(this));
     }
   };
 
@@ -1162,6 +1162,23 @@
     }
 
     self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
+    this.takeControl();
+  };
+
+  TestSuite.prototype.waitForTestResultsAsMessage = function() {
+    const onMessage = event => {
+      if (!event.data.testOutput) {
+        return;
+      }
+      top.removeEventListener('message', onMessage);
+      const text = event.data.testOutput;
+      if (text === 'PASS') {
+        this.releaseControl();
+      } else {
+        this.fail(text);
+      }
+    };
+    top.addEventListener('message', onMessage);
     this.takeControl();
   };
 

@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 import * as UI from '../ui/ui.js';
-import * as MediaModel from './MediaModel.js';
+
+import {Event, MediaChangeTypeKeys} from './MediaModel.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @typedef {{playerTitle: string, playerID: string, exists: boolean, playing: boolean, titleEdited: boolean}}
@@ -27,6 +28,7 @@ export class PlayerEntryTreeElement extends UI.TreeOutline.TreeElement {
     this._playerStatus = playerStatus;
     this._displayContainer = displayContainer;
     this.setLeadingIcons([UI.Icon.Icon.create('smallicon-videoplayer-playing', 'media-player')]);
+    this.listItemElement.classList.add('player-entry-tree-element');
   }
 
   /**
@@ -65,6 +67,7 @@ export class PlayerListView extends UI.Widget.VBox {
 
     // Players active in this tab.
     this._playerList = this._addListSection(Common.UIString('Players'));
+    this._playerList.listItemElement.classList.add('player-entry-header');
   }
 
   /**
@@ -118,12 +121,12 @@ export class PlayerListView extends UI.Widget.VBox {
 
   /**
    * @param {string} playerID
-   * @param {!Array.<!MediaModel.Event>} changes
+   * @param {!Array.<!Event>} changes
    * @param {string} changeType
    */
   renderChanges(playerID, changes, changeType) {
     // We only want to try setting the title from the 'frame_title' and 'frame_url' properties.
-    if (changeType === MediaModel.MediaChangeTypeKeys.Property) {
+    if (changeType === MediaChangeTypeKeys.Property) {
       for (const change of changes) {
         // Sometimes frame_title can be an empty string.
         if (change.name === 'frame_title' && change.value) {
@@ -137,7 +140,7 @@ export class PlayerListView extends UI.Widget.VBox {
       }
     }
 
-    if (changeType === MediaModel.MediaChangeTypeKeys.Event) {
+    if (changeType === MediaChangeTypeKeys.Event) {
       let change_to = null;
       for (const change of changes) {
         if (change.name === 'Event') {

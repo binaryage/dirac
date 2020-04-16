@@ -8,10 +8,16 @@ set -e -o pipefail
 # shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
+if [[ -n "$DIRAC_DEBUG" ]]; then
+  set -x
+fi
+
 #export DIRAC_LOG_LEVEL=debug
 export DIRAC_CHROME_DRIVER_VERBOSE=1
+export DEPOT_TOOLS_UPDATE=0
 
 if [[ -z "${TRAVIS_SKIP_DEPOT_TOOLS_INSTALL}" ]]; then
+  pushd "$HOME"
   # see https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
   if [[ -d depot_tools ]]; then
     cd depot_tools
@@ -22,6 +28,7 @@ if [[ -z "${TRAVIS_SKIP_DEPOT_TOOLS_INSTALL}" ]]; then
   fi
   DEPOT_TOOLS_PATH="$(pwd -P)/depot_tools"
   export PATH=$DEPOT_TOOLS_PATH:$PATH
+  popd
 
   # this seems to be a missing dependency of depot tools under Travis CI
   sudo apt-get install -y python-httplib2
@@ -47,11 +54,11 @@ if [[ -z "${TRAVIS_SKIP_NSS3_UPGRADE}" ]]; then
   sudo apt-get install -y --reinstall libnss3
 fi
 
-if [[ -z "${TRAVIS_SKIP_LEIN_UPGRADE}" ]]; then
-  # we need lein 2.5.3+ because of https://github.com/technomancy/leiningen/issues/1762
-  # update lein to latest, https://github.com/technomancy/leiningen/issues/2014#issuecomment-153829977
-  yes y | sudo lein upgrade || true # note: sudo lein upgrade exits with non-zero exit code if there is nothing to be updated
-fi
+#if [[ -z "${TRAVIS_SKIP_LEIN_UPGRADE}" ]]; then
+#  # we need lein 2.5.3+ because of https://github.com/technomancy/leiningen/issues/1762
+#  # update lein to latest, https://github.com/technomancy/leiningen/issues/2014#issuecomment-153829977
+#  yes y | sudo lein upgrade || true # note: sudo lein upgrade exits with non-zero exit code if there is nothing to be updated
+#fi
 
 # install xvfb (for chrome tests)
 if [[ -z "${TRAVIS_SKIP_XVFB_SETUP}" ]]; then
@@ -81,8 +88,8 @@ if [[ -z "${TRAVIS_SKIP_DEPOT_BOOTSTRAP}" ]]; then
 fi
 
 # HACK: we rely on the fact that the tmp dir is mapped to host and persists
-mkdir -p "$ROOT_TMP_DIR_RELATIVE"
-cd "$ROOT_TMP_DIR_RELATIVE"
+mkdir -p "$DIRAC_CACHE_DIR"
+cd "$DIRAC_CACHE_DIR"
 
 DIRAC_CHROME_BINARY_PATH=
 if [[ -z "${TRAVIS_SKIP_CHROMIUM_SETUP}" ]]; then

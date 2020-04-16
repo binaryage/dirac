@@ -207,41 +207,41 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
   }
 }
 
-/** @type {!Array.<!Lighthouse.Preset>} */
+/** @type {!Array.<!Preset>} */
 export const Presets = [
   // configID maps to Lighthouse's Object.keys(config.categories)[0] value
   {
-    setting: self.Common.settings.createSetting('lighthouse.cat_perf', true),
+    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_perf', true),
     configID: 'performance',
     title: ls`Performance`,
     description: ls`How long does this app take to show content and become usable`
   },
   {
-    setting: self.Common.settings.createSetting('lighthouse.cat_pwa', true),
+    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pwa', true),
     configID: 'pwa',
     title: ls`Progressive Web App`,
     description: ls`Does this page meet the standard of a Progressive Web App`
   },
   {
-    setting: self.Common.settings.createSetting('lighthouse.cat_best_practices', true),
+    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_best_practices', true),
     configID: 'best-practices',
     title: ls`Best practices`,
     description: ls`Does this page follow best practices for modern web development`
   },
   {
-    setting: self.Common.settings.createSetting('lighthouse.cat_a11y', true),
+    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_a11y', true),
     configID: 'accessibility',
     title: ls`Accessibility`,
     description: ls`Is this page usable by people with disabilities or impairments`
   },
   {
-    setting: self.Common.settings.createSetting('lighthouse.cat_seo', true),
+    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_seo', true),
     configID: 'seo',
     title: ls`SEO`,
     description: ls`Is this page optimized for search engine results ranking`
   },
   {
-    setting: self.Common.settings.createSetting('lighthouse.cat_pubads', false),
+    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pubads', false),
     plugin: true,
     configID: 'lighthouse-plugin-publisher-ads',
     title: ls`Publisher Ads`,
@@ -249,10 +249,10 @@ export const Presets = [
   },
 ];
 
-/** @type {!Array.<!Lighthouse.RuntimeSetting>} */
+/** @type {!Array.<!RuntimeSetting>} */
 export const RuntimeSettings = [
   {
-    setting: self.Common.settings.createSetting('lighthouse.device_type', 'mobile'),
+    setting: Common.Settings.Settings.instance().createSetting('lighthouse.device_type', 'mobile'),
     description: ls`Apply mobile emulation during auditing`,
     setFlags: (flags, value) => {
       // See Audits.AuditsPanel._setupEmulationAndProtocolConnection()
@@ -265,17 +265,19 @@ export const RuntimeSettings = [
   },
   {
     // This setting is disabled, but we keep it around to show in the UI.
-    setting: self.Common.settings.createSetting('lighthouse.throttling', true),
+    setting: Common.Settings.Settings.instance().createSetting('lighthouse.throttling', true),
     title: ls`Simulated throttling`,
     // We will disable this when we have a Lantern trace viewer within DevTools.
     learnMore:
         'https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#devtools-lighthouse-panel-throttling',
+    description: ls
+    `Simulate a slower page load, based on data from an initial unthrottled load. If disabled, the page is actually slowed with applied throttling.`,
     setFlags: (flags, value) => {
       flags.throttlingMethod = value ? 'simulate' : 'devtools';
     },
   },
   {
-    setting: self.Common.settings.createSetting('lighthouse.clear_storage', true),
+    setting: Common.Settings.Settings.instance().createSetting('lighthouse.clear_storage', true),
     title: ls`Clear storage`,
     description: ls`Reset storage (localStorage, IndexedDB, etc) before auditing. (Good for performance & PWA testing)`,
     setFlags: (flags, value) => {
@@ -290,3 +292,9 @@ export const Events = {
   RequestLighthouseStart: Symbol('RequestLighthouseStart'),
   RequestLighthouseCancel: Symbol('RequestLighthouseCancel'),
 };
+
+/** @typedef {{setting: !Common.Settings.Setting, configID: string, title: string, description: string}} */
+export let Preset;
+
+/** @typedef {{setting: !Common.Settings.Setting, description: string, setFlags: function(!Object, string), options: (!Array|undefined), title: (string|undefined)}} */
+export let RuntimeSetting;

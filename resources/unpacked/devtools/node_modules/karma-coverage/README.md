@@ -119,4 +119,4 @@ For more information on Karma see the [homepage].
 
 
 [homepage]: http://karma-runner.github.com
-[Istanbul]: https://github.com/gotwarlost/istanbul
+[Istanbul]: https://istanbul.js.org

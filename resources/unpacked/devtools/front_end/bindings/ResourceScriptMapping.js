@@ -32,6 +32,7 @@ import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';
 import * as Workspace from '../workspace/workspace.js';
 
+import {BreakpointManager} from './BreakpointManager.js';
 import {ContentProviderBasedProject} from './ContentProviderBasedProject.js';
 import {DebuggerSourceMapping, DebuggerWorkspaceBinding} from './DebuggerWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
 import {NetworkProject} from './NetworkProject.js';
@@ -61,7 +62,12 @@ export class ResourceScriptMapping {
     this._acceptedScripts = new Set();
     const runtimeModel = debuggerModel.runtimeModel();
     this._eventListeners = [
-      this._debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this),
+      this._debuggerModel.addEventListener(
+          SDK.DebuggerModel.Events.ParsedScriptSource,
+          event => {
+            this._parsedScriptSource(event);
+          },
+          this),
       this._debuggerModel.addEventListener(
           SDK.DebuggerModel.Events.GlobalObjectCleared, this._globalObjectCleared, this),
       runtimeModel.addEventListener(
@@ -115,7 +121,8 @@ export class ResourceScriptMapping {
     }
     let lineNumber = rawLocation.lineNumber - (script.isInlineScriptWithSourceURL() ? script.lineOffset : 0);
     let columnNumber = rawLocation.columnNumber || 0;
-    if (script.isWasmDisassembly()) {
+    if (script.hasWasmDisassembly()) {
+      // TODO(chromium:1056632) This produces the wrong result when the disassembly is not loaded yet.
       lineNumber = script.wasmDisassemblyLine(columnNumber);
       columnNumber = 0;
     } else if (script.isInlineScriptWithSourceURL() && !lineNumber && columnNumber) {
@@ -137,7 +144,7 @@ export class ResourceScriptMapping {
       return [];
     }
     const script = scriptFile._script;
-    if (script.isWasmDisassembly()) {
+    if (script.hasWasmDisassembly()) {
       return [script.wasmByteLocation(lineNumber)];
     }
     if (script.isInlineScriptWithSourceURL()) {
@@ -168,7 +175,7 @@ export class ResourceScriptMapping {
   /**
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
-  _parsedScriptSource(event) {
+  async _parsedScriptSource(event) {
     const script = /** @type {!SDK.Script.Script} */ (event.data);
     if (!this._acceptsScript(script)) {
       return;
@@ -183,7 +190,7 @@ export class ResourceScriptMapping {
     const oldUISourceCode = project.uiSourceCodeForURL(url);
     if (oldUISourceCode) {
       const scriptFile = this._uiSourceCodeToScriptFile.get(oldUISourceCode);
-      this._removeScript(scriptFile._script);
+      await this._removeScript(scriptFile._script);
     }
 
     // Create UISourceCode.
@@ -196,7 +203,7 @@ export class ResourceScriptMapping {
     this._uiSourceCodeToScriptFile.set(uiSourceCode, scriptFile);
 
     project.addUISourceCodeWithProvider(uiSourceCode, originalContentProvider, metadata, 'text/javascript');
-    this._debuggerWorkspaceBinding.updateLocations(script);
+    await this._debuggerWorkspaceBinding.updateLocations(script);
   }
 
   /**
@@ -210,7 +217,7 @@ export class ResourceScriptMapping {
   /**
    * @param {!SDK.Script.Script} script
    */
-  _removeScript(script) {
+  async _removeScript(script) {
     if (!this._acceptedScripts.has(script)) {
       return;
     }
@@ -222,7 +229,7 @@ export class ResourceScriptMapping {
     scriptFile.dispose();
     this._uiSourceCodeToScriptFile.delete(uiSourceCode);
     project.removeFile(script.sourceURL);
-    this._debuggerWorkspaceBinding.updateLocations(script);
+    await this._debuggerWorkspaceBinding.updateLocations(script);
   }
 
   /**
@@ -351,7 +358,8 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
     const debuggerModel = this._resourceScriptMapping._debuggerModel;
-    const breakpoints = self.Bindings.breakpointManager.breakpointLocationsForUISourceCode(this._uiSourceCode)
+    const breakpoints = BreakpointManager.instance()
+                            .breakpointLocationsForUISourceCode(this._uiSourceCode)
                             .map(breakpointLocation => breakpointLocation.breakpoint);
     const source = this._uiSourceCode.workingCopy();
     debuggerModel.setScriptSource(this._script.scriptId, source, scriptSourceWasSet.bind(this));
@@ -365,7 +373,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
       if (!error && !exceptionDetails) {
         this._scriptSource = source;
       }
-      this._update();
+      await this._update();
 
       if (!error && !exceptionDetails) {
         // Live edit can cause breakpoints to be in the wrong position, or to be lost altogether.
@@ -385,26 +393,26 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
     }
   }
 
-  _update() {
+  async _update() {
     if (this._isDiverged() && !this._hasDivergedFromVM) {
-      this._divergeFromVM();
+      await this._divergeFromVM();
     } else if (!this._isDiverged() && this._hasDivergedFromVM) {
-      this._mergeToVM();
+      await this._mergeToVM();
     }
   }
 
-  _divergeFromVM() {
+  async _divergeFromVM() {
     this._isDivergingFromVM = true;
-    this._resourceScriptMapping._debuggerWorkspaceBinding.updateLocations(this._script);
+    await this._resourceScriptMapping._debuggerWorkspaceBinding.updateLocations(this._script);
     delete this._isDivergingFromVM;
     this._hasDivergedFromVM = true;
     this.dispatchEventToListeners(ResourceScriptFile.Events.DidDivergeFromVM, this._uiSourceCode);
   }
 
-  _mergeToVM() {
+  async _mergeToVM() {
     delete this._hasDivergedFromVM;
     this._isMergingToVM = true;
-    this._resourceScriptMapping._debuggerWorkspaceBinding.updateLocations(this._script);
+    await this._resourceScriptMapping._debuggerWorkspaceBinding.updateLocations(this._script);
     delete this._isMergingToVM;
     this.dispatchEventToListeners(ResourceScriptFile.Events.DidMergeToVM, this._uiSourceCode);
   }
@@ -437,8 +445,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
     }
     this._script.requestContent().then(deferredContent => {
       this._scriptSource = deferredContent.content;
-      this._update();
-      this._mappingCheckedForTest();
+      this._update().then(() => this._mappingCheckedForTest());
     });
   }
 

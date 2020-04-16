@@ -5,7 +5,24 @@
 import {assert} from 'chai';
 import {describe, it} from 'mocha';
 
-import {click, getBrowserAndPages, resetPages, resourcesPath, $} from '../../shared/helper.js';
+import {$, click, getBrowserAndPages, resetPages, resourcesPath} from '../../shared/helper.js';
+import {addBreakpointForLine, openSourceCodeEditorForFile, RESUME_BUTTON, retrieveTopCallFrameScriptLocation} from '../helpers/sources-helpers.js';
+
+describe('Source Tab', async () => {
+  beforeEach(async () => {
+    await resetPages();
+  });
+
+  it('can add a breakpoint in raw wasm', async () => {
+    const {target, frontend} = getBrowserAndPages();
+
+    await openSourceCodeEditorForFile(target, 'add.wasm', 'wasm/call-to-add-wasm.html');
+    await addBreakpointForLine(frontend, 5);
+
+    const scriptLocation = await retrieveTopCallFrameScriptLocation('main();', target);
+    assert.deepEqual(scriptLocation, 'add.wasm:5');
+  });
+});
 
 describe('Raw-Wasm', async () => {
   beforeEach(async () => {
@@ -67,9 +84,9 @@ describe('Raw-Wasm', async () => {
     const codeLine = await frontend.waitForSelector('.cm-execution-line pre');
     const codeText = await codeLine.evaluate(n => n.textContent);
 
-    assert.equal(codeText, '    call $import0');
+    assert.equal(codeText, '    call $bar');
 
     // Resume the evaluation
-    await click('[aria-label="Pause script execution"]');
+    await click(RESUME_BUTTON);
   });
 });

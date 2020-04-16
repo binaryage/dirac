@@ -58,7 +58,7 @@ Emulation.EmulatedDevicesList = EmulationModule.EmulatedDevices.EmulatedDevicesL
 /**
  * @constructor
  */
-Emulation.GeolocationsSettingsTab = EmulationModule.GeolocationsSettingsTab.GeolocationsSettingsTab;
+Emulation.LocationsSettingsTab = EmulationModule.LocationsSettingsTab.LocationsSettingsTab;
 
 /**
  * @constructor
@@ -81,12 +81,3 @@ Emulation.SensorsView = EmulationModule.SensorsView.SensorsView;
  * @constructor
  */
 Emulation.SensorsView.ShowActionDelegate = EmulationModule.SensorsView.ShowActionDelegate;
-
-/** @typedef {!{title: string, orientation: string, insets: !UI.Insets, image: ?string}} */
-Emulation.EmulatedDevice.Mode;
-
-/** @typedef {!{width: number, height: number, outlineInsets: ?UI.Insets, outlineImage: ?string}} */
-Emulation.EmulatedDevice.Orientation;
-
-/** @typedef {{title: string, lat: number, long: number}} */
-Emulation.GeolocationsSettingsTab.Item;

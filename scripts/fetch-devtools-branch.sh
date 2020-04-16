@@ -127,7 +127,25 @@ git branch -f tracker5 tracker4
 #remote: error: See http://git.io/iEPt8g for more information.
 #remote: error: File node_modules/puppeteer/.local-chromium/linux-706915/chrome-linux/chrome is 228.63 MB; this exceeds GitHub's file size limit of 100.00 MB
 
-LAST_GOOD_REV="acb302e47295068444b2f3a9712194de2d14240a"
+# LAST_GOOD_REV="acb302e47295068444b2f3a9712194de2d14240a"
+# OFFENDING_FILE="node_modules/puppeteer/.local-chromium/linux-706915/chrome-linux/chrome"
+# git filter-branch -f --index-filter "git rm --cached --ignore-unmatch \"$OFFENDING_FILE\"" $LAST_GOOD_REV..tracker5
+
+# Mar 26, 2002:
+# it looks like whoever is responsible for ChromeDevTools/devtools-frontend rewrote history around March 15, 2020
+# or git filter-branch changed behaviour (unlikely)
+# acb302e47295068444b2f3a9712194de2d14240a is no longer present
+#
+# in https://github.com/ChromeDevTools/devtools-frontend
+# last merged rev 222b156b486b2cf2c4d4242ad06fb914ef12cf13
+# first unmerged rev 5609eb6d52568c35cea160f73babf0703d9c132e
+# the rev where they add the binary file is 8aaca9e8f1de24a17e40bcc9f856864bd6002aca
+# this maps to ee77d1593a518d64628c32ca5882d80c971b9294 in tracker4 (our devtools branch)
+# so let's take as last good d8a4a4404f68a77917a1ba54e02f52bef2157b74 (git rev-parse ee77d1593a518d64628c32ca5882d80c971b9294~3)
+#
+# I decided to adopt their history, which might break some of our old sha links
+
+LAST_GOOD_REV="d8a4a4404f68a77917a1ba54e02f52bef2157b74"
 OFFENDING_FILE="node_modules/puppeteer/.local-chromium/linux-706915/chrome-linux/chrome"
 git filter-branch -f --index-filter "git rm --cached --ignore-unmatch \"$OFFENDING_FILE\"" $LAST_GOOD_REV..tracker5
 

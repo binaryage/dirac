@@ -3,35 +3,37 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
-import * as MediaModel from './MediaModel.js';
-import * as PlayerListView from './PlayerListView.js';
-import * as PlayerDetailView from './PlayerDetailView.js';
+
+import {Event, Events, MediaChangeTypeKeys, MediaModel} from './MediaModel.js';  // eslint-disable-line no-unused-vars
+import {PlayerDetailView} from './PlayerDetailView.js';
+import {PlayerListView} from './PlayerListView.js';
 
 /**
- * @implements {SDK.SDKModelObserver<!Media.MediaModel>}
+ * @implements {SDK.SDKModel.SDKModelObserver<!Media.MediaModel>}
  */
 export class MainView extends UI.Panel.PanelWithSidebar {
   constructor() {
     super('Media');
     this.registerRequiredCSS('media/mediaView.css');
 
-    // Map<PlayerDetailView.PlayerDetailView>
+    // Map<PlayerDetailView>
     this._detailPanels = new Map();
 
     // Map<string>
     this._deletedPlayers = new Set();
 
-    this._sidebar = new PlayerListView.PlayerListView(this);
+    this._sidebar = new PlayerListView(this);
     this._sidebar.show(this.panelSidebarElement());
 
-    SDK.SDKModel.TargetManager.instance().observeModels(MediaModel.MediaModel, this);
+    SDK.SDKModel.TargetManager.instance().observeModels(MediaModel, this);
   }
 
   /**
    * @param {string} playerID
-   * @param {!Array.<!MediaModel.Event>} changes
-   * @param {!MediaModel.MediaChangeTypeKeys} changeType
+   * @param {!Array.<!Event>} changes
+   * @param {!MediaChangeTypeKeys} changeType
    */
   renderChanges(playerID, changes, changeType) {
     if (this._deletedPlayers.has(playerID)) {
@@ -62,7 +64,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
    */
   _onPlayerCreated(playerID) {
     this._sidebar.addMediaElementItem(playerID);
-    this._detailPanels.set(playerID, new PlayerDetailView.PlayerDetailView());
+    this._detailPanels.set(playerID, new PlayerDetailView());
   }
 
   /**
@@ -70,7 +72,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
    */
   wasShown() {
     super.wasShown();
-    for (const model of SDK.SDKModel.TargetManager.instance().models(MediaModel.MediaModel)) {
+    for (const model of SDK.SDKModel.TargetManager.instance().models(MediaModel)) {
       this._addEventListeners(model);
     }
   }
@@ -79,7 +81,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
    * @override
    */
   willHide() {
-    for (const model of SDK.SDKModel.TargetManager.instance().models(MediaModel.MediaModel)) {
+    for (const model of SDK.SDKModel.TargetManager.instance().models(MediaModel)) {
       this._removeEventListeners(model);
     }
   }
@@ -107,32 +109,32 @@ export class MainView extends UI.Panel.PanelWithSidebar {
    */
   _addEventListeners(mediaModel) {
     mediaModel.ensureEnabled();
-    mediaModel.addEventListener(MediaModel.Events.PlayerPropertiesChanged, this._propertiesChanged, this);
-    mediaModel.addEventListener(MediaModel.Events.PlayerEventsAdded, this._eventsAdded, this);
-    mediaModel.addEventListener(MediaModel.Events.PlayersCreated, this._playersCreated, this);
+    mediaModel.addEventListener(Events.PlayerPropertiesChanged, this._propertiesChanged, this);
+    mediaModel.addEventListener(Events.PlayerEventsAdded, this._eventsAdded, this);
+    mediaModel.addEventListener(Events.PlayersCreated, this._playersCreated, this);
   }
 
   /**
    * @param {!Media.MediaModel} mediaModel
    */
   _removeEventListeners(mediaModel) {
-    mediaModel.removeEventListener(MediaModel.Events.PlayerPropertiesChanged, this._propertiesChanged, this);
-    mediaModel.removeEventListener(MediaModel.Events.PlayerEventsAdded, this._eventsAdded, this);
-    mediaModel.removeEventListener(MediaModel.Events.PlayersCreated, this._playersCreated, this);
+    mediaModel.removeEventListener(Events.PlayerPropertiesChanged, this._propertiesChanged, this);
+    mediaModel.removeEventListener(Events.PlayerEventsAdded, this._eventsAdded, this);
+    mediaModel.removeEventListener(Events.PlayersCreated, this._playersCreated, this);
   }
 
   /**
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _propertiesChanged(event) {
-    this.renderChanges(event.data.playerId, event.data.properties, MediaModel.MediaChangeTypeKeys.Property);
+    this.renderChanges(event.data.playerId, event.data.properties, MediaChangeTypeKeys.Property);
   }
 
   /**
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _eventsAdded(event) {
-    this.renderChanges(event.data.playerId, event.data.events, MediaModel.MediaChangeTypeKeys.Event);
+    this.renderChanges(event.data.playerId, event.data.events, MediaChangeTypeKeys.Event);
   }
 
   /**

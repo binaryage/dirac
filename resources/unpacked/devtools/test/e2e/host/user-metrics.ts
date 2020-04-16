@@ -6,7 +6,8 @@ import {assert} from 'chai';
 import {describe, it} from 'mocha';
 import * as puppeteer from 'puppeteer';
 
-import {click, getBrowserAndPages, getElementPosition, platform, resetPages, timeout, waitFor} from '../../shared/helper.js';
+import {click, getBrowserAndPages, platform, resetPages, waitFor} from '../../shared/helper.js';
+import {openPanelViaMoreTools} from '../helpers/settings-helpers.js';
 
 interface UserMetric {
   name: string;
@@ -158,25 +159,7 @@ describe('User Metrics', () => {
   });
 
   it('dispatches events for triple dot items', async () => {
-    const {frontend} = getBrowserAndPages();
-    const moreToolsSelector = '[aria-label="More tools"]';
-    const animationsSelector = '.soft-context-menu-item[aria-label="Animations"]';
-    const animationsPanel = '.view-container[aria-label="Animations panel"]';
-
-    // Head to the triple dot menu.
-    await click('.toolbar-button[aria-label="Customize and control DevTools"]');
-
-    // Hover over the "More Tools" option.
-    const moreTools = await getElementPosition(moreToolsSelector);
-    await frontend.mouse.move(moreTools.x, moreTools.y);
-
-    // The menu is set to appear after 150ms, so wait here. The menu itself does
-    // not have a particular selector onto which we can attach, hence the timeout.
-    await timeout(200);
-
-    // Choose the animations panel and wait for it.
-    await click(animationsSelector);
-    await waitFor(animationsPanel);
+    await openPanelViaMoreTools('Animations');
 
     await assertCapturedEvents([
       {
@@ -198,8 +181,12 @@ describe('User Metrics', () => {
 
     await assertCapturedEvents([
       {
+        name: 'DevTools.PanelShown',
+        value: 29,
+      },
+      {
         name: 'DevTools.KeyboardShortcutFired',
-        value: 22, // settings.show
+        value: 22,  // settings.show
       },
     ]);
   });
@@ -234,7 +221,7 @@ describe('User Metrics', () => {
         break;
     }
 
-    await waitFor('.toolbar-state-on[aria-label="Deactivate breakpoints"]');
+    await waitFor('[aria-label="Activate breakpoints"]');
 
     await assertCapturedEvents([
       {

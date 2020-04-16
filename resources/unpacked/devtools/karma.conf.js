@@ -12,18 +12,18 @@ const TEXT_COVERAGE_ENABLED = COVERAGE_ENABLED && !process.env['NO_TEXT_COVERAGE
 const DEBUG_ENABLED = !!process.env['DEBUG'];
 
 const instrumenterPreprocessors =
-    (DEBUG_ENABLED || COVERAGE_ENABLED === false) ? [] : ['karma-coverage-istanbul-instrumenter'];
+    (DEBUG_ENABLED || COVERAGE_ENABLED === false) ? [] : ['coverage'];
 
 const coverageKarmaPlugins = COVERAGE_ENABLED ?
-    [require('karma-coverage-istanbul-instrumenter'), require('karma-coverage-istanbul-reporter')] :
+    [require('karma-coverage')] :
     [];
 
 const browsers = DEBUG_ENABLED ? ['Chrome'] : ['ChromeHeadless'];
 
-const enabledKarmaReporters = COVERAGE_ENABLED ? ['dots', 'coverage-istanbul'] : ['dots'];
+const enabledKarmaReporters = COVERAGE_ENABLED ? ['coverage'] : [];
 
-const commonIstanbulReporters = ['html', 'json-summary'];
-const istanbulReportOutputs = TEXT_COVERAGE_ENABLED ? ['text', ...commonIstanbulReporters] : commonIstanbulReporters;
+const commonIstanbulReporters = [{type: 'html'}, {type: 'json-summary'}];
+const istanbulReportOutputs = TEXT_COVERAGE_ENABLED ? [{type: 'text'}, ...commonIstanbulReporters] : commonIstanbulReporters;
 
 module.exports = function(config) {
   const options = {
@@ -31,21 +31,24 @@ module.exports = function(config) {
 
     files: [
       {pattern: 'front_end/**/*.js', included: false, served: true},
-      {pattern: 'test/unittests/**/*.ts', type: 'module'},
+      {pattern: 'test/unittests/front_end/**/*.ts', type: 'module'},
       {pattern: 'front_end/**/*.svg', included: false, served: true},
       {pattern: 'front_end/**/*.png', included: false, served: true},
     ],
 
-    reporters: enabledKarmaReporters,
+    reporters: [
+      'dots',
+      ...enabledKarmaReporters,
+    ],
 
     preprocessors: {
-      './test/unittests/**/*.ts': ['karma-typescript'],
+      './test/unittests/front_end/**/*.ts': ['karma-typescript'],
       './front_end/common/*.js': instrumenterPreprocessors,
       './front_end/formatter_worker/*.js': instrumenterPreprocessors,
       './front_end/inline_editor/*.js': instrumenterPreprocessors,
       './front_end/persistence/*.js': instrumenterPreprocessors,
       './front_end/platform/*.js': instrumenterPreprocessors,
-      './front_end/protocol/*.js': instrumenterPreprocessors,
+      './front_end/protocol_client/*.js': instrumenterPreprocessors,
       './front_end/sdk/*.js': instrumenterPreprocessors,
       './front_end/text_utils/*.js': instrumenterPreprocessors,
       './front_end/ui/**/*.js': instrumenterPreprocessors,
@@ -57,17 +60,16 @@ module.exports = function(config) {
     frameworks: ['mocha', 'chai', 'karma-typescript'],
 
     karmaTypescriptConfig: {
-      tsconfig: './tsconfig.json',
+      tsconfig: './tsconfig.base.json',
       compilerOptions: {
         checkJs: false,
         baseUrl: '.',
       },
       coverageOptions: {instrumentation: false},
-      include: {mode: 'replace', values: ['test/unittests/**/*.ts']},
+      include: {mode: 'replace', values: ['test/unittests/front_end/**/*.ts']},
     },
 
     proxies: {
-      '/front_end': '/base/front_end',
       '/Images': '/base/front_end/Images',
     },
 
@@ -79,11 +81,9 @@ module.exports = function(config) {
       ...coverageKarmaPlugins,
     ],
 
-    coverageIstanbulInstrumenter: {esModules: true},
-
-    coverageIstanbulReporter: {
-      reports: istanbulReportOutputs,
+    coverageReporter: {
       dir: 'karma-coverage',
+      reporters: istanbulReportOutputs,
     },
 
     singleRun: !DEBUG_ENABLED

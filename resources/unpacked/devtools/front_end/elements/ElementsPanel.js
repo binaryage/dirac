@@ -76,10 +76,12 @@ export class ElementsPanel extends UI.Panel.Panel {
 
     this._contentElement.id = 'elements-content';
     // FIXME: crbug.com/425984
-    if (self.Common.settings.moduleSetting('domWordWrap').get()) {
+    if (Common.Settings.Settings.instance().moduleSetting('domWordWrap').get()) {
       this._contentElement.classList.add('elements-wrap');
     }
-    self.Common.settings.moduleSetting('domWordWrap').addChangeListener(this._domWordWrapSettingChanged.bind(this));
+    Common.Settings.Settings.instance()
+        .moduleSetting('domWordWrap')
+        .addChangeListener(this._domWordWrapSettingChanged.bind(this));
 
     crumbsContainer.id = 'elements-crumbs';
     this._breadcrumbs = new ElementsBreadcrumbs();
@@ -90,7 +92,9 @@ export class ElementsPanel extends UI.Panel.Panel {
     this._computedStyleWidget = new ComputedStyleWidget();
     this._metricsWidget = new MetricsSidebarPane();
 
-    self.Common.settings.moduleSetting('sidebarPosition').addChangeListener(this._updateSidebarPosition.bind(this));
+    Common.Settings.Settings.instance()
+        .moduleSetting('sidebarPosition')
+        .addChangeListener(this._updateSidebarPosition.bind(this));
     this._updateSidebarPosition();
 
     /** @type {!Set.<!ElementsTreeOutline>} */
@@ -101,7 +105,9 @@ export class ElementsPanel extends UI.Panel.Panel {
     SDK.SDKModel.TargetManager.instance().addEventListener(
         SDK.SDKModel.Events.NameChanged,
         event => this._targetNameChanged(/** @type {!SDK.SDKModel.Target} */ (event.data)));
-    self.Common.settings.moduleSetting('showUAShadowDOM').addChangeListener(this._showUAShadowDOMChanged.bind(this));
+    Common.Settings.Settings.instance()
+        .moduleSetting('showUAShadowDOM')
+        .addChangeListener(this._showUAShadowDOMChanged.bind(this));
     SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.DOMModel.DOMModel, SDK.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
     self.Extensions.extensionServer.addEventListener(
@@ -156,7 +162,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     let treeOutline = parentModel ? ElementsTreeOutline.forDOMModel(parentModel) : null;
     if (!treeOutline) {
       treeOutline = new ElementsTreeOutline(true, true);
-      treeOutline.setWordWrap(self.Common.settings.moduleSetting('domWordWrap').get());
+      treeOutline.setWordWrap(Common.Settings.Settings.instance().moduleSetting('domWordWrap').get());
       treeOutline.addEventListener(ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedNodeChanged, this);
       treeOutline.addEventListener(
           ElementsTreeOutline.Events.ElementsTreeUpdated, this._updateBreadcrumbIfNeeded, this);
@@ -387,7 +393,6 @@ export class ElementsPanel extends UI.Panel.Panel {
      */
     async function restoreNode(domModel, staleNode) {
       const nodePath = staleNode ? staleNode.path() : null;
-
       const restoredNodeId = nodePath ? await domModel.pushNodeByPathToFrontend(nodePath) : null;
 
       if (savedSelectedNodeOnReset !== this._selectedNodeOnReset) {
@@ -398,8 +403,14 @@ export class ElementsPanel extends UI.Panel.Panel {
         const inspectedDocument = domModel.existingDocument();
         node = inspectedDocument ? inspectedDocument.body || inspectedDocument.documentElement : null;
       }
-      this._setDefaultSelectedNode(node);
-      this._lastSelectedNodeSelectedForTest();
+      // If `node` is null here, the document hasn't been transmitted from the backend yet
+      // and isn't in a valid state to have a default-selected node. Another document update
+      // should be forthcoming. In the meantime, don't set the default-selected node or notify
+      // the test that it's ready, because it isn't.
+      if (node) {
+        this._setDefaultSelectedNode(node);
+        this._lastSelectedNodeSelectedForTest();
+      }
     }
   }
 
@@ -460,7 +471,7 @@ export class ElementsPanel extends UI.Panel.Panel {
 
     this._searchConfig = searchConfig;
 
-    const showUAShadowDOM = self.Common.settings.moduleSetting('showUAShadowDOM').get();
+    const showUAShadowDOM = Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get();
     const domModels = SDK.SDKModel.TargetManager.instance().models(SDK.DOMModel.DOMModel);
     const promises = domModels.map(domModel => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
     Promise.all(promises).then(resultCountCallback.bind(this));
@@ -509,7 +520,7 @@ export class ElementsPanel extends UI.Panel.Panel {
   switchToAndFocus(node) {
     // Reset search restore.
     this._searchableView.cancelSearch();
-    self.UI.viewManager.showView('elements').then(() => this.selectDOMNode(node, true));
+    UI.ViewManager.ViewManager.instance().showView('elements').then(() => this.selectDOMNode(node, true));
   }
 
   /**
@@ -721,12 +732,14 @@ export class ElementsPanel extends UI.Panel.Panel {
   revealAndSelectNode(node, focus, omitHighlight) {
     this._omitDefaultSelection = true;
 
-    node = self.Common.settings.moduleSetting('showUAShadowDOM').get() ? node : this._leaveUserAgentShadowDOM(node);
+    node = Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get() ?
+        node :
+        this._leaveUserAgentShadowDOM(node);
     if (!omitHighlight) {
       node.highlightForTwoSeconds();
     }
 
-    return self.UI.viewManager.showView('elements', false, !focus).then(() => {
+    return UI.ViewManager.ViewManager.instance().showView('elements', false, !focus).then(() => {
       this.selectDOMNode(node, focus);
       delete this._omitDefaultSelection;
 
@@ -805,7 +818,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     }  // We can't reparent extension iframes.
 
     let splitMode;
-    const position = self.Common.settings.moduleSetting('sidebarPosition').get();
+    const position = Common.Settings.Settings.instance().moduleSetting('sidebarPosition').get();
     if (position === 'right' || (position === 'auto' && self.UI.inspectorView.element.offsetWidth > 680)) {
       splitMode = _splitMode.Vertical;
     } else if (self.UI.inspectorView.element.offsetWidth > 415) {
@@ -864,7 +877,8 @@ export class ElementsPanel extends UI.Panel.Panel {
       }
     }
 
-    this.sidebarPaneView = self.UI.viewManager.createTabbedLocation(() => self.UI.viewManager.showView('elements'));
+    this.sidebarPaneView = UI.ViewManager.ViewManager.instance().createTabbedLocation(
+        () => UI.ViewManager.ViewManager.instance().showView('elements'));
     const tabbedPane = this.sidebarPaneView.tabbedPane();
     if (this._popoverHelper) {
       this._popoverHelper.hidePopover();
@@ -1019,8 +1033,10 @@ export class DOMNodeRevealer {
         // that the root node is the document itself. Any break implies
         // detachment.
         let currentNode = resolvedNode;
-        while (currentNode.parentNode) {
-          currentNode = currentNode.parentNode;
+        if (currentNode) {
+          while (currentNode.parentNode) {
+            currentNode = currentNode.parentNode;
+          }
         }
         const isDetached = !(currentNode instanceof SDK.DOMModel.DOMDocument);
 

@@ -27,6 +27,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import datetime
 import json
 import os
 import sys
@@ -56,10 +57,12 @@ def properties_from_file(file_name):
     properties = []
     property_names = {}
     property_values = {}
+    aliases_for = {}
     for entry in doc["data"]:
         if type(entry) is str:
             entry = {"name": entry}
         if "alias_for" in entry:
+            aliases_for[entry["name"]] = entry["alias_for"]
             continue
         properties.append(_keep_only_required_keys(entry))
         property_names[entry["name"]] = entry
@@ -87,10 +90,17 @@ def properties_from_file(file_name):
         if all_inherited:
             property["inherited"] = True
 
-    return properties, property_values
+    return properties, property_values, aliases_for
 
 
-properties, property_values = properties_from_file(READ_LOCATION)
+properties, property_values, aliases_for = properties_from_file(READ_LOCATION)
+now = datetime.datetime.now()
 with open(GENERATED_LOCATION, "w+") as f:
+    f.write('// Copyright %d The Chromium Authors. All rights reserved.\n' % now.year)
+    f.write('// Use of this source code is governed by a BSD-style license that can be\n')
+    f.write('// found in the LICENSE file.\n')
+    f.write('\n')
     f.write("export const generatedProperties = %s;\n" % json.dumps(properties))
-    f.write("export const generatedPropertyValues = %s;\n" % json.dumps(property_values))
+    # sort keys to ensure entries are generated in a deterministic way to avoid inconsistencies across different OS
+    f.write("export const generatedPropertyValues = %s;\n" % json.dumps(property_values, sort_keys=True))
+    f.write("export const generatedAliasesFor = new Map(Object.entries(%s));\n" % json.dumps(aliases_for, sort_keys=True))

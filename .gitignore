@@ -16,7 +16,6 @@
 /.idea
 /target
 /checkouts*
-/.tmp
 .profiles/
 pom.xml*
 /test/chromedriver
@@ -35,3 +34,7 @@ chromium-latest-linux/
 .test-dirac-chrome-profile
 .depot
 *.pyc
+.ws/
+.tmp/
+dirac.iml
+.venv

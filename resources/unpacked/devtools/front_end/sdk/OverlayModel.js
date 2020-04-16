@@ -10,6 +10,16 @@ import {RemoteObject} from './RemoteObject.js';                    // eslint-dis
 import {Capability, SDKModel, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
 /**
+ * @typedef {{r: number, g: number, b: number, a: number}}
+ */
+export let HighlightColor;
+
+/**
+ * @typedef {{x: number, y: number, width: number, height: number, color: HighlightColor, outlineColor: HighlightColor}}
+ */
+export let HighlightRect;
+
+/**
  * @implements {Protocol.OverlayDispatcher}
  */
 export class OverlayModel extends SDKModel {
@@ -25,7 +35,8 @@ export class OverlayModel extends SDKModel {
 
     this._debuggerModel = target.model(DebuggerModel);
     if (this._debuggerModel) {
-      self.Common.settings.moduleSetting('disablePausedStateOverlay')
+      Common.Settings.Settings.instance()
+          .moduleSetting('disablePausedStateOverlay')
           .addChangeListener(this._updatePausedInDebuggerMessage, this);
       this._debuggerModel.addEventListener(DebuggerModelEvents.DebuggerPaused, event => {
         this._updatePausedInDebuggerMessage();
@@ -44,13 +55,14 @@ export class OverlayModel extends SDKModel {
     this._defaultHighlighter = new DefaultHighlighter(this);
     this._highlighter = this._defaultHighlighter;
 
-    this._showPaintRectsSetting = self.Common.settings.moduleSetting('showPaintRects');
-    this._showLayoutShiftRegionsSetting = self.Common.settings.moduleSetting('showLayoutShiftRegions');
-    this._showAdHighlightsSetting = self.Common.settings.moduleSetting('showAdHighlights');
-    this._showDebugBordersSetting = self.Common.settings.moduleSetting('showDebugBorders');
-    this._showFPSCounterSetting = self.Common.settings.moduleSetting('showFPSCounter');
-    this._showScrollBottleneckRectsSetting = self.Common.settings.moduleSetting('showScrollBottleneckRects');
-    this._showHitTestBordersSetting = self.Common.settings.moduleSetting('showHitTestBorders');
+    this._showPaintRectsSetting = Common.Settings.Settings.instance().moduleSetting('showPaintRects');
+    this._showLayoutShiftRegionsSetting = Common.Settings.Settings.instance().moduleSetting('showLayoutShiftRegions');
+    this._showAdHighlightsSetting = Common.Settings.Settings.instance().moduleSetting('showAdHighlights');
+    this._showDebugBordersSetting = Common.Settings.Settings.instance().moduleSetting('showDebugBorders');
+    this._showFPSCounterSetting = Common.Settings.Settings.instance().moduleSetting('showFPSCounter');
+    this._showScrollBottleneckRectsSetting =
+        Common.Settings.Settings.instance().moduleSetting('showScrollBottleneckRects');
+    this._showHitTestBordersSetting = Common.Settings.Settings.instance().moduleSetting('showHitTestBorders');
 
     this._registeredListeners = [];
     this._showViewportSizeOnResize = true;
@@ -82,6 +94,39 @@ export class OverlayModel extends SDKModel {
 
   static async unmuteHighlight() {
     return Promise.all(TargetManager.instance().models(OverlayModel).map(model => model.resumeModel()));
+  }
+
+  /**
+   * @param {!HighlightRect} rect
+   */
+  static highlightRect(rect) {
+    for (const overlayModel of TargetManager.instance().models(OverlayModel)) {
+      overlayModel.highlightRect(rect);
+    }
+  }
+
+  static clearHighlight() {
+    for (const overlayModel of TargetManager.instance().models(OverlayModel)) {
+      overlayModel.clearHighlight();
+    }
+  }
+
+  /**
+   * @param {!HighlightRect} rect
+   * @return {!Promise}
+   */
+  highlightRect({x, y, width, height, color, outlineColor}) {
+    const highlightColor = color || {r: 255, g: 0, b: 255, a: 0.3};
+    const highlightOutlineColor = outlineColor || {r: 255, g: 0, b: 255, a: 0.5};
+    return this._overlayAgent.invoke_highlightRect(
+        {x, y, width, height, color: highlightColor, outlineColor: highlightOutlineColor});
+  }
+
+  /**
+   * @return {!Promise}
+   */
+  clearHighlight() {
+    return this._overlayAgent.invoke_hideHighlight({});
   }
 
   /**
@@ -165,8 +210,8 @@ export class OverlayModel extends SDKModel {
     if (this.target().suspended()) {
       return;
     }
-    const message =
-        this._debuggerModel.isPaused() && !self.Common.settings.moduleSetting('disablePausedStateOverlay').get() ?
+    const message = this._debuggerModel.isPaused() &&
+            !Common.Settings.Settings.instance().moduleSetting('disablePausedStateOverlay').get() ?
         Common.UIString.UIString('Paused in debugger') :
         undefined;
     this._overlayAgent.setPausedInDebuggerMessage(message);
@@ -249,7 +294,7 @@ export class OverlayModel extends SDKModel {
    * @return {!Protocol.Overlay.HighlightConfig}
    */
   _buildHighlightConfig(mode = 'all', showStyles = false) {
-    const showRulers = self.Common.settings.moduleSetting('showMetricsRulers').get();
+    const showRulers = Common.Settings.Settings.instance().moduleSetting('showMetricsRulers').get();
     const highlightConfig =
         {showInfo: mode === 'all', showRulers: showRulers, showStyles, showExtensionLines: showRulers};
     if (mode === 'all' || mode === 'content') {

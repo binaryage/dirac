@@ -28,10 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
-import * as ProtocolModule from '../protocol/protocol.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
 
 import {Cookie} from './Cookie.js';
 import {ContentData, Events as NetworkRequestEvents, ExtraRequestInfo, ExtraResponseInfo, NameValue, NetworkRequest} from './NetworkRequest.js';  // eslint-disable-line no-unused-vars
@@ -49,19 +51,21 @@ export class NetworkManager extends SDKModel {
     this._dispatcher = new NetworkDispatcher(this);
     this._networkAgent = target.networkAgent();
     target.registerNetworkDispatcher(this._dispatcher);
-    if (self.Common.settings.moduleSetting('cacheDisabled').get()) {
+    if (Common.Settings.Settings.instance().moduleSetting('cacheDisabled').get()) {
       this._networkAgent.setCacheDisabled(true);
     }
 
     this._networkAgent.enable(undefined, undefined, MAX_EAGER_POST_REQUEST_BODY_LENGTH);
 
-    this._bypassServiceWorkerSetting = self.Common.settings.createSetting('bypassServiceWorker', false);
+    this._bypassServiceWorkerSetting = Common.Settings.Settings.instance().createSetting('bypassServiceWorker', false);
     if (this._bypassServiceWorkerSetting.get()) {
       this._bypassServiceWorkerChanged();
     }
     this._bypassServiceWorkerSetting.addChangeListener(this._bypassServiceWorkerChanged, this);
 
-    self.Common.settings.moduleSetting('cacheDisabled').addChangeListener(this._cacheDisabledSettingChanged, this);
+    Common.Settings.Settings.instance()
+        .moduleSetting('cacheDisabled')
+        .addChangeListener(this._cacheDisabledSettingChanged, this);
   }
 
   /**
@@ -97,7 +101,7 @@ export class NetworkManager extends SDKModel {
    * @param {string} query
    * @param {boolean} caseSensitive
    * @param {boolean} isRegex
-   * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
+   * @return {!Promise<!Array<!TextUtils.ContentProvider.SearchMatch>>}
    */
   static async searchInRequest(request, query, caseSensitive, isRegex) {
     const manager = NetworkManager.forRequest(request);
@@ -125,7 +129,7 @@ export class NetworkManager extends SDKModel {
       return {error: 'No network manager for request', content: null, encoded: false};
     }
     const response = await manager._networkAgent.invoke_getResponseBody({requestId: request.requestId()});
-    const error = response[ProtocolModule.InspectorBackend.ProtocolError] || null;
+    const error = response[ProtocolClient.InspectorBackend.ProtocolError] || null;
     return {error: error, content: error ? null : response.body, encoded: response.base64Encoded};
   }
 
@@ -202,7 +206,9 @@ export class NetworkManager extends SDKModel {
    * @override
    */
   dispose() {
-    self.Common.settings.moduleSetting('cacheDisabled').removeChangeListener(this._cacheDisabledSettingChanged, this);
+    Common.Settings.Settings.instance()
+        .moduleSetting('cacheDisabled')
+        .removeChangeListener(this._cacheDisabledSettingChanged, this);
   }
 
   _bypassServiceWorkerChanged() {
@@ -972,7 +978,7 @@ export class NetworkDispatcher {
           Events.MessageGenerated, {message: message, requestId: networkRequest.requestId(), warning: true});
     }
 
-    if (self.Common.settings.moduleSetting('monitoringXHREnabled').get() &&
+    if (Common.Settings.Settings.instance().moduleSetting('monitoringXHREnabled').get() &&
         networkRequest.resourceType().category() === Common.ResourceType.resourceCategories.XHR) {
       let message;
       const failedToLoad = networkRequest.failed || networkRequest.hasErrorStatusCode();
@@ -1024,8 +1030,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     this._updatingInterceptionPatternsPromise = null;
 
     // TODO(allada) Remove these and merge it with request interception.
-    this._blockingEnabledSetting = self.Common.settings.moduleSetting('requestBlockingEnabled');
-    this._blockedPatternsSetting = self.Common.settings.createSetting('networkBlockedPatterns', []);
+    this._blockingEnabledSetting = Common.Settings.Settings.instance().moduleSetting('requestBlockingEnabled');
+    this._blockedPatternsSetting = Common.Settings.Settings.instance().createSetting('networkBlockedPatterns', []);
     this._effectiveBlockedURLs = [];
     this._updateBlockedPatterns();
 
@@ -1062,8 +1068,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     if (this._extraHeaders) {
       networkAgent.setExtraHTTPHeaders(this._extraHeaders);
     }
-    if (this._currentUserAgent()) {
-      networkAgent.setUserAgentOverride(this._currentUserAgent());
+    if (this.currentUserAgent()) {
+      networkAgent.setUserAgentOverride(this.currentUserAgent());
     }
     if (this._effectiveBlockedURLs.length) {
       networkAgent.setBlockedURLs(this._effectiveBlockedURLs);
@@ -1152,12 +1158,12 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
   /**
    * @return {string}
    */
-  _currentUserAgent() {
+  currentUserAgent() {
     return this._customUserAgent ? this._customUserAgent : this._userAgentOverride;
   }
 
   _updateUserAgentOverride() {
-    const userAgent = this._currentUserAgent();
+    const userAgent = this.currentUserAgent();
     for (const agent of this._agents) {
       agent.setUserAgentOverride(userAgent);
     }
@@ -1290,8 +1296,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
    * @return {!Promise}
    */
   _updateInterceptionPatterns() {
-    if (!self.Common.settings.moduleSetting('cacheDisabled').get()) {
-      self.Common.settings.moduleSetting('cacheDisabled').set(true);
+    if (!Common.Settings.Settings.instance().moduleSetting('cacheDisabled').get()) {
+      Common.Settings.Settings.instance().moduleSetting('cacheDisabled').set(true);
     }
     this._updatingInterceptionPatternsPromise = null;
     const promises = /** @type {!Array<!Promise>} */ ([]);
@@ -1345,12 +1351,12 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
   loadResource(url, callback) {
     const headers = {};
 
-    const currentUserAgent = this._currentUserAgent();
+    const currentUserAgent = this.currentUserAgent();
     if (currentUserAgent) {
       headers['User-Agent'] = currentUserAgent;
     }
 
-    if (self.Common.settings.moduleSetting('cacheDisabled').get()) {
+    if (Common.Settings.Settings.instance().moduleSetting('cacheDisabled').get()) {
       headers['Cache-Control'] = 'no-cache';
     }
 
@@ -1467,7 +1473,7 @@ export class InterceptedRequest {
   async responseBody() {
     const response =
         await this._networkAgent.invoke_getResponseBodyForInterception({interceptionId: this._interceptionId});
-    const error = response[ProtocolModule.InspectorBackend.ProtocolError] || null;
+    const error = response[ProtocolClient.InspectorBackend.ProtocolError] || null;
     return {error: error, content: error ? null : response.body, encoded: response.base64Encoded};
   }
 }

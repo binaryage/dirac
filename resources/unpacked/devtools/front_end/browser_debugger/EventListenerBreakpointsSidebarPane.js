@@ -16,7 +16,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
     this._categoriesTreeOutline.setShowSelectionOnKeyboardFocus(/* show */ true);
     this.contentElement.appendChild(this._categoriesTreeOutline.element);
 
-    /** @type {!Map<string, !BrowserDebugger.EventListenerBreakpointsSidebarPane.Item>} */
+    /** @type {!Map<string, !Item>} */
     this._categories = new Map();
     const categories = self.SDK.domDebuggerManager.eventListenerBreakpoints().map(breakpoint => breakpoint.category());
     categories.sort();
@@ -30,7 +30,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
       firstCategory.element.select();
     }
 
-    /** @type {!Map<!SDK.DOMDebuggerModel.EventListenerBreakpoint, !BrowserDebugger.EventListenerBreakpointsSidebarPane.Item>} */
+    /** @type {!Map<!SDK.DOMDebuggerModel.EventListenerBreakpoint, !Item>} */
     this._breakpoints = new Map();
     for (const breakpoint of self.SDK.domDebuggerManager.eventListenerBreakpoints()) {
       this._createBreakpoint(breakpoint);
@@ -65,6 +65,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
         event.consume(true);
       }
     });
+    labelNode.checkboxElement.addEventListener('focus', () => treeElement.listItemElement.focus());
     UI.ARIAUtils.setChecked(treeElement.listItemElement, false);
     this._categoriesTreeOutline.appendChild(treeElement);
 
@@ -87,6 +88,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
         event.consume(true);
       }
     });
+    labelNode.checkboxElement.addEventListener('focus', () => treeElement.listItemElement.focus());
     UI.ARIAUtils.setChecked(treeElement.listItemElement, false);
     treeElement.listItemElement.createChild('div', 'breakpoint-hit-marker');
     this._categories.get(breakpoint.category()).element.appendChild(treeElement);
@@ -114,7 +116,7 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
       return;
     }
 
-    self.UI.viewManager.showView('sources.eventListenerBreakpoints');
+    UI.ViewManager.ViewManager.instance().showView('sources.eventListenerBreakpoints');
     this._categories.get(breakpoint.category()).element.expand();
     this._highlightedElement = this._breakpoints.get(breakpoint).element.listItemElement;
     UI.ARIAUtils.setDescription(this._highlightedElement, ls`breakpoint hit`);
@@ -167,3 +169,6 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
     }
   }
 }
+
+/** @typedef {!{element: !UI.TreeOutline.TreeElement, checkbox: !Element}} */
+export let Item;

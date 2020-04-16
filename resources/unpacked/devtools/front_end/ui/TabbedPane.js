@@ -29,6 +29,7 @@
  */
 
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {ContextMenu} from './ContextMenu.js';
@@ -37,7 +38,7 @@ import {Icon} from './Icon.js';
 import {Toolbar} from './Toolbar.js';
 import {installDragHandle, invokeOnceAfterBatchUpdate} from './UIUtils.js';
 import {VBox, Widget} from './Widget.js';  // eslint-disable-line no-unused-vars
-import {Events as ZoomManagerEvents} from './ZoomManager.js';
+import {Events as ZoomManagerEvents, ZoomManager} from './ZoomManager.js';
 
 /**
  * @unrestricted
@@ -69,7 +70,7 @@ export class TabbedPane extends VBox {
 
     this._triggerDropDownTimeout = null;
     this._dropDownButton = this._createDropDownButton();
-    self.UI.zoomManager.addEventListener(ZoomManagerEvents.ZoomChanged, this._zoomChanged, this);
+    ZoomManager.instance().addEventListener(ZoomManagerEvents.ZoomChanged, this._zoomChanged, this);
     this.makeTabSlider();
   }
 
@@ -283,7 +284,8 @@ export class TabbedPane extends VBox {
       this._hideTabElement(tab);
     }
 
-    const eventData = {tabId: id, view: tab.view, isUserGesture: userGesture};
+    /** @type {!EventData} */
+    const eventData = {prevTabId: undefined, tabId: id, view: tab.view, isUserGesture: userGesture};
     this.dispatchEventToListeners(Events.TabClosed, eventData);
     return true;
   }
@@ -352,6 +354,15 @@ export class TabbedPane extends VBox {
     if (!tab) {
       return false;
     }
+
+    /** @type {!EventData} */
+    const eventData = {
+      prevTabId: this._currentTab ? this._currentTab.id : undefined,
+      tabId: id,
+      view: tab.view,
+      isUserGesture: userGesture,
+    };
+    this.dispatchEventToListeners(Events.TabInvoked, eventData);
     if (this._currentTab && this._currentTab.id === id) {
       return true;
     }
@@ -370,20 +381,19 @@ export class TabbedPane extends VBox {
       this.focus();
     }
 
-    const eventData = {tabId: id, view: tab.view, isUserGesture: userGesture};
     this.dispatchEventToListeners(Events.TabSelected, eventData);
     return true;
   }
 
   selectNextTab() {
     const index = this._tabs.indexOf(this._currentTab);
-    const nextIndex = mod(index + 1, this._tabs.length);
+    const nextIndex = Platform.NumberUtilities.mod(index + 1, this._tabs.length);
     this.selectTab(this._tabs[nextIndex].id, true);
   }
 
   selectPrevTab() {
     const index = this._tabs.indexOf(this._currentTab);
-    const nextIndex = mod(index - 1, this._tabs.length);
+    const nextIndex = Platform.NumberUtilities.mod(index - 1, this._tabs.length);
     this.selectTab(this._tabs[nextIndex].id, true);
   }
 
@@ -938,7 +948,10 @@ export class TabbedPane extends VBox {
       --index;
     }
     this._tabs.splice(index, 0, tab);
-    this.dispatchEventToListeners(Events.TabOrderChanged, {tabId: tab.id});
+
+    /** @type {!EventData} */
+    const eventData = {prevTabId: undefined, tabId: tab.id, view: tab.view, isUserGesture: undefined};
+    this.dispatchEventToListeners(Events.TabOrderChanged, eventData);
   }
 
   /**
@@ -1012,8 +1025,18 @@ export class TabbedPane extends VBox {
   }
 }
 
+/** @typedef {{
+ *    prevTabId: (string|undefined),
+ *    tabId: string,
+ *    view: (!Widget|undefined),
+ *    isUserGesture: (boolean|undefined)
+ * }}
+ */
+export let EventData;
+
 /** @enum {symbol} */
 export const Events = {
+  TabInvoked: Symbol('TabInvoked'),
   TabSelected: Symbol('TabSelected'),
   TabClosed: Symbol('TabClosed'),
   TabOrderChanged: Symbol('TabOrderChanged')

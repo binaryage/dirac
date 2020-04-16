@@ -4,7 +4,8 @@
 
 import * as DataGrid from '../data_grid/data_grid.js';
 import * as UI from '../ui/ui.js';
-import * as MediaModel from './MediaModel.js';  // eslint-disable-line no-unused-vars
+
+import {Event, MediaChangeTypeKeys} from './MediaModel.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @typedef {{
@@ -29,7 +30,7 @@ export const MediaEventColumnKeys = {
  */
 export class EventNode extends DataGrid.DataGrid.DataGridNode {
   /**
-   * @param {!MediaModel.Event} event
+   * @param {!Event} event
    */
   constructor(event) {
     super(event, false);
@@ -105,8 +106,8 @@ export class PlayerEventsView extends UI.Widget.VBox {
 
   /**
    * @param {string} playerID
-   * @param {!Array.<!MediaModel.Event>} changes
-   * @param {!MediaModel.MediaChangeTypeKeys} change_type
+   * @param {!Array.<!Event>} changes
+   * @param {!MediaChangeTypeKeys} change_type
    */
   renderChanges(playerID, changes, change_type) {
     if (this._firstEventTime === 0 && changes.length > 0) {
@@ -119,33 +120,25 @@ export class PlayerEventsView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!MediaModel.Event} event
+   * @param {!Event} event
    */
   addEvent(event) {
-    if (event.type === 'triggeredEvent') {
-      // New-style events have 'triggeredEvent' as their type, where older ones
-      // use 'systemEvent'.
-      const stringified = /** @type {string} */ (event.value);
+    const stringified = /** @type {string} */ (event.value);
+    try {
       const json = JSON.parse(stringified);
       event.event = json.event;
       delete json['event'];
       event.value = json;
       const node = new EventNode(event);
       this._dataGrid.rootNode().appendChild(node);
-    }
-
-    if (event.type === 'systemEvent') {
-      // TODO(tmathmeyer) delete this block when
-      // https://chromium-review.googlesource.com/c/chromium/src/+/2006249
-      // is merged.
-      event.event = event.name;
-      const node = new EventNode(event);
-      this._dataGrid.rootNode().appendChild(node);
+    } catch (e) {
+      // If this is a legacy message event, ignore it for now until they
+      // are handled.
     }
   }
 
   /**
-   * @param {!MediaModel.Event} event
+   * @param {!Event} event
    */
   _subtractFirstEventTime(event) {
     event.displayTimestamp = (event.timestamp - this._firstEventTime).toFixed(3);

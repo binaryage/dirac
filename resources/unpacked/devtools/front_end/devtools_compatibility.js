@@ -626,7 +626,7 @@
      * @override
      * @param {string} fileSystemId
      * @param {string} registeredName
-     * @return {?DOMFileSystem}
+     * @return {?FileSystem}
      */
     isolatedFileSystem(fileSystemId, registeredName) {
       return DevToolsHost.isolatedFileSystem(fileSystemId, registeredName);
@@ -941,7 +941,7 @@
       'emulation.deviceScaleFactor',
       'emulation.deviceUA',
       'emulation.deviceWidth',
-      'emulation.geolocationOverride',
+      'emulation.locationOverride',
       'emulation.showDeviceMode',
       'emulation.showRulers',
       'enableAsyncStackTraces',

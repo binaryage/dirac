@@ -1,3 +1,7 @@
+const path = require('path');
+const rulesDirPlugin = require('eslint-plugin-rulesdir')
+rulesDirPlugin.RULES_DIR = path.join(__dirname, 'scripts', 'eslint_rules', 'lib');
+
 module.exports = {
   'root': true,
 
@@ -8,6 +12,8 @@ module.exports = {
   'plugins': [
     '@typescript-eslint',
     'mocha',
+    'rulesdir',
+    'import',
   ],
 
   'parserOptions': {'ecmaVersion': 9, 'sourceType': 'module'},
@@ -44,6 +50,7 @@ module.exports = {
 
     // anti-patterns
     'no-caller': 2,
+    'no-case-declarations': 2,
     'no-cond-assign': 2,
     'no-console': [2, {'allow': ['assert', 'context', 'error', 'timeStamp', 'time', 'timeEnd', 'warn']}],
     'no-debugger': 2,
@@ -121,12 +128,21 @@ module.exports = {
     'mocha/no-pending-tests': 2,
     // errors on {describe, it}.only
     'mocha/no-exclusive-tests': 2,
+
+    // Closure does not properly typecheck default exports
+    'import/no-default-export': 2,
+
+    // DevTools specific rules
+    'rulesdir/es_modules_import': 2,
+    'rulesdir/check_license_header': 2,
   },
   'overrides': [{
     'files': ['*.ts'],
     'rules': {
-      '@typescript-eslint/explicit-member-accessibility': [2, {'accessibility': 'no-public'}],
+      '@typescript-eslint/explicit-member-accessibility': [2, {'accessibility': 'explicit'}],
       'comma-dangle': [2, 'always-multiline'],
+      // run just the TypeScript unused-vars rule, else we get duplicate errors
+      'no-unused-vars': 0,
       '@typescript-eslint/no-unused-vars': [2],
     }
   }]

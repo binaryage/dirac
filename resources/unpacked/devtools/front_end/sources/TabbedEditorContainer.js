@@ -91,7 +91,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
 
     this._previouslyViewedFilesSetting = setting;
     this._history = History.fromObject(this._previouslyViewedFilesSetting.get());
-    this._historyUriToUISourceCode = new Map();
+    this._uriToUISourceCode = new Map();
   }
 
   /**
@@ -188,7 +188,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
    * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   showFile(uiSourceCode) {
-    this._innerShowFile(uiSourceCode, true);
+    this._innerShowFile(this._canonicalUISourceCode(uiSourceCode), true);
   }
 
   /**
@@ -213,7 +213,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     const result = [];
     const uris = this._history._urls();
     for (const uri of uris) {
-      const uiSourceCode = this._historyUriToUISourceCode.get(uri);
+      const uiSourceCode = this._uriToUISourceCode.get(uri);
       if (uiSourceCode) {
         result.push(uiSourceCode);
       }
@@ -379,10 +379,31 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @return {!Workspace.UISourceCode.UISourceCode}
+   */
+  _canonicalUISourceCode(uiSourceCode) {
+    // Check if we have already a UISourceCode for this url
+    if (this._uriToUISourceCode.has(uiSourceCode.url())) {
+      // Ignore incoming uiSourceCode, we already have this file.
+      return this._uriToUISourceCode.get(uiSourceCode.url());
+    }
+    this._uriToUISourceCode.set(uiSourceCode.url(), uiSourceCode);
+    return uiSourceCode;
+  }
+
+  /**
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   addUISourceCode(uiSourceCode) {
-    const binding = self.Persistence.persistence.binding(uiSourceCode);
-    uiSourceCode = binding ? binding.fileSystem : uiSourceCode;
+    const canonicalSourceCode = this._canonicalUISourceCode(uiSourceCode);
+    const duplicated = canonicalSourceCode !== uiSourceCode;
+    const binding = self.Persistence.persistence.binding(canonicalSourceCode);
+    uiSourceCode = binding ? binding.fileSystem : canonicalSourceCode;
+
+    if (duplicated) {
+      uiSourceCode.disableEdit();
+    }
+
     if (this._currentFile === uiSourceCode) {
       return;
     }
@@ -392,12 +413,6 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     if (index === -1) {
       return;
     }
-
-    // Check if we have already opened a tab for this uri....
-    if (this._historyUriToUISourceCode.has(uiSourceCode.url())) {
-      return;
-    }
-    this._historyUriToUISourceCode.set(uiSourceCode.url(), uiSourceCode);
 
     if (!this._tabIds.has(uiSourceCode)) {
       this._appendFileTab(uiSourceCode, false);
@@ -437,8 +452,8 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
       if (tabId) {
         tabIds.push(tabId);
       }
-      if (this._historyUriToUISourceCode.get(uiSourceCode.url()) === uiSourceCode) {
-        this._historyUriToUISourceCode.delete(uiSourceCode.url());
+      if (this._uriToUISourceCode.get(uiSourceCode.url()) === uiSourceCode) {
+        this._uriToUISourceCode.delete(uiSourceCode.url());
       }
     }
     this._tabbedPane.closeTabs(tabIds);
@@ -562,7 +577,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
       delete this._currentView;
       delete this._currentFile;
     }
-    this._tabIds.remove(uiSourceCode);
+    this._tabIds.delete(uiSourceCode);
     delete this._files[tabId];
 
     this._removeUISourceCodeListeners(uiSourceCode);
@@ -742,7 +757,10 @@ export class History {
   static fromObject(serializedHistory) {
     const items = [];
     for (let i = 0; i < serializedHistory.length; ++i) {
-      items.push(HistoryItem.fromObject(serializedHistory[i]));
+      // crbug.com/876265 Old versions of DevTools don't have urls set in their localStorage
+      if (serializedHistory[i].url) {
+        items.push(HistoryItem.fromObject(serializedHistory[i]));
+      }
     }
     return new History(items);
   }

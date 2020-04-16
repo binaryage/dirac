@@ -4,8 +4,7 @@
 
 const {assert} = chai;
 
-import '/front_end/common/common-legacy.js';
-import {ListModel, Events} from '/front_end/ui/ListModel.js';
+import {ListModel, Events} from '../../../../front_end/ui/ListModel.js';
 
 describe('ListModel', () => {
   it('can be instantiated correctly without a list of items', () => {

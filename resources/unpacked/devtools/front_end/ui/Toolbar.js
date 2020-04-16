@@ -29,6 +29,7 @@
  */
 
 import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
 
 import {Action, Events as ActionEvents} from './Action.js';  // eslint-disable-line no-unused-vars
 import * as ARIAUtils from './ARIAUtils.js';
@@ -178,18 +179,27 @@ export class Toolbar {
 
   /**
    * @param {!Action} action
-   * @param {boolean=} showLabel
+   * @param {!ToolbarButtonOptions=} options
    * @return {!ToolbarButton}
    */
-  static createActionButton(action, showLabel) {
+  static createActionButton(action, options = TOOLBAR_BUTTON_DEFAULT_OPTIONS) {
     const button = action.toggleable() ? makeToggle() : makeButton();
 
-    if (showLabel) {
+    if (options.showLabel) {
       button.setText(action.title());
     }
-    button.addEventListener(ToolbarButton.Events.Click, event => {
+
+    let handler = event => {
       action.execute();
-    }, action);
+    };
+    if (options.userActionCode) {
+      const actionCode = options.userActionCode;
+      handler = () => {
+        Host.userMetrics.actionTaken(actionCode);
+        action.execute();
+      };
+    }
+    button.addEventListener(ToolbarButton.Events.Click, handler, action);
     action.addEventListener(ActionEvents.Enabled, enabledChanged);
     button.setEnabled(action.enabled());
     return button;
@@ -201,7 +211,9 @@ export class Toolbar {
     function makeButton() {
       const button = new ToolbarButton(action.title(), action.icon());
       if (action.title()) {
-        Tooltip.install(button.element, action.title(), action.id());
+        Tooltip.install(button.element, action.title(), action.id(), {
+          anchorTooltipAtElement: true,
+        });
       }
       return button;
     }
@@ -219,7 +231,10 @@ export class Toolbar {
       function toggled() {
         toggleButton.setToggled(action.toggled());
         if (action.title()) {
-          Tooltip.install(toggleButton.element, action.title(), action.id());
+          toggleButton.setTitle(action.title());
+          Tooltip.install(toggleButton.element, action.title(), action.id(), {
+            anchorTooltipAtElement: true,
+          });
         }
       }
     }
@@ -234,12 +249,12 @@ export class Toolbar {
 
   /**
    * @param {string} actionId
-   * @param {boolean=} showLabel
+   * @param {!ToolbarButtonOptions=} options
    * @return {!ToolbarButton}
    */
-  static createActionButtonForId(actionId, showLabel) {
+  static createActionButtonForId(actionId, options = TOOLBAR_BUTTON_DEFAULT_OPTIONS) {
     const action = self.UI.actionRegistry.action(actionId);
-    return Toolbar.createActionButton(/** @type {!Action} */ (action), showLabel);
+    return Toolbar.createActionButton(/** @type {!Action} */ (action), options);
   }
 
   /**
@@ -398,6 +413,20 @@ export class Toolbar {
 }
 
 /**
+ * @typedef {{
+  *    showLabel: boolean,
+  *    userActionCode: (!Host.UserMetrics.Action|undefined)
+  * }}
+  */
+export let ToolbarButtonOptions;
+
+/** @type {!ToolbarButtonOptions} */
+const TOOLBAR_BUTTON_DEFAULT_OPTIONS = {
+  showLabel: false,
+  userActionCode: undefined
+};
+
+/**
  * @unrestricted
  */
 export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
@@ -421,7 +450,9 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
     }
     this._title = title;
     ARIAUtils.setAccessibleName(this.element, title);
-    Tooltip.install(this.element, title);
+    Tooltip.install(this.element, title, undefined, {
+      anchorTooltipAtElement: true,
+    });
   }
 
   /**
@@ -1094,7 +1125,9 @@ export class ToolbarCheckbox extends ToolbarItem {
     this.element.classList.add('checkbox');
     this.inputElement = this.element.checkboxElement;
     if (tooltip) {
-      this.element.title = tooltip;
+      Tooltip.install(this.element, tooltip, undefined, {
+        anchorTooltipAtElement: true,
+      });
     }
     if (listener) {
       this.inputElement.addEventListener('click', listener, false);

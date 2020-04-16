@@ -29,7 +29,7 @@
  */
 
 import * as Common from '../common/common.js';
-import * as ProtocolModule from '../protocol/protocol.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
 
 import {DOMModel} from './DOMModel.js';
 import {Events as NetworkManagerEvents, NetworkManager} from './NetworkManager.js';
@@ -349,8 +349,8 @@ export class ResourceTreeModel extends SDKModel {
     }
     this._addFrame(frame);
 
-    for (let i = 0; frameTreePayload.childFrames && i < frameTreePayload.childFrames.length; ++i) {
-      this._addFramesRecursively(frame, frameTreePayload.childFrames[i]);
+    for (const childFrame of frameTreePayload.childFrames || []) {
+      this._addFramesRecursively(frame, childFrame);
     }
 
     for (let i = 0; i < frameTreePayload.resources.length; ++i) {
@@ -427,7 +427,7 @@ export class ResourceTreeModel extends SDKModel {
    */
   async navigationHistory() {
     const response = await this._agent.invoke_getNavigationHistory({});
-    if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
+    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
       return null;
     }
     return {currentIndex: response.currentIndex, entries: response.entries};
@@ -445,7 +445,7 @@ export class ResourceTreeModel extends SDKModel {
    */
   async fetchAppManifest() {
     const response = await this._agent.invoke_getAppManifest({});
-    if (response[ProtocolModule.InspectorBackend.ProtocolError]) {
+    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
       return {url: response.url, data: null, errors: []};
     }
     return {url: response.url, data: response.data || null, errors: response.errors};
@@ -614,9 +614,9 @@ export class ResourceTreeFrame {
     this._creationStackTrace = creationStackTrace;
 
     /**
-     * @type {!Array.<!ResourceTreeFrame>}
+     * @type {!Set.<!ResourceTreeFrame>}
      */
-    this._childFrames = [];
+    this._childFrames = new Set();
 
     /**
      * @type {!Object.<string, !Resource>}
@@ -624,7 +624,7 @@ export class ResourceTreeFrame {
     this._resourcesMap = {};
 
     if (this._parentFrame) {
-      this._parentFrame._childFrames.push(this);
+      this._parentFrame._childFrames.add(this);
     }
   }
 
@@ -707,7 +707,7 @@ export class ResourceTreeFrame {
    * @return {!Array.<!ResourceTreeFrame>}
    */
   get childFrames() {
-    return this._childFrames;
+    return [...this._childFrames];
   }
 
   /**
@@ -771,15 +771,15 @@ export class ResourceTreeFrame {
    * @param {!ResourceTreeFrame} frame
    */
   _removeChildFrame(frame) {
-    this._childFrames.remove(frame);
+    this._childFrames.delete(frame);
     frame._remove();
   }
 
   _removeChildFrames() {
     const frames = this._childFrames;
-    this._childFrames = [];
-    for (let i = 0; i < frames.length; ++i) {
-      frames[i]._remove();
+    this._childFrames = new Set();
+    for (const frame of frames) {
+      frame._remove();
     }
   }
 
@@ -833,14 +833,17 @@ export class ResourceTreeFrame {
    * @return {?Resource}
    */
   resourceForURL(url) {
-    let resource = this._resourcesMap[url] || null;
+    const resource = this._resourcesMap[url];
     if (resource) {
       return resource;
     }
-    for (let i = 0; !resource && i < this._childFrames.length; ++i) {
-      resource = this._childFrames[i].resourceForURL(url);
+    for (const frame of this._childFrames) {
+      const resource = frame.resourceForURL(url);
+      if (resource) {
+        return resource;
+      }
     }
-    return resource;
+    return null;
   }
 
   /**
@@ -854,8 +857,8 @@ export class ResourceTreeFrame {
       }
     }
 
-    for (let i = 0; i < this._childFrames.length; ++i) {
-      if (this._childFrames[i]._callForFrameResources(callback)) {
+    for (const frame of this._childFrames) {
+      if (frame._callForFrameResources(callback)) {
         return true;
       }
     }

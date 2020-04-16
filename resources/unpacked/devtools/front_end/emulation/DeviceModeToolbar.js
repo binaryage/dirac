@@ -8,7 +8,7 @@ import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as UI from '../ui/ui.js';
 
 import {defaultMobileScaleFactor, DeviceModeModel, Type, UA} from './DeviceModeModel.js';
-import {EmulatedDevice, EmulatedDevicesList, Events, Horizontal, Vertical} from './EmulatedDevices.js';
+import {EmulatedDevice, EmulatedDevicesList, Events, Horizontal, Mode, Vertical} from './EmulatedDevices.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
@@ -25,15 +25,17 @@ export class DeviceModeToolbar {
     this._showRulersSetting = showRulersSetting;
 
     this._deviceOutlineSetting = this._model.deviceOutlineSetting();
-    this._showDeviceScaleFactorSetting = self.Common.settings.createSetting('emulation.showDeviceScaleFactor', false);
+    this._showDeviceScaleFactorSetting =
+        Common.Settings.Settings.instance().createSetting('emulation.showDeviceScaleFactor', false);
     this._showDeviceScaleFactorSetting.addChangeListener(this._updateDeviceScaleFactorVisibility, this);
 
-    this._showUserAgentTypeSetting = self.Common.settings.createSetting('emulation.showUserAgentType', false);
+    this._showUserAgentTypeSetting =
+        Common.Settings.Settings.instance().createSetting('emulation.showUserAgentType', false);
     this._showUserAgentTypeSetting.addChangeListener(this._updateUserAgentTypeVisibility, this);
 
-    this._autoAdjustScaleSetting = self.Common.settings.createSetting('emulation.autoAdjustScale', true);
+    this._autoAdjustScaleSetting = Common.Settings.Settings.instance().createSetting('emulation.autoAdjustScale', true);
 
-    /** @type {!Map<!EmulatedDevice, !Emulation.EmulatedDevice.Mode>} */
+    /** @type {!Map<!EmulatedDevice, !Mode>} */
     this._lastMode = new Map();
 
     this._element = createElementWithClass('div', 'device-mode-toolbar');
@@ -64,8 +66,8 @@ export class DeviceModeToolbar {
     this._emulatedDevicesList.addEventListener(Events.CustomDevicesUpdated, this._deviceListChanged, this);
     this._emulatedDevicesList.addEventListener(Events.StandardDevicesUpdated, this._deviceListChanged, this);
 
-    this._persistenceSetting =
-        self.Common.settings.createSetting('emulation.deviceModeValue', {device: '', orientation: '', mode: ''});
+    this._persistenceSetting = Common.Settings.Settings.instance().createSetting(
+        'emulation.deviceModeValue', {device: '', orientation: '', mode: ''});
 
     this._model.toolbarControlsEnabledSetting().addChangeListener(updateToolbarsEnabled);
     updateToolbarsEnabled();
@@ -88,7 +90,7 @@ export class DeviceModeToolbar {
         this._wrapToolbarItem(createElementWithClass('div', 'device-mode-empty-toolbar-element')));
     this._deviceSelectItem = new UI.Toolbar.ToolbarMenuButton(this._appendDeviceMenuItems.bind(this));
     this._deviceSelectItem.setGlyph('');
-    this._deviceSelectItem.turnIntoSelect(95);
+    this._deviceSelectItem.turnIntoSelect(150);
     this._deviceSelectItem.setDarkText();
     toolbar.appendToolbarItem(this._deviceSelectItem);
   }
@@ -509,7 +511,7 @@ export class DeviceModeToolbar {
     }
 
     /**
-     * @param {!Emulation.EmulatedDevice.Mode} mode
+     * @param {!Mode} mode
      * @param {string} title
      */
     function addMode(mode, title) {
@@ -517,7 +519,7 @@ export class DeviceModeToolbar {
     }
 
     /**
-     * @param {!Emulation.EmulatedDevice.Mode} mode
+     * @param {!Mode} mode
      */
     function applyMode(mode) {
       const scale = autoAdjustScaleSetting.get() ? undefined : model.scaleSetting().get();
@@ -593,7 +595,7 @@ export class DeviceModeToolbar {
     if (this._model.type() === Type.Device) {
       this._lastMode.set(
           /** @type {!EmulatedDevice} */ (this._model.device()),
-          /** @type {!Emulation.EmulatedDevice.Mode} */ (this._model.mode()));
+          /** @type {!Mode} */ (this._model.mode()));
     }
 
     if (this._model.mode() !== this._cachedModelMode && this._model.type() !== Type.None) {

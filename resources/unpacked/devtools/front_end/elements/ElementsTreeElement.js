@@ -32,7 +32,7 @@ import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
-import * as ProtocolModule from '../protocol/protocol.js';  // eslint-disable-line no-unused-vars
+import * as ProtocolClient from '../protocol_client/protocol_client.js';  // eslint-disable-line no-unused-vars
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
@@ -89,7 +89,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
    */
   static visibleShadowRoots(node) {
     let roots = node.shadowRoots();
-    if (roots.length && !self.Common.settings.moduleSetting('showUAShadowDOM').get()) {
+    if (roots.length && !Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get()) {
       roots = roots.filter(filter);
     }
 
@@ -873,7 +873,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     function gotFactory(factory) {
       const editor = factory.createEditor({
         lineNumbers: false,
-        lineWrapping: self.Common.settings.moduleSetting('domWordWrap').get(),
+        lineWrapping: Common.Settings.Settings.instance().moduleSetting('domWordWrap').get(),
         mimeType: 'text/html',
         autoHeight: false,
         padBottom: false
@@ -972,7 +972,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     const treeOutline = this.treeOutline;
 
     /**
-     * @param {?ProtocolModule.InspectorBackend.ProtocolError=} error
+     * @param {?ProtocolClient.InspectorBackend.ProtocolError=} error
      * @this {ElementsTreeElement}
      */
     function moveToNextAttributeIfNeeded(error) {
@@ -1574,7 +1574,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             titleDOM, /** @type {string} */ (node.name), /** @type {string} */ (node.value), updateRecord, true);
         break;
 
-      case Node.ELEMENT_NODE:
+      case Node.ELEMENT_NODE: {
         const pseudoType = node.pseudoType();
         if (pseudoType) {
           this._buildPseudoElementDOM(titleDOM, pseudoType);
@@ -1619,6 +1619,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
           this._buildTagDOM(titleDOM, tagName, true, false, updateRecord);
         }
         break;
+      }
 
       case Node.TEXT_NODE:
         if (node.parentNode && node.parentNode.nodeName().toLowerCase() === 'script') {
@@ -1648,14 +1649,15 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         }
         break;
 
-      case Node.COMMENT_NODE:
+      case Node.COMMENT_NODE: {
         const commentElement = titleDOM.createChild('span', 'webkit-html-comment');
         commentElement.createTextChild('<!--' + node.nodeValue() + '-->');
         break;
+      }
 
-      case Node.DOCUMENT_TYPE_NODE:
+      case Node.DOCUMENT_TYPE_NODE: {
         const docTypeElement = titleDOM.createChild('span', 'webkit-html-doctype');
-        docTypeElement.createTextChild('<!doctype ' + node.nodeName());
+        docTypeElement.createTextChild('<!DOCTYPE ' + node.nodeName());
         if (node.publicId) {
           docTypeElement.createTextChild(' PUBLIC "' + node.publicId + '"');
           if (node.systemId) {
@@ -1671,19 +1673,24 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
 
         docTypeElement.createTextChild('>');
         break;
+      }
 
-      case Node.CDATA_SECTION_NODE:
+      case Node.CDATA_SECTION_NODE: {
         const cdataElement = titleDOM.createChild('span', 'webkit-html-text-node');
         cdataElement.createTextChild('<![CDATA[' + node.nodeValue() + ']]>');
         break;
+      }
 
-      case Node.DOCUMENT_FRAGMENT_NODE:
+      case Node.DOCUMENT_FRAGMENT_NODE: {
         const fragmentElement = titleDOM.createChild('span', 'webkit-html-fragment');
         fragmentElement.textContent = Platform.StringUtilities.collapseWhitespace(node.nodeNameInCorrectCase());
         break;
-      default:
+      }
+
+      default: {
         const nameWithSpaceCollapsed = Platform.StringUtilities.collapseWhitespace(node.nodeNameInCorrectCase());
         titleDOM.createTextChild(nameWithSpaceCollapsed);
+      }
     }
 
     /**
@@ -1727,7 +1734,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     }
 
     /**
-     * @param {?ProtocolModule.InspectorBackend.ProtocolError} error
+     * @param {?ProtocolClient.InspectorBackend.ProtocolError} error
      */
     function selectNode(error) {
       if (callback) {

@@ -21,8 +21,8 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 source _config.sh
 
 # prepare oracle
-mkdir -p "$ROOT_TMP_DIR"
-ORACLE_CHECKOUT_DIR="$ROOT_TMP_DIR/docker-chromium-oraculum"
+mkdir -p "$DIRAC_CACHE_DIR"
+ORACLE_CHECKOUT_DIR="$DIRAC_CACHE_DIR/docker-chromium-oraculum"
 if [[ -d "$ORACLE_CHECKOUT_DIR" ]]; then
   cd "$ORACLE_CHECKOUT_DIR"
   git fetch
@@ -30,7 +30,7 @@ if [[ -d "$ORACLE_CHECKOUT_DIR" ]]; then
   git reset --hard origin/master
   git clean -fd
 else
-  cd "$ROOT_TMP_DIR"
+  cd "$DIRAC_CACHE_DIR"
   git clone https://github.com/binaryage/docker-chromium-oraculum.git
 fi
 
@@ -40,7 +40,9 @@ cd "$ORACLE_CHECKOUT_DIR"
 ./oraculum.sh build
 CHROMIUM_REVISION=$(./oraculum.sh latest-revision)
 CHROMIUM_VERSION=$(./oraculum.sh version "${CHROMIUM_REVISION}")
-CHROMIUM_REPO_URL=$(./oraculum.sh describe "${CHROMIUM_REVISION}" redirect_url)
+# this is flaky (build server may be behind and returns {"error": {"message": "commit not found."}}
+#CHROMIUM_REPO_URL=$(./oraculum.sh describe "${CHROMIUM_REVISION}" redirect_url)
+CHROMIUM_REPO_URL="https://cr-rev.appspot.com/${CHROMIUM_REVISION}"
 CHROMIUM_DOWNLOAD_URL=$(./oraculum.sh download-link "${CHROMIUM_REVISION}")
 
 # checkout or create health-check branch

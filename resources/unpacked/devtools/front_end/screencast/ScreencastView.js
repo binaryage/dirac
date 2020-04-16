@@ -66,6 +66,7 @@ export class ScreencastView extends UI.Widget.VBox {
     this._glassPaneElement = this._canvasContainerElement.createChild('div', 'screencast-glasspane fill hidden');
 
     this._canvasElement = this._canvasContainerElement.createChild('canvas');
+    UI.ARIAUtils.setAccessibleName(this._canvasElement, ls`Screencast view of debug target`);
     this._canvasElement.tabIndex = 0;
     this._canvasElement.addEventListener('mousedown', this._handleMouseEvent.bind(this), false);
     this._canvasElement.addEventListener('mouseup', this._handleMouseEvent.bind(this), false);
@@ -259,7 +260,7 @@ export class ScreencastView extends UI.Widget.VBox {
     const node = await this._domModel.nodeForLocation(
         Math.floor(position.x / this._pageScaleFactor + this._scrollOffsetX),
         Math.floor(position.y / this._pageScaleFactor + this._scrollOffsetY),
-        self.Common.settings.moduleSetting('showUAShadowDOM').get());
+        Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get());
 
     if (!node) {
       return;
@@ -652,10 +653,14 @@ export class ScreencastView extends UI.Widget.VBox {
     this._navigationBar = this.element.createChild('div', 'screencast-navigation');
     this._navigationBack = this._navigationBar.createChild('button', 'back');
     this._navigationBack.disabled = true;
+    UI.ARIAUtils.setAccessibleName(this._navigationBack, ls`back`);
     this._navigationForward = this._navigationBar.createChild('button', 'forward');
     this._navigationForward.disabled = true;
+    UI.ARIAUtils.setAccessibleName(this._navigationForward, ls`forward`);
     this._navigationReload = this._navigationBar.createChild('button', 'reload');
+    UI.ARIAUtils.setAccessibleName(this._navigationReload, ls`reload`);
     this._navigationUrl = UI.UIUtils.createInput();
+    UI.ARIAUtils.setAccessibleName(this._navigationUrl, ls`Address bar`);
     this._navigationBar.appendChild(this._navigationUrl);
     this._navigationUrl.type = 'text';
     this._navigationProgressBar = new ProgressTracker(

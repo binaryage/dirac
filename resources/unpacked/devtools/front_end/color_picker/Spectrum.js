@@ -161,7 +161,7 @@ export class Spectrum extends UI.Widget.VBox {
     }
 
     this.element.classList.add('flex-none');
-    /** @type {!Map.<string, !ColorPicker.Spectrum.Palette>} */
+    /** @type {!Map.<string, !Palette>} */
     this._palettes = new Map();
     this._palettePanel = this.contentElement.createChild('div', 'palette-panel');
     this._palettePanelShowing = false;
@@ -425,7 +425,7 @@ export class Spectrum extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!ColorPicker.Spectrum.Palette} palette
+   * @param {!Palette} palette
    * @param {boolean} animate
    * @param {!Event=} event
    */
@@ -645,15 +645,17 @@ export class Spectrum extends UI.Widget.VBox {
 
   _loadPalettes() {
     this._palettes.set(MaterialPalette.title, MaterialPalette);
-    /** @type {!ColorPicker.Spectrum.Palette} */
+    /** @type {!Palette} */
     const defaultCustomPalette = {title: 'Custom', colors: [], colorNames: [], mutable: true};
-    this._customPaletteSetting = self.Common.settings.createSetting('customColorPalette', defaultCustomPalette);
+    this._customPaletteSetting =
+        Common.Settings.Settings.instance().createSetting('customColorPalette', defaultCustomPalette);
     const customPalette = this._customPaletteSetting.get();
     // Fallback case for custom palettes created pre-m67
     customPalette.colorNames = customPalette.colorNames || [];
     this._palettes.set(customPalette.title, customPalette);
 
-    this._selectedColorPalette = self.Common.settings.createSetting('selectedColorPalette', GeneratedPaletteTitle);
+    this._selectedColorPalette =
+        Common.Settings.Settings.instance().createSetting('selectedColorPalette', GeneratedPaletteTitle);
     const palette = this._palettes.get(this._selectedColorPalette.get());
     if (palette) {
       this._showPalette(palette, true);
@@ -661,7 +663,7 @@ export class Spectrum extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!ColorPicker.Spectrum.Palette} palette
+   * @param {!Palette} palette
    */
   addPalette(palette) {
     this._palettes.set(palette.title, palette);
@@ -671,7 +673,7 @@ export class Spectrum extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!ColorPicker.Spectrum.Palette} palette
+   * @param {!Palette} palette
    * @return {!Element}
    */
   _createPreviewPaletteElement(palette) {
@@ -696,7 +698,7 @@ export class Spectrum extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!ColorPicker.Spectrum.Palette} palette
+   * @param {!Palette} palette
    */
   _paletteSelected(palette) {
     this._selectedColorPalette.set(palette.title);
@@ -1165,7 +1167,7 @@ const GeneratedPaletteTitle = 'Page colors';
 
 export class PaletteGenerator {
   /**
-   * @param {function(!ColorPicker.Spectrum.Palette)} callback
+   * @param {function(!Palette)} callback
    */
   constructor(callback) {
     this._callback = callback;
@@ -1177,7 +1179,11 @@ export class PaletteGenerator {
         stylesheetPromises.push(this._processStylesheet(stylesheet));
       }
     }
-    Promise.all(stylesheetPromises).catchException(null).then(this._finish.bind(this));
+    Promise.all(stylesheetPromises)
+        .catch(error => {
+          console.error(error);
+        })
+        .then(this._finish.bind(this));
   }
 
   /**

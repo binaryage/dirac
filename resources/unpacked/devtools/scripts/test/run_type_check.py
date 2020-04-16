@@ -45,7 +45,6 @@ from build import modular_build
 from build import special_case_namespaces
 
 import devtools_paths
-import utils
 
 try:
     import simplejson as json
@@ -83,7 +82,7 @@ DEVTOOLS_FRONTEND_PATH = path.join(DEVTOOLS_PATH, 'front_end')
 GLOBAL_EXTERNS_FILE = to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'externs.js'))
 DEFAULT_PROTOCOL_EXTERNS_FILE = path.join(DEVTOOLS_FRONTEND_PATH, 'protocol_externs.js')
 WASM_SOURCE_MAP_FILE = path.join(DEVTOOLS_FRONTEND_PATH, 'sdk', 'wasm_source_map', 'types.js')
-RUNTIME_FILE = to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'Runtime.js'))
+RUNTIME_FILE = to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'RuntimeInstantiator.js'))
 ROOT_MODULE_FILE = to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'root.js'))
 
 CLOSURE_COMPILER_JAR = to_platform_path(path.join(SCRIPTS_PATH, 'closure', 'compiler.jar'))
@@ -368,7 +367,9 @@ def generate_namespace_externs(modules_by_name):
     namespaces.sort()
     namespace_externs_file = tempfile.NamedTemporaryFile(mode='wt', delete=False)
     try:
+        namespace_externs_file.write('var Protocol = {};\n')
         namespace_externs_file.write('var Root = {};\n')
+        namespace_externs_file.write('var Runtime = {};\n')
         for namespace in namespaces:
             namespace_externs_file.write('var %s = {};\n' % namespace)
     finally:

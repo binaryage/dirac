@@ -107,14 +107,13 @@ def _CheckJSON(input_api, output_api):
     return results
 
 
-def _CheckLicenses(input_api, output_api):
-    results = [output_api.PresubmitNotifyResult('Running License Header Check:')]
-    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'test', 'run_license_header_check.js')
-    results.extend(_checkWithNodeScript(input_api, output_api, script_path))
-    return results
-
-
 def _CheckFormat(input_api, output_api):
+    node_modules_affected_files = _getAffectedFiles(input_api, [input_api.os_path.join(input_api.PresubmitLocalPath(), 'node_modules')], [], [])
+
+    # TODO(crbug.com/1068198): Remove once `git cl format --js` can handle large CLs.
+    if (len(node_modules_affected_files) > 0):
+        return [output_api.PresubmitNotifyResult('Skipping Format Checks because `node_modules` files are affected.')]
+
     results = [output_api.PresubmitNotifyResult('Running Format Checks:')]
 
     return _ExecuteSubProcess(input_api, output_api, ['git', 'cl', 'format', '--js'], [], results)
@@ -148,9 +147,42 @@ def _CheckDevtoolsLocalization(input_api, output_api, check_all_files=False):  #
 
 def _CheckDevtoolsStyle(input_api, output_api):
     results = [output_api.PresubmitNotifyResult('Running Devtools Style Check:')]
-    lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'test', 'run_lint_check.py')
+    lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'test', 'run_lint_check.js')
 
-    return _ExecuteSubProcess(input_api, output_api, lint_path, [], results)
+    front_end_directory = input_api.os_path.join(input_api.PresubmitLocalPath(), 'front_end')
+    test_directory = input_api.os_path.join(input_api.PresubmitLocalPath(), 'test')
+    scripts_directory = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts')
+
+    default_linted_directories = [front_end_directory, test_directory, scripts_directory]
+
+    eslint_related_files = [
+        input_api.os_path.join(input_api.PresubmitLocalPath(), 'node_modules', 'eslint'),
+        input_api.os_path.join(input_api.PresubmitLocalPath(), '.eslintrc.js'),
+        input_api.os_path.join(input_api.PresubmitLocalPath(), '.eslintignore'),
+        input_api.os_path.join(scripts_directory, 'test', 'run_lint_check.py'),
+        input_api.os_path.join(scripts_directory, 'test', 'run_lint_check.js'),
+        input_api.os_path.join(scripts_directory, '.eslintrc.js'),
+        input_api.os_path.join(scripts_directory, 'eslint_rules'),
+    ]
+
+    affected_files = _getAffectedFiles(input_api, eslint_related_files, [], ['.js', '.py', '.eslintignore'])
+
+    # We are changing the ESLint configuration, make sure to run the full check
+    if len(affected_files) is not 0:
+        results.append(output_api.PresubmitNotifyResult('Running full ESLint check'))
+        affected_files = default_linted_directories
+    else:
+        # Only run ESLint on files that are relevant, to save PRESUBMIT time
+        affected_files = _getAffectedFiles(input_api, default_linted_directories, ['D'], ['.js', '.ts'])
+
+        # If we have not changed any lintable files, then we should bail out.
+        # Otherwise, `run_lint_check.py` will lint *all* files.
+        if len(affected_files) is 0:
+            results.append(output_api.PresubmitNotifyResult('No affected files for ESLint check'))
+            return results
+
+    results.extend(_checkWithNodeScript(input_api, output_api, lint_path, affected_files))
+    return results
 
 
 def _CheckOptimizeSVGHashes(input_api, output_api):
@@ -187,6 +219,7 @@ def _CheckGeneratedFiles(input_api, output_api):
     blink_directory_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'third_party', 'blink')
     protocol_location = input_api.os_path.join(blink_directory_path, 'public', 'devtools_protocol')
     scripts_build_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'build')
+    scripts_generated_output_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'front_end', 'generated')
 
     generated_aria_path = input_api.os_path.join(scripts_build_path, 'generate_aria.py')
     generated_supported_css_path = input_api.os_path.join(scripts_build_path, 'generate_supported_css.py')
@@ -202,7 +235,8 @@ def _CheckGeneratedFiles(input_api, output_api):
         generated_supported_css_path,
         concatenate_protocols_path,
         generated_protocol_path,
-    ], [], ['.pdl', '.json5', '.py'])
+        scripts_generated_output_path,
+    ], [], ['.pdl', '.json5', '.py', '.js'])
 
     if len(affected_files) == 0:
         return []
@@ -221,7 +255,15 @@ def _CheckNoUncheckedFiles(input_api, output_api):
                                          stderr=input_api.subprocess.STDOUT)
     out, _ = process.communicate()
     if process.returncode != 0:
-        return [output_api.PresubmitError('You have changed files that need to be committed.')]
+        files_changed_process = input_api.subprocess.Popen(['git', 'diff', '--name-only'],
+                                                           stdout=input_api.subprocess.PIPE,
+                                                           stderr=input_api.subprocess.STDOUT)
+        files_changed, _ = files_changed_process.communicate()
+
+        return [
+            output_api.PresubmitError('You have changed files that need to be committed:'),
+            output_api.PresubmitError(files_changed)
+        ]
     return []
 
 def _CheckForTooLargeFiles(input_api, output_api):
@@ -267,7 +309,6 @@ def _CommonChecks(input_api, output_api):
     results.extend(_CheckBuildGN(input_api, output_api))
     results.extend(_CheckGeneratedFiles(input_api, output_api))
     results.extend(_CheckJSON(input_api, output_api))
-    results.extend(_CheckLicenses(input_api, output_api))
     results.extend(_CheckDevtoolsStyle(input_api, output_api))
     results.extend(_CheckFormat(input_api, output_api))
     results.extend(_CheckOptimizeSVGHashes(input_api, output_api))
@@ -300,9 +341,8 @@ def _getAffectedFiles(input_api, parent_directories, excluded_actions, accepted_
         f.AbsoluteLocalPath() for f in input_api.AffectedFiles() if all(f.Action() != action for action in excluded_actions)
     ]
     affected_files = [
-        file_name for file_name in local_paths
-        if any(parent_directory in file_name for parent_directory in parent_directories) and any(
-            file_name.endswith(accepted_ending) for accepted_ending in accepted_endings)
+        file_name for file_name in local_paths if any(parent_directory in file_name for parent_directory in parent_directories) and
+        (len(accepted_endings) is 0 or any(file_name.endswith(accepted_ending) for accepted_ending in accepted_endings))
     ]
     return affected_files
 

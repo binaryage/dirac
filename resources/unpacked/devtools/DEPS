@@ -4,30 +4,30 @@
 
 vars = {
   'build_url': 'https://chromium.googlesource.com/chromium/src/build.git',
-  'build_revision': '54fe4c7ea6338c333ec5f05c29c321fb22d9ec5d',
+  'build_revision': '212b25dc86151e32abc71fa5d129614937666d69',
 
   'buildtools_url': 'https://chromium.googlesource.com/chromium/src/buildtools.git',
-  'buildtools_revision': 'fa6ae42dcfbf3bf965439c0bdfeb03cf4e2a5840',
+  'buildtools_revision': '2c41dfb19abe40908834803b6fed797b0f341fe1',
 
   'depot_tools_url': 'https://chromium.googlesource.com/chromium/tools/depot_tools.git',
-  'depot_tools_revision': 'ffd02955e6680f9f5a32872682bd03227487014e',
+  'depot_tools_revision': 'e1a9c8db7e7cf6ba7d70b06ec3f3cf6d74451680',
 
   'inspector_protocol_url': 'https://chromium.googlesource.com/deps/inspector_protocol',
-  'inspector_protocol_revision': '81ef742ba3587767fc08652d299df9e9b7051407',
+  'inspector_protocol_revision': 'b7cda08cd6e522df2159413ba5f29d2a953cc1c4',
 
   'clang_format_url': 'https://chromium.googlesource.com/chromium/llvm-project/cfe/tools/clang-format.git',
   'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:4166e9fbc1fa5ceab69b69710a0f8b430c50127b',
+  'gn_version': 'git_revision:5ed3c9cc67b090d5e311e4bd2aba072173e82db9',
 
   # Chromium build number for unit tests. It should be regularly updated to
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/LAST_CHANGE
-  'chromium_linux': '747986',
+  'chromium_linux': '758711',
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/LAST_CHANGE
-  'chromium_win': '747980',
+  'chromium_win': '758699',
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/LAST_CHANGE
-  'chromium_mac': '747969',
+  'chromium_mac': '758697',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -171,41 +171,41 @@ hooks = [
   },
 
   # Pull chromium from common storage
-  {
-    'name': 'download_chromium_win',
-    'pattern': '.',
-    'condition': 'host_os == "win"',
-    'action': [ 'python',
-                'devtools-frontend/scripts/deps/download_chromium.py',
-                'https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/' + Var('chromium_win') + '/chrome-win.zip',
-                'devtools-frontend/third_party/chrome',
-                'chrome-win/chrome.exe',
-                Var('chromium_win'),
-    ],
-  },
-  {
-    'name': 'download_chromium_mac',
-    'pattern': '.',
-    'condition': 'host_os == "mac"',
-    'action': [ 'python',
-                'devtools-frontend/scripts/deps/download_chromium.py',
-                'https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/' + Var('chromium_mac') + '/chrome-mac.zip',
-                'devtools-frontend/third_party/chrome',
-                'chrome-mac/Chromium.app/Contents',
-                Var('chromium_mac'),
-    ],
-  },
-  {
-    'name': 'download_chromium_linux',
-    'pattern': '.',
-    'condition': 'host_os == "linux"',
-    'action': [ 'python',
-                'devtools-frontend/scripts/deps/download_chromium.py',
-                'https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/' + Var('chromium_linux') + '/chrome-linux.zip',
-                'devtools-frontend/third_party/chrome',
-                'chrome-linux/chrome',
-                Var('chromium_linux'),
-    ],
-  },
+  # {
+  #   'name': 'download_chromium_win',
+  #   'pattern': '.',
+  #   'condition': 'host_os == "win"',
+  #   'action': [ 'python',
+  #               'devtools-frontend/scripts/deps/download_chromium.py',
+  #               'https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/' + Var('chromium_win') + '/chrome-win.zip',
+  #               'devtools-frontend/third_party/chrome',
+  #               'chrome-win/chrome.exe',
+  #               Var('chromium_win'),
+  #   ],
+  # },
+  # {
+  #   'name': 'download_chromium_mac',
+  #   'pattern': '.',
+  #   'condition': 'host_os == "mac"',
+  #   'action': [ 'python',
+  #               'devtools-frontend/scripts/deps/download_chromium.py',
+  #               'https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/' + Var('chromium_mac') + '/chrome-mac.zip',
+  #               'devtools-frontend/third_party/chrome',
+  #               'chrome-mac/Chromium.app/Contents',
+  #               Var('chromium_mac'),
+  #   ],
+  # },
+  # {
+  #   'name': 'download_chromium_linux',
+  #   'pattern': '.',
+  #   'condition': 'host_os == "linux"',
+  #   'action': [ 'python',
+  #               'devtools-frontend/scripts/deps/download_chromium.py',
+  #               'https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/' + Var('chromium_linux') + '/chrome-linux.zip',
+  #               'devtools-frontend/third_party/chrome',
+  #               'chrome-linux/chrome',
+  #               Var('chromium_linux'),
+  #   ],
+  # },
 
 ]

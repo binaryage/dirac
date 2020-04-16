@@ -8,7 +8,7 @@ import * as ObjectUI from '../object_ui/object_ui.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
-import {frameworkEventListeners} from './EventListenersUtils.js';
+import {frameworkEventListeners, FrameworkEventListenersObject} from './EventListenersUtils.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
@@ -66,7 +66,7 @@ export class EventListenersView extends UI.Widget.VBox {
   _addObject(object) {
     /** @type {!Array<!SDK.DOMDebuggerModel.EventListener>} */
     let eventListeners;
-    /** @type {?EventListeners.FrameworkEventListenersObject}*/
+    /** @type {?FrameworkEventListenersObject}*/
     let frameworkEventListenersObject = null;
 
     const promises = [];
@@ -86,7 +86,7 @@ export class EventListenersView extends UI.Widget.VBox {
     }
 
     /**
-     * @param {?EventListeners.FrameworkEventListenersObject} result
+     * @param {?FrameworkEventListenersObject} result
      */
     function storeFrameworkEventListenersObject(result) {
       frameworkEventListenersObject = result;
@@ -251,6 +251,7 @@ export class EventListenersTreeElement extends UI.TreeOutline.TreeElement {
     this.toggleOnClick = true;
     this._linkifier = linkifier;
     this._changeCallback = changeCallback;
+    UI.ARIAUtils.setAccessibleName(this.listItemElement, `${type}, event listener`);
   }
 
   /**
@@ -352,6 +353,9 @@ export class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
       const menu = new UI.ContextMenu.ContextMenu(event);
       if (event.target !== linkElement) {
         menu.appendApplicableItems(linkElement);
+      }
+      if (object.subtype === 'node') {
+        menu.defaultSection().appendItem(ls`Reveal in Elements panel`, () => Common.Revealer.reveal(object));
       }
       menu.defaultSection().appendItem(
           ls`Delete event listener`, this._removeListener.bind(this), !this._eventListener.canRemove());

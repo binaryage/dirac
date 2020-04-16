@@ -1,0 +1,18 @@
+<!--
+  Copyright 2020 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+-->
+<style>
+  #focus:not(:focus) .show-on-focus {
+    display: none;
+  }
+
+  #focus {
+    background-color: rgba(0, 128, 0, 1);
+  }
+</style>
+<div id="focus" tabindex="0">
+  <span>Some text with a green background once focused</span>
+  <span class="show-on-focus">Some text here, only shown on hover</span>
+</div>

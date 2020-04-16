@@ -11,4 +11,3 @@ set -x
 git pull
 ./scripts/pull-devtools.sh
 ./scripts/squash-and-merge-official-updates.sh
-./scripts/regenerate.sh

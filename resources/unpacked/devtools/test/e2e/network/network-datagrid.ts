@@ -33,7 +33,7 @@ describe('The Network Tab', async () => {
     assert.equal(checked, true, 'The disable cache checkbox should be checked');
   });
 
-  it('shows Last-Modified', async () => {
+  it.skip('[crbug.com/1066813] shows Last-Modified', async () => {
     const {target, frontend} = getBrowserAndPages();
     await navigateToNetworkTab(target, 'last-modified.html');
 
@@ -60,7 +60,7 @@ describe('The Network Tab', async () => {
     ]);
   });
 
-  it('shows the HTML response including cyrillic characters with utf-8 encoding', async () => {
+  it.skip('[crbug.com/1066813] shows the HTML response including cyrillic characters with utf-8 encoding', async () => {
     const {target, frontend} = getBrowserAndPages();
 
     await navigateToNetworkTab(target, 'utf-8.rawresponse');
@@ -87,7 +87,7 @@ describe('The Network Tab', async () => {
         '1<html><body>The following word is written using cyrillic letters and should look like "SUCCESS": SU\u0421\u0421\u0415SS.</body></html>');
   });
 
-  it('shows correct MimeType when resources came from HTTP cache', async () => {
+  it.skip('[crbug.com/1066813] shows the correct MIME type when resources came from HTTP cache', async () => {
     const {target, frontend} = getBrowserAndPages();
 
     await navigateToNetworkTab(target, 'resources-from-cache.html');
@@ -101,22 +101,22 @@ describe('The Network Tab', async () => {
     await click('[aria-label="Disable cache"]');
     await target.reload({waitUntil: 'networkidle2'});
 
-    // Request the first two network request responses (excluding header and favicon.ico)
-    const obtainNetworkRequestSize = () => frontend.evaluate(() => {
+    // Get the size of the first two network request responses (excluding header and favicon.ico).
+    const getNetworkRequestSize = () => frontend.evaluate(() => {
       return Array.from(document.querySelectorAll('.size-column')).slice(1, 3).map(node => node.textContent);
     });
-    const obtainNetworkRequestMimeTypes = () => frontend.evaluate(() => {
+    const getNetworkRequestMimeTypes = () => frontend.evaluate(() => {
       return Array.from(document.querySelectorAll('.type-column')).slice(1, 3).map(node => node.textContent);
     });
-    const computeByteSize = (value: number) => {
+    const formatByteSize = (value: number) => {
       return `${value}\xA0B`;
     };
 
-    assert.deepEqual(await obtainNetworkRequestSize(), [
-      computeByteSize(549) + computeByteSize(429),
-      computeByteSize(362) + computeByteSize(28),
+    assert.deepEqual(await getNetworkRequestSize(), [
+      `${formatByteSize(338)}${formatByteSize(219)}`,
+      `${formatByteSize(362)}${formatByteSize(28)}`,
     ]);
-    assert.deepEqual(await obtainNetworkRequestMimeTypes(), [
+    assert.deepEqual(await getNetworkRequestMimeTypes(), [
       'document',
       'script',
     ]);
@@ -125,12 +125,12 @@ describe('The Network Tab', async () => {
     await click('[aria-label="Disable cache"]');
     await target.reload({waitUntil: 'networkidle2'});
 
-    assert.deepEqual(await obtainNetworkRequestSize(), [
-      computeByteSize(549) + computeByteSize(429),
-      `(memory cache)${computeByteSize(28)}`,
+    assert.deepEqual(await getNetworkRequestSize(), [
+      `${formatByteSize(338)}${formatByteSize(219)}`,
+      `(memory cache)${formatByteSize(28)}`,
     ]);
 
-    assert.deepEqual(await obtainNetworkRequestMimeTypes(), [
+    assert.deepEqual(await getNetworkRequestMimeTypes(), [
       'document',
       'script',
     ]);

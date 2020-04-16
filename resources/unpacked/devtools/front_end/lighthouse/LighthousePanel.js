@@ -105,7 +105,8 @@ export class LighthousePanel extends UI.Panel.Panel {
     this._settingsPane.show(this.contentElement);
     this._settingsPane.element.classList.add('lighthouse-settings-pane');
     this._settingsPane.element.appendChild(this._startView.settingsToolbar().element);
-    this._showSettingsPaneSetting = self.Common.settings.createSetting('lighthouseShowSettingsToolbar', false);
+    this._showSettingsPaneSetting =
+        Common.Settings.Settings.instance().createSetting('lighthouseShowSettingsToolbar', false);
 
     this._rightToolbar = new UI.Toolbar.Toolbar('', lighthouseToolbarContainer);
     this._rightToolbar.appendSeparator();
@@ -194,7 +195,7 @@ export class LighthousePanel extends UI.Panel.Panel {
     const dom = new DOM(/** @type {!Document} */ (this._auditResultsElement.ownerDocument));
     const renderer = new LighthouseReportRenderer(dom);
 
-    const templatesHTML = Root.Runtime.cachedResources['third_party/lighthouse/report-assets/templates.html'];
+    const templatesHTML = self.Runtime.cachedResources['third_party/lighthouse/report-assets/templates.html'];
     const templatesDOM = new DOMParser().parseFromString(templatesHTML, 'text/html');
     if (!templatesDOM) {
       return;

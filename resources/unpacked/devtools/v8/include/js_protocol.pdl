@@ -119,6 +119,7 @@ domain Debugger
         script
         eval
         module
+        wasm-expression-stack
       # Object representing the scope. For `global` and `with` scopes it represents the actual
       # object; for the rest of the scopes, it is artificial transient object enumerating scope
       # variables as its properties.
@@ -503,6 +504,12 @@ domain Debugger
   # Fired when the virtual machine resumed execution.
   event resumed
 
+  # Enum of possible script languages.
+  type ScriptLanguage extends string
+    enum
+      JavaScript
+      WebAssembly
+
   # Fired when virtual machine fails to parse the script.
   event scriptFailedToParse
     parameters
@@ -534,6 +541,10 @@ domain Debugger
       optional integer length
       # JavaScript top stack frame of where the script parsed event was triggered if available.
       experimental optional Runtime.StackTrace stackTrace
+      # If the scriptLanguage is WebAssembly, the code section offset in the module.
+      experimental optional integer codeOffset
+      # The language of the script.
+      experimental optional Debugger.ScriptLanguage scriptLanguage
 
   # Fired when virtual machine parses script. This event is also fired for all known and uncollected
   # scripts upon enabling debugger.
@@ -569,6 +580,10 @@ domain Debugger
       optional integer length
       # JavaScript top stack frame of where the script parsed event was triggered if available.
       experimental optional Runtime.StackTrace stackTrace
+      # If the scriptLanguage is WebAssembly, the code section offset in the module.
+      experimental optional integer codeOffset
+      # The language of the script.
+      experimental optional Debugger.ScriptLanguage scriptLanguage
 
 experimental domain HeapProfiler
   depends on Runtime
@@ -940,7 +955,8 @@ domain Runtime
         boolean
         symbol
         bigint
-      # Object subtype hint. Specified for `object` type values only.
+        wasm
+      # Object subtype hint. Specified for `object` or `wasm` type values only.
       optional enum subtype
         array
         null
@@ -959,6 +975,11 @@ domain Runtime
         typedarray
         arraybuffer
         dataview
+        i32
+        i64
+        f32
+        f64
+        v128
       # Object class (constructor) name. Specified for `object` type values only.
       optional string className
       # Remote object value in case of primitive values or JSON values (if it was requested).

@@ -3,9 +3,6 @@
   <message name="IDS_DEVTOOLS_0203e27fe44545283879b18e7084391b" desc="Error message when failing to load a script source text">
     Unable to fetch script source.
   </message>
-  <message name="IDS_DEVTOOLS_03ad1a888d3306eb6eb2346c17803f96" desc="Name of a color vision deficiency that can be emulated via the Rendering drawer">
-    Protanomaly
-  </message>
   <message name="IDS_DEVTOOLS_05dfd3a2f7eebfad702620a4a7e182eb" desc="Tooltip to explain why a cookie was blocked">
     This Set-Cookie was blocked because it had the &quot;SameSite=Strict&quot; attribute but came from a cross-site response which was not the response to a top-level navigation.
   </message>
@@ -57,14 +54,14 @@
   <message name="IDS_DEVTOOLS_1ee85f6c60017a7f0646ba8dc5824de6" desc="Service worker running status displayed in the Service Workers view in the Application panel">
     starting
   </message>
-  <message name="IDS_DEVTOOLS_20537cc0d1dc49616ff3f71590c2d31b" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
-    Emulate achromatomaly
-  </message>
   <message name="IDS_DEVTOOLS_21070fd87b02611a5426d726a70a5502" desc="Text in Server Timing">
     No value found for parameter &quot;<ph name="PARAMNAME">$1s<ex>https</ex></ph>&quot;.
   </message>
   <message name="IDS_DEVTOOLS_212af9ab36fa426a9e52bc1ebfd8665b" desc="Text in DOMDebugger Model">
     Drag / drop
+  </message>
+  <message name="IDS_DEVTOOLS_2187e1021a911b3807cc1bea2eb1a9ca" desc="Text for a stack, the programming concept">
+    Stack
   </message>
   <message name="IDS_DEVTOOLS_22af645d1859cb5ca6da0c484f1f37ea" desc="Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel">
     new
@@ -87,6 +84,9 @@
   <message name="IDS_DEVTOOLS_2d4f58197f03de72c0472189fd18c162" desc="Title of a setting under the Rendering drawer">
     Emulate vision deficiencies
   </message>
+  <message name="IDS_DEVTOOLS_323d4eb70b252acb4a04eaf9e0882597" desc="Title for a group of cities">
+    Geolocation
+  </message>
   <message name="IDS_DEVTOOLS_3bd3beb3fb5c78e8e85ad06d749bea78" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Emulate protanopia
   </message>
@@ -104,9 +104,6 @@
   </message>
   <message name="IDS_DEVTOOLS_53cd1fbc07fe37544e195e5ad3746175" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Emulate achromatopsia
-  </message>
-  <message name="IDS_DEVTOOLS_548180b145dfc70126a9b2b7b55a611d" desc="Name of a color vision deficiency that can be emulated via the Rendering drawer">
-    Tritanomaly
   </message>
   <message name="IDS_DEVTOOLS_5e53467e9b005376370c28e92b42b6f5" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Emulate CSS prefers-reduced-motion: reduce
@@ -164,9 +161,6 @@
   </message>
   <message name="IDS_DEVTOOLS_4cc00b9253c692417d3b0765d5ae5e79" desc="Text in Server Timing">
     Unable to parse &quot;<ph name="PARAMNAME">$1s<ex>https</ex></ph>&quot; value &quot;<ph name="PARAMVALUE">$2s<ex>2.0</ex></ph>&quot;.
-  </message>
-  <message name="IDS_DEVTOOLS_4cc6684df7b4a92b1dec6fce3264fac8" desc="Text in Debugger Model">
-    Global
   </message>
   <message name="IDS_DEVTOOLS_509820290d57f333403f490dde7316f4" desc="Text in Debugger Model">
     Local
@@ -273,9 +267,6 @@
   <message name="IDS_DEVTOOLS_8eb3dbe83bec0f4c902665a1d49c1f38" desc="Tooltip to explain why a cookie was blocked">
     This Set-Cookie was blocked due to user preferences.
   </message>
-  <message name="IDS_DEVTOOLS_8f53fc4d956f78a40764f692b0439492" desc="Name of a color vision deficiency that can be emulated via the Rendering drawer">
-    Achromatomaly
-  </message>
   <message name="IDS_DEVTOOLS_9028784c589c0c809700c7fbc66a5d96" desc="Text in Network Manager">
     Resource interpreted as <ph name="NETWORKREQUEST_RESOURCETYPE___TITLE__">$1s<ex>application</ex></ph> but transferred with MIME type <ph name="NETWORKREQUEST_MIMETYPE">$2s<ex>image</ex></ph>: &quot;<ph name="NETWORKREQUEST_URL__">$3s<ex>https://example.com</ex></ph>&quot;.
   </message>
@@ -336,9 +327,6 @@
   <message name="IDS_DEVTOOLS_aec445acc1539341cf9a79c3a336131d" desc="Tooltip to explain why a cookie was blocked">
     This cookie was blocked due to user preferences.
   </message>
-  <message name="IDS_DEVTOOLS_b04928d58621eb42c5993eb5bed9c321" desc="Name of a color vision deficiency that can be emulated via the Rendering drawer">
-    Deuteranomaly
-  </message>
   <message name="IDS_DEVTOOLS_b28354b543375bfa94dabaeda722927f" desc="Text in Resource Tree Model">
     top
   </message>
@@ -365,9 +353,6 @@
   </message>
   <message name="IDS_DEVTOOLS_beff15b1acf49b84bf1080cceb920ebf" desc="Title of a media query that can be emulated via the Rendering drawer">
     prefers-color-scheme: dark
-  </message>
-  <message name="IDS_DEVTOOLS_bf0c4dde750bb6c624483d4b280f721d" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
-    Emulate tritanomaly
   </message>
   <message name="IDS_DEVTOOLS_c2b67a1559b80b23f73dabb8bba0f534" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Emulate tritanopia
@@ -399,9 +384,6 @@
   <message name="IDS_DEVTOOLS_ceb19b7234304452f0c748bac8ba3fb8" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Do not emulate CSS prefers-reduced-motion
   </message>
-  <message name="IDS_DEVTOOLS_ceb574a869e25ce4c51e52204dbc3bac" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
-    Emulate deuteranomaly
-  </message>
   <message name="IDS_DEVTOOLS_cedab6b9e4e794e93bba797e8aff218a" desc="Message in Network Manager">
     <ph name="NETWORKREQUEST_RESOURCETYPE___TITLE__">$1s<ex>XHR</ex></ph> finished loading: <ph name="NETWORKREQUEST_REQUESTMETHOD">$2s<ex>GET</ex></ph> &quot;<ph name="NETWORKREQUEST_URL__">$3s<ex>https://example.com</ex></ph>&quot;.
   </message>
@@ -410,9 +392,6 @@
   </message>
   <message name="IDS_DEVTOOLS_d4fad802fc7bf0248d34c685533bd56f" desc="Title of a setting under the Network category that can be invoked through the Command Menu">
     Disable request blocking
-  </message>
-  <message name="IDS_DEVTOOLS_d9ddd995c44a445431e57733748b4ea8" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
-    Emulate protanomaly
   </message>
   <message name="IDS_DEVTOOLS_dcd9c13c4f8ae68ea7ae92edf9191264" desc="Text in Server Timing">
     Deprecated syntax found. Please use: &lt;name&gt;;dur=&lt;duration&gt;;desc=&lt;description&gt;

@@ -1,17 +1,20 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 const fs = require('fs');
 const path = require('path');
-
-const utils = require('../utils');
 
 const FRONTEND_PATH = path.resolve(__dirname, '..', '..', 'front_end');
 
 const modules = [];
-for (let dir of fs.readdirSync(FRONTEND_PATH)) {
-  if (!utils.isDir(path.resolve(FRONTEND_PATH, dir)))
+for (const dir of fs.readdirSync(FRONTEND_PATH)) {
+  if (!fs.lstatSync(path.resolve(FRONTEND_PATH, dir)).isDirectory()) {
     continue;
-  let module = path.resolve(dir, 'module.json');
-  if (utils.isFile(path.resolve(FRONTEND_PATH, dir, 'module.json')))
+  }
+  if (fs.existsSync(path.resolve(FRONTEND_PATH, dir, 'module.json'))) {
     modules.push(dir);
+  }
 }
 
 const Ajv = require('ajv');
@@ -23,7 +26,7 @@ const schema = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'module.schema
 const validate = ajv.compile(schema);
 
 let totalErrors = 0;
-for (let module of modules) {
+for (const module of modules) {
   const moduleObject = JSON.parse(fs.readFileSync(path.resolve(FRONTEND_PATH, module, 'module.json')));
   const valid = validate(moduleObject);
   if (!valid) {
@@ -35,6 +38,7 @@ for (let module of modules) {
     console.log('');
   }
 }
-if (totalErrors)
+if (totalErrors) {
   console.log('module.json errors:', totalErrors);
+}
 process.exit(totalErrors);

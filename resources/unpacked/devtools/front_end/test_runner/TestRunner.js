@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
-import * as ProtocolModule from '../protocol/protocol.js';
+import * as ProtocolClientModule from '../protocol_client/protocol_client.js';
+import * as Workspace from '../workspace/workspace.js';
 
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
@@ -423,7 +424,7 @@ export async function _evaluateInPage(code) {
     code += `//# sourceURL=${sourceURL}`;
   }
   const response = await TestRunner.RuntimeAgent.invoke_evaluate({expression: code, objectGroup: 'console'});
-  const error = response[ProtocolModule.InspectorBackend.ProtocolError];
+  const error = response[ProtocolClientModule.InspectorBackend.ProtocolError];
   if (error) {
     addResult('Error: ' + error);
     completeTest();
@@ -442,7 +443,7 @@ export async function _evaluateInPage(code) {
 export async function evaluateInPageAnonymously(code, userGesture) {
   const response =
       await TestRunner.RuntimeAgent.invoke_evaluate({expression: code, objectGroup: 'console', userGesture});
-  if (!response[ProtocolModule.InspectorBackend.ProtocolError]) {
+  if (!response[ProtocolClientModule.InspectorBackend.ProtocolError]) {
     return response.result.value;
   }
   addResult(
@@ -467,7 +468,7 @@ export async function evaluateInPageAsync(code) {
   const response = await TestRunner.RuntimeAgent.invoke_evaluate(
       {expression: code, objectGroup: 'console', includeCommandLineAPI: false, awaitPromise: true});
 
-  const error = response[ProtocolModule.InspectorBackend.ProtocolError];
+  const error = response[ProtocolClientModule.InspectorBackend.ProtocolError];
   if (!error && !response.exceptionDetails) {
     return response.result.value;
   }
@@ -531,7 +532,7 @@ export function check(passCondition, failureText) {
  * @param {!Function} callback
  */
 export function deprecatedRunAfterPendingDispatches(callback) {
-  Protocol.test.deprecatedRunAfterPendingDispatches(callback);
+  ProtocolClient.test.deprecatedRunAfterPendingDispatches(callback);
 }
 
 /**
@@ -670,7 +671,7 @@ export function markStep(title) {
 }
 
 export function startDumpingProtocolMessages() {
-  Protocol.test.dumpProtocol = self.testRunner.logToStderr.bind(self.testRunner);
+  ProtocolClient.test.dumpProtocol = self.testRunner.logToStderr.bind(self.testRunner);
 }
 
 /**
@@ -1307,19 +1308,19 @@ export function dumpLoadedModules(relativeTo) {
 
 /**
  * @param {string} urlSuffix
- * @param {!Workspace.projectTypes=} projectType
+ * @param {!Workspace.Workspace.projectTypes=} projectType
  * @return {!Promise}
  */
 export function waitForUISourceCode(urlSuffix, projectType) {
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {boolean}
    */
   function matches(uiSourceCode) {
     if (projectType && uiSourceCode.project().type() !== projectType) {
       return false;
     }
-    if (!projectType && uiSourceCode.project().type() === Workspace.projectTypes.Service) {
+    if (!projectType && uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Service) {
       return false;
     }
     if (urlSuffix && !uiSourceCode.url().endsWith(urlSuffix)) {
@@ -1434,11 +1435,8 @@ export async function dumpInspectedPageElementText(querySelector) {
  * once all currently-pending updates (at call time) are completed.
  */
 export async function waitForPendingLiveLocationUpdates() {
-  // TODO(chromium:1032016): Implement once the frontend has the actual methods in the bindings.
-  //
-  //                         This empty function is here so we can prepare affected web
-  //                         tests and than asyncify the frontend without needing to disable the
-  //                         affected web tests inbetween.
+  await self.Bindings.debuggerWorkspaceBinding.pendingLiveLocationChangesPromise();
+  await self.Bindings.cssWorkspaceBinding.pendingLiveLocationChangesPromise();
 }
 
 /** @type {!{logToStderr: function(), navigateSecondaryWindow: function(string), notifyDone: function()}|undefined} */

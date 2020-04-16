@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "esnext",
+    "baseUrl": ".",
+    "checkJs": true,
+    "allowJs": true,
+
+    "noEmitOnError": true,
+
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  }
+}

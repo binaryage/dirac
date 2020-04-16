@@ -13,13 +13,13 @@
 *.xcodeproj*
 /.dev_profile
 /.test_cache
-/front_end/*/jsconfig.json
 /front_end/protocol_externs.js
 /release
 /scripts/visualize_deps/out
 config.gypi
-karma-coverage
+/karma-coverage
 npm-debug.log
+/scripts/protocol_typescript/*.js
 
 /build
 /buildtools
@@ -35,6 +35,13 @@ test/e2e/**/*.js
 test/e2e/**/*.tsbuildinfo
 test/shared/**/*.js
 test/shared/**/helper.d.ts
+test/shared/**/runner.d.ts
+test/shared/**/master.d.ts
+test/shared/**/worker-task.d.ts
+test/shared/**/worker-message.d.ts
+test/shared/**/worker.d.ts
+test/shared/**/config.d.ts
+test/shared/**/text-color.d.ts
 test/shared/**/screenshot.d.ts
 test/shared/**/*.tsbuildinfo
 test/screenshots/**/*.js
@@ -44,3 +51,6 @@ test/screenshots/.generated
 test/perf/.generated
 test/perf/**/*.js
 test/perf/**/*.tsbuildinfo
+test/unittests/scripts/component_bridges/gen/*
+test/unittests/scripts/component_bridges/fixtures/*_bridge.js
+scripts/component_bridges/gen/*.js

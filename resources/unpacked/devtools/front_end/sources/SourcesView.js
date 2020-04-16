@@ -4,6 +4,7 @@
 
 import * as Common from '../common/common.js';
 import * as Persistence from '../persistence/persistence.js';
+import * as Platform from '../platform/platform.js';
 import * as QuickOpen from '../quick_open/quick_open.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
 import * as UI from '../ui/ui.js';
@@ -29,7 +30,7 @@ export class SourcesView extends UI.Widget.VBox {
     this.element.id = 'sources-panel-sources-view';
     this.setMinimumAndPreferredSizes(88, 52, 150, 100);
 
-    const workspace = self.Workspace.workspace;
+    const workspace = Workspace.Workspace.WorkspaceImpl.instance();
 
     this._searchableView = new UI.SearchableView.SearchableView(this, 'sourcesViewSearchConfig');
     this._searchableView.setMinimalSearchQuerySize(0);
@@ -39,8 +40,8 @@ export class SourcesView extends UI.Widget.VBox {
     this._sourceViewByUISourceCode = new Map();
 
     this._editorContainer = new TabbedEditorContainer(
-        this, self.Common.settings.createLocalSetting('previouslyViewedFiles', []), this._placeholderElement(),
-        this._focusedPlaceholderElement);
+        this, Common.Settings.Settings.instance().createLocalSetting('previouslyViewedFiles', []),
+        this._placeholderElement(), this._focusedPlaceholderElement);
     this._editorContainer.show(this._searchableView.element);
     this._editorContainer.addEventListener(TabbedEditorContainerEvents.EditorSelected, this._editorSelected, this);
     this._editorContainer.addEventListener(TabbedEditorContainerEvents.EditorClosed, this._editorClosed, this);
@@ -85,7 +86,8 @@ export class SourcesView extends UI.Widget.VBox {
       }
 
       let unsavedSourceCodes = [];
-      const projects = self.Workspace.workspace.projectsForType(Workspace.Workspace.projectTypes.FileSystem);
+      const projects =
+          Workspace.Workspace.WorkspaceImpl.instance().projectsForType(Workspace.Workspace.projectTypes.FileSystem);
       for (let i = 0; i < projects.length; ++i) {
         unsavedSourceCodes =
             unsavedSourceCodes.concat(projects[i].uiSourceCodes().filter(sourceCode => sourceCode.isDirty()));
@@ -96,7 +98,7 @@ export class SourcesView extends UI.Widget.VBox {
       }
 
       event.returnValue = Common.UIString.UIString('DevTools have unsaved changes that will be permanently lost.');
-      self.UI.viewManager.showView('sources');
+      UI.ViewManager.ViewManager.instance().showView('sources');
       for (let i = 0; i < unsavedSourceCodes.length; ++i) {
         Common.Revealer.reveal(unsavedSourceCodes[i]);
       }
@@ -462,7 +464,7 @@ export class SourcesView extends UI.Widget.VBox {
    */
   _removeSourceFrame(uiSourceCode) {
     const sourceView = this._sourceViewByUISourceCode.get(uiSourceCode);
-    this._sourceViewByUISourceCode.remove(uiSourceCode);
+    this._sourceViewByUISourceCode.delete(uiSourceCode);
     if (sourceView && sourceView instanceof UISourceCodeFrame) {
       /** @type {!UISourceCodeFrame} */ (sourceView).dispose();
     }
@@ -728,7 +730,7 @@ export class SwitchFileActionDelegate {
       }
     }
     candidates.sort(String.naturalOrderComparator);
-    const index = mod(candidates.indexOf(name) + 1, candidates.length);
+    const index = Platform.NumberUtilities.mod(candidates.indexOf(name) + 1, candidates.length);
     const fullURL = (url ? url + '/' : '') + candidates[index];
     const nextUISourceCode = currentUISourceCode.project().uiSourceCodeForURL(fullURL);
     return nextUISourceCode !== currentUISourceCode ? nextUISourceCode : null;

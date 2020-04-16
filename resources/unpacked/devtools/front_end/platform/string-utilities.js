@@ -354,3 +354,40 @@ export const replaceControlCharacters = inputString => {
   // Do not replace '\t', \n' and '\r'.
   return inputString.replace(/[\0-\x08\x0B\f\x0E-\x1F\x80-\x9F]/g, '\uFFFD');
 };
+
+/**
+ * @param {string} inputString
+ * @return {number}
+ */
+export const countWtf8Bytes = inputString => {
+  let count = 0;
+  for (let i = 0; i < inputString.length; i++) {
+    const c = inputString.charCodeAt(i);
+    if (c <= 0x7F) {
+      count++;
+    } else if (c <= 0x07FF) {
+      count += 2;
+    } else if (c < 0xD800 || 0xDFFF < c) {
+      count += 3;
+    } else {
+      if (c <= 0xDBFF && i + 1 < inputString.length) {
+        // The current character is a leading surrogate, and there is a
+        // next character.
+        const next = inputString.charCodeAt(i + 1);
+        if (0xDC00 <= next && next <= 0xDFFF) {
+          // The next character is a trailing surrogate, meaning this
+          // is a surrogate pair.
+          count += 4;
+          i++;
+          continue;
+        }
+      }
+      count += 3;
+    }
+  }
+  return count;
+};
+
+export const stripLineBreaks = inputStr => {
+  return inputStr.replace(/(\r)?\n/g, '');
+};

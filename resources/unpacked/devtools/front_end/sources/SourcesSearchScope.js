@@ -31,6 +31,7 @@
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Search from '../search/search.js';  // eslint-disable-line no-unused-vars
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 
 /**
@@ -101,9 +102,9 @@ export class SourcesSearchScope {
    */
   _projects() {
     const searchInAnonymousAndContentScripts =
-        self.Common.settings.moduleSetting('searchInAnonymousAndContentScripts').get();
+        Common.Settings.Settings.instance().moduleSetting('searchInAnonymousAndContentScripts').get();
 
-    return self.Workspace.workspace.projects().filter(project => {
+    return Workspace.Workspace.WorkspaceImpl.instance().projects().filter(project => {
       if (project.type() === Workspace.Workspace.projectTypes.Service) {
         return false;
       }
@@ -282,8 +283,8 @@ export class SourcesSearchScope {
      */
     function contentLoaded(uiSourceCode, content) {
       /**
-       * @param {!Common.ContentProvider.SearchMatch} a
-       * @param {!Common.ContentProvider.SearchMatch} b
+       * @param {!TextUtils.ContentProvider.SearchMatch} a
+       * @param {!TextUtils.ContentProvider.SearchMatch} b
        */
       function matchesComparator(a, b) {
         return a.lineNumber - b.lineNumber;
@@ -294,7 +295,7 @@ export class SourcesSearchScope {
       const queries = this._searchConfig.queries();
       if (content !== null) {
         for (let i = 0; i < queries.length; ++i) {
-          const nextMatches = Common.ContentProvider.performSearchInContent(
+          const nextMatches = TextUtils.TextUtils.performSearchInContent(
               content, queries[i], !this._searchConfig.ignoreCase(), this._searchConfig.isRegex());
           matches = matches.mergeOrdered(nextMatches, matchesComparator);
         }
@@ -323,7 +324,7 @@ export class SourcesSearchScope {
 export class FileBasedSearchResult {
   /**
    * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
-   * @param {!Array.<!Common.ContentProvider.SearchMatch>} searchMatches
+   * @param {!Array.<!TextUtils.ContentProvider.SearchMatch>} searchMatches
    */
   constructor(uiSourceCode, searchMatches) {
     this._uiSourceCode = uiSourceCode;

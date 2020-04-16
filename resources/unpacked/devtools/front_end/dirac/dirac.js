@@ -1,3 +1,4 @@
+// @ts-nocheck
 import './keysim.js';
 import './parinfer.js';
 import './parinfer-codemirror.js';

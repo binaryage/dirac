@@ -121,7 +121,9 @@ Test are available by running scripts in `scripts/test/`.
 Usual [steps](https://chromium.googlesource.com/chromium/src/+/master/docs/contributing.md#creating-a-change) for creating a change work out of the box.
 
 ##### Managing dependencies
-- To sync dependencies from Chromium to DevTools frontend, use `scripts/deps/roll_deps.py`.
+- To sync dependencies from Chromium to DevTools frontend, use `scripts/deps/roll_deps.py && npm run generate-protocol-resources`.
+
+The following scripts run as AutoRollers, but can be manually invoked if desired:
 - To roll the HEAD commit of DevTools frontend into Chromium, use `scripts/deps/roll_to_chromium.py`.
 - To update DevTools frontend's DEPS, use `roll-dep`.
 </details>
@@ -170,7 +172,7 @@ Please refer to the [overview document](https://docs.google.com/document/d/1c2KL
 * Contributing to DevTools: [bit.ly/devtools-contribution-guide](http://bit.ly/devtools-contribution-guide)
 * Contributing To Chrome DevTools Protocol: [docs.google.com](https://docs.google.com/document/d/1c-COD2kaK__5iMM5SEx-PzNA7HFmgttcYfOHHX0HaOM/edit?usp=sharing)
 * DevTools Design Review Guidelines:
-  [DESGN_GUIDELINES.MD](DESIGN_GUIDELINES.MD)
+  [DESGN_GUIDELINES.MD](DESIGN_GUIDELINES.md)
 
 ### Merges and Cherry-Picks
 
