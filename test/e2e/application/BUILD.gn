@@ -7,9 +7,13 @@ import("../../../third_party/typescript/typescript.gni")
 ts_library("application") {
   testonly = true
   sources = [
-    "session-storage.ts",
-    "websql-database.ts",
+    "cookies_test.ts",
+    "session-storage_test.ts",
+    "websql-database_test.ts",
   ]
 
-  deps = [ "../../shared" ]
+  deps = [
+    "../../shared",
+    "../helpers",
+  ]
 }

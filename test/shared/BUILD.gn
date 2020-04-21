@@ -9,8 +9,7 @@ ts_library("shared") {
   sources = [
     "config.ts",
     "helper.ts",
-    "runner.ts",
-    "screenshot.ts",
     "text-color.ts",
   ]
+  deps = [ "../conductor" ]
 }
