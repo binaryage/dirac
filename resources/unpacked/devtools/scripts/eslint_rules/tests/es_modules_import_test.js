@@ -50,6 +50,10 @@ ruleTester.run('es_modules_import', rule, {
       code: 'import * as RelatedIssue from \'./RelatedIssue.js\';',
       filename: 'front_end/sdk/IssuesModel.js',
     },
+    {
+      code: 'import {appendStyle} from \'./append-style.js\';',
+      filename: 'front_end/ui/utils/utils.js',
+    },
     // the `ls` helper is an exception in a TypeScript file
     {
       code: 'import {ls} from \'../common/ls.js\';',
@@ -59,6 +63,10 @@ ruleTester.run('es_modules_import', rule, {
     {
       code: 'import {classMap} from \'../third_party/lit-html/package/directives/class-map.js\';',
       filename: 'front_end/elements/ElementsBreadcrumbs.ts',
+    },
+    {
+      code: 'import * as fs from \'fs\';',
+      filename: 'test/unittests/front_end/Unit_test.ts',
     },
   ],
 
@@ -80,6 +88,13 @@ ruleTester.run('es_modules_import', rule, {
       }],
     },
     {
+      code: 'import { Exporting } from \'./Exporting.js\';',
+      filename: 'front_end/common/common.js',
+      errors: [{
+        message: 'Incorrect same-namespace import: "Exporting.js". Use "import * as File from \'./File.js\';" instead.'
+      }],
+    },
+    {
       code: 'import * as Common from \'../common/common\';',
       filename: 'front_end/elements/ElementsPanel.ts',
       errors: [{
@@ -94,6 +109,14 @@ ruleTester.run('es_modules_import', rule, {
         message: 'Missing file extension for import "../common/common"',
       }],
       output: 'import \'../common/common.js\';'
+    },
+    {
+      code: 'import \'../../../../front_end/common/common\';',
+      filename: 'test/unittests/front_end/common/Unit_test.ts',
+      errors: [{
+        message: 'Missing file extension for import "../../../../front_end/common/common"',
+      }],
+      output: 'import \'../../../../front_end/common/common.js\';'
     },
     // the `ls` helper is not an exception in a JS file
     {
