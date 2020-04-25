@@ -71,7 +71,7 @@ export class NavigatorView extends UI.Widget.VBox {
 
     this.contentElement.addEventListener('contextmenu', this.handleContextMenu.bind(this), false);
     self.UI.shortcutRegistry.addShortcutListener(
-        this.contentElement, 'sources.rename', this._renameShortcut.bind(this), true);
+        this.contentElement, {'sources.rename': this._renameShortcut.bind(this)});
 
     this._navigatorGroupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigatorGroupByFolder');
     this._navigatorGroupByFolderSetting.addChangeListener(this._groupingChanged.bind(this));
@@ -871,10 +871,9 @@ export class NavigatorView extends UI.Widget.VBox {
     const project = node._project;
 
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
+    NavigatorView.appendSearchItem(contextMenu, path);
 
     if (project.type() === Workspace.Workspace.projectTypes.FileSystem) {
-      NavigatorView.appendSearchItem(contextMenu, path);
-
       const folderPath = Common.ParsedURL.ParsedURL.urlToPlatformPath(
           Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.completeURL(project, path),
           Host.Platform.isWin());

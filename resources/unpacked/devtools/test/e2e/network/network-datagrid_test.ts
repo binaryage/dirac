@@ -26,10 +26,11 @@ describe('The Network Tab', async () => {
     const checkbox = await $('[aria-label="Disable cache"]');
     const checked = await checkbox.evaluate(box => box.checked);
 
-    assert.equal(checked, true, 'The disable cache checkbox should be checked');
+    assert.strictEqual(checked, true, 'The disable cache checkbox should be checked');
   });
 
-  it('shows Last-Modified', async () => {
+  // Flaky test
+  it.skip('[crbug.com/1066813] shows Last-Modified', async () => {
     const {target, frontend} = getBrowserAndPages();
     await navigateToNetworkTab(target, 'last-modified.html');
 
@@ -56,6 +57,7 @@ describe('The Network Tab', async () => {
     ]);
   });
 
+  // Flaky test
   it.skip('[crbug.com/1066813] shows the HTML response including cyrillic characters with utf-8 encoding', async () => {
     const {target, frontend} = getBrowserAndPages();
 
@@ -78,11 +80,12 @@ describe('The Network Tab', async () => {
     const codeMirrorEditor = await $('.CodeMirror-code');
     const htmlRawResponse = await codeMirrorEditor.evaluate(editor => editor.textContent);
 
-    assert.equal(
+    assert.strictEqual(
         htmlRawResponse,
         '1<html><body>The following word is written using cyrillic letters and should look like "SUCCESS": SU\u0421\u0421\u0415SS.</body></html>');
   });
 
+  // Flaky test
   it.skip('[crbug.com/1066813] shows the correct MIME type when resources came from HTTP cache', async () => {
     const {target, frontend} = getBrowserAndPages();
 

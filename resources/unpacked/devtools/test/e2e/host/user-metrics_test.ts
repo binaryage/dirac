@@ -170,6 +170,21 @@ describe('User Metrics', () => {
     ]);
   });
 
+  it('dispatches event for issues drawer', async () => {
+    await openPanelViaMoreTools('Issues');
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.PanelShown',
+        value: 10,  // 'drawer-console-view'.
+      },
+      {
+        name: 'DevTools.PanelShown',
+        value: 37,  // 'drawer-issues-pane'.
+      },
+    ]);
+  });
+
   it('dispatches an event when F1 is used to open settings', async () => {
     const {frontend} = getBrowserAndPages();
 
@@ -232,6 +247,7 @@ describe('User Metrics', () => {
     ]);
   });
 
+  // Flaky test
   it.skip('[crbug.com/1071850]: tracks panel loading', async () => {
     // We specify the selected panel here because the default behavior is to go to the
     // elements panel, but this means we won't get the PanelLoaded event. Instead we

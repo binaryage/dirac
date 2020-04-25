@@ -14,7 +14,8 @@
     "foldgutter.js",
     "brace-fold.js",
     "runmode.js",
-    "placeholder.js"
+    "placeholder.js",
+    "simple.js"
   ],
   "skip_compilation": [
     "codemirror.js",
@@ -29,7 +30,8 @@
     "foldgutter.js",
     "brace-fold.js",
     "runmode.js",
-    "placeholder.js"
+    "placeholder.js",
+    "simple.js"
   ],
   "resources": [
     "codemirror.css"

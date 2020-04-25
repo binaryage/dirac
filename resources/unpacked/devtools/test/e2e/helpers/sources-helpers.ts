@@ -100,6 +100,11 @@ export async function getBreakpointDecorators(frontend: puppeteer.Page, disabled
   return await frontend.$$eval(selector, nodes => nodes.map(n => parseInt(n.textContent!, 10)));
 }
 
+export async function getExecutionLine() {
+  const activeLine = await waitFor('.cm-execution-line-outline', undefined, 1000);
+  return await activeLine.asElement()!.evaluate(n => parseInt(n.textContent!, 10));
+}
+
 export async function retrieveTopCallFrameScriptLocation(script: string, target: puppeteer.Page) {
   // The script will run into a breakpoint, which means that it will not actually
   // finish the evaluation, until we continue executing.
@@ -196,4 +201,15 @@ export async function expandFileTree(selectors: NestedFileSelector) {
 export async function openNestedWorkerFile(selectors: NestedFileSelector) {
   await expandFileTree(selectors);
   await click(selectors.fileSelector);
+}
+
+export async function clickOnContextMenu(selector: string, label: string) {
+  // Find the selected node, right click.
+  const selectedNode = await $(selector);
+  await click(selectedNode, {clickOptions: {button: 'right'}});
+
+  // Wait for the context menu option, and click it.
+  const labelSelector = `[aria-label="${label}"]`;
+  await waitFor(labelSelector);
+  await click(labelSelector);
 }

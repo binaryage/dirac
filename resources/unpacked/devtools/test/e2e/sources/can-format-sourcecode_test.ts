@@ -62,7 +62,7 @@ describe('The Sources Tab', async function() {
     }
 
     const updatedTextContent = await frontend.evaluate(retrieveCodeMirrorEditorContent);
-    assert.equal(updatedTextContent, expectedTextContent);
+    assert.strictEqual(updatedTextContent, expectedTextContent);
   });
 
   it('causes the correct line number to show up in the console panel', async () => {
@@ -127,8 +127,8 @@ describe('The Sources Tab', async function() {
     assert.deepEqual(scriptLocation, 'minified-source…s:formatted:10');
   });
 
-  // TODO(crbug.com/1003497): This requires additional fixes
-  it.skip('[http://crbug.com/1003497] can add breakpoint for inline scripts in HTML file', async () => {
+  // This requires additional fixes
+  it.skip('[crbug.com/1003497] can add breakpoint for inline scripts in HTML file', async () => {
     const {target, frontend} = getBrowserAndPages();
 
     await openSourceCodeEditorForFile(target, 'inline-script.html', 'inline-script.html');

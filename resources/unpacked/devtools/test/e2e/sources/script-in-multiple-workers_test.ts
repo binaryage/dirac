@@ -7,7 +7,7 @@ import {describe, it} from 'mocha';
 import * as puppeteer from 'puppeteer';
 
 import {click, getBrowserAndPages, resourcesPath, waitFor} from '../../shared/helper.js';
-import {addBreakpointForLine, createSelectorsForWorkerFile, getBreakpointDecorators, getOpenSources, openNestedWorkerFile, PAUSE_BUTTON, RESUME_BUTTON} from '../helpers/sources-helpers.js';
+import {addBreakpointForLine, createSelectorsForWorkerFile, getBreakpointDecorators, getExecutionLine, getOpenSources, openNestedWorkerFile, PAUSE_BUTTON, RESUME_BUTTON} from '../helpers/sources-helpers.js';
 
 async function validateSourceTabs() {
   // Verifies there is exactly one source open.
@@ -96,92 +96,107 @@ describe('Multi-Workers', async function() {
       await validateSourceTabs();
     });
 
-    it(`copies breakpoints between workers ${withOrWithout}`, async () => {
-      const {target, frontend} = getBrowserAndPages();
+    describe(`copies breakpoints between workers ${withOrWithout}`, () => {
+      beforeEach(async () => {
+        const {target, frontend} = getBrowserAndPages();
+        // Have the target load the page.
+        await target.goto(targetPage);
 
-      // Have the target load the page.
-      await target.goto(targetPage);
+        await click('#tab-sources');
+        // Wait for all workers to load
+        await validateNavigationTree();
+        // Open file from second worker
+        await openNestedWorkerFile(workerFileSelectors(2));
+        // Set two breakpoints
+        await addBreakpointForLine(frontend, 6);
+        // Disable first breakpoint
+        const bpEntry = await waitFor('.breakpoint-entry');
+        const bpCheckbox = await waitFor('input', bpEntry);
+        if (!bpCheckbox) {
+          assert.fail('Could not find checkbox to disable breakpoint');
+          return;
+        }
+        await bpCheckbox.evaluate(n => (n as HTMLElement).click());
+        await frontend.waitFor('.cm-breakpoint-disabled');
+        // Add another breakpoint
+        await addBreakpointForLine(frontend, 12);
 
-      await click('#tab-sources');
-      // Wait for all workers to load
-      await validateNavigationTree();
-      // Open file from second worker
-      await openNestedWorkerFile(workerFileSelectors(2));
-      // Set two breakpoints
-      await addBreakpointForLine(frontend, 6);
-      // Disable first breakpoint
-      const bpEntry = await waitFor('.breakpoint-entry');
-      const bpCheckbox = await waitFor('input', bpEntry);
-      if (!bpCheckbox) {
-        assert.fail('Could not find checkbox to disable breakpoint');
-        return;
-      }
-      await bpCheckbox.evaluate(n => (n as HTMLElement).click());
-      await frontend.waitFor('.cm-breakpoint-disabled');
-      // Add another breakpoint
-      await addBreakpointForLine(frontend, 12);
+        // Check breakpoints
+        await validateBreakpoints(frontend);
 
-      // Check breakpoints
-      await validateBreakpoints(frontend);
+        // Close tab
+        await click('[aria-label="Close multi-workers.js"]');
+      });
 
-      // Close tab
-      await click('[aria-label="Close multi-workers.js"]');
+      it('when opening different file in editor', async () => {
+        const {frontend} = getBrowserAndPages();
 
-      // Open different worker
-      await openNestedWorkerFile(workerFileSelectors(3));
+        // Open different worker
+        await openNestedWorkerFile(workerFileSelectors(3));
 
-      // Check breakpoints
-      await validateBreakpoints(frontend);
+        // Check breakpoints
+        await validateBreakpoints(frontend);
+      });
 
-      // Close tab
-      await click('[aria-label="Close multi-workers.js"]');
+      it('after reloading', async () => {
+        const {target, frontend} = getBrowserAndPages();
 
-      // Reload
-      await target.goto(targetPage);
+        await target.reload();
 
-      // Open different worker
-      await openNestedWorkerFile(workerFileSelectors(4));
+        // Open different worker
+        await openNestedWorkerFile(workerFileSelectors(4));
 
-      // Check breakpoints
-      await validateBreakpoints(frontend);
+        // Check breakpoints
+        await validateBreakpoints(frontend);
+      });
     });
 
-    it(`hits breakpoints added to workers ${withOrWithout}`, async () => {
-      const {target, frontend} = getBrowserAndPages();
+    describe(`hits breakpoints added to workers ${withOrWithout}`, () => {
+      beforeEach(async () => {
+        const {target, frontend} = getBrowserAndPages();
 
-      // Have the target load the page.
-      await target.goto(targetPage);
+        // Have the target load the page.
+        await target.goto(targetPage);
 
-      await click('#tab-sources');
+        await click('#tab-sources');
 
-      await validateNavigationTree();
-      // Open file from second worker
-      await openNestedWorkerFile(workerFileSelectors(2));
-      // Set breakpoint
-      await addBreakpointForLine(frontend, 6);
+        await validateNavigationTree();
+        // Open file from second worker
+        await openNestedWorkerFile(workerFileSelectors(2));
+        // Set breakpoint
+        await addBreakpointForLine(frontend, 6);
+      });
 
-      // Send message to a worker to trigger break
-      await target.evaluate('workers[5].postMessage({});');
+      it('for pre-loaded workers', async () => {
+        const {target} = getBrowserAndPages();
+        // Send message to a worker to trigger break
+        await target.evaluate('workers[5].postMessage({});');
 
-      // Validate that we are paused by locating the resume button
-      await waitFor(RESUME_BUTTON);
+        // Validate that we are paused by locating the resume button
+        await waitFor(RESUME_BUTTON);
 
-      // Look at source tabs
-      await validateSourceTabs();
+        // Validate that the source line is highlighted
+        assert.strictEqual(await getExecutionLine(), 6);
 
-      // Continue
-      await click(RESUME_BUTTON);
-      // Verify that we have resumed.
-      await waitFor(PAUSE_BUTTON);
+        // Look at source tabs
+        await validateSourceTabs();
+      });
 
-      // Launch a new worker and make it hit breakpoint
-      await target.evaluate(`new Worker('${scriptFile}').postMessage({});`);
+      // Flaky test
+      it.skip('[crbug.com/1073406] for newly created workers', async () => {
+        const {target} = getBrowserAndPages();
+        // Launch a new worker and make it hit breakpoint
+        await target.evaluate(`new Worker('${scriptFile}').postMessage({});`);
 
-      // Validate that we are paused
-      await waitFor(RESUME_BUTTON);
+        // Validate that we are paused
+        await waitFor(RESUME_BUTTON);
 
-      // Look at source tabs
-      await validateSourceTabs();
+        // Validate that the source line is highlighted
+        assert.strictEqual(await getExecutionLine(), 6);
+
+        // Look at source tabs
+        await validateSourceTabs();
+      });
     });
   });
 });

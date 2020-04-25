@@ -585,11 +585,11 @@ export class Color {
           return null;
         }
         return Platform.StringUtilities.sprintf(
-            'rgb(%d, %d, %d)', toRgbValue(this._rgba[0]), toRgbValue(this._rgba[1]), toRgbValue(this._rgba[2]));
+            'rgb(%d %d %d)', toRgbValue(this._rgba[0]), toRgbValue(this._rgba[1]), toRgbValue(this._rgba[2]));
       }
       case Format.RGBA: {
         return Platform.StringUtilities.sprintf(
-            'rgba(%d, %d, %d, %f)', toRgbValue(this._rgba[0]), toRgbValue(this._rgba[1]), toRgbValue(this._rgba[2]),
+            'rgb(%d %d %d / %f)', toRgbValue(this._rgba[0]), toRgbValue(this._rgba[1]), toRgbValue(this._rgba[2]),
             this._rgba[3]);
       }
       case Format.HSL: {
@@ -598,12 +598,12 @@ export class Color {
         }
         const hsl = this.hsla();
         return Platform.StringUtilities.sprintf(
-            'hsl(%d, %d%, %d%)', Math.round(hsl[0] * 360), Math.round(hsl[1] * 100), Math.round(hsl[2] * 100));
+            'hsl(%d %d% %d%)', Math.round(hsl[0] * 360), Math.round(hsl[1] * 100), Math.round(hsl[2] * 100));
       }
       case Format.HSLA: {
         const hsla = this.hsla();
         return Platform.StringUtilities.sprintf(
-            'hsla(%d, %d%, %d%, %f)', Math.round(hsla[0] * 360), Math.round(hsla[1] * 100), Math.round(hsla[2] * 100),
+            'hsl(%d %d% %d% / %f)', Math.round(hsla[0] * 360), Math.round(hsla[1] * 100), Math.round(hsla[2] * 100),
             hsla[3]);
       }
       case Format.HEXA: {
@@ -972,7 +972,7 @@ export class Generator {
     const s = this._indexToValueInSpace(hash >> 8, this._satSpace);
     const l = this._indexToValueInSpace(hash >> 16, this._lightnessSpace);
     const a = this._indexToValueInSpace(hash >> 24, this._alphaSpace);
-    return `hsla(${h}, ${s}%, ${l}%, ${a})`;
+    return `hsl(${h} ${s}% ${l}% / ${a})`;
   }
 
   /**

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 let _id = 0;
 
 /**
@@ -576,6 +579,22 @@ export function setActiveDescendant(element, activedescendant) {
 
   ensureId(activedescendant);
   element.setAttribute('aria-activedescendant', activedescendant.id);
+}
+
+/**
+ * @param {!Element} element
+ * @param {number} size
+ */
+export function setSetSize(element, size) {
+  element.setAttribute('aria-setsize', size);
+}
+
+/**
+ * @param {!Element} element
+ * @param {number} position
+ */
+export function setPositionInSet(element, position) {
+  element.setAttribute('aria-posinset', position);
 }
 
 /**
