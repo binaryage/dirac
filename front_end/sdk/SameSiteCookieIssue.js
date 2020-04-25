@@ -3,6 +3,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import {ls} from '../common/common.js';  // eslint-disable-line rulesdir/es_modules_import
 
 import {Issue, IssueCategory, IssueDescription, IssueKind} from './Issue.js';  // eslint-disable-line no-unused-vars
@@ -49,7 +52,7 @@ export class SameSiteCookieIssue extends Issue {
 
   /**
    * @override
-   * @return {symbol}
+   * @return {!IssueCategory}
    */
   getCategory() {
     return IssueCategory.SameSiteCookie;
@@ -110,6 +113,18 @@ const issueDescriptions = new Map([
     }
   ],
   [
+    'SameSiteCookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::SetCookie', {
+      title: ls `A cookie was blocked, because the cookie's 'SameSite' attribute was defaulted to 'SameSite=Lax'`,
+      message: () => textMessageWithResolutions(
+        ls`A cookie was defaulted to 'SameSite=Lax' because the cookie's SameSite attribute was not set or invalid. The cookie was not set because the default behavior for 'SameSite=Lax' prevents this cookie from being set in a cross-site response. This issue can only be resolved if you can change the cross-site page from which this cookie originated.`, [ls`If the cookie is intended for third parties, mark the cookie as 'SameSite=None; Secure'.`,
+        ls
+        `If the cookie is not intended for third parties, consider explicitly marking the cookie as 'SameSite=Strict' or 'SameSite=Lax' to make your intent clear and provide a consistent experience across browsers.`,]),
+      issueKind: IssueKind.BreakingChange,
+      link: ls`https://web.dev/samesite-cookies-explained/`,
+      linkTitle: ls`SameSite cookies explained`,
+    }
+  ],
+  [
     'SameSiteCookieIssue::ExcludeSameSiteNoneInsecure::SetCookie', {
       title: ls`A cookie was blocked, because the cookie specified 'SameSite=None' without 'Secure'`,
       message: () => textMessageWithResolutions(
@@ -142,4 +157,16 @@ const issueDescriptions = new Map([
       linkTitle: ls`SameSite cookies explained`,
     }
   ],
+  [
+    'SameSiteCookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::ReadCookie', {
+      title: ls `A cookie will not be sent in the future, because the cookie was set without the 'SameSite' attribute`,
+      message: () => textMessageWithResolutions(
+        ls`A cookie without a valid SameSite attribute was sent in a cross-site request. In the future, a cookie will only be sent in a cross-site request if the cookie has both the 'SameSite=None and 'Secure' attributes.`, [ls`If the cookie is intended for third parties, mark the cookie as 'SameSite=None; Secure'.`,
+        ls
+        `If the cookie is not intended for third parties, consider explicitly marking the cookie as 'SameSite=Strict' or 'SameSite=Lax' to make your intent clear and provide a consistent experience across browsers.`,]),
+      issueKind: IssueKind.BreakingChange,
+      link: ls`https://web.dev/samesite-cookies-explained/`,
+      linkTitle: ls`SameSite cookies explained`,
+    }
+  ]
 ]);

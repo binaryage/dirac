@@ -27,6 +27,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Host from '../host/host.js';
 
 /**
@@ -34,14 +37,21 @@ import * as Host from '../host/host.js';
  */
 export class KeyboardShortcut {
   /**
-   * @param {!Descriptor} descriptor
+   * @param {!Array.<!Descriptor>} descriptors
    * @param {string} action
    * @param {!Type=} type
    */
-  constructor(descriptor, action, type) {
-    this.descriptor = descriptor;
+  constructor(descriptors, action, type) {
+    this.descriptors = descriptors;
     this.action = action;
     this.type = type || Type.UserShortcut;
+  }
+
+  /**
+   * @return {string}
+   */
+  title() {
+    return this.descriptors.map(descriptor => descriptor.name).join(' ');
   }
 
   /**
@@ -192,6 +202,14 @@ export class KeyboardShortcut {
   }
 
   /**
+   * @param {number} key
+   * @return {boolean}
+   */
+  static isModifier(key) {
+    return key === Keys.Shift.code || key === Keys.Ctrl.code || key === Keys.Alt.code || key === Keys.Meta.code;
+  }
+
+  /**
    * @param {number|undefined} modifiers
    * @return {string}
    */
@@ -241,6 +259,7 @@ export const Keys = {
   Enter: {code: 13, name: {mac: '\u21a9', other: 'Enter'}},
   Shift: {code: 16, name: {mac: '\u21e7', other: 'Shift'}},
   Ctrl: {code: 17, name: 'Ctrl'},
+  Alt: {code: 18, name: 'Alt'},
   Esc: {code: 27, name: 'Esc'},
   Space: {code: 32, name: 'Space'},
   PageUp: {code: 33, name: {mac: '\u21de', other: 'PageUp'}},      // also NUM_NORTH_EAST

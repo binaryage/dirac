@@ -764,9 +764,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         Common.UIString.UIString('Learn\xa0more'));
 
     const recordKey =
-        encloseWithTag('b', self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.toggle-recording')[0].name);
+        encloseWithTag('b', self.UI.shortcutRegistry.shortcutsForAction('timeline.toggle-recording')[0].title());
     const reloadKey =
-        encloseWithTag('b', self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.record-reload')[0].name);
+        encloseWithTag('b', self.UI.shortcutRegistry.shortcutsForAction('timeline.record-reload')[0].title());
     const navigateNode = encloseWithTag('b', Common.UIString.UIString('WASD'));
 
     this._landingPage = new UI.Widget.VBox();
@@ -866,7 +866,8 @@ export class TimelinePanel extends UI.Panel.Panel {
     if (this._statusPane) {
       return;
     }
-    this._statusPane = new StatusPane({showTimer: true, showProgress: true}, this._stopRecording.bind(this));
+    this._statusPane =
+        new StatusPane({showTimer: true, showProgress: true, buttonDisabled: true}, this._stopRecording.bind(this));
     this._statusPane.showPane(this._statusPaneContainer);
     this._statusPane.updateStatus(Common.UIString.UIString('Initializing profiler…'));
   }

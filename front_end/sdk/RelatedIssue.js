@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 
 import {Cookie} from './Cookie.js';
@@ -88,7 +91,7 @@ export function hasIssues(obj) {
 
 /**
  * @param {!IssuesAssociatable} obj
- * @param {symbol} category
+ * @param {!IssueCategory} category
  * @return {boolean}
  */
 export function hasIssueOfCategory(obj, category) {
@@ -97,7 +100,7 @@ export function hasIssueOfCategory(obj, category) {
 
 /**
  * @param {!IssuesAssociatable} obj
- * @param {symbol} category
+ * @param {!IssueCategory} category
  * @return {!Promise<undefined | void>}
  */
 export async function reveal(obj, category) {

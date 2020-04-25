@@ -134,6 +134,9 @@
   <message name="IDS_DEVTOOLS_5e53467e9b005376370c28e92b42b6f5" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Emulate CSS prefers-reduced-motion: reduce
   </message>
+  <message name="IDS_DEVTOOLS_67370b3edd8beefab5b4d3603172c6be" desc="Description of an issue in the issues panel">
+    A cookie without a valid SameSite attribute was sent in a cross-site request. In the future, a cookie will only be sent in a cross-site request if the cookie has both the &apos;SameSite=None and &apos;Secure&apos; attributes.
+  </message>
   <message name="IDS_DEVTOOLS_6793fd007147c0f5ad833ed1ceb89a2e" desc="Tooltip to explain why a cookie was blocked">
     This cookie was blocked because it had the &quot;Secure&quot; attribute and the connection was not secure.
   </message>
@@ -227,6 +230,9 @@
   <message name="IDS_DEVTOOLS_6617a779f50f7afb7949c7ea3ad52b28" desc="Title of a setting under the Rendering category that can be invoked through the Command Menu">
     Show hit-test borders
   </message>
+  <message name="IDS_DEVTOOLS_68a533725701759155b01979f1a6afd0" desc="Title of an issue in the issues view">
+    A cookie will not be sent in the future, because the cookie was set without the &apos;SameSite&apos; attribute
+  </message>
   <message name="IDS_DEVTOOLS_6948a469c79f7dd5426e4f291cba3db1" desc="Text in Network Log">
     <ph name="LOCKED_1">Chrome Data Saver</ph>
   </message>
@@ -317,6 +323,9 @@
   </message>
   <message name="IDS_DEVTOOLS_9108ae673b7efa9620aec771edc9d4de" desc="Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel">
     setTimeout fired
+  </message>
+  <message name="IDS_DEVTOOLS_927e05f6c7e58e3fd950f4423f25554e" desc="Description of an issue in the issues panel">
+    A cookie was defaulted to &apos;SameSite=Lax&apos; because the cookie&apos;s SameSite attribute was not set or invalid. The cookie was not set because the default behavior for &apos;SameSite=Lax&apos; prevents this cookie from being set in a cross-site response. This issue can only be resolved if you can change the cross-site page from which this cookie originated.
   </message>
   <message name="IDS_DEVTOOLS_92907ecce0019f3a10f867cfd53dad0c" desc="Title of a setting under the Rendering category that can be invoked through the Command Menu">
     Show layout shift regions
@@ -437,6 +446,9 @@
   </message>
   <message name="IDS_DEVTOOLS_ca4fbb6d710463b20755b9a024d841c1" desc="Error message when failing to load a source map text">
     DevTools failed to load SourceMap: <ph name="ERROR_MESSAGE"><ex>An error occured</ex>$1s</ph>
+  </message>
+  <message name="IDS_DEVTOOLS_cad025a69663813eef4aa3176d982a18" desc="Title of an issue in the issues panel">
+    A cookie was blocked, because the cookie&apos;s &apos;SameSite&apos; attribute was defaulted to &apos;SameSite=Lax&apos;
   </message>
   <message name="IDS_DEVTOOLS_ccab918ce9f085b521a52ac13f653c0b" desc="Tooltip to explain why a cookie was blocked">
     An unknown error was encountered when trying to send this cookie.
