@@ -323,7 +323,8 @@
     "ElementsPanel.js",
     "ClassesPaneWidget.js",
     "ElementStatePaneWidget.js",
-    "ElementsTreeElementHighlighter.js"
+    "ElementsTreeElementHighlighter.js",
+    "ImagePreviewPopover.js"
   ],
   "resources": [
     "breadcrumbs.css",
@@ -336,7 +337,6 @@
     "elementsTreeOutline.css",
     "metricsSidebarPane.css",
     "platformFontsWidget.css",
-    "propertiesWidget.css",
     "nodeStackTraceWidget.css",
     "stylesSectionTree.css",
     "stylesSidebarPane.css"

@@ -23,6 +23,7 @@
 .text-button:not(:disabled):active {
     background-color: var(--toolbar-bg-color);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    color: var(--accent-fg-color-hover);
     cursor: pointer;
 }
 
@@ -57,6 +58,7 @@
 .text-button.primary-button:not(:disabled):hover,
 .text-button.primary-button:not(:disabled):active, -theme-preserve {
     background-color: var(--accent-color-hover);
+    color: #fff;
 }
 
 .-theme-with-dark-background .text-button:not(.primary-button):not(:disabled):focus,

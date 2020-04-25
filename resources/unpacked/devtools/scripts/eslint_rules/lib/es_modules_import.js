@@ -31,7 +31,7 @@ function isSideEffectImportSpecifier(specifiers) {
 
 function isModuleEntrypoint(fileName) {
   const fileNameWithoutExtension = path.basename(fileName).replace(path.extname(fileName), '');
-  const directoryName = path.basename(path.dirname(fileName));
+  const directoryName = computeTopLevelFolder(fileName);
 
   // TODO(crbug.com/1011811): remove -legacy fallback
   return directoryName === fileNameWithoutExtension || `${directoryName}-legacy` === fileNameWithoutExtension;
@@ -40,6 +40,26 @@ function isModuleEntrypoint(fileName) {
 function computeTopLevelFolder(fileName) {
   const namespaceName = path.relative(FRONT_END_DIRECTORY, fileName);
   return namespaceName.substring(0, namespaceName.indexOf(path.sep));
+}
+
+function checkImportExtension(importPath, context, node) {
+  // import * as fs from 'fs';
+  if (!node.source.value.startsWith('.')) {
+    return;
+  }
+
+  if (!importPath.endsWith('.js')) {
+    context.report({
+      node,
+      message: 'Missing file extension for import "{{importPath}}"',
+      data: {
+        importPath,
+      },
+      fix(fixer) {
+        return fixer.replaceText(node.source, `'${node.source.value}.js'`);
+      }
+    });
+  }
 }
 
 module.exports = {
@@ -56,25 +76,14 @@ module.exports = {
   create: function(context) {
     const importingFileName = path.resolve(context.getFilename());
 
-    if (!importingFileName.startsWith(FRONT_END_DIRECTORY)) {
-      return {};
-    }
-
     return {
       ImportDeclaration(node) {
         const importPath = path.normalize(node.source.value);
 
-        if (!importPath.endsWith('.js')) {
-          context.report({
-            node,
-            message: 'Missing file extension for import "{{importPath}}"',
-            data: {
-              importPath,
-            },
-            fix(fixer) {
-              return fixer.replaceText(node.source, `'${node.source.value}.js'`);
-            }
-          });
+        checkImportExtension(importPath, context, node);
+
+        if (!importingFileName.startsWith(FRONT_END_DIRECTORY)) {
+          return;
         }
 
         if (isSideEffectImportSpecifier(node.specifiers)) {
@@ -133,6 +142,15 @@ module.exports = {
               data: {
                 importPath,
               },
+            });
+          } else if (isModuleEntrypoint(importingFileName)) {
+            context.report({
+              node,
+              message:
+                  'Incorrect same-namespace import: "{{importPath}}". Use "import * as File from \'./File.js\';" instead.',
+              data: {
+                importPath,
+              }
             });
           }
         }

@@ -17,8 +17,8 @@
 (def ^:const EXPONENTIAL_BACKOFF_CEILING (* 60 1000))
 
 (defn exponential-backoff-ceiling [attempt]
-  (let [time (* (gcall "Math.pow" 2 attempt) 1000)]
-    (gcall "Math.min" time EXPONENTIAL_BACKOFF_CEILING)))
+  (let [time (* (js/Math.pow 2 attempt) 1000)]
+    (js/Math.min time EXPONENTIAL_BACKOFF_CEILING)))
 
 ; this implementation differs from core.async timeout that it is simple and creates a new channel for every invocation
 ; it is safe to call close! on returned channel to cancel timeout early
@@ -78,7 +78,7 @@
   nil)
 
 (defn round [n k]
-  (/ (gcall "Math.round" (* k n)) k))
+  (/ (js/Math.round (* k n)) k))
 
 (defn timeout-display [time-ms]
   {:pre [(number? time-ms)]}

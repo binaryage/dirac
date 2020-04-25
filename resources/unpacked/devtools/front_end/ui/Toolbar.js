@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 
@@ -593,16 +596,10 @@ export class ToolbarButton extends ToolbarItem {
     this.element.classList.add('dark-text');
   }
 
-  /**
-   * @param {number=} width
-   */
-  turnIntoSelect(width) {
+  turnIntoSelect() {
     this.element.classList.add('toolbar-has-dropdown');
     const dropdownArrowIcon = Icon.create('smallicon-triangle-down', 'toolbar-dropdown-arrow');
     this.element.appendChild(dropdownArrowIcon);
-    if (width) {
-      this.element.style.width = width + 'px';
-    }
   }
 
   /**

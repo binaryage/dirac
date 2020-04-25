@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 
 import {ConsoleMessage, ConsoleModel, MessageLevel, MessageSource} from './ConsoleModel.js';
@@ -47,6 +50,8 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
     this._requests = [];
     /** @type {!Set<!NetworkRequest>} */
     this._requestsSet = new Set();
+    /** @type {!Map<string, !Array<!NetworkRequest>>} */
+    this._requestsMap = new Map();
     /** @type {!Map<!NetworkManager, !PageLoad>} */
     this._pageLoadForManager = new Map();
     this._isRecording = true;
@@ -326,6 +331,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
     const oldRequestsSet = this._requestsSet;
     this._requests = [];
     this._requestsSet = new Set();
+    this._requestsMap.clear();
     this.dispatchEventToListeners(Events.Reset);
 
     // Preserve requests from the new session.
@@ -363,18 +369,14 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
     requestsToAdd.push(...serviceWorkerRequestsToAdd);
 
     for (const request of requestsToAdd) {
-      oldRequestsSet.delete(request);
-      this._requests.push(request);
-      this._requestsSet.add(request);
       currentPageLoad.bindRequest(request);
-      this.dispatchEventToListeners(Events.RequestAdded, request);
+      oldRequestsSet.delete(request);
+      this._addRequest(request);
     }
 
     if (Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log').get()) {
       for (const request of oldRequestsSet) {
-        this._requests.push(request);
-        this._requestsSet.add(request);
-        this.dispatchEventToListeners(Events.RequestAdded, request);
+        this._addRequest(request);
       }
     }
 
@@ -384,16 +386,30 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
+   * @param {!NetworkRequest} request
+   */
+  _addRequest(request) {
+    this._requests.push(request);
+    this._requestsSet.add(request);
+    const requestList = this._requestsMap.get(request.requestId());
+    if (!requestList) {
+      this._requestsMap.set(request.requestId(), [request]);
+    } else {
+      requestList.push(request);
+    }
+    this.dispatchEventToListeners(Events.RequestAdded, request);
+  }
+
+  /**
    * @param {!Array<!NetworkRequest>} requests
    */
   importRequests(requests) {
     this.reset();
     this._requests = [];
     this._requestsSet.clear();
+    this._requestsMap.clear();
     for (const request of requests) {
-      this._requests.push(request);
-      this._requestsSet.add(request);
-      this.dispatchEventToListeners(Events.RequestAdded, request);
+      this._addRequest(request);
     }
   }
 
@@ -402,14 +418,12 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
    */
   _onRequestStarted(event) {
     const request = /** @type {!NetworkRequest} */ (event.data);
-    this._requests.push(request);
-    this._requestsSet.add(request);
     const manager = NetworkManager.forRequest(request);
     const pageLoad = manager ? this._pageLoadForManager.get(manager) : null;
     if (pageLoad) {
       pageLoad.bindRequest(request);
     }
-    this.dispatchEventToListeners(Events.RequestAdded, request);
+    this._addRequest(request);
   }
 
   /**
@@ -457,6 +471,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
   reset() {
     this._requests = [];
     this._requestsSet.clear();
+    this._requestsMap.clear();
     const managers = new Set(TargetManager.instance().models(NetworkManager));
     for (const manager of this._pageLoadForManager.keys()) {
       if (!managers.has(manager)) {
@@ -511,6 +526,14 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
    */
   static requestForConsoleMessage(consoleMessage) {
     return consoleMessage[_requestSymbol] || null;
+  }
+
+  /**
+   * @param {string} requestId
+   * @return {!Array<!NetworkRequest>}
+   */
+  requestsForId(requestId) {
+    return this._requestsMap.get(requestId) || [];
   }
 }
 

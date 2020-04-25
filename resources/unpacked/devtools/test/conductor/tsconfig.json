@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "baseUrl": ".",
+    "composite": true,
+
+    "checkJs": false,
+    "allowJs": false
+  },
+  "extends": "../../tsconfig.base.json"
+}

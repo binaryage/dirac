@@ -15,3 +15,4 @@ import './foldgutter.js';
 import './brace-fold.js';
 import './runmode.js';
 import './placeholder.js';
+import './simple.js';
