@@ -44,7 +44,7 @@ function computeTopLevelFolder(fileName) {
 
 function checkImportExtension(importPath, context, node) {
   // import * as fs from 'fs';
-  if (!node.source.value.startsWith('.')) {
+  if (!importPath.startsWith('.')) {
     return;
   }
 
@@ -56,10 +56,14 @@ function checkImportExtension(importPath, context, node) {
         importPath,
       },
       fix(fixer) {
-        return fixer.replaceText(node.source, `'${node.source.value}.js'`);
+        return fixer.replaceText(node.source, `'${importPath}.js'`);
       }
     });
   }
+}
+
+function nodeSpecifiersImportLsOnly(specifiers) {
+  return specifiers.length === 1 && specifiers[0].type === 'ImportSpecifier' && specifiers[0].imported.name === 'ls';
 }
 
 module.exports = {
@@ -77,6 +81,17 @@ module.exports = {
     const importingFileName = path.resolve(context.getFilename());
 
     return {
+      ExportNamedDeclaration(node) {
+        // Any export in a file is called an `ExportNamedDeclaration`, but
+        // only directly-exporting-from-import declarations have the
+        // `node.source` set.
+        if (!node.source) {
+          return;
+        }
+        const importPath = path.normalize(node.source.value);
+
+        checkImportExtension(importPath, context, node);
+      },
       ImportDeclaration(node) {
         const importPath = path.normalize(node.source.value);
 
@@ -103,10 +118,8 @@ module.exports = {
           return;
         }
 
-        if (importPath.endsWith(path.join('common', 'ls.js')) && path.extname(importingFileName) === '.ts') {
-          /* We allow TypeScript files to import the ls module directly.
-           * See common/ls.ts for more detail.
-           */
+        if (importPath.endsWith(path.join('platform', 'platform.js')) && nodeSpecifiersImportLsOnly(node.specifiers)) {
+          /* We allow direct importing of the ls utility as it's so frequently used. */
           return;
         }
 
