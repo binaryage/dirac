@@ -4,7 +4,8 @@
     "host",
     "platform",
     "protocol_client",
-    "dirac"
+    "dirac",
+    "text_utils"
   ],
     "extensions": [
         {
@@ -500,9 +501,9 @@
         "Issue.js",
         "IssuesModel.js",
         "SameSiteCookieIssue.js",
+    "MixedContentIssue.js",
     "CrossOriginEmbedderPolicyIssue.js",
-    "RelatedIssue.js",
-        "ServerTiming.js",
+    "ServerTiming.js",
         "CPUProfileDataModel.js",
         "CPUProfilerModel.js",
         "CSSMatchedStyles.js",

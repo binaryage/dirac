@@ -214,7 +214,8 @@
     "data_grid",
     "object_ui",
     "sdk",
-    "formatter"
+    "formatter",
+    "browser_sdk"
   ],
   "scripts": [
     "clojure-parinfer.js"

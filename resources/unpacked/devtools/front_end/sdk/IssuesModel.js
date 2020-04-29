@@ -5,14 +5,11 @@
 // @ts-nocheck
 // TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
-import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
-
-import {CookieModel} from './CookieModel.js';
 import {CrossOriginEmbedderPolicyIssue} from './CrossOriginEmbedderPolicyIssue.js';
-import {AggregatedIssue, Issue} from './Issue.js';  // eslint-disable-line no-unused-vars
+import {Issue} from './Issue.js';  // eslint-disable-line no-unused-vars
+import {MixedContentIssue} from './MixedContentIssue.js';
 import {Events as NetworkManagerEvents, NetworkManager} from './NetworkManager.js';
 import {NetworkRequest} from './NetworkRequest.js';  // eslint-disable-line no-unused-vars
-import {Events as ResourceTreeModelEvents, ResourceTreeFrame, ResourceTreeModel} from './ResourceTreeModel.js';  // eslint-disable-line no-unused-vars
 import {SameSiteCookieIssue} from './SameSiteCookieIssue.js';
 import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
@@ -77,6 +74,10 @@ export class NetworkIssueDetector {
 
 
 /**
+ * The `IssuesModel` is a thin dispatch that does not store issues, but only creates the representation
+ * class (usually derived from `Issue`) and passes the instances on via a dispatched event.
+ * We chose this approach here because the lifetime of the Model is tied to the target, but DevTools
+ * wants to preserve issues for targets (e.g. iframes) that are already gone as well.
  * @implements {Protocol.AuditsDispatcher}
  */
 export class IssuesModel extends SDKModel {
@@ -86,54 +87,10 @@ export class IssuesModel extends SDKModel {
   constructor(target) {
     super(target);
     this._enabled = false;
-    /** @type {!Map<string, !Issue>} */
-    this._issues = new Map();
-    /** @type {!Map<string, !AggregatedIssue>} */
-    this._aggregatedIssuesByCode = new Map();
-    this._cookiesModel = target.model(CookieModel);
     /** @type {*} */
     this._auditsAgent = null;
-    this._hasSeenMainFrameNavigated = false;
-
-    this._networkManager = target.model(NetworkManager);
-    const resourceTreeModel = /** @type {?ResourceTreeModel} */ (target.model(ResourceTreeModel));
-    if (resourceTreeModel) {
-      resourceTreeModel.addEventListener(
-        ResourceTreeModelEvents.MainFrameNavigated, this._onMainFrameNavigated, this);
-    }
     this._networkIssueDetector = null;
     this.ensureEnabled();
-  }
-
-  /**
-   * @param {!Common.EventTarget.EventTargetEvent} event
-   */
-  _onMainFrameNavigated(event) {
-    const mainFrame = /** @type {!ResourceTreeFrame} */ (event.data);
-    const keptIssues = new Map();
-    for (const [key, issue] of this._issues.entries()) {
-      if (issue.isAssociatedWithRequestId(mainFrame.loaderId)) {
-        keptIssues.set(key, issue);
-      }
-    }
-    this._issues = keptIssues;
-    this._aggregatedIssuesByCode.clear();
-    for (const issue of this._issues.values()) {
-      this._aggregateIssue(issue);
-    }
-    this._hasSeenMainFrameNavigated = true;
-    this.dispatchEventToListeners(Events.FullUpdateRequired);
-    this.dispatchEventToListeners(Events.IssuesCountUpdated);
-  }
-
-  /**
-   * The `IssuesModel` requires at least one `MainFrameNavigated` event. Receiving
-   * one implies that we have all the information for accurate issues.
-   *
-   * @return {boolean}
-   */
-  reloadForAccurateInformationRequired() {
-    return !this._hasSeenMainFrameNavigated;
   }
 
   ensureEnabled() {
@@ -146,20 +103,6 @@ export class IssuesModel extends SDKModel {
     this._auditsAgent = this.target().auditsAgent();
     this._auditsAgent.enable();
     this._networkIssueDetector = new NetworkIssueDetector(this.target(), this);
-  }
-
-  /**
-   * @param {!Issue} issue
-   * @returns {!AggregatedIssue}
-   */
-  _aggregateIssue(issue) {
-    if (!this._aggregatedIssuesByCode.has(issue.code())) {
-      this._aggregatedIssuesByCode.set(issue.code(), new AggregatedIssue(issue.code()));
-    }
-    const aggregatedIssue = this._aggregatedIssuesByCode.get(issue.code());
-    aggregatedIssue.addInstance(issue);
-    this.dispatchEventToListeners(Events.AggregatedIssueUpdated, aggregatedIssue);
-    return aggregatedIssue;
   }
 
   /**
@@ -177,31 +120,12 @@ export class IssuesModel extends SDKModel {
    * @param {!Issue} issue
    */
   addIssue(issue) {
-    // Ignore issues without proper description; they are invisible to the user and will only cause confusion.
-    if (!issue.getDescription()) {
-      return;
-    }
-    const primaryKey = issue.primaryKey();
-    if (this._issues.has(primaryKey)) {
-      return;
-    }
-    this._issues.set(primaryKey, issue);
-    this._aggregateIssue(issue);
-    this.dispatchEventToListeners(Events.IssuesCountUpdated);
-  }
-
-  /**
-   * @return {!Iterable<!Issue>}
-   */
-  issues() {
-    return this._issues.values();
+    this.dispatchEventToListeners(Events.IssueAdded, {issuesModel: this, issue});
   }
 
   /**
    * Each issue reported by the backend can result in multiple {!Issue} instances.
-   * Handlers are simple functions hard-coded into a map. If no handler is found for
-   * a given Issue code, the default behavior creates one {!Issue} per incoming backend
-   * issue.
+   * Handlers are simple functions hard-coded into a map.
    * @param {!Protocol.Audits.InspectorIssue} inspectorIssue} inspectorIssue
    * @return {!Array<!Issue>}
    */
@@ -214,20 +138,6 @@ export class IssuesModel extends SDKModel {
     console.warn(`No handler registered for issue code ${inspectorIssue.code}`);
     return [];
   }
-
-  /**
-   * @returns {!Iterable<AggregatedIssue>}
-   */
-  aggregatedIssues() {
-    return this._aggregatedIssuesByCode.values();
-  }
-
-  /**
-   * @return {number}
-   */
-  numberOfIssues() {
-    return this._issues.size;
-  }
 }
 
 /**
@@ -238,7 +148,7 @@ export class IssuesModel extends SDKModel {
 function createIssuesForSameSiteCookieIssue(issuesModel, inspectorDetails) {
   const sameSiteDetails = inspectorDetails.sameSiteCookieIssueDetails;
   if (!sameSiteDetails) {
-    console.warn('SameSite issue without details received');
+    console.warn('SameSite issue without details received.');
     return [];
   }
 
@@ -265,17 +175,30 @@ function createIssuesForSameSiteCookieIssue(issuesModel, inspectorDetails) {
 }
 
 /**
+ * @param {!IssuesModel} issuesModel
+ * @param {!Protocol.Audits.InspectorIssueDetails} inspectorDetails
+ * @return {!Array<!Issue>}
+ */
+function createIssuesForMixedContentIssue(issuesModel, inspectorDetails) {
+  const mixedContentDetails = inspectorDetails.mixedContentIssueDetails;
+  if (!mixedContentDetails) {
+    console.warn('Mixed content issue without details received.');
+    return [];
+  }
+  return [new MixedContentIssue(mixedContentDetails)];
+}
+
+/**
  * @type {!Map<!Protocol.Audits.InspectorIssueCode, function(!IssuesModel, !Protocol.Audits.InspectorIssueDetails):!Array<!Issue>>}
  */
 const issueCodeHandlers = new Map([
   [Protocol.Audits.InspectorIssueCode.SameSiteCookieIssue, createIssuesForSameSiteCookieIssue],
+  [Protocol.Audits.InspectorIssueCode.MixedContentIssue, createIssuesForMixedContentIssue],
 ]);
 
 /** @enum {symbol} */
 export const Events = {
-  IssuesCountUpdated: Symbol('IssuesCountUpdated'),
-  AggregatedIssueUpdated: Symbol('AggregatedIssueUpdated'),
-  FullUpdateRequired: Symbol('FullUpdateRequired'),
+  IssueAdded: Symbol('IssueAdded'),
 };
 
 SDKModel.register(IssuesModel, Capability.Audits, true);
