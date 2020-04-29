@@ -1,7 +1,7 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.30")
 (def figwheel-version "0.5.19")
-(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.741"))
+(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.748"))
 (def selected-clojure-version "1.10.1")
 (def selenium-version "3.141.59")
 (def lein-cljsbuild-version "1.1.7")
@@ -11,8 +11,8 @@
    ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "1.0.567"]
-   ['org.clojure/tools.logging "1.0.0"]
+  [['org.clojure/core.async "1.1.587"]
+   ['org.clojure/tools.logging "1.1.0"]
    ['org.clojure/tools.cli "1.0.194"]
    ['nrepl/nrepl "0.7.0"]
    ['binaryage/env-config "0.2.2"]
@@ -37,7 +37,7 @@
    ['cljs-http "0.1.46" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
-   ['rum "0.11.4" :scope "test"]
+   ['rum "0.11.5" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "1.0.0" :scope "test"]
