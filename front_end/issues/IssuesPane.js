@@ -2,9 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as Network from '../network/network.js';
+import * as MixedContentIssue from '../sdk/MixedContentIssue.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
+
+import {Events as IssueAggregatorEvents, IssueAggregator} from './IssueAggregator.js';
+
+/**
+ * @param {string} path
+ * @return {string}
+ */
+const extractShortPath = path => {
+  // 1st regex matches everything after last '/'
+  // if path ends with '/', 2nd regex returns everything between the last two '/'
+  return (/[^/]+$/.exec(path) || /[^/]+\/$/.exec(path) || [''])[0];
+};
 
 class AffectedResourcesView extends UI.TreeOutline.TreeElement {
   /**
@@ -22,6 +37,10 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
     /** @type {!Element} */
     this._affectedResources = this.createAffectedResources();
     this._affectedResourcesCount = 0;
+    /** @type {?Common.EventTarget.EventDescriptor} */
+    this._listener = null;
+    /** @type {!Set<string>} */
+    this._unresolvedRequestIds = new Set();
   }
 
   /**
@@ -39,18 +58,6 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
   createAffectedResources() {
     const body = new UI.TreeOutline.TreeElement();
     const affectedResources = createElementWithClass('table', 'affected-resource-list');
-    const header = createElementWithClass('tr');
-
-    const name = createElementWithClass('td', 'affected-resource-header');
-    name.textContent = 'Name';
-    header.appendChild(name);
-
-    const info = createElementWithClass('td', 'affected-resource-header affected-resource-header-info');
-    // Prepend a space to align them better with cookie domains starting with a "."
-    info.textContent = '\u2009Context';
-    header.appendChild(info);
-
-    affectedResources.appendChild(header);
     body.listItemElement.appendChild(affectedResources);
     this.appendChild(body);
 
@@ -88,6 +95,51 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
   clear() {
     this._affectedResources.textContent = '';
   }
+
+
+  /**
+   * This function resolves a requestId to network requests. If the requestId does not resolve, a listener is installed
+   * that takes care of updating the view if the network request is added. This is useful if the issue is added before
+   * the network request gets reported.
+   * @param {string} requestId
+   * @return {!Array<!SDK.NetworkRequest.NetworkRequest>}
+   */
+  _resolveRequestId(requestId) {
+    const requests = self.SDK.networkLog.requestsForId(requestId);
+    if (!requests.length) {
+      this._unresolvedRequestIds.add(requestId);
+      if (!this._listener) {
+        this._listener =
+            self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestAdded, this._onRequestAdded, this);
+      }
+    }
+    return requests;
+  }
+
+  /**
+   *
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
+  _onRequestAdded(event) {
+    const request = /** @type {!SDK.NetworkRequest.NetworkRequest} */ (event.data);
+    const requestWasUnresolved = this._unresolvedRequestIds.delete(request.requestId());
+    if (this._unresolvedRequestIds.size === 0 && this._listener) {
+      // Stop listening once all requests are resolved.
+      Common.EventTarget.EventTarget.removeEventListeners([this._listener]);
+      this._listener = null;
+    }
+    if (requestWasUnresolved) {
+      this.update();
+    }
+  }
+
+  /**
+   * @virtual
+   * @return {void}
+   */
+  update() {
+    throw new Error('This should never be called, did you forget to override?');
+  }
 }
 
 class AffectedCookiesView extends AffectedResourcesView {
@@ -105,6 +157,19 @@ class AffectedCookiesView extends AffectedResourcesView {
    * @param {!Iterable<!Protocol.Audits.AffectedCookie>} cookies
    */
   _appendAffectedCookies(cookies) {
+    const header = createElementWithClass('tr');
+
+    const name = createElementWithClass('td', 'affected-resource-header');
+    name.textContent = 'Name';
+    header.appendChild(name);
+
+    const info = createElementWithClass('td', 'affected-resource-header');
+    // Prepend a space to align them better with cookie domains starting with a "."
+    info.textContent = '\u2009Context';
+    header.appendChild(info);
+
+    this._affectedResources.appendChild(header);
+
     let count = 0;
     for (const cookie of cookies) {
       count++;
@@ -146,6 +211,9 @@ class AffectedCookiesView extends AffectedResourcesView {
     this._affectedResources.appendChild(element);
   }
 
+  /**
+   * @override
+   */
   update() {
     this.clear();
     this._appendAffectedCookies(this._issue.cookies());
@@ -169,7 +237,7 @@ class AffectedRequestsView extends AffectedResourcesView {
   _appendAffectedRequests(affectedRequests) {
     let count = 0;
     for (const affectedRequest of affectedRequests) {
-      for (const request of self.SDK.networkLog.requestsForId(affectedRequest.requestId)) {
+      for (const request of this._resolveRequestId(affectedRequest.requestId)) {
         count++;
         this._appendNetworkRequest(request);
       }
@@ -186,13 +254,16 @@ class AffectedRequestsView extends AffectedResourcesView {
     const nameElement = createElementWithClass('td', '');
     const tab = issueTypeToNetworkHeaderMap.get(this._issue.getCategory()) || Network.NetworkItemView.Tabs.Headers;
     nameElement.appendChild(UI.UIUtils.createTextButton(nameText, () => {
-      Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, tab);
+      Network.NetworkPanel.NetworkPanel.selectAndShowRequestTab(request, tab);
     }, 'link-style devtools-link'));
     const element = createElementWithClass('tr', 'affected-resource-request');
     element.appendChild(nameElement);
     this._affectedResources.appendChild(element);
   }
 
+  /**
+   * @override
+   */
   update() {
     this.clear();
     this._appendAffectedRequests(this._issue.requests());
@@ -204,6 +275,102 @@ const issueTypeToNetworkHeaderMap = new Map([
   [SDK.Issue.IssueCategory.SameSiteCookie, Network.NetworkItemView.Tabs.Cookies],
   [SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy, Network.NetworkItemView.Tabs.Headers]
 ]);
+
+class AffectedMixedContentView extends AffectedResourcesView {
+  /**
+   * @param {!IssueView} parent
+   * @param {!SDK.Issue.Issue} issue
+   */
+  constructor(parent, issue) {
+    super(parent, {singular: ls`resource`, plural: ls`resources`});
+    /** @type {!SDK.Issue.Issue} */
+    this._issue = issue;
+  }
+
+  /**
+   * @param {!Iterable<!Protocol.Audits.MixedContentIssueDetails>} mixedContents
+   */
+  _appendAffectedMixedContents(mixedContents) {
+    const header = createElementWithClass('tr');
+
+    const name = createElementWithClass('td', 'affected-resource-header');
+    name.textContent = 'Name';
+    header.appendChild(name);
+
+    const type = createElementWithClass('td', 'affected-resource-header');
+    type.textContent = 'Type';
+    header.appendChild(type);
+
+    const info = createElementWithClass('td', 'affected-resource-header');
+    info.textContent = 'Status';
+    header.appendChild(info);
+
+    const initiator = createElementWithClass('td', 'affected-resource-header');
+    initiator.textContent = 'Initiator';
+    header.appendChild(initiator);
+
+    this._affectedResources.appendChild(header);
+
+    let count = 0;
+    for (const mixedContent of mixedContents) {
+      if (mixedContent.request) {
+        this._resolveRequestId(mixedContent.request.requestId).forEach(networkRequest => {
+          this.appendAffectedMixedContent(mixedContent, networkRequest);
+          count++;
+        });
+      } else {
+        this.appendAffectedMixedContent(mixedContent);
+        count++;
+      }
+    }
+    this.updateAffectedResourceCount(count);
+  }
+
+  /**
+   * @param {!Protocol.Audits.MixedContentIssueDetails} mixedContent
+   * @param {?SDK.NetworkRequest.NetworkRequest} maybeRequest
+   */
+  appendAffectedMixedContent(mixedContent, maybeRequest = null) {
+    const element = createElementWithClass('tr', 'affected-resource-mixed-content');
+    const filename = extractShortPath(mixedContent.insecureURL);
+
+    const name = createElementWithClass('td');
+    if (maybeRequest) {
+      const request = maybeRequest;  // re-assignment to make type checker happy
+      name.appendChild(UI.UIUtils.createTextButton(filename, () => {
+        Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request);
+      }, 'link-style devtools-link'));
+    } else {
+      name.classList.add('affected-resource-mixed-content-info');
+      name.textContent = filename;
+    }
+    UI.Tooltip.Tooltip.install(name, mixedContent.insecureURL);
+    element.appendChild(name);
+
+    const type = createElementWithClass('td', 'affected-resource-mixed-content-info');
+    type.textContent = mixedContent.resourceType || '';
+    element.appendChild(type);
+
+    const status = createElementWithClass('td', 'affected-resource-mixed-content-info');
+    status.textContent = MixedContentIssue.MixedContentIssue.translateStatus(mixedContent.resolutionStatus);
+    element.appendChild(status);
+
+    const initiator = createElementWithClass('td', 'affected-resource-mixed-content-info');
+    initiator.textContent = extractShortPath(mixedContent.mainResourceURL);
+    UI.Tooltip.Tooltip.install(initiator, mixedContent.mainResourceURL);
+    element.appendChild(initiator);
+
+    this._affectedResources.appendChild(element);
+  }
+
+  /**
+   * @override
+   */
+  update() {
+    this.clear();
+    this._appendAffectedMixedContents(this._issue.mixedContents());
+  }
+}
 
 class IssueView extends UI.TreeOutline.TreeElement {
   /**
@@ -226,6 +393,7 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this._affectedResources = this._createAffectedResources();
     this._affectedCookiesView = new AffectedCookiesView(this, this._issue);
     this._affectedRequestsView = new AffectedRequestsView(this, this._issue);
+    this._affectedMixedContentView = new AffectedMixedContentView(this, this._issue);
   }
 
   /**
@@ -239,6 +407,8 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this._affectedCookiesView.update();
     this.appendAffectedResource(this._affectedRequestsView);
     this._affectedRequestsView.update();
+    this.appendAffectedResource(this._affectedMixedContentView);
+    this._affectedMixedContentView.update();
     this._createReadMoreLink();
 
     this.updateAffectedResourceVisibility();
@@ -266,7 +436,8 @@ class IssueView extends UI.TreeOutline.TreeElement {
   updateAffectedResourceVisibility() {
     const noCookies = !this._affectedCookiesView || this._affectedCookiesView.isEmpty();
     const noRequests = !this._affectedRequestsView || this._affectedRequestsView.isEmpty();
-    const noResources = noCookies && noRequests;
+    const noMixedContent = !this._affectedMixedContentView || this._affectedMixedContentView.isEmpty();
+    const noResources = noCookies && noRequests && noMixedContent;
     this._affectedResources.hidden = noResources;
   }
 
@@ -321,9 +492,9 @@ class IssueView extends UI.TreeOutline.TreeElement {
   update() {
     this._affectedCookiesView.update();
     this._affectedRequestsView.update();
+    this._affectedMixedContentView.update();
     this.updateAffectedResourceVisibility();
   }
-
 
   /**
    * @param {(boolean|undefined)=} expand - Expands the issue if `true`, collapses if `false`, toggles collapse if undefined
@@ -355,21 +526,14 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     this._issuesTree.contentElement.classList.add('issues');
     this.contentElement.appendChild(this._issuesTree.element);
 
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
-    this._model = null;
-    if (mainTarget) {
-      this._model = mainTarget.model(SDK.IssuesModel.IssuesModel);
-      if (this._model) {
-        this._model.addEventListener(SDK.IssuesModel.Events.AggregatedIssueUpdated, this._issueUpdated, this);
-        this._model.addEventListener(SDK.IssuesModel.Events.FullUpdateRequired, this._fullUpdate, this);
-        this._model.ensureEnabled();
-      }
-    }
-
-    if (this._model) {
-      for (const issue of this._model.aggregatedIssues()) {
-        this._updateIssueView(issue);
-      }
+    /** @type {!BrowserSDK.IssuesManager.IssuesManager} */
+    this._issuesManager = BrowserSDK.IssuesManager.IssuesManager.instance();
+    /** @type {!IssueAggregator} */
+    this._aggregator = new IssueAggregator(this._issuesManager);
+    this._aggregator.addEventListener(IssueAggregatorEvents.AggregatedIssueUpdated, this._issueUpdated, this);
+    this._aggregator.addEventListener(IssueAggregatorEvents.FullUpdateRequired, this._fullUpdate, this);
+    for (const issue of this._aggregator.aggregatedIssues()) {
+      this._updateIssueView(issue);
     }
     this._updateCounts();
 
@@ -403,7 +567,7 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!{data: !SDK.Issue.Issue}} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _issueUpdated(event) {
     const issue = /** @type {!SDK.Issue.Issue} */ (event.data);
@@ -434,14 +598,17 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
       this._issuesTree.removeChild(view);
     }
     this._issueViews.clear();
-    for (const issue of this._model.aggregatedIssues()) {
-      this._updateIssueView(issue);
+    if (this._aggregator) {
+      for (const issue of this._aggregator.aggregatedIssues()) {
+        this._updateIssueView(issue);
+      }
     }
     this._updateCounts();
   }
 
   _updateCounts() {
-    this._updateToolbarIssuesCount(this._model.numberOfIssues());
+    const count = this._issuesManager.numberOfIssues();
+    this._updateToolbarIssuesCount(count);
   }
 
   /**
@@ -455,7 +622,7 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
   }
 
   _showReloadInfobarIfNeeded() {
-    if (!this._model || !this._model.reloadForAccurateInformationRequired()) {
+    if (!this._issuesManager.reloadForAccurateInformationRequired()) {
       return;
     }
 

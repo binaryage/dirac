@@ -3,7 +3,8 @@
     "common",
     "host",
     "platform",
-    "protocol_client"
+    "protocol_client",
+    "text_utils"
   ],
   "extensions": [
     {
@@ -421,8 +422,8 @@
     "Issue.js",
     "IssuesModel.js",
     "SameSiteCookieIssue.js",
+    "MixedContentIssue.js",
     "CrossOriginEmbedderPolicyIssue.js",
-    "RelatedIssue.js",
     "ServerTiming.js",
     "CPUProfileDataModel.js",
     "CPUProfilerModel.js",

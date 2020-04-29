@@ -6,10 +6,13 @@ group("front_end") {
   deps = [
     ":copy_karma_conf",
     "bindings",
+    "browser_sdk",
     "common",
     "dom_extension",
+    "elements",
     "formatter_worker",
     "inline_editor",
+    "issues",
     "persistence",
     "platform",
     "protocol_client",
