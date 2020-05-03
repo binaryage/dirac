@@ -1,7 +1,7 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.30")
 (def figwheel-version "0.5.19")
-(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.748"))
+(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.753"))
 (def selected-clojure-version "1.10.1")
 (def selenium-version "3.141.59")
 (def lein-cljsbuild-version "1.1.7")
@@ -24,7 +24,7 @@
    ['progrock "0.1.2"]
    ['me.raynes/conch "0.8.0"]
    ['clj-sub-command "0.6.0"]
-   ['ring/ring-core "1.8.0"]
+   ['ring/ring-core "1.8.1"]
    ['ring/ring-defaults "0.3.2"]
    ['binaryage/devtools "1.0.0"]])
 
@@ -50,7 +50,7 @@
 
    ['http.async.client "1.3.1" :scope "test"]
 
-   ['ring/ring-devel "1.8.0" :scope "test"]
+   ['ring/ring-devel "1.8.1" :scope "test"]
    ['clj-time "0.15.2" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
