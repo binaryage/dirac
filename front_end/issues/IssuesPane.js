@@ -4,6 +4,7 @@
 
 import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Components from '../components/components.js';
 import * as Network from '../network/network.js';
 import * as MixedContentIssue from '../sdk/MixedContentIssue.js';
 import * as SDK from '../sdk/sdk.js';
@@ -47,7 +48,8 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
    * @returns {!Element}
    */
   createAffectedResourcesCounter() {
-    const counterLabel = createElementWithClass('div', 'affected-resource-label');
+    const counterLabel = document.createElement('div');
+    counterLabel.classList.add('affected-resource-label');
     this.listItemElement.appendChild(counterLabel);
     return counterLabel;
   }
@@ -57,7 +59,8 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
    */
   createAffectedResources() {
     const body = new UI.TreeOutline.TreeElement();
-    const affectedResources = createElementWithClass('table', 'affected-resource-list');
+    const affectedResources = document.createElement('table');
+    affectedResources.classList.add('affected-resource-list');
     body.listItemElement.appendChild(affectedResources);
     this.appendChild(body);
 
@@ -157,13 +160,15 @@ class AffectedCookiesView extends AffectedResourcesView {
    * @param {!Iterable<!Protocol.Audits.AffectedCookie>} cookies
    */
   _appendAffectedCookies(cookies) {
-    const header = createElementWithClass('tr');
+    const header = document.createElement('tr');
 
-    const name = createElementWithClass('td', 'affected-resource-header');
+    const name = document.createElement('td');
+    name.classList.add('affected-resource-header');
     name.textContent = 'Name';
     header.appendChild(name);
 
-    const info = createElementWithClass('td', 'affected-resource-header');
+    const info = document.createElement('td');
+    info.classList.add('affected-resource-header');
     // Prepend a space to align them better with cookie domains starting with a "."
     info.textContent = '\u2009Context';
     header.appendChild(info);
@@ -173,17 +178,17 @@ class AffectedCookiesView extends AffectedResourcesView {
     let count = 0;
     for (const cookie of cookies) {
       count++;
-      this.appendAffectedCookie(/** @type{!{name:string,path:string,domain:string,siteForCookies:string}} */ (cookie));
+      this.appendAffectedCookie(cookie);
     }
     this.updateAffectedResourceCount(count);
   }
 
   /**
-   *
-   * @param {!{name:string,path:string,domain:string,siteForCookies:string}} cookie
+   * @param {!Protocol.Audits.AffectedCookie} cookie
    */
   appendAffectedCookie(cookie) {
-    const element = createElementWithClass('tr', 'affected-resource-cookie');
+    const element = document.createElement('tr');
+    element.classList.add('affected-resource-cookie');
     const name = createElementWithClass('td', '');
     name.appendChild(UI.UIUtils.createTextButton(cookie.name, () => {
       Network.NetworkPanel.NetworkPanel.revealAndFilter([
@@ -201,7 +206,8 @@ class AffectedCookiesView extends AffectedResourcesView {
         }
       ]);
     }, 'link-style devtools-link'));
-    const info = createElementWithClass('td', 'affected-resource-cookie-info');
+    const info = document.createElement('td');
+    info.classList.add('affected-resource-cookie-info');
 
     // Prepend a space for all domains not starting with a "." to align them better.
     info.textContent = (cookie.domain[0] !== '.' ? '\u2008' : '') + cookie.domain + cookie.path;
@@ -256,7 +262,8 @@ class AffectedRequestsView extends AffectedResourcesView {
     nameElement.appendChild(UI.UIUtils.createTextButton(nameText, () => {
       Network.NetworkPanel.NetworkPanel.selectAndShowRequestTab(request, tab);
     }, 'link-style devtools-link'));
-    const element = createElementWithClass('tr', 'affected-resource-request');
+    const element = document.createElement('tr');
+    element.classList.add('affected-resource-request');
     element.appendChild(nameElement);
     this._affectedResources.appendChild(element);
   }
@@ -267,6 +274,54 @@ class AffectedRequestsView extends AffectedResourcesView {
   update() {
     this.clear();
     this._appendAffectedRequests(this._issue.requests());
+  }
+}
+
+class AffectedSourcesView extends AffectedResourcesView {
+  /**
+   * @param {!IssueView} parent
+   * @param {!SDK.Issue.Issue} issue
+   */
+  constructor(parent, issue) {
+    super(parent, {singular: ls`source`, plural: ls`sources`});
+    /** @type {!SDK.Issue.Issue} */
+    this._issue = issue;
+  }
+
+  /**
+   * @param {!Iterable<!SDK.Issue.AffectedSource>} affectedSources
+   */
+  _appendAffectedSources(affectedSources) {
+    let count = 0;
+    for (const source of affectedSources) {
+      this._appendAffectedSource(source);
+      count++;
+    }
+    this.updateAffectedResourceCount(count);
+  }
+
+  /**
+   * @param {!SDK.Issue.AffectedSource} source
+   */
+  _appendAffectedSource({url, lineNumber, columnNumber}) {
+    const cellElement = createElementWithClass('td', '');
+    // TODO(chromium:1072331): Check feasibility of plumping through scriptId for `linkifyScriptLocation`
+    //                         to support source maps and formatted scripts.
+    const linkifierURLOptions =
+        /** @type {!Components.Linkifier.LinkifyURLOptions} */ ({columnNumber, lineNumber, tabStop: true});
+    const anchorElement = Components.Linkifier.Linkifier.linkifyURL(url, linkifierURLOptions);
+    cellElement.appendChild(anchorElement);
+    const rowElement = createElementWithClass('tr', '');
+    rowElement.appendChild(cellElement);
+    this._affectedResources.appendChild(rowElement);
+  }
+
+  /**
+   * @override
+   */
+  update() {
+    this.clear();
+    this._appendAffectedSources(this._issue.sources());
   }
 }
 
@@ -291,21 +346,25 @@ class AffectedMixedContentView extends AffectedResourcesView {
    * @param {!Iterable<!Protocol.Audits.MixedContentIssueDetails>} mixedContents
    */
   _appendAffectedMixedContents(mixedContents) {
-    const header = createElementWithClass('tr');
+    const header = document.createElement('tr');
 
-    const name = createElementWithClass('td', 'affected-resource-header');
+    const name = document.createElement('td');
+    name.classList.add('affected-resource-header');
     name.textContent = 'Name';
     header.appendChild(name);
 
-    const type = createElementWithClass('td', 'affected-resource-header');
+    const type = document.createElement('td');
+    type.classList.add('affected-resource-header');
     type.textContent = 'Type';
     header.appendChild(type);
 
-    const info = createElementWithClass('td', 'affected-resource-header');
+    const info = document.createElement('td');
+    info.classList.add('affected-resource-header');
     info.textContent = 'Status';
     header.appendChild(info);
 
-    const initiator = createElementWithClass('td', 'affected-resource-header');
+    const initiator = document.createElement('td');
+    initiator.classList.add('affected-resource-header');
     initiator.textContent = 'Initiator';
     header.appendChild(initiator);
 
@@ -331,10 +390,11 @@ class AffectedMixedContentView extends AffectedResourcesView {
    * @param {?SDK.NetworkRequest.NetworkRequest} maybeRequest
    */
   appendAffectedMixedContent(mixedContent, maybeRequest = null) {
-    const element = createElementWithClass('tr', 'affected-resource-mixed-content');
+    const element = document.createElement('tr');
+    element.classList.add('affected-resource-mixed-content');
     const filename = extractShortPath(mixedContent.insecureURL);
 
-    const name = createElementWithClass('td');
+    const name = document.createElement('td');
     if (maybeRequest) {
       const request = maybeRequest;  // re-assignment to make type checker happy
       name.appendChild(UI.UIUtils.createTextButton(filename, () => {
@@ -347,15 +407,18 @@ class AffectedMixedContentView extends AffectedResourcesView {
     UI.Tooltip.Tooltip.install(name, mixedContent.insecureURL);
     element.appendChild(name);
 
-    const type = createElementWithClass('td', 'affected-resource-mixed-content-info');
+    const type = document.createElement('td');
+    type.classList.add('affected-resource-mixed-content-info');
     type.textContent = mixedContent.resourceType || '';
     element.appendChild(type);
 
-    const status = createElementWithClass('td', 'affected-resource-mixed-content-info');
+    const status = document.createElement('td');
+    status.classList.add('affected-resource-mixed-content-info');
     status.textContent = MixedContentIssue.MixedContentIssue.translateStatus(mixedContent.resolutionStatus);
     element.appendChild(status);
 
-    const initiator = createElementWithClass('td', 'affected-resource-mixed-content-info');
+    const initiator = document.createElement('td');
+    initiator.classList.add('affected-resource-mixed-content-info');
     initiator.textContent = extractShortPath(mixedContent.mainResourceURL);
     UI.Tooltip.Tooltip.install(initiator, mixedContent.mainResourceURL);
     element.appendChild(initiator);
@@ -394,6 +457,7 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this._affectedCookiesView = new AffectedCookiesView(this, this._issue);
     this._affectedRequestsView = new AffectedRequestsView(this, this._issue);
     this._affectedMixedContentView = new AffectedMixedContentView(this, this._issue);
+    this._affectedSourcesView = new AffectedSourcesView(this, this._issue);
   }
 
   /**
@@ -409,6 +473,8 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this._affectedRequestsView.update();
     this.appendAffectedResource(this._affectedMixedContentView);
     this._affectedMixedContentView.update();
+    this.appendAffectedResource(this._affectedSourcesView);
+    this._affectedSourcesView.update();
     this._createReadMoreLink();
 
     this.updateAffectedResourceVisibility();
@@ -422,11 +488,13 @@ class IssueView extends UI.TreeOutline.TreeElement {
   }
 
   _appendHeader() {
-    const header = createElementWithClass('div', 'header');
+    const header = document.createElement('div');
+    header.classList.add('header');
     const icon = UI.Icon.Icon.create('largeicon-breaking-change', 'icon');
     header.appendChild(icon);
 
-    const title = createElementWithClass('div', 'title');
+    const title = document.createElement('div');
+    title.classList.add('title');
     title.textContent = this._description.title;
     header.appendChild(title);
 
@@ -437,7 +505,8 @@ class IssueView extends UI.TreeOutline.TreeElement {
     const noCookies = !this._affectedCookiesView || this._affectedCookiesView.isEmpty();
     const noRequests = !this._affectedRequestsView || this._affectedRequestsView.isEmpty();
     const noMixedContent = !this._affectedMixedContentView || this._affectedMixedContentView.isEmpty();
-    const noResources = noCookies && noRequests && noMixedContent;
+    const noSources = !this._affectedSourcesView || this._affectedSourcesView.isEmpty();
+    const noResources = noCookies && noRequests && noMixedContent && noSources;
     this._affectedResources.hidden = noResources;
   }
 
@@ -464,7 +533,8 @@ class IssueView extends UI.TreeOutline.TreeElement {
     kindAndCode.listItemElement.classList.add('kind-code-line');
     // TODO(chromium:1072331): Re-enable rendering of the issue kind once there is more than a
     //                         single kind and all issue codes are properly classified post-MVP launch.
-    const code = createElementWithClass('span', 'issue-code');
+    const code = document.createElement('span');
+    code.classList.add('issue-code');
     code.textContent = this._issue.code();
     kindAndCode.listItemElement.appendChild(code);
 
@@ -493,6 +563,7 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this._affectedCookiesView.update();
     this._affectedRequestsView.update();
     this._affectedMixedContentView.update();
+    this._affectedSourcesView.update();
     this.updateAffectedResourceVisibility();
   }
 
@@ -552,7 +623,8 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     new UI.Toolbar.Toolbar('issues-toolbar-left', toolbarContainer);
     const rightToolbar = new UI.Toolbar.Toolbar('issues-toolbar-right', toolbarContainer);
     rightToolbar.appendSeparator();
-    const toolbarWarnings = createElementWithClass('div', 'toolbar-warnings');
+    const toolbarWarnings = document.createElement('div');
+    toolbarWarnings.classList.add('toolbar-warnings');
     const breakingChangeIcon = UI.Icon.Icon.create('largeicon-breaking-change');
     toolbarWarnings.appendChild(breakingChangeIcon);
     const toolbarIssuesCount = toolbarWarnings.createChild('span', 'warnings-count-label');
@@ -648,7 +720,8 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
   /** @param {!UI.Infobar.Infobar} infobar */
   _attachReloadInfoBar(infobar) {
     if (!this._infoBarDiv) {
-      this._infoBarDiv = createElementWithClass('div', 'flex-none');
+      this._infoBarDiv = document.createElement('div');
+      this._infoBarDiv.classList.add('flex-none');
       this.contentElement.insertBefore(this._infoBarDiv, this._issuesToolbarContainer.nextSibling);
     }
     this._infoBarDiv.appendChild(infobar.element);
