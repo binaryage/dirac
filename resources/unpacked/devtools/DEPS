@@ -4,16 +4,20 @@
 
 vars = {
   'build_url': 'https://chromium.googlesource.com/chromium/src/build.git',
-  'build_revision': '675188fbb1cfd0bb2bc9e8d0519cc494ff70514b',
+  'build_revision': '3f2bcc3de222a312abbbca654dd73f61501e2090',
 
   'buildtools_url': 'https://chromium.googlesource.com/chromium/src/buildtools.git',
   'buildtools_revision': '204a35a2a64f7179f8b76d7a0385653690839e21',
 
   'depot_tools_url': 'https://chromium.googlesource.com/chromium/tools/depot_tools.git',
-  'depot_tools_revision': '1c6ae9e0d9b61d86d7b2dbe204af9c7feb2a6205',
+  'depot_tools_revision': 'ebb382b4f005f40ce9d79363def5460378578f32',
 
   'inspector_protocol_url': 'https://chromium.googlesource.com/deps/inspector_protocol',
   'inspector_protocol_revision': 'b7cda08cd6e522df2159413ba5f29d2a953cc1c4',
+
+  'llvm_url': 'https://chromium.googlesource.com/external/github.com/llvm/llvm-project/',
+  'llvm_revision': '302e11cd974255eafd80ee4fdf52054a00b3e4be',
+  'build_symbol_server': False,
 
   'clang_format_url': 'https://chromium.googlesource.com/chromium/llvm-project/cfe/tools/clang-format.git',
   'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
@@ -77,6 +81,11 @@ deps = {
     Var('depot_tools_url') + '@' + Var('depot_tools_revision'),
   'devtools-frontend/third_party/inspector_protocol':
     Var('inspector_protocol_url') + '@' + Var('inspector_protocol_revision'),
+
+  'devtools-frontend/back_end/CXXDWARFSymbols/third_party/llvm': {
+    'url': Var('llvm_url') + '@' + Var('llvm_revision'),
+    'condition': 'build_symbol_server'
+  }
 }
 
 hooks = [
@@ -90,7 +99,7 @@ hooks = [
                 '--no_resume',
                 '--extract',
                 '--no_auth',
-                '--bucket', 'chromium-nodejs/10.15.3',
+                '--bucket', 'chromium-nodejs/12.14.1',
                 '-s', 'devtools-frontend/third_party/node/linux/node-linux-x64.tar.gz.sha1',
     ],
   },
@@ -103,7 +112,7 @@ hooks = [
                 '--no_resume',
                 '--extract',
                 '--no_auth',
-                '--bucket', 'chromium-nodejs/10.15.3',
+                '--bucket', 'chromium-nodejs/12.14.1',
                 '-s', 'devtools-frontend/third_party/node/mac/node-darwin-x64.tar.gz.sha1',
     ],
   },
@@ -115,7 +124,7 @@ hooks = [
                 'devtools-frontend/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--no_auth',
-                '--bucket', 'chromium-nodejs/10.15.3',
+                '--bucket', 'chromium-nodejs/12.14.1',
                 '-s', 'devtools-frontend/third_party/node/win/node.exe.sha1',
     ],
   },

@@ -684,11 +684,11 @@ export function formatLocalized(format, substitutions) {
   const formatters = {s: substitution => substitution};
   /**
    * @param {!Element} a
-   * @param {string|!Element} b
+   * @param {*} b
    * @return {!Element}
    */
   function append(a, b) {
-    a.appendChild(typeof b === 'string' ? createTextNode(b) : b);
+    a.appendChild(typeof b === 'string' ? createTextNode(b) : /** @type {!Element} */ (b));
     return a;
   }
   return Platform.StringUtilities
@@ -1468,7 +1468,8 @@ registerCustomElement('span', 'dt-slider', class extends HTMLSpanElement {
   constructor() {
     super();
     const root = createShadowRootWithCoreStyles(this, 'ui/slider.css');
-    this.sliderElement = createElementWithClass('input', 'dt-range-input');
+    this.sliderElement = document.createElement('input');
+    this.sliderElement.classList.add('dt-range-input');
     this.sliderElement.type = 'range';
     root.appendChild(this.sliderElement);
   }
