@@ -10,7 +10,7 @@ import * as MixedContentIssue from '../sdk/MixedContentIssue.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
-import {Events as IssueAggregatorEvents, IssueAggregator} from './IssueAggregator.js';
+import {AggregatedIssue, Events as IssueAggregatorEvents, IssueAggregator} from './IssueAggregator.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @param {string} path
@@ -145,19 +145,67 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
   }
 }
 
-class AffectedCookiesView extends AffectedResourcesView {
+class AffectedElementsView extends AffectedResourcesView {
   /**
    * @param {!IssueView} parent
    * @param {!SDK.Issue.Issue} issue
    */
   constructor(parent, issue) {
-    super(parent, {singular: ls`cookie`, plural: ls`cookies`});
+    super(parent, {singular: ls`element`, plural: ls`elements`});
     /** @type {!SDK.Issue.Issue} */
     this._issue = issue;
   }
 
   /**
-   * @param {!Iterable<!Protocol.Audits.AffectedCookie>} cookies
+   * @param {!Iterable<!SDK.Issue.AffectedElement>} affectedElements
+   */
+  async _appendAffectedElements(affectedElements) {
+    let count = 0;
+    for (const element of affectedElements) {
+      await this._appendAffectedElement(element);
+      count++;
+    }
+    this.updateAffectedResourceCount(count);
+  }
+
+  /**
+   * @param {!SDK.Issue.AffectedElement} element
+   */
+  async _appendAffectedElement({backendNodeId, nodeName}) {
+    const mainTarget = /** @type {!SDK.SDKModel.Target} */ (SDK.SDKModel.TargetManager.instance().mainTarget());
+    const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(mainTarget, backendNodeId);
+    const anchorElement = await Common.Linkifier.Linkifier.linkify(deferredDOMNode);
+    anchorElement.textContent = nodeName;
+    const cellElement = document.createElement('td');
+    cellElement.classList.add('affected-resource-element', 'devtools-link');
+    cellElement.appendChild(anchorElement);
+    const rowElement = document.createElement('tr');
+    rowElement.appendChild(cellElement);
+    this._affectedResources.appendChild(rowElement);
+  }
+
+  /**
+   * @override
+   */
+  update() {
+    this.clear();
+    this._appendAffectedElements(this._issue.elements());
+  }
+}
+
+class AffectedCookiesView extends AffectedResourcesView {
+  /**
+   * @param {!IssueView} parent
+   * @param {!AggregatedIssue} issue
+   */
+  constructor(parent, issue) {
+    super(parent, {singular: ls`cookie`, plural: ls`cookies`});
+    /** @type {!AggregatedIssue} */
+    this._issue = issue;
+  }
+
+  /**
+   * @param {!Iterable<!{cookie: !Protocol.Audits.AffectedCookie, hasRequest: boolean}>} cookies
    */
   _appendAffectedCookies(cookies) {
     const header = document.createElement('tr');
@@ -178,34 +226,39 @@ class AffectedCookiesView extends AffectedResourcesView {
     let count = 0;
     for (const cookie of cookies) {
       count++;
-      this.appendAffectedCookie(cookie);
+      this.appendAffectedCookie(cookie.cookie, cookie.hasRequest);
     }
     this.updateAffectedResourceCount(count);
   }
 
   /**
    * @param {!Protocol.Audits.AffectedCookie} cookie
+   * @param {boolean} hasAssociatedRequest
    */
-  appendAffectedCookie(cookie) {
+  appendAffectedCookie(cookie, hasAssociatedRequest) {
     const element = document.createElement('tr');
     element.classList.add('affected-resource-cookie');
-    const name = createElementWithClass('td', '');
-    name.appendChild(UI.UIUtils.createTextButton(cookie.name, () => {
-      Network.NetworkPanel.NetworkPanel.revealAndFilter([
-        {
-          filterType: 'cookie-domain',
-          filterValue: cookie.domain,
-        },
-        {
-          filterType: 'cookie-name',
-          filterValue: cookie.name,
-        },
-        {
-          filterType: 'cookie-path',
-          filterValue: cookie.path,
-        }
-      ]);
-    }, 'link-style devtools-link'));
+    const name = document.createElement('td');
+    if (hasAssociatedRequest) {
+      name.appendChild(UI.UIUtils.createTextButton(cookie.name, () => {
+        Network.NetworkPanel.NetworkPanel.revealAndFilter([
+          {
+            filterType: 'cookie-domain',
+            filterValue: cookie.domain,
+          },
+          {
+            filterType: 'cookie-name',
+            filterValue: cookie.name,
+          },
+          {
+            filterType: 'cookie-path',
+            filterValue: cookie.path,
+          }
+        ]);
+      }, 'link-style devtools-link'));
+    } else {
+      name.textContent = cookie.name;
+    }
     const info = document.createElement('td');
     info.classList.add('affected-resource-cookie-info');
 
@@ -222,7 +275,7 @@ class AffectedCookiesView extends AffectedResourcesView {
    */
   update() {
     this.clear();
-    this._appendAffectedCookies(this._issue.cookies());
+    this._appendAffectedCookies(this._issue.cookiesWithRequestIndicator());
   }
 }
 
@@ -257,10 +310,10 @@ class AffectedRequestsView extends AffectedResourcesView {
    */
   _appendNetworkRequest(request) {
     const nameText = request.name().trimMiddle(100);
-    const nameElement = createElementWithClass('td', '');
+    const nameElement = document.createElement('td');
     const tab = issueTypeToNetworkHeaderMap.get(this._issue.getCategory()) || Network.NetworkItemView.Tabs.Headers;
     nameElement.appendChild(UI.UIUtils.createTextButton(nameText, () => {
-      Network.NetworkPanel.NetworkPanel.selectAndShowRequestTab(request, tab);
+      Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, tab);
     }, 'link-style devtools-link'));
     const element = document.createElement('tr');
     element.classList.add('affected-resource-request');
@@ -304,14 +357,14 @@ class AffectedSourcesView extends AffectedResourcesView {
    * @param {!SDK.Issue.AffectedSource} source
    */
   _appendAffectedSource({url, lineNumber, columnNumber}) {
-    const cellElement = createElementWithClass('td', '');
+    const cellElement = document.createElement('td');
     // TODO(chromium:1072331): Check feasibility of plumping through scriptId for `linkifyScriptLocation`
     //                         to support source maps and formatted scripts.
     const linkifierURLOptions =
         /** @type {!Components.Linkifier.LinkifyURLOptions} */ ({columnNumber, lineNumber, tabStop: true});
     const anchorElement = Components.Linkifier.Linkifier.linkifyURL(url, linkifierURLOptions);
     cellElement.appendChild(anchorElement);
-    const rowElement = createElementWithClass('tr', '');
+    const rowElement = document.createElement('tr');
     rowElement.appendChild(cellElement);
     this._affectedResources.appendChild(rowElement);
   }
@@ -328,7 +381,8 @@ class AffectedSourcesView extends AffectedResourcesView {
 /** @type {!Map<!SDK.Issue.IssueCategory, !Network.NetworkItemView.Tabs>} */
 const issueTypeToNetworkHeaderMap = new Map([
   [SDK.Issue.IssueCategory.SameSiteCookie, Network.NetworkItemView.Tabs.Cookies],
-  [SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy, Network.NetworkItemView.Tabs.Headers]
+  [SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy, Network.NetworkItemView.Tabs.Headers],
+  [SDK.Issue.IssueCategory.MixedContent, Network.NetworkItemView.Tabs.Headers]
 ]);
 
 class AffectedMixedContentView extends AffectedResourcesView {
@@ -350,23 +404,13 @@ class AffectedMixedContentView extends AffectedResourcesView {
 
     const name = document.createElement('td');
     name.classList.add('affected-resource-header');
-    name.textContent = 'Name';
+    name.textContent = ls`Name`;
     header.appendChild(name);
-
-    const type = document.createElement('td');
-    type.classList.add('affected-resource-header');
-    type.textContent = 'Type';
-    header.appendChild(type);
 
     const info = document.createElement('td');
     info.classList.add('affected-resource-header');
-    info.textContent = 'Status';
+    info.textContent = ls`Restriction Status`;
     header.appendChild(info);
-
-    const initiator = document.createElement('td');
-    initiator.classList.add('affected-resource-header');
-    initiator.textContent = 'Initiator';
-    header.appendChild(initiator);
 
     this._affectedResources.appendChild(header);
 
@@ -397,8 +441,9 @@ class AffectedMixedContentView extends AffectedResourcesView {
     const name = document.createElement('td');
     if (maybeRequest) {
       const request = maybeRequest;  // re-assignment to make type checker happy
+      const tab = issueTypeToNetworkHeaderMap.get(this._issue.getCategory()) || Network.NetworkItemView.Tabs.Headers;
       name.appendChild(UI.UIUtils.createTextButton(filename, () => {
-        Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request);
+        Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, tab);
       }, 'link-style devtools-link'));
     } else {
       name.classList.add('affected-resource-mixed-content-info');
@@ -407,21 +452,10 @@ class AffectedMixedContentView extends AffectedResourcesView {
     UI.Tooltip.Tooltip.install(name, mixedContent.insecureURL);
     element.appendChild(name);
 
-    const type = document.createElement('td');
-    type.classList.add('affected-resource-mixed-content-info');
-    type.textContent = mixedContent.resourceType || '';
-    element.appendChild(type);
-
     const status = document.createElement('td');
     status.classList.add('affected-resource-mixed-content-info');
     status.textContent = MixedContentIssue.MixedContentIssue.translateStatus(mixedContent.resolutionStatus);
     element.appendChild(status);
-
-    const initiator = document.createElement('td');
-    initiator.classList.add('affected-resource-mixed-content-info');
-    initiator.textContent = extractShortPath(mixedContent.mainResourceURL);
-    UI.Tooltip.Tooltip.install(initiator, mixedContent.mainResourceURL);
-    element.appendChild(initiator);
 
     this._affectedResources.appendChild(element);
   }
@@ -439,7 +473,7 @@ class IssueView extends UI.TreeOutline.TreeElement {
   /**
    *
    * @param {!IssuesPaneImpl} parent
-   * @param {!SDK.Issue.Issue} issue
+   * @param {!AggregatedIssue} issue
    * @param {!SDK.Issue.IssueDescription} description
    */
   constructor(parent, issue, description) {
@@ -455,6 +489,7 @@ class IssueView extends UI.TreeOutline.TreeElement {
 
     this._affectedResources = this._createAffectedResources();
     this._affectedCookiesView = new AffectedCookiesView(this, this._issue);
+    this._affectedElementsView = new AffectedElementsView(this, this._issue);
     this._affectedRequestsView = new AffectedRequestsView(this, this._issue);
     this._affectedMixedContentView = new AffectedMixedContentView(this, this._issue);
     this._affectedSourcesView = new AffectedSourcesView(this, this._issue);
@@ -469,6 +504,8 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this.appendChild(this._affectedResources);
     this.appendAffectedResource(this._affectedCookiesView);
     this._affectedCookiesView.update();
+    this.appendAffectedResource(this._affectedElementsView);
+    this._affectedElementsView.update();
     this.appendAffectedResource(this._affectedRequestsView);
     this._affectedRequestsView.update();
     this.appendAffectedResource(this._affectedMixedContentView);
@@ -503,10 +540,11 @@ class IssueView extends UI.TreeOutline.TreeElement {
 
   updateAffectedResourceVisibility() {
     const noCookies = !this._affectedCookiesView || this._affectedCookiesView.isEmpty();
+    const noElements = !this._affectedElementsView || this._affectedElementsView.isEmpty();
     const noRequests = !this._affectedRequestsView || this._affectedRequestsView.isEmpty();
     const noMixedContent = !this._affectedMixedContentView || this._affectedMixedContentView.isEmpty();
     const noSources = !this._affectedSourcesView || this._affectedSourcesView.isEmpty();
-    const noResources = noCookies && noRequests && noMixedContent && noSources;
+    const noResources = noCookies && noElements && noRequests && noMixedContent && noSources;
     this._affectedResources.hidden = noResources;
   }
 
@@ -527,19 +565,6 @@ class IssueView extends UI.TreeOutline.TreeElement {
   }
 
   _createBody() {
-    const kindAndCode = new UI.TreeOutline.TreeElement();
-    kindAndCode.setCollapsible(false);
-    kindAndCode.selectable = false;
-    kindAndCode.listItemElement.classList.add('kind-code-line');
-    // TODO(chromium:1072331): Re-enable rendering of the issue kind once there is more than a
-    //                         single kind and all issue codes are properly classified post-MVP launch.
-    const code = document.createElement('span');
-    code.classList.add('issue-code');
-    code.textContent = this._issue.code();
-    kindAndCode.listItemElement.appendChild(code);
-
-    this.appendChild(kindAndCode);
-
     const messageElement = new UI.TreeOutline.TreeElement();
     messageElement.setCollapsible(false);
     messageElement.selectable = false;
@@ -633,7 +658,11 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     /** @param {number} count */
     const updateToolbarIssuesCount = count => {
       toolbarIssuesCount.textContent = `${count}`;
-      toolbarIssuesItem.setTitle(ls`Issues pertaining to ${count} operations detected.`);
+      if (count === 1) {
+        toolbarIssuesItem.setTitle(ls`Issues pertaining to ${count} operation detected.`);
+      } else {
+        toolbarIssuesItem.setTitle(ls`Issues pertaining to ${count} operations detected.`);
+      }
     };
     return {toolbarContainer, updateToolbarIssuesCount};
   }
@@ -642,12 +671,12 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _issueUpdated(event) {
-    const issue = /** @type {!SDK.Issue.Issue} */ (event.data);
+    const issue = /** @type {!AggregatedIssue} */ (event.data);
     this._updateIssueView(issue);
   }
 
   /**
-   * @param {!SDK.Issue.Issue} issue
+   * @param {!AggregatedIssue} issue
    */
   _updateIssueView(issue) {
     const description = issue.getDescription();
@@ -689,6 +718,7 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
   revealByCode(code) {
     const issueView = this._issueViews.get(code);
     if (issueView) {
+      issueView.expand();
       issueView.reveal();
     }
   }

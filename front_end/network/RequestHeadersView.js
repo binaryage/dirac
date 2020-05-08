@@ -30,6 +30,7 @@
 
 import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
@@ -167,6 +168,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
         const link = document.createElement('div');
         link.classList.add('devtools-link');
         link.onclick = () => {
+          Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.LearnMoreLinkCOEP);
           BrowserSDK.RelatedIssue.reveal(this._request, SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy);
         };
         const text = document.createElement('span');
@@ -203,7 +205,10 @@ export class RequestHeadersView extends UI.Widget.VBox {
         }
       }
     }
-    const div = createElementWithClass('div', className);
+    const div = document.createElement('div');
+    if (className) {
+      div.className = className;
+    }
     if (value === '') {
       div.classList.add('empty-value');
     }
@@ -263,7 +268,9 @@ export class RequestHeadersView extends UI.Widget.VBox {
     const text = (sourceText || '').trim();
     const trim = text.length > max_len;
 
-    const sourceTextElement = createElementWithClass('span', 'header-value source-code');
+    const sourceTextElement = document.createElement('span');
+    sourceTextElement.classList.add('header-value');
+    sourceTextElement.classList.add('source-code');
     sourceTextElement.textContent = trim ? text.substr(0, max_len) : text;
 
     const sourceTreeElement = new UI.TreeOutline.TreeElement(sourceTextElement);

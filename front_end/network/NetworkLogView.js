@@ -1438,7 +1438,7 @@ export class NetworkLogView extends UI.Widget.VBox {
 
     if (request) {
       const maxBlockedURLLength = 20;
-      const manager = self.SDK.multitargetNetworkManager;
+      const manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
       let patterns = manager.blockedPatterns();
 
       /**
@@ -1570,13 +1570,13 @@ export class NetworkLogView extends UI.Widget.VBox {
 
   _clearBrowserCache() {
     if (confirm(Common.UIString.UIString('Are you sure you want to clear browser cache?'))) {
-      self.SDK.multitargetNetworkManager.clearBrowserCache();
+      SDK.NetworkManager.MultitargetNetworkManager.instance().clearBrowserCache();
     }
   }
 
   _clearBrowserCookies() {
     if (confirm(Common.UIString.UIString('Are you sure you want to clear browser cookies?'))) {
-      self.SDK.multitargetNetworkManager.clearBrowserCookies();
+      SDK.NetworkManager.MultitargetNetworkManager.instance().clearBrowserCookies();
     }
   }
 
@@ -1870,8 +1870,8 @@ export class NetworkLogView extends UI.Widget.VBox {
       headers[headerArray[0]] = headerArray[1];
     }
 
-    const credentials =
-        request.requestCookies.length || requestHeaders.some(({name}) => credentialHeaders[name.toLowerCase()]) ?
+    const credentials = request.includedRequestCookies().length ||
+            requestHeaders.some(({name}) => credentialHeaders[name.toLowerCase()]) ?
         'include' :
         'omit';
 

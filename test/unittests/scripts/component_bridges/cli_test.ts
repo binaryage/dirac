@@ -37,4 +37,12 @@ describe('bridges CLI fixture tests', () => {
   it('picks out the right interfaces for components with array parameters', () => {
     runFixtureTestAndAssertMatch('array-params');
   });
+
+  it('correctly pulls out getters and setters into the public interface', () => {
+    runFixtureTestAndAssertMatch('getters-setters-component');
+  });
+
+  it('can handle setters with object literal data parameter', () => {
+    runFixtureTestAndAssertMatch('setters-object-literal');
+  });
 });

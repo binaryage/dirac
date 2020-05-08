@@ -4289,6 +4289,27 @@ declare namespace Protocol {
       PauseIfNetworkFetchesPending = 'pauseIfNetworkFetchesPending',
     }
 
+    /**
+     * Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+     */
+    export interface UserAgentBrandVersion {
+      brand: string;
+      version: string;
+    }
+
+    /**
+     * Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+     */
+    export interface UserAgentMetadata {
+      brands: UserAgentBrandVersion[];
+      fullVersion: string;
+      platform: string;
+      platformVersion: string;
+      architecture: string;
+      model: string;
+      mobile: boolean;
+    }
+
     export interface CanEmulateResponse extends ProtocolResponseWithError {
       /**
        * True if emulation is supported.
@@ -4545,6 +4566,10 @@ declare namespace Protocol {
        * The platform navigator.platform should return.
        */
       platform?: string;
+      /**
+       * To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
+       */
+      userAgentMetadata?: UserAgentMetadata;
     }
   }
 
@@ -7191,6 +7216,10 @@ declare namespace Protocol {
        * The platform navigator.platform should return.
        */
       platform?: string;
+      /**
+       * To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
+       */
+      userAgentMetadata?: Emulation.UserAgentMetadata;
     }
 
     /**
@@ -7615,10 +7644,10 @@ declare namespace Protocol {
        */
       requestId: RequestId;
       /**
-       * A list of cookies which will not be sent with this request along with corresponding reasons
-       * for blocking.
+       * A list of cookies potentially associated to the requested URL. This includes both cookies sent with
+       * the request and the ones not sent; the latter are distinguished by having blockedReason field set.
        */
-      blockedCookies: BlockedCookieWithReason[];
+      associatedCookies: BlockedCookieWithReason[];
       /**
        * Raw request headers as they will be sent over the wire.
        */
@@ -7710,6 +7739,34 @@ declare namespace Protocol {
        * The grid layout color (default: transparent).
        */
       cssGridColor?: DOM.RGBA;
+      /**
+       * The color format used to format color styles (default: hex).
+       */
+      colorFormat?: ColorFormat;
+    }
+
+    export enum ColorFormat {
+      Rgb = 'rgb',
+      Hsl = 'hsl',
+      Hex = 'hex',
+    }
+
+    /**
+     * Configuration for dual screen hinge
+     */
+    export interface HingeConfig {
+      /**
+       * A rectangle represent hinge
+       */
+      rect: DOM.Rect;
+      /**
+       * The content box highlight fill color (default: a dark color).
+       */
+      contentColor?: DOM.RGBA;
+      /**
+       * The content box highlight outline color (default: transparent).
+       */
+      outlineColor?: DOM.RGBA;
     }
 
     export enum InspectMode {
@@ -7733,6 +7790,10 @@ declare namespace Protocol {
        * Whether to include style info.
        */
       includeStyle?: boolean;
+      /**
+       * The color format to get config with (default: hex)
+       */
+      colorFormat?: ColorFormat;
     }
 
     export interface GetHighlightObjectForTestResponse extends ProtocolResponseWithError {
@@ -7895,6 +7956,13 @@ declare namespace Protocol {
        * Whether to paint size or not.
        */
       show: boolean;
+    }
+
+    export interface SetShowHingeRequest {
+      /**
+       * hinge data, null means hideHinge
+       */
+      hingeConfig?: HingeConfig;
     }
 
     /**
@@ -8313,6 +8381,13 @@ declare namespace Protocol {
       PageBlockInterstitial = 'pageBlockInterstitial',
       Reload = 'reload',
       AnchorClick = 'anchorClick',
+    }
+
+    export enum ClientNavigationDisposition {
+      CurrentTab = 'currentTab',
+      NewTab = 'newTab',
+      NewWindow = 'newWindow',
+      Download = 'download',
     }
 
     export interface InstallabilityErrorArgument {
@@ -9087,6 +9162,10 @@ declare namespace Protocol {
        * The destination URL for the requested navigation.
        */
       url: string;
+      /**
+       * The disposition for the navigation.
+       */
+      disposition: ClientNavigationDisposition;
     }
 
     /**
@@ -11747,6 +11826,27 @@ declare namespace Protocol {
       WebAssembly = 'WebAssembly',
     }
 
+    export enum DebugSymbolsType {
+      None = 'None',
+      SourceMap = 'SourceMap',
+      EmbeddedDWARF = 'EmbeddedDWARF',
+      ExternalDWARF = 'ExternalDWARF',
+    }
+
+    /**
+     * Debug symbols available for a wasm script.
+     */
+    export interface DebugSymbols {
+      /**
+       * Type of the debug symbols.
+       */
+      type: DebugSymbolsType;
+      /**
+       * URL of the external symbol source.
+       */
+      externalURL?: string;
+    }
+
     export enum ContinueToLocationRequestTargetCallFrames {
       Any = 'any',
       Current = 'current',
@@ -11818,6 +11918,32 @@ declare namespace Protocol {
     }
 
     export interface EvaluateOnCallFrameResponse extends ProtocolResponseWithError {
+      /**
+       * Object wrapper for the evaluation result.
+       */
+      result: Runtime.RemoteObject;
+      /**
+       * Exception details.
+       */
+      exceptionDetails?: Runtime.ExceptionDetails;
+    }
+
+    export interface ExecuteWasmEvaluatorRequest {
+      /**
+       * WebAssembly call frame identifier to evaluate on.
+       */
+      callFrameId: CallFrameId;
+      /**
+       * Code of the evaluator module.
+       */
+      evaluator: binary;
+      /**
+       * Terminate execution after timing out (number of milliseconds).
+       */
+      timeout?: Runtime.TimeDelta;
+    }
+
+    export interface ExecuteWasmEvaluatorResponse extends ProtocolResponseWithError {
       /**
        * Object wrapper for the evaluation result.
        */
@@ -12391,6 +12517,10 @@ declare namespace Protocol {
        * The language of the script.
        */
       scriptLanguage?: Debugger.ScriptLanguage;
+      /**
+       * If the scriptLanguage is WebASsembly, the source of debug symbols for the module.
+       */
+      debugSymbols?: Debugger.DebugSymbols;
     }
   }
 
@@ -12927,6 +13057,7 @@ declare namespace Protocol {
       F32 = 'f32',
       F64 = 'f64',
       V128 = 'v128',
+      Anyref = 'anyref',
     }
 
     /**

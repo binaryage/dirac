@@ -17,13 +17,16 @@
   --issue-gray: #5F6368;
   --issue-link: #1967D2;
   --issue-black: #202124;
+  --issue-code: #F0F0F0;
   --affected-resource-background: #F8F9FA;
 }
 
 :host-context(.-theme-with-dark-background) .issues {
-  --issue-gray: #A09C97;
-  --issue-black: #DFDEDB;
-  --affected-resource-background: #070605;
+  --issue-gray: #FFFFFFDE;
+  --issue-link: #8AB4F8;
+  --issue-black: #FFFFFF;
+  --issue-code: #0F0F0F;
+  --affected-resource-background: #FFFFFF12;
 }
 
 /* Override whitespace behavior for tree items to allow wrapping */
@@ -61,13 +64,6 @@
   border-width: 0;
 }
 
-.issue::before {
-  /* Move toggle for issue items to the right */
-  order: 3;
-  /* Point toggle arrow up for issue items when closed */
-  transform: rotate(180deg);
-}
-
 p {
   margin-block-start: 2px;
   margin-block-end: 2px;
@@ -97,6 +93,7 @@ p {
   font-size: 14px;
   color: var(--issue-black);
   font-weight: normal;
+  user-select: text;
 }
 
 .issue.expanded .title {
@@ -107,7 +104,7 @@ p {
   border-bottom: 1px solid #E5E5E5;
   padding: 6px 0;
   position: relative;
-  padding-left: 38.5px;
+  padding-left: 51px;
   padding-bottom: 26px;
   padding-right: 8px;
 }
@@ -117,7 +114,7 @@ p {
   content: '';
   display: block;
   position: absolute;
-  left: 17.5px;
+  left: 31px;
   top: 0;
   bottom: 20px;
   border-left: 2px solid var(--breaking-change-color);
@@ -129,45 +126,34 @@ p {
   font-size: 14px;
   color: var(--issue-gray);
   margin-bottom: 4px;
+  user-select: text;
 }
 
-.message .example {
-  margin-top: 2px;
-  margin-bottom: 2px;
+.message p {
+  margin-bottom: 16px;
 }
 
-.message .example code {
+.message li {
+  margin-top: 8px;
+}
+
+/* Add some space between the arrow and the first child of <li> */
+.message li > *:first-child {
+  margin-left: 5px;
+}
+
+.message code {
   color: var(--issue-black);
   font-size: 90%;
   user-select: text;
   cursor: text;
-}
-
-.message .example .comment::before {
-   content: ' — ';
-}
-
-.kind-code-line {
-  font-size: 12px;
-  color: var(--issue-gray);
-  margin-bottom: 4px;
-  user-select: none;
+  background: var(--issue-code);
 }
 
 .separator::before {
   content: '·';
   padding-left: 1ex;
   padding-right: 1ex;
-}
-
-.issue-code {
-  color: rgba(95, 99, 104, 0.5);
-  user-select: text;
-  cursor: text;
-}
-
-.issue-kind {
-  color: var(--breaking-change-color);
 }
 
 .link {
@@ -177,21 +163,25 @@ p {
 
 .link-wrapper {
   margin-top: 8px;
+  user-select: text;
 }
 
 .affected-resources-label,
 .resolutions-label {
+  margin-top: 5px;
   font-size: 10px;
   font-weight: 500;
   line-height: 2em;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--issue-black);
+  display: inline-block;
 }
 
 .resolutions-list {
-  list-style-type: circle;
-  padding-inline-start: 20px;
+  list-style-type: "→";
+  list-style-position: inside;
+  padding-inline-start: 0px;
 }
 
 /* We inherit all the styles from treeoutline, but these are simple text <li>, so we override some styles */
@@ -206,8 +196,9 @@ p {
 
 .affected-resources {
   background: var(--affected-resource-background);
-  padding: 12px 3px 12px 20px;
+  padding: 9px 3px 12px 20px;
   position: relative;
+  user-select: text;
 }
 
 .affected-resource-label {
@@ -221,6 +212,13 @@ p {
 .affected-resource-cookie {
   font-size: 14px;
   line-height: 20px;
+  border: 0;
+  border-collapse: collapse;
+}
+
+.affected-resource-element {
+  font-size: 14px;
+  line-height: 20px;
   color: var(--issue-link);
   border: 0;
   border-collapse: collapse;
@@ -229,7 +227,6 @@ p {
 .affected-resource-mixed-content {
   font-size: 14px;
   line-height: 20px;
-  color: var(--issue-link);
   border: 0;
   border-collapse: collapse;
 }
@@ -237,7 +234,6 @@ p {
 .affected-resource-request {
   font-size: 14px;
   line-height: 20px;
-  color: var(--issue-link);
   border: 0;
   border-collapse: collapse;
 }
@@ -261,4 +257,8 @@ p {
 .affected-resource-mixed-content-info {
   color: var(--issue-gray);
   padding: 2px;
+}
+
+.affected-resources > .parent {
+  margin-top: 3px;
 }

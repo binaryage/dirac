@@ -220,7 +220,7 @@ export class MainImpl {
     UI.Tooltip.Tooltip.installHandler(document);
     self.SDK.consoleModel = SDK.ConsoleModel.ConsoleModel.instance();
     self.Components.dockController = new Components.DockController.DockController(canDock);
-    self.SDK.multitargetNetworkManager = new SDK.NetworkManager.MultitargetNetworkManager();
+    self.SDK.multitargetNetworkManager = SDK.NetworkManager.MultitargetNetworkManager.instance({forceNew: true});
     self.SDK.domDebuggerManager = new SDK.DOMDebuggerModel.DOMDebuggerManager();
     SDK.SDKModel.TargetManager.instance().addEventListener(
         SDK.SDKModel.Events.SuspendStateChanged, this._onSuspendStateChanged.bind(this));
@@ -623,7 +623,9 @@ export class MainMenuItem {
    */
   _handleContextMenu(contextMenu) {
     if (self.Components.dockController.canDock()) {
-      const dockItemElement = createElementWithClass('div', 'flex-centered flex-auto');
+      const dockItemElement = document.createElement('div');
+      dockItemElement.classList.add('flex-centered');
+      dockItemElement.classList.add('flex-auto');
       dockItemElement.tabIndex = -1;
       const titleElement = dockItemElement.createChild('span', 'flex-auto');
       titleElement.textContent = Common.UIString.UIString('Dock side');
@@ -723,6 +725,14 @@ export class MainMenuItem {
         moreTools.defaultSection().appendItem(extension.title(), () => {
           Host.userMetrics.actionTaken(Host.UserMetrics.Action.SettingsOpenedFromMenu);
           UI.ViewManager.ViewManager.instance().showView('preferences', /* userGesture */ true);
+        });
+        continue;
+      }
+
+      if (descriptor['id'] === 'issues-pane') {
+        moreTools.defaultSection().appendItem(extension.title(), () => {
+          Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.HamburgerMenu);
+          UI.ViewManager.ViewManager.instance().showView('issues-pane', /* userGesture */ true);
         });
         continue;
       }

@@ -67,28 +67,11 @@ const EXCLUDED_FILES = [
   'cm/multiplex.js',
   'cm/overlay.js',
   'cm/simple.js',
-  'cm_headless/headlesscodemirror.js',
-  'cm_modes/clike.js',
-  'cm_modes/clojure.js',
-  'cm_modes/coffeescript.js',
-  'cm_modes/jsx.js',
-  'cm_modes/livescript.js',
-  'cm_modes/markdown.js',
-  'cm_modes/php.js',
-  'cm_modes/python.js',
-  'cm_modes/shell.js',
-  'cm_web_modes/css.js',
-  'cm_web_modes/htmlembedded.js',
-  'cm_web_modes/htmlmixed.js',
-  'cm_web_modes/javascript.js',
-  'cm_web_modes/wast.js',
-  'cm_web_modes/xml.js',
   // FIXME: Dagre bundles must be moved to third_party
   'dagre_layout/dagre.js',
   // FIXME: Diff bundles must be moved to third_party
   'diff/diff_match_patch.js',
   // FIXME: Acorn bundles must be moved to third_party
-  'formatter_worker/acorn/acorn.js',
   'formatter_worker/acorn/acorn_loose.js',
 ];
 

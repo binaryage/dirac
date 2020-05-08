@@ -2,8 +2,7 @@
   "dependencies": [
     "platform",
     "text_utils",
-    "cm_headless",
-    "cm_web_modes"
+    "cm_headless"
   ],
   "scripts": [],
   "modules": [
@@ -11,8 +10,10 @@
     "formatter_worker-legacy.js",
     "ESTreeWalker.js",
     "FormatterWorker.js",
-    "acorn/acorn.js",
+    "../third_party/acorn/package/dist/acorn.js",
     "acorn/acorn_loose.js",
+    "../third_party/codemirror/package/mode/css/css.js",
+    "../third_party/codemirror/package/mode/xml/xml.js",
     "CSSFormatter.js",
     "AcornTokenizer.js",
     "JavaScriptFormatter.js",
@@ -24,7 +25,9 @@
     "RelaxedJSONParser.js"
   ],
   "skip_compilation": [
-    "acorn/acorn.js",
-    "acorn/acorn_loose.js"
+    "../third_party/acorn/package/dist/acorn.js",
+    "acorn/acorn_loose.js",
+    "../third_party/codemirror/package/mode/css/css.js",
+    "../third_party/codemirror/package/mode/xml/xml.js"
   ]
 }
