@@ -375,7 +375,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         parentElement.classList.add('hbox');
       }
     } else {
-      const valueElement = createElementWithClass('span', 'object-value-' + (subtype || type));
+      const valueElement = document.createElement('span');
+      valueElement.classList.add('object-value-' + (subtype || type));
       if (value.preview && showPreview) {
         const previewFormatter = new RemoteObjectPreviewFormatter();
         previewFormatter.appendObjectPreview(valueElement, value.preview, false /* isEntry */);
@@ -393,7 +394,9 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     }
 
     if (wasThrown) {
-      const wrapperElement = createElementWithClass('span', 'error value');
+      const wrapperElement = document.createElement('span');
+      wrapperElement.classList.add('error');
+      wrapperElement.classList.add('value');
       wrapperElement.appendChild(UI.UIUtils.formatLocalized('[Exception: %s]', [propertyValue.element]));
       propertyValue.element = wrapperElement;
     }

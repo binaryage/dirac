@@ -1861,6 +1861,11 @@ declare namespace ProtocolProxyApi {
     invoke_setShowViewportSizeOnResize(params: Protocol.Overlay.SetShowViewportSizeOnResizeRequest): Promise<void>;
 
     /**
+     * Add a dual screen device hinge
+     */
+    invoke_setShowHinge(params: Protocol.Overlay.SetShowHingeRequest): Promise<void>;
+
+    /**
      * Fired when the node should be inspected. This happens after call to `setInspectMode` or when
      * user manually inspects an element.
      */
@@ -2982,6 +2987,12 @@ declare namespace ProtocolProxyApi {
      */
     invoke_evaluateOnCallFrame(params: Protocol.Debugger.EvaluateOnCallFrameRequest):
         Promise<Protocol.Debugger.EvaluateOnCallFrameResponse>;
+
+    /**
+     * Execute a Wasm Evaluator module on a given call frame.
+     */
+    invoke_executeWasmEvaluator(params: Protocol.Debugger.ExecuteWasmEvaluatorRequest):
+        Promise<Protocol.Debugger.ExecuteWasmEvaluatorResponse>;
 
     /**
      * Returns possible locations for breakpoint. scriptId in start and end range locations should be

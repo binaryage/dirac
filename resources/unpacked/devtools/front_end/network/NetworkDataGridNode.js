@@ -612,8 +612,8 @@ export class NetworkRequestNode extends NetworkNode {
     if (!aRequest || !bRequest) {
       return !aRequest ? -1 : 1;
     }
-    const aScore = aRequest.requestCookies.length;
-    const bScore = bRequest.requestCookies.length;
+    const aScore = aRequest.includedRequestCookies().length;
+    const bScore = bRequest.includedRequestCookies().length;
     return (aScore - bScore) || aRequest.indentityCompare(bRequest);
   }
 
@@ -943,7 +943,7 @@ export class NetworkRequestNode extends NetworkNode {
         break;
       }
       case 'cookies': {
-        this._setTextAndTitle(cell, this._arrayLength(this._request.requestCookies));
+        this._setTextAndTitle(cell, this._arrayLength(this._request.includedRequestCookies()));
         break;
       }
       case 'setcookies': {
@@ -1055,7 +1055,7 @@ export class NetworkRequestNode extends NetworkNode {
         const previewImage = document.createElement('img');
         previewImage.classList.add('image-network-icon-preview');
         previewImage.alt = this._request.resourceType().title();
-        this._request.populateImageSource(previewImage);
+        this._request.populateImageSource(/** @type {!HTMLImageElement} */ (previewImage));
 
         iconElement = document.createElement('div');
         iconElement.classList.add('icon');

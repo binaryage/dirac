@@ -1849,6 +1849,10 @@ export namespace ProtocolMapping {
     'Overlay.setShowViewportSizeOnResize':
         {paramsType: [Protocol.Overlay.SetShowViewportSizeOnResizeRequest]; returnType: void;};
     /**
+     * Add a dual screen device hinge
+     */
+    'Overlay.setShowHinge': {paramsType: [Protocol.Overlay.SetShowHingeRequest?]; returnType: void;};
+    /**
      * Deprecated, please use addScriptToEvaluateOnNewDocument instead.
      */
     'Page.addScriptToEvaluateOnLoad': {
@@ -2463,6 +2467,13 @@ export namespace ProtocolMapping {
     'Debugger.evaluateOnCallFrame': {
       paramsType: [Protocol.Debugger.EvaluateOnCallFrameRequest];
       returnType: Protocol.Debugger.EvaluateOnCallFrameResponse;
+    };
+    /**
+     * Execute a Wasm Evaluator module on a given call frame.
+     */
+    'Debugger.executeWasmEvaluator': {
+      paramsType: [Protocol.Debugger.ExecuteWasmEvaluatorRequest];
+      returnType: Protocol.Debugger.ExecuteWasmEvaluatorResponse;
     };
     /**
      * Returns possible locations for breakpoint. scriptId in start and end range locations should be

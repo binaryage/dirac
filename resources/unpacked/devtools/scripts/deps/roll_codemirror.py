@@ -54,22 +54,6 @@ def copy_lib_files(options):
     return result
 
 
-def copy_headless_file(options):
-    print 'Copying runmode-standalone.js into headlesscodemirror.js'
-    source_file = os.path.join(options.cm_dir, 'addon', 'runmode', 'runmode-standalone.js')
-    target_file = os.path.join(options.devtools_dir, 'front_end', 'cm_headless', 'headlesscodemirror.js')
-
-    with open(source_file, 'r') as read:
-        lines = read.readlines()
-    with open(target_file, 'w') as write:
-        write.write('// Content of the function is equal to runmode-standalone.js file\n')
-        write.write('// from CodeMirror distribution\n')
-        write.write('(function(window) {\n')
-        for line in lines:
-            write.write(line)
-        write.write('}(this))\n')
-
-
 def find_and_copy_js_files(source_dir, target_dir, filter_fn):
     for f in os.listdir(target_dir):
         if not filter_fn(f):
@@ -94,32 +78,10 @@ def copy_cm_files(options):
     find_and_copy_js_files(source_dir, target_dir, cm_filter)
 
 
-def copy_cm_modes_files(options):
-    source_dir = os.path.join(options.cm_dir, 'mode')
-    target_dir = os.path.join(options.devtools_dir, 'front_end', 'cm_modes')
-
-    def cm_modes_filter(f):
-        return f.endswith('.js') and f != 'DefaultCodeMirrorMimeMode.js' and f != 'cm_modes.js'
-
-    find_and_copy_js_files(source_dir, target_dir, cm_modes_filter)
-
-
-def copy_cm_web_modes_files(options):
-    source_dir = os.path.join(options.cm_dir, 'mode')
-    target_dir = os.path.join(options.devtools_dir, 'front_end', 'cm_web_modes')
-
-    def cm_web_modes_filter(f):
-        return f.endswith('.js') and not f.startswith('cm_web_modes')
-
-    find_and_copy_js_files(source_dir, target_dir, cm_web_modes_filter)
-
 
 if __name__ == '__main__':
     OPTIONS = parse_options(sys.argv[1:])
     run_npm(OPTIONS)
     copy_cm_files(OPTIONS)
-    copy_cm_modes_files(OPTIONS)
-    copy_cm_web_modes_files(OPTIONS)
-    copy_headless_file(OPTIONS)
     VERSION = copy_lib_files(OPTIONS)
     print VERSION

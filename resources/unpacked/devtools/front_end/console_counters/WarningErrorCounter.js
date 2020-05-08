@@ -4,6 +4,7 @@
 
 import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -36,6 +37,7 @@ export class WarningErrorCounter {
 
     this._issuesCounter = createElement('div');
     this._issuesCounter.addEventListener('click', () => {
+      Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.StatusBarIssuesCounter);
       UI.ViewManager.ViewManager.instance().showView('issues-pane');
     });
     const issuesShadowRoot =
@@ -158,9 +160,9 @@ export class WarningErrorCounter {
     if (Root.Runtime.experiments.isEnabled('issuesPane')) {
       let issuesCountTitle = '';
       if (issues === 1) {
-        issuesCountTitle = ls`${issues} issue`;
+        issuesCountTitle = ls`Issues pertaining to ${issues} operation detected.`;
       } else {
-        issuesCountTitle = ls`${issues} issues`;
+        issuesCountTitle = ls`Issues pertaining to ${issues} operations detected.`;
       }
       this._updateItem(this._issues, issues, true);
       this._issuesCounter.title = issuesCountTitle;

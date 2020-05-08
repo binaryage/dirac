@@ -28,9 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
@@ -165,8 +162,33 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
 
     /** @type {!Array<!BlockedCookieWithReason>} */
     this._blockedRequestCookies = [];
+    /** @type {!Array<!Cookie>} */
+    this._includedRequestCookies = [];
     /** @type {!Array<!BlockedSetCookieWithReason>} */
     this._blockedResponseCookies = [];
+
+    /** @type {?string} */
+    this.localizedFailDescription = null;
+    /** @type {string} */
+    this._url;
+    /** @type {number} */
+    this._responseReceivedTime;
+    /** @type {number} */
+    this._transferSize;
+    /** @type {boolean} */
+    this._finished;
+    /** @type {boolean} */
+    this._failed;
+    /** @type {boolean} */
+    this._canceled;
+    /** @type {!MIME_TYPE} */
+    this._mimeType;
+    /** @type {!Common.ParsedURL.ParsedURL} */
+    this._parsedURL;
+    /** @type {string} */
+    this._name;
+    /** @type {string} */
+    this._path;
   }
 
   /**
@@ -936,12 +958,12 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
    * @return {!Array.<!Cookie>}
    */
   allCookiesIncludingBlockedOnes() {
-    return [
-      ...this.requestCookies, ...this.responseCookies,
+    return /** @type {!Array.<!Cookie>} */ ([
+      ...this.includedRequestCookies(), ...this.responseCookies,
       ...this.blockedRequestCookies().map(blockedRequestCookie => blockedRequestCookie.cookie),
       ...this.blockedResponseCookies().map(blockedResponseCookie => blockedResponseCookie.cookie),
       // blockedRequestCookie or blockedResponseCookie might not contain a cookie in case of SyntaxErrors:
-    ].filter(v => !!v);
+    ].filter(v => !!v));
   }
 
   /**
@@ -1063,6 +1085,9 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
    * @return {!Array.<!NameValue>}
    */
   _parseParameters(queryString) {
+    /**
+     * @param {string} pair
+     */
     function parseNameValue(pair) {
       const position = pair.indexOf('=');
       if (position === -1) {
@@ -1297,7 +1322,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {!Element} image
+   * @param {!HTMLImageElement} image
    */
   async populateImageSource(image) {
     const {content, encoded} = await this.contentData();
@@ -1419,6 +1444,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
    */
   addExtraRequestInfo(extraRequestInfo) {
     this._blockedRequestCookies = extraRequestInfo.blockedRequestCookies;
+    this._includedRequestCookies = extraRequestInfo.includedRequestCookies;
     this.setRequestHeaders(extraRequestInfo.requestHeaders);
     this._hasExtraRequestInfo = true;
     this.setRequestHeadersText('');  // Mark request headers as non-provisional
@@ -1436,6 +1462,20 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
    */
   blockedRequestCookies() {
     return this._blockedRequestCookies;
+  }
+
+  /**
+   * @return {!Array<!Cookie>}
+   */
+  includedRequestCookies() {
+    return this._includedRequestCookies;
+  }
+
+  /**
+   * @return {boolean}
+   */
+  hasRequestCookies() {
+    return this._includedRequestCookies.length > 0 || this._blockedRequestCookies.length > 0;
   }
 
   /**
@@ -1638,9 +1678,11 @@ export const setCookieBlockedReasonToAttribute = function(blockedReason) {
 };
 
 /** @typedef {!{name: string, value: string}} */
+// @ts-ignore typedef
 export let NameValue;
 
 /** @typedef {!{type: WebSocketFrameType, time: number, text: string, opCode: number, mask: boolean}} */
+// @ts-ignore typedef
 export let WebSocketFrame;
 
 /**
@@ -1650,6 +1692,7 @@ export let WebSocketFrame;
   *   cookie: ?Cookie
   * }}
   */
+// @ts-ignore typedef
 export let BlockedSetCookieWithReason;
 
 /**
@@ -1658,20 +1701,25 @@ export let BlockedSetCookieWithReason;
  *   cookie: !Cookie
  * }}
  */
+// @ts-ignore typedef
 export let BlockedCookieWithReason;
 
 /** @typedef {!{error: ?string, content: ?string, encoded: boolean}} */
+// @ts-ignore typedef
 export let ContentData;
 
 /** @typedef {!{time: number, eventName: string, eventId: string, data: string}} */
+// @ts-ignore typedef
 export let EventSourceMessage;
 
 /**
   * @typedef {!{
   *   blockedRequestCookies: !Array<!BlockedCookieWithReason>,
-  *   requestHeaders: !Array<!NameValue>
+  *   requestHeaders: !Array<!NameValue>,
+  *   includedRequestCookies: !Array<!Cookie>
   * }}
   */
+// @ts-ignore typedef
 export let ExtraRequestInfo;
 
 /**
@@ -1681,4 +1729,5 @@ export let ExtraRequestInfo;
   *   responseHeadersText: (string|undefined)
   * }}
   */
+// @ts-ignore typedef
 export let ExtraResponseInfo;
