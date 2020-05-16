@@ -19,7 +19,7 @@
     "128": "images/icon128.png"
   },
   /* this is needed for eval in Runtime._loadModules() */
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "content_security_policy": "script-src 'self' 'unsafe-eval' 'unsafe-inline'; object-src 'self'",
   "background": {
     "page": "background.html",
     "persistent": true
