@@ -30,7 +30,11 @@
 ; I believe this to be related to http://dev.clojure.org/jira/browse/CLJS-365
 ; I'm not sure what go macro does exactly, but it might generate an apply call which exceeds safe number of args
 (defmacro chunkify [& commands]
-  (let [safe-number-of-commands 17                                                                                            ; this number was determined experimentally, 18 seems to be smallest size causing stack overflow
+  ; this number was determined experimentally, 18 seems to be smallest size causing stack overflow
+  ; had some new issues with this
+  ; https://github.com/binaryage/dirac/commit/2a47dcce1f9b93e16566f95cfa642ddef3b38511
+  ; decreasing this to 10, to leave room for future changes
+  (let [safe-number-of-commands 10
         command-chunks (partition-all safe-number-of-commands commands)
         gen-chunk (fn [commands] `(cljs.core.async/<! (cljs.core.async/go ~@commands)))]
     `(do
