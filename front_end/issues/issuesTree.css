@@ -84,10 +84,6 @@ p {
   width: 100%;
 }
 
-.icon {
-  margin-right: 4px;
-}
-
 .title {
   flex: 1;
   font-size: 14px;
@@ -137,14 +133,9 @@ p {
   margin-top: 8px;
 }
 
-/* Add some space between the arrow and the first child of <li> */
-.message li > *:first-child {
-  margin-left: 5px;
-}
-
 .message code {
   color: var(--issue-black);
-  font-size: 90%;
+  font-size: 12px;
   user-select: text;
   cursor: text;
   background: var(--issue-code);
@@ -162,7 +153,7 @@ p {
 }
 
 .link-wrapper {
-  margin-top: 8px;
+  margin-top: 15px;
   user-select: text;
 }
 
@@ -171,32 +162,49 @@ p {
   margin-top: 5px;
   font-size: 10px;
   font-weight: 500;
-  line-height: 2em;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--issue-black);
   display: inline-block;
 }
 
+.link-list {
+  list-style-type: none;
+  list-style-position: inside;
+  padding-inline-start: 0px;
+}
+
 .resolutions-list {
-  list-style-type: "→";
+  list-style-type: none;
   list-style-position: inside;
   padding-inline-start: 0px;
 }
 
 /* We inherit all the styles from treeoutline, but these are simple text <li>, so we override some styles */
-.resolutions-list li::before {
+.link-list li::before {
   content: none;
   -webkit-mask-image: none;
+}
+
+.resolutions-list li::before {
+  content: "→";
+  -webkit-mask-image: none;
+  padding-right: 5px;
+  position: relative;
+  top: -1px;
+}
+
+.link-list li {
+  display: list-item;
+  margin-top: 4px;
 }
 
 .resolutions-list li {
   display: list-item;
 }
 
-.affected-resources {
-  background: var(--affected-resource-background);
-  padding: 9px 3px 12px 20px;
+.affected-resources-label + .affected-resources {
+  padding: 3px 0 0 0;
   position: relative;
   user-select: text;
 }
@@ -252,6 +260,11 @@ p {
 .affected-resource-cookie-info {
   color: var(--issue-gray);
   padding: 2px;
+  text-align: right;
+}
+
+.affected-resource-cookie-info-header {
+  text-align: right;
 }
 
 .affected-resource-mixed-content-info {
@@ -260,5 +273,20 @@ p {
 }
 
 .affected-resources > .parent {
-  margin-top: 3px;
+  margin-top: 0px;
+  padding: 2px 5px 0px 5px;
+}
+
+.affected-resources > .parent.expanded {
+  background: var(--affected-resource-background);
+}
+
+.affected-resources > .children.expanded {
+  background: var(--affected-resource-background);
+  padding: 6px 0 9px 5px;
+  margin-bottom: 10px;
+}
+
+.aggregated-issues-count {
+  padding-right: 7px;
 }

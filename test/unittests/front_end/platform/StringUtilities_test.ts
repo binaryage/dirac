@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FORMATTER_TOKEN} from 'front_end/platform/string-utilities.js';
-
 import {StringUtilities} from '../../../../front_end/platform/platform.js';
+import {FORMATTER_TOKEN} from '../../../../front_end/platform/string-utilities.js';
 
 const {assert} = chai;
 
@@ -515,6 +514,13 @@ describe('StringUtilities', () => {
       ];
 
       assert.deepEqual(tokens, expectedTokens);
+    });
+  });
+
+  describe('toTitleCase', () => {
+    it('converts a string to title case', () => {
+      const output = StringUtilities.toTitleCase('foo bar baz');
+      assert.strictEqual(output, 'Foo bar baz');
     });
   });
 });

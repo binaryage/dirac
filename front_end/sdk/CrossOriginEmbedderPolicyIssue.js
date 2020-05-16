@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import {ls} from '../common/common.js';  // eslint-disable-line rulesdir/es_modules_import
 
 import {Issue, IssueCategory, IssueDescription, IssueKind} from './Issue.js';  // eslint-disable-line no-unused-vars
@@ -73,7 +70,7 @@ function CorpNotSameOriginAfterDefaultedToSameOriginByCoepMessage() {
   message.classList.add('message');
 
   message.createChild('p').textContent = ls
-  `Because your site has the cross-origin embedder policy (COEP) enabled, each resource must specify a suitable cross-origin resource policy (CORP).
+  `Because your site has the Cross-Origin Embedder Policy (COEP) enabled, each resource must specify a suitable Cross-Origin Resource Policy (CORP).
    This behavior prevents a document from loading cross-origin resources which don't explicitly grant permission to be loaded.`;
 
   const solveBy = message.createChild('p');
@@ -101,7 +98,7 @@ function CoepFrameResourceNeedsCoepHeaderMessage() {
   message.classList.add('message');
 
   message.createChild('p').textContent = ls
-  `Because your site has the cross-origin embedder policy (COEP) enabled, each embedded iframe must also specify this policy.
+  `Because your site has the Cross-Origin Embedder Policy (COEP) enabled, each embedded iframe must also specify this policy.
   This behavior protects private data from being exposed to untrusted third party sites.`;
 
   const solvedBy = message.createChild('p');
@@ -180,40 +177,56 @@ function textOnlyMessage(text) {
 /** @type {!Map<string, !IssueDescription>} */
 const issueDescriptions = new Map([
 ['CrossOriginEmbedderPolicy::CorpNotSameOriginAfterDefaultedToSameOriginByCoep', {
-  title: ls`Specify a cross-origin resource policy to prevent a resource from being blocked`,
+  title: ls`Specify a Cross-Origin Resource Policy to prevent a resource from being blocked`,
   message: CorpNotSameOriginAfterDefaultedToSameOriginByCoepMessage,
   issueKind: IssueKind.BreakingChange,
-  link: ls`https://web.dev/coop-coep/`,
-  linkTitle: ls`COOP and COEP`,
+  links: [
+    {link: ls`https://web.dev/coop-coep/`,
+     linkTitle: ls`COOP and COEP`},
+    {link: ls`https://web.dev/same-site-same-origin/`,
+     linkTitle: ls`Same-Site and Same-Origin`},
+  ],
 }],
 ['CrossOriginEmbedderPolicy::CoepFrameResourceNeedsCoepHeader',  {
-  title: ls`Specify a cross-origin embedder policy to prevent this frame from being blocked`,
+  title: ls`Specify a Cross-Origin Embedder Policy to prevent this frame from being blocked`,
   message: CoepFrameResourceNeedsCoepHeaderMessage,
-   issueKind: IssueKind.BreakingChange,
-  link: ls`https://web.dev/coop-coep/`,
-  linkTitle: ls`COOP and COEP`,
+  issueKind: IssueKind.BreakingChange,
+  links: [
+    {link: ls`https://web.dev/coop-coep/`,
+     linkTitle: ls`COOP and COEP`},
+  ],
 }],
 ['CrossOriginEmbedderPolicy::CoopSandboxedIframeCannotNavigateToCoopPage',  {
-  title: ls`An iframe navigation to a document with a cross-origin opener policy was blocked`,
+  title: ls`An iframe navigation to a document with a Cross-Origin Opener Policy was blocked`,
   message: () => textOnlyMessage(ls
-  `A document with a cross-origin opener policy (COOP) was blocked from loading in an iframe, because the iframe specifies a sandbox attribute.
+  `A document with a Cross-Origin Opener Policy (COOP) was blocked from loading in an iframe, because the iframe specifies a sandbox attribute.
   This protects COOP-enabled documents from inheriting properties from its opener.`),
   issueKind: IssueKind.BreakingChange,
-  link: ls`https://web.dev/coop-coep/`,
-  linkTitle: ls`COOP and COEP`,
+  links: [
+    {link: ls`https://web.dev/coop-coep/`,
+     linkTitle: ls`COOP and COEP`},
+  ],
 }],
 ['CrossOriginEmbedderPolicy::CorpNotSameSite',  {
-  title: ls`Specify a more permissive cross-origin resource policy to prevent a resource from being blocked`,
+  title: ls`Specify a more permissive Cross-Origin Resource Policy to prevent a resource from being blocked`,
   message: CorpNotSameSiteMessage,
   issueKind: IssueKind.BreakingChange,
-  link: ls`https://web.dev/coop-coep/`,
-  linkTitle: ls`COOP and COEP`,
+  links: [
+    {link: ls`https://web.dev/coop-coep/`,
+     linkTitle: ls`COOP and COEP`},
+    {link: ls`https://web.dev/same-site-same-origin/`,
+     linkTitle: ls`Same-Site and Same-Origin`},
+  ],
 }],
 ['CrossOriginEmbedderPolicy::CorpNotSameOrigin',  {
-  title: ls`Specify a more permissive cross-origin resource policy to prevent a resource from being blocked`,
+  title: ls`Specify a more permissive Cross-Origin Resource Policy to prevent a resource from being blocked`,
   message: CorpNotSameOriginMessage,
   issueKind: IssueKind.BreakingChange,
-  link: ls`https://web.dev/coop-coep/`,
-  linkTitle: ls`COOP and COEP`,
+  links: [
+    {link: ls`https://web.dev/coop-coep/`,
+     linkTitle: ls`COOP and COEP`},
+    {link: ls`https://web.dev/same-site-same-origin/`,
+     linkTitle: ls`Same-Site and Same-Origin`},
+  ],
 }],
 ]);

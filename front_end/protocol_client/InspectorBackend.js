@@ -653,6 +653,13 @@ export class TargetBase {
   networkAgent() {
     throw new Error('Implemented in InspectorBackend.js');
   }
+
+  /**
+   * @return {!ProtocolProxyApi.LayerTreeApi}
+   */
+  layerTreeAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
 }
 
 /**
@@ -780,7 +787,7 @@ class _AgentPrototype {
       return Promise.resolve(null);
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       /**
        * @param {*} error
        * @param {*} result
@@ -790,11 +797,9 @@ class _AgentPrototype {
           if (!test.suppressRequestErrors && error.code !== DevToolsStubErrorCode && error.code !== _GenericError &&
               error.code !== _ConnectionClosedErrorCode) {
             console.error('Request ' + method + ' failed. ' + JSON.stringify(error));
-            reject(error);
-          } else {
-            resolve(null);
           }
 
+          resolve(null);
           return;
         }
 

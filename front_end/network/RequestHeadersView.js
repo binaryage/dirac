@@ -32,6 +32,7 @@ import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -68,6 +69,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
     const generalCategory = new Category(root, 'general', Common.UIString.UIString('General'));
     generalCategory.hidden = false;
     this._root = generalCategory;
+    this.setDefaultFocusedElement(this._root.listItemElement);
     this._urlItem = generalCategory.createLeaf();
     this._requestMethodItem = generalCategory.createLeaf();
     this._statusCodeItem = generalCategory.createLeaf();
@@ -173,7 +175,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
         };
         const text = document.createElement('span');
         text.classList.add('devtools-link');
-        text.textContent = 'Learn more in the issues panel';
+        text.textContent = ls`Learn more in the issues tab`;
         link.appendChild(text);
         link.prepend(UI.Icon.Icon.create('largeicon-breaking-change', 'icon'));
         callToActionBody.appendChild(link);

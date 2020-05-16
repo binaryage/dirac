@@ -342,7 +342,8 @@ const emitApiCommand = (command: Protocol.Command, domainName: string, modulePre
   const prefix = `${modulePrefix}.${domainName}.`;
   emitDescription(command.description);
   const params = command.parameters ? `params: ${prefix}${toCmdRequestName(command.name)}` : '';
-  const response = command.returns ? `${prefix}${toCmdResponseName(command.name)}` : 'void';
+  const response =
+      command.returns ? `${prefix}${toCmdResponseName(command.name)}` : 'Protocol.ProtocolResponseWithError';
   emitLine(`invoke_${command.name}(${params}): Promise<${response}>;`);
   emitLine();
 };
@@ -351,7 +352,7 @@ const emitApiEvent = (event: Protocol.Event, domainName: string, modulePrefix: s
   const prefix = `${modulePrefix}.${domainName}.`;
   emitDescription(event.description);
   const params = event.parameters ? `params: ${prefix}${toEventPayloadName(event.name)}` : '';
-  emitLine(`on(event: '${event.name}', listener: (${params}) => void): void;`);
+  emitLine(`${event.name}(${params}): void;`);
   emitLine();
 };
 
@@ -366,6 +367,8 @@ const emitDomainApi = (domain: Protocol.Domain, modulePrefix: string) => {
   if (domain.commands) {
     domain.commands.forEach(c => emitApiCommand(c, domainName, modulePrefix));
   }
+  emitCloseBlock();
+  emitOpenBlock(`export interface ${domainName}Dispatcher`);
   if (domain.events) {
     domain.events.forEach(e => emitApiEvent(e, domainName, modulePrefix));
   }

@@ -8,8 +8,18 @@
   overflow: hidden;
 }
 
-.issues-toolbar-container {
+.issues-pane-no-issues {
+  align-items: center;
+  background-color: lightgray;
   display: flex;
+  flex: 1 1 auto;
+  font-size: 18px;
+  justify-content: center;
+  padding: 30px;
+}
+
+.issues-toolbar-container {
+  display: none;
   flex: none;
 }
 

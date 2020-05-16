@@ -4,13 +4,13 @@
 
 vars = {
   'build_url': 'https://chromium.googlesource.com/chromium/src/build.git',
-  'build_revision': '26651b8c4403b2ffc6cb1b3f803bb8c341ca717c',
+  'build_revision': '1ea3c3aca4a1e8e10cd09b941bd8ab8d74b03ace',
 
   'buildtools_url': 'https://chromium.googlesource.com/chromium/src/buildtools.git',
   'buildtools_revision': '204a35a2a64f7179f8b76d7a0385653690839e21',
 
   'depot_tools_url': 'https://chromium.googlesource.com/chromium/tools/depot_tools.git',
-  'depot_tools_revision': 'ddcba7ca3c7f0432aee6bd9740c21f785c32a982',
+  'depot_tools_revision': '8280ae5e0a3853fb30b77c603e8c75bbe3ad403a',
 
   'inspector_protocol_url': 'https://chromium.googlesource.com/deps/inspector_protocol',
   'inspector_protocol_revision': 'b7cda08cd6e522df2159413ba5f29d2a953cc1c4',
@@ -22,16 +22,22 @@ vars = {
   'clang_format_url': 'https://chromium.googlesource.com/chromium/llvm-project/cfe/tools/clang-format.git',
   'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
 
+  'clang_url': 'https://chromium.googlesource.com/chromium/src/tools/clang.git',
+  'clang_revision': '116e3ee70d1877ee7d92e0d8bfdf9420b773cd43',
+
+  'cmake_version': 'version:3.16.1',
+  'protoc_version': 'protobuf_version:v3.11.4',
+
   # GN CIPD package version.
   'gn_version': 'git_revision:5ed3c9cc67b090d5e311e4bd2aba072173e82db9',
 
   # Chromium build number for unit tests. It should be regularly updated to
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/LAST_CHANGE
-  'chromium_linux': '766738',
+  'chromium_linux': '768150',
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/LAST_CHANGE
-  'chromium_win': '766734',
+  'chromium_win': '768148',
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/LAST_CHANGE
-  'chromium_mac': '766729',
+  'chromium_mac': '768144',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -84,6 +90,30 @@ deps = {
 
   'devtools-frontend/back_end/CXXDWARFSymbols/third_party/llvm': {
     'url': Var('llvm_url') + '@' + Var('llvm_revision'),
+    'condition': 'build_symbol_server'
+  },
+  'devtools-frontend/third_party/clang': {
+    'url': Var('clang_url') + '@' + Var('clang_revision'),
+    'condition': 'build_symbol_server'
+  },
+  'devtools-frontend/third_party/cmake': {
+    'packages': [
+      {
+        'package': 'infra/cmake/${{platform}}',
+        'version': Var('cmake_version')
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'build_symbol_server'
+  },
+  'devtools-frontend/third_party/protoc': {
+    'packages': [
+      {
+        'package': 'infra/tools/protoc/${{platform}}',
+        'version':  Var('protoc_version')
+      }
+    ],
+    'dep_type': 'cipd',
     'condition': 'build_symbol_server'
   }
 }
@@ -215,6 +245,14 @@ hooks = [
                 'chrome-linux/chrome',
                 Var('chromium_linux'),
     ],
+  },
+  {
+    # Note: On Win, this should run after win_toolchain, as it may use it.
+    'name': 'clang',
+    'pattern': '.',
+    # clang not supported on aix
+    'condition': 'host_os != "aix" and build_symbol_server',
+    'action': ['python', 'devtools-frontend/third_party/clang/scripts/update.py'],
   },
 
 ]

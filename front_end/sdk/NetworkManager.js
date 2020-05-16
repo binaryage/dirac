@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck crbug.com/1081686
+
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
@@ -1095,7 +1097,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     const chromeVersion = MultitargetNetworkManager.getChromeVersion();
     if (chromeVersion.length > 0) {
       const majorVersion = chromeVersion.split('.', 1)[0];
-      return [{brand: 'Chromium', version: majorVersion}, {brand: 'Chrome', version: majorVersion}];
+      return [{brand: 'Chromium', version: majorVersion}, {brand: 'Google Chrome', version: majorVersion}];
     }
     return [];
   }
@@ -1343,7 +1345,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
    * @return {!Promise<void>}
    */
   setInterceptionHandlerForPatterns(patterns, requestInterceptor) {
-    // Note: requestInterceptors may recieve interception requests for patterns they did not subscribe to.
+    // Note: requestInterceptors may receive interception requests for patterns they did not subscribe to.
     this._urlsForRequestInterceptor.deleteAll(requestInterceptor);
     for (const newPattern of patterns) {
       this._urlsForRequestInterceptor.set(requestInterceptor, newPattern);
