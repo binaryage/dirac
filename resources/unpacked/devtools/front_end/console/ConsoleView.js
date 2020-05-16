@@ -702,11 +702,14 @@ export class ConsoleView extends UI.Widget.VBox {
    * @param {string | null} compiler
    */
   _buildPromptPlaceholder(namespace, compiler) {
-    const placeholderEl = createElementWithClass("div", "dirac-prompt-placeholder");
-    const namespaceEl = createElementWithClass("span", "dirac-prompt-namespace");
+    const placeholderEl = document.createElement('div');
+    placeholderEl.classList.add('dirac-prompt-placeholder');
+    const namespaceEl =  document.createElement('span');
+    namespaceEl.classList.add('dirac-prompt-namespace');
     namespaceEl.textContent = namespace || "";
     if (compiler) {
-      const compilerEl = createElementWithClass("span", "dirac-prompt-compiler");
+      const compilerEl = document.createElement('span');
+      compilerEl.classList.add('dirac-prompt-compiler');
       compilerEl.textContent = compiler;
       placeholderEl.appendChildren(namespaceEl, compilerEl);
     } else {
@@ -2160,16 +2163,6 @@ export class ConsoleViewFilter {
 export class ConsoleCommand extends ConsoleViewMessage {
 
   /**
-   * @param {!SDK.ConsoleModel.ConsoleMessage} consoleMessage
-   * @param {!Components.Linkifier.Linkifier} linkifier
-   * @param {number} nestingLevel
-   * @param {function(!Common.EventTarget.EventTargetEvent)} onResize
-   */
-  constructor(consoleMessage, linkifier, nestingLevel, onResize) {
-    super(consoleMessage, linkifier, nestingLevel, onResize);
-    this._formattedCommand = null;
-  }
-  /**
    * @override
    * @return {!Element}
    */
@@ -2214,13 +2207,14 @@ class ConsoleDiracCommand extends ConsoleCommand {
    */
   contentElement() {
     if (!this._contentElement) {
-      this._contentElement = createElementWithClass("div", "console-user-command");
+      this._contentElement = document.createElement('div');
+      this._contentElement.classList.add('console-user-command');
+      this._contentElement.message = this;
       const icon = UI.Icon.Icon.create('smallicon-user-command', 'command-result-icon');
       this._contentElement.appendChild(icon);
 
-      this._contentElement.message = this;
-
-      this._formattedCommand = createElementWithClass("span", "console-message-text source-code cm-s-dirac");
+      this._formattedCommand = document.createElement('span');
+      this._formattedCommand.classList.add('console-message-text', 'source-code', 'cm-s-dirac');
       this._contentElement.appendChild(this._formattedCommand);
 
       CodeMirror.runMode(this.text, "clojure-parinfer", this._formattedCommand, undefined);
@@ -2241,10 +2235,12 @@ class ConsoleDiracMarkup extends ConsoleCommand {
    */
   contentElement() {
     if (!this._contentElement) {
-      this._contentElement = createElementWithClass("div", "console-message console-dirac-markup");
+      this._contentElement = document.createElement('div');
+      this._contentElement.classList.add('console-message', 'console-dirac-markup');
       this._contentElement.message = this;
 
-      this._formattedCommand = createElementWithClass("span", "console-message-text source-code");
+      this._formattedCommand = document.createElement('span');
+      this._formattedCommand.classList.add('console-message-text', 'source-code');
       this._formattedCommand.innerHTML = this.consoleMessage().messageText;
       this._contentElement.appendChild(this._formattedCommand);
 
