@@ -16,9 +16,16 @@ The server is part of the Chrome DevTools frontend that is available on
 ### Prerequisites
 
 Building the server requires
-[depot_tools](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up)
-to fetch dependencies. The dependencies are not fetched by `gclient sync` in
-DevTools by default. To enable it, run
+[depot_tools](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up).
+To check out the source for the DevTools frontend, including the symbol server, follow these steps:
+
+```bash
+mkdir devtools
+cd devtools
+fetch devtools-frontend
+```
+
+The dependencies for the symbol server are not fetched by `gclient sync` in DevTools by default. To enable it, run
 ```bash
 vim $(gclient root)/.gclient
 ```
@@ -26,20 +33,21 @@ In the `custom_vars` section, insert this line:
 ```python
 "build_symbol_server": True,
 ```
-Then run `glient sync` to fetch the dependencies.
+Then run `glient sync` to fetch the dependencies. To update with the latest upstream changes, simply run `git pull`
+followed by `gclient sync` again later.
 
 Building and running the server further require these dependencies:
 * CMake
 * Python3
 * libprotobuf and protoc
 * Swig (for building lldb)
-* The watchdog python package
+* The watchdog python package (optional)
 * XCode and XCode developer tools (MacOS)
 * brew (MacOs)
 
 On Debian, install the dependencies by running
 ```bash
-apt install cmake python3 libprotobuf-dev protobuf-compiler swig python-watchdog
+apt install cmake python3 libprotobuf-dev protobuf-compiler swig
 ```
 
 On MacOS, install the dependencies by
@@ -55,7 +63,6 @@ xcode-select --install
 * cmake, python3, swig, protobuf
 ```bash
 brew install cmake python3 swig protobuf
-pip3 install --user watchdog
 ```
 
 ### Building
@@ -80,7 +87,6 @@ cmake -GNinja \
   -DCMAKE_C_COMPILER_LAUNCHER=/path/to/depot_tools/.cipd_bin/gomacc \
   -DCMAKE_C_COMPILER=/path/to/v8/third_party/llvm-build/Release+Asserts/bin/clang \
   -DCMAKE_CXX_COMPILER=/path/to/v8/third_party/llvm-build/Release+Asserts/bin/clang++ \
-  -DLLDB_INCLUDE_TESTS=OFF \
   ../../back_end/CXXDWARFSymbols
 ninja -j100
 ```
@@ -94,6 +100,11 @@ back_end/CXXDWARFSymbols/tools/symbol-server.py out/SymbolServer/bin/DWARFSymbol
 
 To avoid having to download lots of symbol modules, the tool accepts `-I`
 arguments pointing to file system directories containing the symbol modules.
+
+You can also pass `-watch` when developing the symbol server, which makes
+the Python script watch the symbol server binary for changes and automatically
+restart it when changes are detected. For this to work, you need to install
+the `python3-watchdog` package on Debian.
 
 ### Showing Variable Values
 There is experimental support for showing contents for integer and

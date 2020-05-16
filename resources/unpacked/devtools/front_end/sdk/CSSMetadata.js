@@ -30,22 +30,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as SupportedCSSProperties from '../generated/SupportedCSSProperties.js';
+import * as Platform from '../platform/platform.js';
 
 /**
  * @unrestricted
  */
 export class CSSMetadata {
   /**
-   * @param {!Array.<!CSSPropertyDefinition>} properties
+   * @param {!Array<!CSSPropertyDefinition>} properties
    * @param {!Map<string, string>} aliasesFor
    */
   constructor(properties, aliasesFor) {
-    this._values = /** !Array.<string> */ ([]);
+    /** @type {!Array<string>} */
+    this._values = [];
     /** @type {!Map<string, !Array<string>>} */
     this._longhands = new Map();
     /** @type {!Map<string, !Array<string>>} */
@@ -99,7 +98,7 @@ export class CSSMetadata {
     // and add manually maintained map of extra prop-value pairs
     for (const [propertyName, extraValueObj] of Object.entries(_extraPropertyValues)) {
       if (propertyValueSets.has(propertyName)) {
-        propertyValueSets.get(propertyName).addAll(extraValueObj.values);
+        Platform.SetUtilities.addAll(propertyValueSets.get(propertyName), extraValueObj.values);
       } else {
         propertyValueSets.set(propertyName, new Set(extraValueObj.values));
       }
@@ -174,7 +173,7 @@ export class CSSMetadata {
 
   /**
    * @param {string} shorthand
-   * @return {?Array.<string>}
+   * @return {?Array<string>}
    */
   longhands(shorthand) {
     return this._longhands.get(shorthand) || null;
@@ -182,7 +181,7 @@ export class CSSMetadata {
 
   /**
    * @param {string} longhand
-   * @return {?Array.<string>}
+   * @return {?Array<string>}
    */
   shorthands(longhand) {
     return this._shorthands.get(longhand) || null;
@@ -386,15 +385,19 @@ export const URLRegex = /url\(\s*('.+?'|".+?"|[^)]+)\s*\)/g;
  */
 export const GridAreaRowRegex = /((?:\[[\w\- ]+\]\s*)*(?:"[^"]+"|'[^']+'))[^'"\[]*\[?[^'"\[]*/;
 
+/** @type {?CSSMetadata} */
+let _instance = null;
+
 /**
  * @return {!CSSMetadata}
  */
 export function cssMetadata() {
-  if (!CSSMetadata._instance) {
-    CSSMetadata._instance =
-        new CSSMetadata(SupportedCSSProperties.generatedProperties, SupportedCSSProperties.generatedAliasesFor);
+  if (!_instance) {
+    const supportedProperties =
+        /** @type {!Array<!CSSPropertyDefinition>} */ (SupportedCSSProperties.generatedProperties);
+    _instance = new CSSMetadata(supportedProperties, SupportedCSSProperties.generatedAliasesFor);
   }
-  return CSSMetadata._instance;
+  return _instance;
 }
 
 /**
@@ -1167,6 +1170,7 @@ const Weight = new Map([
 const CommonKeywords = ['auto', 'none'];
 
 /**
- * @typedef {{name: string, longhands: !Array.<string>, inherited: boolean, svg: boolean}}
+ * @typedef {{name: string, longhands: ?Array<string>, inherited: ?boolean, svg: ?boolean}}
  */
+// @ts-ignore typedef
 export let CSSPropertyDefinition;

@@ -12,7 +12,7 @@ import {addBreakpointForLine, clearSourceFilesAdded, getBreakpointDecorators, ge
 describe('Source Tab', async () => {
   it('shows the correct wasm source on load and reload', async () => {
     async function checkSources(frontend: puppeteer.Page) {
-      await waitForAdditionalSourceFiles(frontend);
+      await waitForAdditionalSourceFiles(frontend, 2);
       const capturedFileNames = await retrieveSourceFilesAdded(frontend);
       assert.deepEqual(
           capturedFileNames,

@@ -9,7 +9,8 @@ interface StringConstructor {
 
 interface Array<T> {
   peekLast(): T | undefined;
-  lowerBound(object: T, comparator?: {(a: T, b: T): number}): number;
+  lowerBound<S>(object: S, comparator?: {(a: S, b: T): number}, left?: number, right?: number): number;
+  upperBound<S>(object: S, comparator?: {(a: S, b: T): number}, left?: number, right?: number): number;
 }
 
 // Type alias for the Closure-supported ITemplateArray which is equivalent
@@ -77,4 +78,8 @@ declare namespace Adb {
     networkDiscoveryConfig: NetworkDiscoveryConfig;
   }
   type NetworkDiscoveryConfig = string[];
+}
+
+interface HTMLElement {
+  createChild(tagName: string, className?: string, content?: string): HTMLElement;
 }

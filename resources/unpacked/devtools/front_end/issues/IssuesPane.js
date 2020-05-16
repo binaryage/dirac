@@ -5,8 +5,8 @@
 import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as Components from '../components/components.js';
+import * as Elements from '../elements/elements.js';
 import * as Network from '../network/network.js';
-import * as MixedContentIssue from '../sdk/MixedContentIssue.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -217,8 +217,9 @@ class AffectedCookiesView extends AffectedResourcesView {
 
     const info = document.createElement('td');
     info.classList.add('affected-resource-header');
-    // Prepend a space to align them better with cookie domains starting with a "."
-    info.textContent = '\u2009Context';
+    info.classList.add('affected-resource-cookie-info-header');
+    info.textContent = ls`Domain` +
+        ' & ' + ls`Path`;
     header.appendChild(info);
 
     this._affectedResources.appendChild(header);
@@ -261,9 +262,7 @@ class AffectedCookiesView extends AffectedResourcesView {
     }
     const info = document.createElement('td');
     info.classList.add('affected-resource-cookie-info');
-
-    // Prepend a space for all domains not starting with a "." to align them better.
-    info.textContent = (cookie.domain[0] !== '.' ? '\u2008' : '') + cookie.domain + cookie.path;
+    info.textContent = `${cookie.domain}${cookie.path}`;
 
     element.appendChild(name);
     element.appendChild(info);
@@ -454,7 +453,7 @@ class AffectedMixedContentView extends AffectedResourcesView {
 
     const status = document.createElement('td');
     status.classList.add('affected-resource-mixed-content-info');
-    status.textContent = MixedContentIssue.MixedContentIssue.translateStatus(mixedContent.resolutionStatus);
+    status.textContent = SDK.MixedContentIssue.MixedContentIssue.translateStatus(mixedContent.resolutionStatus);
     element.appendChild(status);
 
     this._affectedResources.appendChild(element);
@@ -493,6 +492,8 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this._affectedRequestsView = new AffectedRequestsView(this, this._issue);
     this._affectedMixedContentView = new AffectedMixedContentView(this, this._issue);
     this._affectedSourcesView = new AffectedSourcesView(this, this._issue);
+
+    this._aggregatedIssuesCount = null;
   }
 
   /**
@@ -512,7 +513,7 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this._affectedMixedContentView.update();
     this.appendAffectedResource(this._affectedSourcesView);
     this._affectedSourcesView.update();
-    this._createReadMoreLink();
+    this._createReadMoreLinks();
 
     this.updateAffectedResourceVisibility();
   }
@@ -528,7 +529,12 @@ class IssueView extends UI.TreeOutline.TreeElement {
     const header = document.createElement('div');
     header.classList.add('header');
     const icon = UI.Icon.Icon.create('largeicon-breaking-change', 'icon');
+    this._aggregatedIssuesCount = /** @type {!HTMLElement} */ (document.createElement('span'));
+    const countAdorner = Elements.Adorner.Adorner.create(this._aggregatedIssuesCount, 'countWrapper');
+    countAdorner.classList.add('aggregated-issues-count');
+    this._aggregatedIssuesCount.textContent = `${this._issue.getAggregatedIssuesCount()}`;
     header.appendChild(icon);
+    header.appendChild(countAdorner);
 
     const title = document.createElement('div');
     title.classList.add('title');
@@ -536,6 +542,12 @@ class IssueView extends UI.TreeOutline.TreeElement {
     header.appendChild(title);
 
     this.listItemElement.appendChild(header);
+  }
+
+  _updateAggregatedIssuesCount() {
+    if (this._aggregatedIssuesCount) {
+      this._aggregatedIssuesCount.textContent = `${this._issue.getAggregatedIssuesCount()}`;
+    }
   }
 
   updateAffectedResourceVisibility() {
@@ -573,14 +585,23 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this.appendChild(messageElement);
   }
 
-  _createReadMoreLink() {
-    const link = UI.XLink.XLink.create(this._description.link, ls`Learn more: ${this._description.linkTitle}`, 'link');
-    const linkIcon = UI.Icon.Icon.create('largeicon-link', 'link-icon');
-    link.prepend(linkIcon);
+  _createReadMoreLinks() {
+    if (this._description.links.length === 0) {
+      return;
+    }
     const linkWrapper = new UI.TreeOutline.TreeElement();
     linkWrapper.setCollapsible(false);
     linkWrapper.listItemElement.classList.add('link-wrapper');
-    linkWrapper.listItemElement.appendChild(link);
+
+    const linkList = linkWrapper.listItemElement.createChild('ul', 'link-list');
+    for (const description of this._description.links) {
+      const link = UI.XLink.XLink.create(description.link, ls`Learn more: ${description.linkTitle}`, 'link');
+      const linkIcon = UI.Icon.Icon.create('largeicon-link', 'link-icon');
+      link.prepend(linkIcon);
+
+      const linkListItem = linkList.createChild('li');
+      linkListItem.appendChild(link);
+    }
     this.appendChild(linkWrapper);
   }
 
@@ -590,6 +611,7 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this._affectedMixedContentView.update();
     this._affectedSourcesView.update();
     this.updateAffectedResourceVisibility();
+    this._updateAggregatedIssuesCount();
   }
 
   /**
@@ -621,6 +643,11 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     this._issuesTree.setShowSelectionOnKeyboardFocus(true);
     this._issuesTree.contentElement.classList.add('issues');
     this.contentElement.appendChild(this._issuesTree.element);
+
+    this._noIssuesMessageDiv = document.createElement('div');
+    this._noIssuesMessageDiv.classList.add('issues-pane-no-issues');
+    this._noIssuesMessageDiv.textContent = ls`No issues detected so far`;
+    this.contentElement.appendChild(this._noIssuesMessageDiv);
 
     /** @type {!BrowserSDK.IssuesManager.IssuesManager} */
     this._issuesManager = BrowserSDK.IssuesManager.IssuesManager.instance();
@@ -710,6 +737,20 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
   _updateCounts() {
     const count = this._issuesManager.numberOfIssues();
     this._updateToolbarIssuesCount(count);
+    this._showIssuesTreeOrNoIssuesDetectedMessage(count);
+  }
+
+  /**
+   * @param {number} issuesCount
+   */
+  _showIssuesTreeOrNoIssuesDetectedMessage(issuesCount) {
+    if (issuesCount > 0 || this._issuesManager.reloadForAccurateInformationRequired()) {
+      this._issuesTree.element.hidden = false;
+      this._noIssuesMessageDiv.style.display = 'none';
+    } else {
+      this._issuesTree.element.hidden = true;
+      this._noIssuesMessageDiv.style.display = 'flex';
+    }
   }
 
   /**
@@ -740,7 +781,7 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
 
     const infobar = new UI.Infobar.Infobar(
         UI.Infobar.Type.Warning,
-        ls`Some issues might be missing or incomplete, reload the inspected page to get full information`,
+        ls`Some issues might be missing or incomplete, reload the inspected page to get the full information.`,
         [{text: ls`Reload page`, highlight: false, delegate: reload, dismiss: true}]);
 
     this._reloadInfobar = infobar;

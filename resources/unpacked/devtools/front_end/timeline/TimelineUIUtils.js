@@ -244,7 +244,7 @@ export class TimelineUIUtils {
     return regExp.test(tokens.join('|'));
 
     /**
-     * @param {!Object} object
+     * @param {!*} object
      * @param {number} depth
      */
     function appendObjectProperties(object, depth) {
@@ -1619,7 +1619,7 @@ export class TimelineUIUtils {
    * @param {!Array<!TimelineModel.TimelineModel.InvalidationTrackingEvent>} invalidations
    */
   static _collectInvalidationNodeIds(nodeIds, invalidations) {
-    nodeIds.addAll(invalidations.map(invalidation => invalidation.nodeId).filter(id => id));
+    Platform.SetUtilities.addAll(nodeIds, invalidations.map(invalidation => invalidation.nodeId).filter(id => id));
   }
 
   /**

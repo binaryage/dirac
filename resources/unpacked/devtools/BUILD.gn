@@ -792,20 +792,25 @@ application_templates = [
   "front_end/worker_app.html",
 ]
 
-generated_applications = [
-  "$resources_out_dir/lighthouse_worker.js",
+generated_applications_html = [
   "$resources_out_dir/devtools_app.html",
-  "$resources_out_dir/devtools_app.js",
   "$resources_out_dir/inspector.html",
-  "$resources_out_dir/inspector.js",
+  "$resources_out_dir/integration_test_runner.html",
   "$resources_out_dir/js_app.html",
-  "$resources_out_dir/js_app.js",
+  "$resources_out_dir/ndb_app.html",
   "$resources_out_dir/node_app.html",
+  "$resources_out_dir/toolbox.html",
+  "$resources_out_dir/worker_app.html",
+]
+
+generated_applications_js = [
+  "$resources_out_dir/lighthouse_worker.js",
+  "$resources_out_dir/devtools_app.js",
+  "$resources_out_dir/inspector.js",
+  "$resources_out_dir/js_app.js",
   "$resources_out_dir/node_app.js",
   "$resources_out_dir/shell.js",
-  "$resources_out_dir/toolbox.html",
   "$resources_out_dir/toolbox.js",
-  "$resources_out_dir/worker_app.html",
   "$resources_out_dir/worker_app.js",
 ]
 
@@ -967,6 +972,7 @@ devtools_frontend_resources_deps = devtools_typescript_deps + [
                                      ":copy_lighthouse_locale_files",
                                      ":copy_wasm_deps",
                                      ":devtools_extension_api",
+                                     "front_end",
                                    ]
 
 if (is_debug) {
@@ -1336,9 +1342,11 @@ all_devtools_modules = [
   "persistence/PlatformFileSystem.js",
   "persistence/WorkspaceSettingsTab.js",
   "platform/utilities.js",
+  "platform/set-utilities.js",
   "platform/string-utilities.js",
   "platform/number-utilities.js",
   "platform/array-utilities.js",
+  "platform/date-utilities.js",
   "platform/UIString.js",
   "profiler/TopDownProfileDataGrid.js",
   "profiler/ProfileView.js",
@@ -1688,8 +1696,9 @@ action("generate_devtools_grd") {
 
   grd_files =
       generated_devtools_module_entrypoints + output_devtools_modules +
-      generated_applications + generated_non_autostart_non_remote_modules +
-      devtools_embedder_scripts + generated_worker_bundles +
+      generated_applications_html + generated_applications_js +
+      generated_non_autostart_non_remote_modules + devtools_embedder_scripts +
+      generated_worker_bundles +
       [
         "$resources_out_dir/devtools_extension_api.js",
         "$resources_out_dir/sdk/wasm_source_map/pkg/wasm_source_map_bg.wasm",
@@ -1747,7 +1756,7 @@ action("build_release_devtools") {
            application_templates + all_worker_entrypoints +
            front_end_devtools_module_entrypoints + input_devtools_modules
   outputs =
-      generated_applications + generated_non_autostart_non_remote_modules +
+      generated_applications_js + generated_non_autostart_non_remote_modules +
       generated_remote_modules + generated_test_modules +
       generated_worker_bundles + generated_devtools_module_entrypoints
 
