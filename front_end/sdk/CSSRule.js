@@ -86,9 +86,7 @@ export class CSSRule {
   }
 }
 
-/**
- * @unrestricted
- */
+
 class CSSValue {
   /**
    * @param {!Protocol.CSS.Value} payload
@@ -111,9 +109,7 @@ class CSSValue {
   }
 }
 
-/**
- * @unrestricted
- */
+
 export class CSSStyleRule extends CSSRule {
   /**
    * @param {!CSSModel} cssModel
@@ -123,6 +119,8 @@ export class CSSStyleRule extends CSSRule {
   constructor(cssModel, payload, wasUsed) {
     super(cssModel, payload);
 
+    /** @type {!Array.<!CSSValue>} */
+    this.selectors;
     this._reinitializeSelectors(payload.selectorList);
     this.media = payload.media ? CSSMedia.parseMediaArrayPayload(cssModel, payload.media) : [];
     this.wasUsed = wasUsed || false;
@@ -147,7 +145,6 @@ export class CSSStyleRule extends CSSRule {
    * @param {!Protocol.CSS.SelectorList} selectorList
    */
   _reinitializeSelectors(selectorList) {
-    /** @type {!Array.<!CSSValue>} */
     this.selectors = [];
     for (let i = 0; i < selectorList.selectors.length; ++i) {
       this.selectors.push(new CSSValue(selectorList.selectors[i]));
@@ -241,9 +238,6 @@ export class CSSStyleRule extends CSSRule {
 }
 
 
-/**
- * @unrestricted
- */
 export class CSSKeyframesRule {
   /**
    * @param {!CSSModel} cssModel

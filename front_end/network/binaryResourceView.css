@@ -6,15 +6,15 @@
 
 .panel.network .toolbar.binary-view-toolbar {
   border-top: 1px solid #ccc;
-  border-bottom: 0px;
+  border-bottom: 0;
   padding-left: 5px;
 }
 
 .binary-view-copied-text {
-  opacity: 1;
+  opacity: 100%;
 }
 
 .binary-view-copied-text.fadeout {
-  opacity: 0;
+  opacity: 0%;
   transition: opacity 1s;
 }

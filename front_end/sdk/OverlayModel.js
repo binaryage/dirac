@@ -22,6 +22,9 @@ export let HighlightColor;
  */
 export let HighlightRect;
 
+/** @typedef {!{width: number, height: number, x: number, y: number, contentColor:HighlightColor, outlineColor: HighlightColor}} */
+export let Hinge;
+
 /**
  * @implements {Protocol.OverlayDispatcher}
  */
@@ -116,7 +119,7 @@ export class OverlayModel extends SDKModel {
 
   /**
    * @param {!HighlightRect} rect
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   highlightRect({x, y, width, height, color, outlineColor}) {
     const highlightColor = color || {r: 255, g: 0, b: 255, a: 0.3};
@@ -126,14 +129,14 @@ export class OverlayModel extends SDKModel {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   clearHighlight() {
     return this._overlayAgent.invoke_hideHighlight({});
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   _wireAgentToSettings() {
     this._registeredListeners = [
@@ -182,7 +185,7 @@ export class OverlayModel extends SDKModel {
 
   /**
    * @override
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   suspendModel() {
     Common.EventTarget.EventTarget.removeEventListeners(this._registeredListeners);
@@ -191,7 +194,7 @@ export class OverlayModel extends SDKModel {
 
   /**
    * @override
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   resumeModel() {
     this._overlayAgent.enable();
@@ -230,7 +233,7 @@ export class OverlayModel extends SDKModel {
   /**
    * @param {!Protocol.Overlay.InspectMode} mode
    * @param {boolean=} showStyles
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async setInspectMode(mode, showStyles = true) {
     await this._domModel.requestDocument();
@@ -289,6 +292,20 @@ export class OverlayModel extends SDKModel {
       this._hideHighlightTimeout = null;
     }
     this._highlighter.highlightFrame(frameId);
+  }
+
+  /**
+   * @param {boolean} show
+   * @param {?Hinge} hinge
+   */
+  showHingeForDualScreen(show, hinge = null) {
+    if (show) {
+      const {x, y, width, height, contentColor, outlineColor} = hinge;
+      this._overlayAgent.setShowHinge(
+          {rect: {x: x, y: y, width: width, height: height}, contentColor: contentColor, outlineColor: outlineColor});
+    } else {
+      this._overlayAgent.setShowHinge();
+    }
   }
 
   /**
@@ -412,7 +429,7 @@ export class Highlighter {
   /**
    * @param {!Protocol.Overlay.InspectMode} mode
    * @param {!Protocol.Overlay.HighlightConfig} config
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   setInspectMode(mode, config) {
   }
@@ -455,7 +472,7 @@ class DefaultHighlighter {
    * @override
    * @param {!Protocol.Overlay.InspectMode} mode
    * @param {!Protocol.Overlay.HighlightConfig} config
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   setInspectMode(mode, config) {
     return this._model._overlayAgent.setInspectMode(mode, config);

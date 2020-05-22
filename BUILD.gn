@@ -311,7 +311,6 @@ all_devtools_files = [
   "front_end/third_party/lighthouse/report-assets/report-generator.js",
   "front_end/third_party/lighthouse/report-assets/template.html",
   "front_end/third_party/lighthouse/report-assets/templates.html",
-  "front_end/third_party/wasmparser/module.json",
   "front_end/timeline_model/module.json",
   "front_end/timeline/historyToolbarButton.css",
   "front_end/timeline/invalidationsTree.css",
@@ -923,32 +922,17 @@ group("devtools_all_files") {
   deps = [ ":devtools_frontend_resources_data" ]
 }
 
-devtools_typescript_deps = [
-  "front_end/bindings",
-  "front_end/browser_sdk",
-  "front_end/common:common",
-  "front_end/elements",
-  "front_end/formatter_worker",
-  "front_end/host",
-  "front_end/issues:issues",
-  "front_end/protocol_client",
-  "front_end/root",
-  "front_end/sdk:sdk",
-  "front_end/third_party/codemirror",
-  "front_end/workspace",
+devtools_frontend_resources_deps = [
+  ":build_release_devtools",
+  ":copy_embedder_scripts",
+  ":copy_emulated_devices_images",
+  ":copy_htaccess",
+  ":copy_inspector_images",
+  ":copy_lighthouse_locale_files",
+  ":copy_wasm_deps",
+  ":devtools_extension_api",
+  "front_end",
 ]
-
-devtools_frontend_resources_deps = devtools_typescript_deps + [
-                                     ":build_release_devtools",
-                                     ":copy_embedder_scripts",
-                                     ":copy_emulated_devices_images",
-                                     ":copy_htaccess",
-                                     ":copy_inspector_images",
-                                     ":copy_lighthouse_locale_files",
-                                     ":copy_wasm_deps",
-                                     ":devtools_extension_api",
-                                     "front_end",
-                                   ]
 
 if (is_debug) {
   devtools_frontend_resources_deps += [ ":copy_devtools_modules" ]
@@ -970,6 +954,10 @@ if (!is_android) {
 
 group("devtools_frontend_resources") {
   public_deps = devtools_frontend_resources_deps
+}
+
+group("devtools_inspector_overlay_resources") {
+  public_deps = [ "front_end/inspector_overlay:build_inspector_overlay" ]
 }
 
 # Do not use this unless you need unpacked devtools at runtime.
@@ -1069,18 +1057,6 @@ all_devtools_modules = [
   "changes/ChangesTextEditor.js",
   "changes/ChangesView.js",
   "cm_modes/DefaultCodeMirrorMimeMode.js",
-  "cm/active-line.js",
-  "cm/brace-fold.js",
-  "cm/closebrackets.js",
-  "cm/codemirror.js",
-  "cm/comment.js",
-  "cm/foldcode.js",
-  "cm/foldgutter.js",
-  "cm/mark-selection.js",
-  "cm/matchbrackets.js",
-  "cm/multiplex.js",
-  "cm/overlay.js",
-  "cm/simple.js",
   "color_picker/ContrastDetails.js",
   "color_picker/ContrastInfo.js",
   "color_picker/ContrastOverlay.js",
@@ -1513,8 +1489,21 @@ all_devtools_modules = [
   "third_party/codemirror/package/mode/xml/xml.js",
   "third_party/codemirror/package/mode/htmlmixed/htmlmixed.js",
   "third_party/codemirror/package/mode/htmlembedded/htmlembedded.js",
-  "third_party/wasmparser/WasmDis.js",
-  "third_party/wasmparser/WasmParser.js",
+  "third_party/codemirror/package/mode/wast/wast.js",
+  "third_party/codemirror/package/lib/codemirror.js",
+  "third_party/codemirror/package/addon/comment/comment.js",
+  "third_party/codemirror/package/addon/edit/closebrackets.js",
+  "third_party/codemirror/package/addon/edit/matchbrackets.js",
+  "third_party/codemirror/package/addon/mode/multiplex.js",
+  "third_party/codemirror/package/addon/mode/overlay.js",
+  "third_party/codemirror/package/addon/mode/simple.js",
+  "third_party/codemirror/package/addon/selection/active-line.js",
+  "third_party/codemirror/package/addon/selection/mark-selection.js",
+  "third_party/codemirror/package/addon/fold/foldcode.js",
+  "third_party/codemirror/package/addon/fold/foldgutter.js",
+  "third_party/codemirror/package/addon/fold/brace-fold.js",
+  "third_party/wasmparser/package/esm/WasmDis.js",
+  "third_party/wasmparser/package/esm/WasmParser.js",
   "timeline/UIDevtoolsUtils.js",
   "timeline/UIDevtoolsController.js",
   "timeline/TimelineUIUtils.js",

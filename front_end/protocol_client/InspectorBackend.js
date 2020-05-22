@@ -168,9 +168,9 @@ export class InspectorBackend {
   /**
    * @param {function((T|undefined)):void} clientCallback
    * @param {string} errorPrefix
-   * @param {function(new:T,S)=} constructor
+   * @param {function(new:T,S):void=} constructor
    * @param {T=} defaultValue
-   * @return {function(?string, S)}
+   * @return {function(?string, S):void}
    * @template T,S
    */
   wrapClientCallback(clientCallback, errorPrefix, constructor, defaultValue) {
@@ -519,7 +519,7 @@ export class SessionRouter {
   }
 
   /**
-   * @param {function()=} script
+   * @param {function():void=} script
    */
   _deprecatedRunAfterPendingDispatches(script) {
     if (script) {
@@ -647,6 +647,51 @@ export class TargetBase {
     return this._router;
   }
 
+
+  // Agent accessors, keep alphabetically sorted.
+
+  /**
+   * @return {!ProtocolProxyApi.CacheStorageApi}
+   */
+  cacheStorageAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.DebuggerApi}
+   */
+  debuggerAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.DOMDebuggerApi}
+   */
+  domdebuggerAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.HeapProfilerApi}
+   */
+  heapProfilerAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.LayerTreeApi}
+   */
+  layerTreeAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.MemoryApi}
+   */
+  memoryAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
   /**
    * @return {!ProtocolProxyApi.NetworkApi}
    */
@@ -655,9 +700,61 @@ export class TargetBase {
   }
 
   /**
-   * @return {!ProtocolProxyApi.LayerTreeApi}
+   * @return {!ProtocolProxyApi.PerformanceApi}
    */
-  layerTreeAgent() {
+  performanceAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.ServiceWorkerApi}
+   */
+  serviceWorkerAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.StorageApi}
+   */
+  storageAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+
+  // Dispatcher registration, keep alphabetically sorted.
+
+  /**
+   * @param {!ProtocolProxyApi.DebuggerDispatcher} dispatcher
+   */
+  registerDebuggerDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @param {!ProtocolProxyApi.HeapProfilerDispatcher} dispatcher
+   */
+  registerHeapProfilerDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @param {!ProtocolProxyApi.NetworkDispatcher} dispatcher
+   */
+  registerNetworkDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @param {!ProtocolProxyApi.StorageDispatcher} dispatcher
+   */
+  registerStorageDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @param {!ProtocolProxyApi.ServiceWorkerDispatcher} dispatcher
+   */
+  registerServiceWorkerDispatcher(dispatcher) {
     throw new Error('Implemented in InspectorBackend.js');
   }
 }
@@ -910,8 +1007,13 @@ class _DispatcherPrototype {
 
     for (let index = 0; index < this._dispatchers.length; ++index) {
       const dispatcher = this._dispatchers[index];
+
       if (functionName in dispatcher) {
-        dispatcher[functionName].apply(dispatcher, params);
+        if (dispatcher.usesObjectNotation && dispatcher.usesObjectNotation()) {
+          dispatcher[functionName].call(dispatcher, {...messageObject.params});
+        } else {
+          dispatcher[functionName].apply(dispatcher, params);
+        }
       }
     }
   }

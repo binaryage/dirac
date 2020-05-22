@@ -8,9 +8,7 @@
 import * as Common from '../common/common.js';
 import {ContextFlavorListener} from './ContextFlavorListener.js';
 
-/**
- * @unrestricted
- */
+
 export class Context {
   constructor() {
     this._flavors = new Map();
@@ -18,7 +16,7 @@ export class Context {
   }
 
   /**
-   * @param {function(new:T, ...)} flavorType
+   * @param {function(new:T, ...):void} flavorType
    * @param {?T} flavorValue
    * @template T
    */
@@ -37,7 +35,7 @@ export class Context {
   }
 
   /**
-   * @param {function(new:T, ...)} flavorType
+   * @param {function(new:T, ...):void} flavorType
    * @param {?T} flavorValue
    * @template T
    */
@@ -56,8 +54,8 @@ export class Context {
   }
 
   /**
-   * @param {function(new:Object, ...)} flavorType
-   * @param {function(!Common.EventTarget.EventTargetEvent)} listener
+   * @param {function(new:Object, ...):void} flavorType
+   * @param {function(!Common.EventTarget.EventTargetEvent):*} listener
    * @param {!Object=} thisObject
    */
   addFlavorChangeListener(flavorType, listener, thisObject) {
@@ -70,8 +68,8 @@ export class Context {
   }
 
   /**
-   * @param {function(new:Object, ...)} flavorType
-   * @param {function(!Common.EventTarget.EventTargetEvent)} listener
+   * @param {function(new:Object, ...):void} flavorType
+   * @param {function(!Common.EventTarget.EventTargetEvent):*} listener
    * @param {!Object=} thisObject
    */
   removeFlavorChangeListener(flavorType, listener, thisObject) {
@@ -86,7 +84,7 @@ export class Context {
   }
 
   /**
-   * @param {function(new:T, ...)} flavorType
+   * @param {function(new:T, ...):void} flavorType
    * @return {?T}
    * @template T
    */

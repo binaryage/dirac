@@ -81,7 +81,7 @@ export class TextEditor extends Common.EventTarget.EventTarget {
   }
 
   /**
-   * @param {function(!KeyboardEvent)} handler
+   * @param {function(!KeyboardEvent):void} handler
    */
   addKeyDownHandler(handler) {
   }
@@ -126,7 +126,7 @@ export const Events = {
 
 /**
  * @typedef {{
-  *  bracketMatchingSetting: (!Common.Settings.Setting|undefined),
+  *  bracketMatchingSetting: (!Common.Settings.Setting<*>|undefined),
   *  devtoolsAccessibleName: (string|undefined),
   *  lineNumbers: boolean,
   *  lineWrapping: boolean,
@@ -134,7 +134,8 @@ export const Events = {
   *  autoHeight: (boolean|undefined),
   *  padBottom: (boolean|undefined),
   *  maxHighlightLength: (number|undefined),
-  *  placeholder: (string|undefined)
+  *  placeholder: (string|undefined),
+  *  lineWiseCopyCut: (boolean|undefined)
   * }}
   */
 export let Options;

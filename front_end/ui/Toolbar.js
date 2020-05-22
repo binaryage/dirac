@@ -396,7 +396,7 @@ export class Toolbar {
 
   /**
    * @param {string} location
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async appendItemsAtLocation(location) {
     const extensions = self.runtime.extensions(Provider);
@@ -794,7 +794,7 @@ export class ToolbarToggle extends ToolbarButton {
  */
 export class ToolbarMenuButton extends ToolbarButton {
   /**
-   * @param {function(!ContextMenu)} contextMenuHandler
+   * @param {function(!ContextMenu):void} contextMenuHandler
    * @param {boolean=} useSoftMenu
    */
   constructor(contextMenuHandler, useSoftMenu) {
@@ -855,7 +855,7 @@ export class ToolbarMenuButton extends ToolbarButton {
  */
 export class ToolbarSettingToggle extends ToolbarToggle {
   /**
-   * @param {!Common.Settings.Setting} setting
+   * @param {!Common.Settings.Setting<boolean>} setting
    * @param {string} glyph
    * @param {string} title
    */
@@ -922,7 +922,7 @@ export class ItemsProvider {
  */
 export class ToolbarComboBox extends ToolbarItem {
   /**
-   * @param {?function(!Event)} changeHandler
+   * @param {?function(!Event):void} changeHandler
    * @param {string} title
    * @param {string=} className
    */
@@ -1058,7 +1058,7 @@ export class ToolbarComboBox extends ToolbarItem {
 export class ToolbarSettingComboBox extends ToolbarComboBox {
   /**
    * @param {!Array<!{value: string, label: string}>} options
-   * @param {!Common.Settings.Setting} setting
+   * @param {!Common.Settings.Setting<*>} setting
    * @param {string} accessibleName
    */
   constructor(options, setting, accessibleName) {
@@ -1125,7 +1125,7 @@ export class ToolbarCheckbox extends ToolbarItem {
   /**
    * @param {string} text
    * @param {string=} tooltip
-   * @param {function()=} listener
+   * @param {function():void=} listener
    */
   constructor(text, tooltip, listener) {
     super(CheckboxLabel.create(text));
@@ -1167,7 +1167,7 @@ export class ToolbarCheckbox extends ToolbarItem {
 
 export class ToolbarSettingCheckbox extends ToolbarCheckbox {
   /**
-   * @param {!Common.Settings.Setting} setting
+   * @param {!Common.Settings.Setting<*>} setting
    * @param {string=} tooltip
    * @param {string=} alternateTitle
    */

@@ -85,9 +85,6 @@ export class TimelineController {
     }
     if (!Root.Runtime.queryParam('timelineTracingJSProfileDisabled') && options.enableJSSampling) {
       categoriesArray.push(disabledByDefault('v8.cpu_profiler'));
-      if (Common.Settings.Settings.instance().moduleSetting('highResolutionCpuProfiling').get()) {
-        categoriesArray.push(disabledByDefault('v8.cpu_profiler.hires'));
-      }
     }
     categoriesArray.push(disabledByDefault('devtools.timeline.stack'));
     if (Root.Runtime.experiments.isEnabled('timelineInvalidationTracking')) {
@@ -223,10 +220,7 @@ export class TimelineController {
       return;
     }
 
-    const samplingFrequencyHz =
-        Common.Settings.Settings.instance().moduleSetting('highResolutionCpuProfiling').get() ? 10000 : 1000;
-    const options = 'sampling-frequency=' + samplingFrequencyHz;
-    return this._tracingManager.start(this, categories, options);
+    return this._tracingManager.start(this, categories, '');
   }
 
   /**

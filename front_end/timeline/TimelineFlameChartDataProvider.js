@@ -762,6 +762,14 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         time = ls`Occurrences: ${occurrences}`;
       }
 
+      if (this._model && this._model.isParseHTMLEvent(event)) {
+        const startLine = event.args['beginData']['startLine'];
+        const endLine = event.args['endData'] && event.args['endData']['endLine'];
+        const url = Bindings.ResourceUtils.displayNameForURL(event.args['beginData']['url']);
+        const range = (endLine !== -1 || endLine === startLine) ? `${startLine}...${endLine}` : startLine;
+        title += ` - ${url} [${range}]`;
+      }
+
     } else if (type === EntryType.Frame) {
       const frame = /** @type {!TimelineModel.TimelineFrameModel.TimelineFrame} */ (this._entryData[entryIndex]);
       time = Common.UIString.UIString(
@@ -1124,17 +1132,23 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
       timelineData.flowEndLevels[flowIndex] = level;
     }
 
+    const eventId = event.id;
+
+    if (!eventId) {
+      return;
+    }
+
     switch (event.phase) {
       case SDK.TracingModel.Phase.FlowBegin:
-        this._flowEventIndexById.set(event.id, pushStartFlow(event));
+        this._flowEventIndexById.set(eventId, pushStartFlow(event));
         break;
       case SDK.TracingModel.Phase.FlowStep:
-        pushEndFlow(event, this._flowEventIndexById.get(event.id));
-        this._flowEventIndexById.set(event.id, pushStartFlow(event));
+        pushEndFlow(event, this._flowEventIndexById.get(eventId));
+        this._flowEventIndexById.set(eventId, pushStartFlow(event));
         break;
       case SDK.TracingModel.Phase.FlowEnd:
-        pushEndFlow(event, this._flowEventIndexById.get(event.id));
-        this._flowEventIndexById.delete(event.id);
+        pushEndFlow(event, this._flowEventIndexById.get(eventId));
+        this._flowEventIndexById.delete(eventId);
         break;
     }
   }

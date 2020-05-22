@@ -23,11 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
-import * as ProtocolClient from '../protocol_client/protocol_client.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';  // eslint-disable-line no-unused-vars
 import * as TextUtils from '../text_utils/text_utils.js';
 
 import {DebuggerModel, Location} from './DebuggerModel.js';  // eslint-disable-line no-unused-vars
@@ -57,10 +54,15 @@ export class Script {
    * @param {?Protocol.Runtime.StackTrace} originStackTrace
    * @param {?number} codeOffset
    * @param {?string} scriptLanguage
+   * @param {?Protocol.Debugger.DebugSymbols} debugSymbols
    */
   constructor(
       debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash,
-      isContentScript, isLiveEdit, sourceMapURL, hasSourceURL, length, originStackTrace, codeOffset, scriptLanguage) {
+      isContentScript, isLiveEdit, sourceMapURL, hasSourceURL, length, originStackTrace, codeOffset, scriptLanguage,
+      debugSymbols) {
+    /** @type {?string} */
+    this._source;
+
     this.debuggerModel = debuggerModel;
     this.scriptId = scriptId;
     this.sourceURL = sourceURL;
@@ -74,6 +76,11 @@ export class Script {
     this._isContentScript = isContentScript;
     this._isLiveEdit = isLiveEdit;
     this.sourceMapURL = sourceMapURL;
+    if (!sourceMapURL && debugSymbols && debugSymbols.type === 'EmbeddedDWARF') {
+      // TODO(chromium:1064248) Remove this once we either drop gimli or support DebugSymbols all the way down.
+      this.sourceMapURL = 'wasm://dwarf';
+    }
+    this.debugSymbols = debugSymbols;
     this.hasSourceURL = hasSourceURL;
     this.contentLength = length;
     this._originalContentProvider = null;
@@ -183,7 +190,7 @@ export class Script {
       return {content: this._source, isEncoded: false};
     }
     if (!this.scriptId) {
-      return {error: ls`Script removed or deleted.`, isEncoded: false};
+      return {content: null, error: ls`Script removed or deleted.`, isEncoded: false};
     }
 
     try {
@@ -207,12 +214,12 @@ export class Script {
           });
           worker.postMessage({method: 'disassemble', params: {content: sourceOrBytecode.bytecode}});
 
-          /** @type {{source: string, offsets: ?Array<number>, functionBodyOffsets: ?Array<?{start: number, end: number}>}} */
+          /** @type {{source: string, offsets: ?Array<number>, functionBodyOffsets: ?Array<{start: number, end: number}>}} */
           const data = (await promise).data;
           this._source = data.source;
           this._lineMap = data.offsets;
           this._functionBodyOffsets = data.functionBodyOffsets;
-          this.endLine = this._lineMap.length;
+          this.endLine = (this._lineMap && this._lineMap.length) || 0;
         }
       }
 
@@ -221,7 +228,7 @@ export class Script {
       }
       return {content: this._source, isEncoded: false};
     } catch (err) {
-      return {error: ls`Unable to fetch script source.`, isEncoded: false};
+      return {content: null, error: ls`Unable to fetch script source.`, isEncoded: false};
     }
   }
 
@@ -229,8 +236,8 @@ export class Script {
    * @return {!Promise<!ArrayBuffer>}
    */
   async getWasmBytecode() {
-    const base64 = await this.debuggerModel.target().debuggerAgent().getWasmBytecode(this.scriptId);
-    const response = await fetch(`data:application/wasm;base64,${base64}`);
+    const base64 = await this.debuggerModel.target().debuggerAgent().invoke_getWasmBytecode({scriptId: this.scriptId});
+    const response = await fetch(`data:application/wasm;base64,${base64.bytecode}`);
     return response.arrayBuffer();
   }
 
@@ -241,7 +248,7 @@ export class Script {
     if (!this._originalContentProvider) {
       const lazyContent = () => this.requestContent().then(() => {
         return {
-          content: this._originalSource,
+          content: this._originalSource || '',
           isEncoded: false,
         };
       });
@@ -263,9 +270,10 @@ export class Script {
       return [];
     }
 
-    const matches =
-        await this.debuggerModel.target().debuggerAgent().searchInContent(this.scriptId, query, caseSensitive, isRegex);
-    return (matches || []).map(match => new TextUtils.ContentProvider.SearchMatch(match.lineNumber, match.lineContent));
+    const matches = await this.debuggerModel.target().debuggerAgent().invoke_searchInContent(
+        {scriptId: this.scriptId, query, caseSensitive, isRegex});
+    return (matches.result || [])
+        .map(match => new TextUtils.ContentProvider.SearchMatch(match.lineNumber, match.lineContent));
   }
 
   /**
@@ -301,19 +309,19 @@ export class Script {
     const response = await this.debuggerModel.target().debuggerAgent().invoke_setScriptSource(
         {scriptId: this.scriptId, scriptSource: newSource});
 
-    if (!response[ProtocolClient.InspectorBackend.ProtocolError] && !response.exceptionDetails) {
+    if (!response.getError() && !response.exceptionDetails) {
       this._source = newSource;
     }
 
     const needsStepIn = !!response.stackChanged;
     callback(
-        response[ProtocolClient.InspectorBackend.ProtocolError], response.exceptionDetails, response.callFrames,
-        response.asyncStackTrace, response.asyncStackTraceId, needsStepIn);
+        response.getError() || null, response.exceptionDetails, response.callFrames, response.asyncStackTrace,
+        response.asyncStackTraceId, needsStepIn);
   }
 
   /**
    * @param {number} lineNumber
-   * @param {number=} columnNumber
+   * @param {number} columnNumber
    * @return {?Location}
    */
   rawLocation(lineNumber, columnNumber) {
@@ -328,7 +336,7 @@ export class Script {
    * @return {?Location}
    */
   wasmByteLocation(lineNumber) {
-    if (lineNumber < this._lineMap.length) {
+    if (this._lineMap && lineNumber < this._lineMap.length) {
       return new Location(this.debuggerModel, this.scriptId, 0, this._lineMap[lineNumber]);
     }
     return null;
@@ -341,7 +349,7 @@ export class Script {
   wasmDisassemblyLine(byteOffset) {
     let line = 0;
     // TODO: Implement binary search if necessary for large wasm modules
-    while (line < this._lineMap.length && byteOffset > this._lineMap[line]) {
+    while (this._lineMap && line < this._lineMap.length && byteOffset > this._lineMap[line]) {
       line++;
     }
     return line;
@@ -427,9 +435,14 @@ export class Script {
   async setBlackboxedRanges(positions) {
     const response = await this.debuggerModel.target().debuggerAgent().invoke_setBlackboxedRanges(
         {scriptId: this.scriptId, positions});
-    return !response[ProtocolClient.InspectorBackend.ProtocolError];
+    return !response.getError();
   }
 
+  /**
+   * @param {number} lineNumber
+   * @param {number} columnNumber
+   * @return {boolean}
+   */
   containsLocation(lineNumber, columnNumber) {
     const afterStart =
         (lineNumber === this.lineOffset && columnNumber >= this.columnOffset) || lineNumber > this.lineOffset;
@@ -444,7 +457,7 @@ export class Script {
     if (typeof this[frameIdSymbol] !== 'string') {
       this[frameIdSymbol] = frameIdForScript(this);
     }
-    return this[frameIdSymbol];
+    return this[frameIdSymbol] || '';
   }
 }
 

@@ -267,7 +267,7 @@ export class CSSModel extends SDKModel {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<?>}
    */
   stopCoverage() {
     this._isRuleUsageTrackingEnabled = false;
@@ -290,7 +290,7 @@ export class CSSModel extends SDKModel {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<?>}
    */
   async _enable() {
     await this._agent.enable();
@@ -697,7 +697,7 @@ export class CSSModel extends SDKModel {
 
   /**
    * @override
-   * @return {!Promise}
+   * @return {!Promise<?>}
    */
   suspendModel() {
     this._isEnabled = false;
@@ -706,7 +706,7 @@ export class CSSModel extends SDKModel {
 
   /**
    * @override
-   * @return {!Promise}
+   * @return {!Promise<?>}
    */
   async resumeModel() {
     return this._enable();
@@ -763,9 +763,7 @@ export const Events = {
 
 const PseudoStateMarker = 'pseudo-state-marker';
 
-/**
- * @unrestricted
- */
+
 export class Edit {
   /**
    * @param {!Protocol.CSS.StyleSheetId} styleSheetId
@@ -862,9 +860,7 @@ class CSSDispatcher {
   }
 }
 
-/**
- * @unrestricted
- */
+
 class ComputedStyleLoader {
   /**
    * @param {!CSSModel} cssModel
@@ -907,9 +903,7 @@ class ComputedStyleLoader {
   }
 }
 
-/**
- * @unrestricted
- */
+
 export class InlineStyleResult {
   /**
    * @param {?CSSStyleDeclaration} inlineStyle

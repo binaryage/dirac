@@ -1,0 +1,8 @@
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "alpha-value-notation": "percentage",
+    "color-function-notation": "modern",
+    "hue-degree-notation": "angle"
+  }
+}

@@ -7,13 +7,18 @@ import("../../../third_party/typescript/typescript.gni")
 ts_library("helpers") {
   testonly = true
   sources = [
+    "animations-helpers.ts",
     "application-helpers.ts",
     "console-helpers.ts",
+    "coverage-helpers.ts",
+    "cross-tool-helper.ts",
     "elements-helpers.ts",
     "event-listeners-helpers.ts",
     "layers-helpers.ts",
     "lighthouse-helpers.ts",
     "media-helpers.ts",
+    "memory-helpers.ts",
+    "performance-helpers.ts",
     "profiler-helpers.ts",
     "quick_open-helpers.ts",
     "search-helpers.ts",
