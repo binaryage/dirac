@@ -1,4 +1,7 @@
+file://COMMON_OWNERS
+
 alph@chromium.org
 caseq@chromium.org
 
+per-file *_test_runner=file://COMMON_OWNERS
 per-file audits*=file://LIGHTHOUSE_OWNERS

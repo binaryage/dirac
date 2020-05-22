@@ -808,7 +808,7 @@ export class TreeElement {
   }
 
   /**
-   * @param {!Config} editingConfig
+   * @param {!Config<*>} editingConfig
    */
   startEditingTitle(editingConfig) {
     InplaceEditor.startEditing(/** @type {!Element} */ (this.titleElement), editingConfig);
@@ -1097,7 +1097,7 @@ export class TreeElement {
 
   /**
    * @param {number=} maxDepth
-   * @returns {!Promise}
+   * @returns {!Promise<void>}
    */
   async expandRecursively(maxDepth) {
     let item = this;
@@ -1333,7 +1333,7 @@ export class TreeElement {
   }
 
   /**
-   * @returns {!Promise}
+   * @returns {!Promise<void>}
    */
   async _populateIfNeeded() {
     if (this.treeOutline && this._expandable && !this._children) {
@@ -1343,7 +1343,7 @@ export class TreeElement {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async onpopulate() {
     // Overridden by subclasses.

@@ -7,6 +7,7 @@
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
 
 import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import {ObjectSnapshot} from './TracingModel.js';            // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
@@ -71,6 +72,8 @@ export class TracingManager extends SDKModel {
     this._finishing = false;
   }
 
+  // TODO(petermarshall): Use the traceConfig argument instead of deprecated
+  // categories + options.
   /**
    * @param {!TracingManagerClient} client
    * @param {string} categoryFilter
@@ -87,7 +90,7 @@ export class TracingManager extends SDKModel {
       bufferUsageReportingInterval: bufferUsageReportingIntervalMs,
       categories: categoryFilter,
       options: options,
-      transferMode: TransferMode.ReportEvents
+      transferMode: Protocol.Tracing.StartRequestTransferMode.ReportEvents,
     };
     const response = await this._tracingAgent.invoke_start(args);
     if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
@@ -107,11 +110,6 @@ export class TracingManager extends SDKModel {
     this._tracingAgent.end();
   }
 }
-
-const TransferMode = {
-  ReportEvents: 'ReportEvents',
-  ReturnAsStream: 'ReturnAsStream'
-};
 
 /**
  * @interface
@@ -184,7 +182,11 @@ SDKModel.register(TracingManager, Capability.Tracing, false);
         ts: number,
         ph: string,
         name: string,
-        args: !Object,
+        args: !{
+          sort_index: number,
+          name: string,
+          snapshot: ObjectSnapshot,
+        },
         dur: number,
         id: string,
         id2: (!{global: (string|undefined), local: (string|undefined)}|undefined),

@@ -140,6 +140,14 @@ export class TimelineModelImpl {
    * @param {!SDK.TracingModel.Event} event
    * @return {boolean}
    */
+  isParseHTMLEvent(event) {
+    return event.name === RecordType.ParseHTML;
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {boolean}
+   */
   isLCPCandidateEvent(event) {
     return event.name === RecordType.MarkLCPCandidate && !!event.args['data']['isMainFrame'];
   }
@@ -1127,7 +1135,7 @@ export class TimelineModelImpl {
   _processBrowserEvent(event) {
     if (event.name === RecordType.LatencyInfoFlow) {
       const frameId = event.args['frameTreeNodeId'];
-      if (typeof frameId === 'number' && frameId === this._mainFrameNodeId) {
+      if (typeof frameId === 'number' && frameId === this._mainFrameNodeId && event.bind_id) {
         this._knownInputEvents.add(event.bind_id);
       }
       return;

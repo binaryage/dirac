@@ -105,8 +105,9 @@ export class ResizerWidget extends Common.ObjectWrapper.ObjectWrapper {
     if (!this._elements.has(element)) {
       return false;
     }
-    elementDragStart(
-        element, this._dragStart.bind(this), this._drag.bind(this), this._dragEnd.bind(this), this.cursor(), event);
+    elementDragStart(element, this._dragStart.bind(this), event => {
+      this._drag(event);
+    }, this._dragEnd.bind(this), this.cursor(), event);
   }
 
   /**
@@ -176,9 +177,7 @@ export const Events = {
   ResizeEnd: Symbol('ResizeEnd')
 };
 
-/**
- * @unrestricted
- */
+
 export class SimpleResizerWidget extends ResizerWidget {
   constructor() {
     super();

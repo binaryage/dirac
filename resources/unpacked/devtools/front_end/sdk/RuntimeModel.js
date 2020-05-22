@@ -42,9 +42,7 @@ import {RemoteFunction, RemoteObject,
         RemoteObjectProperty, ScopeRef, ScopeRemoteObject,} from './RemoteObject.js';  // eslint-disable-line no-unused-vars
 import {Capability, SDKModel, Target, Type} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
+
 export class RuntimeModel extends SDKModel {
   /**
    * @param {!Target} target
@@ -62,12 +60,9 @@ export class RuntimeModel extends SDKModel {
     /** @type {?boolean} */
     this._hasSideEffectSupport = null;
 
-    // TODO(1016755): remove custom formatters altogether.
-    // darwin: revert this for now, wait for what comes next
-    // Common.Settings.Settings.instance().moduleSetting('customFormatters').set(false);
-    // this._agent.setCustomObjectFormatterEnabled(false);
-    Common.Settings.Settings.instance().moduleSetting('customFormatters').set(true);
-    this._agent.setCustomObjectFormatterEnabled(true);
+    if (Common.Settings.Settings.instance().moduleSetting('customFormatters').get()) {
+      this._agent.setCustomObjectFormatterEnabled(true);
+    }
 
     Common.Settings.Settings.instance()
         .moduleSetting('customFormatters')
@@ -572,7 +567,7 @@ export class RuntimeModel extends SDKModel {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   terminateExecution() {
     return this._agent.invoke_terminateExecution({});
@@ -912,8 +907,8 @@ export class ExecutionContext {
 SDKModel.register(RuntimeModel, Capability.JS, true);
 
 /** @typedef {{
- *    object: (!RemoteObject|undefined),
- *    exceptionDetails: (!Protocol.Runtime.ExceptionDetails|undefined),
+ *    object: !RemoteObject,
+ *    exceptionDetails: (!Protocol.Runtime.ExceptionDetails|undefined)}|{
  *    error: (!ProtocolClient.InspectorBackend.ProtocolError|undefined)}
  *  }}
  */

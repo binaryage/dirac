@@ -70,7 +70,7 @@ export class ViewManager {
 
   /**
    * @param {!View} view
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   revealView(view) {
     const location = /** @type {?_Location} */ (view[_Location.symbol]);
@@ -102,7 +102,7 @@ export class ViewManager {
    * @param {string} viewId
    * @param {boolean=} userGesture
    * @param {boolean=} omitFocus
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   showView(viewId, userGesture, omitFocus) {
     const view = this._views.get(viewId);
@@ -148,7 +148,7 @@ export class ViewManager {
   }
 
   /**
-   * @param {function()=} revealCallback
+   * @param {function():void=} revealCallback
    * @param {string=} location
    * @param {boolean=} restoreSelection
    * @param {boolean=} allowReorder
@@ -160,7 +160,7 @@ export class ViewManager {
   }
 
   /**
-   * @param {function()=} revealCallback
+   * @param {function():void=} revealCallback
    * @param {string=} location
    * @return {!ViewLocation}
    */
@@ -210,7 +210,7 @@ export class ContainerWidget extends VBox {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   _materialize() {
     if (this._materializePromise) {
@@ -294,7 +294,7 @@ export class _ExpandableContainerWidget extends VBox {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   _materialize() {
     if (this._materializePromise) {
@@ -318,7 +318,7 @@ export class _ExpandableContainerWidget extends VBox {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   _expand() {
     if (this._titleElement.classList.contains('expanded')) {
@@ -382,7 +382,7 @@ class _Location {
   /**
    * @param {!ViewManager} manager
    * @param {!Widget} widget
-   * @param {function()=} revealCallback
+   * @param {function():void=} revealCallback
    */
   constructor(manager, widget, revealCallback) {
     this._manager = manager;
@@ -413,7 +413,7 @@ _Location.symbol = Symbol('location');
 export class _TabbedLocation extends _Location {
   /**
    * @param {!ViewManager} manager
-   * @param {function()=} revealCallback
+   * @param {function():void=} revealCallback
    * @param {string=} location
    * @param {boolean=} restoreSelection
    * @param {boolean=} allowReorder
@@ -598,7 +598,7 @@ export class _TabbedLocation extends _Location {
    * @param {?View=} insertBefore
    * @param {boolean=} userGesture
    * @param {boolean=} omitFocus
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   showView(view, insertBefore, userGesture, omitFocus) {
     this.appendView(view, insertBefore);
@@ -679,7 +679,7 @@ _TabbedLocation.orderStep = 10;  // Keep in sync with descriptors.
 class _StackLocation extends _Location {
   /**
    * @param {!ViewManager} manager
-   * @param {function()=} revealCallback
+   * @param {function():void=} revealCallback
    * @param {string=} location
    */
   constructor(manager, revealCallback, location) {
@@ -725,7 +725,7 @@ class _StackLocation extends _Location {
    * @override
    * @param {!View} view
    * @param {?View=} insertBefore
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   showView(view, insertBefore) {
     this.appendView(view, insertBefore);
