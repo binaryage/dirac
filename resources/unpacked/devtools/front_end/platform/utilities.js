@@ -109,13 +109,6 @@ String.prototype.trimEndWithMaxLength = function(maxLength) {
 };
 
 /**
- * @return {string}
- */
-String.prototype.toTitleCase = function() {
-  return this.substring(0, 1).toUpperCase() + this.substring(1);
-};
-
-/**
  * @param {string} other
  * @return {number}
  */
@@ -237,13 +230,6 @@ Number.toFixedIfFloating = function(value) {
   }
   const number = Number(value);
   return number % 1 ? number.toFixed(3) : String(number);
-};
-
-/**
- * @return {boolean}
- */
-Date.prototype.isValid = function() {
-  return !isNaN(this.getTime());
 };
 
 /**
@@ -579,16 +565,6 @@ Set.prototype.firstValue = function() {
     return null;
   }
   return this.values().next().value;
-};
-
-/**
- * @param {!Iterable<T>|!Array<!T>} iterable
- * @template T
- */
-Set.prototype.addAll = function(iterable) {
-  for (const e of iterable) {
-    this.add(e);
-  }
 };
 
 /**

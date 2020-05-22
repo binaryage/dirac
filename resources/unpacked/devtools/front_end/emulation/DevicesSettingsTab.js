@@ -29,7 +29,7 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
         UI.UIUtils.createTextButton(Common.UIString.UIString('Add custom device...'), this._addCustomDevice.bind(this));
     buttonsRow.appendChild(this._addCustomButton);
 
-    this._list = new UI.ListWidget.ListWidget(this);
+    this._list = new UI.ListWidget.ListWidget(this, false /* delegatesFocus */);
     this._list.registerRequiredCSS('emulation/devicesSettingsTab.css');
     this._list.element.classList.add('devices-list');
     this._list.show(this.containerElement);
@@ -110,7 +110,8 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
    */
   renderItem(item, editable) {
     const device = /** @type {!EmulatedDevice} */ (item);
-    const label = createElementWithClass('label', 'devices-list-item');
+    const label = document.createElement('label');
+    label.classList.add('devices-list-item');
     const checkbox = label.createChild('input', 'devices-list-checkbox');
     checkbox.type = 'checkbox';
     checkbox.checked = device.show();

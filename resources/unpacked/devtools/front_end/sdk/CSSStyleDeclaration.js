@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
+import * as TextUtils from '../text_utils/text_utils.js';
 import {cssMetadata} from './CSSMetadata.js';
 import {CSSModel, Edit} from './CSSModel.js';  // eslint-disable-line no-unused-vars
 import {CSSProperty} from './CSSProperty.js';
@@ -25,7 +23,7 @@ export class CSSStyleDeclaration {
     this._allProperties;
     /** @type {string|undefined} */
     this.styleSheetId;
-    /** @type {?TextUtils.TextRange} */
+    /** @type {?TextUtils.TextRange.TextRange} */
     this.range;
     /** @type {string|undefined} */
     this.cssText;
@@ -63,7 +61,7 @@ export class CSSStyleDeclaration {
    */
   _reinitialize(payload) {
     this.styleSheetId = payload.styleSheetId;
-    this.range = payload.range ? TextUtils.TextRange.fromObject(payload.range) : null;
+    this.range = payload.range ? TextUtils.TextRange.TextRange.fromObject(payload.range) : null;
 
     const shorthandEntries = payload.shorthandEntries;
     this._shorthandValues = new Map();
@@ -78,7 +76,7 @@ export class CSSStyleDeclaration {
     this._allProperties = [];
 
     if (payload.cssText && this.range) {
-      const cssText = new TextUtils.Text(payload.cssText);
+      const cssText = new TextUtils.Text.Text(payload.cssText);
       let start = {line: this.range.startLine, column: this.range.startColumn};
       for (const cssProperty of payload.cssProperties) {
         const range = cssProperty.range;
@@ -111,14 +109,17 @@ export class CSSStyleDeclaration {
 
     /**
      * @this {CSSStyleDeclaration}
-     * @param {!TextUtils.Text} cssText
+     * @param {!TextUtils.Text.Text} cssText
      * @param {number} startLine
      * @param {number} startColumn
      * @param {number} endLine
      * @param {number} endColumn
      */
     function parseUnusedText(cssText, startLine, startColumn, endLine, endColumn) {
-      const tr = new TextUtils.TextRange(startLine, startColumn, endLine, endColumn);
+      const tr = new TextUtils.TextRange.TextRange(startLine, startColumn, endLine, endColumn);
+      if (!this.range) {
+        return;
+      }
       const missingText = cssText.extract(tr.relativeTo(this.range.startLine, this.range.startColumn));
 
       // Try to fit the malformed css into properties.
@@ -143,7 +144,7 @@ export class CSSStyleDeclaration {
               name = trimmedProperty.substring(0, colonIndex).trim();
               value = trimmedProperty.substring(colonIndex + 1).trim();
             }
-            const range = new TextUtils.TextRange(lineNumber, column, lineNumber, column + property.length);
+            const range = new TextUtils.TextRange.TextRange(lineNumber, column, lineNumber, column + property.length);
             this._allProperties.push(new CSSProperty(
                 this, this._allProperties.length, name, value, false, false, false, false, property,
                 range.relativeFrom(startLine, startColumn)));
@@ -274,7 +275,8 @@ export class CSSStyleDeclaration {
   }
 
   _computeInactiveProperties() {
-    const activeProperties = {};
+    /** @type {!Map<string, !CSSProperty>} */
+    const activeProperties = new Map();
     for (let i = 0; i < this._allProperties.length; ++i) {
       const property = this._allProperties[i];
       if (property.disabled || !property.parsedOk) {
@@ -282,12 +284,12 @@ export class CSSStyleDeclaration {
         continue;
       }
       const canonicalName = cssMetadata().canonicalPropertyName(property.name);
-      const activeProperty = activeProperties[canonicalName];
+      const activeProperty = activeProperties.get(canonicalName);
       if (!activeProperty) {
-        activeProperties[canonicalName] = property;
+        activeProperties.set(canonicalName, property);
       } else if (!activeProperty.important || property.important) {
         activeProperty.setActive(false);
-        activeProperties[canonicalName] = property;
+        activeProperties.set(canonicalName, property);
       } else {
         property.setActive(false);
       }
@@ -357,11 +359,17 @@ export class CSSStyleDeclaration {
 
   /**
    * @param {number} index
-   * @return {!TextUtils.TextRange}
+   * @return {!TextUtils.TextRange.TextRange}
    */
   _insertionRange(index) {
     const property = this.propertyAt(index);
-    return property && property.range ? property.range.collapseToStart() : this.range.collapseToEnd();
+    if (property && property.range) {
+      return property.range.collapseToStart();
+    }
+    if (!this.range) {
+      throw new Error('CSSStyleDeclaration.range is null');
+    }
+    return this.range.collapseToEnd();
   }
 
   /**
@@ -390,7 +398,7 @@ export class CSSStyleDeclaration {
    * @param {number} index
    * @param {string} name
    * @param {string} value
-   * @param {function(boolean)=} userCallback
+   * @param {function(boolean):void=} userCallback
    */
   insertPropertyAt(index, name, value, userCallback) {
     this.newBlankProperty(index).setText(name + ': ' + value + ';', false, true).then(userCallback);
@@ -399,7 +407,7 @@ export class CSSStyleDeclaration {
   /**
    * @param {string} name
    * @param {string} value
-   * @param {function(boolean)=} userCallback
+   * @param {function(boolean):void=} userCallback
    */
   appendProperty(name, value, userCallback) {
     this.insertPropertyAt(this.allProperties().length, name, value, userCallback);

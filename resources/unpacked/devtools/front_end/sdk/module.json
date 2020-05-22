@@ -4,7 +4,8 @@
     "host",
     "platform",
     "protocol_client",
-    "dirac"
+    "dirac",
+    "text_utils"
   ],
     "extensions": [
         {
@@ -368,7 +369,7 @@
         {
             "type": "setting",
             "category": "Console",
-            "title": "Enable custom formatters",
+            "title": "Temporarily enable deprecated custom formatters",
             "settingName": "customFormatters",
             "settingType": "boolean",
             "defaultValue": true
@@ -500,9 +501,9 @@
         "Issue.js",
         "IssuesModel.js",
         "SameSiteCookieIssue.js",
+    "MixedContentIssue.js",
     "CrossOriginEmbedderPolicyIssue.js",
-    "RelatedIssue.js",
-        "ServerTiming.js",
+    "ServerTiming.js",
         "CPUProfileDataModel.js",
         "CPUProfilerModel.js",
         "CSSMatchedStyles.js",

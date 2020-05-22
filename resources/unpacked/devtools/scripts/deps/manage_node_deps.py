@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -45,18 +47,18 @@ DEPS = {
     "karma": "5.0.1",
     "karma-chai": "0.1.0",
     "karma-chrome-launcher": "3.1.0",
-    "karma-coverage": "git+https://git@github.com/karma-runner/karma-coverage.git#27822c91afe597322667211e0f9d2d36670b8323",
-    "karma-mocha": "1.3.0",
+    "karma-coverage":
+    "git+https://git@github.com/karma-runner/karma-coverage.git#27822c91afe597322667211e0f9d2d36670b8323",
+    "karma-mocha": "2.0.1",
     "karma-sourcemap-loader": "0.3.0",
-    "karma-typescript": "5.0.2",
     "license-checker": "25.0.1",
     "mocha": "7.1.1",
-    "puppeteer": "2.0.0",
+    "puppeteer": "3.0.3",
     "recast": "0.18.2",
     "rimraf": "3.0.2",
     "rollup": "2.3.3",
     "typescript": "3.8.3",
-    "yargs": "15.0.2"
+    "yargs": "15.3.1"
 }
 
 def exec_command(cmd):

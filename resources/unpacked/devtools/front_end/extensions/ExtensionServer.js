@@ -263,7 +263,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
       }
     }
 
-    self.SDK.multitargetNetworkManager.setExtraHTTPHeaders(allHeaders);
+    SDK.NetworkManager.MultitargetNetworkManager.instance().setExtraHTTPHeaders(allHeaders);
   }
 
   /**
@@ -455,8 +455,8 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   _onReload(message) {
     const options = /** @type {!ExtensionReloadOptions} */ (message.options || {});
 
-    self.SDK.multitargetNetworkManager.setUserAgentOverride(
-        typeof options.userAgent === 'string' ? options.userAgent : '');
+    SDK.NetworkManager.MultitargetNetworkManager.instance().setUserAgentOverride(
+        typeof options.userAgent === 'string' ? options.userAgent : '', null);
     let injectedScript;
     if (options.injectedScript) {
       injectedScript = '(function(){' + options.injectedScript + '})()';

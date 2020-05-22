@@ -467,6 +467,7 @@
 
 (def playground-epilogue
   ["goog.define('goog.ENABLE_CHROME_APP_SAFE_SCRIPT_LOADING', true);"
+   "goog.ENABLE_CHROME_APP_SAFE_SCRIPT_LOADING=true;"
    "goog.require('dirac.runtime.preload');"
    "goog.require('devtools.preload');"
    "goog.require('process.env');"

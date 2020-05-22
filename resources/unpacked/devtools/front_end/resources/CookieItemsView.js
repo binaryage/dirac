@@ -27,7 +27,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';
+import * as CookieTable from '../cookie_table/cookie_table.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -48,8 +51,8 @@ export class CookieItemsView extends StorageItemsView {
     this._cookieDomain = cookieDomain;
 
     this._totalSize = 0;
-    /** @type {?CookieTable.CookiesTable} */
-    this._cookiesTable = this._cookiesTable = new CookieTable.CookiesTable(
+    /** @type {!CookieTable.CookiesTable.CookiesTable} */
+    this._cookiesTable = new CookieTable.CookiesTable.CookiesTable(
         /* renderInline */ false, this._saveCookie.bind(this), this.refreshItems.bind(this),
         this._handleCookieSelected.bind(this), this._deleteCookie.bind(this));
 
@@ -66,10 +69,16 @@ export class CookieItemsView extends StorageItemsView {
     this._splitWidget.setSidebarWidget(this._previewPanel);
     this._splitWidget.installResizer(resizer);
 
-    this._onlyIssuesFilterUI = new UI.Toolbar.ToolbarCheckbox(ls`Only blocked`, ls`Only show blocked Cookies`, () => {
-      this._updateWithCookies(this._allCookies);
-    });
-    this.appendToolbarItem(this._onlyIssuesFilterUI);
+    this._onlyIssuesFilterUI = new UI.Toolbar.ToolbarCheckbox(
+        ls`Only show cookies with an issue`, ls`Only show cookies which have an associated issue`, () => {
+          this._updateWithCookies(this._allCookies);
+        });
+    if (Root.Runtime.experiments.isEnabled('issuesPane')) {
+      this.appendToolbarItem(this._onlyIssuesFilterUI);
+    } else {
+      // Disable this filter if the experiment is disabled.
+      this._onlyIssuesFilterUI.setChecked(false);
+    }
 
     this._refreshThrottler = new Common.Throttler.Throttler(300);
     /** @type {!Array<!Common.EventTarget.EventDescriptor>} */
@@ -137,7 +146,8 @@ export class CookieItemsView extends StorageItemsView {
       return;
     }
 
-    const value = createElementWithClass('div', 'cookie-value');
+    const value = document.createElement('div');
+    value.classList.add('cookie-value');
     value.textContent = cookie.value();
     value.addEventListener('dblclick', handleDblClickOnCookieValue);
 
@@ -174,7 +184,7 @@ export class CookieItemsView extends StorageItemsView {
 
   /**
    * @param {!SDK.Cookie.Cookie} cookie
-   * @param {function()} callback
+   * @param {function():void} callback
    */
   _deleteCookie(cookie, callback) {
     this._model.deleteCookie(cookie, callback);
@@ -200,16 +210,24 @@ export class CookieItemsView extends StorageItemsView {
 
   /**
    * @override
-   * @param {!Array<?Object>} items
-   * @param {function(?Object): string} keyFunction
-   * @return {!Array<?Object>}
+   * @template T
+   * @param {!Array<!T>} items
+   * @param {function(!T): string} keyFunction
+   * @return {!Array<!T>}
    * @protected
    */
   filter(items, keyFunction) {
-    return super.filter(items, keyFunction)
-        .filter(
-            cookie => !this._onlyIssuesFilterUI.checked() ||
-                SDK.RelatedIssue.hasIssues(/** @type {!SDK.Cookie.Cookie} */ (cookie)));
+    /** @param {T|null} object */
+    const predicate = object => {
+      if (!this._onlyIssuesFilterUI.checked()) {
+        return true;
+      }
+      if (object instanceof SDK.Cookie.Cookie) {
+        return BrowserSDK.RelatedIssue.hasIssues(object);
+      }
+      return false;
+    };
+    return super.filter(items, keyFunction).filter(predicate);
   }
 
   /**

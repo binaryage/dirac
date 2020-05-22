@@ -18,9 +18,10 @@ import {VBox} from './Widget.js';
 export class ListWidget extends VBox {
   /**
    * @param {!Delegate<T>} delegate
+   * @param {boolean=} delegatesFocus
    */
-  constructor(delegate) {
-    super(true, true /* delegatesFocus */);
+  constructor(delegate, delegatesFocus = true) {
+    super(true, delegatesFocus);
     this.registerRequiredCSS('ui/listWidget.css');
     this._delegate = delegate;
 
@@ -64,7 +65,9 @@ export class ListWidget extends VBox {
    */
   appendItem(item, editable) {
     if (this._lastSeparator && this._items.length) {
-      this._list.appendChild(createElementWithClass('div', 'list-separator'));
+      const element = document.createElement('div');
+      element.classList.add('list-separator');
+      this._list.appendChild(element);
     }
     this._lastSeparator = false;
 
@@ -138,7 +141,9 @@ export class ListWidget extends VBox {
    * @return {!Element}
    */
   _createControls(item, element) {
-    const controls = createElementWithClass('div', 'controls-container fill');
+    const controls = document.createElement('div');
+    controls.classList.add('controls-container');
+    controls.classList.add('fill');
     controls.createChild('div', 'controls-gradient');
 
     const buttons = controls.createChild('div', 'controls-buttons');
@@ -290,7 +295,8 @@ export class Delegate {
  */
 export class Editor {
   constructor() {
-    this.element = createElementWithClass('div', 'editor-container');
+    this.element = document.createElement('div');
+    this.element.classList.add('editor-container');
     this.element.addEventListener('keydown', onKeyDown.bind(null, isEscKey, this._cancelClicked.bind(this)), false);
     this.element.addEventListener('keydown', onKeyDown.bind(null, isEnterKey, this._commitClicked.bind(this)), false);
 
@@ -370,7 +376,8 @@ export class Editor {
    * @return {!HTMLSelectElement}
    */
   createSelect(name, options, validator, title) {
-    const select = /** @type {!HTMLSelectElement} */ (createElementWithClass('select', 'chrome-select'));
+    const select = /** @type {!HTMLSelectElement} */ (document.createElement('select'));
+    select.classList.add('chrome-select');
     for (let index = 0; index < options.length; ++index) {
       const option = select.createChild('option');
       option.value = options[index];

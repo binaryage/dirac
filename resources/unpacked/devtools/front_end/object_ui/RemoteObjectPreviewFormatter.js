@@ -247,7 +247,8 @@ export class RemoteObjectPreviewFormatter {
    * @return {!Element}
    */
   _renderDisplayName(name) {
-    const result = createElementWithClass('span', 'name');
+    const result = document.createElement('span');
+    result.classList.add('name');
     const needsQuotes = /^\s|\s$|^$|\n/.test(name);
     result.textContent = needsQuotes ? '"' + name.replace(/\n/g, '\u21B5') + '"' : name;
     return result;
@@ -269,7 +270,8 @@ export class RemoteObjectPreviewFormatter {
    * @return {!Element}
    */
   renderPropertyPreview(type, subtype, description) {
-    const span = createElementWithClass('span', 'object-value-' + (subtype || type));
+    const span = document.createElement('span');
+    span.classList.add('object-value-' + (subtype || type));
     description = description || '';
 
     if (type === 'accessor') {

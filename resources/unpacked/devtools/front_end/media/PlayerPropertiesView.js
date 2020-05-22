@@ -6,7 +6,6 @@ import * as Common from '../common/common.js';
 import * as UI from '../ui/ui.js';
 
 import {ChevronTabbedPanel} from './ChevronTabbedPanel.js';
-import {Event, MediaChangeTypeKeys} from './MediaModel.js';  // eslint-disable-line no-unused-vars
 
 /** @enum {string} */
 export const PlayerPropertyKeys = {
@@ -29,6 +28,8 @@ export const PlayerPropertyKeys = {
   kIsAudioDecryptingDemuxerStream: 'kIsAudioDecryptingDemuxerStream',
   kAudioTracks: 'kAudioTracks',
   kVideoTracks: 'kVideoTracks',
+  kFramerate: 'kFramerate',
+  kVideoPlaybackRoughness: 'kVideoPlaybackRoughness',
 };
 
 /**
@@ -77,7 +78,8 @@ export class PropertyRenderer extends UI.Widget.VBox {
     if (value === null) {
       this.contentElement.classList.add('media-property-renderer-hidden');
       if (this._pseudo_color_protection_element === null) {
-        this._pseudo_color_protection_element = createElementWithClass('div', 'media-property-renderer');
+        this._pseudo_color_protection_element = document.createElement('div');
+        this._pseudo_color_protection_element.classList.add('media-property-renderer');
         this._pseudo_color_protection_element.classList.add('media-property-renderer-hidden');
         this.contentElement.parentNode.insertBefore(this._pseudo_color_protection_element, this.contentElement);
       }
@@ -269,19 +271,14 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {string} playerID
-   * @param {!Array.<!Event>} changes
-   * @param {!MediaChangeTypeKeys} changeType
+   * @param {!Protocol.Media.PlayerProperty} property
    */
-  renderChanges(playerID, changes, changeType) {
-    for (const change of changes) {
-      const renderer = this._attributeMap.get(change.name);
-      if (renderer) {
-        renderer.updateData(change.name, change.value);
-      } else {
-        throw new Error(`PlayerProperty ${change.name} not supported.`);
-      }
+  onProperty(property) {
+    const renderer = this._attributeMap.get(property.name);
+    if (!renderer) {
+      throw new Error(`PlayerProperty ${property.name} not supported.`);
     }
+    renderer.updateData(property.name, property.value);
   }
 
   formatKbps(bitsPerSecond) {
@@ -360,6 +357,14 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
     const rangeHeaders = new PropertyRenderer(ls`Range Header Support`);
     this._mediaElements.push(rangeHeaders);
     this._attributeMap.set(PlayerPropertyKeys.kIsRangeHeaderSupported, rangeHeaders);
+
+    const frameRate = new PropertyRenderer(ls`Frame Rate`);
+    this._mediaElements.push(frameRate);
+    this._attributeMap.set(PlayerPropertyKeys.kFramerate, frameRate);
+
+    const roughness = new PropertyRenderer(ls`Video Playback Roughness`);
+    this._mediaElements.push(roughness);
+    this._attributeMap.set(PlayerPropertyKeys.kVideoPlaybackRoughness, roughness);
 
     /* Video Decoder Properties */
     const decoderName = new DefaultPropertyRenderer(ls`Decoder Name`, ls`No Decoder`);

@@ -18,9 +18,10 @@ export class BlockedURLsPane extends UI.Widget.VBox {
     this.registerRequiredCSS('network/blockedURLsPane.css');
 
     _instance = this;
-    this._manager = self.SDK.multitargetNetworkManager;
-    this._manager.addEventListener(
-        SDK.NetworkManager.MultitargetNetworkManager.Events.BlockedPatternsChanged, this._update, this);
+    this._manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
+    this._manager.addEventListener(SDK.NetworkManager.MultitargetNetworkManager.Events.BlockedPatternsChanged, () => {
+      this._update();
+    }, this);
 
     this._toolbar = new UI.Toolbar.Toolbar('', this.contentElement);
     this._enabledCheckbox = new UI.Toolbar.ToolbarCheckbox(
@@ -85,7 +86,8 @@ export class BlockedURLsPane extends UI.Widget.VBox {
    */
   renderItem(pattern, editable) {
     const count = this._blockedRequestsCount(pattern.url);
-    const element = createElementWithClass('div', 'blocked-url');
+    const element = document.createElement('div');
+    element.classList.add('blocked-url');
     const checkbox = element.createChild('input', 'blocked-url-checkbox');
     checkbox.type = 'checkbox';
     checkbox.checked = pattern.enabled;
@@ -189,7 +191,7 @@ export class BlockedURLsPane extends UI.Widget.VBox {
   }
 
   /**
-   * @return {!Promise<?>}
+   * @return {!Promise<void>}
    */
   _update() {
     const enabled = this._manager.blockingEnabled();

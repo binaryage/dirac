@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -26,7 +27,9 @@ export class IsolateSelector extends UI.Widget.VBox {
     /** @type {!Map<!SDK.IsolateManager.Isolate, !ListItem>} */
     this._itemByIsolate = new Map();
 
-    this._totalElement = createElementWithClass('div', 'profile-memory-usage-item hbox');
+    this._totalElement = document.createElement('div');
+    this._totalElement.classList.add('profile-memory-usage-item');
+    this._totalElement.classList.add('hbox');
     this._totalValueDiv = this._totalElement.createChild('div', 'profile-memory-usage-item-size');
     this._totalTrendDiv = this._totalElement.createChild('div', 'profile-memory-usage-item-trend');
     this._totalElement.createChild('div').textContent = ls`Total JS heap size`;
@@ -125,7 +128,7 @@ export class IsolateSelector extends UI.Widget.VBox {
       total += isolate.usedHeapSize();
       trend += isolate.usedHeapSizeGrowRate();
     }
-    this._totalValueDiv.textContent = Number.bytesToString(total);
+    this._totalValueDiv.textContent = Platform.NumberUtilities.bytesToString(total);
     IsolateSelector._formatTrendElement(trend, this._totalTrendDiv);
   }
 
@@ -139,7 +142,7 @@ export class IsolateSelector extends UI.Widget.VBox {
     if (Math.abs(changeRateBytesPerSecond) < changeRateThresholdBytesPerSecond) {
       return;
     }
-    const changeRateText = Number.bytesToString(Math.abs(changeRateBytesPerSecond));
+    const changeRateText = Platform.NumberUtilities.bytesToString(Math.abs(changeRateBytesPerSecond));
     let changeText, changeLabel;
     if (changeRateBytesPerSecond > 0) {
       changeText = ls`\u2B06${changeRateText}/s`;
@@ -230,7 +233,9 @@ export class ListItem {
   constructor(isolate) {
     this._isolate = isolate;
     const trendIntervalMinutes = Math.round(SDK.IsolateManager.MemoryTrendWindowMs / 60e3);
-    this.element = createElementWithClass('div', 'profile-memory-usage-item hbox');
+    this.element = document.createElement('div');
+    this.element.classList.add('profile-memory-usage-item');
+    this.element.classList.add('hbox');
     UI.ARIAUtils.markAsOption(this.element);
     this._heapDiv = this.element.createChild('div', 'profile-memory-usage-item-size');
     this._heapDiv.title = ls`Heap size in use by live JS objects.`;
@@ -248,7 +253,7 @@ export class ListItem {
   }
 
   updateStats() {
-    this._heapDiv.textContent = Number.bytesToString(this._isolate.usedHeapSize());
+    this._heapDiv.textContent = Platform.NumberUtilities.bytesToString(this._isolate.usedHeapSize());
     IsolateSelector._formatTrendElement(this._isolate.usedHeapSizeGrowRate(), this._trendDiv);
   }
 

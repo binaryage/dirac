@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
 /**
  * @implements {UI.Toolbar.Provider}
- * @implements {SDK.SDKModel.Observer}
  * @unrestricted
  */
 export class WarningErrorCounter {
@@ -36,6 +37,7 @@ export class WarningErrorCounter {
 
     this._issuesCounter = createElement('div');
     this._issuesCounter.addEventListener('click', () => {
+      Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.StatusBarIssuesCounter);
       UI.ViewManager.ViewManager.instance().showView('issues-pane');
     });
     const issuesShadowRoot =
@@ -65,9 +67,8 @@ export class WarningErrorCounter {
     SDK.ConsoleModel.ConsoleModel.instance().addEventListener(
         SDK.ConsoleModel.Events.MessageUpdated, this._update, this);
 
-    this._issuesModel = null;
-    // This class is created before any target exists, so attach to the main target when it gets created.
-    SDK.SDKModel.TargetManager.instance().observeTargets(this);
+    BrowserSDK.IssuesManager.IssuesManager.instance().addEventListener(
+        BrowserSDK.IssuesManager.Events.IssuesCountUpdated, this._update, this);
 
     this._update();
   }
@@ -77,37 +78,13 @@ export class WarningErrorCounter {
   }
 
   /**
-   * @override
-   * @param {!SDK.SDKModel.Target} target
-   */
-  targetAdded(target) {
-    if (this._issuesModel) {
-      return;
-    }
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
-    if (mainTarget) {
-      this._issuesModel = mainTarget.model(SDK.IssuesModel.IssuesModel);
-      if (this._issuesModel) {
-        this._issuesModel.addEventListener(SDK.IssuesModel.Events.IssuesCountUpdated, this._update, this);
-      }
-    }
-    this._update();
-  }
-
-  /**
-   * @override
-   * @param {!SDK.SDKModel.Target} target
-   */
-  targetRemoved(target) {
-  }
-
-  /**
    * @param {!Node} shadowRoot
    * @param {string} iconType
    * @return {!{item: !Element, text: !Element}}
    */
   _createItem(shadowRoot, iconType) {
-    const item = createElementWithClass('span', 'counter-item');
+    const item = document.createElement('span');
+    item.classList.add('counter-item');
     UI.ARIAUtils.markAsHidden(item);
     const icon = item.createChild('span', '', 'dt-icon-label');
     icon.type = iconType;
@@ -139,7 +116,7 @@ export class WarningErrorCounter {
     const errors = SDK.ConsoleModel.ConsoleModel.instance().errors();
     const warnings = SDK.ConsoleModel.ConsoleModel.instance().warnings();
     const violations = SDK.ConsoleModel.ConsoleModel.instance().violations();
-    const issues = (this._issuesModel && this._issuesModel.numberOfAggregatedIssues()) || 0;
+    const issues = BrowserSDK.IssuesManager.IssuesManager.instance().numberOfIssues();
     if (errors === this._errorCount && warnings === this._warningCount && violations === this._violationCount &&
         issues === this._issuesCount) {
       return Promise.resolve();
@@ -183,9 +160,9 @@ export class WarningErrorCounter {
     if (Root.Runtime.experiments.isEnabled('issuesPane')) {
       let issuesCountTitle = '';
       if (issues === 1) {
-        issuesCountTitle = ls`${issues} issue`;
+        issuesCountTitle = ls`Issues pertaining to ${issues} operation detected.`;
       } else {
-        issuesCountTitle = ls`${issues} issues`;
+        issuesCountTitle = ls`Issues pertaining to ${issues} operations detected.`;
       }
       this._updateItem(this._issues, issues, true);
       this._issuesCounter.title = issuesCountTitle;

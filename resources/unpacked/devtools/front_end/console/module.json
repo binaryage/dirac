@@ -32,7 +32,8 @@
       "className": "Console.ConsoleView.ActionDelegate",
       "bindings": [
         {
-          "shortcut": "Ctrl+`"
+          "shortcut": "Ctrl+`",
+          "keybindSets": ["devToolsDefault", "vsCode"]
         }
       ]
     },
@@ -214,7 +215,8 @@
     "data_grid",
     "object_ui",
     "sdk",
-    "formatter"
+    "formatter",
+    "browser_sdk"
   ],
   "scripts": [
     "clojure-parinfer.js"

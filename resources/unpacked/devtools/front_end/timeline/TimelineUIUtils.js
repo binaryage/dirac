@@ -244,7 +244,7 @@ export class TimelineUIUtils {
     return regExp.test(tokens.join('|'));
 
     /**
-     * @param {!Object} object
+     * @param {!*} object
      * @param {number} depth
      */
     function appendObjectProperties(object, depth) {
@@ -495,7 +495,7 @@ export class TimelineUIUtils {
       case recordType.MajorGC:
       case recordType.MinorGC: {
         const delta = event.args['usedHeapSizeBefore'] - event.args['usedHeapSizeAfter'];
-        detailsText = Common.UIString.UIString('%s collected', Number.bytesToString(delta));
+        detailsText = Common.UIString.UIString('%s collected', Platform.NumberUtilities.bytesToString(delta));
         break;
       }
       case recordType.FunctionCall:
@@ -890,13 +890,14 @@ export class TimelineUIUtils {
       case recordTypes.MajorGC:
       case recordTypes.MinorGC: {
         const delta = event.args['usedHeapSizeBefore'] - event.args['usedHeapSizeAfter'];
-        contentHelper.appendTextRow(ls`Collected`, Number.bytesToString(delta));
+        contentHelper.appendTextRow(ls`Collected`, Platform.NumberUtilities.bytesToString(delta));
         break;
       }
 
       case recordTypes.JSFrame:
       case recordTypes.FunctionCall: {
-        const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, model.targetByEvent(event), linkifier);
+        const detailsNode =
+            await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, model.targetByEvent(event), linkifier);
         if (detailsNode) {
           contentHelper.appendElementRow(ls`Function`, detailsNode);
         }
@@ -1161,7 +1162,8 @@ export class TimelineUIUtils {
       }
 
       default: {
-        const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, model.targetByEvent(event), linkifier);
+        const detailsNode =
+            await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, model.targetByEvent(event), linkifier);
         if (detailsNode) {
           contentHelper.appendElementRow(ls`Details`, detailsNode);
         }
@@ -1402,11 +1404,11 @@ export class TimelineUIUtils {
       lengthText += ls` (from service worker)`;
     }
     if (request.encodedDataLength || !lengthText) {
-      lengthText = `${Number.bytesToString(request.encodedDataLength)}${lengthText}`;
+      lengthText = `${Platform.NumberUtilities.bytesToString(request.encodedDataLength)}${lengthText}`;
     }
     contentHelper.appendTextRow(ls`Encoded Data`, lengthText);
     if (request.decodedBodyLength) {
-      contentHelper.appendTextRow(ls`Decoded Body`, Number.bytesToString(request.decodedBodyLength));
+      contentHelper.appendTextRow(ls`Decoded Body`, Platform.NumberUtilities.bytesToString(request.decodedBodyLength));
     }
     const title = ls`Initiator`;
     const sendRequest = request.children[0];
@@ -1498,7 +1500,8 @@ export class TimelineUIUtils {
       const delay = event.startTime - initiator.startTime;
       contentHelper.appendTextRow(ls`Pending for`, Number.preciseMillisToString(delay, 1));
 
-      const link = createElementWithClass('span', 'devtools-link');
+      const link = document.createElement('span');
+      link.classList.add('devtools-link');
       UI.ARIAUtils.markAsLink(link);
       link.tabIndex = 0;
       link.textContent = ls`Reveal`;
@@ -1616,7 +1619,7 @@ export class TimelineUIUtils {
    * @param {!Array<!TimelineModel.TimelineModel.InvalidationTrackingEvent>} invalidations
    */
   static _collectInvalidationNodeIds(nodeIds, invalidations) {
-    nodeIds.addAll(invalidations.map(invalidation => invalidation.nodeId).filter(id => id));
+    Platform.SetUtilities.addAll(nodeIds, invalidations.map(invalidation => invalidation.nodeId).filter(id => id));
   }
 
   /**
@@ -1718,7 +1721,8 @@ export class TimelineUIUtils {
    * @return {!Element}
    */
   static createEventDivider(event, zeroTime) {
-    const eventDivider = createElementWithClass('div', 'resources-event-divider');
+    const eventDivider = document.createElement('div');
+    eventDivider.classList.add('resources-event-divider');
     const startTime = Number.millisToString(event.startTime - zeroTime);
     eventDivider.title = Common.UIString.UIString('%s at %s', TimelineUIUtils.eventTitle(event), startTime);
     const style = TimelineUIUtils.markerStyleForEvent(event);
@@ -1807,7 +1811,9 @@ export class TimelineUIUtils {
       total += aggregatedStats[categoryName];
     }
 
-    const element = createElementWithClass('div', 'timeline-details-view-pie-chart-wrapper hbox');
+    const element = document.createElement('div');
+    element.classList.add('timeline-details-view-pie-chart-wrapper');
+    element.classList.add('hbox');
     const pieChart = new PerfUI.PieChart.PieChart({
       chartName: ls`Time spent in rendering`,
       size: 110,
@@ -1874,7 +1880,8 @@ export class TimelineUIUtils {
     contentHelper.appendTextRow(ls`FPS`, Math.floor(1000 / durationInMillis));
     contentHelper.appendTextRow(ls`CPU time`, Number.millisToString(frame.cpuTime, true));
     if (filmStripFrame) {
-      const filmStripPreview = createElementWithClass('div', 'timeline-filmstrip-preview');
+      const filmStripPreview = document.createElement('div');
+      filmStripPreview.classList.add('timeline-filmstrip-preview');
       filmStripFrame.imageDataPromise()
           .then(data => UI.UIUtils.loadImageFromData(data))
           .then(image => image && filmStripPreview.appendChild(image));
@@ -2233,7 +2240,8 @@ export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
     const title = UI.UIUtils.formatLocalized('%s for %s', [reason, truncatedNodesElement]);
 
     if (topFrame && this._contentHelper.linkifier()) {
-      const stack = createElementWithClass('span', 'monospace');
+      const stack = document.createElement('span');
+      stack.classList.add('monospace');
       const completeTitle = UI.UIUtils.formatLocalized('%s. %s', [title, stack]);
       stack.createChild('span').textContent = TimelineUIUtils.frameDisplayName(topFrame);
       const link = this._contentHelper.linkifier().maybeLinkifyConsoleCallFrame(target, topFrame);
@@ -2252,7 +2260,8 @@ export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
    * @returns {!Promise}
    */
   async onpopulate() {
-    const content = createElementWithClass('div', 'content');
+    const content = document.createElement('div');
+    content.classList.add('content');
 
     const first = this._invalidations[0];
     if (first.cause.stackTrace) {
@@ -2500,7 +2509,8 @@ export class TimelineDetailsContentHelper {
     this._linkifier = linkifier;
     this._target = target;
 
-    this.element = createElementWithClass('div', 'timeline-details-view-block');
+    this.element = document.createElement('div');
+    this.element.classList.add('timeline-details-view-block');
     this._tableElement = this.element.createChild('div', 'vbox timeline-details-chip-body');
     this.fragment.appendChild(this.element);
   }
@@ -2513,7 +2523,8 @@ export class TimelineDetailsContentHelper {
     if (!this._tableElement.hasChildNodes()) {
       this.element.removeChildren();
     } else {
-      this.element = createElementWithClass('div', 'timeline-details-view-block');
+      this.element = document.createElement('div');
+      this.element.classList.add('timeline-details-view-block');
       this.fragment.appendChild(this.element);
     }
 
@@ -2604,8 +2615,7 @@ export class TimelineDetailsContentHelper {
       return;
     }
     locationContent.appendChild(link);
-    locationContent.createTextChild(
-        Platform.StringUtilities.sprintf(' [%s…%s]', startLine + 1, endLine + 1 || ''));
+    locationContent.createTextChild(Platform.StringUtilities.sprintf(' [%s…%s]', startLine + 1, endLine + 1 || ''));
     this.appendElementRow(title, locationContent);
   }
 

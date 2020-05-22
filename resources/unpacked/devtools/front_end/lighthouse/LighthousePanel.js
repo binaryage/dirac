@@ -345,7 +345,7 @@ export class LighthousePanel extends UI.Panel.Panel {
         outlineEnabled: emulationModel.deviceOutlineSetting().get(),
         toolbarControlsEnabled: emulationModel.toolbarControlsEnabledSetting().get()
       },
-      network: {conditions: self.SDK.multitargetNetworkManager.networkConditions()}
+      network: {conditions: SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions()}
     };
 
     emulationModel.toolbarControlsEnabledSetting().set(false);
@@ -357,7 +357,7 @@ export class LighthousePanel extends UI.Panel.Panel {
       emulationModel.deviceOutlineSetting().set(true);
 
       for (const device of Emulation.EmulatedDevices.EmulatedDevicesList.instance().standard()) {
-        if (device.title === 'Nexus 5X') {
+        if (device.title === 'Moto G4') {
           emulationModel.emulate(Emulation.DeviceModeModel.Type.Device, device, device.modes[0], 1);
         }
       }
@@ -380,7 +380,8 @@ export class LighthousePanel extends UI.Panel.Panel {
       emulationModel.enabledSetting().set(this._stateBefore.emulation.enabled);
       emulationModel.deviceOutlineSetting().set(this._stateBefore.emulation.outlineEnabled);
       emulationModel.toolbarControlsEnabledSetting().set(this._stateBefore.emulation.toolbarControlsEnabled);
-      self.SDK.multitargetNetworkManager.setNetworkConditions(this._stateBefore.network.conditions);
+      SDK.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(
+          this._stateBefore.network.conditions);
       delete this._stateBefore;
     }
 

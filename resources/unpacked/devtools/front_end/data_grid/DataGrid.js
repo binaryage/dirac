@@ -38,7 +38,8 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
   constructor(dataGridParameters) {
     super();
     const {displayName, columns: columnsArray, editCallback, deleteCallback, refreshCallback} = dataGridParameters;
-    this.element = createElementWithClass('div', 'data-grid');
+    this.element = document.createElement('div');
+    this.element.classList.add('data-grid');
     UI.Utils.appendStyle(this.element, 'data_grid/dataGrid.css');
     this.element.tabIndex = 0;
     this.element.addEventListener('keydown', this._keyDown.bind(this), false);
@@ -596,7 +597,8 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
     }
     const column = this._columns[columnId];
     const cellIndex = this.visibleColumnsArray.indexOf(column);
-    const textBeforeEditing = /** @type {string} */ (this._editingNode.data[columnId]);
+    const valueBeforeEditing = /** @type {string|boolean} */ (
+        this._editingNode.data[columnId] === null ? '' : this._editingNode.data[columnId]);
     const currentEditingNode = this._editingNode;
 
     /**
@@ -652,7 +654,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
     // Show trimmed text after editing.
     this.setElementContent(element, newText);
 
-    if (textBeforeEditing === newText) {
+    if (valueBeforeEditing === newText) {
       this._editingCancelled(element);
       moveToNextIfNeeded.call(this, false);
       return;
@@ -663,7 +665,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
 
     // Make the callback - expects an editing node (table row), the column number that is being edited,
     // the text that used to be there, and the new text.
-    this._editCallback(this._editingNode, columnId, textBeforeEditing, newText);
+    this._editCallback(this._editingNode, columnId, valueBeforeEditing, newText);
 
     if (this._editingNode.isCreationNode) {
       this.addCreationNode(false);
@@ -1660,7 +1662,8 @@ export class DataGridNode extends Common.ObjectWrapper.ObjectWrapper {
    * @return {!Element}
    */
   createElement() {
-    this._element = createElementWithClass('tr', 'data-grid-data-grid-node');
+    this._element = document.createElement('tr');
+    this._element.classList.add('data-grid-data-grid-node');
     this._element._dataGridNode = this;
 
     if (this._hasChildren) {
@@ -1943,7 +1946,10 @@ export class DataGridNode extends Common.ObjectWrapper.ObjectWrapper {
    * @return {!Element}
    */
   _createTDWithClass(className) {
-    const cell = createElementWithClass('td', className);
+    const cell = document.createElement('td');
+    if (className) {
+      cell.className = className;
+    }
     const cellClass = this.dataGrid._cellClass;
     if (cellClass) {
       cell.classList.add(cellClass);

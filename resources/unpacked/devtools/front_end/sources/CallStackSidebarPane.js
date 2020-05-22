@@ -217,7 +217,8 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
    * @return {!Element}
    */
   createElementForItem(item) {
-    const element = createElementWithClass('div', 'call-frame-item');
+    const element = document.createElement('div');
+    element.classList.add('call-frame-item');
     const title = element.createChild('div', 'call-frame-item-title');
     const titleElement = title.createChild('div', 'call-frame-title-text');
     titleElement.textContent = item.title;
@@ -302,7 +303,8 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
    * @return {!Element}
    */
   _createBlackboxedMessageElement() {
-    const element = createElementWithClass('div', 'blackboxed-message');
+    const element = document.createElement('div');
+    element.classList.add('blackboxed-message');
     element.createChild('span');
     const showAllLink = element.createChild('span', 'link');
     showAllLink.textContent = Common.UIString.UIString('Show blackboxed frames');
@@ -324,7 +326,8 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
    * @return {!Element}
    */
   _createShowMoreMessageElement() {
-    const element = createElementWithClass('div', 'show-more-message');
+    const element = document.createElement('div');
+    element.classList.add('show-more-message');
     element.createChild('span');
     const showAllLink = element.createChild('span', 'link');
     showAllLink.textContent = Common.UIString.UIString('Show more');

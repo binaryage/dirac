@@ -50,7 +50,7 @@ export class CPUProfilerModel extends SDKModel {
     this._nextAnonymousConsoleProfileNumber = 1;
     this._anonymousConsoleProfileIdToTitle = new Map();
     this._profilerAgent = target.profilerAgent();
-    /** @type {?function(number, string, !Array<!Protocol.Profiler.ScriptCoverage>)} */
+    /** @type {?function(number, string, !Array<!Protocol.Profiler.ScriptCoverage>):void} */
     this._preciseCoverageDeltaUpdateCallback = null;
     target.registerProfilerDispatcher(this);
     this._profilerAgent.enable();
@@ -146,7 +146,7 @@ export class CPUProfilerModel extends SDKModel {
 
   /**
    * @param {boolean} jsCoveragePerBlock - Collect per Block coverage if `true`, per function coverage otherwise.
-   * @param {?function(number, string, !Array<!Protocol.Profiler.ScriptCoverage>)} preciseCoverageDeltaUpdateCallback - Callback for coverage updates initiated from the back-end
+   * @param {?function(number, string, !Array<!Protocol.Profiler.ScriptCoverage>):void} preciseCoverageDeltaUpdateCallback - Callback for coverage updates initiated from the back-end
    * @return {!Promise}
    */
   startPreciseCoverage(jsCoveragePerBlock, preciseCoverageDeltaUpdateCallback) {

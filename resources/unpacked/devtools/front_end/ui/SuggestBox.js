@@ -213,7 +213,12 @@ export class SuggestBox {
    */
   createElementForItem(item) {
     const query = this._userEnteredText;
-    const element = createElementWithClass('div', 'suggest-box-content-item source-code ' + (item.className || ''));
+    const element = document.createElement('div');
+    element.classList.add('suggest-box-content-item');
+    element.classList.add('source-code');
+    if (item.className) {
+      element.classList.add.apply(element.classList, item.className.split(' '));
+    }
     if (item.iconType) {
       const icon = Icon.create(item.iconType, 'suggestion-icon');
       element.appendChild(icon);

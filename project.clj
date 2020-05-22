@@ -1,7 +1,7 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.30")
-(def figwheel-version "0.5.19")
-(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.741"))
+(def figwheel-version "0.5.20")
+(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.764"))
 (def selected-clojure-version "1.10.1")
 (def selenium-version "3.141.59")
 (def lein-cljsbuild-version "1.1.7")
@@ -11,8 +11,8 @@
    ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "1.0.567"]
-   ['org.clojure/tools.logging "1.0.0"]
+  [['org.clojure/core.async "1.2.603"]
+   ['org.clojure/tools.logging "1.1.0"]
    ['org.clojure/tools.cli "1.0.194"]
    ['nrepl/nrepl "0.7.0"]
    ['binaryage/env-config "0.2.2"]
@@ -24,7 +24,7 @@
    ['progrock "0.1.2"]
    ['me.raynes/conch "0.8.0"]
    ['clj-sub-command "0.6.0"]
-   ['ring/ring-core "1.8.0"]
+   ['ring/ring-core "1.8.1"]
    ['ring/ring-defaults "0.3.2"]
    ['binaryage/devtools "1.0.0"]])
 
@@ -33,24 +33,24 @@
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.7.0" :scope "test"]
    ['binaryage/chromex "0.9.1" :scope "test"]
-   ['environ "1.1.0" :scope "test"]
+   ['environ "1.2.0" :scope "test"]
    ['cljs-http "0.1.46" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
-   ['rum "0.11.4" :scope "test"]
+   ['rum "0.11.5" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "1.0.0" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
-   ['fipp "0.6.22" :scope "test"]
-   ['nubank/matcher-combinators "1.5.1" :scope "test"]
+   ['fipp "0.6.23" :scope "test"]
+   ['nubank/matcher-combinators "1.5.2" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
 
    ['http.async.client "1.3.1" :scope "test"]
 
-   ['ring/ring-devel "1.8.0" :scope "test"]
+   ['ring/ring-devel "1.8.1" :scope "test"]
    ['clj-time "0.15.2" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
@@ -64,7 +64,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.5.11"
+(defproject binaryage/dirac "1.5.12"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

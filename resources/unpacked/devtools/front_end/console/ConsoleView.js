@@ -28,6 +28,7 @@
  */
 
 import * as Bindings from '../bindings/bindings.js';
+import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as Host from '../host/host.js';
@@ -351,49 +352,41 @@ export class ConsoleView extends UI.Widget.VBox {
     SDK.ConsoleModel.ConsoleModel.instance().messages().forEach(this._addConsoleMessage, this);
 
     if (Root.Runtime.experiments.isEnabled('issuesPane')) {
-      const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
-      if (mainTarget) {
-        const issuesModel = mainTarget.model(SDK.IssuesModel.IssuesModel);
-        if (issuesModel) {
-          issuesModel.addEventListener(SDK.IssuesModel.Events.AggregatedIssueUpdated, this._onIssueAdded.bind(this));
-          issuesModel.ensureEnabled();
-          if (issuesModel.numberOfAggregatedIssues()) {
-            this._onIssueAdded();
-          }
-        }
-        const resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        if (resourceTreeModel) {
-          resourceTreeModel.addEventListener(
-              SDK.ResourceTreeModel.Events.MainFrameNavigated, this._onMainFrameNavigated.bind(this));
-        }
+      const issuesManager = BrowserSDK.IssuesManager.IssuesManager.instance();
+      issuesManager.addEventListener(
+          BrowserSDK.IssuesManager.Events.IssuesCountUpdated, this._onIssuesCountChanged.bind(this));
+      if (issuesManager.numberOfIssues()) {
+        this._onIssuesCountChanged();
       }
     }
   }
 
-  _onIssueAdded() {
-    if (!this._issueBarDiv) {
-      this._issueBarDiv = createElementWithClass('div', 'flex-none');
+  _onIssuesCountChanged() {
+    if (BrowserSDK.IssuesManager.IssuesManager.instance().numberOfIssues() === 0) {
+      if (this._issueBarDiv) {
+        this._issueBarDiv.remove();
+        this._issueBarDiv = null;
+      }
+    } else if (!this._issueBarDiv) {
+      this._issueBarDiv = document.createElement('div');
+      this._issueBarDiv.classList.add('flex-none');
+      const issueBarAction = /** @type {!UI.Infobar.InfobarAction} */ ({
+        text: ls`Go to Issues`,
+        highlight: false,
+        delegate: () => {
+          Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.ConsoleInfoBar);
+          UI.ViewManager.ViewManager.instance().showView('issues-pane');
+        },
+        dismiss: true,
+      });
       const issueBar = new UI.Infobar.Infobar(
           UI.Infobar.Type.Warning,
-          ls
-          `Issues detected. The new issues panel displays information about deprecations, breaking changes and other potential problems.`,
-          [{
-            text: ls`Go to Issues`,
-            highlight: false,
-            delegate: () => UI.ViewManager.ViewManager.instance().showView('issues-pane'),
-            dismiss: true,
-          }]);
-          this.element.insertBefore(this._issueBarDiv, this._consoleToolbarContainer.nextSibling);
-          this._issueBarDiv.appendChild(issueBar.element);
-          issueBar.setParentView(this);
-          this.doResize();
-    }
-  }
-
-  _onMainFrameNavigated() {
-    if (this._issueBarDiv) {
-      this._issueBarDiv.remove();
-      this._issueBarDiv = null;
+          ls`Issues detected. The new Issues tab displays information about deprecations, breaking changes and other potential problems.`,
+          [issueBarAction]);
+      this.element.insertBefore(this._issueBarDiv, this._consoleToolbarContainer.nextSibling);
+      this._issueBarDiv.appendChild(issueBar.element);
+      issueBar.setParentView(this);
+      this.doResize();
     }
   }
 
@@ -709,11 +702,14 @@ export class ConsoleView extends UI.Widget.VBox {
    * @param {string | null} compiler
    */
   _buildPromptPlaceholder(namespace, compiler) {
-    const placeholderEl = createElementWithClass("div", "dirac-prompt-placeholder");
-    const namespaceEl = createElementWithClass("span", "dirac-prompt-namespace");
+    const placeholderEl = document.createElement('div');
+    placeholderEl.classList.add('dirac-prompt-placeholder');
+    const namespaceEl =  document.createElement('span');
+    namespaceEl.classList.add('dirac-prompt-namespace');
     namespaceEl.textContent = namespace || "";
     if (compiler) {
-      const compilerEl = createElementWithClass("span", "dirac-prompt-compiler");
+      const compilerEl = document.createElement('span');
+      compilerEl.classList.add('dirac-prompt-compiler');
       compilerEl.textContent = compiler;
       placeholderEl.appendChildren(namespaceEl, compilerEl);
     } else {
@@ -1540,7 +1536,7 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   _addGroupableMessagesToEnd() {
-    /** @type {!Set<!SDK.ConsoleModel.ConsoleMessage>} */
+    /** @type {!Set<(!SDK.ConsoleModel.ConsoleMessage|!ConsoleViewMessage)>} */
     const alreadyAdded = new Set();
     /** @type {!Set<string>} */
     const processedGroupKeys = new Set();
@@ -1572,7 +1568,7 @@ export class ConsoleView extends UI.Widget.VBox {
 
       if (!viewMessagesInGroup.find(x => this._shouldMessageBeVisible(x))) {
         // Optimize for speed.
-        alreadyAdded.addAll(viewMessagesInGroup);
+        Platform.SetUtilities.addAll(alreadyAdded, viewMessagesInGroup);
         processedGroupKeys.add(key);
         continue;
       }
@@ -2167,28 +2163,20 @@ export class ConsoleViewFilter {
 export class ConsoleCommand extends ConsoleViewMessage {
 
   /**
-   * @param {!SDK.ConsoleModel.ConsoleMessage} consoleMessage
-   * @param {!Components.Linkifier.Linkifier} linkifier
-   * @param {number} nestingLevel
-   * @param {function(!Common.EventTarget.EventTargetEvent)} onResize
-   */
-  constructor(consoleMessage, linkifier, nestingLevel, onResize) {
-    super(consoleMessage, linkifier, nestingLevel, onResize);
-    this._formattedCommand = null;
-  }
-  /**
    * @override
    * @return {!Element}
    */
   contentElement() {
     if (!this._contentElement) {
-      this._contentElement = createElementWithClass('div', 'console-user-command');
+      this._contentElement = document.createElement('div');
+      this._contentElement.classList.add('console-user-command');
       const icon = UI.Icon.Icon.create('smallicon-user-command', 'command-result-icon');
       this._contentElement.appendChild(icon);
 
       this._contentElement.message = this;
 
-      this._formattedCommand = createElementWithClass('span', 'source-code');
+      this._formattedCommand = document.createElement('span');
+      this._formattedCommand.classList.add('source-code');
       this._formattedCommand.textContent = Platform.StringUtilities.replaceControlCharacters(this.text);
       this._contentElement.appendChild(this._formattedCommand);
 
@@ -2219,13 +2207,14 @@ class ConsoleDiracCommand extends ConsoleCommand {
    */
   contentElement() {
     if (!this._contentElement) {
-      this._contentElement = createElementWithClass("div", "console-user-command");
+      this._contentElement = document.createElement('div');
+      this._contentElement.classList.add('console-user-command');
+      this._contentElement.message = this;
       const icon = UI.Icon.Icon.create('smallicon-user-command', 'command-result-icon');
       this._contentElement.appendChild(icon);
 
-      this._contentElement.message = this;
-
-      this._formattedCommand = createElementWithClass("span", "console-message-text source-code cm-s-dirac");
+      this._formattedCommand = document.createElement('span');
+      this._formattedCommand.classList.add('console-message-text', 'source-code', 'cm-s-dirac');
       this._contentElement.appendChild(this._formattedCommand);
 
       CodeMirror.runMode(this.text, "clojure-parinfer", this._formattedCommand, undefined);
@@ -2246,10 +2235,12 @@ class ConsoleDiracMarkup extends ConsoleCommand {
    */
   contentElement() {
     if (!this._contentElement) {
-      this._contentElement = createElementWithClass("div", "console-message console-dirac-markup");
+      this._contentElement = document.createElement('div');
+      this._contentElement.classList.add('console-message', 'console-dirac-markup');
       this._contentElement.message = this;
 
-      this._formattedCommand = createElementWithClass("span", "console-message-text source-code");
+      this._formattedCommand = document.createElement('span');
+      this._formattedCommand.classList.add('console-message-text', 'source-code');
       this._formattedCommand.innerHTML = this.consoleMessage().messageText;
       this._contentElement.appendChild(this._formattedCommand);
 

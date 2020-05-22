@@ -265,6 +265,146 @@ describe('generateClosure', () => {
   * @param {?Person} person
   */`);
     });
+
+    it('parses getter functions', () => {
+      const state = parseCode(`interface Person {
+        name: string
+        age: number
+      }
+      class Breadcrumbs extends HTMLElement {
+        public get person(): Person {
+        }
+      }`);
+
+      const classOutput = generateClosureClass(state);
+
+      assert.include(classOutput.join('\n'), `
+  /**
+  * @return {!Person}
+  */`);
+
+      assert.include(classOutput.join('\n'), 'get person() {}');
+    });
+
+    it('throws on a getter that has no return type', () => {
+      const state = parseCode(`interface Person {
+        name: string
+        age: number
+      }
+      class Breadcrumbs extends HTMLElement {
+        public get person() {
+        }
+      }`);
+
+      assert.throws(() => generateClosureClass(state), 'Found invalid getter with no return type: person');
+    });
+
+    it('handles getter functions with optional return', () => {
+      const state = parseCode(`interface Person {
+        name: string
+        age: number
+      }
+      class Breadcrumbs extends HTMLElement {
+        public get person(): Person | null {
+        }
+      }`);
+
+      const classOutput = generateClosureClass(state);
+
+      assert.include(classOutput.join('\n'), `
+  /**
+  * @return {?Person}
+  */`);
+
+      assert.include(classOutput.join('\n'), 'get person() {}');
+    });
+
+    it('parses setter functions', () => {
+      const state = parseCode(`interface Person {
+        name: string
+        age: number
+      }
+      class Breadcrumbs extends HTMLElement {
+        public set person(person: Person) {
+        }
+      }`);
+
+      const classOutput = generateClosureClass(state);
+
+      assert.include(classOutput.join('\n'), `
+  /**
+  * @param {!Person} person
+  */`);
+
+      assert.include(classOutput.join('\n'), 'set person(person) {}');
+    });
+
+    it('throws on a setter that has no parameter', () => {
+      const state = parseCode(`interface Person {
+        name: string
+        age: number
+      }
+      class Breadcrumbs extends HTMLElement {
+        public set person() {
+        }
+      }`);
+
+      assert.throws(() => generateClosureClass(state), 'Found invalid setter with no parameter: person');
+    });
+
+    it('throws on a setter that has an untyped parameter', () => {
+      const state = parseCode(`interface Person {
+        name: string
+        age: number
+      }
+      class Breadcrumbs extends HTMLElement {
+        public set person(p) {
+        }
+      }`);
+
+      assert.throws(() => generateClosureClass(state), 'Found invalid setter with no explicit parameter type: person');
+    });
+
+    it('handles setter functions with optional parameters', () => {
+      const state = parseCode(`interface Person {
+        name: string
+        age: number
+      }
+      class Breadcrumbs extends HTMLElement {
+        public set person(person?: Person) {
+        }
+      }`);
+
+      const classOutput = generateClosureClass(state);
+
+      assert.include(classOutput.join('\n'), `
+  /**
+  * @param {!Person=} person
+  */`);
+
+      assert.include(classOutput.join('\n'), 'set person(person) {}');
+    });
+
+    it('handles object parameters in setters', () => {
+      const state = parseCode(`interface Person {
+        name: string
+        age: number
+      }
+
+      class Breadcrumbs extends HTMLElement {
+        public set data(data: { person: Person, somethingElse: number }) {
+        }
+      }`);
+
+      const classOutput = generateClosureClass(state);
+
+      assert.include(classOutput.join('\n'), `
+  /**
+  * @param {{person: !Person, somethingElse: number}} data
+  */`);
+
+      assert.include(classOutput.join('\n'), 'set data(data) {}');
+    });
   });
 
   describe('generateInterfaces', () => {
@@ -328,8 +468,8 @@ describe('generateClosure', () => {
 
       assert.strictEqual(interfaces.length, 1);
       assert.include(interfaces[0].join('\n'), `* @typedef {{
-* name:string
-* age:number
+* name:string,
+* age:number,
 * }}`);
     });
 
@@ -346,7 +486,7 @@ describe('generateClosure', () => {
 
       assert.strictEqual(interfaces.length, 1);
       assert.include(interfaces[0].join('\n'), `* @typedef {{
-* name:(string|undefined)
+* name:(string|undefined),
 * }}`);
     });
 
@@ -365,7 +505,7 @@ describe('generateClosure', () => {
 
       assert.strictEqual(interfaces.length, 1);
       assert.include(interfaces[0].join('\n'), `* @typedef {{
-* pet:(!Pet|undefined)
+* pet:(!Pet|undefined),
 * }}`);
     });
 

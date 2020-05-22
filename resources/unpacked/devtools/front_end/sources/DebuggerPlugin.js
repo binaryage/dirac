@@ -208,7 +208,8 @@ export class DebuggerPlugin extends Plugin {
     // so that the contextMenu event handler can determine which row was clicked on.
     this._textEditor.installGutter(breakpointsGutterType, true);
     for (let i = 0; i < this._textEditor.linesCount; ++i) {
-      const gutterElement = createElementWithClass('div', 'breakpoint-element');
+      const gutterElement = document.createElement('div');
+      gutterElement.classList.add('breakpoint-element');
       this._textEditor.setGutterDecoration(i, breakpointsGutterType, gutterElement);
     }
   }
@@ -1120,7 +1121,8 @@ export class DebuggerPlugin extends Plugin {
         continue;
       }
 
-      const widget = createElementWithClass('div', 'text-editor-value-decoration');
+      const widget = document.createElement('div');
+      widget.classList.add('text-editor-value-decoration');
       const base = this._textEditor.cursorPositionToCoordinates(i, 0);
       const offset = this._textEditor.cursorPositionToCoordinates(i, this._textEditor.line(i).length);
       const codeMirrorLinesLeftPadding = 4;
@@ -1566,21 +1568,44 @@ export class DebuggerPlugin extends Plugin {
     }
   }
 
+  _getScriptForCurrentUISourceCode() {
+    for (const scriptFile of this._scriptFileForDebuggerModel.values()) {
+      if (!scriptFile) {
+        continue;
+      }
+      if (scriptFile.uiSourceCode === this._uiSourceCode) {
+        return scriptFile.script;
+      }
+    }
+    return;
+  }
+
   _updateLinesWithoutMappingHighlight() {
     const isSourceMapSource =
         !!Bindings.CompilerScriptMapping.CompilerScriptMapping.uiSourceCodeOrigin(this._uiSourceCode);
-    if (!isSourceMapSource) {
+    if (isSourceMapSource) {
+      const linesCount = this._textEditor.linesCount;
+      for (let i = 0; i < linesCount; ++i) {
+        const lineHasMapping =
+            Bindings.CompilerScriptMapping.CompilerScriptMapping.uiLineHasMapping(this._uiSourceCode, i);
+        if (!lineHasMapping) {
+          this._hasLineWithoutMapping = true;
+        }
+        if (this._hasLineWithoutMapping) {
+          this._textEditor.toggleLineClass(i, 'cm-non-breakable-line', !lineHasMapping);
+        }
+      }
       return;
     }
-    const linesCount = this._textEditor.linesCount;
-    for (let i = 0; i < linesCount; ++i) {
-      const lineHasMapping =
-          Bindings.CompilerScriptMapping.CompilerScriptMapping.uiLineHasMapping(this._uiSourceCode, i);
-      if (!lineHasMapping) {
-        this._hasLineWithoutMapping = true;
-      }
-      if (this._hasLineWithoutMapping) {
-        this._textEditor.toggleLineClass(i, 'cm-line-without-source-mapping', !lineHasMapping);
+
+    // Check to see if it is Wasm Disassembly.
+    const script = this._getScriptForCurrentUISourceCode();
+    if (script && script.hasWasmDisassembly()) {
+      const linesCount = this._textEditor.linesCount;
+      for (let i = 0; i < linesCount; ++i) {
+        if (!script.isWasmDisassemblyBreakableLine(i)) {
+          this._textEditor.toggleLineClass(i, 'cm-non-breakable-line', true);
+        }
       }
     }
   }
@@ -1763,6 +1788,12 @@ export class DebuggerPlugin extends Plugin {
    */
   async _setBreakpoint(lineNumber, columnNumber, condition, enabled) {
     if (!Bindings.CompilerScriptMapping.CompilerScriptMapping.uiLineHasMapping(this._uiSourceCode, lineNumber)) {
+      return;
+    }
+
+    // Check to see if it is Wasm Disassembly.
+    const script = this._getScriptForCurrentUISourceCode();
+    if (script && script.hasWasmDisassembly() && !script.isWasmDisassemblyBreakableLine(lineNumber)) {
       return;
     }
 

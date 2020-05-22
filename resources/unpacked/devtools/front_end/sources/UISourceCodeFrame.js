@@ -30,6 +30,7 @@
 
 import * as Common from '../common/common.js';
 import * as Persistence from '../persistence/persistence.js';  // eslint-disable-line no-unused-vars
+import * as Platform from '../platform/platform.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
 import * as TextEditor from '../text_editor/text_editor.js';  // eslint-disable-line no-unused-vars
 import * as TextUtils from '../text_utils/text_utils.js';
@@ -301,7 +302,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
   _allMessages() {
     if (this._persistenceBinding) {
       const combinedSet = this._persistenceBinding.network.messages();
-      combinedSet.addAll(this._persistenceBinding.fileSystem.messages());
+      Platform.SetUtilities.addAll(combinedSet, this._persistenceBinding.fileSystem.messages());
       return combinedSet;
     }
     return this._uiSourceCode.messages();
@@ -656,7 +657,8 @@ export class RowMessage {
   constructor(message) {
     this._message = message;
     this._repeatCount = 1;
-    this.element = createElementWithClass('div', 'text-editor-row-message');
+    this.element = document.createElement('div');
+    this.element.classList.add('text-editor-row-message');
     this._icon = this.element.createChild('label', '', 'dt-icon-label');
     this._icon.type = iconClassPerLevel[message.level()];
     this._repeatCountElement =
@@ -710,14 +712,16 @@ export class RowMessageBucket {
     this._sourceFrame = sourceFrame;
     this.textEditor = textEditor;
     this._lineHandle = textEditor.textEditorPositionHandle(editorLineNumber, 0);
-    this._decoration = createElementWithClass('div', 'text-editor-line-decoration');
+    this._decoration = document.createElement('div');
+    this._decoration.classList.add('text-editor-line-decoration');
     this._decoration._messageBucket = this;
     this._wave = this._decoration.createChild('div', 'text-editor-line-decoration-wave');
     this._icon = this._wave.createChild('span', 'text-editor-line-decoration-icon', 'dt-icon-label');
     /** @type {?number} */
     this._decorationStartColumn = null;
 
-    this._messagesDescriptionElement = createElementWithClass('div', 'text-editor-messages-description-container');
+    this._messagesDescriptionElement = document.createElement('div');
+    this._messagesDescriptionElement.classList.add('text-editor-messages-description-container');
     /** @type {!Array.<!RowMessage>} */
     this._messages = [];
 

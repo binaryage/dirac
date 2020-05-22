@@ -15,6 +15,7 @@ if (typeof runtime !== "undefined") {
 
     insertScript('dirac/.compiled/implant/goog/base.js', function () {
       goog.define('goog.ENABLE_CHROME_APP_SAFE_SCRIPT_LOADING', true);
+      goog.ENABLE_CHROME_APP_SAFE_SCRIPT_LOADING = true;
       insertScript('dirac/.compiled/implant/goog/deps.js', function () {
         insertScript('dirac/.compiled/implant/cljs_deps.js', function () {
           goog.require("dirac.devtools");

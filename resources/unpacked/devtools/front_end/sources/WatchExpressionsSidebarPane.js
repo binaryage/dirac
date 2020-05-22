@@ -295,7 +295,9 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     super();
     this._expression = expression;
     this._expandController = expandController;
-    this._element = createElementWithClass('div', 'watch-expression monospace');
+    this._element = document.createElement('div');
+    this._element.classList.add('watch-expression');
+    this._element.classList.add('monospace');
     this._editing = false;
     this._linkifier = linkifier;
 
@@ -439,7 +441,9 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     titleElement.appendChild(deleteButton);
     this._nameElement = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(this._expression);
     if (!!exceptionDetails || !expressionValue) {
-      this._valueElement = createElementWithClass('span', 'watch-expression-error value');
+      this._valueElement = document.createElement('span');
+      this._valueElement.classList.add('watch-expression-error');
+      this._valueElement.classList.add('value');
       titleElement.classList.add('dimmed');
       this._valueElement.textContent = Common.UIString.UIString('<not available>');
     } else {
@@ -448,7 +452,8 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
               expressionValue, !!exceptionDetails, false /* showPreview */, titleElement, this._linkifier);
       this._valueElement = propertyValue.element;
     }
-    const separatorElement = createElementWithClass('span', 'watch-expressions-separator');
+    const separatorElement = document.createElement('span');
+    separatorElement.classList.add('watch-expressions-separator');
     separatorElement.textContent = ': ';
     titleElement.appendChildren(this._nameElement, separatorElement, this._valueElement);
 

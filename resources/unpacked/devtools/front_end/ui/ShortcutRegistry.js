@@ -35,6 +35,13 @@ export class ShortcutRegistry {
     this._activePrefixTimeout = null;
     /** @type {?function():Promise<void>} */
     this._consumePrefix = null;
+    const keybindSetSetting = self.Common.settings.moduleSetting('activeKeybindSet');
+    if (!Root.Runtime.experiments.isEnabled('customKeyboardShortcuts') &&
+        keybindSetSetting.get() !== DefaultShortcutSetting) {
+      keybindSetSetting.set(DefaultShortcutSetting);
+    }
+    keybindSetSetting.addChangeListener(this._registerBindings, this);
+
     this._registerBindings();
   }
 
@@ -165,8 +172,17 @@ export class ShortcutRegistry {
    */
   async handleKey(key, domKey, event, handlers) {
     const keyModifiers = key >> 8;
-    if ((!handlers && (isPossiblyInputKey() || Dialog.hasInstance())) ||
+    const hasHandlersOrPrefixKey = !!handlers || !!this._activePrefixKey;
+    const keyMapNode = this._keyMap.getNode(key);
+    const maybeHasActions = this._applicableActions(key, handlers).length > 0 || (keyMapNode && keyMapNode.hasChords());
+    if ((!hasHandlersOrPrefixKey && isPossiblyInputKey()) || !maybeHasActions ||
         KeyboardShortcut.isModifier(KeyboardShortcut.keyCodeAndModifiersFromKey(key).keyCode)) {
+      return;
+    }
+    if (event) {
+      event.consume(true);
+    }
+    if (!hasHandlersOrPrefixKey && Dialog.hasInstance()) {
       return;
     }
 
@@ -182,11 +198,7 @@ export class ShortcutRegistry {
         await this._consumePrefix();
       }
     }
-    const keyMapNode = this._keyMap.getNode(key);
     if (keyMapNode && keyMapNode.hasChords()) {
-      if (event) {
-        event.consume(true);
-      }
       this._activePrefixKey = keyMapNode;
       this._consumePrefix = async () => {
         this._activePrefixKey = null;
@@ -255,9 +267,6 @@ export class ShortcutRegistry {
       if (!actions.length) {
         return false;
       }
-      if (event) {
-        event.consume(true);
-      }
       for (const action of actions) {
         let handled;
         if (handlers && handlers[action.id()]) {
@@ -284,6 +293,10 @@ export class ShortcutRegistry {
   }
 
   _registerBindings() {
+    this._keyToShortcut.clear();
+    this._actionToShortcut.clear();
+    this._keyMap.clear();
+    const keybindSet = self.Common.settings.moduleSetting('activeKeybindSet').get();
     const extensions = self.runtime.extensions('action');
     extensions.forEach(registerExtension, this);
 
@@ -295,14 +308,20 @@ export class ShortcutRegistry {
       const descriptor = extension.descriptor();
       const bindings = descriptor.bindings;
       for (let i = 0; bindings && i < bindings.length; ++i) {
-        if (!platformMatches(bindings[i].platform)) {
+        const keybindSets = bindings[i].keybindSets;
+        if (!platformMatches(bindings[i].platform) || !keybindSetsMatch(keybindSets)) {
           continue;
         }
         const keys = bindings[i].shortcut.split(/\s+/);
         const shortcutDescriptors = keys.map(KeyboardShortcut.makeDescriptorFromBindingShortcut);
         if (shortcutDescriptors.length > 0) {
-          this._registerShortcut(new KeyboardShortcut(
-              shortcutDescriptors, /** @type {string} */ (descriptor.actionId), Type.DefaultShortcut));
+          const actionId = /** @type {string} */ (descriptor.actionId);
+          if (!keybindSets) {
+            this._registerShortcut(new KeyboardShortcut(shortcutDescriptors, actionId, Type.DefaultShortcut));
+          } else {
+            this._registerShortcut(
+                new KeyboardShortcut(shortcutDescriptors, actionId, Type.KeybindSetShortcut, keybindSet));
+          }
         }
       }
     }
@@ -322,6 +341,16 @@ export class ShortcutRegistry {
         isMatch = platforms[i] === currentPlatform;
       }
       return isMatch;
+    }
+
+    /**
+     * @param {!Array<string>=} keybindSets
+     */
+    function keybindSetsMatch(keybindSets) {
+      if (!keybindSets) {
+        return true;
+      }
+      return keybindSets.includes(keybindSet);
     }
   }
 }
@@ -401,6 +430,11 @@ export class ShortcutTreeNode {
   actions() {
     return this._actions;
   }
+
+  clear() {
+    this._actions = [];
+    this._chords = new Map();
+  }
 }
 
 /**
@@ -411,3 +445,4 @@ export class ForwardedShortcut {}
 ForwardedShortcut.instance = new ForwardedShortcut();
 
 export const KeyTimeout = 1000;
+export const DefaultShortcutSetting = 'devToolsDefault';

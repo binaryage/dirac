@@ -57,13 +57,17 @@ export class RuntimeModel extends SDKModel {
     this._agent.enable();
     /** @type {!Map<number, !ExecutionContext>} */
     this._executionContextById = new Map();
+    /** @type {function(!ExecutionContext,!ExecutionContext):number} */
     this._executionContextComparator = ExecutionContext.comparator;
     /** @type {?boolean} */
     this._hasSideEffectSupport = null;
 
-    if (Common.Settings.Settings.instance().moduleSetting('customFormatters').get()) {
-      this._agent.setCustomObjectFormatterEnabled(true);
-    }
+    // TODO(1016755): remove custom formatters altogether.
+    // darwin: revert this for now, wait for what comes next
+    // Common.Settings.Settings.instance().moduleSetting('customFormatters').set(false);
+    // this._agent.setCustomObjectFormatterEnabled(false);
+    Common.Settings.Settings.instance().moduleSetting('customFormatters').set(true);
+    this._agent.setCustomObjectFormatterEnabled(true);
 
     Common.Settings.Settings.instance()
         .moduleSetting('customFormatters')
@@ -129,14 +133,14 @@ export class RuntimeModel extends SDKModel {
   }
 
   /**
-   * @param {function(!ExecutionContext,!ExecutionContext)} comparator
+   * @param {function(!ExecutionContext,!ExecutionContext):number} comparator
    */
   setExecutionContextComparator(comparator) {
     this._executionContextComparator = comparator;
   }
 
   /**
-   * @return {function(!ExecutionContext,!ExecutionContext)} comparator
+   * @return {function(!ExecutionContext,!ExecutionContext):number} comparator
    */
   executionContextComparator() {
     return this._executionContextComparator;

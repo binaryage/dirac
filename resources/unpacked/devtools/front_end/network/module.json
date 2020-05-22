@@ -163,26 +163,33 @@
       "bindings": [
         {
           "platform": "mac",
-          "shortcut": "Meta+F"
+          "shortcut": "Meta+F",
+          "keybindSets": ["devToolsDefault", "vsCode"]
         },
         {
           "platform": "windows,linux",
-          "shortcut": "Ctrl+F"
+          "shortcut": "Ctrl+F",
+          "keybindSets": ["devToolsDefault", "vsCode"]
         }
       ]
     }
   ],
   "dependencies": [
-    "search",
-    "source_frame",
+    "browser_sdk",
+    "common",
     "components",
-    "perf_ui",
     "cookie_table",
     "data_grid",
-    "browser_sdk",
-    "mobile_throttling",
     "har_importer",
-    "persistence"
+    "host",
+    "mobile_throttling",
+    "object_ui",
+    "perf_ui",
+    "persistence",
+    "sdk",
+    "search",
+    "source_frame",
+    "ui"
   ],
   "scripts": [],
   "modules": [

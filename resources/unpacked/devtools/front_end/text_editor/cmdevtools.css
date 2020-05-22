@@ -1,4 +1,13 @@
 .CodeMirror {
+    --breakpoint-background-red: #FF4E4226;
+}
+
+:host-context(.-theme-with-dark-background) .CodeMirror,
+.-theme-with-dark-background .CodeMirror {
+    --breakpoint-background-red: #FF4E4233;
+}
+
+.CodeMirror {
     line-height: 1.2em !important;
     background-color: transparent !important;
     color: #222;
@@ -174,16 +183,20 @@
     to { background-color: #14522b; }
 }
 
-.cm-line-without-source-mapping .CodeMirror-linenumber {
+.cm-non-breakable-line .CodeMirror-linenumber {
     color: rgba(128, 128, 128, 0.4);
 }
 
 .breakpoint-element {
-    padding-top: 1px;
+    padding-top: 1.5px;
 }
 
 .breakpoint-element::before {
     content: "\00AD";
+}
+
+.CodeMirror-gutter-background.cm-breakpoint {
+    background-color: var(--breakpoint-background-red);
 }
 
 .cm-breakpoint .breakpoint-element::before {
@@ -217,9 +230,11 @@
 }
 
 .cm-inline-breakpoint {
+    cursor: pointer;
+    padding-left: 1px;
+    padding-right: 2px;
     position:relative;
     top: 1px;
-    cursor: pointer;
 }
 
 .cm-inline-breakpoint::before {

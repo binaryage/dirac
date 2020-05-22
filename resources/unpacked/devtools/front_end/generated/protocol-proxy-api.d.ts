@@ -12,7 +12,7 @@
  * API generated from Protocol commands and events.
  */
 declare namespace ProtocolProxyApi {
-  declare interface ProtocolApi {
+  export interface ProtocolApi {
     Accessibility: AccessibilityApi;
 
     Animation: AnimationApi;
@@ -109,124 +109,128 @@ declare namespace ProtocolProxyApi {
     /**
      * Disables the accessibility domain.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables the accessibility domain which causes `AXNodeId`s to remain consistent between method calls.
      * This turns on accessibility for the page, which can impact performance until accessibility is disabled.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
      */
-    getPartialAXTree(params: Protocol.Accessibility.GetPartialAXTreeRequest):
+    invoke_getPartialAXTree(params: Protocol.Accessibility.GetPartialAXTreeRequest):
         Promise<Protocol.Accessibility.GetPartialAXTreeResponse>;
 
     /**
      * Fetches the entire accessibility tree
      */
-    getFullAXTree(): Promise<Protocol.Accessibility.GetFullAXTreeResponse>;
+    invoke_getFullAXTree(): Promise<Protocol.Accessibility.GetFullAXTreeResponse>;
   }
+  export interface AccessibilityDispatcher {}
 
   export interface AnimationApi {
     /**
      * Disables animation domain notifications.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables animation domain notifications.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns the current time of the an animation.
      */
-    getCurrentTime(params: Protocol.Animation.GetCurrentTimeRequest):
+    invoke_getCurrentTime(params: Protocol.Animation.GetCurrentTimeRequest):
         Promise<Protocol.Animation.GetCurrentTimeResponse>;
 
     /**
      * Gets the playback rate of the document timeline.
      */
-    getPlaybackRate(): Promise<Protocol.Animation.GetPlaybackRateResponse>;
+    invoke_getPlaybackRate(): Promise<Protocol.Animation.GetPlaybackRateResponse>;
 
     /**
      * Releases a set of animations to no longer be manipulated.
      */
-    releaseAnimations(params: Protocol.Animation.ReleaseAnimationsRequest): Promise<void>;
+    invoke_releaseAnimations(params: Protocol.Animation.ReleaseAnimationsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Gets the remote object of the Animation.
      */
-    resolveAnimation(params: Protocol.Animation.ResolveAnimationRequest):
+    invoke_resolveAnimation(params: Protocol.Animation.ResolveAnimationRequest):
         Promise<Protocol.Animation.ResolveAnimationResponse>;
 
     /**
      * Seek a set of animations to a particular time within each animation.
      */
-    seekAnimations(params: Protocol.Animation.SeekAnimationsRequest): Promise<void>;
+    invoke_seekAnimations(params: Protocol.Animation.SeekAnimationsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets the paused state of a set of animations.
      */
-    setPaused(params: Protocol.Animation.SetPausedRequest): Promise<void>;
+    invoke_setPaused(params: Protocol.Animation.SetPausedRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets the playback rate of the document timeline.
      */
-    setPlaybackRate(params: Protocol.Animation.SetPlaybackRateRequest): Promise<void>;
+    invoke_setPlaybackRate(params: Protocol.Animation.SetPlaybackRateRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets the timing of an animation node.
      */
-    setTiming(params: Protocol.Animation.SetTimingRequest): Promise<void>;
-
+    invoke_setTiming(params: Protocol.Animation.SetTimingRequest): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface AnimationDispatcher {
     /**
      * Event for when an animation has been cancelled.
      */
-    on(event: 'animationCanceled', listener: (params: Protocol.Animation.AnimationCanceledEvent) => void): void;
+    animationCanceled(params: Protocol.Animation.AnimationCanceledEvent): void;
 
     /**
      * Event for each animation that has been created.
      */
-    on(event: 'animationCreated', listener: (params: Protocol.Animation.AnimationCreatedEvent) => void): void;
+    animationCreated(params: Protocol.Animation.AnimationCreatedEvent): void;
 
     /**
      * Event for animation that has been started.
      */
-    on(event: 'animationStarted', listener: (params: Protocol.Animation.AnimationStartedEvent) => void): void;
+    animationStarted(params: Protocol.Animation.AnimationStartedEvent): void;
   }
 
   export interface ApplicationCacheApi {
     /**
      * Enables application cache domain notifications.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns relevant application cache data for the document in given frame.
      */
-    getApplicationCacheForFrame(params: Protocol.ApplicationCache.GetApplicationCacheForFrameRequest):
+    invoke_getApplicationCacheForFrame(params: Protocol.ApplicationCache.GetApplicationCacheForFrameRequest):
         Promise<Protocol.ApplicationCache.GetApplicationCacheForFrameResponse>;
 
     /**
      * Returns array of frame identifiers with manifest urls for each frame containing a document
      * associated with some application cache.
      */
-    getFramesWithManifests(): Promise<Protocol.ApplicationCache.GetFramesWithManifestsResponse>;
+    invoke_getFramesWithManifests(): Promise<Protocol.ApplicationCache.GetFramesWithManifestsResponse>;
 
     /**
      * Returns manifest URL for document in the given frame.
      */
-    getManifestForFrame(params: Protocol.ApplicationCache.GetManifestForFrameRequest):
+    invoke_getManifestForFrame(params: Protocol.ApplicationCache.GetManifestForFrameRequest):
         Promise<Protocol.ApplicationCache.GetManifestForFrameResponse>;
+  }
+  export interface ApplicationCacheDispatcher {
+    applicationCacheStatusUpdated(params: Protocol.ApplicationCache.ApplicationCacheStatusUpdatedEvent): void;
 
-    on(event: 'applicationCacheStatusUpdated',
-       listener: (params: Protocol.ApplicationCache.ApplicationCacheStatusUpdatedEvent) => void): void;
-
-    on(event: 'networkStateUpdated',
-       listener: (params: Protocol.ApplicationCache.NetworkStateUpdatedEvent) => void): void;
+    networkStateUpdated(params: Protocol.ApplicationCache.NetworkStateUpdatedEvent): void;
   }
 
   export interface AuditsApi {
@@ -234,315 +238,333 @@ declare namespace ProtocolProxyApi {
      * Returns the response body and size if it were re-encoded with the specified settings. Only
      * applies to images.
      */
-    getEncodedResponse(params: Protocol.Audits.GetEncodedResponseRequest):
+    invoke_getEncodedResponse(params: Protocol.Audits.GetEncodedResponseRequest):
         Promise<Protocol.Audits.GetEncodedResponseResponse>;
 
     /**
      * Disables issues domain, prevents further issues from being reported to the client.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables issues domain, sends the issues collected so far to the client by means of the
      * `issueAdded` event.
      */
-    enable(): Promise<void>;
-
-    on(event: 'issueAdded', listener: (params: Protocol.Audits.IssueAddedEvent) => void): void;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface AuditsDispatcher {
+    issueAdded(params: Protocol.Audits.IssueAddedEvent): void;
   }
 
   export interface BackgroundServiceApi {
     /**
      * Enables event updates for the service.
      */
-    startObserving(params: Protocol.BackgroundService.StartObservingRequest): Promise<void>;
+    invoke_startObserving(params: Protocol.BackgroundService.StartObservingRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disables event updates for the service.
      */
-    stopObserving(params: Protocol.BackgroundService.StopObservingRequest): Promise<void>;
+    invoke_stopObserving(params: Protocol.BackgroundService.StopObservingRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Set the recording state for the service.
      */
-    setRecording(params: Protocol.BackgroundService.SetRecordingRequest): Promise<void>;
+    invoke_setRecording(params: Protocol.BackgroundService.SetRecordingRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Clears all stored data for the service.
      */
-    clearEvents(params: Protocol.BackgroundService.ClearEventsRequest): Promise<void>;
-
+    invoke_clearEvents(params: Protocol.BackgroundService.ClearEventsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface BackgroundServiceDispatcher {
     /**
      * Called when the recording state for the service has been updated.
      */
-    on(event: 'recordingStateChanged',
-       listener: (params: Protocol.BackgroundService.RecordingStateChangedEvent) => void): void;
+    recordingStateChanged(params: Protocol.BackgroundService.RecordingStateChangedEvent): void;
 
     /**
      * Called with all existing backgroundServiceEvents when enabled, and all new
      * events afterwards if enabled and recording.
      */
-    on(event: 'backgroundServiceEventReceived',
-       listener: (params: Protocol.BackgroundService.BackgroundServiceEventReceivedEvent) => void): void;
+    backgroundServiceEventReceived(params: Protocol.BackgroundService.BackgroundServiceEventReceivedEvent): void;
   }
 
   export interface BrowserApi {
     /**
      * Set permission settings for given origin.
      */
-    setPermission(params: Protocol.Browser.SetPermissionRequest): Promise<void>;
+    invoke_setPermission(params: Protocol.Browser.SetPermissionRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Grant specific permissions to the given origin and reject all others.
      */
-    grantPermissions(params: Protocol.Browser.GrantPermissionsRequest): Promise<void>;
+    invoke_grantPermissions(params: Protocol.Browser.GrantPermissionsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Reset all permission management for all origins.
      */
-    resetPermissions(params: Protocol.Browser.ResetPermissionsRequest): Promise<void>;
+    invoke_resetPermissions(params: Protocol.Browser.ResetPermissionsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Set the behavior when downloading a file.
      */
-    setDownloadBehavior(params: Protocol.Browser.SetDownloadBehaviorRequest): Promise<void>;
+    invoke_setDownloadBehavior(params: Protocol.Browser.SetDownloadBehaviorRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Close browser gracefully.
      */
-    close(): Promise<void>;
+    invoke_close(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Crashes browser on the main thread.
      */
-    crash(): Promise<void>;
+    invoke_crash(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Crashes GPU process.
      */
-    crashGpuProcess(): Promise<void>;
+    invoke_crashGpuProcess(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns version information.
      */
-    getVersion(): Promise<Protocol.Browser.GetVersionResponse>;
+    invoke_getVersion(): Promise<Protocol.Browser.GetVersionResponse>;
 
     /**
      * Returns the command line switches for the browser process if, and only if
      * --enable-automation is on the commandline.
      */
-    getBrowserCommandLine(): Promise<Protocol.Browser.GetBrowserCommandLineResponse>;
+    invoke_getBrowserCommandLine(): Promise<Protocol.Browser.GetBrowserCommandLineResponse>;
 
     /**
      * Get Chrome histograms.
      */
-    getHistograms(params: Protocol.Browser.GetHistogramsRequest): Promise<Protocol.Browser.GetHistogramsResponse>;
+    invoke_getHistograms(params: Protocol.Browser.GetHistogramsRequest):
+        Promise<Protocol.Browser.GetHistogramsResponse>;
 
     /**
      * Get a Chrome histogram by name.
      */
-    getHistogram(params: Protocol.Browser.GetHistogramRequest): Promise<Protocol.Browser.GetHistogramResponse>;
+    invoke_getHistogram(params: Protocol.Browser.GetHistogramRequest): Promise<Protocol.Browser.GetHistogramResponse>;
 
     /**
      * Get position and size of the browser window.
      */
-    getWindowBounds(params: Protocol.Browser.GetWindowBoundsRequest): Promise<Protocol.Browser.GetWindowBoundsResponse>;
+    invoke_getWindowBounds(params: Protocol.Browser.GetWindowBoundsRequest):
+        Promise<Protocol.Browser.GetWindowBoundsResponse>;
 
     /**
      * Get the browser window that contains the devtools target.
      */
-    getWindowForTarget(params: Protocol.Browser.GetWindowForTargetRequest):
+    invoke_getWindowForTarget(params: Protocol.Browser.GetWindowForTargetRequest):
         Promise<Protocol.Browser.GetWindowForTargetResponse>;
 
     /**
      * Set position and/or size of the browser window.
      */
-    setWindowBounds(params: Protocol.Browser.SetWindowBoundsRequest): Promise<void>;
+    invoke_setWindowBounds(params: Protocol.Browser.SetWindowBoundsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Set dock tile details, platform-specific.
      */
-    setDockTile(params: Protocol.Browser.SetDockTileRequest): Promise<void>;
+    invoke_setDockTile(params: Protocol.Browser.SetDockTileRequest): Promise<Protocol.ProtocolResponseWithError>;
   }
+  export interface BrowserDispatcher {}
 
   export interface CSSApi {
     /**
      * Inserts a new rule with the given `ruleText` in a stylesheet with given `styleSheetId`, at the
      * position specified by `location`.
      */
-    addRule(params: Protocol.CSS.AddRuleRequest): Promise<Protocol.CSS.AddRuleResponse>;
+    invoke_addRule(params: Protocol.CSS.AddRuleRequest): Promise<Protocol.CSS.AddRuleResponse>;
 
     /**
      * Returns all class names from specified stylesheet.
      */
-    collectClassNames(params: Protocol.CSS.CollectClassNamesRequest): Promise<Protocol.CSS.CollectClassNamesResponse>;
+    invoke_collectClassNames(params: Protocol.CSS.CollectClassNamesRequest):
+        Promise<Protocol.CSS.CollectClassNamesResponse>;
 
     /**
      * Creates a new special "via-inspector" stylesheet in the frame with given `frameId`.
      */
-    createStyleSheet(params: Protocol.CSS.CreateStyleSheetRequest): Promise<Protocol.CSS.CreateStyleSheetResponse>;
+    invoke_createStyleSheet(params: Protocol.CSS.CreateStyleSheetRequest):
+        Promise<Protocol.CSS.CreateStyleSheetResponse>;
 
     /**
      * Disables the CSS agent for the given page.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been
      * enabled until the result of this command is received.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Ensures that the given node will have specified pseudo-classes whenever its style is computed by
      * the browser.
      */
-    forcePseudoState(params: Protocol.CSS.ForcePseudoStateRequest): Promise<void>;
+    invoke_forcePseudoState(params: Protocol.CSS.ForcePseudoStateRequest): Promise<Protocol.ProtocolResponseWithError>;
 
-    getBackgroundColors(params: Protocol.CSS.GetBackgroundColorsRequest):
+    invoke_getBackgroundColors(params: Protocol.CSS.GetBackgroundColorsRequest):
         Promise<Protocol.CSS.GetBackgroundColorsResponse>;
 
     /**
      * Returns the computed style for a DOM node identified by `nodeId`.
      */
-    getComputedStyleForNode(params: Protocol.CSS.GetComputedStyleForNodeRequest):
+    invoke_getComputedStyleForNode(params: Protocol.CSS.GetComputedStyleForNodeRequest):
         Promise<Protocol.CSS.GetComputedStyleForNodeResponse>;
 
     /**
      * Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM
      * attributes) for a DOM node identified by `nodeId`.
      */
-    getInlineStylesForNode(params: Protocol.CSS.GetInlineStylesForNodeRequest):
+    invoke_getInlineStylesForNode(params: Protocol.CSS.GetInlineStylesForNodeRequest):
         Promise<Protocol.CSS.GetInlineStylesForNodeResponse>;
 
     /**
      * Returns requested styles for a DOM node identified by `nodeId`.
      */
-    getMatchedStylesForNode(params: Protocol.CSS.GetMatchedStylesForNodeRequest):
+    invoke_getMatchedStylesForNode(params: Protocol.CSS.GetMatchedStylesForNodeRequest):
         Promise<Protocol.CSS.GetMatchedStylesForNodeResponse>;
 
     /**
      * Returns all media queries parsed by the rendering engine.
      */
-    getMediaQueries(): Promise<Protocol.CSS.GetMediaQueriesResponse>;
+    invoke_getMediaQueries(): Promise<Protocol.CSS.GetMediaQueriesResponse>;
 
     /**
      * Requests information about platform fonts which we used to render child TextNodes in the given
      * node.
      */
-    getPlatformFontsForNode(params: Protocol.CSS.GetPlatformFontsForNodeRequest):
+    invoke_getPlatformFontsForNode(params: Protocol.CSS.GetPlatformFontsForNodeRequest):
         Promise<Protocol.CSS.GetPlatformFontsForNodeResponse>;
 
     /**
      * Returns the current textual content for a stylesheet.
      */
-    getStyleSheetText(params: Protocol.CSS.GetStyleSheetTextRequest): Promise<Protocol.CSS.GetStyleSheetTextResponse>;
+    invoke_getStyleSheetText(params: Protocol.CSS.GetStyleSheetTextRequest):
+        Promise<Protocol.CSS.GetStyleSheetTextResponse>;
 
     /**
      * Find a rule with the given active property for the given node and set the new value for this
      * property
      */
-    setEffectivePropertyValueForNode(params: Protocol.CSS.SetEffectivePropertyValueForNodeRequest): Promise<void>;
+    invoke_setEffectivePropertyValueForNode(params: Protocol.CSS.SetEffectivePropertyValueForNodeRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Modifies the keyframe rule key text.
      */
-    setKeyframeKey(params: Protocol.CSS.SetKeyframeKeyRequest): Promise<Protocol.CSS.SetKeyframeKeyResponse>;
+    invoke_setKeyframeKey(params: Protocol.CSS.SetKeyframeKeyRequest): Promise<Protocol.CSS.SetKeyframeKeyResponse>;
 
     /**
      * Modifies the rule selector.
      */
-    setMediaText(params: Protocol.CSS.SetMediaTextRequest): Promise<Protocol.CSS.SetMediaTextResponse>;
+    invoke_setMediaText(params: Protocol.CSS.SetMediaTextRequest): Promise<Protocol.CSS.SetMediaTextResponse>;
 
     /**
      * Modifies the rule selector.
      */
-    setRuleSelector(params: Protocol.CSS.SetRuleSelectorRequest): Promise<Protocol.CSS.SetRuleSelectorResponse>;
+    invoke_setRuleSelector(params: Protocol.CSS.SetRuleSelectorRequest): Promise<Protocol.CSS.SetRuleSelectorResponse>;
 
     /**
      * Sets the new stylesheet text.
      */
-    setStyleSheetText(params: Protocol.CSS.SetStyleSheetTextRequest): Promise<Protocol.CSS.SetStyleSheetTextResponse>;
+    invoke_setStyleSheetText(params: Protocol.CSS.SetStyleSheetTextRequest):
+        Promise<Protocol.CSS.SetStyleSheetTextResponse>;
 
     /**
      * Applies specified style edits one after another in the given order.
      */
-    setStyleTexts(params: Protocol.CSS.SetStyleTextsRequest): Promise<Protocol.CSS.SetStyleTextsResponse>;
+    invoke_setStyleTexts(params: Protocol.CSS.SetStyleTextsRequest): Promise<Protocol.CSS.SetStyleTextsResponse>;
 
     /**
      * Enables the selector recording.
      */
-    startRuleUsageTracking(): Promise<void>;
+    invoke_startRuleUsageTracking(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Stop tracking rule usage and return the list of rules that were used since last call to
      * `takeCoverageDelta` (or since start of coverage instrumentation)
      */
-    stopRuleUsageTracking(): Promise<Protocol.CSS.StopRuleUsageTrackingResponse>;
+    invoke_stopRuleUsageTracking(): Promise<Protocol.CSS.StopRuleUsageTrackingResponse>;
 
     /**
      * Obtain list of rules that became used since last call to this method (or since start of coverage
      * instrumentation)
      */
-    takeCoverageDelta(): Promise<Protocol.CSS.TakeCoverageDeltaResponse>;
-
+    invoke_takeCoverageDelta(): Promise<Protocol.CSS.TakeCoverageDeltaResponse>;
+  }
+  export interface CSSDispatcher {
     /**
      * Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded
      * web font
      */
-    on(event: 'fontsUpdated', listener: (params: Protocol.CSS.FontsUpdatedEvent) => void): void;
+    fontsUpdated(params: Protocol.CSS.FontsUpdatedEvent): void;
 
     /**
      * Fires whenever a MediaQuery result changes (for example, after a browser window has been
      * resized.) The current implementation considers only viewport-dependent media features.
      */
-    on(event: 'mediaQueryResultChanged', listener: () => void): void;
+    mediaQueryResultChanged(): void;
 
     /**
      * Fired whenever an active document stylesheet is added.
      */
-    on(event: 'styleSheetAdded', listener: (params: Protocol.CSS.StyleSheetAddedEvent) => void): void;
+    styleSheetAdded(params: Protocol.CSS.StyleSheetAddedEvent): void;
 
     /**
      * Fired whenever a stylesheet is changed as a result of the client operation.
      */
-    on(event: 'styleSheetChanged', listener: (params: Protocol.CSS.StyleSheetChangedEvent) => void): void;
+    styleSheetChanged(params: Protocol.CSS.StyleSheetChangedEvent): void;
 
     /**
      * Fired whenever an active document stylesheet is removed.
      */
-    on(event: 'styleSheetRemoved', listener: (params: Protocol.CSS.StyleSheetRemovedEvent) => void): void;
+    styleSheetRemoved(params: Protocol.CSS.StyleSheetRemovedEvent): void;
   }
 
   export interface CacheStorageApi {
     /**
      * Deletes a cache.
      */
-    deleteCache(params: Protocol.CacheStorage.DeleteCacheRequest): Promise<void>;
+    invoke_deleteCache(params: Protocol.CacheStorage.DeleteCacheRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Deletes a cache entry.
      */
-    deleteEntry(params: Protocol.CacheStorage.DeleteEntryRequest): Promise<void>;
+    invoke_deleteEntry(params: Protocol.CacheStorage.DeleteEntryRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Requests cache names.
      */
-    requestCacheNames(params: Protocol.CacheStorage.RequestCacheNamesRequest):
+    invoke_requestCacheNames(params: Protocol.CacheStorage.RequestCacheNamesRequest):
         Promise<Protocol.CacheStorage.RequestCacheNamesResponse>;
 
     /**
      * Fetches cache entry.
      */
-    requestCachedResponse(params: Protocol.CacheStorage.RequestCachedResponseRequest):
+    invoke_requestCachedResponse(params: Protocol.CacheStorage.RequestCachedResponseRequest):
         Promise<Protocol.CacheStorage.RequestCachedResponseResponse>;
 
     /**
      * Requests data from cache.
      */
-    requestEntries(params: Protocol.CacheStorage.RequestEntriesRequest):
+    invoke_requestEntries(params: Protocol.CacheStorage.RequestEntriesRequest):
         Promise<Protocol.CacheStorage.RequestEntriesResponse>;
   }
+  export interface CacheStorageDispatcher {}
 
   export interface CastApi {
     /**
@@ -552,421 +574,442 @@ declare namespace ProtocolProxyApi {
      * Also starts observing for issue messages. When an issue is added or removed,
      * an |issueUpdated| event is fired.
      */
-    enable(params: Protocol.Cast.EnableRequest): Promise<void>;
+    invoke_enable(params: Protocol.Cast.EnableRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Stops observing for sinks and issues.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets a sink to be used when the web page requests the browser to choose a
      * sink via Presentation API, Remote Playback API, or Cast SDK.
      */
-    setSinkToUse(params: Protocol.Cast.SetSinkToUseRequest): Promise<void>;
+    invoke_setSinkToUse(params: Protocol.Cast.SetSinkToUseRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Starts mirroring the tab to the sink.
      */
-    startTabMirroring(params: Protocol.Cast.StartTabMirroringRequest): Promise<void>;
+    invoke_startTabMirroring(params: Protocol.Cast.StartTabMirroringRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Stops the active Cast session on the sink.
      */
-    stopCasting(params: Protocol.Cast.StopCastingRequest): Promise<void>;
-
+    invoke_stopCasting(params: Protocol.Cast.StopCastingRequest): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface CastDispatcher {
     /**
      * This is fired whenever the list of available sinks changes. A sink is a
      * device or a software surface that you can cast to.
      */
-    on(event: 'sinksUpdated', listener: (params: Protocol.Cast.SinksUpdatedEvent) => void): void;
+    sinksUpdated(params: Protocol.Cast.SinksUpdatedEvent): void;
 
     /**
      * This is fired whenever the outstanding issue/error message changes.
      * |issueMessage| is empty if there is no issue.
      */
-    on(event: 'issueUpdated', listener: (params: Protocol.Cast.IssueUpdatedEvent) => void): void;
+    issueUpdated(params: Protocol.Cast.IssueUpdatedEvent): void;
   }
 
   export interface DOMApi {
     /**
      * Collects class names for the node with given id and all of it's child nodes.
      */
-    collectClassNamesFromSubtree(params: Protocol.DOM.CollectClassNamesFromSubtreeRequest):
+    invoke_collectClassNamesFromSubtree(params: Protocol.DOM.CollectClassNamesFromSubtreeRequest):
         Promise<Protocol.DOM.CollectClassNamesFromSubtreeResponse>;
 
     /**
      * Creates a deep copy of the specified node and places it into the target container before the
      * given anchor.
      */
-    copyTo(params: Protocol.DOM.CopyToRequest): Promise<Protocol.DOM.CopyToResponse>;
+    invoke_copyTo(params: Protocol.DOM.CopyToRequest): Promise<Protocol.DOM.CopyToResponse>;
 
     /**
      * Describes node given its id, does not require domain to be enabled. Does not start tracking any
      * objects, can be used for automation.
      */
-    describeNode(params: Protocol.DOM.DescribeNodeRequest): Promise<Protocol.DOM.DescribeNodeResponse>;
+    invoke_describeNode(params: Protocol.DOM.DescribeNodeRequest): Promise<Protocol.DOM.DescribeNodeResponse>;
 
     /**
      * Scrolls the specified rect of the given node into view if not already visible.
      * Note: exactly one between nodeId, backendNodeId and objectId should be passed
      * to identify the node.
      */
-    scrollIntoViewIfNeeded(params: Protocol.DOM.ScrollIntoViewIfNeededRequest): Promise<void>;
+    invoke_scrollIntoViewIfNeeded(params: Protocol.DOM.ScrollIntoViewIfNeededRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disables DOM agent for the given page.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Discards search results from the session with the given id. `getSearchResults` should no longer
      * be called for that search.
      */
-    discardSearchResults(params: Protocol.DOM.DiscardSearchResultsRequest): Promise<void>;
+    invoke_discardSearchResults(params: Protocol.DOM.DiscardSearchResultsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables DOM agent for the given page.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Focuses the given element.
      */
-    focus(params: Protocol.DOM.FocusRequest): Promise<void>;
+    invoke_focus(params: Protocol.DOM.FocusRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns attributes for the specified node.
      */
-    getAttributes(params: Protocol.DOM.GetAttributesRequest): Promise<Protocol.DOM.GetAttributesResponse>;
+    invoke_getAttributes(params: Protocol.DOM.GetAttributesRequest): Promise<Protocol.DOM.GetAttributesResponse>;
 
     /**
      * Returns boxes for the given node.
      */
-    getBoxModel(params: Protocol.DOM.GetBoxModelRequest): Promise<Protocol.DOM.GetBoxModelResponse>;
+    invoke_getBoxModel(params: Protocol.DOM.GetBoxModelRequest): Promise<Protocol.DOM.GetBoxModelResponse>;
 
     /**
      * Returns quads that describe node position on the page. This method
      * might return multiple quads for inline nodes.
      */
-    getContentQuads(params: Protocol.DOM.GetContentQuadsRequest): Promise<Protocol.DOM.GetContentQuadsResponse>;
+    invoke_getContentQuads(params: Protocol.DOM.GetContentQuadsRequest): Promise<Protocol.DOM.GetContentQuadsResponse>;
 
     /**
      * Returns the root DOM node (and optionally the subtree) to the caller.
      */
-    getDocument(params: Protocol.DOM.GetDocumentRequest): Promise<Protocol.DOM.GetDocumentResponse>;
+    invoke_getDocument(params: Protocol.DOM.GetDocumentRequest): Promise<Protocol.DOM.GetDocumentResponse>;
 
     /**
      * Returns the root DOM node (and optionally the subtree) to the caller.
      */
-    getFlattenedDocument(params: Protocol.DOM.GetFlattenedDocumentRequest):
+    invoke_getFlattenedDocument(params: Protocol.DOM.GetFlattenedDocumentRequest):
         Promise<Protocol.DOM.GetFlattenedDocumentResponse>;
 
     /**
      * Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
      * either returned or not.
      */
-    getNodeForLocation(params: Protocol.DOM.GetNodeForLocationRequest):
+    invoke_getNodeForLocation(params: Protocol.DOM.GetNodeForLocationRequest):
         Promise<Protocol.DOM.GetNodeForLocationResponse>;
 
     /**
      * Returns node's HTML markup.
      */
-    getOuterHTML(params: Protocol.DOM.GetOuterHTMLRequest): Promise<Protocol.DOM.GetOuterHTMLResponse>;
+    invoke_getOuterHTML(params: Protocol.DOM.GetOuterHTMLRequest): Promise<Protocol.DOM.GetOuterHTMLResponse>;
 
     /**
      * Returns the id of the nearest ancestor that is a relayout boundary.
      */
-    getRelayoutBoundary(params: Protocol.DOM.GetRelayoutBoundaryRequest):
+    invoke_getRelayoutBoundary(params: Protocol.DOM.GetRelayoutBoundaryRequest):
         Promise<Protocol.DOM.GetRelayoutBoundaryResponse>;
 
     /**
      * Returns search results from given `fromIndex` to given `toIndex` from the search with the given
      * identifier.
      */
-    getSearchResults(params: Protocol.DOM.GetSearchResultsRequest): Promise<Protocol.DOM.GetSearchResultsResponse>;
+    invoke_getSearchResults(params: Protocol.DOM.GetSearchResultsRequest):
+        Promise<Protocol.DOM.GetSearchResultsResponse>;
 
     /**
      * Hides any highlight.
      */
-    hideHighlight(): Promise<void>;
+    invoke_hideHighlight(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Highlights DOM node.
      */
-    highlightNode(): Promise<void>;
+    invoke_highlightNode(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Highlights given rectangle.
      */
-    highlightRect(): Promise<void>;
+    invoke_highlightRect(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Marks last undoable state.
      */
-    markUndoableState(): Promise<void>;
+    invoke_markUndoableState(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Moves node into the new container, places it before the given anchor.
      */
-    moveTo(params: Protocol.DOM.MoveToRequest): Promise<Protocol.DOM.MoveToResponse>;
+    invoke_moveTo(params: Protocol.DOM.MoveToRequest): Promise<Protocol.DOM.MoveToResponse>;
 
     /**
      * Searches for a given string in the DOM tree. Use `getSearchResults` to access search results or
      * `cancelSearch` to end this search session.
      */
-    performSearch(params: Protocol.DOM.PerformSearchRequest): Promise<Protocol.DOM.PerformSearchResponse>;
+    invoke_performSearch(params: Protocol.DOM.PerformSearchRequest): Promise<Protocol.DOM.PerformSearchResponse>;
 
     /**
      * Requests that the node is sent to the caller given its path. // FIXME, use XPath
      */
-    pushNodeByPathToFrontend(params: Protocol.DOM.PushNodeByPathToFrontendRequest):
+    invoke_pushNodeByPathToFrontend(params: Protocol.DOM.PushNodeByPathToFrontendRequest):
         Promise<Protocol.DOM.PushNodeByPathToFrontendResponse>;
 
     /**
      * Requests that a batch of nodes is sent to the caller given their backend node ids.
      */
-    pushNodesByBackendIdsToFrontend(params: Protocol.DOM.PushNodesByBackendIdsToFrontendRequest):
+    invoke_pushNodesByBackendIdsToFrontend(params: Protocol.DOM.PushNodesByBackendIdsToFrontendRequest):
         Promise<Protocol.DOM.PushNodesByBackendIdsToFrontendResponse>;
 
     /**
      * Executes `querySelector` on a given node.
      */
-    querySelector(params: Protocol.DOM.QuerySelectorRequest): Promise<Protocol.DOM.QuerySelectorResponse>;
+    invoke_querySelector(params: Protocol.DOM.QuerySelectorRequest): Promise<Protocol.DOM.QuerySelectorResponse>;
 
     /**
      * Executes `querySelectorAll` on a given node.
      */
-    querySelectorAll(params: Protocol.DOM.QuerySelectorAllRequest): Promise<Protocol.DOM.QuerySelectorAllResponse>;
+    invoke_querySelectorAll(params: Protocol.DOM.QuerySelectorAllRequest):
+        Promise<Protocol.DOM.QuerySelectorAllResponse>;
 
     /**
      * Re-does the last undone action.
      */
-    redo(): Promise<void>;
+    invoke_redo(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Removes attribute with given name from an element with given id.
      */
-    removeAttribute(params: Protocol.DOM.RemoveAttributeRequest): Promise<void>;
+    invoke_removeAttribute(params: Protocol.DOM.RemoveAttributeRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Removes node with given id.
      */
-    removeNode(params: Protocol.DOM.RemoveNodeRequest): Promise<void>;
+    invoke_removeNode(params: Protocol.DOM.RemoveNodeRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Requests that children of the node with given id are returned to the caller in form of
      * `setChildNodes` events where not only immediate children are retrieved, but all children down to
      * the specified depth.
      */
-    requestChildNodes(params: Protocol.DOM.RequestChildNodesRequest): Promise<void>;
+    invoke_requestChildNodes(params: Protocol.DOM.RequestChildNodesRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Requests that the node is sent to the caller given the JavaScript node object reference. All
      * nodes that form the path from the node to the root are also sent to the client as a series of
      * `setChildNodes` notifications.
      */
-    requestNode(params: Protocol.DOM.RequestNodeRequest): Promise<Protocol.DOM.RequestNodeResponse>;
+    invoke_requestNode(params: Protocol.DOM.RequestNodeRequest): Promise<Protocol.DOM.RequestNodeResponse>;
 
     /**
      * Resolves the JavaScript node object for a given NodeId or BackendNodeId.
      */
-    resolveNode(params: Protocol.DOM.ResolveNodeRequest): Promise<Protocol.DOM.ResolveNodeResponse>;
+    invoke_resolveNode(params: Protocol.DOM.ResolveNodeRequest): Promise<Protocol.DOM.ResolveNodeResponse>;
 
     /**
      * Sets attribute for an element with given id.
      */
-    setAttributeValue(params: Protocol.DOM.SetAttributeValueRequest): Promise<void>;
+    invoke_setAttributeValue(params: Protocol.DOM.SetAttributeValueRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets attributes on element with given id. This method is useful when user edits some existing
      * attribute value and types in several attribute name/value pairs.
      */
-    setAttributesAsText(params: Protocol.DOM.SetAttributesAsTextRequest): Promise<void>;
+    invoke_setAttributesAsText(params: Protocol.DOM.SetAttributesAsTextRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets files for the given file input element.
      */
-    setFileInputFiles(params: Protocol.DOM.SetFileInputFilesRequest): Promise<void>;
+    invoke_setFileInputFiles(params: Protocol.DOM.SetFileInputFilesRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets if stack traces should be captured for Nodes. See `Node.getNodeStackTraces`. Default is disabled.
      */
-    setNodeStackTracesEnabled(params: Protocol.DOM.SetNodeStackTracesEnabledRequest): Promise<void>;
+    invoke_setNodeStackTracesEnabled(params: Protocol.DOM.SetNodeStackTracesEnabledRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Gets stack traces associated with a Node. As of now, only provides stack trace for Node creation.
      */
-    getNodeStackTraces(params: Protocol.DOM.GetNodeStackTracesRequest):
+    invoke_getNodeStackTraces(params: Protocol.DOM.GetNodeStackTracesRequest):
         Promise<Protocol.DOM.GetNodeStackTracesResponse>;
 
     /**
      * Returns file information for the given
      * File wrapper.
      */
-    getFileInfo(params: Protocol.DOM.GetFileInfoRequest): Promise<Protocol.DOM.GetFileInfoResponse>;
+    invoke_getFileInfo(params: Protocol.DOM.GetFileInfoRequest): Promise<Protocol.DOM.GetFileInfoResponse>;
 
     /**
      * Enables console to refer to the node with given id via $x (see Command Line API for more details
      * $x functions).
      */
-    setInspectedNode(params: Protocol.DOM.SetInspectedNodeRequest): Promise<void>;
+    invoke_setInspectedNode(params: Protocol.DOM.SetInspectedNodeRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets node name for a node with given id.
      */
-    setNodeName(params: Protocol.DOM.SetNodeNameRequest): Promise<Protocol.DOM.SetNodeNameResponse>;
+    invoke_setNodeName(params: Protocol.DOM.SetNodeNameRequest): Promise<Protocol.DOM.SetNodeNameResponse>;
 
     /**
      * Sets node value for a node with given id.
      */
-    setNodeValue(params: Protocol.DOM.SetNodeValueRequest): Promise<void>;
+    invoke_setNodeValue(params: Protocol.DOM.SetNodeValueRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets node HTML markup, returns new node id.
      */
-    setOuterHTML(params: Protocol.DOM.SetOuterHTMLRequest): Promise<void>;
+    invoke_setOuterHTML(params: Protocol.DOM.SetOuterHTMLRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Undoes the last performed action.
      */
-    undo(): Promise<void>;
+    invoke_undo(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns iframe node that owns iframe with the given domain.
      */
-    getFrameOwner(params: Protocol.DOM.GetFrameOwnerRequest): Promise<Protocol.DOM.GetFrameOwnerResponse>;
-
+    invoke_getFrameOwner(params: Protocol.DOM.GetFrameOwnerRequest): Promise<Protocol.DOM.GetFrameOwnerResponse>;
+  }
+  export interface DOMDispatcher {
     /**
      * Fired when `Element`'s attribute is modified.
      */
-    on(event: 'attributeModified', listener: (params: Protocol.DOM.AttributeModifiedEvent) => void): void;
+    attributeModified(params: Protocol.DOM.AttributeModifiedEvent): void;
 
     /**
      * Fired when `Element`'s attribute is removed.
      */
-    on(event: 'attributeRemoved', listener: (params: Protocol.DOM.AttributeRemovedEvent) => void): void;
+    attributeRemoved(params: Protocol.DOM.AttributeRemovedEvent): void;
 
     /**
      * Mirrors `DOMCharacterDataModified` event.
      */
-    on(event: 'characterDataModified', listener: (params: Protocol.DOM.CharacterDataModifiedEvent) => void): void;
+    characterDataModified(params: Protocol.DOM.CharacterDataModifiedEvent): void;
 
     /**
      * Fired when `Container`'s child node count has changed.
      */
-    on(event: 'childNodeCountUpdated', listener: (params: Protocol.DOM.ChildNodeCountUpdatedEvent) => void): void;
+    childNodeCountUpdated(params: Protocol.DOM.ChildNodeCountUpdatedEvent): void;
 
     /**
      * Mirrors `DOMNodeInserted` event.
      */
-    on(event: 'childNodeInserted', listener: (params: Protocol.DOM.ChildNodeInsertedEvent) => void): void;
+    childNodeInserted(params: Protocol.DOM.ChildNodeInsertedEvent): void;
 
     /**
      * Mirrors `DOMNodeRemoved` event.
      */
-    on(event: 'childNodeRemoved', listener: (params: Protocol.DOM.ChildNodeRemovedEvent) => void): void;
+    childNodeRemoved(params: Protocol.DOM.ChildNodeRemovedEvent): void;
 
     /**
      * Called when distrubution is changed.
      */
-    on(event: 'distributedNodesUpdated', listener: (params: Protocol.DOM.DistributedNodesUpdatedEvent) => void): void;
+    distributedNodesUpdated(params: Protocol.DOM.DistributedNodesUpdatedEvent): void;
 
     /**
      * Fired when `Document` has been totally updated. Node ids are no longer valid.
      */
-    on(event: 'documentUpdated', listener: () => void): void;
+    documentUpdated(): void;
 
     /**
      * Fired when `Element`'s inline style is modified via a CSS property modification.
      */
-    on(event: 'inlineStyleInvalidated', listener: (params: Protocol.DOM.InlineStyleInvalidatedEvent) => void): void;
+    inlineStyleInvalidated(params: Protocol.DOM.InlineStyleInvalidatedEvent): void;
 
     /**
      * Called when a pseudo element is added to an element.
      */
-    on(event: 'pseudoElementAdded', listener: (params: Protocol.DOM.PseudoElementAddedEvent) => void): void;
+    pseudoElementAdded(params: Protocol.DOM.PseudoElementAddedEvent): void;
 
     /**
      * Called when a pseudo element is removed from an element.
      */
-    on(event: 'pseudoElementRemoved', listener: (params: Protocol.DOM.PseudoElementRemovedEvent) => void): void;
+    pseudoElementRemoved(params: Protocol.DOM.PseudoElementRemovedEvent): void;
 
     /**
      * Fired when backend wants to provide client with the missing DOM structure. This happens upon
      * most of the calls requesting node ids.
      */
-    on(event: 'setChildNodes', listener: (params: Protocol.DOM.SetChildNodesEvent) => void): void;
+    setChildNodes(params: Protocol.DOM.SetChildNodesEvent): void;
 
     /**
      * Called when shadow root is popped from the element.
      */
-    on(event: 'shadowRootPopped', listener: (params: Protocol.DOM.ShadowRootPoppedEvent) => void): void;
+    shadowRootPopped(params: Protocol.DOM.ShadowRootPoppedEvent): void;
 
     /**
      * Called when shadow root is pushed into the element.
      */
-    on(event: 'shadowRootPushed', listener: (params: Protocol.DOM.ShadowRootPushedEvent) => void): void;
+    shadowRootPushed(params: Protocol.DOM.ShadowRootPushedEvent): void;
   }
 
   export interface DOMDebuggerApi {
     /**
      * Returns event listeners of the given object.
      */
-    getEventListeners(params: Protocol.DOMDebugger.GetEventListenersRequest):
+    invoke_getEventListeners(params: Protocol.DOMDebugger.GetEventListenersRequest):
         Promise<Protocol.DOMDebugger.GetEventListenersResponse>;
 
     /**
      * Removes DOM breakpoint that was set using `setDOMBreakpoint`.
      */
-    removeDOMBreakpoint(params: Protocol.DOMDebugger.RemoveDOMBreakpointRequest): Promise<void>;
+    invoke_removeDOMBreakpoint(params: Protocol.DOMDebugger.RemoveDOMBreakpointRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Removes breakpoint on particular DOM event.
      */
-    removeEventListenerBreakpoint(params: Protocol.DOMDebugger.RemoveEventListenerBreakpointRequest): Promise<void>;
+    invoke_removeEventListenerBreakpoint(params: Protocol.DOMDebugger.RemoveEventListenerBreakpointRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Removes breakpoint on particular native event.
      */
-    removeInstrumentationBreakpoint(params: Protocol.DOMDebugger.RemoveInstrumentationBreakpointRequest): Promise<void>;
+    invoke_removeInstrumentationBreakpoint(params: Protocol.DOMDebugger.RemoveInstrumentationBreakpointRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Removes breakpoint from XMLHttpRequest.
      */
-    removeXHRBreakpoint(params: Protocol.DOMDebugger.RemoveXHRBreakpointRequest): Promise<void>;
+    invoke_removeXHRBreakpoint(params: Protocol.DOMDebugger.RemoveXHRBreakpointRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets breakpoint on particular operation with DOM.
      */
-    setDOMBreakpoint(params: Protocol.DOMDebugger.SetDOMBreakpointRequest): Promise<void>;
+    invoke_setDOMBreakpoint(params: Protocol.DOMDebugger.SetDOMBreakpointRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets breakpoint on particular DOM event.
      */
-    setEventListenerBreakpoint(params: Protocol.DOMDebugger.SetEventListenerBreakpointRequest): Promise<void>;
+    invoke_setEventListenerBreakpoint(params: Protocol.DOMDebugger.SetEventListenerBreakpointRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets breakpoint on particular native event.
      */
-    setInstrumentationBreakpoint(params: Protocol.DOMDebugger.SetInstrumentationBreakpointRequest): Promise<void>;
+    invoke_setInstrumentationBreakpoint(params: Protocol.DOMDebugger.SetInstrumentationBreakpointRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets breakpoint on XMLHttpRequest.
      */
-    setXHRBreakpoint(params: Protocol.DOMDebugger.SetXHRBreakpointRequest): Promise<void>;
+    invoke_setXHRBreakpoint(params: Protocol.DOMDebugger.SetXHRBreakpointRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
   }
+  export interface DOMDebuggerDispatcher {}
 
   export interface DOMSnapshotApi {
     /**
      * Disables DOM snapshot agent for the given page.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables DOM snapshot agent for the given page.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns a document snapshot, including the full DOM tree of the root node (including iframes,
@@ -974,7 +1017,8 @@ declare namespace ProtocolProxyApi {
      * white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is
      * flattened.
      */
-    getSnapshot(params: Protocol.DOMSnapshot.GetSnapshotRequest): Promise<Protocol.DOMSnapshot.GetSnapshotResponse>;
+    invoke_getSnapshot(params: Protocol.DOMSnapshot.GetSnapshotRequest):
+        Promise<Protocol.DOMSnapshot.GetSnapshotResponse>;
 
     /**
      * Returns a document snapshot, including the full DOM tree of the root node (including iframes,
@@ -982,193 +1026,215 @@ declare namespace ProtocolProxyApi {
      * white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is
      * flattened.
      */
-    captureSnapshot(params: Protocol.DOMSnapshot.CaptureSnapshotRequest):
+    invoke_captureSnapshot(params: Protocol.DOMSnapshot.CaptureSnapshotRequest):
         Promise<Protocol.DOMSnapshot.CaptureSnapshotResponse>;
   }
+  export interface DOMSnapshotDispatcher {}
 
   export interface DOMStorageApi {
-    clear(params: Protocol.DOMStorage.ClearRequest): Promise<void>;
+    invoke_clear(params: Protocol.DOMStorage.ClearRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disables storage tracking, prevents storage events from being sent to the client.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables storage tracking, storage events will now be delivered to the client.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
-    getDOMStorageItems(params: Protocol.DOMStorage.GetDOMStorageItemsRequest):
+    invoke_getDOMStorageItems(params: Protocol.DOMStorage.GetDOMStorageItemsRequest):
         Promise<Protocol.DOMStorage.GetDOMStorageItemsResponse>;
 
-    removeDOMStorageItem(params: Protocol.DOMStorage.RemoveDOMStorageItemRequest): Promise<void>;
+    invoke_removeDOMStorageItem(params: Protocol.DOMStorage.RemoveDOMStorageItemRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    setDOMStorageItem(params: Protocol.DOMStorage.SetDOMStorageItemRequest): Promise<void>;
+    invoke_setDOMStorageItem(params: Protocol.DOMStorage.SetDOMStorageItemRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface DOMStorageDispatcher {
+    domStorageItemAdded(params: Protocol.DOMStorage.DomStorageItemAddedEvent): void;
 
-    on(event: 'domStorageItemAdded', listener: (params: Protocol.DOMStorage.DomStorageItemAddedEvent) => void): void;
+    domStorageItemRemoved(params: Protocol.DOMStorage.DomStorageItemRemovedEvent): void;
 
-    on(event: 'domStorageItemRemoved',
-       listener: (params: Protocol.DOMStorage.DomStorageItemRemovedEvent) => void): void;
+    domStorageItemUpdated(params: Protocol.DOMStorage.DomStorageItemUpdatedEvent): void;
 
-    on(event: 'domStorageItemUpdated',
-       listener: (params: Protocol.DOMStorage.DomStorageItemUpdatedEvent) => void): void;
-
-    on(event: 'domStorageItemsCleared',
-       listener: (params: Protocol.DOMStorage.DomStorageItemsClearedEvent) => void): void;
+    domStorageItemsCleared(params: Protocol.DOMStorage.DomStorageItemsClearedEvent): void;
   }
 
   export interface DatabaseApi {
     /**
      * Disables database tracking, prevents database events from being sent to the client.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables database tracking, database events will now be delivered to the client.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
-    executeSQL(params: Protocol.Database.ExecuteSQLRequest): Promise<Protocol.Database.ExecuteSQLResponse>;
+    invoke_executeSQL(params: Protocol.Database.ExecuteSQLRequest): Promise<Protocol.Database.ExecuteSQLResponse>;
 
-    getDatabaseTableNames(params: Protocol.Database.GetDatabaseTableNamesRequest):
+    invoke_getDatabaseTableNames(params: Protocol.Database.GetDatabaseTableNamesRequest):
         Promise<Protocol.Database.GetDatabaseTableNamesResponse>;
-
-    on(event: 'addDatabase', listener: (params: Protocol.Database.AddDatabaseEvent) => void): void;
+  }
+  export interface DatabaseDispatcher {
+    addDatabase(params: Protocol.Database.AddDatabaseEvent): void;
   }
 
   export interface DeviceOrientationApi {
     /**
      * Clears the overridden Device Orientation.
      */
-    clearDeviceOrientationOverride(): Promise<void>;
+    invoke_clearDeviceOrientationOverride(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Overrides the Device Orientation.
      */
-    setDeviceOrientationOverride(params: Protocol.DeviceOrientation.SetDeviceOrientationOverrideRequest): Promise<void>;
+    invoke_setDeviceOrientationOverride(params: Protocol.DeviceOrientation.SetDeviceOrientationOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
   }
+  export interface DeviceOrientationDispatcher {}
 
   export interface EmulationApi {
     /**
      * Tells whether emulation is supported.
      */
-    canEmulate(): Promise<Protocol.Emulation.CanEmulateResponse>;
+    invoke_canEmulate(): Promise<Protocol.Emulation.CanEmulateResponse>;
 
     /**
      * Clears the overriden device metrics.
      */
-    clearDeviceMetricsOverride(): Promise<void>;
+    invoke_clearDeviceMetricsOverride(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Clears the overriden Geolocation Position and Error.
      */
-    clearGeolocationOverride(): Promise<void>;
+    invoke_clearGeolocationOverride(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Requests that page scale factor is reset to initial values.
      */
-    resetPageScaleFactor(): Promise<void>;
+    invoke_resetPageScaleFactor(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables or disables simulating a focused and active page.
      */
-    setFocusEmulationEnabled(params: Protocol.Emulation.SetFocusEmulationEnabledRequest): Promise<void>;
+    invoke_setFocusEmulationEnabled(params: Protocol.Emulation.SetFocusEmulationEnabledRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables CPU throttling to emulate slow CPUs.
      */
-    setCPUThrottlingRate(params: Protocol.Emulation.SetCPUThrottlingRateRequest): Promise<void>;
+    invoke_setCPUThrottlingRate(params: Protocol.Emulation.SetCPUThrottlingRateRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets or clears an override of the default background color of the frame. This override is used
      * if the content does not specify one.
      */
-    setDefaultBackgroundColorOverride(params: Protocol.Emulation.SetDefaultBackgroundColorOverrideRequest):
-        Promise<void>;
+    invoke_setDefaultBackgroundColorOverride(params: Protocol.Emulation.SetDefaultBackgroundColorOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
      * window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
      * query results).
      */
-    setDeviceMetricsOverride(params: Protocol.Emulation.SetDeviceMetricsOverrideRequest): Promise<void>;
+    invoke_setDeviceMetricsOverride(params: Protocol.Emulation.SetDeviceMetricsOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    setScrollbarsHidden(params: Protocol.Emulation.SetScrollbarsHiddenRequest): Promise<void>;
+    invoke_setScrollbarsHidden(params: Protocol.Emulation.SetScrollbarsHiddenRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    setDocumentCookieDisabled(params: Protocol.Emulation.SetDocumentCookieDisabledRequest): Promise<void>;
+    invoke_setDocumentCookieDisabled(params: Protocol.Emulation.SetDocumentCookieDisabledRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    setEmitTouchEventsForMouse(params: Protocol.Emulation.SetEmitTouchEventsForMouseRequest): Promise<void>;
+    invoke_setEmitTouchEventsForMouse(params: Protocol.Emulation.SetEmitTouchEventsForMouseRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Emulates the given media type or media feature for CSS media queries.
      */
-    setEmulatedMedia(params: Protocol.Emulation.SetEmulatedMediaRequest): Promise<void>;
+    invoke_setEmulatedMedia(params: Protocol.Emulation.SetEmulatedMediaRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Emulates the given vision deficiency.
      */
-    setEmulatedVisionDeficiency(params: Protocol.Emulation.SetEmulatedVisionDeficiencyRequest): Promise<void>;
+    invoke_setEmulatedVisionDeficiency(params: Protocol.Emulation.SetEmulatedVisionDeficiencyRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
      * unavailable.
      */
-    setGeolocationOverride(params: Protocol.Emulation.SetGeolocationOverrideRequest): Promise<void>;
+    invoke_setGeolocationOverride(params: Protocol.Emulation.SetGeolocationOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Overrides value returned by the javascript navigator object.
      */
-    setNavigatorOverrides(params: Protocol.Emulation.SetNavigatorOverridesRequest): Promise<void>;
+    invoke_setNavigatorOverrides(params: Protocol.Emulation.SetNavigatorOverridesRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets a specified page scale factor.
      */
-    setPageScaleFactor(params: Protocol.Emulation.SetPageScaleFactorRequest): Promise<void>;
+    invoke_setPageScaleFactor(params: Protocol.Emulation.SetPageScaleFactorRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Switches script execution in the page.
      */
-    setScriptExecutionDisabled(params: Protocol.Emulation.SetScriptExecutionDisabledRequest): Promise<void>;
+    invoke_setScriptExecutionDisabled(params: Protocol.Emulation.SetScriptExecutionDisabledRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables touch on platforms which do not support them.
      */
-    setTouchEmulationEnabled(params: Protocol.Emulation.SetTouchEmulationEnabledRequest): Promise<void>;
+    invoke_setTouchEmulationEnabled(params: Protocol.Emulation.SetTouchEmulationEnabledRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets
      * the current virtual time policy.  Note this supersedes any previous time budget.
      */
-    setVirtualTimePolicy(params: Protocol.Emulation.SetVirtualTimePolicyRequest):
+    invoke_setVirtualTimePolicy(params: Protocol.Emulation.SetVirtualTimePolicyRequest):
         Promise<Protocol.Emulation.SetVirtualTimePolicyResponse>;
 
     /**
      * Overrides default host system locale with the specified one.
      */
-    setLocaleOverride(params: Protocol.Emulation.SetLocaleOverrideRequest): Promise<void>;
+    invoke_setLocaleOverride(params: Protocol.Emulation.SetLocaleOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Overrides default host system timezone with the specified one.
      */
-    setTimezoneOverride(params: Protocol.Emulation.SetTimezoneOverrideRequest): Promise<void>;
+    invoke_setTimezoneOverride(params: Protocol.Emulation.SetTimezoneOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Resizes the frame/viewport of the page. Note that this does not affect the frame's container
      * (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported
      * on Android.
      */
-    setVisibleSize(params: Protocol.Emulation.SetVisibleSizeRequest): Promise<void>;
+    invoke_setVisibleSize(params: Protocol.Emulation.SetVisibleSizeRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Allows overriding user agent with the given string.
      */
-    setUserAgentOverride(params: Protocol.Emulation.SetUserAgentOverrideRequest): Promise<void>;
-
+    invoke_setUserAgentOverride(params: Protocol.Emulation.SetUserAgentOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface EmulationDispatcher {
     /**
      * Notification sent after the virtual time budget for the current VirtualTimePolicy has run out.
      */
-    on(event: 'virtualTimeBudgetExpired', listener: () => void): void;
+    virtualTimeBudgetExpired(): void;
   }
 
   export interface HeadlessExperimentalApi {
@@ -1178,26 +1244,26 @@ declare namespace ProtocolProxyApi {
      * BeginFrameControl. Designed for use with --run-all-compositor-stages-before-draw, see also
      * https://goo.gl/3zHXhB for more background.
      */
-    beginFrame(params: Protocol.HeadlessExperimental.BeginFrameRequest):
+    invoke_beginFrame(params: Protocol.HeadlessExperimental.BeginFrameRequest):
         Promise<Protocol.HeadlessExperimental.BeginFrameResponse>;
 
     /**
      * Disables headless events for the target.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables headless events for the target.
      */
-    enable(): Promise<void>;
-
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface HeadlessExperimentalDispatcher {
     /**
      * Issued when the target starts or stops needing BeginFrames.
      * Deprecated. Issue beginFrame unconditionally instead and use result from
      * beginFrame to detect whether the frames were suppressed.
      */
-    on(event: 'needsBeginFramesChanged',
-       listener: (params: Protocol.HeadlessExperimental.NeedsBeginFramesChangedEvent) => void): void;
+    needsBeginFramesChanged(params: Protocol.HeadlessExperimental.NeedsBeginFramesChangedEvent): void;
   }
 
   // eslint thinks this is us prefixing our interfaces but it's not!
@@ -1206,18 +1272,19 @@ declare namespace ProtocolProxyApi {
     /**
      * Close the stream, discard any temporary backing storage.
      */
-    close(params: Protocol.IO.CloseRequest): Promise<void>;
+    invoke_close(params: Protocol.IO.CloseRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Read a chunk of the stream
      */
-    read(params: Protocol.IO.ReadRequest): Promise<Protocol.IO.ReadResponse>;
+    invoke_read(params: Protocol.IO.ReadRequest): Promise<Protocol.IO.ReadResponse>;
 
     /**
      * Return UUID of Blob object specified by a remote object id.
      */
-    resolveBlob(params: Protocol.IO.ResolveBlobRequest): Promise<Protocol.IO.ResolveBlobResponse>;
+    invoke_resolveBlob(params: Protocol.IO.ResolveBlobRequest): Promise<Protocol.IO.ResolveBlobResponse>;
   }
+  export interface IODispatcher {}
 
   // eslint thinks this is us prefixing our interfaces but it's not!
   // eslint-disable-next-line @typescript-eslint/interface-name-prefix
@@ -1225,50 +1292,54 @@ declare namespace ProtocolProxyApi {
     /**
      * Clears all entries from an object store.
      */
-    clearObjectStore(params: Protocol.IndexedDB.ClearObjectStoreRequest): Promise<void>;
+    invoke_clearObjectStore(params: Protocol.IndexedDB.ClearObjectStoreRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Deletes a database.
      */
-    deleteDatabase(params: Protocol.IndexedDB.DeleteDatabaseRequest): Promise<void>;
+    invoke_deleteDatabase(params: Protocol.IndexedDB.DeleteDatabaseRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Delete a range of entries from an object store
      */
-    deleteObjectStoreEntries(params: Protocol.IndexedDB.DeleteObjectStoreEntriesRequest): Promise<void>;
+    invoke_deleteObjectStoreEntries(params: Protocol.IndexedDB.DeleteObjectStoreEntriesRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disables events from backend.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables events from backend.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Requests data from object store or index.
      */
-    requestData(params: Protocol.IndexedDB.RequestDataRequest): Promise<Protocol.IndexedDB.RequestDataResponse>;
+    invoke_requestData(params: Protocol.IndexedDB.RequestDataRequest): Promise<Protocol.IndexedDB.RequestDataResponse>;
 
     /**
      * Gets metadata of an object store
      */
-    getMetadata(params: Protocol.IndexedDB.GetMetadataRequest): Promise<Protocol.IndexedDB.GetMetadataResponse>;
+    invoke_getMetadata(params: Protocol.IndexedDB.GetMetadataRequest): Promise<Protocol.IndexedDB.GetMetadataResponse>;
 
     /**
      * Requests database with given name in given frame.
      */
-    requestDatabase(params: Protocol.IndexedDB.RequestDatabaseRequest):
+    invoke_requestDatabase(params: Protocol.IndexedDB.RequestDatabaseRequest):
         Promise<Protocol.IndexedDB.RequestDatabaseResponse>;
 
     /**
      * Requests database names for given security origin.
      */
-    requestDatabaseNames(params: Protocol.IndexedDB.RequestDatabaseNamesRequest):
+    invoke_requestDatabaseNames(params: Protocol.IndexedDB.RequestDatabaseNamesRequest):
         Promise<Protocol.IndexedDB.RequestDatabaseNamesResponse>;
   }
+  export interface IndexedDBDispatcher {}
 
   // eslint thinks this is us prefixing our interfaces but it's not!
   // eslint-disable-next-line @typescript-eslint/interface-name-prefix
@@ -1276,49 +1347,58 @@ declare namespace ProtocolProxyApi {
     /**
      * Dispatches a key event to the page.
      */
-    dispatchKeyEvent(params: Protocol.Input.DispatchKeyEventRequest): Promise<void>;
+    invoke_dispatchKeyEvent(params: Protocol.Input.DispatchKeyEventRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * This method emulates inserting text that doesn't come from a key press,
      * for example an emoji keyboard or an IME.
      */
-    insertText(params: Protocol.Input.InsertTextRequest): Promise<void>;
+    invoke_insertText(params: Protocol.Input.InsertTextRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Dispatches a mouse event to the page.
      */
-    dispatchMouseEvent(params: Protocol.Input.DispatchMouseEventRequest): Promise<void>;
+    invoke_dispatchMouseEvent(params: Protocol.Input.DispatchMouseEventRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Dispatches a touch event to the page.
      */
-    dispatchTouchEvent(params: Protocol.Input.DispatchTouchEventRequest): Promise<void>;
+    invoke_dispatchTouchEvent(params: Protocol.Input.DispatchTouchEventRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Emulates touch event from the mouse event parameters.
      */
-    emulateTouchFromMouseEvent(params: Protocol.Input.EmulateTouchFromMouseEventRequest): Promise<void>;
+    invoke_emulateTouchFromMouseEvent(params: Protocol.Input.EmulateTouchFromMouseEventRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Ignores input events (useful while auditing page).
      */
-    setIgnoreInputEvents(params: Protocol.Input.SetIgnoreInputEventsRequest): Promise<void>;
+    invoke_setIgnoreInputEvents(params: Protocol.Input.SetIgnoreInputEventsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Synthesizes a pinch gesture over a time period by issuing appropriate touch events.
      */
-    synthesizePinchGesture(params: Protocol.Input.SynthesizePinchGestureRequest): Promise<void>;
+    invoke_synthesizePinchGesture(params: Protocol.Input.SynthesizePinchGestureRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Synthesizes a scroll gesture over a time period by issuing appropriate touch events.
      */
-    synthesizeScrollGesture(params: Protocol.Input.SynthesizeScrollGestureRequest): Promise<void>;
+    invoke_synthesizeScrollGesture(params: Protocol.Input.SynthesizeScrollGestureRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Synthesizes a tap gesture over a time period by issuing appropriate touch events.
      */
-    synthesizeTapGesture(params: Protocol.Input.SynthesizeTapGestureRequest): Promise<void>;
+    invoke_synthesizeTapGesture(params: Protocol.Input.SynthesizeTapGestureRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
   }
+  export interface InputDispatcher {}
 
   // eslint thinks this is us prefixing our interfaces but it's not!
   // eslint-disable-next-line @typescript-eslint/interface-name-prefix
@@ -1326,189 +1406,198 @@ declare namespace ProtocolProxyApi {
     /**
      * Disables inspector domain notifications.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables inspector domain notifications.
      */
-    enable(): Promise<void>;
-
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface InspectorDispatcher {
     /**
      * Fired when remote debugging connection is about to be terminated. Contains detach reason.
      */
-    on(event: 'detached', listener: (params: Protocol.Inspector.DetachedEvent) => void): void;
+    detached(params: Protocol.Inspector.DetachedEvent): void;
 
     /**
      * Fired when debugging target has crashed
      */
-    on(event: 'targetCrashed', listener: () => void): void;
+    targetCrashed(): void;
 
     /**
      * Fired when debugging target has reloaded after crash
      */
-    on(event: 'targetReloadedAfterCrash', listener: () => void): void;
+    targetReloadedAfterCrash(): void;
   }
 
   export interface LayerTreeApi {
     /**
      * Provides the reasons why the given layer was composited.
      */
-    compositingReasons(params: Protocol.LayerTree.CompositingReasonsRequest):
+    invoke_compositingReasons(params: Protocol.LayerTree.CompositingReasonsRequest):
         Promise<Protocol.LayerTree.CompositingReasonsResponse>;
 
     /**
      * Disables compositing tree inspection.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables compositing tree inspection.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns the snapshot identifier.
      */
-    loadSnapshot(params: Protocol.LayerTree.LoadSnapshotRequest): Promise<Protocol.LayerTree.LoadSnapshotResponse>;
+    invoke_loadSnapshot(params: Protocol.LayerTree.LoadSnapshotRequest):
+        Promise<Protocol.LayerTree.LoadSnapshotResponse>;
 
     /**
      * Returns the layer snapshot identifier.
      */
-    makeSnapshot(params: Protocol.LayerTree.MakeSnapshotRequest): Promise<Protocol.LayerTree.MakeSnapshotResponse>;
+    invoke_makeSnapshot(params: Protocol.LayerTree.MakeSnapshotRequest):
+        Promise<Protocol.LayerTree.MakeSnapshotResponse>;
 
-    profileSnapshot(params: Protocol.LayerTree.ProfileSnapshotRequest):
+    invoke_profileSnapshot(params: Protocol.LayerTree.ProfileSnapshotRequest):
         Promise<Protocol.LayerTree.ProfileSnapshotResponse>;
 
     /**
      * Releases layer snapshot captured by the back-end.
      */
-    releaseSnapshot(params: Protocol.LayerTree.ReleaseSnapshotRequest): Promise<void>;
+    invoke_releaseSnapshot(params: Protocol.LayerTree.ReleaseSnapshotRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Replays the layer snapshot and returns the resulting bitmap.
      */
-    replaySnapshot(params: Protocol.LayerTree.ReplaySnapshotRequest):
+    invoke_replaySnapshot(params: Protocol.LayerTree.ReplaySnapshotRequest):
         Promise<Protocol.LayerTree.ReplaySnapshotResponse>;
 
     /**
      * Replays the layer snapshot and returns canvas log.
      */
-    snapshotCommandLog(params: Protocol.LayerTree.SnapshotCommandLogRequest):
+    invoke_snapshotCommandLog(params: Protocol.LayerTree.SnapshotCommandLogRequest):
         Promise<Protocol.LayerTree.SnapshotCommandLogResponse>;
+  }
+  export interface LayerTreeDispatcher {
+    layerPainted(params: Protocol.LayerTree.LayerPaintedEvent): void;
 
-    on(event: 'layerPainted', listener: (params: Protocol.LayerTree.LayerPaintedEvent) => void): void;
-
-    on(event: 'layerTreeDidChange', listener: (params: Protocol.LayerTree.LayerTreeDidChangeEvent) => void): void;
+    layerTreeDidChange(params: Protocol.LayerTree.LayerTreeDidChangeEvent): void;
   }
 
   export interface LogApi {
     /**
      * Clears the log.
      */
-    clear(): Promise<void>;
+    invoke_clear(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disables log domain, prevents further log entries from being reported to the client.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables log domain, sends the entries collected so far to the client by means of the
      * `entryAdded` notification.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * start violation reporting.
      */
-    startViolationsReport(params: Protocol.Log.StartViolationsReportRequest): Promise<void>;
+    invoke_startViolationsReport(params: Protocol.Log.StartViolationsReportRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Stop violation reporting.
      */
-    stopViolationsReport(): Promise<void>;
-
+    invoke_stopViolationsReport(): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface LogDispatcher {
     /**
      * Issued when new message was logged.
      */
-    on(event: 'entryAdded', listener: (params: Protocol.Log.EntryAddedEvent) => void): void;
+    entryAdded(params: Protocol.Log.EntryAddedEvent): void;
   }
 
   export interface MemoryApi {
-    getDOMCounters(): Promise<Protocol.Memory.GetDOMCountersResponse>;
+    invoke_getDOMCounters(): Promise<Protocol.Memory.GetDOMCountersResponse>;
 
-    prepareForLeakDetection(): Promise<void>;
+    invoke_prepareForLeakDetection(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Simulate OomIntervention by purging V8 memory.
      */
-    forciblyPurgeJavaScriptMemory(): Promise<void>;
+    invoke_forciblyPurgeJavaScriptMemory(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enable/disable suppressing memory pressure notifications in all processes.
      */
-    setPressureNotificationsSuppressed(params: Protocol.Memory.SetPressureNotificationsSuppressedRequest):
-        Promise<void>;
+    invoke_setPressureNotificationsSuppressed(params: Protocol.Memory.SetPressureNotificationsSuppressedRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Simulate a memory pressure notification in all processes.
      */
-    simulatePressureNotification(params: Protocol.Memory.SimulatePressureNotificationRequest): Promise<void>;
+    invoke_simulatePressureNotification(params: Protocol.Memory.SimulatePressureNotificationRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Start collecting native memory profile.
      */
-    startSampling(params: Protocol.Memory.StartSamplingRequest): Promise<void>;
+    invoke_startSampling(params: Protocol.Memory.StartSamplingRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Stop collecting native memory profile.
      */
-    stopSampling(): Promise<void>;
+    invoke_stopSampling(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Retrieve native memory allocations profile
      * collected since renderer process startup.
      */
-    getAllTimeSamplingProfile(): Promise<Protocol.Memory.GetAllTimeSamplingProfileResponse>;
+    invoke_getAllTimeSamplingProfile(): Promise<Protocol.Memory.GetAllTimeSamplingProfileResponse>;
 
     /**
      * Retrieve native memory allocations profile
      * collected since browser process startup.
      */
-    getBrowserSamplingProfile(): Promise<Protocol.Memory.GetBrowserSamplingProfileResponse>;
+    invoke_getBrowserSamplingProfile(): Promise<Protocol.Memory.GetBrowserSamplingProfileResponse>;
 
     /**
      * Retrieve native memory allocations profile collected since last
      * `startSampling` call.
      */
-    getSamplingProfile(): Promise<Protocol.Memory.GetSamplingProfileResponse>;
+    invoke_getSamplingProfile(): Promise<Protocol.Memory.GetSamplingProfileResponse>;
   }
+  export interface MemoryDispatcher {}
 
   export interface NetworkApi {
     /**
      * Tells whether clearing browser cache is supported.
      */
-    canClearBrowserCache(): Promise<Protocol.Network.CanClearBrowserCacheResponse>;
+    invoke_canClearBrowserCache(): Promise<Protocol.Network.CanClearBrowserCacheResponse>;
 
     /**
      * Tells whether clearing browser cookies is supported.
      */
-    canClearBrowserCookies(): Promise<Protocol.Network.CanClearBrowserCookiesResponse>;
+    invoke_canClearBrowserCookies(): Promise<Protocol.Network.CanClearBrowserCookiesResponse>;
 
     /**
      * Tells whether emulation of network conditions is supported.
      */
-    canEmulateNetworkConditions(): Promise<Protocol.Network.CanEmulateNetworkConditionsResponse>;
+    invoke_canEmulateNetworkConditions(): Promise<Protocol.Network.CanEmulateNetworkConditionsResponse>;
 
     /**
      * Clears browser cache.
      */
-    clearBrowserCache(): Promise<void>;
+    invoke_clearBrowserCache(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Clears browser cookies.
      */
-    clearBrowserCookies(): Promise<void>;
+    invoke_clearBrowserCookies(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Response to Network.requestIntercepted which either modifies the request to continue with any
@@ -1517,60 +1606,64 @@ declare namespace ProtocolProxyApi {
      * event will be sent with the same InterceptionId.
      * Deprecated, use Fetch.continueRequest, Fetch.fulfillRequest and Fetch.failRequest instead.
      */
-    continueInterceptedRequest(params: Protocol.Network.ContinueInterceptedRequestRequest): Promise<void>;
+    invoke_continueInterceptedRequest(params: Protocol.Network.ContinueInterceptedRequestRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Deletes browser cookies with matching name and url or domain/path pair.
      */
-    deleteCookies(params: Protocol.Network.DeleteCookiesRequest): Promise<void>;
+    invoke_deleteCookies(params: Protocol.Network.DeleteCookiesRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disables network tracking, prevents network events from being sent to the client.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Activates emulation of network conditions.
      */
-    emulateNetworkConditions(params: Protocol.Network.EmulateNetworkConditionsRequest): Promise<void>;
+    invoke_emulateNetworkConditions(params: Protocol.Network.EmulateNetworkConditionsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables network tracking, network events will now be delivered to the client.
      */
-    enable(params: Protocol.Network.EnableRequest): Promise<void>;
+    invoke_enable(params: Protocol.Network.EnableRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns all browser cookies. Depending on the backend support, will return detailed cookie
      * information in the `cookies` field.
      */
-    getAllCookies(): Promise<Protocol.Network.GetAllCookiesResponse>;
+    invoke_getAllCookies(): Promise<Protocol.Network.GetAllCookiesResponse>;
 
     /**
      * Returns the DER-encoded certificate.
      */
-    getCertificate(params: Protocol.Network.GetCertificateRequest): Promise<Protocol.Network.GetCertificateResponse>;
+    invoke_getCertificate(params: Protocol.Network.GetCertificateRequest):
+        Promise<Protocol.Network.GetCertificateResponse>;
 
     /**
      * Returns all browser cookies for the current URL. Depending on the backend support, will return
      * detailed cookie information in the `cookies` field.
      */
-    getCookies(params: Protocol.Network.GetCookiesRequest): Promise<Protocol.Network.GetCookiesResponse>;
+    invoke_getCookies(params: Protocol.Network.GetCookiesRequest): Promise<Protocol.Network.GetCookiesResponse>;
 
     /**
      * Returns content served for the given request.
      */
-    getResponseBody(params: Protocol.Network.GetResponseBodyRequest): Promise<Protocol.Network.GetResponseBodyResponse>;
+    invoke_getResponseBody(params: Protocol.Network.GetResponseBodyRequest):
+        Promise<Protocol.Network.GetResponseBodyResponse>;
 
     /**
      * Returns post data sent with the request. Returns an error when no data was sent with the request.
      */
-    getRequestPostData(params: Protocol.Network.GetRequestPostDataRequest):
+    invoke_getRequestPostData(params: Protocol.Network.GetRequestPostDataRequest):
         Promise<Protocol.Network.GetRequestPostDataResponse>;
 
     /**
      * Returns content served for the given currently intercepted request.
      */
-    getResponseBodyForInterception(params: Protocol.Network.GetResponseBodyForInterceptionRequest):
+    invoke_getResponseBodyForInterception(params: Protocol.Network.GetResponseBodyForInterceptionRequest):
         Promise<Protocol.Network.GetResponseBodyForInterceptionResponse>;
 
     /**
@@ -1579,7 +1672,8 @@ declare namespace ProtocolProxyApi {
      * the response body. The stream only supports sequential read, IO.read will fail if the position
      * is specified.
      */
-    takeResponseBodyForInterceptionAsStream(params: Protocol.Network.TakeResponseBodyForInterceptionAsStreamRequest):
+    invoke_takeResponseBodyForInterceptionAsStream(params:
+                                                       Protocol.Network.TakeResponseBodyForInterceptionAsStreamRequest):
         Promise<Protocol.Network.TakeResponseBodyForInterceptionAsStreamResponse>;
 
     /**
@@ -1587,150 +1681,153 @@ declare namespace ProtocolProxyApi {
      * parameters should be identical: method, url, async, request body, extra headers, withCredentials
      * attribute, user, password.
      */
-    replayXHR(params: Protocol.Network.ReplayXHRRequest): Promise<void>;
+    invoke_replayXHR(params: Protocol.Network.ReplayXHRRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Searches for given string in response content.
      */
-    searchInResponseBody(params: Protocol.Network.SearchInResponseBodyRequest):
+    invoke_searchInResponseBody(params: Protocol.Network.SearchInResponseBodyRequest):
         Promise<Protocol.Network.SearchInResponseBodyResponse>;
 
     /**
      * Blocks URLs from loading.
      */
-    setBlockedURLs(params: Protocol.Network.SetBlockedURLsRequest): Promise<void>;
+    invoke_setBlockedURLs(params: Protocol.Network.SetBlockedURLsRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Toggles ignoring of service worker for each request.
      */
-    setBypassServiceWorker(params: Protocol.Network.SetBypassServiceWorkerRequest): Promise<void>;
+    invoke_setBypassServiceWorker(params: Protocol.Network.SetBypassServiceWorkerRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Toggles ignoring cache for each request. If `true`, cache will not be used.
      */
-    setCacheDisabled(params: Protocol.Network.SetCacheDisabledRequest): Promise<void>;
+    invoke_setCacheDisabled(params: Protocol.Network.SetCacheDisabledRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
      */
-    setCookie(params: Protocol.Network.SetCookieRequest): Promise<Protocol.Network.SetCookieResponse>;
+    invoke_setCookie(params: Protocol.Network.SetCookieRequest): Promise<Protocol.Network.SetCookieResponse>;
 
     /**
      * Sets given cookies.
      */
-    setCookies(params: Protocol.Network.SetCookiesRequest): Promise<void>;
+    invoke_setCookies(params: Protocol.Network.SetCookiesRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * For testing.
      */
-    setDataSizeLimitsForTest(params: Protocol.Network.SetDataSizeLimitsForTestRequest): Promise<void>;
+    invoke_setDataSizeLimitsForTest(params: Protocol.Network.SetDataSizeLimitsForTestRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Specifies whether to always send extra HTTP headers with the requests from this page.
      */
-    setExtraHTTPHeaders(params: Protocol.Network.SetExtraHTTPHeadersRequest): Promise<void>;
+    invoke_setExtraHTTPHeaders(params: Protocol.Network.SetExtraHTTPHeadersRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets the requests to intercept that match the provided patterns and optionally resource types.
      * Deprecated, please use Fetch.enable instead.
      */
-    setRequestInterception(params: Protocol.Network.SetRequestInterceptionRequest): Promise<void>;
+    invoke_setRequestInterception(params: Protocol.Network.SetRequestInterceptionRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Allows overriding user agent with the given string.
      */
-    setUserAgentOverride(params: Protocol.Network.SetUserAgentOverrideRequest): Promise<void>;
-
+    invoke_setUserAgentOverride(params: Protocol.Network.SetUserAgentOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface NetworkDispatcher {
     /**
      * Fired when data chunk was received over the network.
      */
-    on(event: 'dataReceived', listener: (params: Protocol.Network.DataReceivedEvent) => void): void;
+    dataReceived(params: Protocol.Network.DataReceivedEvent): void;
 
     /**
      * Fired when EventSource message is received.
      */
-    on(event: 'eventSourceMessageReceived',
-       listener: (params: Protocol.Network.EventSourceMessageReceivedEvent) => void): void;
+    eventSourceMessageReceived(params: Protocol.Network.EventSourceMessageReceivedEvent): void;
 
     /**
      * Fired when HTTP request has failed to load.
      */
-    on(event: 'loadingFailed', listener: (params: Protocol.Network.LoadingFailedEvent) => void): void;
+    loadingFailed(params: Protocol.Network.LoadingFailedEvent): void;
 
     /**
      * Fired when HTTP request has finished loading.
      */
-    on(event: 'loadingFinished', listener: (params: Protocol.Network.LoadingFinishedEvent) => void): void;
+    loadingFinished(params: Protocol.Network.LoadingFinishedEvent): void;
 
     /**
      * Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
      * mocked.
      * Deprecated, use Fetch.requestPaused instead.
      */
-    on(event: 'requestIntercepted', listener: (params: Protocol.Network.RequestInterceptedEvent) => void): void;
+    requestIntercepted(params: Protocol.Network.RequestInterceptedEvent): void;
 
     /**
      * Fired if request ended up loading from cache.
      */
-    on(event: 'requestServedFromCache', listener: (params: Protocol.Network.RequestServedFromCacheEvent) => void): void;
+    requestServedFromCache(params: Protocol.Network.RequestServedFromCacheEvent): void;
 
     /**
      * Fired when page is about to send HTTP request.
      */
-    on(event: 'requestWillBeSent', listener: (params: Protocol.Network.RequestWillBeSentEvent) => void): void;
+    requestWillBeSent(params: Protocol.Network.RequestWillBeSentEvent): void;
 
     /**
      * Fired when resource loading priority is changed
      */
-    on(event: 'resourceChangedPriority',
-       listener: (params: Protocol.Network.ResourceChangedPriorityEvent) => void): void;
+    resourceChangedPriority(params: Protocol.Network.ResourceChangedPriorityEvent): void;
 
     /**
      * Fired when a signed exchange was received over the network
      */
-    on(event: 'signedExchangeReceived', listener: (params: Protocol.Network.SignedExchangeReceivedEvent) => void): void;
+    signedExchangeReceived(params: Protocol.Network.SignedExchangeReceivedEvent): void;
 
     /**
      * Fired when HTTP response is available.
      */
-    on(event: 'responseReceived', listener: (params: Protocol.Network.ResponseReceivedEvent) => void): void;
+    responseReceived(params: Protocol.Network.ResponseReceivedEvent): void;
 
     /**
      * Fired when WebSocket is closed.
      */
-    on(event: 'webSocketClosed', listener: (params: Protocol.Network.WebSocketClosedEvent) => void): void;
+    webSocketClosed(params: Protocol.Network.WebSocketClosedEvent): void;
 
     /**
      * Fired upon WebSocket creation.
      */
-    on(event: 'webSocketCreated', listener: (params: Protocol.Network.WebSocketCreatedEvent) => void): void;
+    webSocketCreated(params: Protocol.Network.WebSocketCreatedEvent): void;
 
     /**
      * Fired when WebSocket message error occurs.
      */
-    on(event: 'webSocketFrameError', listener: (params: Protocol.Network.WebSocketFrameErrorEvent) => void): void;
+    webSocketFrameError(params: Protocol.Network.WebSocketFrameErrorEvent): void;
 
     /**
      * Fired when WebSocket message is received.
      */
-    on(event: 'webSocketFrameReceived', listener: (params: Protocol.Network.WebSocketFrameReceivedEvent) => void): void;
+    webSocketFrameReceived(params: Protocol.Network.WebSocketFrameReceivedEvent): void;
 
     /**
      * Fired when WebSocket message is sent.
      */
-    on(event: 'webSocketFrameSent', listener: (params: Protocol.Network.WebSocketFrameSentEvent) => void): void;
+    webSocketFrameSent(params: Protocol.Network.WebSocketFrameSentEvent): void;
 
     /**
      * Fired when WebSocket handshake response becomes available.
      */
-    on(event: 'webSocketHandshakeResponseReceived',
-       listener: (params: Protocol.Network.WebSocketHandshakeResponseReceivedEvent) => void): void;
+    webSocketHandshakeResponseReceived(params: Protocol.Network.WebSocketHandshakeResponseReceivedEvent): void;
 
     /**
      * Fired when WebSocket is about to initiate handshake.
      */
-    on(event: 'webSocketWillSendHandshakeRequest',
-       listener: (params: Protocol.Network.WebSocketWillSendHandshakeRequestEvent) => void): void;
+    webSocketWillSendHandshakeRequest(params: Protocol.Network.WebSocketWillSendHandshakeRequestEvent): void;
 
     /**
      * Fired when additional information about a requestWillBeSent event is available from the
@@ -1738,745 +1835,789 @@ declare namespace ProtocolProxyApi {
      * requestWillBeSentExtraInfo fired for it, and there is no guarantee whether requestWillBeSent
      * or requestWillBeSentExtraInfo will be fired first for the same request.
      */
-    on(event: 'requestWillBeSentExtraInfo',
-       listener: (params: Protocol.Network.RequestWillBeSentExtraInfoEvent) => void): void;
+    requestWillBeSentExtraInfo(params: Protocol.Network.RequestWillBeSentExtraInfoEvent): void;
 
     /**
      * Fired when additional information about a responseReceived event is available from the network
      * stack. Not every responseReceived event will have an additional responseReceivedExtraInfo for
      * it, and responseReceivedExtraInfo may be fired before or after responseReceived.
      */
-    on(event: 'responseReceivedExtraInfo',
-       listener: (params: Protocol.Network.ResponseReceivedExtraInfoEvent) => void): void;
+    responseReceivedExtraInfo(params: Protocol.Network.ResponseReceivedExtraInfoEvent): void;
   }
 
   export interface OverlayApi {
     /**
      * Disables domain notifications.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables domain notifications.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * For testing.
      */
-    getHighlightObjectForTest(params: Protocol.Overlay.GetHighlightObjectForTestRequest):
+    invoke_getHighlightObjectForTest(params: Protocol.Overlay.GetHighlightObjectForTestRequest):
         Promise<Protocol.Overlay.GetHighlightObjectForTestResponse>;
 
     /**
      * Hides any highlight.
      */
-    hideHighlight(): Promise<void>;
+    invoke_hideHighlight(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Highlights owner element of the frame with given id.
      */
-    highlightFrame(params: Protocol.Overlay.HighlightFrameRequest): Promise<void>;
+    invoke_highlightFrame(params: Protocol.Overlay.HighlightFrameRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or
      * objectId must be specified.
      */
-    highlightNode(params: Protocol.Overlay.HighlightNodeRequest): Promise<void>;
+    invoke_highlightNode(params: Protocol.Overlay.HighlightNodeRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Highlights given quad. Coordinates are absolute with respect to the main frame viewport.
      */
-    highlightQuad(params: Protocol.Overlay.HighlightQuadRequest): Promise<void>;
+    invoke_highlightQuad(params: Protocol.Overlay.HighlightQuadRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport.
      */
-    highlightRect(params: Protocol.Overlay.HighlightRectRequest): Promise<void>;
+    invoke_highlightRect(params: Protocol.Overlay.HighlightRectRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted.
      * Backend then generates 'inspectNodeRequested' event upon element selection.
      */
-    setInspectMode(params: Protocol.Overlay.SetInspectModeRequest): Promise<void>;
+    invoke_setInspectMode(params: Protocol.Overlay.SetInspectModeRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Highlights owner element of all frames detected to be ads.
      */
-    setShowAdHighlights(params: Protocol.Overlay.SetShowAdHighlightsRequest): Promise<void>;
+    invoke_setShowAdHighlights(params: Protocol.Overlay.SetShowAdHighlightsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    setPausedInDebuggerMessage(params: Protocol.Overlay.SetPausedInDebuggerMessageRequest): Promise<void>;
+    invoke_setPausedInDebuggerMessage(params: Protocol.Overlay.SetPausedInDebuggerMessageRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Requests that backend shows debug borders on layers
      */
-    setShowDebugBorders(params: Protocol.Overlay.SetShowDebugBordersRequest): Promise<void>;
+    invoke_setShowDebugBorders(params: Protocol.Overlay.SetShowDebugBordersRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Requests that backend shows the FPS counter
      */
-    setShowFPSCounter(params: Protocol.Overlay.SetShowFPSCounterRequest): Promise<void>;
+    invoke_setShowFPSCounter(params: Protocol.Overlay.SetShowFPSCounterRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Requests that backend shows paint rectangles
      */
-    setShowPaintRects(params: Protocol.Overlay.SetShowPaintRectsRequest): Promise<void>;
+    invoke_setShowPaintRects(params: Protocol.Overlay.SetShowPaintRectsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Requests that backend shows layout shift regions
      */
-    setShowLayoutShiftRegions(params: Protocol.Overlay.SetShowLayoutShiftRegionsRequest): Promise<void>;
+    invoke_setShowLayoutShiftRegions(params: Protocol.Overlay.SetShowLayoutShiftRegionsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Requests that backend shows scroll bottleneck rects
      */
-    setShowScrollBottleneckRects(params: Protocol.Overlay.SetShowScrollBottleneckRectsRequest): Promise<void>;
+    invoke_setShowScrollBottleneckRects(params: Protocol.Overlay.SetShowScrollBottleneckRectsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Requests that backend shows hit-test borders on layers
      */
-    setShowHitTestBorders(params: Protocol.Overlay.SetShowHitTestBordersRequest): Promise<void>;
+    invoke_setShowHitTestBorders(params: Protocol.Overlay.SetShowHitTestBordersRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Paints viewport size upon main frame resize.
      */
-    setShowViewportSizeOnResize(params: Protocol.Overlay.SetShowViewportSizeOnResizeRequest): Promise<void>;
+    invoke_setShowViewportSizeOnResize(params: Protocol.Overlay.SetShowViewportSizeOnResizeRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
+    /**
+     * Add a dual screen device hinge
+     */
+    invoke_setShowHinge(params: Protocol.Overlay.SetShowHingeRequest): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface OverlayDispatcher {
     /**
      * Fired when the node should be inspected. This happens after call to `setInspectMode` or when
      * user manually inspects an element.
      */
-    on(event: 'inspectNodeRequested', listener: (params: Protocol.Overlay.InspectNodeRequestedEvent) => void): void;
+    inspectNodeRequested(params: Protocol.Overlay.InspectNodeRequestedEvent): void;
 
     /**
      * Fired when the node should be highlighted. This happens after call to `setInspectMode`.
      */
-    on(event: 'nodeHighlightRequested', listener: (params: Protocol.Overlay.NodeHighlightRequestedEvent) => void): void;
+    nodeHighlightRequested(params: Protocol.Overlay.NodeHighlightRequestedEvent): void;
 
     /**
      * Fired when user asks to capture screenshot of some area on the page.
      */
-    on(event: 'screenshotRequested', listener: (params: Protocol.Overlay.ScreenshotRequestedEvent) => void): void;
+    screenshotRequested(params: Protocol.Overlay.ScreenshotRequestedEvent): void;
 
     /**
      * Fired when user cancels the inspect mode.
      */
-    on(event: 'inspectModeCanceled', listener: () => void): void;
+    inspectModeCanceled(): void;
   }
 
   export interface PageApi {
     /**
      * Deprecated, please use addScriptToEvaluateOnNewDocument instead.
      */
-    addScriptToEvaluateOnLoad(params: Protocol.Page.AddScriptToEvaluateOnLoadRequest):
+    invoke_addScriptToEvaluateOnLoad(params: Protocol.Page.AddScriptToEvaluateOnLoadRequest):
         Promise<Protocol.Page.AddScriptToEvaluateOnLoadResponse>;
 
     /**
      * Evaluates given script in every frame upon creation (before loading frame's scripts).
      */
-    addScriptToEvaluateOnNewDocument(params: Protocol.Page.AddScriptToEvaluateOnNewDocumentRequest):
+    invoke_addScriptToEvaluateOnNewDocument(params: Protocol.Page.AddScriptToEvaluateOnNewDocumentRequest):
         Promise<Protocol.Page.AddScriptToEvaluateOnNewDocumentResponse>;
 
     /**
      * Brings page to front (activates tab).
      */
-    bringToFront(): Promise<void>;
+    invoke_bringToFront(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Capture page screenshot.
      */
-    captureScreenshot(params: Protocol.Page.CaptureScreenshotRequest): Promise<Protocol.Page.CaptureScreenshotResponse>;
+    invoke_captureScreenshot(params: Protocol.Page.CaptureScreenshotRequest):
+        Promise<Protocol.Page.CaptureScreenshotResponse>;
 
     /**
      * Returns a snapshot of the page as a string. For MHTML format, the serialization includes
      * iframes, shadow DOM, external resources, and element-inline styles.
      */
-    captureSnapshot(params: Protocol.Page.CaptureSnapshotRequest): Promise<Protocol.Page.CaptureSnapshotResponse>;
+    invoke_captureSnapshot(params: Protocol.Page.CaptureSnapshotRequest):
+        Promise<Protocol.Page.CaptureSnapshotResponse>;
 
     /**
      * Clears the overriden device metrics.
      */
-    clearDeviceMetricsOverride(): Promise<void>;
+    invoke_clearDeviceMetricsOverride(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Clears the overridden Device Orientation.
      */
-    clearDeviceOrientationOverride(): Promise<void>;
+    invoke_clearDeviceOrientationOverride(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Clears the overriden Geolocation Position and Error.
      */
-    clearGeolocationOverride(): Promise<void>;
+    invoke_clearGeolocationOverride(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Creates an isolated world for the given frame.
      */
-    createIsolatedWorld(params: Protocol.Page.CreateIsolatedWorldRequest):
+    invoke_createIsolatedWorld(params: Protocol.Page.CreateIsolatedWorldRequest):
         Promise<Protocol.Page.CreateIsolatedWorldResponse>;
 
     /**
      * Deletes browser cookie with given name, domain and path.
      */
-    deleteCookie(params: Protocol.Page.DeleteCookieRequest): Promise<void>;
+    invoke_deleteCookie(params: Protocol.Page.DeleteCookieRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disables page domain notifications.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables page domain notifications.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
-    getAppManifest(): Promise<Protocol.Page.GetAppManifestResponse>;
+    invoke_getAppManifest(): Promise<Protocol.Page.GetAppManifestResponse>;
 
-    getInstallabilityErrors(): Promise<Protocol.Page.GetInstallabilityErrorsResponse>;
+    invoke_getInstallabilityErrors(): Promise<Protocol.Page.GetInstallabilityErrorsResponse>;
 
-    getManifestIcons(): Promise<Protocol.Page.GetManifestIconsResponse>;
+    invoke_getManifestIcons(): Promise<Protocol.Page.GetManifestIconsResponse>;
 
     /**
      * Returns all browser cookies. Depending on the backend support, will return detailed cookie
      * information in the `cookies` field.
      */
-    getCookies(): Promise<Protocol.Page.GetCookiesResponse>;
+    invoke_getCookies(): Promise<Protocol.Page.GetCookiesResponse>;
 
     /**
      * Returns present frame tree structure.
      */
-    getFrameTree(): Promise<Protocol.Page.GetFrameTreeResponse>;
+    invoke_getFrameTree(): Promise<Protocol.Page.GetFrameTreeResponse>;
 
     /**
      * Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
      */
-    getLayoutMetrics(): Promise<Protocol.Page.GetLayoutMetricsResponse>;
+    invoke_getLayoutMetrics(): Promise<Protocol.Page.GetLayoutMetricsResponse>;
 
     /**
      * Returns navigation history for the current page.
      */
-    getNavigationHistory(): Promise<Protocol.Page.GetNavigationHistoryResponse>;
+    invoke_getNavigationHistory(): Promise<Protocol.Page.GetNavigationHistoryResponse>;
 
     /**
      * Resets navigation history for the current page.
      */
-    resetNavigationHistory(): Promise<void>;
+    invoke_resetNavigationHistory(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns content of the given resource.
      */
-    getResourceContent(params: Protocol.Page.GetResourceContentRequest):
+    invoke_getResourceContent(params: Protocol.Page.GetResourceContentRequest):
         Promise<Protocol.Page.GetResourceContentResponse>;
 
     /**
      * Returns present frame / resource tree structure.
      */
-    getResourceTree(): Promise<Protocol.Page.GetResourceTreeResponse>;
+    invoke_getResourceTree(): Promise<Protocol.Page.GetResourceTreeResponse>;
 
     /**
      * Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
      */
-    handleJavaScriptDialog(params: Protocol.Page.HandleJavaScriptDialogRequest): Promise<void>;
+    invoke_handleJavaScriptDialog(params: Protocol.Page.HandleJavaScriptDialogRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Navigates current page to the given URL.
      */
-    navigate(params: Protocol.Page.NavigateRequest): Promise<Protocol.Page.NavigateResponse>;
+    invoke_navigate(params: Protocol.Page.NavigateRequest): Promise<Protocol.Page.NavigateResponse>;
 
     /**
      * Navigates current page to the given history entry.
      */
-    navigateToHistoryEntry(params: Protocol.Page.NavigateToHistoryEntryRequest): Promise<void>;
+    invoke_navigateToHistoryEntry(params: Protocol.Page.NavigateToHistoryEntryRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Print page as PDF.
      */
-    printToPDF(params: Protocol.Page.PrintToPDFRequest): Promise<Protocol.Page.PrintToPDFResponse>;
+    invoke_printToPDF(params: Protocol.Page.PrintToPDFRequest): Promise<Protocol.Page.PrintToPDFResponse>;
 
     /**
      * Reloads given page optionally ignoring the cache.
      */
-    reload(params: Protocol.Page.ReloadRequest): Promise<void>;
+    invoke_reload(params: Protocol.Page.ReloadRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Deprecated, please use removeScriptToEvaluateOnNewDocument instead.
      */
-    removeScriptToEvaluateOnLoad(params: Protocol.Page.RemoveScriptToEvaluateOnLoadRequest): Promise<void>;
+    invoke_removeScriptToEvaluateOnLoad(params: Protocol.Page.RemoveScriptToEvaluateOnLoadRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Removes given script from the list.
      */
-    removeScriptToEvaluateOnNewDocument(params: Protocol.Page.RemoveScriptToEvaluateOnNewDocumentRequest):
-        Promise<void>;
+    invoke_removeScriptToEvaluateOnNewDocument(params: Protocol.Page.RemoveScriptToEvaluateOnNewDocumentRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Acknowledges that a screencast frame has been received by the frontend.
      */
-    screencastFrameAck(params: Protocol.Page.ScreencastFrameAckRequest): Promise<void>;
+    invoke_screencastFrameAck(params: Protocol.Page.ScreencastFrameAckRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Searches for given string in resource content.
      */
-    searchInResource(params: Protocol.Page.SearchInResourceRequest): Promise<Protocol.Page.SearchInResourceResponse>;
+    invoke_searchInResource(params: Protocol.Page.SearchInResourceRequest):
+        Promise<Protocol.Page.SearchInResourceResponse>;
 
     /**
      * Enable Chrome's experimental ad filter on all sites.
      */
-    setAdBlockingEnabled(params: Protocol.Page.SetAdBlockingEnabledRequest): Promise<void>;
+    invoke_setAdBlockingEnabled(params: Protocol.Page.SetAdBlockingEnabledRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enable page Content Security Policy by-passing.
      */
-    setBypassCSP(params: Protocol.Page.SetBypassCSPRequest): Promise<void>;
+    invoke_setBypassCSP(params: Protocol.Page.SetBypassCSPRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
      * window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
      * query results).
      */
-    setDeviceMetricsOverride(params: Protocol.Page.SetDeviceMetricsOverrideRequest): Promise<void>;
+    invoke_setDeviceMetricsOverride(params: Protocol.Page.SetDeviceMetricsOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Overrides the Device Orientation.
      */
-    setDeviceOrientationOverride(params: Protocol.Page.SetDeviceOrientationOverrideRequest): Promise<void>;
+    invoke_setDeviceOrientationOverride(params: Protocol.Page.SetDeviceOrientationOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Set generic font families.
      */
-    setFontFamilies(params: Protocol.Page.SetFontFamiliesRequest): Promise<void>;
+    invoke_setFontFamilies(params: Protocol.Page.SetFontFamiliesRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Set default font sizes.
      */
-    setFontSizes(params: Protocol.Page.SetFontSizesRequest): Promise<void>;
+    invoke_setFontSizes(params: Protocol.Page.SetFontSizesRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets given markup as the document's HTML.
      */
-    setDocumentContent(params: Protocol.Page.SetDocumentContentRequest): Promise<void>;
+    invoke_setDocumentContent(params: Protocol.Page.SetDocumentContentRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Set the behavior when downloading a file.
      */
-    setDownloadBehavior(params: Protocol.Page.SetDownloadBehaviorRequest): Promise<void>;
+    invoke_setDownloadBehavior(params: Protocol.Page.SetDownloadBehaviorRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
      * unavailable.
      */
-    setGeolocationOverride(params: Protocol.Page.SetGeolocationOverrideRequest): Promise<void>;
+    invoke_setGeolocationOverride(params: Protocol.Page.SetGeolocationOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Controls whether page will emit lifecycle events.
      */
-    setLifecycleEventsEnabled(params: Protocol.Page.SetLifecycleEventsEnabledRequest): Promise<void>;
+    invoke_setLifecycleEventsEnabled(params: Protocol.Page.SetLifecycleEventsEnabledRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Toggles mouse event-based touch event emulation.
      */
-    setTouchEmulationEnabled(params: Protocol.Page.SetTouchEmulationEnabledRequest): Promise<void>;
+    invoke_setTouchEmulationEnabled(params: Protocol.Page.SetTouchEmulationEnabledRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Starts sending each frame using the `screencastFrame` event.
      */
-    startScreencast(params: Protocol.Page.StartScreencastRequest): Promise<void>;
+    invoke_startScreencast(params: Protocol.Page.StartScreencastRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Force the page stop all navigations and pending resource fetches.
      */
-    stopLoading(): Promise<void>;
+    invoke_stopLoading(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Crashes renderer on the IO thread, generates minidumps.
      */
-    crash(): Promise<void>;
+    invoke_crash(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Tries to close page, running its beforeunload hooks, if any.
      */
-    close(): Promise<void>;
+    invoke_close(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Tries to update the web lifecycle state of the page.
      * It will transition the page to the given state according to:
      * https://github.com/WICG/web-lifecycle/
      */
-    setWebLifecycleState(params: Protocol.Page.SetWebLifecycleStateRequest): Promise<void>;
+    invoke_setWebLifecycleState(params: Protocol.Page.SetWebLifecycleStateRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Stops sending each frame in the `screencastFrame`.
      */
-    stopScreencast(): Promise<void>;
+    invoke_stopScreencast(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Forces compilation cache to be generated for every subresource script.
      */
-    setProduceCompilationCache(params: Protocol.Page.SetProduceCompilationCacheRequest): Promise<void>;
+    invoke_setProduceCompilationCache(params: Protocol.Page.SetProduceCompilationCacheRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Seeds compilation cache for given url. Compilation cache does not survive
      * cross-process navigation.
      */
-    addCompilationCache(params: Protocol.Page.AddCompilationCacheRequest): Promise<void>;
+    invoke_addCompilationCache(params: Protocol.Page.AddCompilationCacheRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Clears seeded compilation cache.
      */
-    clearCompilationCache(): Promise<void>;
+    invoke_clearCompilationCache(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Generates a report for testing.
      */
-    generateTestReport(params: Protocol.Page.GenerateTestReportRequest): Promise<void>;
+    invoke_generateTestReport(params: Protocol.Page.GenerateTestReportRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Pauses page execution. Can be resumed using generic Runtime.runIfWaitingForDebugger.
      */
-    waitForDebugger(): Promise<void>;
+    invoke_waitForDebugger(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Intercept file chooser requests and transfer control to protocol clients.
      * When file chooser interception is enabled, native file chooser dialog is not shown.
      * Instead, a protocol event `Page.fileChooserOpened` is emitted.
      */
-    setInterceptFileChooserDialog(params: Protocol.Page.SetInterceptFileChooserDialogRequest): Promise<void>;
-
-    on(event: 'domContentEventFired', listener: (params: Protocol.Page.DomContentEventFiredEvent) => void): void;
+    invoke_setInterceptFileChooserDialog(params: Protocol.Page.SetInterceptFileChooserDialogRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface PageDispatcher {
+    domContentEventFired(params: Protocol.Page.DomContentEventFiredEvent): void;
 
     /**
      * Emitted only when `page.interceptFileChooser` is enabled.
      */
-    on(event: 'fileChooserOpened', listener: (params: Protocol.Page.FileChooserOpenedEvent) => void): void;
+    fileChooserOpened(params: Protocol.Page.FileChooserOpenedEvent): void;
 
     /**
      * Fired when frame has been attached to its parent.
      */
-    on(event: 'frameAttached', listener: (params: Protocol.Page.FrameAttachedEvent) => void): void;
+    frameAttached(params: Protocol.Page.FrameAttachedEvent): void;
 
     /**
      * Fired when frame no longer has a scheduled navigation.
      */
-    on(event: 'frameClearedScheduledNavigation',
-       listener: (params: Protocol.Page.FrameClearedScheduledNavigationEvent) => void): void;
+    frameClearedScheduledNavigation(params: Protocol.Page.FrameClearedScheduledNavigationEvent): void;
 
     /**
      * Fired when frame has been detached from its parent.
      */
-    on(event: 'frameDetached', listener: (params: Protocol.Page.FrameDetachedEvent) => void): void;
+    frameDetached(params: Protocol.Page.FrameDetachedEvent): void;
 
     /**
      * Fired once navigation of the frame has completed. Frame is now associated with the new loader.
      */
-    on(event: 'frameNavigated', listener: (params: Protocol.Page.FrameNavigatedEvent) => void): void;
+    frameNavigated(params: Protocol.Page.FrameNavigatedEvent): void;
 
-    on(event: 'frameResized', listener: () => void): void;
+    frameResized(): void;
 
     /**
      * Fired when a renderer-initiated navigation is requested.
      * Navigation may still be cancelled after the event is issued.
      */
-    on(event: 'frameRequestedNavigation',
-       listener: (params: Protocol.Page.FrameRequestedNavigationEvent) => void): void;
+    frameRequestedNavigation(params: Protocol.Page.FrameRequestedNavigationEvent): void;
 
     /**
      * Fired when frame schedules a potential navigation.
      */
-    on(event: 'frameScheduledNavigation',
-       listener: (params: Protocol.Page.FrameScheduledNavigationEvent) => void): void;
+    frameScheduledNavigation(params: Protocol.Page.FrameScheduledNavigationEvent): void;
 
     /**
      * Fired when frame has started loading.
      */
-    on(event: 'frameStartedLoading', listener: (params: Protocol.Page.FrameStartedLoadingEvent) => void): void;
+    frameStartedLoading(params: Protocol.Page.FrameStartedLoadingEvent): void;
 
     /**
      * Fired when frame has stopped loading.
      */
-    on(event: 'frameStoppedLoading', listener: (params: Protocol.Page.FrameStoppedLoadingEvent) => void): void;
+    frameStoppedLoading(params: Protocol.Page.FrameStoppedLoadingEvent): void;
 
     /**
      * Fired when page is about to start a download.
      */
-    on(event: 'downloadWillBegin', listener: (params: Protocol.Page.DownloadWillBeginEvent) => void): void;
+    downloadWillBegin(params: Protocol.Page.DownloadWillBeginEvent): void;
 
     /**
      * Fired when download makes progress. Last call has |done| == true.
      */
-    on(event: 'downloadProgress', listener: (params: Protocol.Page.DownloadProgressEvent) => void): void;
+    downloadProgress(params: Protocol.Page.DownloadProgressEvent): void;
 
     /**
      * Fired when interstitial page was hidden
      */
-    on(event: 'interstitialHidden', listener: () => void): void;
+    interstitialHidden(): void;
 
     /**
      * Fired when interstitial page was shown
      */
-    on(event: 'interstitialShown', listener: () => void): void;
+    interstitialShown(): void;
 
     /**
      * Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been
      * closed.
      */
-    on(event: 'javascriptDialogClosed', listener: (params: Protocol.Page.JavascriptDialogClosedEvent) => void): void;
+    javascriptDialogClosed(params: Protocol.Page.JavascriptDialogClosedEvent): void;
 
     /**
      * Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to
      * open.
      */
-    on(event: 'javascriptDialogOpening', listener: (params: Protocol.Page.JavascriptDialogOpeningEvent) => void): void;
+    javascriptDialogOpening(params: Protocol.Page.JavascriptDialogOpeningEvent): void;
 
     /**
      * Fired for top level page lifecycle events such as navigation, load, paint, etc.
      */
-    on(event: 'lifecycleEvent', listener: (params: Protocol.Page.LifecycleEventEvent) => void): void;
+    lifecycleEvent(params: Protocol.Page.LifecycleEventEvent): void;
 
-    on(event: 'loadEventFired', listener: (params: Protocol.Page.LoadEventFiredEvent) => void): void;
+    loadEventFired(params: Protocol.Page.LoadEventFiredEvent): void;
 
     /**
      * Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
      */
-    on(event: 'navigatedWithinDocument', listener: (params: Protocol.Page.NavigatedWithinDocumentEvent) => void): void;
+    navigatedWithinDocument(params: Protocol.Page.NavigatedWithinDocumentEvent): void;
 
     /**
      * Compressed image data requested by the `startScreencast`.
      */
-    on(event: 'screencastFrame', listener: (params: Protocol.Page.ScreencastFrameEvent) => void): void;
+    screencastFrame(params: Protocol.Page.ScreencastFrameEvent): void;
 
     /**
      * Fired when the page with currently enabled screencast was shown or hidden `.
      */
-    on(event: 'screencastVisibilityChanged',
-       listener: (params: Protocol.Page.ScreencastVisibilityChangedEvent) => void): void;
+    screencastVisibilityChanged(params: Protocol.Page.ScreencastVisibilityChangedEvent): void;
 
     /**
      * Fired when a new window is going to be opened, via window.open(), link click, form submission,
      * etc.
      */
-    on(event: 'windowOpen', listener: (params: Protocol.Page.WindowOpenEvent) => void): void;
+    windowOpen(params: Protocol.Page.WindowOpenEvent): void;
 
     /**
      * Issued for every compilation cache generated. Is only available
      * if Page.setGenerateCompilationCache is enabled.
      */
-    on(event: 'compilationCacheProduced',
-       listener: (params: Protocol.Page.CompilationCacheProducedEvent) => void): void;
+    compilationCacheProduced(params: Protocol.Page.CompilationCacheProducedEvent): void;
   }
 
   export interface PerformanceApi {
     /**
      * Disable collecting and reporting metrics.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enable collecting and reporting metrics.
      */
-    enable(params: Protocol.Performance.EnableRequest): Promise<void>;
+    invoke_enable(params: Protocol.Performance.EnableRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets time domain to use for collecting and reporting duration metrics.
      * Note that this must be called before enabling metrics collection. Calling
      * this method while metrics collection is enabled returns an error.
      */
-    setTimeDomain(params: Protocol.Performance.SetTimeDomainRequest): Promise<void>;
+    invoke_setTimeDomain(params: Protocol.Performance.SetTimeDomainRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Retrieve current values of run-time metrics.
      */
-    getMetrics(): Promise<Protocol.Performance.GetMetricsResponse>;
-
+    invoke_getMetrics(): Promise<Protocol.Performance.GetMetricsResponse>;
+  }
+  export interface PerformanceDispatcher {
     /**
      * Current values of the metrics.
      */
-    on(event: 'metrics', listener: (params: Protocol.Performance.MetricsEvent) => void): void;
+    metrics(params: Protocol.Performance.MetricsEvent): void;
   }
 
   export interface SecurityApi {
     /**
      * Disables tracking security state changes.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables tracking security state changes.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enable/disable whether all certificate errors should be ignored.
      */
-    setIgnoreCertificateErrors(params: Protocol.Security.SetIgnoreCertificateErrorsRequest): Promise<void>;
+    invoke_setIgnoreCertificateErrors(params: Protocol.Security.SetIgnoreCertificateErrorsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Handles a certificate error that fired a certificateError event.
      */
-    handleCertificateError(params: Protocol.Security.HandleCertificateErrorRequest): Promise<void>;
+    invoke_handleCertificateError(params: Protocol.Security.HandleCertificateErrorRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enable/disable overriding certificate errors. If enabled, all certificate error events need to
      * be handled by the DevTools client and should be answered with `handleCertificateError` commands.
      */
-    setOverrideCertificateErrors(params: Protocol.Security.SetOverrideCertificateErrorsRequest): Promise<void>;
-
+    invoke_setOverrideCertificateErrors(params: Protocol.Security.SetOverrideCertificateErrorsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface SecurityDispatcher {
     /**
      * There is a certificate error. If overriding certificate errors is enabled, then it should be
      * handled with the `handleCertificateError` command. Note: this event does not fire if the
      * certificate error has been allowed internally. Only one client per target should override
      * certificate errors at the same time.
      */
-    on(event: 'certificateError', listener: (params: Protocol.Security.CertificateErrorEvent) => void): void;
+    certificateError(params: Protocol.Security.CertificateErrorEvent): void;
 
     /**
      * The security state of the page changed.
      */
-    on(event: 'visibleSecurityStateChanged',
-       listener: (params: Protocol.Security.VisibleSecurityStateChangedEvent) => void): void;
+    visibleSecurityStateChanged(params: Protocol.Security.VisibleSecurityStateChangedEvent): void;
 
     /**
      * The security state of the page changed.
      */
-    on(event: 'securityStateChanged', listener: (params: Protocol.Security.SecurityStateChangedEvent) => void): void;
+    securityStateChanged(params: Protocol.Security.SecurityStateChangedEvent): void;
   }
 
   export interface ServiceWorkerApi {
-    deliverPushMessage(params: Protocol.ServiceWorker.DeliverPushMessageRequest): Promise<void>;
+    invoke_deliverPushMessage(params: Protocol.ServiceWorker.DeliverPushMessageRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
-    dispatchSyncEvent(params: Protocol.ServiceWorker.DispatchSyncEventRequest): Promise<void>;
+    invoke_dispatchSyncEvent(params: Protocol.ServiceWorker.DispatchSyncEventRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    dispatchPeriodicSyncEvent(params: Protocol.ServiceWorker.DispatchPeriodicSyncEventRequest): Promise<void>;
+    invoke_dispatchPeriodicSyncEvent(params: Protocol.ServiceWorker.DispatchPeriodicSyncEventRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
-    inspectWorker(params: Protocol.ServiceWorker.InspectWorkerRequest): Promise<void>;
+    invoke_inspectWorker(params: Protocol.ServiceWorker.InspectWorkerRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    setForceUpdateOnPageLoad(params: Protocol.ServiceWorker.SetForceUpdateOnPageLoadRequest): Promise<void>;
+    invoke_setForceUpdateOnPageLoad(params: Protocol.ServiceWorker.SetForceUpdateOnPageLoadRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    skipWaiting(params: Protocol.ServiceWorker.SkipWaitingRequest): Promise<void>;
+    invoke_skipWaiting(params: Protocol.ServiceWorker.SkipWaitingRequest): Promise<Protocol.ProtocolResponseWithError>;
 
-    startWorker(params: Protocol.ServiceWorker.StartWorkerRequest): Promise<void>;
+    invoke_startWorker(params: Protocol.ServiceWorker.StartWorkerRequest): Promise<Protocol.ProtocolResponseWithError>;
 
-    stopAllWorkers(): Promise<void>;
+    invoke_stopAllWorkers(): Promise<Protocol.ProtocolResponseWithError>;
 
-    stopWorker(params: Protocol.ServiceWorker.StopWorkerRequest): Promise<void>;
+    invoke_stopWorker(params: Protocol.ServiceWorker.StopWorkerRequest): Promise<Protocol.ProtocolResponseWithError>;
 
-    unregister(params: Protocol.ServiceWorker.UnregisterRequest): Promise<void>;
+    invoke_unregister(params: Protocol.ServiceWorker.UnregisterRequest): Promise<Protocol.ProtocolResponseWithError>;
 
-    updateRegistration(params: Protocol.ServiceWorker.UpdateRegistrationRequest): Promise<void>;
+    invoke_updateRegistration(params: Protocol.ServiceWorker.UpdateRegistrationRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface ServiceWorkerDispatcher {
+    workerErrorReported(params: Protocol.ServiceWorker.WorkerErrorReportedEvent): void;
 
-    on(event: 'workerErrorReported', listener: (params: Protocol.ServiceWorker.WorkerErrorReportedEvent) => void): void;
+    workerRegistrationUpdated(params: Protocol.ServiceWorker.WorkerRegistrationUpdatedEvent): void;
 
-    on(event: 'workerRegistrationUpdated',
-       listener: (params: Protocol.ServiceWorker.WorkerRegistrationUpdatedEvent) => void): void;
-
-    on(event: 'workerVersionUpdated',
-       listener: (params: Protocol.ServiceWorker.WorkerVersionUpdatedEvent) => void): void;
+    workerVersionUpdated(params: Protocol.ServiceWorker.WorkerVersionUpdatedEvent): void;
   }
 
   export interface StorageApi {
     /**
      * Clears storage for origin.
      */
-    clearDataForOrigin(params: Protocol.Storage.ClearDataForOriginRequest): Promise<void>;
+    invoke_clearDataForOrigin(params: Protocol.Storage.ClearDataForOriginRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns all browser cookies.
      */
-    getCookies(params: Protocol.Storage.GetCookiesRequest): Promise<Protocol.Storage.GetCookiesResponse>;
+    invoke_getCookies(params: Protocol.Storage.GetCookiesRequest): Promise<Protocol.Storage.GetCookiesResponse>;
 
     /**
      * Sets given cookies.
      */
-    setCookies(params: Protocol.Storage.SetCookiesRequest): Promise<void>;
+    invoke_setCookies(params: Protocol.Storage.SetCookiesRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Clears cookies.
      */
-    clearCookies(params: Protocol.Storage.ClearCookiesRequest): Promise<void>;
+    invoke_clearCookies(params: Protocol.Storage.ClearCookiesRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns usage and quota in bytes.
      */
-    getUsageAndQuota(params: Protocol.Storage.GetUsageAndQuotaRequest):
+    invoke_getUsageAndQuota(params: Protocol.Storage.GetUsageAndQuotaRequest):
         Promise<Protocol.Storage.GetUsageAndQuotaResponse>;
 
     /**
      * Registers origin to be notified when an update occurs to its cache storage list.
      */
-    trackCacheStorageForOrigin(params: Protocol.Storage.TrackCacheStorageForOriginRequest): Promise<void>;
+    invoke_trackCacheStorageForOrigin(params: Protocol.Storage.TrackCacheStorageForOriginRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Registers origin to be notified when an update occurs to its IndexedDB.
      */
-    trackIndexedDBForOrigin(params: Protocol.Storage.TrackIndexedDBForOriginRequest): Promise<void>;
+    invoke_trackIndexedDBForOrigin(params: Protocol.Storage.TrackIndexedDBForOriginRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Unregisters origin from receiving notifications for cache storage.
      */
-    untrackCacheStorageForOrigin(params: Protocol.Storage.UntrackCacheStorageForOriginRequest): Promise<void>;
+    invoke_untrackCacheStorageForOrigin(params: Protocol.Storage.UntrackCacheStorageForOriginRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Unregisters origin from receiving notifications for IndexedDB.
      */
-    untrackIndexedDBForOrigin(params: Protocol.Storage.UntrackIndexedDBForOriginRequest): Promise<void>;
-
+    invoke_untrackIndexedDBForOrigin(params: Protocol.Storage.UntrackIndexedDBForOriginRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface StorageDispatcher {
     /**
      * A cache's contents have been modified.
      */
-    on(event: 'cacheStorageContentUpdated',
-       listener: (params: Protocol.Storage.CacheStorageContentUpdatedEvent) => void): void;
+    cacheStorageContentUpdated(params: Protocol.Storage.CacheStorageContentUpdatedEvent): void;
 
     /**
      * A cache has been added/deleted.
      */
-    on(event: 'cacheStorageListUpdated',
-       listener: (params: Protocol.Storage.CacheStorageListUpdatedEvent) => void): void;
+    cacheStorageListUpdated(params: Protocol.Storage.CacheStorageListUpdatedEvent): void;
 
     /**
      * The origin's IndexedDB object store has been modified.
      */
-    on(event: 'indexedDBContentUpdated',
-       listener: (params: Protocol.Storage.IndexedDBContentUpdatedEvent) => void): void;
+    indexedDBContentUpdated(params: Protocol.Storage.IndexedDBContentUpdatedEvent): void;
 
     /**
      * The origin's IndexedDB database list has been modified.
      */
-    on(event: 'indexedDBListUpdated', listener: (params: Protocol.Storage.IndexedDBListUpdatedEvent) => void): void;
+    indexedDBListUpdated(params: Protocol.Storage.IndexedDBListUpdatedEvent): void;
   }
 
   export interface SystemInfoApi {
     /**
      * Returns information about the system.
      */
-    getInfo(): Promise<Protocol.SystemInfo.GetInfoResponse>;
+    invoke_getInfo(): Promise<Protocol.SystemInfo.GetInfoResponse>;
 
     /**
      * Returns information about all running processes.
      */
-    getProcessInfo(): Promise<Protocol.SystemInfo.GetProcessInfoResponse>;
+    invoke_getProcessInfo(): Promise<Protocol.SystemInfo.GetProcessInfoResponse>;
   }
+  export interface SystemInfoDispatcher {}
 
   export interface TargetApi {
     /**
      * Activates (focuses) the target.
      */
-    activateTarget(params: Protocol.Target.ActivateTargetRequest): Promise<void>;
+    invoke_activateTarget(params: Protocol.Target.ActivateTargetRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Attaches to the target with given id.
      */
-    attachToTarget(params: Protocol.Target.AttachToTargetRequest): Promise<Protocol.Target.AttachToTargetResponse>;
+    invoke_attachToTarget(params: Protocol.Target.AttachToTargetRequest):
+        Promise<Protocol.Target.AttachToTargetResponse>;
 
     /**
      * Attaches to the browser target, only uses flat sessionId mode.
      */
-    attachToBrowserTarget(): Promise<Protocol.Target.AttachToBrowserTargetResponse>;
+    invoke_attachToBrowserTarget(): Promise<Protocol.Target.AttachToBrowserTargetResponse>;
 
     /**
      * Closes the target. If the target is a page that gets closed too.
      */
-    closeTarget(params: Protocol.Target.CloseTargetRequest): Promise<Protocol.Target.CloseTargetResponse>;
+    invoke_closeTarget(params: Protocol.Target.CloseTargetRequest): Promise<Protocol.Target.CloseTargetResponse>;
 
     /**
      * Inject object to the target's main frame that provides a communication
@@ -2488,202 +2629,212 @@ declare namespace ProtocolProxyApi {
      * - `binding.send(json)` - a method to send messages over the remote debugging protocol
      * - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
      */
-    exposeDevToolsProtocol(params: Protocol.Target.ExposeDevToolsProtocolRequest): Promise<void>;
+    invoke_exposeDevToolsProtocol(params: Protocol.Target.ExposeDevToolsProtocolRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than
      * one.
      */
-    createBrowserContext(params: Protocol.Target.CreateBrowserContextRequest):
+    invoke_createBrowserContext(params: Protocol.Target.CreateBrowserContextRequest):
         Promise<Protocol.Target.CreateBrowserContextResponse>;
 
     /**
      * Returns all browser contexts created with `Target.createBrowserContext` method.
      */
-    getBrowserContexts(): Promise<Protocol.Target.GetBrowserContextsResponse>;
+    invoke_getBrowserContexts(): Promise<Protocol.Target.GetBrowserContextsResponse>;
 
     /**
      * Creates a new page.
      */
-    createTarget(params: Protocol.Target.CreateTargetRequest): Promise<Protocol.Target.CreateTargetResponse>;
+    invoke_createTarget(params: Protocol.Target.CreateTargetRequest): Promise<Protocol.Target.CreateTargetResponse>;
 
     /**
      * Detaches session with given id.
      */
-    detachFromTarget(params: Protocol.Target.DetachFromTargetRequest): Promise<void>;
+    invoke_detachFromTarget(params: Protocol.Target.DetachFromTargetRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Deletes a BrowserContext. All the belonging pages will be closed without calling their
      * beforeunload hooks.
      */
-    disposeBrowserContext(params: Protocol.Target.DisposeBrowserContextRequest): Promise<void>;
+    invoke_disposeBrowserContext(params: Protocol.Target.DisposeBrowserContextRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns information about a target.
      */
-    getTargetInfo(params: Protocol.Target.GetTargetInfoRequest): Promise<Protocol.Target.GetTargetInfoResponse>;
+    invoke_getTargetInfo(params: Protocol.Target.GetTargetInfoRequest): Promise<Protocol.Target.GetTargetInfoResponse>;
 
     /**
      * Retrieves a list of available targets.
      */
-    getTargets(): Promise<Protocol.Target.GetTargetsResponse>;
+    invoke_getTargets(): Promise<Protocol.Target.GetTargetsResponse>;
 
     /**
      * Sends protocol message over session with given id.
      * Consider using flat mode instead; see commands attachToTarget, setAutoAttach,
      * and crbug.com/991325.
      */
-    sendMessageToTarget(params: Protocol.Target.SendMessageToTargetRequest): Promise<void>;
+    invoke_sendMessageToTarget(params: Protocol.Target.SendMessageToTargetRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Controls whether to automatically attach to new targets which are considered to be related to
      * this one. When turned on, attaches to all existing related targets as well. When turned off,
      * automatically detaches from all currently attached targets.
      */
-    setAutoAttach(params: Protocol.Target.SetAutoAttachRequest): Promise<void>;
+    invoke_setAutoAttach(params: Protocol.Target.SetAutoAttachRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Controls whether to discover available targets and notify via
      * `targetCreated/targetInfoChanged/targetDestroyed` events.
      */
-    setDiscoverTargets(params: Protocol.Target.SetDiscoverTargetsRequest): Promise<void>;
+    invoke_setDiscoverTargets(params: Protocol.Target.SetDiscoverTargetsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables target discovery for the specified locations, when `setDiscoverTargets` was set to
      * `true`.
      */
-    setRemoteLocations(params: Protocol.Target.SetRemoteLocationsRequest): Promise<void>;
-
+    invoke_setRemoteLocations(params: Protocol.Target.SetRemoteLocationsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface TargetDispatcher {
     /**
      * Issued when attached to target because of auto-attach or `attachToTarget` command.
      */
-    on(event: 'attachedToTarget', listener: (params: Protocol.Target.AttachedToTargetEvent) => void): void;
+    attachedToTarget(params: Protocol.Target.AttachedToTargetEvent): void;
 
     /**
      * Issued when detached from target for any reason (including `detachFromTarget` command). Can be
      * issued multiple times per target if multiple sessions have been attached to it.
      */
-    on(event: 'detachedFromTarget', listener: (params: Protocol.Target.DetachedFromTargetEvent) => void): void;
+    detachedFromTarget(params: Protocol.Target.DetachedFromTargetEvent): void;
 
     /**
      * Notifies about a new protocol message received from the session (as reported in
      * `attachedToTarget` event).
      */
-    on(event: 'receivedMessageFromTarget',
-       listener: (params: Protocol.Target.ReceivedMessageFromTargetEvent) => void): void;
+    receivedMessageFromTarget(params: Protocol.Target.ReceivedMessageFromTargetEvent): void;
 
     /**
      * Issued when a possible inspection target is created.
      */
-    on(event: 'targetCreated', listener: (params: Protocol.Target.TargetCreatedEvent) => void): void;
+    targetCreated(params: Protocol.Target.TargetCreatedEvent): void;
 
     /**
      * Issued when a target is destroyed.
      */
-    on(event: 'targetDestroyed', listener: (params: Protocol.Target.TargetDestroyedEvent) => void): void;
+    targetDestroyed(params: Protocol.Target.TargetDestroyedEvent): void;
 
     /**
      * Issued when a target has crashed.
      */
-    on(event: 'targetCrashed', listener: (params: Protocol.Target.TargetCrashedEvent) => void): void;
+    targetCrashed(params: Protocol.Target.TargetCrashedEvent): void;
 
     /**
      * Issued when some information about a target has changed. This only happens between
      * `targetCreated` and `targetDestroyed`.
      */
-    on(event: 'targetInfoChanged', listener: (params: Protocol.Target.TargetInfoChangedEvent) => void): void;
+    targetInfoChanged(params: Protocol.Target.TargetInfoChangedEvent): void;
   }
 
   export interface TetheringApi {
     /**
      * Request browser port binding.
      */
-    bind(params: Protocol.Tethering.BindRequest): Promise<void>;
+    invoke_bind(params: Protocol.Tethering.BindRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Request browser port unbinding.
      */
-    unbind(params: Protocol.Tethering.UnbindRequest): Promise<void>;
-
+    invoke_unbind(params: Protocol.Tethering.UnbindRequest): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface TetheringDispatcher {
     /**
      * Informs that port was successfully bound and got a specified connection id.
      */
-    on(event: 'accepted', listener: (params: Protocol.Tethering.AcceptedEvent) => void): void;
+    accepted(params: Protocol.Tethering.AcceptedEvent): void;
   }
 
   export interface TracingApi {
     /**
      * Stop trace events collection.
      */
-    end(): Promise<void>;
+    invoke_end(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Gets supported tracing categories.
      */
-    getCategories(): Promise<Protocol.Tracing.GetCategoriesResponse>;
+    invoke_getCategories(): Promise<Protocol.Tracing.GetCategoriesResponse>;
 
     /**
      * Record a clock sync marker in the trace.
      */
-    recordClockSyncMarker(params: Protocol.Tracing.RecordClockSyncMarkerRequest): Promise<void>;
+    invoke_recordClockSyncMarker(params: Protocol.Tracing.RecordClockSyncMarkerRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Request a global memory dump.
      */
-    requestMemoryDump(params: Protocol.Tracing.RequestMemoryDumpRequest):
+    invoke_requestMemoryDump(params: Protocol.Tracing.RequestMemoryDumpRequest):
         Promise<Protocol.Tracing.RequestMemoryDumpResponse>;
 
     /**
      * Start trace events collection.
      */
-    start(params: Protocol.Tracing.StartRequest): Promise<void>;
-
-    on(event: 'bufferUsage', listener: (params: Protocol.Tracing.BufferUsageEvent) => void): void;
+    invoke_start(params: Protocol.Tracing.StartRequest): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface TracingDispatcher {
+    bufferUsage(params: Protocol.Tracing.BufferUsageEvent): void;
 
     /**
      * Contains an bucket of collected trace events. When tracing is stopped collected events will be
      * send as a sequence of dataCollected events followed by tracingComplete event.
      */
-    on(event: 'dataCollected', listener: (params: Protocol.Tracing.DataCollectedEvent) => void): void;
+    dataCollected(params: Protocol.Tracing.DataCollectedEvent): void;
 
     /**
      * Signals that tracing is stopped and there is no trace buffers pending flush, all data were
      * delivered via dataCollected events.
      */
-    on(event: 'tracingComplete', listener: (params: Protocol.Tracing.TracingCompleteEvent) => void): void;
+    tracingComplete(params: Protocol.Tracing.TracingCompleteEvent): void;
   }
 
   export interface FetchApi {
     /**
      * Disables the fetch domain.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables issuing of requestPaused events. A request will be paused until client
      * calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
      */
-    enable(params: Protocol.Fetch.EnableRequest): Promise<void>;
+    invoke_enable(params: Protocol.Fetch.EnableRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Causes the request to fail with specified reason.
      */
-    failRequest(params: Protocol.Fetch.FailRequestRequest): Promise<void>;
+    invoke_failRequest(params: Protocol.Fetch.FailRequestRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Provides response to the request.
      */
-    fulfillRequest(params: Protocol.Fetch.FulfillRequestRequest): Promise<void>;
+    invoke_fulfillRequest(params: Protocol.Fetch.FulfillRequestRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Continues the request, optionally modifying some of its parameters.
      */
-    continueRequest(params: Protocol.Fetch.ContinueRequestRequest): Promise<void>;
+    invoke_continueRequest(params: Protocol.Fetch.ContinueRequestRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Continues a request supplying authChallengeResponse following authRequired event.
      */
-    continueWithAuth(params: Protocol.Fetch.ContinueWithAuthRequest): Promise<void>;
+    invoke_continueWithAuth(params: Protocol.Fetch.ContinueWithAuthRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Causes the body of the response to be received from the server and
@@ -2693,7 +2844,8 @@ declare namespace ProtocolProxyApi {
      * affect the request or disabling fetch domain before body is received
      * results in an undefined behavior.
      */
-    getResponseBody(params: Protocol.Fetch.GetResponseBodyRequest): Promise<Protocol.Fetch.GetResponseBodyResponse>;
+    invoke_getResponseBody(params: Protocol.Fetch.GetResponseBodyRequest):
+        Promise<Protocol.Fetch.GetResponseBodyResponse>;
 
     /**
      * Returns a handle to the stream representing the response body.
@@ -2707,9 +2859,10 @@ declare namespace ProtocolProxyApi {
      * Calling other methods that affect the request or disabling fetch
      * domain before body is received results in an undefined behavior.
      */
-    takeResponseBodyAsStream(params: Protocol.Fetch.TakeResponseBodyAsStreamRequest):
+    invoke_takeResponseBodyAsStream(params: Protocol.Fetch.TakeResponseBodyAsStreamRequest):
         Promise<Protocol.Fetch.TakeResponseBodyAsStreamResponse>;
-
+  }
+  export interface FetchDispatcher {
     /**
      * Issued when the domain is enabled and the request URL matches the
      * specified filter. The request is paused until the client responds
@@ -2718,100 +2871,97 @@ declare namespace ProtocolProxyApi {
      * and responseStatusCode -- the request is at the response stage if either
      * of these fields is present and in the request stage otherwise.
      */
-    on(event: 'requestPaused', listener: (params: Protocol.Fetch.RequestPausedEvent) => void): void;
+    requestPaused(params: Protocol.Fetch.RequestPausedEvent): void;
 
     /**
      * Issued when the domain is enabled with handleAuthRequests set to true.
      * The request is paused until client responds with continueWithAuth.
      */
-    on(event: 'authRequired', listener: (params: Protocol.Fetch.AuthRequiredEvent) => void): void;
+    authRequired(params: Protocol.Fetch.AuthRequiredEvent): void;
   }
 
   export interface WebAudioApi {
     /**
      * Enables the WebAudio domain and starts sending context lifetime events.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disables the WebAudio domain.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Fetch the realtime data from the registered contexts.
      */
-    getRealtimeData(params: Protocol.WebAudio.GetRealtimeDataRequest):
+    invoke_getRealtimeData(params: Protocol.WebAudio.GetRealtimeDataRequest):
         Promise<Protocol.WebAudio.GetRealtimeDataResponse>;
-
+  }
+  export interface WebAudioDispatcher {
     /**
      * Notifies that a new BaseAudioContext has been created.
      */
-    on(event: 'contextCreated', listener: (params: Protocol.WebAudio.ContextCreatedEvent) => void): void;
+    contextCreated(params: Protocol.WebAudio.ContextCreatedEvent): void;
 
     /**
      * Notifies that an existing BaseAudioContext will be destroyed.
      */
-    on(event: 'contextWillBeDestroyed',
-       listener: (params: Protocol.WebAudio.ContextWillBeDestroyedEvent) => void): void;
+    contextWillBeDestroyed(params: Protocol.WebAudio.ContextWillBeDestroyedEvent): void;
 
     /**
      * Notifies that existing BaseAudioContext has changed some properties (id stays the same)..
      */
-    on(event: 'contextChanged', listener: (params: Protocol.WebAudio.ContextChangedEvent) => void): void;
+    contextChanged(params: Protocol.WebAudio.ContextChangedEvent): void;
 
     /**
      * Notifies that the construction of an AudioListener has finished.
      */
-    on(event: 'audioListenerCreated', listener: (params: Protocol.WebAudio.AudioListenerCreatedEvent) => void): void;
+    audioListenerCreated(params: Protocol.WebAudio.AudioListenerCreatedEvent): void;
 
     /**
      * Notifies that a new AudioListener has been created.
      */
-    on(event: 'audioListenerWillBeDestroyed',
-       listener: (params: Protocol.WebAudio.AudioListenerWillBeDestroyedEvent) => void): void;
+    audioListenerWillBeDestroyed(params: Protocol.WebAudio.AudioListenerWillBeDestroyedEvent): void;
 
     /**
      * Notifies that a new AudioNode has been created.
      */
-    on(event: 'audioNodeCreated', listener: (params: Protocol.WebAudio.AudioNodeCreatedEvent) => void): void;
+    audioNodeCreated(params: Protocol.WebAudio.AudioNodeCreatedEvent): void;
 
     /**
      * Notifies that an existing AudioNode has been destroyed.
      */
-    on(event: 'audioNodeWillBeDestroyed',
-       listener: (params: Protocol.WebAudio.AudioNodeWillBeDestroyedEvent) => void): void;
+    audioNodeWillBeDestroyed(params: Protocol.WebAudio.AudioNodeWillBeDestroyedEvent): void;
 
     /**
      * Notifies that a new AudioParam has been created.
      */
-    on(event: 'audioParamCreated', listener: (params: Protocol.WebAudio.AudioParamCreatedEvent) => void): void;
+    audioParamCreated(params: Protocol.WebAudio.AudioParamCreatedEvent): void;
 
     /**
      * Notifies that an existing AudioParam has been destroyed.
      */
-    on(event: 'audioParamWillBeDestroyed',
-       listener: (params: Protocol.WebAudio.AudioParamWillBeDestroyedEvent) => void): void;
+    audioParamWillBeDestroyed(params: Protocol.WebAudio.AudioParamWillBeDestroyedEvent): void;
 
     /**
      * Notifies that two AudioNodes are connected.
      */
-    on(event: 'nodesConnected', listener: (params: Protocol.WebAudio.NodesConnectedEvent) => void): void;
+    nodesConnected(params: Protocol.WebAudio.NodesConnectedEvent): void;
 
     /**
      * Notifies that AudioNodes are disconnected. The destination can be null, and it means all the outgoing connections from the source are disconnected.
      */
-    on(event: 'nodesDisconnected', listener: (params: Protocol.WebAudio.NodesDisconnectedEvent) => void): void;
+    nodesDisconnected(params: Protocol.WebAudio.NodesDisconnectedEvent): void;
 
     /**
      * Notifies that an AudioNode is connected to an AudioParam.
      */
-    on(event: 'nodeParamConnected', listener: (params: Protocol.WebAudio.NodeParamConnectedEvent) => void): void;
+    nodeParamConnected(params: Protocol.WebAudio.NodeParamConnectedEvent): void;
 
     /**
      * Notifies that an AudioNode is disconnected to an AudioParam.
      */
-    on(event: 'nodeParamDisconnected', listener: (params: Protocol.WebAudio.NodeParamDisconnectedEvent) => void): void;
+    nodeParamDisconnected(params: Protocol.WebAudio.NodeParamDisconnectedEvent): void;
   }
 
   export interface WebAuthnApi {
@@ -2819,197 +2969,228 @@ declare namespace ProtocolProxyApi {
      * Enable the WebAuthn domain and start intercepting credential storage and
      * retrieval with a virtual authenticator.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disable the WebAuthn domain.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Creates and adds a virtual authenticator.
      */
-    addVirtualAuthenticator(params: Protocol.WebAuthn.AddVirtualAuthenticatorRequest):
+    invoke_addVirtualAuthenticator(params: Protocol.WebAuthn.AddVirtualAuthenticatorRequest):
         Promise<Protocol.WebAuthn.AddVirtualAuthenticatorResponse>;
 
     /**
      * Removes the given authenticator.
      */
-    removeVirtualAuthenticator(params: Protocol.WebAuthn.RemoveVirtualAuthenticatorRequest): Promise<void>;
+    invoke_removeVirtualAuthenticator(params: Protocol.WebAuthn.RemoveVirtualAuthenticatorRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Adds the credential to the specified authenticator.
      */
-    addCredential(params: Protocol.WebAuthn.AddCredentialRequest): Promise<void>;
+    invoke_addCredential(params: Protocol.WebAuthn.AddCredentialRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Returns a single credential stored in the given virtual authenticator that
      * matches the credential ID.
      */
-    getCredential(params: Protocol.WebAuthn.GetCredentialRequest): Promise<Protocol.WebAuthn.GetCredentialResponse>;
+    invoke_getCredential(params: Protocol.WebAuthn.GetCredentialRequest):
+        Promise<Protocol.WebAuthn.GetCredentialResponse>;
 
     /**
      * Returns all the credentials stored in the given virtual authenticator.
      */
-    getCredentials(params: Protocol.WebAuthn.GetCredentialsRequest): Promise<Protocol.WebAuthn.GetCredentialsResponse>;
+    invoke_getCredentials(params: Protocol.WebAuthn.GetCredentialsRequest):
+        Promise<Protocol.WebAuthn.GetCredentialsResponse>;
 
     /**
      * Removes a credential from the authenticator.
      */
-    removeCredential(params: Protocol.WebAuthn.RemoveCredentialRequest): Promise<void>;
+    invoke_removeCredential(params: Protocol.WebAuthn.RemoveCredentialRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Clears all the credentials from the specified device.
      */
-    clearCredentials(params: Protocol.WebAuthn.ClearCredentialsRequest): Promise<void>;
+    invoke_clearCredentials(params: Protocol.WebAuthn.ClearCredentialsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets whether User Verification succeeds or fails for an authenticator.
      * The default is true.
      */
-    setUserVerified(params: Protocol.WebAuthn.SetUserVerifiedRequest): Promise<void>;
+    invoke_setUserVerified(params: Protocol.WebAuthn.SetUserVerifiedRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
   }
+  export interface WebAuthnDispatcher {}
 
   export interface MediaApi {
     /**
      * Enables the Media domain
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disables the Media domain.
      */
-    disable(): Promise<void>;
-
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface MediaDispatcher {
     /**
      * This can be called multiple times, and can be used to set / override /
      * remove player properties. A null propValue indicates removal.
      */
-    on(event: 'playerPropertiesChanged', listener: (params: Protocol.Media.PlayerPropertiesChangedEvent) => void): void;
+    playerPropertiesChanged(params: Protocol.Media.PlayerPropertiesChangedEvent): void;
 
     /**
      * Send events as a list, allowing them to be batched on the browser for less
      * congestion. If batched, events must ALWAYS be in chronological order.
      */
-    on(event: 'playerEventsAdded', listener: (params: Protocol.Media.PlayerEventsAddedEvent) => void): void;
+    playerEventsAdded(params: Protocol.Media.PlayerEventsAddedEvent): void;
+
+    /**
+     * Send a list of any messages that need to be delivered.
+     */
+    playerMessagesLogged(params: Protocol.Media.PlayerMessagesLoggedEvent): void;
+
+    /**
+     * Send a list of any errors that need to be delivered.
+     */
+    playerErrorsRaised(params: Protocol.Media.PlayerErrorsRaisedEvent): void;
 
     /**
      * Called whenever a player is created, or when a new agent joins and recieves
      * a list of active players. If an agent is restored, it will recieve the full
      * list of player ids and all events again.
      */
-    on(event: 'playersCreated', listener: (params: Protocol.Media.PlayersCreatedEvent) => void): void;
+    playersCreated(params: Protocol.Media.PlayersCreatedEvent): void;
   }
 
   export interface ConsoleApi {
     /**
      * Does nothing.
      */
-    clearMessages(): Promise<void>;
+    invoke_clearMessages(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disables console domain, prevents further console messages from being reported to the client.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables console domain, sends the messages collected so far to the client by means of the
      * `messageAdded` notification.
      */
-    enable(): Promise<void>;
-
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface ConsoleDispatcher {
     /**
      * Issued when new console message is added.
      */
-    on(event: 'messageAdded', listener: (params: Protocol.Console.MessageAddedEvent) => void): void;
+    messageAdded(params: Protocol.Console.MessageAddedEvent): void;
   }
 
   export interface DebuggerApi {
     /**
      * Continues execution until specific location is reached.
      */
-    continueToLocation(params: Protocol.Debugger.ContinueToLocationRequest): Promise<void>;
+    invoke_continueToLocation(params: Protocol.Debugger.ContinueToLocationRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disables debugger for given page.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables debugger for the given page. Clients should not assume that the debugging has been
      * enabled until the result for this command is received.
      */
-    enable(params: Protocol.Debugger.EnableRequest): Promise<Protocol.Debugger.EnableResponse>;
+    invoke_enable(params: Protocol.Debugger.EnableRequest): Promise<Protocol.Debugger.EnableResponse>;
 
     /**
      * Evaluates expression on a given call frame.
      */
-    evaluateOnCallFrame(params: Protocol.Debugger.EvaluateOnCallFrameRequest):
+    invoke_evaluateOnCallFrame(params: Protocol.Debugger.EvaluateOnCallFrameRequest):
         Promise<Protocol.Debugger.EvaluateOnCallFrameResponse>;
+
+    /**
+     * Execute a Wasm Evaluator module on a given call frame.
+     */
+    invoke_executeWasmEvaluator(params: Protocol.Debugger.ExecuteWasmEvaluatorRequest):
+        Promise<Protocol.Debugger.ExecuteWasmEvaluatorResponse>;
 
     /**
      * Returns possible locations for breakpoint. scriptId in start and end range locations should be
      * the same.
      */
-    getPossibleBreakpoints(params: Protocol.Debugger.GetPossibleBreakpointsRequest):
+    invoke_getPossibleBreakpoints(params: Protocol.Debugger.GetPossibleBreakpointsRequest):
         Promise<Protocol.Debugger.GetPossibleBreakpointsResponse>;
 
     /**
      * Returns source for the script with given id.
      */
-    getScriptSource(params: Protocol.Debugger.GetScriptSourceRequest):
+    invoke_getScriptSource(params: Protocol.Debugger.GetScriptSourceRequest):
         Promise<Protocol.Debugger.GetScriptSourceResponse>;
 
     /**
      * This command is deprecated. Use getScriptSource instead.
      */
-    getWasmBytecode(params: Protocol.Debugger.GetWasmBytecodeRequest):
+    invoke_getWasmBytecode(params: Protocol.Debugger.GetWasmBytecodeRequest):
         Promise<Protocol.Debugger.GetWasmBytecodeResponse>;
 
     /**
      * Returns stack trace with given `stackTraceId`.
      */
-    getStackTrace(params: Protocol.Debugger.GetStackTraceRequest): Promise<Protocol.Debugger.GetStackTraceResponse>;
+    invoke_getStackTrace(params: Protocol.Debugger.GetStackTraceRequest):
+        Promise<Protocol.Debugger.GetStackTraceResponse>;
 
     /**
      * Stops on the next JavaScript statement.
      */
-    pause(): Promise<void>;
+    invoke_pause(): Promise<Protocol.ProtocolResponseWithError>;
 
-    pauseOnAsyncCall(params: Protocol.Debugger.PauseOnAsyncCallRequest): Promise<void>;
+    invoke_pauseOnAsyncCall(params: Protocol.Debugger.PauseOnAsyncCallRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Removes JavaScript breakpoint.
      */
-    removeBreakpoint(params: Protocol.Debugger.RemoveBreakpointRequest): Promise<void>;
+    invoke_removeBreakpoint(params: Protocol.Debugger.RemoveBreakpointRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Restarts particular call frame from the beginning.
      */
-    restartFrame(params: Protocol.Debugger.RestartFrameRequest): Promise<Protocol.Debugger.RestartFrameResponse>;
+    invoke_restartFrame(params: Protocol.Debugger.RestartFrameRequest): Promise<Protocol.Debugger.RestartFrameResponse>;
 
     /**
      * Resumes JavaScript execution.
      */
-    resume(params: Protocol.Debugger.ResumeRequest): Promise<void>;
+    invoke_resume(params: Protocol.Debugger.ResumeRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Searches for given string in script content.
      */
-    searchInContent(params: Protocol.Debugger.SearchInContentRequest):
+    invoke_searchInContent(params: Protocol.Debugger.SearchInContentRequest):
         Promise<Protocol.Debugger.SearchInContentResponse>;
 
     /**
      * Enables or disables async call stacks tracking.
      */
-    setAsyncCallStackDepth(params: Protocol.Debugger.SetAsyncCallStackDepthRequest): Promise<void>;
+    invoke_setAsyncCallStackDepth(params: Protocol.Debugger.SetAsyncCallStackDepthRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in
      * scripts with url matching one of the patterns. VM will try to leave blackboxed script by
      * performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
      */
-    setBlackboxPatterns(params: Protocol.Debugger.SetBlackboxPatternsRequest): Promise<void>;
+    invoke_setBlackboxPatterns(params: Protocol.Debugger.SetBlackboxPatternsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted
@@ -3017,17 +3198,19 @@ declare namespace ProtocolProxyApi {
      * Positions array contains positions where blackbox state is changed. First interval isn't
      * blackboxed. Array should be sorted.
      */
-    setBlackboxedRanges(params: Protocol.Debugger.SetBlackboxedRangesRequest): Promise<void>;
+    invoke_setBlackboxedRanges(params: Protocol.Debugger.SetBlackboxedRangesRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Sets JavaScript breakpoint at a given location.
      */
-    setBreakpoint(params: Protocol.Debugger.SetBreakpointRequest): Promise<Protocol.Debugger.SetBreakpointResponse>;
+    invoke_setBreakpoint(params: Protocol.Debugger.SetBreakpointRequest):
+        Promise<Protocol.Debugger.SetBreakpointResponse>;
 
     /**
      * Sets instrumentation breakpoint.
      */
-    setInstrumentationBreakpoint(params: Protocol.Debugger.SetInstrumentationBreakpointRequest):
+    invoke_setInstrumentationBreakpoint(params: Protocol.Debugger.SetInstrumentationBreakpointRequest):
         Promise<Protocol.Debugger.SetInstrumentationBreakpointResponse>;
 
     /**
@@ -3036,7 +3219,7 @@ declare namespace ProtocolProxyApi {
      * `locations` property. Further matching script parsing will result in subsequent
      * `breakpointResolved` events issued. This logical breakpoint will survive page reloads.
      */
-    setBreakpointByUrl(params: Protocol.Debugger.SetBreakpointByUrlRequest):
+    invoke_setBreakpointByUrl(params: Protocol.Debugger.SetBreakpointByUrlRequest):
         Promise<Protocol.Debugger.SetBreakpointByUrlResponse>;
 
     /**
@@ -3044,82 +3227,87 @@ declare namespace ProtocolProxyApi {
      * If another function was created from the same source as a given one,
      * calling it will also trigger the breakpoint.
      */
-    setBreakpointOnFunctionCall(params: Protocol.Debugger.SetBreakpointOnFunctionCallRequest):
+    invoke_setBreakpointOnFunctionCall(params: Protocol.Debugger.SetBreakpointOnFunctionCallRequest):
         Promise<Protocol.Debugger.SetBreakpointOnFunctionCallResponse>;
 
     /**
      * Activates / deactivates all breakpoints on the page.
      */
-    setBreakpointsActive(params: Protocol.Debugger.SetBreakpointsActiveRequest): Promise<void>;
+    invoke_setBreakpointsActive(params: Protocol.Debugger.SetBreakpointsActiveRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or
      * no exceptions. Initial pause on exceptions state is `none`.
      */
-    setPauseOnExceptions(params: Protocol.Debugger.SetPauseOnExceptionsRequest): Promise<void>;
+    invoke_setPauseOnExceptions(params: Protocol.Debugger.SetPauseOnExceptionsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Changes return value in top frame. Available only at return break position.
      */
-    setReturnValue(params: Protocol.Debugger.SetReturnValueRequest): Promise<void>;
+    invoke_setReturnValue(params: Protocol.Debugger.SetReturnValueRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Edits JavaScript source live.
      */
-    setScriptSource(params: Protocol.Debugger.SetScriptSourceRequest):
+    invoke_setScriptSource(params: Protocol.Debugger.SetScriptSourceRequest):
         Promise<Protocol.Debugger.SetScriptSourceResponse>;
 
     /**
      * Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
      */
-    setSkipAllPauses(params: Protocol.Debugger.SetSkipAllPausesRequest): Promise<void>;
+    invoke_setSkipAllPauses(params: Protocol.Debugger.SetSkipAllPausesRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Changes value of variable in a callframe. Object-based scopes are not supported and must be
      * mutated manually.
      */
-    setVariableValue(params: Protocol.Debugger.SetVariableValueRequest): Promise<void>;
+    invoke_setVariableValue(params: Protocol.Debugger.SetVariableValueRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Steps into the function call.
      */
-    stepInto(params: Protocol.Debugger.StepIntoRequest): Promise<void>;
+    invoke_stepInto(params: Protocol.Debugger.StepIntoRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Steps out of the function call.
      */
-    stepOut(): Promise<void>;
+    invoke_stepOut(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Steps over the statement.
      */
-    stepOver(): Promise<void>;
-
+    invoke_stepOver(): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface DebuggerDispatcher {
     /**
      * Fired when breakpoint is resolved to an actual script and location.
      */
-    on(event: 'breakpointResolved', listener: (params: Protocol.Debugger.BreakpointResolvedEvent) => void): void;
+    breakpointResolved(params: Protocol.Debugger.BreakpointResolvedEvent): void;
 
     /**
      * Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
      */
-    on(event: 'paused', listener: (params: Protocol.Debugger.PausedEvent) => void): void;
+    paused(params: Protocol.Debugger.PausedEvent): void;
 
     /**
      * Fired when the virtual machine resumed execution.
      */
-    on(event: 'resumed', listener: () => void): void;
+    resumed(): void;
 
     /**
      * Fired when virtual machine fails to parse the script.
      */
-    on(event: 'scriptFailedToParse', listener: (params: Protocol.Debugger.ScriptFailedToParseEvent) => void): void;
+    scriptFailedToParse(params: Protocol.Debugger.ScriptFailedToParseEvent): void;
 
     /**
      * Fired when virtual machine parses script. This event is also fired for all known and uncollected
      * scripts upon enabling debugger.
      */
-    on(event: 'scriptParsed', listener: (params: Protocol.Debugger.ScriptParsedEvent) => void): void;
+    scriptParsed(params: Protocol.Debugger.ScriptParsedEvent): void;
   }
 
   export interface HeapProfilerApi {
@@ -3127,130 +3315,135 @@ declare namespace ProtocolProxyApi {
      * Enables console to refer to the node with given id via $x (see Command Line API for more details
      * $x functions).
      */
-    addInspectedHeapObject(params: Protocol.HeapProfiler.AddInspectedHeapObjectRequest): Promise<void>;
+    invoke_addInspectedHeapObject(params: Protocol.HeapProfiler.AddInspectedHeapObjectRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    collectGarbage(): Promise<void>;
+    invoke_collectGarbage(): Promise<Protocol.ProtocolResponseWithError>;
 
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
-    getHeapObjectId(params: Protocol.HeapProfiler.GetHeapObjectIdRequest):
+    invoke_getHeapObjectId(params: Protocol.HeapProfiler.GetHeapObjectIdRequest):
         Promise<Protocol.HeapProfiler.GetHeapObjectIdResponse>;
 
-    getObjectByHeapObjectId(params: Protocol.HeapProfiler.GetObjectByHeapObjectIdRequest):
+    invoke_getObjectByHeapObjectId(params: Protocol.HeapProfiler.GetObjectByHeapObjectIdRequest):
         Promise<Protocol.HeapProfiler.GetObjectByHeapObjectIdResponse>;
 
-    getSamplingProfile(): Promise<Protocol.HeapProfiler.GetSamplingProfileResponse>;
+    invoke_getSamplingProfile(): Promise<Protocol.HeapProfiler.GetSamplingProfileResponse>;
 
-    startSampling(params: Protocol.HeapProfiler.StartSamplingRequest): Promise<void>;
+    invoke_startSampling(params: Protocol.HeapProfiler.StartSamplingRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    startTrackingHeapObjects(params: Protocol.HeapProfiler.StartTrackingHeapObjectsRequest): Promise<void>;
+    invoke_startTrackingHeapObjects(params: Protocol.HeapProfiler.StartTrackingHeapObjectsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    stopSampling(): Promise<Protocol.HeapProfiler.StopSamplingResponse>;
+    invoke_stopSampling(): Promise<Protocol.HeapProfiler.StopSamplingResponse>;
 
-    stopTrackingHeapObjects(params: Protocol.HeapProfiler.StopTrackingHeapObjectsRequest): Promise<void>;
+    invoke_stopTrackingHeapObjects(params: Protocol.HeapProfiler.StopTrackingHeapObjectsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    takeHeapSnapshot(params: Protocol.HeapProfiler.TakeHeapSnapshotRequest): Promise<void>;
-
-    on(event: 'addHeapSnapshotChunk',
-       listener: (params: Protocol.HeapProfiler.AddHeapSnapshotChunkEvent) => void): void;
+    invoke_takeHeapSnapshot(params: Protocol.HeapProfiler.TakeHeapSnapshotRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface HeapProfilerDispatcher {
+    addHeapSnapshotChunk(params: Protocol.HeapProfiler.AddHeapSnapshotChunkEvent): void;
 
     /**
      * If heap objects tracking has been started then backend may send update for one or more fragments
      */
-    on(event: 'heapStatsUpdate', listener: (params: Protocol.HeapProfiler.HeapStatsUpdateEvent) => void): void;
+    heapStatsUpdate(params: Protocol.HeapProfiler.HeapStatsUpdateEvent): void;
 
     /**
      * If heap objects tracking has been started then backend regularly sends a current value for last
      * seen object id and corresponding timestamp. If the were changes in the heap since last event
      * then one or more heapStatsUpdate events will be sent before a new lastSeenObjectId event.
      */
-    on(event: 'lastSeenObjectId', listener: (params: Protocol.HeapProfiler.LastSeenObjectIdEvent) => void): void;
+    lastSeenObjectId(params: Protocol.HeapProfiler.LastSeenObjectIdEvent): void;
 
-    on(event: 'reportHeapSnapshotProgress',
-       listener: (params: Protocol.HeapProfiler.ReportHeapSnapshotProgressEvent) => void): void;
+    reportHeapSnapshotProgress(params: Protocol.HeapProfiler.ReportHeapSnapshotProgressEvent): void;
 
-    on(event: 'resetProfiles', listener: () => void): void;
+    resetProfiles(): void;
   }
 
   export interface ProfilerApi {
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Collect coverage data for the current isolate. The coverage data may be incomplete due to
      * garbage collection.
      */
-    getBestEffortCoverage(): Promise<Protocol.Profiler.GetBestEffortCoverageResponse>;
+    invoke_getBestEffortCoverage(): Promise<Protocol.Profiler.GetBestEffortCoverageResponse>;
 
     /**
      * Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
      */
-    setSamplingInterval(params: Protocol.Profiler.SetSamplingIntervalRequest): Promise<void>;
+    invoke_setSamplingInterval(params: Protocol.Profiler.SetSamplingIntervalRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    start(): Promise<void>;
+    invoke_start(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code
      * coverage may be incomplete. Enabling prevents running optimized code and resets execution
      * counters.
      */
-    startPreciseCoverage(params: Protocol.Profiler.StartPreciseCoverageRequest):
+    invoke_startPreciseCoverage(params: Protocol.Profiler.StartPreciseCoverageRequest):
         Promise<Protocol.Profiler.StartPreciseCoverageResponse>;
 
     /**
      * Enable type profile.
      */
-    startTypeProfile(): Promise<void>;
+    invoke_startTypeProfile(): Promise<Protocol.ProtocolResponseWithError>;
 
-    stop(): Promise<Protocol.Profiler.StopResponse>;
+    invoke_stop(): Promise<Protocol.Profiler.StopResponse>;
 
     /**
      * Disable precise code coverage. Disabling releases unnecessary execution count records and allows
      * executing optimized code.
      */
-    stopPreciseCoverage(): Promise<void>;
+    invoke_stopPreciseCoverage(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disable type profile. Disabling releases type profile data collected so far.
      */
-    stopTypeProfile(): Promise<void>;
+    invoke_stopTypeProfile(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Collect coverage data for the current isolate, and resets execution counters. Precise code
      * coverage needs to have started.
      */
-    takePreciseCoverage(): Promise<Protocol.Profiler.TakePreciseCoverageResponse>;
+    invoke_takePreciseCoverage(): Promise<Protocol.Profiler.TakePreciseCoverageResponse>;
 
     /**
      * Collect type profile.
      */
-    takeTypeProfile(): Promise<Protocol.Profiler.TakeTypeProfileResponse>;
+    invoke_takeTypeProfile(): Promise<Protocol.Profiler.TakeTypeProfileResponse>;
 
     /**
      * Enable run time call stats collection.
      */
-    enableRuntimeCallStats(): Promise<void>;
+    invoke_enableRuntimeCallStats(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disable run time call stats collection.
      */
-    disableRuntimeCallStats(): Promise<void>;
+    invoke_disableRuntimeCallStats(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Retrieve run time call stats.
      */
-    getRuntimeCallStats(): Promise<Protocol.Profiler.GetRuntimeCallStatsResponse>;
-
-    on(event: 'consoleProfileFinished',
-       listener: (params: Protocol.Profiler.ConsoleProfileFinishedEvent) => void): void;
+    invoke_getRuntimeCallStats(): Promise<Protocol.Profiler.GetRuntimeCallStatsResponse>;
+  }
+  export interface ProfilerDispatcher {
+    consoleProfileFinished(params: Protocol.Profiler.ConsoleProfileFinishedEvent): void;
 
     /**
      * Sent when new profile recording is started using console.profile() call.
      */
-    on(event: 'consoleProfileStarted', listener: (params: Protocol.Profiler.ConsoleProfileStartedEvent) => void): void;
+    consoleProfileStarted(params: Protocol.Profiler.ConsoleProfileStartedEvent): void;
 
     /**
      * Reports coverage delta since the last poll (either from an event like this, or from
@@ -3258,108 +3451,114 @@ declare namespace ProtocolProxyApi {
      * coverage has been started. This event can be trigged by the embedder to, for example,
      * trigger collection of coverage data immediatelly at a certain point in time.
      */
-    on(event: 'preciseCoverageDeltaUpdate',
-       listener: (params: Protocol.Profiler.PreciseCoverageDeltaUpdateEvent) => void): void;
+    preciseCoverageDeltaUpdate(params: Protocol.Profiler.PreciseCoverageDeltaUpdateEvent): void;
   }
 
   export interface RuntimeApi {
     /**
      * Add handler to promise with given promise object id.
      */
-    awaitPromise(params: Protocol.Runtime.AwaitPromiseRequest): Promise<Protocol.Runtime.AwaitPromiseResponse>;
+    invoke_awaitPromise(params: Protocol.Runtime.AwaitPromiseRequest): Promise<Protocol.Runtime.AwaitPromiseResponse>;
 
     /**
      * Calls function with given declaration on the given object. Object group of the result is
      * inherited from the target object.
      */
-    callFunctionOn(params: Protocol.Runtime.CallFunctionOnRequest): Promise<Protocol.Runtime.CallFunctionOnResponse>;
+    invoke_callFunctionOn(params: Protocol.Runtime.CallFunctionOnRequest):
+        Promise<Protocol.Runtime.CallFunctionOnResponse>;
 
     /**
      * Compiles expression.
      */
-    compileScript(params: Protocol.Runtime.CompileScriptRequest): Promise<Protocol.Runtime.CompileScriptResponse>;
+    invoke_compileScript(params: Protocol.Runtime.CompileScriptRequest):
+        Promise<Protocol.Runtime.CompileScriptResponse>;
 
     /**
      * Disables reporting of execution contexts creation.
      */
-    disable(): Promise<void>;
+    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Discards collected exceptions and console API calls.
      */
-    discardConsoleEntries(): Promise<void>;
+    invoke_discardConsoleEntries(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Enables reporting of execution contexts creation by means of `executionContextCreated` event.
      * When the reporting gets enabled the event will be sent immediately for each existing execution
      * context.
      */
-    enable(): Promise<void>;
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Evaluates expression on global object.
      */
-    evaluate(params: Protocol.Runtime.EvaluateRequest): Promise<Protocol.Runtime.EvaluateResponse>;
+    invoke_evaluate(params: Protocol.Runtime.EvaluateRequest): Promise<Protocol.Runtime.EvaluateResponse>;
 
     /**
      * Returns the isolate id.
      */
-    getIsolateId(): Promise<Protocol.Runtime.GetIsolateIdResponse>;
+    invoke_getIsolateId(): Promise<Protocol.Runtime.GetIsolateIdResponse>;
 
     /**
      * Returns the JavaScript heap usage.
      * It is the total usage of the corresponding isolate not scoped to a particular Runtime.
      */
-    getHeapUsage(): Promise<Protocol.Runtime.GetHeapUsageResponse>;
+    invoke_getHeapUsage(): Promise<Protocol.Runtime.GetHeapUsageResponse>;
 
     /**
      * Returns properties of a given object. Object group of the result is inherited from the target
      * object.
      */
-    getProperties(params: Protocol.Runtime.GetPropertiesRequest): Promise<Protocol.Runtime.GetPropertiesResponse>;
+    invoke_getProperties(params: Protocol.Runtime.GetPropertiesRequest):
+        Promise<Protocol.Runtime.GetPropertiesResponse>;
 
     /**
      * Returns all let, const and class variables from global scope.
      */
-    globalLexicalScopeNames(params: Protocol.Runtime.GlobalLexicalScopeNamesRequest):
+    invoke_globalLexicalScopeNames(params: Protocol.Runtime.GlobalLexicalScopeNamesRequest):
         Promise<Protocol.Runtime.GlobalLexicalScopeNamesResponse>;
 
-    queryObjects(params: Protocol.Runtime.QueryObjectsRequest): Promise<Protocol.Runtime.QueryObjectsResponse>;
+    invoke_queryObjects(params: Protocol.Runtime.QueryObjectsRequest): Promise<Protocol.Runtime.QueryObjectsResponse>;
 
     /**
      * Releases remote object with given id.
      */
-    releaseObject(params: Protocol.Runtime.ReleaseObjectRequest): Promise<void>;
+    invoke_releaseObject(params: Protocol.Runtime.ReleaseObjectRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Releases all remote objects that belong to a given group.
      */
-    releaseObjectGroup(params: Protocol.Runtime.ReleaseObjectGroupRequest): Promise<void>;
+    invoke_releaseObjectGroup(params: Protocol.Runtime.ReleaseObjectGroupRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Tells inspected instance to run if it was waiting for debugger to attach.
      */
-    runIfWaitingForDebugger(): Promise<void>;
+    invoke_runIfWaitingForDebugger(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Runs script with given id in a given context.
      */
-    runScript(params: Protocol.Runtime.RunScriptRequest): Promise<Protocol.Runtime.RunScriptResponse>;
+    invoke_runScript(params: Protocol.Runtime.RunScriptRequest): Promise<Protocol.Runtime.RunScriptResponse>;
 
     /**
      * Enables or disables async call stacks tracking.
      */
-    setAsyncCallStackDepth(params: Protocol.Runtime.SetAsyncCallStackDepthRequest): Promise<void>;
+    invoke_setAsyncCallStackDepth(params: Protocol.Runtime.SetAsyncCallStackDepthRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    setCustomObjectFormatterEnabled(params: Protocol.Runtime.SetCustomObjectFormatterEnabledRequest): Promise<void>;
+    invoke_setCustomObjectFormatterEnabled(params: Protocol.Runtime.SetCustomObjectFormatterEnabledRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
-    setMaxCallStackSizeToCapture(params: Protocol.Runtime.SetMaxCallStackSizeToCaptureRequest): Promise<void>;
+    invoke_setMaxCallStackSizeToCapture(params: Protocol.Runtime.SetMaxCallStackSizeToCaptureRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Terminate current or next JavaScript execution.
      * Will cancel the termination when the outer-most script execution ends.
      */
-    terminateExecution(): Promise<void>;
+    invoke_terminateExecution(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * If executionContextId is empty, adds binding with the given name on the
@@ -3371,62 +3570,62 @@ declare namespace ProtocolProxyApi {
      * in case of any other input, function throws an exception.
      * Each binding function call produces Runtime.bindingCalled notification.
      */
-    addBinding(params: Protocol.Runtime.AddBindingRequest): Promise<void>;
+    invoke_addBinding(params: Protocol.Runtime.AddBindingRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * This method does not remove binding function from global object but
      * unsubscribes current runtime agent from Runtime.bindingCalled notifications.
      */
-    removeBinding(params: Protocol.Runtime.RemoveBindingRequest): Promise<void>;
-
+    invoke_removeBinding(params: Protocol.Runtime.RemoveBindingRequest): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface RuntimeDispatcher {
     /**
      * Notification is issued every time when binding is called.
      */
-    on(event: 'bindingCalled', listener: (params: Protocol.Runtime.BindingCalledEvent) => void): void;
+    bindingCalled(params: Protocol.Runtime.BindingCalledEvent): void;
 
     /**
      * Issued when console API was called.
      */
-    on(event: 'consoleAPICalled', listener: (params: Protocol.Runtime.ConsoleAPICalledEvent) => void): void;
+    consoleAPICalled(params: Protocol.Runtime.ConsoleAPICalledEvent): void;
 
     /**
      * Issued when unhandled exception was revoked.
      */
-    on(event: 'exceptionRevoked', listener: (params: Protocol.Runtime.ExceptionRevokedEvent) => void): void;
+    exceptionRevoked(params: Protocol.Runtime.ExceptionRevokedEvent): void;
 
     /**
      * Issued when exception was thrown and unhandled.
      */
-    on(event: 'exceptionThrown', listener: (params: Protocol.Runtime.ExceptionThrownEvent) => void): void;
+    exceptionThrown(params: Protocol.Runtime.ExceptionThrownEvent): void;
 
     /**
      * Issued when new execution context is created.
      */
-    on(event: 'executionContextCreated',
-       listener: (params: Protocol.Runtime.ExecutionContextCreatedEvent) => void): void;
+    executionContextCreated(params: Protocol.Runtime.ExecutionContextCreatedEvent): void;
 
     /**
      * Issued when execution context is destroyed.
      */
-    on(event: 'executionContextDestroyed',
-       listener: (params: Protocol.Runtime.ExecutionContextDestroyedEvent) => void): void;
+    executionContextDestroyed(params: Protocol.Runtime.ExecutionContextDestroyedEvent): void;
 
     /**
      * Issued when all executionContexts were cleared in browser
      */
-    on(event: 'executionContextsCleared', listener: () => void): void;
+    executionContextsCleared(): void;
 
     /**
      * Issued when object should be inspected (for example, as a result of inspect() command line API
      * call).
      */
-    on(event: 'inspectRequested', listener: (params: Protocol.Runtime.InspectRequestedEvent) => void): void;
+    inspectRequested(params: Protocol.Runtime.InspectRequestedEvent): void;
   }
 
   export interface SchemaApi {
     /**
      * Returns supported domains.
      */
-    getDomains(): Promise<Protocol.Schema.GetDomainsResponse>;
+    invoke_getDomains(): Promise<Protocol.Schema.GetDomainsResponse>;
   }
+  export interface SchemaDispatcher {}
 }

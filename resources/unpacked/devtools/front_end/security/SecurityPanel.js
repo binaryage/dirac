@@ -20,7 +20,8 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
 
     this._mainView = new SecurityMainView(this);
 
-    const title = createElementWithClass('span', 'title');
+    const title = document.createElement('span');
+    title.classList.add('title');
     title.textContent = Common.UIString.UIString('Overview');
     this._sidebarMainViewElement = new SecurityPanelSidebarTreeElement(
         title, this._setVisibleView.bind(this, this._mainView), 'security-main-view-sidebar-tree-item', 'lock-icon');
@@ -56,7 +57,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
   static createCertificateViewerButtonForOrigin(text, origin) {
     const certificateButton = UI.UIUtils.createTextButton(text, async e => {
       e.consume();
-      const names = await self.SDK.multitargetNetworkManager.getCertificate(origin);
+      const names = await SDK.NetworkManager.MultitargetNetworkManager.instance().getCertificate(origin);
       if (names.length > 0) {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer(names);
       }

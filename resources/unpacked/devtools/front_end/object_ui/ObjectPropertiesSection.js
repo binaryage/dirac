@@ -102,7 +102,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
    * @return {!ObjectPropertiesSection}
    */
   static defaultObjectPropertiesSection(object, linkifier, skipProto, readOnly) {
-    const titleElement = createElementWithClass('span', 'source-code');
+    const titleElement = document.createElement('span');
+    titleElement.classList.add('source-code');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(titleElement, 'object_ui/objectValue.css');
     const propertyValue =
         ObjectPropertiesSection.createPropertyValue(object, /* wasThrown */ false, /* showPreview */ true);
@@ -237,7 +238,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
    * @return {!Element} valueElement
    */
   static valueElementForFunctionDescription(description, includePreview, defaultName) {
-    const valueElement = createElementWithClass('span', 'object-value-function');
+    const valueElement = document.createElement('span');
+    valueElement.classList.add('object-value-function');
     description = description || '';
     const text = description.replace(/^function [gs]et /, 'function ')
                      .replace(/^function [gs]et\(/, 'function\(')
@@ -373,7 +375,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         parentElement.classList.add('hbox');
       }
     } else {
-      const valueElement = createElementWithClass('span', 'object-value-' + (subtype || type));
+      const valueElement = document.createElement('span');
+      valueElement.classList.add('object-value-' + (subtype || type));
       if (value.preview && showPreview) {
         const previewFormatter = new RemoteObjectPreviewFormatter();
         previewFormatter.appendObjectPreview(valueElement, value.preview, false /* isEntry */);
@@ -391,7 +394,9 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     }
 
     if (wasThrown) {
-      const wrapperElement = createElementWithClass('span', 'error value');
+      const wrapperElement = document.createElement('span');
+      wrapperElement.classList.add('error');
+      wrapperElement.classList.add('value');
       wrapperElement.appendChild(UI.UIUtils.formatLocalized('[Exception: %s]', [propertyValue.element]));
       propertyValue.element = wrapperElement;
     }
@@ -402,7 +407,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
      * @return {!Element}
      */
     function createUnknownInternalLocationElement() {
-      const valueElement = createElementWithClass('span');
+      const valueElement = document.createElement('span');
       valueElement.textContent = '<' + Common.UIString.UIString('unknown') + '>';
       valueElement.title = description || '';
       return valueElement;
@@ -412,7 +417,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
      * @return {!ObjectPropertyValue}
      */
     function createStringElement() {
-      const valueElement = createElementWithClass('span', 'object-value-string');
+      const valueElement = document.createElement('span');
+      valueElement.classList.add('object-value-string');
       const text = description.replace(/\n/g, '\u21B5');
       let propertyValue;
       valueElement.createChild('span', 'object-value-string-quote').textContent = '"';
@@ -432,7 +438,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
      * @return {!Element}
      */
     function createNodeElement() {
-      const valueElement = createElementWithClass('span', 'object-value-node');
+      const valueElement = document.createElement('span');
+      valueElement.classList.add('object-value-node');
       createSpansForNodeTitle(valueElement, /** @type {string} */ (description));
       valueElement.addEventListener('click', event => {
         Common.Revealer.reveal(value);
@@ -448,7 +455,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
      * @return {!Element}
      */
     function createNumberWithExponentElement() {
-      const valueElement = createElementWithClass('span', 'object-value-number');
+      const valueElement = document.createElement('span');
+      valueElement.classList.add('object-value-number');
       const numberParts = description.split('e');
       valueElement.createChild('span', 'object-value-scientific-notation-mantissa').textContent = numberParts[0];
       valueElement.createChild('span', 'object-value-scientific-notation-exponent').textContent = 'e' + numberParts[1];
@@ -705,13 +713,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
    * @param {?string=} emptyPlaceholder
    */
   static populateWithProperties(
-      treeNode,
-      properties,
-      internalProperties,
-      skipProto,
-      value,
-      linkifier,
-      emptyPlaceholder) {
+      treeNode, properties, internalProperties, skipProto, value, linkifier, emptyPlaceholder) {
     properties.sort(ObjectPropertiesSection.CompareProperties);
     internalProperties = internalProperties || [];
 
@@ -821,7 +823,8 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     if (treeNode.childCount()) {
       return;
     }
-    const title = createElementWithClass('div', 'gray-info-message');
+    const title = document.createElement('div');
+    title.classList.add('gray-info-message');
     title.textContent = emptyPlaceholder || Common.UIString.UIString('No properties');
     const infoElement = new UI.TreeOutline.TreeElement(title);
     treeNode.appendChild(infoElement);
@@ -997,7 +1000,8 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
       return null;
     }
 
-    const valueElement = createElementWithClass('span', 'value');
+    const valueElement = document.createElement('span');
+    valueElement.classList.add('value');
     if (value.description === 'Object') {
       valueElement.textContent = '';
     } else {
@@ -1021,7 +1025,8 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
 
     const isInternalEntries = this.property.synthetic && this.property.name === '[[Entries]]';
     if (isInternalEntries) {
-      this.valueElement = createElementWithClass('span', 'value');
+      this.valueElement = document.createElement('span');
+      this.valueElement.classList.add('value');
     } else if (this.property.value) {
       const showPreview = this.property.name !== '__proto__';
       this.propertyValue = ObjectPropertiesSection.createPropertyValueWithCustomSupport(
@@ -1031,7 +1036,8 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
       this.valueElement = ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(
           this.property.parentObject, [this.property.name], this._onInvokeGetterClick.bind(this));
     } else {
-      this.valueElement = createElementWithClass('span', 'object-value-undefined');
+      this.valueElement = document.createElement('span');
+      this.valueElement.classList.add('object-value-undefined');
       this.valueElement.textContent = Common.UIString.UIString('<unreadable>');
       this.valueElement.title = Common.UIString.UIString('No property getter');
     }
@@ -1748,7 +1754,7 @@ export class ExpandableTextPropertyValue extends ObjectPropertyValue {
     this._maxDisplayableTextLength = 10000000;
 
     const byteCount = Platform.StringUtilities.countWtf8Bytes(text);
-    const totalBytesText = Number.bytesToString(byteCount);
+    const totalBytesText = Platform.NumberUtilities.bytesToString(byteCount);
     if (this._text.length < this._maxDisplayableTextLength) {
       this._expandElementText = ls`Show more (${totalBytesText})`;
       this._expandElement.setAttribute('data-text', this._expandElementText);

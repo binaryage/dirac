@@ -1,19 +1,19 @@
-(def devtools-version "0.9.11")
-(def dirac-version "1.5.11")
-(def figwheel-version "0.5.19")
+(def devtools-version "1.0.0")
+(def dirac-version "1.5.12")
+(def figwheel-version "0.5.20")
 (defproject binaryage/dirac-lein "0.1.0-SNAPSHOT"
   :description "An example integration of Dirac DevTools with a Leiningen-based project"
   :url "https://github.com/binaryage/dirac"
 
   :dependencies [[org.clojure/clojure "1.10.1"]
-                 [org.clojure/clojurescript "1.10.597"]
-                 [nrepl/nrepl "0.6.0"]
+                 [org.clojure/clojurescript "1.10.764"]
+                 [nrepl/nrepl "0.7.0"]
                  [clojure-complete "0.2.5" :exclusions [org.clojure/clojure]]
                  [binaryage/devtools ~devtools-version]
                  [binaryage/dirac ~dirac-version]
                  [figwheel ~figwheel-version]]
 
-  :plugins [[lein-cljsbuild "1.1.7"]
+  :plugins [[lein-cljsbuild "1.1.8"]
             [lein-shell "0.5.0"]
             [lein-cooper "1.2.2"]
             [lein-figwheel ~figwheel-version]]
@@ -35,8 +35,6 @@
   :checkout-deps-shares ^:replace []
 
   ; =========================================================================================================================
-
-  :cljsbuild {:builds {}}                                                                                                     ; prevent https://github.com/emezeske/lein-cljsbuild/issues/413
 
   :profiles {; --------------------------------------------------------------------------------------------------------------
              :clojure19
@@ -174,7 +172,7 @@
                                                 (use 'figwheel-sidecar.repl-api)
                                                 (start-figwheel!
                                                   {:figwheel-options {:server-port 7111}                                      ;; <-- figwheel server config goes here
-                                                   :build-ids        ["demo"]                                                 ;; <-- a vector of build ids to start autobuilding
+                                                   :build-ids        ["demo"]                                                 ;; <-- a vector of build ids to start auto building
                                                    :all-builds                                                                ;; <-- supply your build configs here
                                                                      [{:id           "demo"
                                                                        :figwheel     true

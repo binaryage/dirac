@@ -32,6 +32,8 @@ GLOBAL_TYPESCRIPT_DEFINITION_FILES = [
     path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'legacy', 'legacy-defs.d.ts'),
     # generated protocol definitions
     path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'generated', 'protocol.d.ts'),
+    # generated protocol api interactions
+    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'generated', 'protocol-proxy-api.d.ts'),
     # Types for W3C FileSystem API
     path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'node_modules', '@types', 'filesystem', 'index.d.ts'),
 ]
@@ -53,7 +55,8 @@ def main():
     parser.add_argument('-dir', '--front_end_directory', required=True, help='Folder that contains source files')
     parser.add_argument('-b', '--tsconfig_output_location', required=True)
     parser.add_argument('--test-only', action='store_true')
-    parser.set_defaults(test_only=False)
+    parser.add_argument('--skip-lib-check', action='store_true')
+    parser.set_defaults(test_only=False, skip_lib_check=False)
 
     opts = parser.parse_args()
     with open(BASE_TS_CONFIG_LOCATION) as root_tsconfig:
@@ -80,6 +83,8 @@ def main():
     tsconfig['compilerOptions']['declaration'] = True
     tsconfig['compilerOptions']['composite'] = True
     tsconfig['compilerOptions']['sourceMap'] = True
+    if (opts.skip_lib_check):
+        tsconfig['compilerOptions']['skipLibCheck'] = True
     tsconfig['compilerOptions']['rootDir'] = get_relative_path_from_output_directory(opts.front_end_directory)
     tsconfig['compilerOptions']['typeRoots'] = opts.test_only and [
         get_relative_path_from_output_directory(TYPES_NODE_MODULES_DIRECTORY)
@@ -93,6 +98,13 @@ def main():
             print('Encountered error while writing generated tsconfig in location %s:' % tsconfig_output_location)
             print(e)
             return 1
+
+    # If there are no sources to compile, we can bail out and don't call tsc.
+    # That's because tsc can successfully compile dependents solely on the
+    # the tsconfig.json
+    if len(sources) == 0:
+        return 0
+
     found_errors, stderr = runTsc(tsconfig_location=tsconfig_output_location)
     if found_errors:
         print('')

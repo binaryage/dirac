@@ -646,6 +646,20 @@ export class TargetBase {
   router() {
     return this._router;
   }
+
+  /**
+   * @return {!ProtocolProxyApi.NetworkApi}
+   */
+  networkAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.LayerTreeApi}
+   */
+  layerTreeAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
 }
 
 /**
@@ -688,11 +702,11 @@ class _AgentPrototype {
     this[methodName] = sendMessagePromise;
 
     /**
-     * @param {!Object} request
+     * @param {!Object=} request
      * @return {!Promise<?Object>}
      * @this {_AgentPrototype}
      */
-    function invoke(request) {
+    function invoke(request = {}) {
       return this._invoke(domainAndMethod, request);
     }
 
@@ -773,7 +787,7 @@ class _AgentPrototype {
       return Promise.resolve(null);
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       /**
        * @param {*} error
        * @param {*} result
@@ -783,11 +797,9 @@ class _AgentPrototype {
           if (!test.suppressRequestErrors && error.code !== DevToolsStubErrorCode && error.code !== _GenericError &&
               error.code !== _ConnectionClosedErrorCode) {
             console.error('Request ' + method + ' failed. ' + JSON.stringify(error));
-            reject(error);
-          } else {
-            resolve(null);
           }
 
+          resolve(null);
           return;
         }
 
@@ -825,7 +837,15 @@ class _AgentPrototype {
           result = {};
         }
         if (error) {
+          // TODO(crbug.com/1011811): Remove Old lookup of ProtocolError
           result[ProtocolError] = error.message;
+          result.getError = () => {
+            return error.message;
+          };
+        } else {
+          result.getError = () => {
+            return undefined;
+          };
         }
         fulfill(result);
       };

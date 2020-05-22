@@ -183,7 +183,7 @@ export class StylesSidebarPane extends ElementsSidebarPane {
    * @return {!Element}
    */
   static createPropertyFilterElement(placeholder, container, filterCallback) {
-    const input = createElementWithClass('input');
+    const input = document.createElement('input');
     input.placeholder = placeholder;
 
     function searchHandler() {
@@ -921,7 +921,10 @@ export class StylePropertiesSection {
     this._originalPropertiesCount = style.leadingProperties().length;
 
     const rule = style.parentRule;
-    this.element = createElementWithClass('div', 'styles-section matched-styles monospace');
+    this.element = document.createElement('div');
+    this.element.classList.add('styles-section');
+    this.element.classList.add('matched-styles');
+    this.element.classList.add('monospace');
     UI.ARIAUtils.setAccessibleName(this.element, `${this._headerText()}, css selector`);
     this.element.tabIndex = -1;
     UI.ARIAUtils.markAsTreeitem(this.element);
@@ -942,7 +945,8 @@ export class StylePropertiesSection {
     this._innerElement.appendChild(this._showAllButton);
 
     const selectorContainer = createElement('div');
-    this._selectorElement = createElementWithClass('span', 'selector');
+    this._selectorElement = document.createElement('span');
+    this._selectorElement.classList.add('selector');
     this._selectorElement.textContent = this._headerText();
     selectorContainer.appendChild(this._selectorElement);
     this._selectorElement.addEventListener('mouseenter', this._onMouseEnterSelector.bind(this), false);
@@ -1669,7 +1673,8 @@ export class StylePropertiesSection {
    * @return {!Element}
    */
   _createSelectorElement(text, isMatching, navigationIndex) {
-    const element = createElementWithClass('span', 'simple-selector');
+    const element = document.createElement('span');
+    element.classList.add('simple-selector');
     element.classList.toggle('selector-matches', isMatching);
     if (typeof navigationIndex === 'number') {
       element._selectorIndex = navigationIndex;
@@ -1875,7 +1880,8 @@ export class StylePropertiesSection {
     this._parentPane.setUserOperation(true);
     const cssModel = this._parentPane.cssModel();
     if (cssModel) {
-      cssModel.setMediaText(media.styleSheetId, media.range, newContent).then(userCallback.bind(this));
+      cssModel.setMediaText(media.styleSheetId, /** @type {!TextUtils.TextRange.TextRange} */ (media.range), newContent)
+          .then(userCallback.bind(this));
     }
   }
 
@@ -2724,7 +2730,7 @@ export class StylesSidebarPropertyRenderer {
           // at the same time, which complicates both StylesSidebarPane and StylePropertyTreeElement.
           bypassURLTrimming: true,
         }),
-        url);
+        hrefUrl || url);
     container.appendChild(link);
     container.createTextChild(')');
     return container;

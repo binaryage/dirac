@@ -36,6 +36,7 @@ import * as HeapSnapshotModel from '../heap_snapshot_model/heap_snapshot_model.j
 import * as Host from '../host/host.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
 import * as PerfUI from '../perf_ui/perf_ui.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -129,7 +130,8 @@ export class HeapSnapshotView extends UI.View.SimpleView {
       splitWidgetResizer = this._tabbedPane.headerElement();
       this._objectDetailsView = this._tabbedPane;
     } else {
-      const retainmentViewHeader = createElementWithClass('div', 'heap-snapshot-view-resizer');
+      const retainmentViewHeader = document.createElement('div');
+      retainmentViewHeader.classList.add('heap-snapshot-view-resizer');
       const retainingPathsTitleDiv = retainmentViewHeader.createChild('div', 'title');
       const retainingPathsTitle = retainingPathsTitleDiv.createChild('span');
       retainingPathsTitle.textContent = Common.UIString.UIString('Retainers');
@@ -330,7 +332,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     const minId = event.data.minId;
     const maxId = event.data.maxId;
     this._selectedSizeText.setText(
-        Common.UIString.UIString('Selected size: %s', Number.bytesToString(event.data.size)));
+        Common.UIString.UIString('Selected size: %s', Platform.NumberUtilities.bytesToString(event.data.size)));
     if (this._constructorsDataGrid.snapshot) {
       this._constructorsDataGrid.setSelectionRange(minId, maxId);
     }
@@ -1001,7 +1003,8 @@ export class AllocationPerspective extends Perspective {
     heapSnapshotView._splitWidget.setSidebarWidget(heapSnapshotView._objectDetailsView);
 
     const allocatedObjectsView = new UI.Widget.VBox();
-    const resizer = createElementWithClass('div', 'heap-snapshot-view-resizer');
+    const resizer = document.createElement('div');
+    resizer.classList.add('heap-snapshot-view-resizer');
     const title = resizer.createChild('div', 'title').createChild('span');
     title.textContent = Common.UIString.UIString('Live objects');
     this._allocationSplitWidget.hideDefaultResizer();
@@ -1644,7 +1647,7 @@ export class HeapProfileHeader extends ProfileHeader {
     if (!this._snapshotProxy) {
       return;
     }
-    this.updateStatus(Number.bytesToString(this._snapshotProxy.totalSize), false);
+    this.updateStatus(Platform.NumberUtilities.bytesToString(this._snapshotProxy.totalSize), false);
   }
 
   /**

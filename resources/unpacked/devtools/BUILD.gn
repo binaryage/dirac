@@ -51,7 +51,6 @@ all_devtools_files = [
   "front_end/changes/module.json",
   "front_end/cm_headless/module.json",
   "front_end/cm_modes/module.json",
-  "front_end/cm_web_modes/module.json",
   "front_end/cm/codemirror.css",
   "front_end/cm/module.json",
   "front_end/color_picker/module.json",
@@ -466,7 +465,6 @@ devtools_module_entrypoints = [
   "cm/cm.js",
   "cm_headless/cm_headless.js",
   "cm_modes/cm_modes.js",
-  "cm_web_modes/cm_web_modes.js",
   "color_picker/color_picker.js",
   "color_picker/color_picker-legacy.js",
   "common/common.js",
@@ -794,20 +792,25 @@ application_templates = [
   "front_end/worker_app.html",
 ]
 
-generated_applications = [
-  "$resources_out_dir/lighthouse_worker.js",
+generated_applications_html = [
   "$resources_out_dir/devtools_app.html",
-  "$resources_out_dir/devtools_app.js",
   "$resources_out_dir/inspector.html",
-  "$resources_out_dir/inspector.js",
+  "$resources_out_dir/integration_test_runner.html",
   "$resources_out_dir/js_app.html",
-  "$resources_out_dir/js_app.js",
+  "$resources_out_dir/ndb_app.html",
   "$resources_out_dir/node_app.html",
+  "$resources_out_dir/toolbox.html",
+  "$resources_out_dir/worker_app.html",
+]
+
+generated_applications_js = [
+  "$resources_out_dir/lighthouse_worker.js",
+  "$resources_out_dir/devtools_app.js",
+  "$resources_out_dir/inspector.js",
+  "$resources_out_dir/js_app.js",
   "$resources_out_dir/node_app.js",
   "$resources_out_dir/shell.js",
-  "$resources_out_dir/toolbox.html",
   "$resources_out_dir/toolbox.js",
-  "$resources_out_dir/worker_app.html",
   "$resources_out_dir/worker_app.js",
 ]
 
@@ -818,7 +821,6 @@ generated_non_autostart_non_remote_modules = [
   "$resources_out_dir/browser_debugger/browser_debugger_module.js",
   "$resources_out_dir/changes/changes_module.js",
   "$resources_out_dir/cm_modes/cm_modes_module.js",
-  "$resources_out_dir/cm_web_modes/cm_web_modes_module.js",
   "$resources_out_dir/cm/cm_module.js",
   "$resources_out_dir/color_picker/color_picker_module.js",
   "$resources_out_dir/console/console_module.js",
@@ -948,12 +950,16 @@ group("devtools_all_files") {
 
 devtools_typescript_deps = [
   "front_end/bindings",
+  "front_end/browser_sdk",
   "front_end/common:common",
+  "front_end/elements",
   "front_end/formatter_worker",
   "front_end/host",
+  "front_end/issues:issues",
   "front_end/protocol_client",
   "front_end/root",
   "front_end/sdk:sdk",
+  "front_end/third_party/codemirror",
   "front_end/workspace",
 ]
 
@@ -966,6 +972,7 @@ devtools_frontend_resources_deps = devtools_typescript_deps + [
                                      ":copy_lighthouse_locale_files",
                                      ":copy_wasm_deps",
                                      ":devtools_extension_api",
+                                     "front_end",
                                    ]
 
 if (is_debug) {
@@ -1080,29 +1087,13 @@ all_devtools_modules = [
   "browser_debugger/ObjectEventListenersSidebarPane.js",
   "browser_debugger/XHRBreakpointsSidebarPane.js",
   "browser_sdk/LogManager.js",
+  "browser_sdk/IssuesManager.js",
+  "browser_sdk/RelatedIssue.js",
   "changes/ChangesHighlighter.js",
   "changes/ChangesSidebar.js",
   "changes/ChangesTextEditor.js",
   "changes/ChangesView.js",
-  "cm_headless/headlesscodemirror.js",
-  "cm_modes/clike.js",
-  "cm_modes/clojure.js",
-  "cm_modes/coffeescript.js",
   "cm_modes/DefaultCodeMirrorMimeMode.js",
-  "cm_modes/jsx.js",
-  "cm_modes/livescript.js",
-  "cm_modes/markdown.js",
-  "cm_modes/php.js",
-  "cm_modes/python.js",
-  "cm_modes/shell.js",
-  "cm_web_modes/cm_web_modes_cm.js",
-  "cm_web_modes/cm_web_modes_headless.js",
-  "cm_web_modes/css.js",
-  "cm_web_modes/htmlembedded.js",
-  "cm_web_modes/htmlmixed.js",
-  "cm_web_modes/javascript.js",
-  "cm_web_modes/wast.js",
-  "cm_web_modes/xml.js",
   "cm/active-line.js",
   "cm/brace-fold.js",
   "cm/closebrackets.js",
@@ -1126,6 +1117,7 @@ all_devtools_modules = [
   "common/Console.js",
   "common/EventTarget.js",
   "common/JavaScriptMetaData.js",
+  "common/Lazy.js",
   "common/Linkifier.js",
   "common/Object.js",
   "common/ParsedURL.js",
@@ -1140,7 +1132,6 @@ all_devtools_modules = [
   "common/TextDictionary.js",
   "common/Throttler.js",
   "common/Trie.js",
-  "common/UIString.js",
   "common/Worker.js",
   "components/DockController.js",
   "components/ImagePreview.js",
@@ -1183,6 +1174,7 @@ all_devtools_modules = [
   "elements/ColorSwatchPopoverIcon.js",
   "elements/ComputedStyleModel.js",
   "elements/ComputedStyleWidget.js",
+  "elements/Adorner.js",
   "elements/DOMLinkifier.js",
   "elements/DOMPath.js",
   "elements/ElementsBreadcrumbs.js",
@@ -1222,7 +1214,6 @@ all_devtools_modules = [
   "extensions/ExtensionTraceProvider.js",
   "extensions/ExtensionView.js",
   "formatter_worker/acorn/acorn_loose.js",
-  "formatter_worker/acorn/acorn.js",
   "formatter_worker/AcornTokenizer.js",
   "formatter_worker/CSSFormatter.js",
   "formatter_worker/CSSRuleParser.js",
@@ -1351,9 +1342,12 @@ all_devtools_modules = [
   "persistence/PlatformFileSystem.js",
   "persistence/WorkspaceSettingsTab.js",
   "platform/utilities.js",
+  "platform/set-utilities.js",
   "platform/string-utilities.js",
   "platform/number-utilities.js",
   "platform/array-utilities.js",
+  "platform/date-utilities.js",
+  "platform/UIString.js",
   "profiler/TopDownProfileDataGrid.js",
   "profiler/ProfileView.js",
   "profiler/ProfileTypeRegistry.js",
@@ -1378,6 +1372,7 @@ all_devtools_modules = [
   "protocol_monitor/ProtocolMonitor.js",
   "issues/IssuesPane.js",
   "issues/IssueRevealer.js",
+  "issues/IssueAggregator.js",
   "protocol_client/InspectorBackend.js",
   "protocol_client/NodeURL.js",
   "quick_open/CommandMenu.js",
@@ -1436,9 +1431,9 @@ all_devtools_modules = [
   "sdk/SameSiteCookieIssue.js",
   "sdk/CrossOriginEmbedderPolicyIssue.js",
   "sdk/IssuesModel.js",
-  "sdk/RelatedIssue.js",
   "sdk/LayerTreeBase.js",
   "sdk/LogModel.js",
+  "sdk/MixedContentIssue.js",
   "sdk/NetworkLog.js",
   "sdk/NetworkManager.js",
   "sdk/NetworkRequest.js",
@@ -1527,6 +1522,22 @@ all_devtools_modules = [
   "text_utils/TextCursor.js",
   "text_utils/TextRange.js",
   "text_utils/TextUtils.js",
+  "third_party/acorn/package/dist/acorn.js",
+  "third_party/codemirror/package/addon/runmode/runmode-standalone.js",
+  "third_party/codemirror/package/mode/clike/clike.js",
+  "third_party/codemirror/package/mode/clojure/clojure.js",
+  "third_party/codemirror/package/mode/coffeescript/coffeescript.js",
+  "third_party/codemirror/package/mode/jsx/jsx.js",
+  "third_party/codemirror/package/mode/livescript/livescript.js",
+  "third_party/codemirror/package/mode/markdown/markdown.js",
+  "third_party/codemirror/package/mode/php/php.js",
+  "third_party/codemirror/package/mode/python/python.js",
+  "third_party/codemirror/package/mode/shell/shell.js",
+  "third_party/codemirror/package/mode/css/css.js",
+  "third_party/codemirror/package/mode/javascript/javascript.js",
+  "third_party/codemirror/package/mode/xml/xml.js",
+  "third_party/codemirror/package/mode/htmlmixed/htmlmixed.js",
+  "third_party/codemirror/package/mode/htmlembedded/htmlembedded.js",
   "third_party/wasmparser/WasmDis.js",
   "third_party/wasmparser/WasmParser.js",
   "timeline/UIDevtoolsUtils.js",
@@ -1685,8 +1696,9 @@ action("generate_devtools_grd") {
 
   grd_files =
       generated_devtools_module_entrypoints + output_devtools_modules +
-      generated_applications + generated_non_autostart_non_remote_modules +
-      devtools_embedder_scripts + generated_worker_bundles +
+      generated_applications_html + generated_applications_js +
+      generated_non_autostart_non_remote_modules + devtools_embedder_scripts +
+      generated_worker_bundles +
       [
         "$resources_out_dir/devtools_extension_api.js",
         "$resources_out_dir/sdk/wasm_source_map/pkg/wasm_source_map_bg.wasm",
@@ -1744,7 +1756,7 @@ action("build_release_devtools") {
            application_templates + all_worker_entrypoints +
            front_end_devtools_module_entrypoints + input_devtools_modules
   outputs =
-      generated_applications + generated_non_autostart_non_remote_modules +
+      generated_applications_js + generated_non_autostart_non_remote_modules +
       generated_remote_modules + generated_test_modules +
       generated_worker_bundles + generated_devtools_module_entrypoints
 

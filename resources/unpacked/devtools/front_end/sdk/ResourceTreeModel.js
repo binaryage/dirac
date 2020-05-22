@@ -69,7 +69,9 @@ export class ResourceTreeModel extends SDKModel {
     /** @type {?ResourceTreeFrame} */
     this.mainFrame = null;
 
-    this._agent.getResourceTree().then(this._processCachedResources.bind(this));
+    this._agent.getResourceTree()
+        .then(this._processCachedResources.bind(this))
+        .catch(() => this._processCachedResources(null));
   }
 
   /**
@@ -314,7 +316,7 @@ export class ResourceTreeModel extends SDKModel {
   }
 
   /**
-   * @param {function(!Resource)} callback
+   * @param {function(!Resource):void} callback
    * @return {boolean}
    */
   forAllResources(callback) {
@@ -850,7 +852,7 @@ export class ResourceTreeFrame {
   }
 
   /**
-   * @param {function(!Resource)} callback
+   * @param {function(!Resource):void} callback
    * @return {boolean}
    */
   _callForFrameResources(callback) {

@@ -44,10 +44,11 @@ testing          javascript completions in js/ namespace
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["js/docume"]
 automate #1      scrape! [:suggest-box]
-stdout           displayed 6 items:
+stdout           displayed 7 items:
                   * docume|nt (selected force-white-icons)
                   * Docume|nt
                   * Docume|ntFragment
+                  * Docume|ntTimeline
                   * Docume|ntType
                   * HTML~Docume|nt
                   * XML~Docume|nt

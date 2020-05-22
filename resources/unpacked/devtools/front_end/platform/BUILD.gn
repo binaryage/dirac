@@ -6,9 +6,12 @@ import("../../third_party/typescript/typescript.gni")
 
 ts_library("platform") {
   sources = [
+    "UIString.js",
     "array-utilities.js",
+    "date-utilities.js",
     "number-utilities.js",
     "platform.js",
+    "set-utilities.js",
     "string-utilities.js",
     "utilities.js",
   ]

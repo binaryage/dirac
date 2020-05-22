@@ -2,9 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Components from '../components/components.js';
+import * as Elements from '../elements/elements.js';
 import * as Network from '../network/network.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
+
+import {AggregatedIssue, Events as IssueAggregatorEvents, IssueAggregator} from './IssueAggregator.js';  // eslint-disable-line no-unused-vars
+
+/**
+ * @param {string} path
+ * @return {string}
+ */
+const extractShortPath = path => {
+  // 1st regex matches everything after last '/'
+  // if path ends with '/', 2nd regex returns everything between the last two '/'
+  return (/[^/]+$/.exec(path) || /[^/]+\/$/.exec(path) || [''])[0];
+};
 
 class AffectedResourcesView extends UI.TreeOutline.TreeElement {
   /**
@@ -22,13 +38,18 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
     /** @type {!Element} */
     this._affectedResources = this.createAffectedResources();
     this._affectedResourcesCount = 0;
+    /** @type {?Common.EventTarget.EventDescriptor} */
+    this._listener = null;
+    /** @type {!Set<string>} */
+    this._unresolvedRequestIds = new Set();
   }
 
   /**
    * @returns {!Element}
    */
   createAffectedResourcesCounter() {
-    const counterLabel = createElementWithClass('div', 'affected-resource-label');
+    const counterLabel = document.createElement('div');
+    counterLabel.classList.add('affected-resource-label');
     this.listItemElement.appendChild(counterLabel);
     return counterLabel;
   }
@@ -38,19 +59,8 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
    */
   createAffectedResources() {
     const body = new UI.TreeOutline.TreeElement();
-    const affectedResources = createElementWithClass('table', 'affected-resource-list');
-    const header = createElementWithClass('tr');
-
-    const name = createElementWithClass('td', 'affected-resource-header');
-    name.textContent = 'Name';
-    header.appendChild(name);
-
-    const info = createElementWithClass('td', 'affected-resource-header affected-resource-header-info');
-    // Prepend a space to align them better with cookie domains starting with a "."
-    info.textContent = '\u2009Context';
-    header.appendChild(info);
-
-    affectedResources.appendChild(header);
+    const affectedResources = document.createElement('table');
+    affectedResources.classList.add('affected-resource-list');
     body.listItemElement.appendChild(affectedResources);
     this.appendChild(body);
 
@@ -88,67 +98,183 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
   clear() {
     this._affectedResources.textContent = '';
   }
+
+
+  /**
+   * This function resolves a requestId to network requests. If the requestId does not resolve, a listener is installed
+   * that takes care of updating the view if the network request is added. This is useful if the issue is added before
+   * the network request gets reported.
+   * @param {string} requestId
+   * @return {!Array<!SDK.NetworkRequest.NetworkRequest>}
+   */
+  _resolveRequestId(requestId) {
+    const requests = self.SDK.networkLog.requestsForId(requestId);
+    if (!requests.length) {
+      this._unresolvedRequestIds.add(requestId);
+      if (!this._listener) {
+        this._listener =
+            self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestAdded, this._onRequestAdded, this);
+      }
+    }
+    return requests;
+  }
+
+  /**
+   *
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
+  _onRequestAdded(event) {
+    const request = /** @type {!SDK.NetworkRequest.NetworkRequest} */ (event.data);
+    const requestWasUnresolved = this._unresolvedRequestIds.delete(request.requestId());
+    if (this._unresolvedRequestIds.size === 0 && this._listener) {
+      // Stop listening once all requests are resolved.
+      Common.EventTarget.EventTarget.removeEventListeners([this._listener]);
+      this._listener = null;
+    }
+    if (requestWasUnresolved) {
+      this.update();
+    }
+  }
+
+  /**
+   * @virtual
+   * @return {void}
+   */
+  update() {
+    throw new Error('This should never be called, did you forget to override?');
+  }
 }
 
-class AffectedCookiesView extends AffectedResourcesView {
+class AffectedElementsView extends AffectedResourcesView {
   /**
    * @param {!IssueView} parent
    * @param {!SDK.Issue.Issue} issue
    */
   constructor(parent, issue) {
-    super(parent, {singular: ls`cookie`, plural: ls`cookies`});
+    super(parent, {singular: ls`element`, plural: ls`elements`});
     /** @type {!SDK.Issue.Issue} */
     this._issue = issue;
   }
 
   /**
-   * @param {!Iterable<!Protocol.Audits.AffectedCookie>} cookies
+   * @param {!Iterable<!SDK.Issue.AffectedElement>} affectedElements
    */
-  _appendAffectedCookies(cookies) {
+  async _appendAffectedElements(affectedElements) {
     let count = 0;
-    for (const cookie of cookies) {
+    for (const element of affectedElements) {
+      await this._appendAffectedElement(element);
       count++;
-      this.appendAffectedCookie(/** @type{!{name:string,path:string,domain:string,siteForCookies:string}} */ (cookie));
     }
     this.updateAffectedResourceCount(count);
   }
 
   /**
-   *
-   * @param {!{name:string,path:string,domain:string,siteForCookies:string}} cookie
+   * @param {!SDK.Issue.AffectedElement} element
    */
-  appendAffectedCookie(cookie) {
-    const element = createElementWithClass('tr', 'affected-resource-cookie');
-    const name = createElementWithClass('td', '');
-    name.appendChild(UI.UIUtils.createTextButton(cookie.name, () => {
-      Network.NetworkPanel.NetworkPanel.revealAndFilter([
-        {
-          filterType: 'cookie-domain',
-          filterValue: cookie.domain,
-        },
-        {
-          filterType: 'cookie-name',
-          filterValue: cookie.name,
-        },
-        {
-          filterType: 'cookie-path',
-          filterValue: cookie.path,
-        }
-      ]);
-    }, 'link-style devtools-link'));
-    const info = createElementWithClass('td', 'affected-resource-cookie-info');
+  async _appendAffectedElement({backendNodeId, nodeName}) {
+    const mainTarget = /** @type {!SDK.SDKModel.Target} */ (SDK.SDKModel.TargetManager.instance().mainTarget());
+    const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(mainTarget, backendNodeId);
+    const anchorElement = await Common.Linkifier.Linkifier.linkify(deferredDOMNode);
+    anchorElement.textContent = nodeName;
+    const cellElement = document.createElement('td');
+    cellElement.classList.add('affected-resource-element', 'devtools-link');
+    cellElement.appendChild(anchorElement);
+    const rowElement = document.createElement('tr');
+    rowElement.appendChild(cellElement);
+    this._affectedResources.appendChild(rowElement);
+  }
 
-    // Prepend a space for all domains not starting with a "." to align them better.
-    info.textContent = (cookie.domain[0] !== '.' ? '\u2008' : '') + cookie.domain + cookie.path;
+  /**
+   * @override
+   */
+  update() {
+    this.clear();
+    this._appendAffectedElements(this._issue.elements());
+  }
+}
+
+class AffectedCookiesView extends AffectedResourcesView {
+  /**
+   * @param {!IssueView} parent
+   * @param {!AggregatedIssue} issue
+   */
+  constructor(parent, issue) {
+    super(parent, {singular: ls`cookie`, plural: ls`cookies`});
+    /** @type {!AggregatedIssue} */
+    this._issue = issue;
+  }
+
+  /**
+   * @param {!Iterable<!{cookie: !Protocol.Audits.AffectedCookie, hasRequest: boolean}>} cookies
+   */
+  _appendAffectedCookies(cookies) {
+    const header = document.createElement('tr');
+
+    const name = document.createElement('td');
+    name.classList.add('affected-resource-header');
+    name.textContent = 'Name';
+    header.appendChild(name);
+
+    const info = document.createElement('td');
+    info.classList.add('affected-resource-header');
+    info.classList.add('affected-resource-cookie-info-header');
+    info.textContent = ls`Domain` +
+        ' & ' + ls`Path`;
+    header.appendChild(info);
+
+    this._affectedResources.appendChild(header);
+
+    let count = 0;
+    for (const cookie of cookies) {
+      count++;
+      this.appendAffectedCookie(cookie.cookie, cookie.hasRequest);
+    }
+    this.updateAffectedResourceCount(count);
+  }
+
+  /**
+   * @param {!Protocol.Audits.AffectedCookie} cookie
+   * @param {boolean} hasAssociatedRequest
+   */
+  appendAffectedCookie(cookie, hasAssociatedRequest) {
+    const element = document.createElement('tr');
+    element.classList.add('affected-resource-cookie');
+    const name = document.createElement('td');
+    if (hasAssociatedRequest) {
+      name.appendChild(UI.UIUtils.createTextButton(cookie.name, () => {
+        Network.NetworkPanel.NetworkPanel.revealAndFilter([
+          {
+            filterType: 'cookie-domain',
+            filterValue: cookie.domain,
+          },
+          {
+            filterType: 'cookie-name',
+            filterValue: cookie.name,
+          },
+          {
+            filterType: 'cookie-path',
+            filterValue: cookie.path,
+          }
+        ]);
+      }, 'link-style devtools-link'));
+    } else {
+      name.textContent = cookie.name;
+    }
+    const info = document.createElement('td');
+    info.classList.add('affected-resource-cookie-info');
+    info.textContent = `${cookie.domain}${cookie.path}`;
 
     element.appendChild(name);
     element.appendChild(info);
     this._affectedResources.appendChild(element);
   }
 
+  /**
+   * @override
+   */
   update() {
     this.clear();
-    this._appendAffectedCookies(this._issue.cookies());
+    this._appendAffectedCookies(this._issue.cookiesWithRequestIndicator());
   }
 }
 
@@ -169,7 +295,7 @@ class AffectedRequestsView extends AffectedResourcesView {
   _appendAffectedRequests(affectedRequests) {
     let count = 0;
     for (const affectedRequest of affectedRequests) {
-      for (const request of self.SDK.networkLog.requestsForId(affectedRequest.requestId)) {
+      for (const request of this._resolveRequestId(affectedRequest.requestId)) {
         count++;
         this._appendNetworkRequest(request);
       }
@@ -183,33 +309,170 @@ class AffectedRequestsView extends AffectedResourcesView {
    */
   _appendNetworkRequest(request) {
     const nameText = request.name().trimMiddle(100);
-    const nameElement = createElementWithClass('td', '');
+    const nameElement = document.createElement('td');
     const tab = issueTypeToNetworkHeaderMap.get(this._issue.getCategory()) || Network.NetworkItemView.Tabs.Headers;
     nameElement.appendChild(UI.UIUtils.createTextButton(nameText, () => {
       Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, tab);
     }, 'link-style devtools-link'));
-    const element = createElementWithClass('tr', 'affected-resource-request');
+    const element = document.createElement('tr');
+    element.classList.add('affected-resource-request');
     element.appendChild(nameElement);
     this._affectedResources.appendChild(element);
   }
 
+  /**
+   * @override
+   */
   update() {
     this.clear();
     this._appendAffectedRequests(this._issue.requests());
   }
 }
 
+class AffectedSourcesView extends AffectedResourcesView {
+  /**
+   * @param {!IssueView} parent
+   * @param {!SDK.Issue.Issue} issue
+   */
+  constructor(parent, issue) {
+    super(parent, {singular: ls`source`, plural: ls`sources`});
+    /** @type {!SDK.Issue.Issue} */
+    this._issue = issue;
+  }
+
+  /**
+   * @param {!Iterable<!SDK.Issue.AffectedSource>} affectedSources
+   */
+  _appendAffectedSources(affectedSources) {
+    let count = 0;
+    for (const source of affectedSources) {
+      this._appendAffectedSource(source);
+      count++;
+    }
+    this.updateAffectedResourceCount(count);
+  }
+
+  /**
+   * @param {!SDK.Issue.AffectedSource} source
+   */
+  _appendAffectedSource({url, lineNumber, columnNumber}) {
+    const cellElement = document.createElement('td');
+    // TODO(chromium:1072331): Check feasibility of plumping through scriptId for `linkifyScriptLocation`
+    //                         to support source maps and formatted scripts.
+    const linkifierURLOptions =
+        /** @type {!Components.Linkifier.LinkifyURLOptions} */ ({columnNumber, lineNumber, tabStop: true});
+    const anchorElement = Components.Linkifier.Linkifier.linkifyURL(url, linkifierURLOptions);
+    cellElement.appendChild(anchorElement);
+    const rowElement = document.createElement('tr');
+    rowElement.appendChild(cellElement);
+    this._affectedResources.appendChild(rowElement);
+  }
+
+  /**
+   * @override
+   */
+  update() {
+    this.clear();
+    this._appendAffectedSources(this._issue.sources());
+  }
+}
+
 /** @type {!Map<!SDK.Issue.IssueCategory, !Network.NetworkItemView.Tabs>} */
 const issueTypeToNetworkHeaderMap = new Map([
   [SDK.Issue.IssueCategory.SameSiteCookie, Network.NetworkItemView.Tabs.Cookies],
-  [SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy, Network.NetworkItemView.Tabs.Headers]
+  [SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy, Network.NetworkItemView.Tabs.Headers],
+  [SDK.Issue.IssueCategory.MixedContent, Network.NetworkItemView.Tabs.Headers]
 ]);
+
+class AffectedMixedContentView extends AffectedResourcesView {
+  /**
+   * @param {!IssueView} parent
+   * @param {!SDK.Issue.Issue} issue
+   */
+  constructor(parent, issue) {
+    super(parent, {singular: ls`resource`, plural: ls`resources`});
+    /** @type {!SDK.Issue.Issue} */
+    this._issue = issue;
+  }
+
+  /**
+   * @param {!Iterable<!Protocol.Audits.MixedContentIssueDetails>} mixedContents
+   */
+  _appendAffectedMixedContents(mixedContents) {
+    const header = document.createElement('tr');
+
+    const name = document.createElement('td');
+    name.classList.add('affected-resource-header');
+    name.textContent = ls`Name`;
+    header.appendChild(name);
+
+    const info = document.createElement('td');
+    info.classList.add('affected-resource-header');
+    info.textContent = ls`Restriction Status`;
+    header.appendChild(info);
+
+    this._affectedResources.appendChild(header);
+
+    let count = 0;
+    for (const mixedContent of mixedContents) {
+      if (mixedContent.request) {
+        this._resolveRequestId(mixedContent.request.requestId).forEach(networkRequest => {
+          this.appendAffectedMixedContent(mixedContent, networkRequest);
+          count++;
+        });
+      } else {
+        this.appendAffectedMixedContent(mixedContent);
+        count++;
+      }
+    }
+    this.updateAffectedResourceCount(count);
+  }
+
+  /**
+   * @param {!Protocol.Audits.MixedContentIssueDetails} mixedContent
+   * @param {?SDK.NetworkRequest.NetworkRequest} maybeRequest
+   */
+  appendAffectedMixedContent(mixedContent, maybeRequest = null) {
+    const element = document.createElement('tr');
+    element.classList.add('affected-resource-mixed-content');
+    const filename = extractShortPath(mixedContent.insecureURL);
+
+    const name = document.createElement('td');
+    if (maybeRequest) {
+      const request = maybeRequest;  // re-assignment to make type checker happy
+      const tab = issueTypeToNetworkHeaderMap.get(this._issue.getCategory()) || Network.NetworkItemView.Tabs.Headers;
+      name.appendChild(UI.UIUtils.createTextButton(filename, () => {
+        Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, tab);
+      }, 'link-style devtools-link'));
+    } else {
+      name.classList.add('affected-resource-mixed-content-info');
+      name.textContent = filename;
+    }
+    UI.Tooltip.Tooltip.install(name, mixedContent.insecureURL);
+    element.appendChild(name);
+
+    const status = document.createElement('td');
+    status.classList.add('affected-resource-mixed-content-info');
+    status.textContent = SDK.MixedContentIssue.MixedContentIssue.translateStatus(mixedContent.resolutionStatus);
+    element.appendChild(status);
+
+    this._affectedResources.appendChild(element);
+  }
+
+  /**
+   * @override
+   */
+  update() {
+    this.clear();
+    this._appendAffectedMixedContents(this._issue.mixedContents());
+  }
+}
 
 class IssueView extends UI.TreeOutline.TreeElement {
   /**
    *
    * @param {!IssuesPaneImpl} parent
-   * @param {!SDK.Issue.Issue} issue
+   * @param {!AggregatedIssue} issue
    * @param {!SDK.Issue.IssueDescription} description
    */
   constructor(parent, issue, description) {
@@ -225,7 +488,12 @@ class IssueView extends UI.TreeOutline.TreeElement {
 
     this._affectedResources = this._createAffectedResources();
     this._affectedCookiesView = new AffectedCookiesView(this, this._issue);
+    this._affectedElementsView = new AffectedElementsView(this, this._issue);
     this._affectedRequestsView = new AffectedRequestsView(this, this._issue);
+    this._affectedMixedContentView = new AffectedMixedContentView(this, this._issue);
+    this._affectedSourcesView = new AffectedSourcesView(this, this._issue);
+
+    this._aggregatedIssuesCount = null;
   }
 
   /**
@@ -237,9 +505,15 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this.appendChild(this._affectedResources);
     this.appendAffectedResource(this._affectedCookiesView);
     this._affectedCookiesView.update();
+    this.appendAffectedResource(this._affectedElementsView);
+    this._affectedElementsView.update();
     this.appendAffectedResource(this._affectedRequestsView);
     this._affectedRequestsView.update();
-    this._createReadMoreLink();
+    this.appendAffectedResource(this._affectedMixedContentView);
+    this._affectedMixedContentView.update();
+    this.appendAffectedResource(this._affectedSourcesView);
+    this._affectedSourcesView.update();
+    this._createReadMoreLinks();
 
     this.updateAffectedResourceVisibility();
   }
@@ -252,21 +526,37 @@ class IssueView extends UI.TreeOutline.TreeElement {
   }
 
   _appendHeader() {
-    const header = createElementWithClass('div', 'header');
+    const header = document.createElement('div');
+    header.classList.add('header');
     const icon = UI.Icon.Icon.create('largeicon-breaking-change', 'icon');
+    this._aggregatedIssuesCount = /** @type {!HTMLElement} */ (document.createElement('span'));
+    const countAdorner = Elements.Adorner.Adorner.create(this._aggregatedIssuesCount, 'countWrapper');
+    countAdorner.classList.add('aggregated-issues-count');
+    this._aggregatedIssuesCount.textContent = `${this._issue.getAggregatedIssuesCount()}`;
     header.appendChild(icon);
+    header.appendChild(countAdorner);
 
-    const title = createElementWithClass('div', 'title');
+    const title = document.createElement('div');
+    title.classList.add('title');
     title.textContent = this._description.title;
     header.appendChild(title);
 
     this.listItemElement.appendChild(header);
   }
 
+  _updateAggregatedIssuesCount() {
+    if (this._aggregatedIssuesCount) {
+      this._aggregatedIssuesCount.textContent = `${this._issue.getAggregatedIssuesCount()}`;
+    }
+  }
+
   updateAffectedResourceVisibility() {
     const noCookies = !this._affectedCookiesView || this._affectedCookiesView.isEmpty();
+    const noElements = !this._affectedElementsView || this._affectedElementsView.isEmpty();
     const noRequests = !this._affectedRequestsView || this._affectedRequestsView.isEmpty();
-    const noResources = noCookies && noRequests;
+    const noMixedContent = !this._affectedMixedContentView || this._affectedMixedContentView.isEmpty();
+    const noSources = !this._affectedSourcesView || this._affectedSourcesView.isEmpty();
+    const noResources = noCookies && noElements && noRequests && noMixedContent && noSources;
     this._affectedResources.hidden = noResources;
   }
 
@@ -287,18 +577,6 @@ class IssueView extends UI.TreeOutline.TreeElement {
   }
 
   _createBody() {
-    const kindAndCode = new UI.TreeOutline.TreeElement();
-    kindAndCode.setCollapsible(false);
-    kindAndCode.selectable = false;
-    kindAndCode.listItemElement.classList.add('kind-code-line');
-    // TODO(chromium:1072331): Re-enable rendering of the issue kind once there is more than a
-    //                         single kind and all issue codes are properly classified post-MVP launch.
-    const code = createElementWithClass('span', 'issue-code');
-    code.textContent = this._issue.code();
-    kindAndCode.listItemElement.appendChild(code);
-
-    this.appendChild(kindAndCode);
-
     const messageElement = new UI.TreeOutline.TreeElement();
     messageElement.setCollapsible(false);
     messageElement.selectable = false;
@@ -307,23 +585,34 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this.appendChild(messageElement);
   }
 
-  _createReadMoreLink() {
-    const link = UI.XLink.XLink.create(this._description.link, ls`Learn more: ${this._description.linkTitle}`, 'link');
-    const linkIcon = UI.Icon.Icon.create('largeicon-link', 'link-icon');
-    link.prepend(linkIcon);
+  _createReadMoreLinks() {
+    if (this._description.links.length === 0) {
+      return;
+    }
     const linkWrapper = new UI.TreeOutline.TreeElement();
     linkWrapper.setCollapsible(false);
     linkWrapper.listItemElement.classList.add('link-wrapper');
-    linkWrapper.listItemElement.appendChild(link);
+
+    const linkList = linkWrapper.listItemElement.createChild('ul', 'link-list');
+    for (const description of this._description.links) {
+      const link = UI.XLink.XLink.create(description.link, ls`Learn more: ${description.linkTitle}`, 'link');
+      const linkIcon = UI.Icon.Icon.create('largeicon-link', 'link-icon');
+      link.prepend(linkIcon);
+
+      const linkListItem = linkList.createChild('li');
+      linkListItem.appendChild(link);
+    }
     this.appendChild(linkWrapper);
   }
 
   update() {
     this._affectedCookiesView.update();
     this._affectedRequestsView.update();
+    this._affectedMixedContentView.update();
+    this._affectedSourcesView.update();
     this.updateAffectedResourceVisibility();
+    this._updateAggregatedIssuesCount();
   }
-
 
   /**
    * @param {(boolean|undefined)=} expand - Expands the issue if `true`, collapses if `false`, toggles collapse if undefined
@@ -355,21 +644,19 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     this._issuesTree.contentElement.classList.add('issues');
     this.contentElement.appendChild(this._issuesTree.element);
 
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
-    this._model = null;
-    if (mainTarget) {
-      this._model = mainTarget.model(SDK.IssuesModel.IssuesModel);
-      if (this._model) {
-        this._model.addEventListener(SDK.IssuesModel.Events.AggregatedIssueUpdated, this._issueUpdated, this);
-        this._model.addEventListener(SDK.IssuesModel.Events.FullUpdateRequired, this._fullUpdate, this);
-        this._model.ensureEnabled();
-      }
-    }
+    this._noIssuesMessageDiv = document.createElement('div');
+    this._noIssuesMessageDiv.classList.add('issues-pane-no-issues');
+    this._noIssuesMessageDiv.textContent = ls`No issues detected so far`;
+    this.contentElement.appendChild(this._noIssuesMessageDiv);
 
-    if (this._model) {
-      for (const issue of this._model.aggregatedIssues()) {
-        this._updateIssueView(issue);
-      }
+    /** @type {!BrowserSDK.IssuesManager.IssuesManager} */
+    this._issuesManager = BrowserSDK.IssuesManager.IssuesManager.instance();
+    /** @type {!IssueAggregator} */
+    this._aggregator = new IssueAggregator(this._issuesManager);
+    this._aggregator.addEventListener(IssueAggregatorEvents.AggregatedIssueUpdated, this._issueUpdated, this);
+    this._aggregator.addEventListener(IssueAggregatorEvents.FullUpdateRequired, this._fullUpdate, this);
+    for (const issue of this._aggregator.aggregatedIssues()) {
+      this._updateIssueView(issue);
     }
     this._updateCounts();
 
@@ -388,7 +675,8 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     new UI.Toolbar.Toolbar('issues-toolbar-left', toolbarContainer);
     const rightToolbar = new UI.Toolbar.Toolbar('issues-toolbar-right', toolbarContainer);
     rightToolbar.appendSeparator();
-    const toolbarWarnings = createElementWithClass('div', 'toolbar-warnings');
+    const toolbarWarnings = document.createElement('div');
+    toolbarWarnings.classList.add('toolbar-warnings');
     const breakingChangeIcon = UI.Icon.Icon.create('largeicon-breaking-change');
     toolbarWarnings.appendChild(breakingChangeIcon);
     const toolbarIssuesCount = toolbarWarnings.createChild('span', 'warnings-count-label');
@@ -397,20 +685,25 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     /** @param {number} count */
     const updateToolbarIssuesCount = count => {
       toolbarIssuesCount.textContent = `${count}`;
+      if (count === 1) {
+        toolbarIssuesItem.setTitle(ls`Issues pertaining to ${count} operation detected.`);
+      } else {
+        toolbarIssuesItem.setTitle(ls`Issues pertaining to ${count} operations detected.`);
+      }
     };
     return {toolbarContainer, updateToolbarIssuesCount};
   }
 
   /**
-   * @param {!{data: !SDK.Issue.Issue}} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _issueUpdated(event) {
-    const issue = /** @type {!SDK.Issue.Issue} */ (event.data);
+    const issue = /** @type {!AggregatedIssue} */ (event.data);
     this._updateIssueView(issue);
   }
 
   /**
-   * @param {!SDK.Issue.Issue} issue
+   * @param {!AggregatedIssue} issue
    */
   _updateIssueView(issue) {
     const description = issue.getDescription();
@@ -433,14 +726,31 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
       this._issuesTree.removeChild(view);
     }
     this._issueViews.clear();
-    for (const issue of this._model.aggregatedIssues()) {
-      this._updateIssueView(issue);
+    if (this._aggregator) {
+      for (const issue of this._aggregator.aggregatedIssues()) {
+        this._updateIssueView(issue);
+      }
     }
     this._updateCounts();
   }
 
   _updateCounts() {
-    this._updateToolbarIssuesCount(this._model.numberOfAggregatedIssues());
+    const count = this._issuesManager.numberOfIssues();
+    this._updateToolbarIssuesCount(count);
+    this._showIssuesTreeOrNoIssuesDetectedMessage(count);
+  }
+
+  /**
+   * @param {number} issuesCount
+   */
+  _showIssuesTreeOrNoIssuesDetectedMessage(issuesCount) {
+    if (issuesCount > 0 || this._issuesManager.reloadForAccurateInformationRequired()) {
+      this._issuesTree.element.hidden = false;
+      this._noIssuesMessageDiv.style.display = 'none';
+    } else {
+      this._issuesTree.element.hidden = true;
+      this._noIssuesMessageDiv.style.display = 'flex';
+    }
   }
 
   /**
@@ -449,12 +759,13 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
   revealByCode(code) {
     const issueView = this._issueViews.get(code);
     if (issueView) {
+      issueView.expand();
       issueView.reveal();
     }
   }
 
   _showReloadInfobarIfNeeded() {
-    if (!this._model || !this._model.reloadForAccurateInformationRequired()) {
+    if (!this._issuesManager.reloadForAccurateInformationRequired()) {
       return;
     }
 
@@ -470,7 +781,7 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
 
     const infobar = new UI.Infobar.Infobar(
         UI.Infobar.Type.Warning,
-        ls`Some issues might be missing or incomplete, reload the inspected page to get full information`,
+        ls`Some issues might be missing or incomplete, reload the inspected page to get the full information.`,
         [{text: ls`Reload page`, highlight: false, delegate: reload, dismiss: true}]);
 
     this._reloadInfobar = infobar;
@@ -480,7 +791,8 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
   /** @param {!UI.Infobar.Infobar} infobar */
   _attachReloadInfoBar(infobar) {
     if (!this._infoBarDiv) {
-      this._infoBarDiv = createElementWithClass('div', 'flex-none');
+      this._infoBarDiv = document.createElement('div');
+      this._infoBarDiv.classList.add('flex-none');
       this.contentElement.insertBefore(this._infoBarDiv, this._issuesToolbarContainer.nextSibling);
     }
     this._infoBarDiv.appendChild(infobar.element);

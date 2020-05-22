@@ -1,4 +1,4 @@
-// use goog.dependencies_ to list all relevant task namespaces
+// use goog.debugLoader_.dependencies_ to list all relevant task namespaces
 // we rely on the fact that we are running unoptimized clojurescript code here
 // so all namespaces are present with original names
 
@@ -8,10 +8,10 @@ function pathToNamespace(path) {
 
 function getIndex(re) {
     const index = [];
-    const container = goog.dependencies_.requires;
-    for (const item in container) {
-        if (container.hasOwnProperty(item)) {
-            const m = item.match(re);
+    const deps = goog.debugLoader_.dependencies_;
+    for (const dep in deps) {
+        if (deps.hasOwnProperty(dep)) {
+            const m = dep.match(re);
             if (m) {
                 const path = m[1];
                 index.push(pathToNamespace(path));
@@ -105,7 +105,7 @@ function genScenariosMarkup(runnerUrl, url) {
     return lines.join("\n");
 }
 
-const tasks = getIndex(/tasks\/(.*)\.js/);
+const tasks = getIndex(/.*\/tasks\/(.*)\.js/);
 const tasksMarkup = genTaskList("runner.html", tasks.sort());
 const scenariosMarkup = genScenariosMarkup("runner.html", "scenarios");
 

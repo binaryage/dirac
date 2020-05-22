@@ -979,12 +979,11 @@
                         "WarnSameSiteUnspecifiedCrossSiteContext",
                         "WarnSameSiteNoneInsecure",
                         "WarnSameSiteUnspecifiedLaxAllowUnsafe",
-                        "WarnSameSiteCrossSchemeSecureUrlMethodUnsafe",
-                        "WarnSameSiteCrossSchemeSecureUrlLax",
-                        "WarnSameSiteCrossSchemeSecureUrlStrict",
-                        "WarnSameSiteCrossSchemeInsecureUrlMethodUnsafe",
-                        "WarnSameSiteCrossSchemeInsecureUrlLax",
-                        "WarnSameSiteCrossSchemeInsecureUrlStrict"
+                        "WarnSameSiteStrictLaxDowngradeStrict",
+                        "WarnSameSiteStrictCrossDowngradeStrict",
+                        "WarnSameSiteStrictCrossDowngradeLax",
+                        "WarnSameSiteLaxCrossDowngradeStrict",
+                        "WarnSameSiteLaxCrossDowngradeLax"
                     ]
                 },
                 {
@@ -6387,6 +6386,61 @@
                         "pause",
                         "pauseIfNetworkFetchesPending"
                     ]
+                },
+                {
+                    "id": "UserAgentBrandVersion",
+                    "description": "Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "brand",
+                            "type": "string"
+                        },
+                        {
+                            "name": "version",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "id": "UserAgentMetadata",
+                    "description": "Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "brands",
+                            "type": "array",
+                            "items": {
+                                "$ref": "UserAgentBrandVersion"
+                            }
+                        },
+                        {
+                            "name": "fullVersion",
+                            "type": "string"
+                        },
+                        {
+                            "name": "platform",
+                            "type": "string"
+                        },
+                        {
+                            "name": "platformVersion",
+                            "type": "string"
+                        },
+                        {
+                            "name": "architecture",
+                            "type": "string"
+                        },
+                        {
+                            "name": "model",
+                            "type": "string"
+                        },
+                        {
+                            "name": "mobile",
+                            "type": "boolean"
+                        }
+                    ]
                 }
             ],
             "commands": [
@@ -6797,6 +6851,13 @@
                             "description": "The platform navigator.platform should return.",
                             "optional": true,
                             "type": "string"
+                        },
+                        {
+                            "name": "userAgentMetadata",
+                            "description": "To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "UserAgentMetadata"
                         }
                     ]
                 }
@@ -10512,6 +10573,13 @@
                             "description": "The platform navigator.platform should return.",
                             "optional": true,
                             "type": "string"
+                        },
+                        {
+                            "name": "userAgentMetadata",
+                            "description": "To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "Emulation.UserAgentMetadata"
                         }
                     ]
                 }
@@ -11024,8 +11092,8 @@
                             "$ref": "RequestId"
                         },
                         {
-                            "name": "blockedCookies",
-                            "description": "A list of cookies which will not be sent with this request along with corresponding reasons\nfor blocking.",
+                            "name": "associatedCookies",
+                            "description": "A list of cookies potentially associated to the requested URL. This includes both cookies sent with\nthe request and the ones not sent; the latter are distinguished by having blockedReason field set.",
                             "type": "array",
                             "items": {
                                 "$ref": "BlockedCookieWithReason"
@@ -11157,6 +11225,45 @@
                             "description": "The grid layout color (default: transparent).",
                             "optional": true,
                             "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "colorFormat",
+                            "description": "The color format used to format color styles (default: hex).",
+                            "optional": true,
+                            "$ref": "ColorFormat"
+                        }
+                    ]
+                },
+                {
+                    "id": "ColorFormat",
+                    "type": "string",
+                    "enum": [
+                        "rgb",
+                        "hsl",
+                        "hex"
+                    ]
+                },
+                {
+                    "id": "HingeConfig",
+                    "description": "Configuration for dual screen hinge",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "rect",
+                            "description": "A rectangle represent hinge",
+                            "$ref": "DOM.Rect"
+                        },
+                        {
+                            "name": "contentColor",
+                            "description": "The content box highlight fill color (default: a dark color).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "outlineColor",
+                            "description": "The content box highlight outline color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
                         }
                     ]
                 },
@@ -11201,6 +11308,12 @@
                             "description": "Whether to include style info.",
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "colorFormat",
+                            "description": "The color format to get config with (default: hex)",
+                            "optional": true,
+                            "$ref": "ColorFormat"
                         }
                     ],
                     "returns": [
@@ -11447,6 +11560,18 @@
                             "name": "show",
                             "description": "Whether to paint size or not.",
                             "type": "boolean"
+                        }
+                    ]
+                },
+                {
+                    "name": "setShowHinge",
+                    "description": "Add a dual screen device hinge",
+                    "parameters": [
+                        {
+                            "name": "hingeConfig",
+                            "description": "hinge data, null means hideHinge",
+                            "optional": true,
+                            "$ref": "HingeConfig"
                         }
                     ]
                 }
@@ -12004,6 +12129,17 @@
                         "pageBlockInterstitial",
                         "reload",
                         "anchorClick"
+                    ]
+                },
+                {
+                    "id": "ClientNavigationDisposition",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "currentTab",
+                        "newTab",
+                        "newWindow",
+                        "download"
                     ]
                 },
                 {
@@ -13228,6 +13364,11 @@
                             "name": "url",
                             "description": "The destination URL for the requested navigation.",
                             "type": "string"
+                        },
+                        {
+                            "name": "disposition",
+                            "description": "The disposition for the navigation.",
+                            "$ref": "ClientNavigationDisposition"
                         }
                     ]
                 },
@@ -16805,50 +16946,73 @@
                     "type": "number"
                 },
                 {
-                    "id": "PlayerProperty",
-                    "description": "Player Property type",
+                    "id": "PlayerMessage",
+                    "description": "Have one type per entry in MediaLogRecord::Type\nCorresponds to kMessage",
                     "type": "object",
                     "properties": [
                         {
-                            "name": "name",
-                            "type": "string"
+                            "name": "level",
+                            "description": "Keep in sync with MediaLogMessageLevel\nWe are currently keeping the message level 'error' separate from the\nPlayerError type because right now they represent different things,\nthis one being a DVLOG(ERROR) style log message that gets printed\nbased on what log level is selected in the UI, and the other is a\nrepresentation of a media::PipelineStatus object. Soon however we're\ngoing to be moving away from using PipelineStatus for errors and\nintroducing a new error type which should hopefully let us integrate\nthe error log level into the PlayerError type.",
+                            "type": "string",
+                            "enum": [
+                                "error",
+                                "warning",
+                                "info",
+                                "debug"
+                            ]
                         },
                         {
-                            "name": "value",
-                            "optional": true,
+                            "name": "message",
                             "type": "string"
                         }
                     ]
                 },
                 {
-                    "id": "PlayerEventType",
-                    "description": "Break out events into different types",
-                    "type": "string",
-                    "enum": [
-                        "errorEvent",
-                        "triggeredEvent",
-                        "messageEvent"
-                    ]
-                },
-                {
-                    "id": "PlayerEvent",
+                    "id": "PlayerProperty",
+                    "description": "Corresponds to kMediaPropertyChange",
                     "type": "object",
                     "properties": [
-                        {
-                            "name": "type",
-                            "$ref": "PlayerEventType"
-                        },
-                        {
-                            "name": "timestamp",
-                            "description": "Events are timestamped relative to the start of the player creation\nnot relative to the start of playback.",
-                            "$ref": "Timestamp"
-                        },
                         {
                             "name": "name",
                             "type": "string"
                         },
                         {
                             "name": "value",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "id": "PlayerEvent",
+                    "description": "Corresponds to kMediaEventTriggered",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "timestamp",
+                            "$ref": "Timestamp"
+                        },
+                        {
+                            "name": "value",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "id": "PlayerError",
+                    "description": "Corresponds to kMediaError",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "type",
+                            "type": "string",
+                            "enum": [
+                                "pipeline_error",
+                                "media_error"
+                            ]
+                        },
+                        {
+                            "name": "errorCode",
+                            "description": "When this switches to using media::Status instead of PipelineStatus\nwe can remove \"errorCode\" and replace it with the fields from\na Status instance. This also seems like a duplicate of the error\nlevel enum - there is a todo bug to have that level removed and\nuse this instead. (crbug.com/1068454)",
                             "type": "string"
                         }
                     ]
@@ -16885,6 +17049,40 @@
                             "type": "array",
                             "items": {
                                 "$ref": "PlayerEvent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "playerMessagesLogged",
+                    "description": "Send a list of any messages that need to be delivered.",
+                    "parameters": [
+                        {
+                            "name": "playerId",
+                            "$ref": "PlayerId"
+                        },
+                        {
+                            "name": "messages",
+                            "type": "array",
+                            "items": {
+                                "$ref": "PlayerMessage"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "playerErrorsRaised",
+                    "description": "Send a list of any errors that need to be delivered.",
+                    "parameters": [
+                        {
+                            "name": "playerId",
+                            "$ref": "PlayerId"
+                        },
+                        {
+                            "name": "errors",
+                            "type": "array",
+                            "items": {
+                                "$ref": "PlayerError"
                             }
                         }
                     ]
@@ -17222,6 +17420,30 @@
                         "JavaScript",
                         "WebAssembly"
                     ]
+                },
+                {
+                    "id": "DebugSymbols",
+                    "description": "Debug symbols available for a wasm script.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "type",
+                            "description": "Type of the debug symbols.",
+                            "type": "string",
+                            "enum": [
+                                "None",
+                                "SourceMap",
+                                "EmbeddedDWARF",
+                                "ExternalDWARF"
+                            ]
+                        },
+                        {
+                            "name": "externalURL",
+                            "description": "URL of the external symbol source.",
+                            "optional": true,
+                            "type": "string"
+                        }
+                    ]
                 }
             ],
             "commands": [
@@ -17320,6 +17542,43 @@
                             "description": "Whether to throw an exception if side effect cannot be ruled out during evaluation.",
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "timeout",
+                            "description": "Terminate execution after timing out (number of milliseconds).",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "Runtime.TimeDelta"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "result",
+                            "description": "Object wrapper for the evaluation result.",
+                            "$ref": "Runtime.RemoteObject"
+                        },
+                        {
+                            "name": "exceptionDetails",
+                            "description": "Exception details.",
+                            "optional": true,
+                            "$ref": "Runtime.ExceptionDetails"
+                        }
+                    ]
+                },
+                {
+                    "name": "executeWasmEvaluator",
+                    "description": "Execute a Wasm Evaluator module on a given call frame.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "callFrameId",
+                            "description": "WebAssembly call frame identifier to evaluate on.",
+                            "$ref": "CallFrameId"
+                        },
+                        {
+                            "name": "evaluator",
+                            "description": "Code of the evaluator module.",
+                            "type": "binary"
                         },
                         {
                             "name": "timeout",
@@ -18166,6 +18425,13 @@
                             "experimental": true,
                             "optional": true,
                             "$ref": "Debugger.ScriptLanguage"
+                        },
+                        {
+                            "name": "debugSymbols",
+                            "description": "If the scriptLanguage is WebASsembly, the source of debug symbols for the module.",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "Debugger.DebugSymbols"
                         }
                     ]
                 }
@@ -19005,7 +19271,8 @@
                                 "i64",
                                 "f32",
                                 "f64",
-                                "v128"
+                                "v128",
+                                "anyref"
                             ]
                         },
                         {

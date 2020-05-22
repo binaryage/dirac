@@ -4,11 +4,32 @@
 
 import {assert} from 'chai';
 import {describe, it} from 'mocha';
+import * as puppeteer from 'puppeteer';
 
 import {$, click, getBrowserAndPages, resourcesPath} from '../../shared/helper.js';
-import {addBreakpointForLine, openSourceCodeEditorForFile, RESUME_BUTTON, retrieveTopCallFrameScriptLocation} from '../helpers/sources-helpers.js';
+import {addBreakpointForLine, clearSourceFilesAdded, getBreakpointDecorators, getNonBreakableLines, listenForSourceFilesAdded, openSourceCodeEditorForFile, openSourcesPanel, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
 
 describe('Source Tab', async () => {
+  it('shows the correct wasm source on load and reload', async () => {
+    async function checkSources(frontend: puppeteer.Page) {
+      await waitForAdditionalSourceFiles(frontend, 2);
+      const capturedFileNames = await retrieveSourceFilesAdded(frontend);
+      assert.deepEqual(
+          capturedFileNames,
+          ['/test/e2e/resources/sources/wasm/call-to-add-wasm.html', '/test/e2e/resources/sources/wasm/add.wasm']);
+    }
+    const {target, frontend} = getBrowserAndPages();
+    await openSourcesPanel();
+
+    await listenForSourceFilesAdded(frontend);
+    await target.goto(`${resourcesPath}/sources/wasm/call-to-add-wasm.html`);
+    await checkSources(frontend);
+
+    await clearSourceFilesAdded(frontend);
+    await target.reload();
+    await checkSources(frontend);
+  });
+
   it('can add a breakpoint in raw wasm', async () => {
     const {target, frontend} = getBrowserAndPages();
 
@@ -18,9 +39,29 @@ describe('Source Tab', async () => {
     const scriptLocation = await retrieveTopCallFrameScriptLocation('main();', target);
     assert.deepEqual(scriptLocation, 'add.wasm:5');
   });
+
+  it('cannot set a breakpoint on non-breakable line in raw wasm', async () => {
+    const {target, frontend} = getBrowserAndPages();
+
+    await openSourceCodeEditorForFile(target, 'add.wasm', 'wasm/call-to-add-wasm.html');
+    assert.deepEqual(await getNonBreakableLines(frontend), [
+      1,
+      2,
+      3,
+      4,
+      9,
+    ]);
+    // Line 3 is non-breakable.
+    await addBreakpointForLine(frontend, 3, true);
+    assert.deepEqual(await getBreakpointDecorators(frontend), []);
+    // Line 5 is breakable.
+    await addBreakpointForLine(frontend, 5);
+    assert.deepEqual(await getBreakpointDecorators(frontend), [5]);
+  });
 });
 
-describe('Raw-Wasm', async () => {
+// Disabled to the Chromium binary -> DevTools roller working again.
+describe.skip('[crbug.com/1079328] Raw-Wasm', async () => {
   it('displays correct location in Wasm source', async () => {
     const {target, frontend} = getBrowserAndPages();
 
