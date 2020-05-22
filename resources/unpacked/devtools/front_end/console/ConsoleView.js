@@ -727,7 +727,16 @@ export class ConsoleView extends UI.Widget.VBox {
     const namespace = this._currentNamespace || "";
     const compiler = this._currentCompiler;
     const placeholderEl = this._buildPromptPlaceholder(namespace, compiler);
+    const cm = promptDescriptor.codeMirror;
+    // code mirror won't switch the placeholder if the input has focus
+    const hadFocus = cm.hasFocus();
+    if (hadFocus) {
+      cm.display.input.blur();
+    }
     promptDescriptor.codeMirror.setOption("placeholder", placeholderEl);
+    if (hadFocus) {
+      cm.focus();
+    }
   }
 
   /**
