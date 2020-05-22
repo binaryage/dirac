@@ -1527,6 +1527,10 @@ all_devtools_modules = [
   "third_party/codemirror/package/addon/fold/foldcode.js",
   "third_party/codemirror/package/addon/fold/foldgutter.js",
   "third_party/codemirror/package/addon/fold/brace-fold.js",
+  # dirac - start
+  "third_party/codemirror/package/addon/runmode/runmode.js",
+  "third_party/codemirror/package/addon/display/placeholder.js",
+  # dirac - end
   "third_party/wasmparser/package/esm/WasmDis.js",
   "third_party/wasmparser/package/esm/WasmParser.js",
   "timeline/UIDevtoolsUtils.js",
@@ -1641,8 +1645,6 @@ all_devtools_modules = [
   "workspace/WorkspaceImpl.js",
   # dirac - start
   "console/ConsoleDiracPrompt.js",
-  "cm/placeholder.js",
-  "cm/runmode.js",
   "dirac/parinfer.js",
   "dirac/parinfer-codemirror.js",
   "dirac/keysim.js",
