@@ -889,7 +889,6 @@ generated_test_modules = [
   "$resources_out_dir/extensions_test_runner/extensions_test_runner_module.js",
   "$resources_out_dir/heap_profiler_test_runner/heap_profiler_test_runner_module.js",
   "$resources_out_dir/heap_snapshot_worker/heap_snapshot_worker_module.js",
-  "$resources_out_dir/integration_test_runner.html",
   "$resources_out_dir/integration_test_runner.js",
   "$resources_out_dir/layers_test_runner/layers_test_runner_module.js",
   "$resources_out_dir/network_test_runner/network_test_runner_module.js",
@@ -957,6 +956,10 @@ devtools_frontend_resources_deps = [
   ":copy_wasm_deps",
   ":devtools_extension_api",
   "front_end",
+
+  # Required for layout tests, which depend on the existence of `integration_test_runner.html`
+  # If we don't add this dependency explicitly, the swarming bots don't pick up the file.
+  "front_end:front_end_html_entrypoints",
 ]
 
 if (is_debug) {
@@ -1189,7 +1192,6 @@ all_devtools_modules = [
   "extensions/ExtensionServer.js",
   "extensions/ExtensionTraceProvider.js",
   "extensions/ExtensionView.js",
-  "formatter_worker/acorn/acorn_loose.js",
   "formatter_worker/AcornTokenizer.js",
   "formatter_worker/CSSFormatter.js",
   "formatter_worker/CSSRuleParser.js",
@@ -1498,7 +1500,8 @@ all_devtools_modules = [
   "text_utils/TextCursor.js",
   "text_utils/TextRange.js",
   "text_utils/TextUtils.js",
-  "third_party/acorn/package/dist/acorn.js",
+  "third_party/acorn/package/dist/acorn.mjs",
+  "third_party/acorn-loose/package/dist/acorn-loose.mjs",
   "third_party/codemirror/package/addon/runmode/runmode-standalone.js",
   "third_party/codemirror/package/mode/clike/clike.js",
   "third_party/codemirror/package/mode/clojure/clojure.js",
@@ -1531,8 +1534,8 @@ all_devtools_modules = [
   "third_party/codemirror/package/addon/runmode/runmode.js",
   "third_party/codemirror/package/addon/display/placeholder.js",
   # dirac - end
-  "third_party/wasmparser/package/esm/WasmDis.js",
-  "third_party/wasmparser/package/esm/WasmParser.js",
+  "third_party/wasmparser/package/dist/esm/WasmDis.js",
+  "third_party/wasmparser/package/dist/esm/WasmParser.js",
   "timeline/UIDevtoolsUtils.js",
   "timeline/UIDevtoolsController.js",
   "timeline/TimelineUIUtils.js",
@@ -1742,6 +1745,8 @@ action("build_release_devtools") {
     "scripts/build/modular_build.py",
     "scripts/build/rjsmin.py",
   ]
+
+  deps = [ "front_end" ]
 
   inputs = helper_scripts + all_devtools_files + devtools_test_files +
            application_templates + all_worker_entrypoints +

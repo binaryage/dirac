@@ -9,6 +9,8 @@ import {$, $$, click, getBrowserAndPages, timeout, waitFor, waitForFunction} fro
 
 const SELECTED_TREE_ELEMENT_SELECTOR = '.selected[role="treeitem"]';
 const CSS_PROPERTY_NAME_SELECTOR = '.webkit-css-property';
+const CSS_STYLE_RULE_SELECTOR = '[aria-label*="css selector"]';
+const COMPUTED_PROPERTY_SELECTOR = '.computed-style-property';
 const ELEMENTS_PANEL_SELECTOR = '.panel[aria-label="elements"]';
 
 export const assertContentOfSelectedElementsNode = async (expectedTextContent: string) => {
@@ -62,9 +64,52 @@ export const waitForChildrenOfSelectedElementNode = async () => {
   await waitFor(`${SELECTED_TREE_ELEMENT_SELECTOR} + ol > li`);
 };
 
+export const focusElementsTree = async () => {
+  await click(SELECTED_TREE_ELEMENT_SELECTOR);
+};
+
+export const navigateToSidePane = async (paneName: string) => {
+  await click(`[aria-label="${paneName}"]`);
+  await waitFor(`[aria-label="${paneName} panel"]`);
+};
+
 export const waitForElementsStyleSection = async () => {
   // Wait for the file to be loaded and selectors to be shown
   await waitFor('.styles-selector');
+};
+
+export const waitForElementsComputedSection = async () => {
+  await waitFor(COMPUTED_PROPERTY_SELECTOR);
+};
+
+export const getContentOfComputedPane = async () => {
+  const pane = await $('.computed-properties');
+  const tree = await $('.tree-outline', pane);
+  return await tree.evaluate(node => node.textContent);
+};
+
+export const waitForComputedPaneChange = async (initialValue: string) => {
+  await waitForFunction(async () => {
+    const value = await getContentOfComputedPane();
+    return value !== initialValue;
+  }, 'The content of the computed pane did not change');
+};
+
+export const getAllPropertiesFromComputedPane = async () => {
+  const properties = await $$(COMPUTED_PROPERTY_SELECTOR);
+  return properties.evaluate((nodes: Element[]) => {
+    return nodes
+        .map(node => {
+          const name = node.querySelector('.property-name');
+          const value = node.querySelector('.property-value');
+
+          return (!name || !value) ? null : {
+            name: name.textContent ? name.textContent.trim().replace(/:$/, '') : '',
+            value: value.textContent ? value.textContent.trim().replace(/;$/, '') : '',
+          };
+        })
+        .filter(prop => !!prop);
+  });
 };
 
 export const expandSelectedNodeRecursively = async () => {
@@ -123,6 +168,32 @@ export const assertGutterDecorationForDomNodeExists = async () => {
 export const getAriaLabelSelectorFromPropertiesSelector = (selectorForProperties: string) =>
     `[aria-label="${selectorForProperties}, css selector"]`;
 
+
+export const waitForStyleRule = async (expectedSelector: string) => {
+  await waitForFunction(async () => {
+    const rules = await getDisplayedStyleRules();
+    return rules.map(rule => rule.selectorText).includes(expectedSelector);
+  }, `Style rule matching ${expectedSelector} did not appear`);
+};
+
+export const getDisplayedStyleRules = async () => {
+  const allRuleSelectors = await $$(CSS_STYLE_RULE_SELECTOR);
+
+  const rules = [];
+
+  for (const ruleSelector of (await allRuleSelectors.getProperties()).values()) {
+    const propertyNames = await getDisplayedCSSPropertyNames(ruleSelector);
+    const selectorText = await ruleSelector.evaluate((node: Element) => {
+      const attribute = node.getAttribute('aria-label') || '';
+      return attribute.substring(0, attribute.lastIndexOf(', css selector'));
+    });
+
+    rules.push({selectorText, propertyNames});
+  }
+
+  return rules;
+};
+
 export const getDisplayedCSSPropertyNames = async (propertiesSection: puppeteer.JSHandle<any>) => {
   const listNodesContent = (nodes: Element[]) => {
     const rawContent = nodes.map(node => node.textContent);
@@ -133,6 +204,33 @@ export const getDisplayedCSSPropertyNames = async (propertiesSection: puppeteer.
   const propertyNamesText = await cssPropertyNames.evaluate(listNodesContent);
   return propertyNamesText;
 };
+
+export const getStyleRule = async (selector: string) => {
+  return await $(`[aria-label="${selector}, css selector"]`);
+};
+
+export const getCSSPropertyInRule = async (ruleSection: puppeteer.JSHandle<any>, name: string) => {
+  const propertyNames = await $$(CSS_PROPERTY_NAME_SELECTOR, ruleSection);
+  return await propertyNames.evaluateHandle(async (nodes: Element[], name) => {
+    const propertyName = nodes.find(node => node.textContent === name);
+    return propertyName && propertyName.parentNode;
+  }, name);
+};
+
+export const focusCSSPropertyValue = async (selector: string, propertyName: string) => {
+  await waitForStyleRule(selector);
+  const rule = await getStyleRule(selector);
+  const property = await getCSSPropertyInRule(rule, propertyName);
+  await click('.value', {root: property});
+};
+
+export async function editCSSProperty(selector: string, propertyName: string, newValue: string) {
+  await focusCSSPropertyValue(selector, propertyName);
+
+  const {frontend} = getBrowserAndPages();
+  await frontend.keyboard.type(newValue);
+  await frontend.keyboard.press('Enter');
+}
 
 export const getBreadcrumbsTextContent = async () => {
   const crumbs = await $$('span.crumb');

@@ -45,6 +45,11 @@ import {ExtensionTraceProvider, TracingSession} from './ExtensionTraceProvider.j
 
 const extensionOriginSymbol = Symbol('extensionOrigin');
 
+const kAllowedOrigins = [
+  'chrome://newtab',
+  'chrome://new-tab-page',
+].map(url => (new URL(url)).origin);
+
 /**
  * @unrestricted
  */
@@ -429,7 +434,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
       return this._status.OK();
     }
 
-    const request = self.SDK.networkLog.requestForURL(message.url);
+    const request = SDK.NetworkLog.NetworkLog.instance().requestForURL(message.url);
     if (request) {
       Common.Revealer.reveal(request);
       return this._status.OK();
@@ -489,7 +494,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   async _onGetHAR() {
-    const requests = self.SDK.networkLog.requests();
+    const requests = SDK.NetworkLog.NetworkLog.instance().requests();
     const harLog = await SDK.HARLog.HARLog.build(requests);
     for (let i = 0; i < harLog.entries.length; ++i) {
       harLog.entries[i]._requestId = this._requestId(requests[i]);
@@ -1018,6 +1023,9 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
       parsedURL = new URL(url);
     } catch (exception) {
       return false;
+    }
+    if (kAllowedOrigins.includes(parsedURL.origin)) {
+      return true;
     }
     if (parsedURL.protocol === 'chrome:' || parsedURL.protocol === 'devtools:') {
       return false;
