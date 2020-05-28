@@ -8,7 +8,6 @@
 Builds applications in release mode:
 - Concatenates autostart modules, application modules' module.json descriptors,
 and the application loader into a single script.
-- Builds app.html referencing the application script.
 """
 
 from cStringIO import StringIO
@@ -39,6 +38,17 @@ finally:
     sys.path = original_sys_path
 
 FRONT_END_DIRECTORY = path.join(os.path.dirname(path.abspath(__file__)), '..', '..', 'front_end')
+
+MODULE_LIST = [
+    path.join(FRONT_END_DIRECTORY, subfolder, subfolder + '.js')
+    for subfolder in os.listdir(FRONT_END_DIRECTORY)
+    if path.isdir(os.path.join(FRONT_END_DIRECTORY, subfolder))
+]
+
+ROLLUP_ARGS = [
+    '--no-treeshake', '--format', 'esm', '--context', 'self', '--external',
+    ','.join([path.abspath(module) for module in MODULE_LIST])
+]
 
 
 def main(argv):
@@ -80,7 +90,6 @@ def concatenated_module_filename(module_name, output_dir):
 
 
 # Outputs:
-#   <app_name>.html
 #   <app_name>.js
 #   <module_name>_module.js
 class ReleaseBuilder(object):
@@ -110,9 +119,6 @@ class ReleaseBuilder(object):
         return result
 
     def build_app(self):
-        if self.descriptors.has_html:
-            html_entrypoint = self.app_file('html')
-            write_file(join(self.output_dir, html_entrypoint), read_file(join(self.application_dir, html_entrypoint)))
         self._build_app_script()
         for module in filter(lambda desc: (not desc.get('type') or desc.get('type') == 'remote'),
                              self.descriptors.application.values()):
@@ -210,19 +216,17 @@ class ReleaseBuilder(object):
         js_entrypoint = join(self.application_dir, module_name, module_name + '.js')
         out = ''
         if self.use_rollup:
-            rollup_process = subprocess.Popen([
-                devtools_paths.node_path(),
-                devtools_paths.rollup_path(), '--config',
-                join(FRONT_END_DIRECTORY, 'rollup.config.js'), '--input',
-                js_entrypoint
-            ],
-                                              stdout=subprocess.PIPE,
-                                              stderr=subprocess.PIPE)
+            rollup_process = subprocess.Popen(
+                [devtools_paths.node_path(),
+                 devtools_paths.rollup_path()] + ROLLUP_ARGS +
+                ['--input', js_entrypoint],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
             out, error = rollup_process.communicate()
         else:
             out = read_file(js_entrypoint)
         write_file(join(self.output_dir, module_name, module_name + '.js'),
-                   out)
+                   minify_js(out))
 
         legacyFileName = module_name + '-legacy.js'
         if legacyFileName in modules:

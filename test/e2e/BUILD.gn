@@ -10,10 +10,12 @@ ts_library("e2e") {
   deps = [
     "animations",
     "application",
+    "changes",
     "console",
     "coverage",
     "cross_tool_integration",
     "elements",
+    "emulation",
     "host",
     "layers",
     "lighthouse",
@@ -26,5 +28,6 @@ ts_library("e2e") {
     "search",
     "snippets",
     "sources",
+    "webaudio",
   ]
 }

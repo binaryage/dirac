@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';
+
+/** @type {!WeakMap<!SDK.LogModel.LogModel, !Array<!Common.EventTarget.EventDescriptor>>} */
+const modelToEventListeners = new WeakMap();
 
 /**
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.LogModel.LogModel>}
@@ -23,7 +23,7 @@ export class LogManager {
   modelAdded(logModel) {
     const eventListeners = [];
     eventListeners.push(logModel.addEventListener(SDK.LogModel.Events.EntryAdded, this._logEntryAdded, this));
-    logModel[_eventSymbol] = eventListeners;
+    modelToEventListeners.set(logModel, eventListeners);
   }
 
   /**
@@ -31,7 +31,10 @@ export class LogManager {
    * @param {!SDK.LogModel.LogModel} logModel
    */
   modelRemoved(logModel) {
-    Common.EventTarget.EventTarget.removeEventListeners(logModel[_eventSymbol]);
+    const eventListeners = modelToEventListeners.get(logModel);
+    if (eventListeners) {
+      Common.EventTarget.EventTarget.removeEventListeners(eventListeners);
+    }
   }
 
   /**
@@ -47,7 +50,8 @@ export class LogManager {
         data.entry.stackTrace, data.entry.timestamp, undefined, undefined, data.entry.workerId);
 
     if (data.entry.networkRequestId) {
-      self.SDK.networkLog.associateConsoleMessageWithRequest(consoleMessage, data.entry.networkRequestId);
+      SDK.NetworkLog.NetworkLog.instance().associateConsoleMessageWithRequest(
+          consoleMessage, data.entry.networkRequestId);
     }
 
     if (consoleMessage.source === SDK.ConsoleModel.MessageSource.Worker) {
@@ -69,5 +73,3 @@ export class LogManager {
     }
   }
 }
-
-const _eventSymbol = Symbol('_events');
