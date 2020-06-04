@@ -2,11 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("../../scripts/build/copy_to_gen.gni")
 import("../../third_party/typescript/typescript.gni")
 
-ts_library("e2e") {
-  testonly = true
+group("e2e") {
+  deps = [
+    ":config",
+    ":tests",
+    "resources",
+  ]
+}
 
+node_ts_library("tests") {
   deps = [
     "animations",
     "application",
@@ -30,4 +37,8 @@ ts_library("e2e") {
     "sources",
     "webaudio",
   ]
+}
+
+copy_to_gen("config") {
+  sources = [ ".mocharc.js" ]
 }

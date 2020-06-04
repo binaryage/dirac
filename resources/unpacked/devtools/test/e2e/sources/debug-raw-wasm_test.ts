@@ -37,7 +37,7 @@ describe('Source Tab', async () => {
     await addBreakpointForLine(frontend, 5);
 
     const scriptLocation = await retrieveTopCallFrameScriptLocation('main();', target);
-    assert.deepEqual(scriptLocation, 'add.wasm:5');
+    assert.deepEqual(scriptLocation, 'add.wasm:0x23');
   });
 
   it('cannot set a breakpoint on non-breakable line in raw wasm', async () => {
@@ -45,18 +45,18 @@ describe('Source Tab', async () => {
 
     await openSourceCodeEditorForFile(target, 'add.wasm', 'wasm/call-to-add-wasm.html');
     assert.deepEqual(await getNonBreakableLines(frontend), [
-      1,
-      2,
-      3,
-      4,
-      9,
+      0x000,
+      0x00a,
+      0x017,
+      0x020,
+      0x04b,
     ]);
     // Line 3 is non-breakable.
     await addBreakpointForLine(frontend, 3, true);
     assert.deepEqual(await getBreakpointDecorators(frontend), []);
     // Line 5 is breakable.
     await addBreakpointForLine(frontend, 5);
-    assert.deepEqual(await getBreakpointDecorators(frontend), [5]);
+    assert.deepEqual(await getBreakpointDecorators(frontend), [0x023]);
   });
 });
 
@@ -107,7 +107,7 @@ describe('Raw-Wasm', async () => {
     const location = await callFrameLocation.evaluate(n => n.textContent);
 
     assert.strictEqual(title, 'foo');
-    assert.strictEqual(location, 'callstack-wasm-to-js.wasm:1');
+    assert.strictEqual(location, 'callstack-wasm-to-js.wasm:0x32');
 
     // Select next call frame.
     await callFrame.press('ArrowDown');
