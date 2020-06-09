@@ -179,6 +179,12 @@ export class MainImpl {
     // Dual-screen
     Root.Runtime.experiments.register('dualScreenSupport', 'Emulation: Support dual screen mode');
 
+    // CSS Grid
+    Root.Runtime.experiments.register('cssGridFeatures', 'Enable new CSS Grid debugging features');
+
+    // Layout personalization
+    Root.Runtime.experiments.register('movableTabs', 'Enable support to move tabs between panels');
+
     Root.Runtime.experiments.cleanUpStaleExperiments();
     const enabledExperiments = Root.Runtime.queryParam('enabledExperiments');
     if (enabledExperiments) {
