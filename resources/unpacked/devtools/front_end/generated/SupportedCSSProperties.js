@@ -139,6 +139,7 @@ export const generatedProperties = [
   {'name': 'animation-iteration-count', 'keywords': ['infinite']},
   {'name': 'animation-name', 'keywords': ['none']},
   {'name': 'animation-play-state', 'keywords': ['running', 'paused']},
+  {'name': 'animation-timeline', 'keywords': ['none', 'auto']},
   {
     'name': 'animation-timing-function',
     'keywords': [
@@ -779,13 +780,15 @@ export const generatedProperties = [
   {
     'name': 'text-align',
     'inherited': true,
-    'keywords':
-        ['left', 'right', 'center', 'justify', '-webkit-left', '-webkit-right', '-webkit-center', 'start', 'end']
+    'keywords': [
+      'left', 'right', 'center', 'justify', '-webkit-left', '-webkit-right', '-webkit-center', 'start', 'end',
+      '-internal-space-around'
+    ]
   },
   {
     'name': 'text-align-last',
     'inherited': true,
-    'keywords': ['auto', 'start', 'end', 'left', 'right', 'center', 'justify']
+    'keywords': ['auto', 'start', 'end', 'left', 'right', 'center', 'justify', '-internal-space-around']
   },
   {'name': 'text-anchor', 'svg': true, 'inherited': true, 'keywords': ['start', 'middle', 'end']},
   {'name': 'text-combine-upright', 'inherited': true, 'keywords': ['none', 'all']},
@@ -885,6 +888,7 @@ export const generatedPropertyValues = {
   'animation-iteration-count': {'values': ['infinite']},
   'animation-name': {'values': ['none']},
   'animation-play-state': {'values': ['running', 'paused']},
+  'animation-timeline': {'values': ['none', 'auto']},
   'animation-timing-function': {
     'values': [
       'linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out', 'jump-both', 'jump-end', 'jump-none', 'jump-start',
