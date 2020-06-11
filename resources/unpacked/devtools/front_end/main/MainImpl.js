@@ -168,6 +168,7 @@ export class MainImpl {
         'Show option to take heap snapshot where globals are not treated as root');
     Root.Runtime.experiments.register('sourceDiff', 'Source diff');
     Root.Runtime.experiments.register('spotlight', 'Spotlight', true);
+    Root.Runtime.experiments.register('webauthnPane', 'WebAuthn Pane');
     Root.Runtime.experiments.register(
         'customKeyboardShortcuts', 'Enable custom keyboard shortcuts settings tab (requires reload)');
 
@@ -300,7 +301,6 @@ export class MainImpl {
     self.UI.actionRegistry = new UI.ActionRegistry.ActionRegistry();
     self.UI.shortcutRegistry = new UI.ShortcutRegistry.ShortcutRegistry(self.UI.actionRegistry);
     UI.ShortcutsScreen.ShortcutsScreen.registerShortcuts();
-    this._registerForwardedShortcuts();
     this._registerMessageSinkListener();
 
     MainImpl.timeEnd('Main._createAppUI');
@@ -404,16 +404,6 @@ export class MainImpl {
    */
   lateInitDonePromiseForTest() {
     return this._lateInitDonePromise;
-  }
-
-  _registerForwardedShortcuts() {
-    /** @const */ const forwardedActions = [
-      'main.toggle-dock', 'debugger.toggle-breakpoints-active', 'debugger.toggle-pause', 'commandMenu.show',
-      'console.show'
-    ];
-    const actionKeys = self.UI.shortcutRegistry.keysForActions(forwardedActions)
-                           .map(UI.KeyboardShortcut.KeyboardShortcut.keyCodeAndModifiersFromKey);
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setWhitelistedShortcuts(JSON.stringify(actionKeys));
   }
 
   _registerMessageSinkListener() {
