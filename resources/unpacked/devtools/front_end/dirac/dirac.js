@@ -240,6 +240,9 @@ console.log("DJS imported!");
       return loadLazyDirac().then(() => window.dirac.addConsoleMessageToMainTarget(...args));
     }
 
+    function evaluateCommandInConsole(...args) {
+      return loadLazyDirac().then(() => window.dirac.evaluateCommandInConsole(...args));
+    }
     function registerDiracLinkAction(...args) {
       return loadLazyDirac().then(() => window.dirac.registerDiracLinkAction(...args));
     }
@@ -294,6 +297,7 @@ console.log("DJS imported!");
       subscribeDebuggerEvents: subscribeDebuggerEvents,
       unsubscribeDebuggerEvents: unsubscribeDebuggerEvents,
       addConsoleMessageToMainTarget: addConsoleMessageToMainTarget,
+      evaluateCommandInConsole: evaluateCommandInConsole,
       startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,
       stopListeningForWorkspaceChanges: stopListeningForWorkspaceChanges,
       extractScopeInfoFromScopeChainAsync: extractScopeInfoFromScopeChainAsync,

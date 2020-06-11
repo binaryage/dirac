@@ -186,6 +186,18 @@
 > [this commit](https://github.com/binaryage/dirac-sample/commit/3f6b149eca7bac6efc6ffd77f29d25bdc1606d3c) how you could 
 > potentially implement something like this for your own project.
 
+#### What is loopback mode?
+
+> Shadow-cljs exposed experimental cljs_eval API. Please read [the announcement](https://clojureverse.org/t/status-update-inspect-cljs-eval/6074).
+> We can make use of this in shadow-cljs scenarios without any prior Dirac setup. 
+> If Dirac REPL is opened on a page which has no Dirac Runtime but has this API available, we can at least offer sugar 
+> on top of cljs_eval. When you type "some cljs code" into Dirac REPL and hit ENTER, it will be effectively turned into `await cljs_eval("some cljs code")`
+> Shadow-cljs will then do the compilation, evaluates generated javascript and you should see some results back in the console.
+> To switch current namespace enter `(in-ns 'your.new.namespace)`, this is handled specially by Dirac REPL.
+> I refer to this mode of operation as "loopback REPL". Because there is no Dirac nREPL backend or runtime support. 
+> Dirac talks to page's context to do cljs evaluations. Some Dirac features are not supported.
+> When this mode is active, you should see purple "loopback" indicator when the REPL prompt is empty.
+
 #### I have a great idea for contribution! How to hack on Dirac itself?
 
 > Please refer to [hacking.md](hacking.md).

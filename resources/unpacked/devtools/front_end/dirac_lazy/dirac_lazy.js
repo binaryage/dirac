@@ -197,6 +197,18 @@ Object.assign(window.dirac, (function() {
     SDK.consoleModel.addMessage(msg);
   }
 
+  function evaluateCommandInConsole(contextName, code) {
+    let context = contextName === "current" ? lookupCurrentContext() : lookupDefaultContext();
+    if (!context) {
+      console.warn("evaluateCommandInConsole got null '" +contextName+ "' context:", code);
+      return;
+    }
+    const commandMessage = new SDK.ConsoleMessage(context.runtimeModel, SDK.ConsoleMessage.MessageSource.JS, null, code, SDK.ConsoleMessage.MessageType.Command);
+    commandMessage.setExecutionContextId(context.id);
+    commandMessage.skipHistory = true;
+    SDK.consoleModel.evaluateCommandInConsole(context, commandMessage, code, false);
+  }
+
   // --- scope info -------------------------------------------------------------------------------------------------------
 
   function getScopeTitle(scope) {
@@ -919,6 +931,7 @@ Object.assign(window.dirac, (function() {
     subscribeDebuggerEvents: subscribeDebuggerEvents,
     unsubscribeDebuggerEvents: unsubscribeDebuggerEvents,
     addConsoleMessageToMainTarget: addConsoleMessageToMainTarget,
+    evaluateCommandInConsole: evaluateCommandInConsole,
     startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,
     stopListeningForWorkspaceChanges: stopListeningForWorkspaceChanges,
     extractScopeInfoFromScopeChainAsync: extractScopeInfoFromScopeChainAsync,

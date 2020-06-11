@@ -1740,8 +1740,10 @@ export class ConsoleView extends UI.Widget.VBox {
     const data =
         /** @type {{result: ?SDK.RemoteObject.RemoteObject, commandMessage: !SDK.ConsoleModel.ConsoleMessage, exceptionDetails: (!Protocol.Runtime.ExceptionDetails|undefined)}} */
         (event.data);
-    this._prompt.history().pushHistoryItem(data.commandMessage.messageText);
-    this._consoleHistorySetting.set(this._prompt.history().historyData().slice(-persistedHistorySize));
+    if (!data.commandMessage.skipHistory) {
+      this._prompt.history().pushHistoryItem(data.commandMessage.messageText);
+      this._consoleHistorySetting.set(this._prompt.history().historyData().slice(-persistedHistorySize));
+    }
     this._printResult(data.result, data.commandMessage, data.exceptionDetails);
   }
 

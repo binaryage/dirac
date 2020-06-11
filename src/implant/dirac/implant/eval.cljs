@@ -83,6 +83,16 @@
     :default (oget dirac "evalInDefaultContext")
     :current (oget dirac "evalInCurrentContext")))
 
+(defn get-context-name [context]
+  (case context
+    :default "default"
+    :current "current"))
+
+(defn eval-command-in-console! [context js-code]
+  (let [context-name (get-context-name context)]
+    (log (str "eval-command-in-console! [" context-name " context] > ") js-code)
+    (ocall (get-dirac) "evaluateCommandInConsole" context-name js-code)))
+
 (defn get-current-time []
   (.getTime (js/Date.)))
 
@@ -154,6 +164,9 @@
 
 (defn ^:dynamic console-log-template [method & args]
   (str "console." method "(" (string/join (interpose "," (map code-as-string args))) ")"))
+
+(defn ^:dynamic cljs-eval-template [code ns]
+  (str "await cljs_eval(" (code-as-string code) ", {'ns':" (code-as-string ns) "})"))
 
 (defn ^:dynamic prepare-install-playground-runtime-template [before includes after]
   (let [template (str before ";" (emit-install-playground-runtime-template))
@@ -484,3 +497,20 @@
         (if-not (= (first res) ::ok)
           (error "Failed to install playground runtime" res)
           (second res))))))
+
+; -- loopback REPL support --------------------------------------------------------------------------------------------------
+
+(defn go-ask-is-cljs-eval-present? []
+  (go
+    (let [res (<! (go-call-eval-with-timeout! :default "typeof cljs_eval" 2000 true))]
+      (if-not (= (first res) ::ok)
+        (do
+          (error "Failed to detect cljs_eval presence" (pr-str res))
+          false)
+        (do
+          (log "loopback available" (second res))
+          (= (second res) "function"))))))
+
+(defn eval-cljs-in-console! [code ns]
+  (let [js-code (cljs-eval-template code ns)]
+    (eval-command-in-console! :current js-code)))
