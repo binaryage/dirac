@@ -1,0 +1,10 @@
+{:deps     true
+ :dev-http {8080 "public"}
+ :builds   {:app
+            {:target  :browser
+             :output-dir         "public/.compiled"
+             :asset-path         "/.compiled"
+             :modules {:main {:init-fn dirac-shadow.app/init}}
+             }}
+
+ }
