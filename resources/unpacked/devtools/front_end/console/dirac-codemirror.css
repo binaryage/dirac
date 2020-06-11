@@ -6,6 +6,11 @@
     height: inherit;
     font-family: Menlo, monospace;
     line-height: 1em;
+    /* darwin: this min-height is important for some reason
+               in some cases empty dirac prompt wasn't visible because it had 0 height and
+               it was impossible to activate it by clicking to give it focus
+    */
+    min-height: 1em;
 }
 
 /* PADDING */
