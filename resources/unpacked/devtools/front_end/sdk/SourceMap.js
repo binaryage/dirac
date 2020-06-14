@@ -558,7 +558,7 @@ export class TextSourceMap {
   /**
    * @param {string} url
    * @param {!TextUtils.TextRange.TextRange} textRange
-   * @return {!TextUtils.TextRange.TextRange}
+   * @return {?TextUtils.TextRange.TextRange}
    */
   reverseMapTextRange(url, textRange) {
     /**
@@ -575,6 +575,9 @@ export class TextSourceMap {
     }
 
     const mappings = this._reversedMappings(url);
+    if (!mappings.length) {
+      return null;
+    }
     const startIndex =
         mappings.lowerBound({lineNumber: textRange.startLine, columnNumber: textRange.startColumn}, comparator);
     const endIndex =

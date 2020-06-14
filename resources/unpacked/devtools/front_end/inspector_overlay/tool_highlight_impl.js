@@ -182,6 +182,7 @@ function _drawAxis(context, rulerAtRight, rulerAtBottom) {
 
 export function doReset() {
   document.getElementById('tooltip-container').removeChildren();
+  document.getElementById('grid-label-container').removeChildren();
   window._gridPainted = false;
 }
 
@@ -234,9 +235,34 @@ function computeIsLargeFont(contrast) {
   return fontSizePt >= 18;
 }
 
-function _createElementDescription(elementInfo, colorFormat) {
+/**
+ * Determine the layout type of the highlighted element based on the config.
+ * @param {Object} highlight The highlight config object passed to drawHighlight
+ * @return {String|null} The layout type of the object, or null if none was found
+ */
+function _getElementLayoutType(highlight) {
+  if (highlight.gridInfo && highlight.gridInfo.length) {
+    return 'grid';
+  }
+
+  return null;
+}
+
+/**
+ * Create the DOM node that displays the description of the highlighted element
+ * @param {Object} highlight The highlight config object passed to drawHighlight
+ * @return {DOMNode}
+ */
+function _createElementDescription(highlight) {
+  const {elementInfo, colorFormat} = highlight;
+
   const elementInfoElement = createElement('div', 'element-info');
   const elementInfoHeaderElement = elementInfoElement.createChild('div', 'element-info-header');
+
+  const layoutType = _getElementLayoutType(highlight);
+  if (layoutType) {
+    elementInfoHeaderElement.createChild('div', `element-layout-type ${layoutType}`);
+  }
   const descriptionElement = elementInfoHeaderElement.createChild('div', 'element-description monospace');
   const tagNameElement = descriptionElement.createChild('span', 'material-tag-name');
   tagNameElement.textContent = elementInfo.tagName;
@@ -365,10 +391,13 @@ function _createElementDescription(elementInfo, colorFormat) {
   return elementInfoElement;
 }
 
-function _drawElementTitle(elementInfo, bounds, colorFormat) {
+/**
+ * @param {Object} highlight The highlight config object passed to drawHighlight
+ */
+function _drawElementTitle(highlight, bounds) {
   const tooltipContainer = document.getElementById('tooltip-container');
   tooltipContainer.removeChildren();
-  _createMaterialTooltip(tooltipContainer, bounds, _createElementDescription(elementInfo, colorFormat), true);
+  _createMaterialTooltip(tooltipContainer, bounds, _createElementDescription(highlight), true);
 }
 
 function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow) {
@@ -436,7 +465,8 @@ function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow
 
   tooltipContent.style.setProperty('--arrow', onTop ? 'var(--arrow-down)' : 'var(--arrow-up)');
   tooltipContent.style.setProperty('--shadow-direction', onTop ? 'var(--shadow-up)' : 'var(--shadow-down)');
-  tooltipContent.style.setProperty('--arrow-top', (onTop ? titleHeight : -arrowHalfWidth) + 'px');
+  // When tooltip is on-top remove 1px from the arrow's top value to get rid of whitespace produced by the tooltip's border.
+  tooltipContent.style.setProperty('--arrow-top', (onTop ? titleHeight - 1 : -arrowHalfWidth) + 'px');
   tooltipContent.style.setProperty('--arrow-left', (arrowX - boxX) + 'px');
 }
 
@@ -743,7 +773,7 @@ export function drawHighlight(highlight, context) {
     }
 
     if (highlight.elementInfo) {
-      _drawElementTitle(highlight.elementInfo, bounds, highlight.colorFormat);
+      _drawElementTitle(highlight, bounds);
     }
   }
   if (highlight.gridInfo) {
