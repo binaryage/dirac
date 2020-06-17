@@ -4,11 +4,12 @@
     "components",
     "dirac"
   ],
-  "scripts": [
+  "modules": [
     "dirac_lazy.js"
   ],
+  "scripts": [
+  ],
   "skip_compilation": [
-    "dirac_lazy.js"
   ],
   "resources": [
   ]

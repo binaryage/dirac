@@ -7,7 +7,8 @@ import './keysim.js';
 import './parinfer.js';
 import './parinfer-codemirror.js';
 
-console.log('DJS imported!');
+console.log('dirac module import!');
+
 (function () {
   const window = this;
 
@@ -328,3 +329,5 @@ console.log('DJS imported!');
     window.initDiracImplantAfterLoad = true;
   }
 }).call(self);
+
+console.log('dirac module imported!');

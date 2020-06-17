@@ -3,6 +3,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+console.log('dirac-lazy module import!');
+
 if (!window.dirac) {
   console.error('window.dirac was expected to exist when loading dirac_lazy overlay');
   throw new Error('window.dirac was expected to exist when loading dirac_lazy overlay');
@@ -952,3 +954,5 @@ Object.assign(window.dirac, (function () {
   };
 
 })());
+
+console.log('dirac-lazy module imported!');
