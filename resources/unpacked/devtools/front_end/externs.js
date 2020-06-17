@@ -331,7 +331,7 @@ diff_match_patch.prototype = {
   diff_cleanupSemantic(diff) {}
 };
 
-var dirac = {
+const dirac = {
     /** @type {boolean} */
     _DEBUG_EVAL: true,
     /** @type {boolean} */
@@ -360,12 +360,12 @@ var dirac = {
     * @param {string} code
     * @return {string}
     */
-    codeAsString: function (code) {},
+    codeAsString: function(code) {},
     /**
     * @param {string} string
     * @return {string}
     */
-    stringEscape: function (string) {},
+    stringEscape: function(string) {},
     /**
     * @param {string} action
     */
@@ -438,7 +438,7 @@ var dirac = {
     /**
     * @param {string=} namespaceName
     */
-    invalidateNamespaceSymbolsCache: function (namespaceName) {},
+    invalidateNamespaceSymbolsCache: function(namespaceName) {},
     invalidateNamespacesCache: function() {},
 
     /**
@@ -541,7 +541,7 @@ var dirac = {
   /**
    * @return {boolean}
    * */
-  isIntercomReady: function () {
+  isIntercomReady: function() {
   },
 
     reportNamespacesCacheMutation: function() {},
@@ -582,7 +582,7 @@ dirac.ScopeInfo;
 dirac.NamespaceDescriptor;
 
 
-var Keysim = {
+const Keysim = {
     Keyboard: {
         US_ENGLISH: {}
     },

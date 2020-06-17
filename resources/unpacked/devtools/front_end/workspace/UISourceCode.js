@@ -153,12 +153,12 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
       // @ts-ignore
       if (dirac.hasCleanUrls) {
         // strip all after ? in the name
-        const qmarkIndex = name.indexOf("?");
+        const qmarkIndex = name.indexOf('?');
         if (qmarkIndex != -1) {
           name = name.substring(0, qmarkIndex);
         }
         // strip all after # in the name
-        const hashIndex = name.indexOf("#");
+        const hashIndex = name.indexOf('#');
         if (hashIndex != -1) {
           name = name.substring(0, hashIndex);
         }

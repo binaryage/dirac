@@ -1,3 +1,7 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 //
 // Parinfer 3.11.0
 //
@@ -11,11 +15,11 @@
 // Use `sync.sh` to keep the function/var links in `doc/code.md` accurate.
 //
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // JS Module Boilerplate
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
-(function (root, factory) {
+(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     define([], factory);
   }
@@ -25,23 +29,23 @@
   else {
     root.parinfer = factory();
   }
-}(self, function() { // start module anonymous scope
-  "use strict";
+})(self, function() { // start module anonymous scope
+  'use strict';
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Constants / Predicates
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
 // NOTE: this is a performance hack
 // The main result object uses a lot of "unsigned integer or null" values.
 // Using a negative integer is faster than actual null because it cuts down on
 // type coercion overhead.
-  var UINT_NULL = -999;
+  const UINT_NULL = -999;
 
-  var INDENT_MODE = "INDENT_MODE",
-    PAREN_MODE = "PAREN_MODE";
+  const INDENT_MODE = 'INDENT_MODE',
+    PAREN_MODE = 'PAREN_MODE';
 
-  var BACKSLASH = '\\',
+  const BACKSLASH = '\\',
     BLANK_SPACE = ' ',
     DOUBLE_SPACE = '  ',
     DOUBLE_QUOTE = '"',
@@ -49,19 +53,19 @@
     SEMICOLON = ';',
     TAB = '\t';
 
-  var LINE_ENDING_REGEX = /\r?\n/;
+  const LINE_ENDING_REGEX = /\r?\n/;
 
-  var MATCH_PAREN = {
-    "{": "}",
-    "}": "{",
-    "[": "]",
-    "]": "[",
-    "(": ")",
-    ")": "("
+  const MATCH_PAREN = {
+    '{': '}',
+    '}': '{',
+    '[': ']',
+    ']': '[',
+    '(': ')',
+    ')': '('
   };
 
 // toggle this to check the asserts during development
-  var RUN_ASSERTS = false;
+  const RUN_ASSERTS = false;
 
   function isBoolean(x) {
     return typeof x === 'boolean';
@@ -77,17 +81,17 @@
       Math.floor(x) === x;
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Options Structure
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function transformChange(change) {
     if (!change) {
       return undefined;
     }
 
-    var newLines = change.newText.split(LINE_ENDING_REGEX);
-    var oldLines = change.oldText.split(LINE_ENDING_REGEX);
+    const newLines = change.newText.split(LINE_ENDING_REGEX);
+    const oldLines = change.oldText.split(LINE_ENDING_REGEX);
 
     // single line case:
     //     (defn foo| [])
@@ -102,12 +106,12 @@
     //       |[])
     //     ++^ newEndX, newEndLineNo
 
-    var lastOldLineLen = oldLines[oldLines.length-1].length;
-    var lastNewLineLen = newLines[newLines.length-1].length;
+    const lastOldLineLen = oldLines[oldLines.length - 1].length;
+    const lastNewLineLen = newLines[newLines.length - 1].length;
 
-    var oldEndX = (oldLines.length === 1 ? change.x : 0) + lastOldLineLen;
-    var newEndX = (newLines.length === 1 ? change.x : 0) + lastNewLineLen;
-    var newEndLineNo = change.lineNo + (newLines.length-1);
+    const oldEndX = (oldLines.length === 1 ? change.x : 0) + lastOldLineLen;
+    const newEndX = (newLines.length === 1 ? change.x : 0) + lastNewLineLen;
+    const newEndLineNo = change.lineNo + (newLines.length - 1);
 
     return {
       x: change.x,
@@ -128,9 +132,9 @@
     if (changes.length === 0) {
       return null;
     }
-    var lines = {};
-    var line, i, change;
-    for (i=0; i<changes.length; i++) {
+    const lines = {};
+    let line, i, change;
+    for (i = 0; i < changes.length; i++) {
       change = transformChange(changes[i]);
       line = lines[change.lookupLineNo];
       if (!line) {
@@ -156,9 +160,9 @@
     };
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Result Structure
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
 // This represents the running result. As we scan through each character
 // of a given text, we mutate this structure to update the state of our
@@ -180,7 +184,7 @@
 
   function getInitialResult(text, options, mode, smart) {
 
-    var result = {
+    const result = {
 
       mode: mode,                // [enum] - current processing mode (INDENT_MODE or PAREN_MODE)
       smart: smart,              // [boolean] - smart mode attempts special user-friendly behavior
@@ -196,7 +200,7 @@
 
       lines: [],                 // [string array] - output lines (with corrected parens or indentation)
       lineNo: -1,                // [integer] - output line number we are on
-      ch: "",                    // [string] - character we are processing (can be changed to indicate a replacement)
+      ch: '',                    // [string] - character we are processing (can be changed to indicate a replacement)
       x: 0,                      // [integer] - output x position of the current character (ch)
       indentX: UINT_NULL,        // [integer] - x position of the indentation point if present
 
@@ -292,32 +296,32 @@
     return result;
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Possible Errors
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
 // `result.error.name` is set to any of these
-  var ERROR_QUOTE_DANGER = "quote-danger";
-  var ERROR_EOL_BACKSLASH = "eol-backslash";
-  var ERROR_UNCLOSED_QUOTE = "unclosed-quote";
-  var ERROR_UNCLOSED_PAREN = "unclosed-paren";
-  var ERROR_UNMATCHED_CLOSE_PAREN = "unmatched-close-paren";
-  var ERROR_UNMATCHED_OPEN_PAREN = "unmatched-open-paren";
-  var ERROR_LEADING_CLOSE_PAREN = "leading-close-paren";
-  var ERROR_UNHANDLED = "unhandled";
+  const ERROR_QUOTE_DANGER = 'quote-danger';
+  const ERROR_EOL_BACKSLASH = 'eol-backslash';
+  const ERROR_UNCLOSED_QUOTE = 'unclosed-quote';
+  const ERROR_UNCLOSED_PAREN = 'unclosed-paren';
+  const ERROR_UNMATCHED_CLOSE_PAREN = 'unmatched-close-paren';
+  const ERROR_UNMATCHED_OPEN_PAREN = 'unmatched-open-paren';
+  const ERROR_LEADING_CLOSE_PAREN = 'leading-close-paren';
+  const ERROR_UNHANDLED = 'unhandled';
 
-  var errorMessages = {};
-  errorMessages[ERROR_QUOTE_DANGER] = "Quotes must balanced inside comment blocks.";
-  errorMessages[ERROR_EOL_BACKSLASH] = "Line cannot end in a hanging backslash.";
-  errorMessages[ERROR_UNCLOSED_QUOTE] = "String is missing a closing quote.";
-  errorMessages[ERROR_UNCLOSED_PAREN] = "Unclosed open-paren.";
-  errorMessages[ERROR_UNMATCHED_CLOSE_PAREN] = "Unmatched close-paren.";
-  errorMessages[ERROR_UNMATCHED_OPEN_PAREN] = "Unmatched open-paren.";
-  errorMessages[ERROR_LEADING_CLOSE_PAREN] = "Line cannot lead with a close-paren.";
-  errorMessages[ERROR_UNHANDLED] = "Unhandled error.";
+  const errorMessages = {};
+  errorMessages[ERROR_QUOTE_DANGER] = 'Quotes must balanced inside comment blocks.';
+  errorMessages[ERROR_EOL_BACKSLASH] = 'Line cannot end in a hanging backslash.';
+  errorMessages[ERROR_UNCLOSED_QUOTE] = 'String is missing a closing quote.';
+  errorMessages[ERROR_UNCLOSED_PAREN] = 'Unclosed open-paren.';
+  errorMessages[ERROR_UNMATCHED_CLOSE_PAREN] = 'Unmatched close-paren.';
+  errorMessages[ERROR_UNMATCHED_OPEN_PAREN] = 'Unmatched open-paren.';
+  errorMessages[ERROR_LEADING_CLOSE_PAREN] = 'Line cannot lead with a close-paren.';
+  errorMessages[ERROR_UNHANDLED] = 'Unhandled error.';
 
   function cacheErrorPos(result, errorName) {
-    var e = {
+    const e = {
       lineNo: result.lineNo,
       x: result.x,
       inputLineNo: result.inputLineNo,
@@ -328,19 +332,19 @@
   }
 
   function error(result, name) {
-    var cache = result.errorPosCache[name];
+    let cache = result.errorPosCache[name];
 
-    var keyLineNo = result.partialResult ? 'lineNo' : 'inputLineNo';
-    var keyX = result.partialResult ? 'x' : 'inputX';
+    const keyLineNo = result.partialResult ? 'lineNo' : 'inputLineNo';
+    const keyX = result.partialResult ? 'x' : 'inputX';
 
-    var e = {
+    const e = {
       parinferError: true,
       name: name,
       message: errorMessages[name],
       lineNo: cache ? cache[keyLineNo] : result[keyLineNo],
       x: cache ? cache[keyX] : result[keyX]
     };
-    var opener = peek(result.parenStack, 0);
+    const opener = peek(result.parenStack, 0);
 
     if (name === ERROR_UNMATCHED_CLOSE_PAREN) {
       // extra error info for locating the open-paren that it should've matched
@@ -360,9 +364,9 @@
     return e;
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // String Operations
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function replaceWithinString(orig, start, end, replace) {
     return (
@@ -379,8 +383,8 @@
   }
 
   function repeatString(text, n) {
-    var i;
-    var result = "";
+    let i;
+    let result = '';
     for (i = 0; i < n; i++) {
       result += text;
     }
@@ -398,16 +402,16 @@
   function getLineEnding(text) {
     // NOTE: We assume that if the CR char "\r" is used anywhere,
     //       then we should use CRLF line-endings after every line.
-    var i = text.search("\r");
+    const i = text.search('\r');
     if (i !== -1) {
-      return "\r\n";
+      return '\r\n';
     }
-    return "\n";
+    return '\n';
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Line operations
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function isCursorAffected(result, start, end) {
     if (result.cursorX === start &&
@@ -418,9 +422,9 @@
   }
 
   function shiftCursorOnEdit(result, lineNo, start, end, replace) {
-    var oldLength = end - start;
-    var newLength = replace.length;
-    var dx = newLength - oldLength;
+    const oldLength = end - start;
+    const newLength = replace.length;
+    const dx = newLength - oldLength;
 
     if (dx !== 0 &&
       result.cursorLine === lineNo &&
@@ -431,8 +435,8 @@
   }
 
   function replaceWithinLine(result, lineNo, start, end, replace) {
-    var line = result.lines[lineNo];
-    var newLine = replaceWithinString(line, start, end, replace);
+    const line = result.lines[lineNo];
+    const newLine = replaceWithinString(line, start, end, replace);
     result.lines[lineNo] = newLine;
 
     shiftCursorOnEdit(result, lineNo, start, end, replace);
@@ -461,7 +465,7 @@
 
 // if the current character has changed, commit its change to the current line.
   function commitChar(result, origCh) {
-    var ch = result.ch;
+    const ch = result.ch;
     if (origCh !== ch) {
       replaceWithinLine(result, result.lineNo, result.x, result.x + origCh.length, ch);
       result.indentDelta -= (origCh.length - ch.length);
@@ -469,9 +473,9 @@
     result.x += ch.length;
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Misc Utils
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function clamp(val, minN, maxN) {
     if (minN !== UINT_NULL) {
@@ -494,7 +498,7 @@
   }
 
   function peek(arr, idxFromBack) {
-    var maxIdx = arr.length - 1;
+    const maxIdx = arr.length - 1;
     if (idxFromBack > maxIdx) {
       return null;
     }
@@ -511,16 +515,16 @@
     console.assert(peek([], 1) === null);
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Questions about characters
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function isOpenParen(ch) {
-    return ch === "{" || ch === "(" || ch === "[";
+    return ch === '{' || ch === '(' || ch === '[';
   }
 
   function isCloseParen(ch) {
-    return ch === "}" || ch === ")" || ch === "]";
+    return ch === '}' || ch === ')' || ch === ']';
   }
 
   function isValidCloseParen(parenStack, ch) {
@@ -531,34 +535,34 @@
   }
 
   function isWhitespace(result) {
-    var ch = result.ch;
+    const ch = result.ch;
     return !result.isEscaped && (ch === BLANK_SPACE || ch === DOUBLE_SPACE);
   }
 
 // can this be the last code character of a list?
   function isClosable(result) {
-    var ch = result.ch;
-    var closer = (isCloseParen(ch) && !result.isEscaped);
-    return result.isInCode && !isWhitespace(result) && ch !== "" && !closer;
+    const ch = result.ch;
+    const closer = (isCloseParen(ch) && !result.isEscaped);
+    return result.isInCode && !isWhitespace(result) && ch !== '' && !closer;
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Advanced operations on characters
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function checkCursorHolding(result) {
-    var opener = peek(result.parenStack, 0);
-    var parent = peek(result.parenStack, 1);
-    var holdMinX = parent ? parent.x+1 : 0;
-    var holdMaxX = opener.x;
+    const opener = peek(result.parenStack, 0);
+    const parent = peek(result.parenStack, 1);
+    const holdMinX = parent ? parent.x + 1 : 0;
+    const holdMaxX = opener.x;
 
-    var holding = (
+    const holding = (
       result.cursorLine === opener.lineNo &&
       holdMinX <= result.cursorX && result.cursorX <= holdMaxX
     );
-    var shouldCheckPrev = !result.changes && result.prevCursorLine !== UINT_NULL;
+    const shouldCheckPrev = !result.changes && result.prevCursorLine !== UINT_NULL;
     if (shouldCheckPrev) {
-      var prevHolding = (
+      const prevHolding = (
         result.prevCursorLine === opener.lineNo &&
         holdMinX <= result.prevCursorX && result.prevCursorX <= holdMaxX
       );
@@ -577,20 +581,20 @@
     }
     else if (state === 'arg') {
       if (!isWhitespace(result)) {
-        var opener = peek(result.parenStack, 0);
+        const opener = peek(result.parenStack, 0);
         opener.argX = result.x;
         result.trackingArgTabStop = null;
       }
     }
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Literal character events
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function onOpenParen(result) {
     if (result.isInCode) {
-      var opener = {
+      const opener = {
         inputLineNo: result.inputLineNo,
         inputX: result.inputX,
 
@@ -608,7 +612,7 @@
           x: UINT_NULL,
           ch: ''
         };
-        var parent = peek(result.parenStack, 0);
+        let parent = peek(result.parenStack, 0);
         parent = parent ? parent.children : result.parens;
         parent.push(opener);
       }
@@ -625,7 +629,7 @@
   }
 
   function onMatchedCloseParen(result) {
-    var opener = peek(result.parenStack, 0);
+    const opener = peek(result.parenStack, 0);
     if (result.returnParens) {
       setCloser(opener, result.lineNo, result.x, result.ch);
     }
@@ -634,10 +638,10 @@
     result.parenTrail.openers.push(opener);
 
     if (result.mode === INDENT_MODE && result.smart && checkCursorHolding(result)) {
-      var origStartX = result.parenTrail.startX;
-      var origEndX = result.parenTrail.endX;
-      var origOpeners = result.parenTrail.openers;
-      resetParenTrail(result, result.lineNo, result.x+1);
+      const origStartX = result.parenTrail.startX;
+      const origEndX = result.parenTrail.endX;
+      const origOpeners = result.parenTrail.openers;
+      resetParenTrail(result, result.lineNo, result.x + 1);
       result.parenTrail.clamped.startX = origStartX;
       result.parenTrail.clamped.endX = origEndX;
       result.parenTrail.clamped.openers = origOpeners;
@@ -648,23 +652,23 @@
 
   function onUnmatchedCloseParen(result) {
     if (result.mode === PAREN_MODE) {
-      var trail = result.parenTrail;
-      var inLeadingParenTrail = trail.lineNo === result.lineNo && trail.startX === result.indentX;
-      var canRemove = result.smart && inLeadingParenTrail;
+      const trail = result.parenTrail;
+      const inLeadingParenTrail = trail.lineNo === result.lineNo && trail.startX === result.indentX;
+      const canRemove = result.smart && inLeadingParenTrail;
       if (!canRemove) {
         throw error(result, ERROR_UNMATCHED_CLOSE_PAREN);
       }
     }
     else if (result.mode === INDENT_MODE && !result.errorPosCache[ERROR_UNMATCHED_CLOSE_PAREN]) {
       cacheErrorPos(result, ERROR_UNMATCHED_CLOSE_PAREN);
-      var opener = peek(result.parenStack, 0);
+      const opener = peek(result.parenStack, 0);
       if (opener) {
-        var e = cacheErrorPos(result, ERROR_UNMATCHED_OPEN_PAREN);
+        const e = cacheErrorPos(result, ERROR_UNMATCHED_OPEN_PAREN);
         e.inputLineNo = opener.inputLineNo;
         e.inputX = opener.inputX;
       }
     }
-    result.ch = "";
+    result.ch = '';
   }
 
   function onCloseParen(result) {
@@ -694,7 +698,7 @@
 
   function onNewline(result) {
     result.isInComment = false;
-    result.ch = "";
+    result.ch = '';
   }
 
   function onQuote(result) {
@@ -729,12 +733,12 @@
     }
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Character dispatch
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function onChar(result) {
-    var ch = result.ch;
+    let ch = result.ch;
     result.isEscaped = false;
 
     if (result.isEscaping)        { afterBackslash(result); }
@@ -751,18 +755,18 @@
     result.isInCode = !result.isInComment && !result.isInStr;
 
     if (isClosable(result)) {
-      resetParenTrail(result, result.lineNo, result.x+ch.length);
+      resetParenTrail(result, result.lineNo, result.x + ch.length);
     }
 
-    var state = result.trackingArgTabStop;
+    const state = result.trackingArgTabStop;
     if (state) {
       trackArgTabStop(result, state);
     }
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Cursor functions
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function isCursorLeftOf(cursorX, cursorLine, x, lineNo) {
     return (
@@ -788,9 +792,9 @@
 
   function handleChangeDelta(result) {
     if (result.changes && (result.smart || result.mode === PAREN_MODE)) {
-      var line = result.changes[result.inputLineNo];
+      const line = result.changes[result.inputLineNo];
       if (line) {
-        var change = line[result.inputX];
+        const change = line[result.inputX];
         if (change) {
           result.indentDelta += (change.newEndX - change.oldEndX);
         }
@@ -798,9 +802,9 @@
     }
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Paren Trail functions
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function resetParenTrail(result, lineNo, x) {
     result.parenTrail.lineNo = lineNo;
@@ -821,25 +825,25 @@
 
 // INDENT MODE: allow the cursor to clamp the paren trail
   function clampParenTrailToCursor(result) {
-    var startX = result.parenTrail.startX;
-    var endX = result.parenTrail.endX;
+    const startX = result.parenTrail.startX;
+    const endX = result.parenTrail.endX;
 
-    var clamping = isCursorClampingParenTrail(result, result.cursorX, result.cursorLine);
+    const clamping = isCursorClampingParenTrail(result, result.cursorX, result.cursorLine);
 
     if (clamping) {
-      var newStartX = Math.max(startX, result.cursorX);
-      var newEndX = Math.max(endX, result.cursorX);
+      const newStartX = Math.max(startX, result.cursorX);
+      const newEndX = Math.max(endX, result.cursorX);
 
-      var line = result.lines[result.lineNo];
-      var removeCount = 0;
-      var i;
+      const line = result.lines[result.lineNo];
+      let removeCount = 0;
+      let i;
       for (i = startX; i < newStartX; i++) {
         if (isCloseParen(line[i])) {
           removeCount++;
         }
       }
 
-      var openers = result.parenTrail.openers;
+      const openers = result.parenTrail.openers;
 
       result.parenTrail.openers = openers.slice(removeCount);
       result.parenTrail.startX = newStartX;
@@ -853,25 +857,25 @@
 
 // INDENT MODE: pops the paren trail from the stack
   function popParenTrail(result) {
-    var startX = result.parenTrail.startX;
-    var endX = result.parenTrail.endX;
+    const startX = result.parenTrail.startX;
+    const endX = result.parenTrail.endX;
 
     if (startX === endX) {
       return;
     }
 
-    var openers = result.parenTrail.openers;
+    const openers = result.parenTrail.openers;
     while (openers.length !== 0) {
       result.parenStack.push(openers.pop());
     }
   }
 
   function getParentOpenerIndex(result, indentX) {
-    var i;
-    for (i=0; i<result.parenStack.length; i++) {
-      var opener = peek(result.parenStack, i);
-      var currOutside = (opener.x < indentX);
-      var prevOutside = (opener.x - opener.indentDelta < indentX);
+    let i;
+    for (i = 0; i < result.parenStack.length; i++) {
+      const opener = peek(result.parenStack, i);
+      const currOutside = (opener.x < indentX);
+      const prevOutside = (opener.x - opener.indentDelta < indentX);
 
       if (prevOutside) {
         // If an open-paren WAS outside, its `indentDelta` will be used to KEEP IT
@@ -882,7 +886,7 @@
         // If an open-paren was JUST pushed outside and its parent open-paren was
         // not pushed by same amount, new child line(s) will be adopted.
         // Clear `indentDelta` since it is reserved for previous child lines only.
-        var nextOpener = peek(result.parenStack, i+1);
+        const nextOpener = peek(result.parenStack, i + 1);
         if (!nextOpener || nextOpener.indentDelta !== opener.indentDelta) {
           opener.indentDelta = 0;
           break;
@@ -894,18 +898,18 @@
 
 // INDENT MODE: correct paren trail from indentation
   function correctParenTrail(result, indentX) {
-    var parens = "";
+    let parens = '';
 
-    var index = getParentOpenerIndex(result, indentX);
-    var i;
-    for (i=0; i<index; i++) {
-      var opener = result.parenStack.pop();
+    const index = getParentOpenerIndex(result, indentX);
+    let i;
+    for (i = 0; i < index; i++) {
+      const opener = result.parenStack.pop();
       result.parenTrail.openers.push(opener);
-      var closeCh = MATCH_PAREN[opener.ch];
+      const closeCh = MATCH_PAREN[opener.ch];
       parens += closeCh;
 
       if (result.returnParens) {
-        setCloser(opener, result.parenTrail.lineNo, result.parenTrail.startX+i, closeCh);
+        setCloser(opener, result.parenTrail.lineNo, result.parenTrail.startX + i, closeCh);
       }
     }
 
@@ -918,18 +922,18 @@
 
 // PAREN MODE: remove spaces from the paren trail
   function cleanParenTrail(result) {
-    var startX = result.parenTrail.startX;
-    var endX = result.parenTrail.endX;
+    const startX = result.parenTrail.startX;
+    const endX = result.parenTrail.endX;
 
     if (startX === endX ||
       result.lineNo !== result.parenTrail.lineNo) {
       return;
     }
 
-    var line = result.lines[result.lineNo];
-    var newTrail = "";
-    var spaceCount = 0;
-    var i;
+    const line = result.lines[result.lineNo];
+    let newTrail = '';
+    let spaceCount = 0;
+    let i;
     for (i = startX; i < endX; i++) {
       if (isCloseParen(line[i])) {
         newTrail += line[i];
@@ -947,8 +951,8 @@
 
 // PAREN MODE: append a valid close-paren to the end of the paren trail
   function appendParenTrail(result) {
-    var opener = result.parenStack.pop();
-    var closeCh = MATCH_PAREN[opener.ch];
+    const opener = result.parenStack.pop();
+    const closeCh = MATCH_PAREN[opener.ch];
     if (result.returnParens) {
       setCloser(opener, result.parenTrail.lineNo, result.parenTrail.endX, closeCh);
     }
@@ -966,7 +970,7 @@
   }
 
   function checkUnmatchedOutsideParenTrail(result) {
-    var cache = result.errorPosCache[ERROR_UNMATCHED_CLOSE_PAREN];
+    const cache = result.errorPosCache[ERROR_UNMATCHED_CLOSE_PAREN];
     if (cache && cache.x < result.parenTrail.startX) {
       throw error(result, ERROR_UNMATCHED_CLOSE_PAREN);
     }
@@ -974,7 +978,7 @@
 
   function setMaxIndent(result, opener) {
     if (opener) {
-      var parent = peek(result.parenStack, 0);
+      const parent = peek(result.parenStack, 0);
       if (parent) {
         parent.maxChildIndent = opener.x;
       }
@@ -985,12 +989,12 @@
   }
 
   function rememberParenTrail(result) {
-    var trail = result.parenTrail;
-    var openers = trail.clamped.openers.concat(trail.openers);
+    const trail = result.parenTrail;
+    const openers = trail.clamped.openers.concat(trail.openers);
     if (openers.length > 0) {
-      var isClamped = trail.clamped.startX !== UINT_NULL;
-      var allClamped = trail.openers.length === 0;
-      var shortTrail = {
+      const isClamped = trail.clamped.startX !== UINT_NULL;
+      const allClamped = trail.openers.length === 0;
+      const shortTrail = {
         lineNo: trail.lineNo,
         startX: isClamped ? trail.clamped.startX : trail.startX,
         endX: allClamped ? trail.clamped.endX : trail.endX
@@ -998,8 +1002,8 @@
       result.parenTrails.push(shortTrail);
 
       if (result.returnParens) {
-        var i;
-        for (i=0; i<openers.length; i++) {
+        let i;
+        for (i = 0; i < openers.length; i++) {
           openers[i].closer.trail = shortTrail;
         }
       }
@@ -1007,14 +1011,14 @@
   }
 
   function updateRememberedParenTrail(result) {
-    var trail = result.parenTrails[result.parenTrails.length-1];
+    const trail = result.parenTrails[result.parenTrails.length - 1];
     if (!trail || trail.lineNo !== result.parenTrail.lineNo) {
       rememberParenTrail(result);
     }
     else {
       trail.endX = result.parenTrail.endX;
       if (result.returnParens) {
-        var opener = result.parenTrail.openers[result.parenTrail.openers.length-1];
+        const opener = result.parenTrail.openers[result.parenTrail.openers.length - 1];
         opener.closer.trail = trail;
       }
     }
@@ -1037,14 +1041,14 @@
     }
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Indentation functions
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function addIndent(result, delta) {
-    var origIndent = result.x;
-    var newIndent = origIndent + delta;
-    var indentStr = repeatString(BLANK_SPACE, newIndent);
+    const origIndent = result.x;
+    const newIndent = origIndent + delta;
+    const indentStr = repeatString(BLANK_SPACE, newIndent);
     replaceWithinLine(result, result.lineNo, 0, origIndent, indentStr);
     result.x = newIndent;
     result.indentX = newIndent;
@@ -1058,12 +1062,12 @@
   }
 
   function correctIndent(result) {
-    var origIndent = result.x;
-    var newIndent = origIndent;
-    var minIndent = 0;
-    var maxIndent = result.maxIndent;
+    const origIndent = result.x;
+    let newIndent = origIndent;
+    let minIndent = 0;
+    let maxIndent = result.maxIndent;
 
-    var opener = peek(result.parenStack, 0);
+    const opener = peek(result.parenStack, 0);
     if (opener) {
       minIndent = opener.x + 1;
       maxIndent = opener.maxChildIndent;
@@ -1090,7 +1094,7 @@
     if (result.mode === INDENT_MODE) {
       correctParenTrail(result, result.x);
 
-      var opener = peek(result.parenStack, 0);
+      const opener = peek(result.parenStack, 0);
       if (opener && shouldAddOpenerIndent(result, opener)) {
         addIndent(result, opener.indentDelta);
       }
@@ -1140,18 +1144,18 @@
   }
 
   function onCommentLine(result) {
-    var parenTrailLength = result.parenTrail.openers.length;
+    const parenTrailLength = result.parenTrail.openers.length;
 
     // restore the openers matching the previous paren trail
-    var j;
+    let j;
     if (result.mode === PAREN_MODE) {
-      for (j=0; j<parenTrailLength; j++) {
+      for (j = 0; j < parenTrailLength; j++) {
         result.parenStack.push(peek(result.parenTrail.openers, j));
       }
     }
 
-    var i = getParentOpenerIndex(result, result.x);
-    var opener = peek(result.parenStack, i);
+    const i = getParentOpenerIndex(result, result.x);
+    const opener = peek(result.parenStack, i);
     if (opener) {
       // shift the comment line based on the parent open paren
       if (shouldAddOpenerIndent(result, opener)) {
@@ -1162,7 +1166,7 @@
 
     // repop the openers matching the previous paren trail
     if (result.mode === PAREN_MODE) {
-      for (j=0; j<parenTrailLength; j++) {
+      for (j = 0; j < parenTrailLength; j++) {
         result.parenStack.pop();
       }
     }
@@ -1185,7 +1189,7 @@
   }
 
   function makeTabStop(result, opener) {
-    var tabStop = {
+    const tabStop = {
       ch: opener.ch,
       x: opener.x,
       lineNo: opener.lineNo
@@ -1205,33 +1209,33 @@
       return;
     }
 
-    var i;
-    for (i=0; i<result.parenStack.length; i++) {
+    let i;
+    for (i = 0; i < result.parenStack.length; i++) {
       result.tabStops.push(makeTabStop(result, result.parenStack[i]));
     }
 
     if (result.mode === PAREN_MODE) {
-      for (i=result.parenTrail.openers.length-1; i>=0; i--) {
+      for (i = result.parenTrail.openers.length - 1; i >= 0; i--) {
         result.tabStops.push(makeTabStop(result, result.parenTrail.openers[i]));
       }
     }
 
     // remove argX if it falls to the right of the next stop
-    for (i=1; i<result.tabStops.length; i++) {
-      var x = result.tabStops[i].x;
-      var prevArgX = result.tabStops[i-1].argX;
+    for (i = 1; i < result.tabStops.length; i++) {
+      const x = result.tabStops[i].x;
+      const prevArgX = result.tabStops[i - 1].argX;
       if (prevArgX != null && prevArgX >= x) {
-        delete result.tabStops[i-1].argX;
+        delete result.tabStops[i - 1].argX;
       }
     }
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // High-level processing functions
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function processChar(result, ch) {
-    var origCh = ch;
+    const origCh = ch;
 
     result.ch = ch;
     result.skipChar = false;
@@ -1243,7 +1247,7 @@
     }
 
     if (result.skipChar) {
-      result.ch = "";
+      result.ch = '';
     }
     else {
       onChar(result);
@@ -1257,7 +1261,7 @@
 
     setTabStops(result);
 
-    var x;
+    let x;
     for (x = 0; x < result.inputLines[lineNo].length; x++) {
       result.inputX = x;
       processChar(result, result.inputLines[lineNo][x]);
@@ -1304,10 +1308,10 @@
   }
 
   function processText(text, options, mode, smart) {
-    var result = getInitialResult(text, options, mode, smart);
+    const result = getInitialResult(text, options, mode, smart);
 
     try {
-      var i;
+      let i;
       for (i = 0; i < result.inputLines.length; i++) {
         result.inputLineNo = i;
         processLine(result, i);
@@ -1324,13 +1328,13 @@
     return result;
   }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Public API
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
   function publicResult(result) {
-    var lineEnding = getLineEnding(result.origText);
-    var final;
+    const lineEnding = getLineEnding(result.origText);
+    let final;
     if (result.success) {
       final = {
         text: result.lines.join(lineEnding),
@@ -1375,12 +1379,12 @@
 
   function smartMode(text, options) {
     options = parseOptions(options);
-    var smart = options.selectionStartLine == null;
+    const smart = options.selectionStartLine == null;
     return publicResult(processText(text, options, INDENT_MODE, smart));
   }
 
-  var API = {
-    version: "3.11.0",
+  const API = {
+    version: '3.11.0',
     indentMode: indentMode,
     parenMode: parenMode,
     smartMode: smartMode
@@ -1388,4 +1392,4 @@
 
   return API;
 
-})); // end module anonymous scope
+}); // end module anonymous scope

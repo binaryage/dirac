@@ -34,7 +34,7 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
     this._delegate = delegate;
 
     if (dirac.hasInlineCFs) {
-      this.codeMirror().on("update", this._update.bind(this));
+      this.codeMirror().on('update', this._update.bind(this));
     }
     this.codeMirror().on('cursorActivity', this._cursorActivity.bind(this));
     this.codeMirror().on('gutterClick', this._gutterClick.bind(this));

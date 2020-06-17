@@ -91,7 +91,7 @@ export class SuggestBox {
     this._glassPane.setAnchorBehavior(AnchorBehavior.PreferBottom);
     this._glassPane.setOutsideClickCallback(this.hide.bind(this));
     const shadowRoot = createShadowRootWithCoreStyles(this._glassPane.contentElement, 'ui/suggestBox.css');
-    UI.Utils.appendStyle(shadowRoot, "ui/suggestBox-dirac.css");
+    UI.Utils.appendStyle(shadowRoot, 'ui/suggestBox-dirac.css');
     shadowRoot.appendChild(this._element);
   }
 
@@ -140,7 +140,7 @@ export class SuggestBox {
     for (let i = 0; i < items.length; i++) {
       let length = (items[i].title || items[i].text).length + (items[i].subtitle || '').length;
       const length2 = (items[i].epilogue || '').length;
-      length = 54 + 6.7*length + 4.9*length2; // dirac's suggestion items are more complex, this is a rough estimate
+      length = 54 + 6.7 * length + 4.9 * length2; // dirac's suggestion items are more complex, this is a rough estimate
       if (length > maxLength) {
         maxLength = length;
         maxItem = items[i];
@@ -227,7 +227,7 @@ export class SuggestBox {
       element.classList.add('secondary');
     }
     element.tabIndex = -1;
-    element.createChild("span", "prologue").textContent = (item.prologue || "").trimEndWithMaxLength(50);
+    element.createChild('span', 'prologue').textContent = (item.prologue || '').trimEndWithMaxLength(50);
     const maxTextLength = 50 + query.length;
     const displayText = (item.title || item.text).trim().trimEndWithMaxLength(maxTextLength).replace(/\n/g, '\u21B5');
 
@@ -240,7 +240,7 @@ export class SuggestBox {
       titleElement.createChild('span', 'query').textContent = displayText.substring(index, index + query.length);
     }
     titleElement.createChild('span', 'post-query').textContent = displayText.substring(index > -1 ? index + query.length : 0);
-    element.createChild("span", "epilogue").textContent = (item.epilogue || "").trimEndWithMaxLength(50);
+    element.createChild('span', 'epilogue').textContent = (item.epilogue || '').trimEndWithMaxLength(50);
     titleElement.createChild('span', 'spacer');
     if (item.subtitleRenderer) {
       const subtitleElement = item.subtitleRenderer.call(null);

@@ -147,7 +147,7 @@ export const resolveScope = function(scope) {
    */
   function onIdentifiers(identifiers) {
     const namesMapping = [];
-    let missingIdentifiers = [];
+    const missingIdentifiers = [];
     // Extract as much as possible from SourceMap.
     for (let i = 0; i < identifiers.length; ++i) {
       const id = identifiers[i];
@@ -162,7 +162,7 @@ export const resolveScope = function(scope) {
     }
 
     // Resolve missing identifier names from sourcemap ranges.
-    let promises = missingIdentifiers.map(id => {
+    const promises = missingIdentifiers.map(id => {
       return resolveSourceName(id).then(onSourceNameResolved.bind(null, namesMapping, id));
     });
     return Promise.all(promises)
@@ -275,7 +275,7 @@ const lookupMappingRecordForOriginalName = function(mapping, name, line, column)
     const desc = value.originalNameDescriptor;
     return desc.name === name && desc.lineNumber === line && desc.columnNumber === column;
   });
-  if (res.length!==1) {
+  if (res.length !== 1) {
     return null;
   }
   return res[0];
@@ -569,21 +569,21 @@ export class RemoteObject extends SDK.RemoteObject.RemoteObject {
         const property = properties[i];
         let name = property.name;
         const propertyMapping = collectMappingRecordsForCompiledName(namesMapping, name);
-        if (propertyMapping.length>0) {
+        if (propertyMapping.length > 0) {
           // TODO: how to resolve the case when compiled name matches multiple original names?
           //       currently we don't have any information in property which would help us decide which one to take
           name = propertyMapping[0].originalNameDescriptor.name;
         }
-        let newProperty = new SDK.RemoteObject.RemoteObjectProperty(
+        const newProperty = new SDK.RemoteObject.RemoteObjectProperty(
           name, property.value, property.enumerable, property.writable, property.isOwn, property.wasThrown,
           property.symbol, property.synthetic);
-        if (propertyMapping.length>0) {
+        if (propertyMapping.length > 0) {
           // this is for _prepareScopeVariables, TODO: figure out a better way how to pass this info
           newProperty.originalNameLineNumber = propertyMapping[0].originalNameDescriptor.lineNumber;
           newProperty.originalNameColumnNumber = propertyMapping[0].originalNameDescriptor.columnNumber;
         }
         newProperties.push(newProperty);
-        newProperties[newProperties.length-1].resolutionSourceProperty = property;
+        newProperties[newProperties.length - 1].resolutionSourceProperty = property;
       }
     }
     return {properties: newProperties, internalProperties: internalProperties};
@@ -606,8 +606,8 @@ export class RemoteObject extends SDK.RemoteObject.RemoteObject {
     }
 
     let actualName = name;
-    let matchingRecords = collectMappingRecordsForOriginalName(namesMapping, name);
-    if (matchingRecords.length>0) {
+    const matchingRecords = collectMappingRecordsForOriginalName(namesMapping, name);
+    if (matchingRecords.length > 0) {
       // TODO: how to resolve the case when original name matches multiple compiled names?
       actualName = matchingRecords[0].compiledNameDescriptor.name;
     }

@@ -159,12 +159,12 @@ export class InspectorFrontendHostStub {
          */
       function(tag) {
         if (!tag) {
-          tag = "[no runtime] " + url;
+          tag = '[no runtime] ' + url;
         }
-        document.title = "Dirac v" + version + " <-> " + tag;
+        document.title = 'Dirac v' + version + ' <-> ' + tag;
       });
     // this is just for a temporary display, we will update it when get_runtime_tag calls us back with full runtime info
-    document.title = "Dirac v" + version + " <-> " + url;
+    document.title = 'Dirac v' + version + ' <-> ' + url;
   }
 
   /**

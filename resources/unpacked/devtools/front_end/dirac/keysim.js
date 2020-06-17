@@ -1,24 +1,28 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
         typeof define === 'function' && define.amd ? define(['exports'], factory) :
-            factory((global.Keysim = {}))
-}(self, function(exports) {
+            factory((global.Keysim = {}));
+})(self, function(exports) {
     'use strict';
 
-    var _createClass = (function() {
+    const _createClass = (function() {
         function defineProperties(target, props) {
-            for (var i = 0; i < props.length; i++) {
-                var descriptor = props[i];
+            for (let i = 0; i < props.length; i++) {
+                const descriptor = props[i];
                 descriptor.enumerable = descriptor.enumerable || false;
                 descriptor.configurable = true;
-                if ('value' in descriptor) descriptor.writable = true;
+                if ('value' in descriptor) {descriptor.writable = true;}
                 Object.defineProperty(target, descriptor.key, descriptor);
             }
         }
 
         return function(Constructor, protoProps, staticProps) {
-            if (protoProps) defineProperties(Constructor.prototype, protoProps);
-            if (staticProps) defineProperties(Constructor, staticProps);
+            if (protoProps) {defineProperties(Constructor.prototype, protoProps);}
+            if (staticProps) {defineProperties(Constructor, staticProps);}
             return Constructor;
         };
     })();
@@ -33,7 +37,7 @@
      * @param {string} s
      * @return {function}
      */
-    let appender = function(s) {
+    const appender = function(s) {
         /**
          * @param {string} value
          * @return {string}
@@ -47,25 +51,25 @@
      * @param {number} n
      * @return {function}
      */
-    let deleter = function(n) {
+    const deleter = function(n) {
         /**
          * @param {string} value
          * @return {string}
          */
         return function(value) {
             const end = value.length - n;
-            return (end > 0) ? value.substring(0, end) : "";
+            return (end > 0) ? value.substring(0, end) : '';
         };
     };
 
-    var taskQueueRunning = false;
-    var taskQueue = [];
+    let taskQueueRunning = false;
+    const taskQueue = [];
 
     function processTask(task) {
         try {
             task.job();
         } catch (e) {
-            console.error("keysim task has failed:", e, "\n", task);
+            console.error('keysim task has failed:', e, '\n', task);
         }
         wakeTaskQueue();
     }
@@ -81,7 +85,7 @@
     }
 
     function scheduleTask(delay, job) {
-        taskQueue.push({delay, job, stack: new Error("scheduled at")});
+        taskQueue.push({delay, job, stack: new Error('scheduled at')});
         if (!taskQueueRunning) {
             wakeTaskQueue();
         }
@@ -90,83 +94,83 @@
     /* jshint esnext:true, undef:true, unused:true */
 
     // taken from devtools.js
-    var staticKeyIdentifiers = new Map([
-        [0x12, "Alt"],
-        [0x11, "Control"],
-        [0x10, "Shift"],
-        [0x14, "CapsLock"],
-        [0x5b, "Win"],
-        [0x5c, "Win"],
-        [0x0c, "Clear"],
-        [0x28, "Down"],
-        [0x23, "End"],
-        [0x0a, "Enter"],
-        [0x0d, "Enter"],
-        [0x2b, "Execute"],
-        [0x70, "F1"],
-        [0x71, "F2"],
-        [0x72, "F3"],
-        [0x73, "F4"],
-        [0x74, "F5"],
-        [0x75, "F6"],
-        [0x76, "F7"],
-        [0x77, "F8"],
-        [0x78, "F9"],
-        [0x79, "F10"],
-        [0x7a, "F11"],
-        [0x7b, "F12"],
-        [0x7c, "F13"],
-        [0x7d, "F14"],
-        [0x7e, "F15"],
-        [0x7f, "F16"],
-        [0x80, "F17"],
-        [0x81, "F18"],
-        [0x82, "F19"],
-        [0x83, "F20"],
-        [0x84, "F21"],
-        [0x85, "F22"],
-        [0x86, "F23"],
-        [0x87, "F24"],
-        [0x2f, "Help"],
-        [0x24, "Home"],
-        [0x2d, "Insert"],
-        [0x25, "Left"],
-        [0x22, "PageDown"],
-        [0x21, "PageUp"],
-        [0x13, "Pause"],
-        [0x2c, "PrintScreen"],
-        [0x27, "Right"],
-        [0x91, "Scroll"],
-        [0x29, "Select"],
-        [0x26, "Up"],
-        [0x2e, "U+007F"], // Standard says that DEL becomes U+007F.
-        [0xb0, "MediaNextTrack"],
-        [0xb1, "MediaPreviousTrack"],
-        [0xb2, "MediaStop"],
-        [0xb3, "MediaPlayPause"],
-        [0xad, "VolumeMute"],
-        [0xae, "VolumeDown"],
-        [0xaf, "VolumeUp"],
+    const staticKeyIdentifiers = new Map([
+        [0x12, 'Alt'],
+        [0x11, 'Control'],
+        [0x10, 'Shift'],
+        [0x14, 'CapsLock'],
+        [0x5b, 'Win'],
+        [0x5c, 'Win'],
+        [0x0c, 'Clear'],
+        [0x28, 'Down'],
+        [0x23, 'End'],
+        [0x0a, 'Enter'],
+        [0x0d, 'Enter'],
+        [0x2b, 'Execute'],
+        [0x70, 'F1'],
+        [0x71, 'F2'],
+        [0x72, 'F3'],
+        [0x73, 'F4'],
+        [0x74, 'F5'],
+        [0x75, 'F6'],
+        [0x76, 'F7'],
+        [0x77, 'F8'],
+        [0x78, 'F9'],
+        [0x79, 'F10'],
+        [0x7a, 'F11'],
+        [0x7b, 'F12'],
+        [0x7c, 'F13'],
+        [0x7d, 'F14'],
+        [0x7e, 'F15'],
+        [0x7f, 'F16'],
+        [0x80, 'F17'],
+        [0x81, 'F18'],
+        [0x82, 'F19'],
+        [0x83, 'F20'],
+        [0x84, 'F21'],
+        [0x85, 'F22'],
+        [0x86, 'F23'],
+        [0x87, 'F24'],
+        [0x2f, 'Help'],
+        [0x24, 'Home'],
+        [0x2d, 'Insert'],
+        [0x25, 'Left'],
+        [0x22, 'PageDown'],
+        [0x21, 'PageUp'],
+        [0x13, 'Pause'],
+        [0x2c, 'PrintScreen'],
+        [0x27, 'Right'],
+        [0x91, 'Scroll'],
+        [0x29, 'Select'],
+        [0x26, 'Up'],
+        [0x2e, 'U+007F'], // Standard says that DEL becomes U+007F.
+        [0xb0, 'MediaNextTrack'],
+        [0xb1, 'MediaPreviousTrack'],
+        [0xb2, 'MediaStop'],
+        [0xb3, 'MediaPlayPause'],
+        [0xad, 'VolumeMute'],
+        [0xae, 'VolumeDown'],
+        [0xaf, 'VolumeUp'],
     ]);
 
     function keyCodeToKeyIdentifier(keyCode)
     {
-        var result = staticKeyIdentifiers.get(keyCode);
+        let result = staticKeyIdentifiers.get(keyCode);
         if (result !== undefined)
-            return result;
-        result = "U+";
-        var hexString = keyCode.toString(16).toUpperCase();
-        for (var i = hexString.length; i < 4; ++i)
-            result += "0";
+            {return result;}
+        result = 'U+';
+        const hexString = keyCode.toString(16).toUpperCase();
+        for (let i = hexString.length; i < 4; ++i)
+            {result += '0';}
         result += hexString;
         return result;
     }
 
-    var keyCodeToKeyMap = {
-        9: "Tab", // tab
-        16: "Shift",
-        27: "Escape", // esc
-        32: " ", // space
+    const keyCodeToKeyMap = {
+        9: 'Tab', // tab
+        16: 'Shift',
+        27: 'Escape', // esc
+        32: ' ', // space
         38: 'ArrowUp',
         40: 'ArrowDown',
         37: 'ArrowLeft',
@@ -197,13 +201,13 @@
     }
 
 
-    var CTRL = 1 << 0;
-    var META = 1 << 1;
-    var ALT = 1 << 2;
-    var SHIFT = 1 << 3;
+    const CTRL = 1 << 0;
+    const META = 1 << 1;
+    const ALT = 1 << 2;
+    const SHIFT = 1 << 3;
 
     // Key Events
-    var KeyEvents = {
+    const KeyEvents = {
         DOWN: 1 << 0,
         PRESS: 1 << 1,
         UP: 1 << 2,
@@ -217,7 +221,7 @@
      * @class Keystroke
      */
 
-    var Keystroke = (function() {
+    const Keystroke = (function() {
         /**
          * @param {number} modifiers A bitmask formed by CTRL, META, ALT, and SHIFT.
          * @param {number} keyCode
@@ -285,7 +289,7 @@
         return Keystroke;
     })();
 
-    var Keyboard = (function() {
+    const Keyboard = (function() {
         /**
          * @param {Object.<number, Keystroke>} charCodeKeyCodeMap
          * @param {Object.<string, number>} actionMap
@@ -306,10 +310,10 @@
          */
 
         Keyboard.prototype.charCodeForKeystroke = function charCodeForKeystroke(keystroke) {
-            var map = this._charCodeKeyCodeMap;
-            for (var charCode in map) {
+            const map = this._charCodeKeyCodeMap;
+            for (const charCode in map) {
                 if (Object.prototype.hasOwnProperty.call(map, charCode)) {
-                    var keystrokeForCharCode = map[charCode];
+                    const keystrokeForCharCode = map[charCode];
                     if (keystroke.keyCode === keystrokeForCharCode.keyCode && keystroke.modifiers === keystrokeForCharCode.modifiers) {
                         return parseInt(charCode, 10);
                     }
@@ -328,15 +332,15 @@
          */
 
         Keyboard.prototype.createEventFromKeystroke = function createEventFromKeystroke(type, keystroke, target) {
-            var doc = target.ownerDocument || document;
+            let doc = target.ownerDocument || document;
             if (target instanceof Document) {
                 doc = target;
             }
 
-            var window = doc.defaultView;
-            var Event = window.Event;
+            const window = doc.defaultView;
+            const Event = window.Event;
 
-            var event = undefined;
+            let event = undefined;
 
             try {
                 event = new Event(type);
@@ -378,7 +382,7 @@
          * @param {?function} callback
          */
         Keyboard.prototype.dispatchEventsForAction = function(action, target, callback) {
-            var keystroke = this.keystrokeForAction(action);
+            const keystroke = this.keystrokeForAction(action);
             scheduleTask(50, () => this.dispatchEventsForKeystroke(keystroke, target));
             if (callback) {
                 scheduleTask(100, callback);
@@ -394,9 +398,9 @@
          * @param {?function} callback
          */
         Keyboard.prototype.dispatchEventsForInput = function(input, target, callback) {
-            var currentModifierState = 0;
-            for (var i = 0, _length = input.length; i < _length; i++) {
-                var keystroke = this.keystrokeForCharCode(input.charCodeAt(i));
+            let currentModifierState = 0;
+            for (let i = 0, _length = input.length; i < _length; i++) {
+                const keystroke = this.keystrokeForCharCode(input.charCodeAt(i));
                 scheduleTask(30, ((currentModifierState, keystrokeModifiers) =>
                     this.dispatchModifierStateTransition(target, currentModifierState, keystrokeModifiers))
                     .bind(this, currentModifierState, keystroke.modifiers));
@@ -449,37 +453,37 @@
                 this.dispatchModifierStateTransition(target, 0, keystroke.modifiers, events);
             }
 
-            var dispatchEvent = function(e) {
+            const dispatchEvent = function(e) {
                 if (dirac._DEBUG_KEYSIM) {
-                    console.log("event dispatch", e.keyCode, e.type, e);
+                    console.log('event dispatch', e.keyCode, e.type, e);
                 }
                 const res = target.dispatchEvent(e);
                 if (dirac._DEBUG_KEYSIM) {
-                    console.log("  => (event dispatch) ", res);
+                    console.log('  => (event dispatch) ', res);
                 }
                 return res;
             };
 
-            var keydownEvent = undefined;
+            let keydownEvent = undefined;
             if (events & KeyEvents.DOWN) {
                 keydownEvent = this.createEventFromKeystroke('keydown', keystroke, target);
             }
 
             if (keydownEvent && dispatchEvent(keydownEvent) && this.targetCanReceiveTextInput(target)) {
-                var keypressEvent = undefined;
+                let keypressEvent = undefined;
                 if (events & KeyEvents.PRESS) {
                     keypressEvent = this.createEventFromKeystroke('keypress', keystroke, target);
                 }
                 if (keypressEvent && (keypressEvent.charCode || mutation || keystroke.mutation) && dispatchEvent(keypressEvent)) {
                     if (events & KeyEvents.INPUT) {
-                        var inputEvent = this.createEventFromKeystroke('input', keystroke, target);
+                        const inputEvent = this.createEventFromKeystroke('input', keystroke, target);
                         // CodeMirror does read input content back, so we have to add real content into target element
                         // we currently only support cursor at the end of input, no selection changes, etc.
                         const effectiveMutation = mutation || keystroke.mutation;
                         if (effectiveMutation) {
                             const newValue = effectiveMutation(target.value);
                             if (dirac._DEBUG_KEYSIM) {
-                                console.log("mutation of value", target.value, newValue, target);
+                                console.log('mutation of value', target.value, newValue, target);
                             }
                             target.value = newValue;
                         }
@@ -489,7 +493,7 @@
             }
 
             if (events & KeyEvents.UP) {
-                var keyupEvent = this.createEventFromKeystroke('keyup', keystroke, target);
+                const keyupEvent = this.createEventFromKeystroke('keyup', keystroke, target);
                 dispatchEvent(keyupEvent);
             }
 
@@ -509,24 +513,24 @@
          */
 
         Keyboard.prototype.dispatchModifierStateTransition = function dispatchModifierStateTransition(target, fromModifierState, toModifierState) {
-            var events = arguments.length <= 3 || arguments[3] === undefined ? KeyEvents.ALL : arguments[3];
+            const events = arguments.length <= 3 || arguments[3] === undefined ? KeyEvents.ALL : arguments[3];
 
-            var currentModifierState = fromModifierState;
-            var didHaveMeta = (fromModifierState & META) === META;
-            var willHaveMeta = (toModifierState & META) === META;
-            var didHaveCtrl = (fromModifierState & CTRL) === CTRL;
-            var willHaveCtrl = (toModifierState & CTRL) === CTRL;
-            var didHaveShift = (fromModifierState & SHIFT) === SHIFT;
-            var willHaveShift = (toModifierState & SHIFT) === SHIFT;
-            var didHaveAlt = (fromModifierState & ALT) === ALT;
-            var willHaveAlt = (toModifierState & ALT) === ALT;
+            let currentModifierState = fromModifierState;
+            const didHaveMeta = (fromModifierState & META) === META;
+            const willHaveMeta = (toModifierState & META) === META;
+            const didHaveCtrl = (fromModifierState & CTRL) === CTRL;
+            const willHaveCtrl = (toModifierState & CTRL) === CTRL;
+            const didHaveShift = (fromModifierState & SHIFT) === SHIFT;
+            const willHaveShift = (toModifierState & SHIFT) === SHIFT;
+            const didHaveAlt = (fromModifierState & ALT) === ALT;
+            const willHaveAlt = (toModifierState & ALT) === ALT;
 
-            var includeKeyUp = events & KeyEvents.UP;
-            var includeKeyPress = events & KeyEvents.PRESS;
-            var includeKeyDown = events & KeyEvents.DOWN;
+            const includeKeyUp = events & KeyEvents.UP;
+            const includeKeyPress = events & KeyEvents.PRESS;
+            const includeKeyDown = events & KeyEvents.DOWN;
 
-            var dispatchEvent = function(e) {
-                //console.log("dispatch", e);
+            const dispatchEvent = function(e) {
+                // console.log("dispatch", e);
                 return target.dispatchEvent(e);
             };
 
@@ -591,12 +595,12 @@
          */
 
         Keyboard.prototype.keystrokeForAction = function keystrokeForAction(action) {
-            var keyCode = null;
-            var modifiers = 0;
-            var mutation = null;
+            let keyCode = null;
+            let modifiers = 0;
+            let mutation = null;
 
-            var parts = action.split('+');
-            var lastPart = parts.pop();
+            const parts = action.split('+');
+            const lastPart = parts.pop();
 
             parts.forEach(function(part) {
                 switch (part.toUpperCase()) {
@@ -623,7 +627,7 @@
                 keyCode = actionLookup.keyCode;
                 mutation = actionLookup.mutation;
             } else if (lastPart.length === 1) {
-                var lastPartKeystroke = this.keystrokeForCharCode(lastPart.charCodeAt(0));
+                const lastPartKeystroke = this.keystrokeForCharCode(lastPart.charCodeAt(0));
                 modifiers |= lastPartKeystroke.modifiers;
                 keyCode = lastPartKeystroke.keyCode;
             } else {
@@ -670,7 +674,7 @@
         return Keyboard;
     })();
 
-    var US_ENGLISH_CHARCODE_KEYCODE_MAP = {
+    const US_ENGLISH_CHARCODE_KEYCODE_MAP = {
         32: new Keystroke(0, 32), // <space>
         33: new Keystroke(SHIFT, 49), // !
         34: new Keystroke(SHIFT, 222), // "
@@ -766,17 +770,17 @@
         126: new Keystroke(SHIFT, 192) // ~
     };
 
-    var US_ENGLISH_ACTION_MAP = {
+    const US_ENGLISH_ACTION_MAP = {
         BACKSPACE: {keyCode: 8, mutation: deleter(1)},
-        TAB: {keyCode: 9, mutation: appender("\t")},
-        ENTER: {keyCode: 13, mutation: appender("\n")},
+        TAB: {keyCode: 9, mutation: appender('\t')},
+        ENTER: {keyCode: 13, mutation: appender('\n')},
         SHIFT: {keyCode: 16},
         CTRL: {keyCode: 17},
         ALT: {keyCode: 18},
         PAUSE: {keyCode: 19},
         CAPSLOCK: {keyCode: 20},
         ESCAPE: {keyCode: 27},
-        SPACE: {keyCode: 32, mutation: appender(" ")},
+        SPACE: {keyCode: 32, mutation: appender(' ')},
         PAGEUP: {keyCode: 33},
         PAGEDOWN: {keyCode: 34},
         END: {keyCode: 35},
@@ -813,4 +817,4 @@
     exports.Keystroke = Keystroke;
     exports.Keyboard = Keyboard;
 
-}));
+});

@@ -253,7 +253,7 @@ export class InspectorView extends VBox {
    * @param {boolean} focus
    */
   _showDrawer(focus) {
-    dirac.feedback("showDrawer");
+    dirac.feedback('showDrawer');
     if (this._drawerTabbedPane.isShowing()) {
       return;
     }

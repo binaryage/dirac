@@ -1,6 +1,10 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 if (!window.dirac) {
-  console.error("window.dirac was expected to exist when loading dirac_lazy overlay");
-  throw new Error("window.dirac was expected to exist when loading dirac_lazy overlay");
+  console.error('window.dirac was expected to exist when loading dirac_lazy overlay');
+  throw new Error('window.dirac was expected to exist when loading dirac_lazy overlay');
 }
 
 Object.assign(window.dirac, (function() {
@@ -15,12 +19,12 @@ Object.assign(window.dirac, (function() {
 
   function evalInContext(context, code, silent, callback) {
     if (!context) {
-      console.warn("Requested evalInContext with null context:", code);
+      console.warn('Requested evalInContext with null context:', code);
       return;
     }
     const resultCallback = function(result, exceptionDetails) {
       if (dirac._DEBUG_EVAL) {
-        console.log("evalInContext/resultCallback: result", result, "exceptionDetails", exceptionDetails);
+        console.log('evalInContext/resultCallback: result', result, 'exceptionDetails', exceptionDetails);
       }
       if (callback) {
         let exceptionDescription = null;
@@ -33,7 +37,7 @@ Object.assign(window.dirac, (function() {
             exceptionDescription = exceptionDetails.text;
           }
           if (!exceptionDescription) {
-            exceptionDescription = "?";
+            exceptionDescription = '?';
           }
         }
 
@@ -42,7 +46,7 @@ Object.assign(window.dirac, (function() {
     };
     try {
       if (dirac._DEBUG_EVAL) {
-        console.log("evalInContext", context, silent, code);
+        console.log('evalInContext', context, silent, code);
       }
       context.evaluate({
         expression: code,
@@ -53,7 +57,7 @@ Object.assign(window.dirac, (function() {
         generatePreview: false
       }, false, false).then(answer => resultCallback(answer.object, answer.exceptionDetails));
     } catch (e) {
-      console.error("failed js evaluation in context:", context, "code", code);
+      console.error('failed js evaluation in context:', context, 'code', code);
     }
   }
 
@@ -63,56 +67,56 @@ Object.assign(window.dirac, (function() {
 
   function evalInCurrentContext(code, silent, callback) {
     if (dirac._DEBUG_EVAL) {
-      console.log("evalInCurrentContext called:", code, silent, callback);
+      console.log('evalInCurrentContext called:', code, silent, callback);
     }
     evalInContext(lookupCurrentContext(), code, silent, callback);
   }
 
   function lookupDefaultContext() {
     if (dirac._DEBUG_EVAL) {
-      console.log("lookupDefaultContext called");
+      console.log('lookupDefaultContext called');
     }
     if (!SDK.targetManager) {
       if (dirac._DEBUG_EVAL) {
-        console.log("  !SDK.targetManager => bail out");
+        console.log('  !SDK.targetManager => bail out');
       }
       return null;
     }
-    let target = SDK.targetManager.mainTarget();
+    const target = SDK.targetManager.mainTarget();
     if (!target) {
       if (dirac._DEBUG_EVAL) {
-        console.log("  !target => bail out");
+        console.log('  !target => bail out');
       }
       return null;
     }
     const runtimeModel = target.model(SDK.RuntimeModel);
     if (!runtimeModel) {
       if (dirac._DEBUG_EVAL) {
-        console.log("  !runtimeModel => bail out");
+        console.log('  !runtimeModel => bail out');
       }
       return null;
     }
     const executionContexts = runtimeModel.executionContexts();
     if (dirac._DEBUG_EVAL) {
-      console.log("  execution contexts:", executionContexts);
+      console.log('  execution contexts:', executionContexts);
     }
     for (let i = 0; i < executionContexts.length; ++i) {
       const executionContext = executionContexts[i];
       if (executionContext.isDefault) {
         if (dirac._DEBUG_EVAL) {
-          console.log("  execution context #" + i + " isDefault:", executionContext);
+          console.log('  execution context #' + i + ' isDefault:', executionContext);
         }
         return executionContext;
       }
     }
     if (executionContexts.length > 0) {
       if (dirac._DEBUG_EVAL) {
-        console.log("  lookupDefaultContext failed to find valid context => return the first one");
+        console.log('  lookupDefaultContext failed to find valid context => return the first one');
       }
       return executionContexts[0];
     }
     if (dirac._DEBUG_EVAL) {
-      console.log("  lookupDefaultContext failed to find valid context => no context avail");
+      console.log('  lookupDefaultContext failed to find valid context => no context avail');
     }
     return null;
   }
@@ -123,7 +127,7 @@ Object.assign(window.dirac, (function() {
 
   function evalInDefaultContext(code, silent, callback) {
     if (dirac._DEBUG_EVAL) {
-      console.log("evalInDefaultContext called:", code, silent, callback);
+      console.log('evalInDefaultContext called:', code, silent, callback);
     }
     evalInContext(lookupDefaultContext(), code, silent, callback);
   }
@@ -132,23 +136,23 @@ Object.assign(window.dirac, (function() {
     return SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
   }
 
-  let debuggerEventsUnsubscribers = new Map();
+  const debuggerEventsUnsubscribers = new Map();
 
   /**
    * @return {boolean}
    */
   function subscribeDebuggerEvents(callback) {
     if (debuggerEventsUnsubscribers.has(callback)) {
-      throw new Error("subscribeDebuggerEvents called without prior unsubscribeDebuggerEvents for callback " + callback);
+      throw new Error('subscribeDebuggerEvents called without prior unsubscribeDebuggerEvents for callback ' + callback);
     }
     const globalObjectClearedHandler = (...args) => {
-      callback("GlobalObjectCleared", ...args);
+      callback('GlobalObjectCleared', ...args);
     };
     const debuggerPausedHandler = (...args) => {
-      callback("DebuggerPaused", ...args);
+      callback('DebuggerPaused', ...args);
     };
     const debuggerResumedHandler = (...args) => {
-      callback("DebuggerResumed", ...args);
+      callback('DebuggerResumed', ...args);
     };
 
     SDK.targetManager.addModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
@@ -170,7 +174,7 @@ Object.assign(window.dirac, (function() {
    */
   function unsubscribeDebuggerEvents(callback) {
     if (!debuggerEventsUnsubscribers.has(callback)) {
-      throw new Error("unsubscribeDebuggerEvents called without prior subscribeDebuggerEvents for callback " + callback);
+      throw new Error('unsubscribeDebuggerEvents called without prior subscribeDebuggerEvents for callback ' + callback);
     }
 
     const unsubscriber = debuggerEventsUnsubscribers.get(callback);
@@ -183,24 +187,24 @@ Object.assign(window.dirac, (function() {
   function addConsoleMessageToMainTarget(type, level, text, parameters) {
     const target = SDK.targetManager.mainTarget();
     if (!target) {
-      console.warn("Unable to add console message to main target (no target): ", text);
+      console.warn('Unable to add console message to main target (no target): ', text);
       return;
     }
     const runtimeModel = target.model(SDK.RuntimeModel);
     if (!runtimeModel) {
-      console.warn("Unable to add console message to main target (no runtime model): ", text);
+      console.warn('Unable to add console message to main target (no runtime model): ', text);
       return;
     }
-    const sanitizedText = text || "";
+    const sanitizedText = text || '';
     const msg = new SDK.ConsoleMessage(runtimeModel, SDK.ConsoleMessage.MessageSource.Other, level,
       sanitizedText, type, undefined, undefined, undefined, parameters);
     SDK.consoleModel.addMessage(msg);
   }
 
   function evaluateCommandInConsole(contextName, code) {
-    let context = contextName === "current" ? lookupCurrentContext() : lookupDefaultContext();
+    const context = contextName === 'current' ? lookupCurrentContext() : lookupDefaultContext();
     if (!context) {
-      console.warn("evaluateCommandInConsole got null '" +contextName+ "' context:", code);
+      console.warn("evaluateCommandInConsole got null '" + contextName + "' context:", code);
       return;
     }
     const commandMessage = new SDK.ConsoleMessage(context.runtimeModel, SDK.ConsoleMessage.MessageSource.JS, null, code, SDK.ConsoleMessage.MessageType.Command);
@@ -216,29 +220,29 @@ Object.assign(window.dirac, (function() {
 
     switch (scope.type()) {
       case Protocol.Debugger.ScopeType.Local:
-        title = Common.UIString("Local");
+        title = Common.UIString('Local');
         break;
       case Protocol.Debugger.ScopeType.Closure:
         const scopeName = scope.name();
         if (scopeName)
-          title = Common.UIString("Closure (%s)", UI.beautifyFunctionName(scopeName));
+          {title = Common.UIString('Closure (%s)', UI.beautifyFunctionName(scopeName));}
         else
-          title = Common.UIString("Closure");
+          {title = Common.UIString('Closure');}
         break;
       case Protocol.Debugger.ScopeType.Catch:
-        title = Common.UIString("Catch");
+        title = Common.UIString('Catch');
         break;
       case Protocol.Debugger.ScopeType.Block:
-        title = Common.UIString("Block");
+        title = Common.UIString('Block');
         break;
       case Protocol.Debugger.ScopeType.Script:
-        title = Common.UIString("Script");
+        title = Common.UIString('Script');
         break;
       case Protocol.Debugger.ScopeType.With:
-        title = Common.UIString("With Block");
+        title = Common.UIString('With Block');
         break;
       case Protocol.Debugger.ScopeType.Global:
-        title = Common.UIString("Global");
+        title = Common.UIString('Global');
         break;
     }
 
@@ -277,7 +281,7 @@ Object.assign(window.dirac, (function() {
         if (resolved) {
           return;
         }
-        console.warn("Unable to retrieve properties from remote object", remoteObject);
+        console.warn('Unable to retrieve properties from remote object', remoteObject);
         resolve(result);
       }
 
@@ -318,7 +322,7 @@ Object.assign(window.dirac, (function() {
    * @return {function(string)}
    */
   function prepareUrlMatcher(namespaceName) {
-    const relativeNSPath = dirac.nsToRelpath(namespaceName, "js");
+    const relativeNSPath = dirac.nsToRelpath(namespaceName, 'js');
     return /** @suppressGlobalPropertiesCheck */ function(url) {
       const parser = document.createElement('a');
       parser.href = url;
@@ -348,10 +352,10 @@ Object.assign(window.dirac, (function() {
    */
   function parseClojureScriptNamespaces(url, cljsSourceCode) {
     if (dirac._DEBUG_CACHES) {
-      console.log("parseClojureScriptNamespaces ", url, cljsSourceCode);
+      console.log('parseClojureScriptNamespaces ', url, cljsSourceCode);
     }
     if (!cljsSourceCode) {
-      console.warn("unexpected empty source from " + url);
+      console.warn('unexpected empty source from ' + url);
       return [];
     }
     const descriptor = dirac.parseNsFromSource(cljsSourceCode);
@@ -370,10 +374,10 @@ Object.assign(window.dirac, (function() {
    */
   function parsePseudoNamespaces(url, jsSourceCode) {
     if (dirac._DEBUG_CACHES) {
-      console.log("parsePseudoNamespaces ", url, jsSourceCode);
+      console.log('parsePseudoNamespaces ', url, jsSourceCode);
     }
     if (!jsSourceCode) {
-      console.warn("unexpected empty source from " + url);
+      console.warn('unexpected empty source from ' + url);
       return [];
     }
 
@@ -433,10 +437,10 @@ Object.assign(window.dirac, (function() {
     // Bindings.debuggerWorkspaceBinding.maybeLoadSourceMap(script);
     return ensureSourceMapLoadedAsync(script).then(/** @suppressGlobalPropertiesCheck */sourceMap => {
       const scriptUrl = script.contentURL();
-      let promises = [];
+      const promises = [];
       let realNamespace = false;
       if (sourceMap) {
-        for (let url of sourceMap.sourceURLs()) {
+        for (const url of sourceMap.sourceURLs()) {
           // take only .cljs or .cljc urls, make sure url params and fragments get matched properly
           // examples:
           //   http://localhost:9977/.compiled/demo/clojure/browser/event.cljs?rel=1463085025939
@@ -474,7 +478,7 @@ Object.assign(window.dirac, (function() {
 
   function getMacroNamespaceNames(namespaces) {
     let names = [];
-    for (let descriptor of Object.values(namespaces)) {
+    for (const descriptor of Object.values(namespaces)) {
       if (!descriptor.detectedMacroNamespaces) {
         continue;
       }
@@ -491,13 +495,13 @@ Object.assign(window.dirac, (function() {
     if (!script) {
       return Promise.resolve([]);
     }
-    //noinspection JSCheckFunctionSignatures
+    // noinspection JSCheckFunctionSignatures
     return parseNamespacesDescriptorsAsync(script);
   }
 
   function prepareNamespacesFromDescriptors(namespaceDescriptors) {
     const result = {};
-    for (let descriptor of namespaceDescriptors) {
+    for (const descriptor of namespaceDescriptors) {
       result[descriptor.name] = descriptor;
     }
     return result;
@@ -506,16 +510,16 @@ Object.assign(window.dirac, (function() {
   function extractNamespacesAsyncWorker() {
     const workspace = Workspace.workspace;
     if (!workspace) {
-      console.error("unable to locate Workspace when extracting all ClojureScript namespace names");
+      console.error('unable to locate Workspace when extracting all ClojureScript namespace names');
       return Promise.resolve([]);
     }
 
     const uiSourceCodes = getRelevantSourceCodes(workspace);
     const promises = [];
     if (dirac._DEBUG_CACHES) {
-      console.log("extractNamespacesAsyncWorker initial processing of " + uiSourceCodes.length + " source codes");
+      console.log('extractNamespacesAsyncWorker initial processing of ' + uiSourceCodes.length + ' source codes');
     }
-    for (let uiSourceCode of uiSourceCodes) {
+    for (const uiSourceCode of uiSourceCodes) {
       const namespaceDescriptorsPromise = getSourceCodeNamespaceDescriptorsAsync(uiSourceCode);
       promises.push(namespaceDescriptorsPromise);
     }
@@ -553,8 +557,8 @@ Object.assign(window.dirac, (function() {
       Object.assign(dirac._namespacesCache, newDescriptors);
       const allDescriptorsCount = Object.keys(dirac._namespacesCache).length;
       if (dirac._DEBUG_CACHES) {
-        console.log("extractNamespacesAsync finished _namespacesCache with " + newDescriptorsCount + " items " +
-          "(" + allDescriptorsCount + " in total)");
+        console.log('extractNamespacesAsync finished _namespacesCache with ' + newDescriptorsCount + ' items ' +
+          '(' + allDescriptorsCount + ' in total)');
       }
       dirac.reportNamespacesCacheMutation();
       return dirac._namespacesCache;
@@ -566,7 +570,7 @@ Object.assign(window.dirac, (function() {
 
   function invalidateNamespacesCache() {
     if (dirac._DEBUG_CACHES) {
-      console.log("invalidateNamespacesCache");
+      console.log('invalidateNamespacesCache');
     }
     dirac._namespacesCache = null;
   }
@@ -581,12 +585,12 @@ Object.assign(window.dirac, (function() {
 
   function extractAndMergeSourceCodeNamespacesAsync(uiSourceCode) {
     if (!isRelevantSourceCode(uiSourceCode)) {
-      console.warn("extractAndMergeSourceCodeNamespacesAsync called on irrelevant source code", uiSourceCode);
+      console.warn('extractAndMergeSourceCodeNamespacesAsync called on irrelevant source code', uiSourceCode);
       return;
     }
 
     if (dirac._DEBUG_CACHES) {
-      console.log("extractAndMergeSourceCodeNamespacesAsync", uiSourceCode);
+      console.log('extractAndMergeSourceCodeNamespacesAsync', uiSourceCode);
     }
     const jobs = [extractNamespacesAsync(), extractSourceCodeNamespacesAsync(uiSourceCode)];
     return Promise.all(jobs).then(([namespaces, result]) => {
@@ -594,9 +598,9 @@ Object.assign(window.dirac, (function() {
       if (addedNamespaceNames.length) {
         Object.assign(namespaces, result);
         if (dirac._DEBUG_CACHES) {
-          console.log("updated _namespacesCache by merging ", addedNamespaceNames,
-            "from", uiSourceCode.contentURL(),
-            " => new namespaces count:", Object.keys(namespaces).length);
+          console.log('updated _namespacesCache by merging ', addedNamespaceNames,
+            'from', uiSourceCode.contentURL(),
+            ' => new namespaces count:', Object.keys(namespaces).length);
         }
         dirac.reportNamespacesCacheMutation();
       }
@@ -607,7 +611,7 @@ Object.assign(window.dirac, (function() {
   function removeNamespacesMatchingUrl(url) {
     extractNamespacesAsync().then(namespaces => {
       const removedNames = [];
-      for (let namespaceName of Object.keys(namespaces)) {
+      for (const namespaceName of Object.keys(namespaces)) {
         const descriptor = namespaces[namespaceName];
         if (descriptor.url === url) {
           delete namespaces[namespaceName];
@@ -616,8 +620,8 @@ Object.assign(window.dirac, (function() {
       }
 
       if (dirac._DEBUG_CACHES) {
-        console.log("removeNamespacesMatchingUrl removed " + removedNames.length + " namespaces for url: " + url +
-          " new namespaces count:" + Object.keys(namespaces).length);
+        console.log('removeNamespacesMatchingUrl removed ' + removedNames.length + ' namespaces for url: ' + url +
+          ' new namespaces count:' + Object.keys(namespaces).length);
       }
     });
   }
@@ -646,7 +650,7 @@ Object.assign(window.dirac, (function() {
    * @return {!Array<string>}
    */
   function filterNamesForNamespace(names, namespaceName) {
-    const prefix = namespaceName + "/";
+    const prefix = namespaceName + '/';
     const prefixLength = prefix.length;
 
     return names.filter(name => name.startsWith(prefix)).map(name => name.substring(prefixLength));
@@ -660,7 +664,7 @@ Object.assign(window.dirac, (function() {
     const target = SDK.targetManager.mainTarget();
     if (!target) {
       throw new Error(
-        `getScriptFromSourceCode called when there is no main target\n` +
+        'getScriptFromSourceCode called when there is no main target\n' +
         `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
     }
     const debuggerModel = /** @type {!SDK.DebuggerModel} */ (target.model(SDK.DebuggerModel));
@@ -677,7 +681,7 @@ Object.assign(window.dirac, (function() {
       // disabled to prevent console spam
       if (dirac._DEBUG_CACHES) {
         console.error(
-          `uiSourceCode expected to have scriptFile associated\n` +
+          'uiSourceCode expected to have scriptFile associated\n' +
           `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
       }
       return null;
@@ -685,12 +689,12 @@ Object.assign(window.dirac, (function() {
     const script = scriptFile.getScript();
     if (!script) {
       throw new Error(
-        `uiSourceCode expected to have _script associated\n` +
+        'uiSourceCode expected to have _script associated\n' +
         `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
     }
     if (!(script instanceof SDK.Script)) {
       throw new Error(
-        `getScriptFromSourceCode expected to return an instance of SDK.Script\n` +
+        'getScriptFromSourceCode expected to return an instance of SDK.Script\n' +
         `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
     }
     return script;
@@ -740,14 +744,14 @@ Object.assign(window.dirac, (function() {
       // we simply extract names from all matching source maps and then we filter then to match our namespace name and
       // deduplicate them
       const results = [];
-      for (let uiSourceCode of matchingSourceCodes) {
+      for (const uiSourceCode of matchingSourceCodes) {
         results.push(extractNamesFromSourceMap(uiSourceCode, namespaceName));
       }
       const allNames = [].concat.apply([], results);
       const filteredNames = unique(filterNamesForNamespace(allNames, namespaceName));
 
       if (dirac._DEBUG_CACHES) {
-        console.log("extracted " + filteredNames.length + " symbol names for namespace", namespaceName, matchingSourceCodes.map(i => i.url()));
+        console.log('extracted ' + filteredNames.length + ' symbol names for namespace', namespaceName, matchingSourceCodes.map(i => i.url()));
       }
 
       resolve(filteredNames);
@@ -773,7 +777,7 @@ Object.assign(window.dirac, (function() {
 
   function invalidateNamespaceSymbolsCache(namespaceName = null) {
     if (dirac._DEBUG_CACHES) {
-      console.log("invalidateNamespaceSymbolsCache", namespaceName);
+      console.log('invalidateNamespaceSymbolsCache', namespaceName);
     }
     if (namespaceName) {
       namespacesSymbolsCache.delete(namespaceName);
@@ -820,7 +824,7 @@ Object.assign(window.dirac, (function() {
 
     if (dirac._DEBUG_CACHES) {
       promisedResult.then(result => {
-        console.log("extractMacroNamespaceSymbolsAsync resolved", namespaceName, result);
+        console.log('extractMacroNamespaceSymbolsAsync resolved', namespaceName, result);
       });
     }
 
@@ -833,7 +837,7 @@ Object.assign(window.dirac, (function() {
   let listeningForWorkspaceChanges = false;
 
   function invalidateNamespaceSymbolsMatchingUrl(url) {
-    for (let namespaceName of namespacesSymbolsCache.keys()) {
+    for (const namespaceName of namespacesSymbolsCache.keys()) {
       const matcherFn = prepareUrlMatcher(namespaceName);
       if (matcherFn(url)) {
         dirac.invalidateNamespaceSymbolsCache(namespaceName);
@@ -846,7 +850,7 @@ Object.assign(window.dirac, (function() {
     if (uiSourceCode && isRelevantSourceCode(uiSourceCode)) {
       const url = uiSourceCode.url();
       if (dirac._DEBUG_WATCHING) {
-        console.log("handleSourceCodeAdded", url);
+        console.log('handleSourceCodeAdded', url);
       }
       extractAndMergeSourceCodeNamespacesAsync(uiSourceCode);
       invalidateNamespaceSymbolsMatchingUrl(url);
@@ -858,7 +862,7 @@ Object.assign(window.dirac, (function() {
     if (uiSourceCode && isRelevantSourceCode(uiSourceCode)) {
       const url = uiSourceCode.url();
       if (dirac._DEBUG_WATCHING) {
-        console.log("handleSourceCodeRemoved", url);
+        console.log('handleSourceCodeRemoved', url);
       }
       removeNamespacesMatchingUrl(url);
       invalidateNamespaceSymbolsMatchingUrl(url);
@@ -871,12 +875,12 @@ Object.assign(window.dirac, (function() {
     }
 
     if (dirac._DEBUG_WATCHING) {
-      console.log("startListeningForWorkspaceChanges");
+      console.log('startListeningForWorkspaceChanges');
     }
 
     const workspace = Workspace.workspace;
     if (!workspace) {
-      console.error("unable to locate Workspace in startListeningForWorkspaceChanges");
+      console.error('unable to locate Workspace in startListeningForWorkspaceChanges');
       return;
     }
 
@@ -892,12 +896,12 @@ Object.assign(window.dirac, (function() {
     }
 
     if (dirac._DEBUG_WATCHING) {
-      console.log("stopListeningForWorkspaceChanges");
+      console.log('stopListeningForWorkspaceChanges');
     }
 
     const workspace = Workspace.workspace;
     if (!workspace) {
-      console.error("unable to locate Workspace in stopListeningForWorkspaceChanges");
+      console.error('unable to locate Workspace in stopListeningForWorkspaceChanges');
       return;
     }
 
@@ -909,7 +913,7 @@ Object.assign(window.dirac, (function() {
 
   function registerDiracLinkAction(action) {
     if (Components.Linkifier.diracLinkHandlerAction) {
-      throw new Error("registerDiracLinkAction already set");
+      throw new Error('registerDiracLinkAction already set');
     }
     Components.Linkifier.diracLinkHandlerAction = action;
   }

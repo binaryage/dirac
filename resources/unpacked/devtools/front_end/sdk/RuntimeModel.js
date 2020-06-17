@@ -71,18 +71,18 @@ export class RuntimeModel extends SDKModel {
     // note dirac module is initialized at this point because sdk module (our module) depends on dirac
     // these should match "feature toggles" in dirac.js, dirac[name] = enabled
     const flagNames = [
-      "hasREPL",
-      "hasParinfer",
-      "hasFriendlyLocals",
-      "hasClusteredLocals",
-      "hasInlineCFs",
-      "hasWelcomeMessage",
-      "hasCleanUrls",
-      "hasBeautifyFunctionNames",
-      "hasLinkActions"
+      'hasREPL',
+      'hasParinfer',
+      'hasFriendlyLocals',
+      'hasClusteredLocals',
+      'hasInlineCFs',
+      'hasWelcomeMessage',
+      'hasCleanUrls',
+      'hasBeautifyFunctionNames',
+      'hasLinkActions'
     ];
 
-    for (let flagName of flagNames) {
+    for (const flagName of flagNames) {
       if (dirac.hostedInExtension) {
         // in hosted mode we receive flags via dirac_flags url param
         // we pass them down to moduleSetting

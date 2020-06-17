@@ -1042,8 +1042,8 @@ export class DebuggerPlugin extends Plugin {
       return `${name}@${line}:${column}`;
     }
 
-    var infoMap = new Map();
-    for (var property of properties) {
+    const infoMap = new Map();
+    for (const property of properties) {
       const locationId = getLocationId(property.name, property.originalNameLineNumber, property.originalNameColumnNumber);
       infoMap.set(locationId, {
         name: property.name,
@@ -1052,9 +1052,9 @@ export class DebuggerPlugin extends Plugin {
     }
 
     /** @type {!Map.<number, !Set<string>>} */
-    var infoIdsPerLine = new Map();
-    var skipObjectProperty = false;
-    var tokenizer = new TextEditor.CodeMirrorUtils.TokenizerFactory().createTokenizer('text/javascript');
+    const infoIdsPerLine = new Map();
+    let skipObjectProperty = false;
+    const tokenizer = new TextEditor.CodeMirrorUtils.TokenizerFactory().createTokenizer('text/javascript');
     tokenizer(this._textEditor.line(fromLine).substring(fromColumn), processToken.bind(this, fromLine));
     for (let i = fromLine + 1; i < toLine; ++i) {
       tokenizer(this._textEditor.line(i), processToken.bind(this, i));
@@ -1121,13 +1121,13 @@ export class DebuggerPlugin extends Plugin {
       widget.__nameToToken = new Map();
 
       let renderedNameCount = 0;
-      for (let infoId of infoIds) {
+      for (const infoId of infoIds) {
         if (renderedNameCount > 10)
-          break;
+          {break;}
         if (infoIdsPerLine.get(i - 1) && infoIdsPerLine.get(i - 1).has(infoId))
-          continue;  // Only render name once in the given continuous block.
+          {continue;}  // Only render name once in the given continuous block.
         if (renderedNameCount)
-          widget.createTextChild(', ');
+          {widget.createTextChild(', ');}
         const nameValuePair = widget.createChild('span');
         widget.__nameToToken.set(infoId, nameValuePair);
         const info = infoMap.get(infoId);

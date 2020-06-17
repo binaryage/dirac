@@ -129,18 +129,18 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     // then all null values
     // then all undefined values
     try {
-      var value = property.value
+      const value = property.value;
       if (!value) {
         return 3;
       }
-      if (value.type === "undefined") {
+      if (value.type === 'undefined') {
         return 3;
       }
-      if (value.subtype === "null") {
+      if (value.subtype === 'null') {
         return 2;
       }
-      var name = property.name;
-      if (name.indexOf("__")!=-1) {
+      const name = property.name;
+      if (name.indexOf('__') != -1) {
         return 1;
       }
       return 0;
@@ -156,8 +156,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
    */
   static CompareProperties(propertyA, propertyB) {
     if (dirac.hasClusteredLocals) {
-      var clusterA = ObjectUI.ObjectPropertiesSection.PropertyCluster(propertyA);
-      var clusterB = ObjectUI.ObjectPropertiesSection.PropertyCluster(propertyB);
+      const clusterA = ObjectUI.ObjectPropertiesSection.PropertyCluster(propertyA);
+      const clusterB = ObjectUI.ObjectPropertiesSection.PropertyCluster(propertyB);
 
       if (clusterA > clusterB) {
         return 1;
@@ -210,9 +210,9 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
    */
   static createNameElement(name, isPrivate, friendlyName, friendlyNameNum) {
     if (friendlyName) {
-      let numHtml="";
+      let numHtml = '';
       if (friendlyNameNum) {
-        numHtml = UI.Fragment.html`<sub class="friendly-num">${friendlyNameNum}</sub>`
+        numHtml = UI.Fragment.html`<sub class="friendly-num">${friendlyNameNum}</sub>`;
       }
       return UI.Fragment.html`<span class="name friendly-name" title="${name}">${friendlyName}${numHtml}</span>`;
     }
@@ -736,18 +736,18 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
      * @return {?string}
      */
     function getFriendlyName(name) {
-      let duIndex = name.indexOf("__");
+      const duIndex = name.indexOf('__');
       if (duIndex != -1) {
         return name.substring(0, duIndex);
       }
-      let suMatch = name.match(/(.*?)_\d+$/);
+      const suMatch = name.match(/(.*?)_\d+$/);
       if (suMatch) {
         return suMatch[1];
       }
       return null;
     }
 
-    let friendlyNamesTable = {};
+    const friendlyNamesTable = {};
     let previousProperty = null;
     const tailProperties = [];
     let protoProperty = null;
@@ -767,11 +767,11 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
       }
 
       if (dirac.hasFriendlyLocals) {
-        let friendlyName = getFriendlyName(property.name);
+        const friendlyName = getFriendlyName(property.name);
         if (friendlyName) {
           property._friendlyName = friendlyName;
           let num = friendlyNamesTable[friendlyName];
-          if (!num) num = 0;
+          if (!num) {num = 0;}
           num += 1;
           property._friendlyNameNum = num;
           friendlyNamesTable[friendlyName] = num;
@@ -1075,14 +1075,14 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     }
 
     if (this.property._cluster !== undefined) {
-      var clusterClass = "cluster-"+this.property._cluster;
+      const clusterClass = 'cluster-' + this.property._cluster;
       this.listItemElement.classList.add(clusterClass);
     }
     if (this.property._beforeClusterBoundary) {
-      this.listItemElement.classList.add("before-cluster-boundary");
+      this.listItemElement.classList.add('before-cluster-boundary');
     }
     if (this.property._afterClusterBoundary) {
-      this.listItemElement.classList.add("after-cluster-boundary");
+      this.listItemElement.classList.add('after-cluster-boundary');
     }
     const valueText = this.valueElement.textContent;
     if (this.property.value && valueText && !this.property.wasThrown) {

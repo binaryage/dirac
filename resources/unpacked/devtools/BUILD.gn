@@ -868,9 +868,7 @@ generated_non_autostart_non_remote_modules = [
   "$resources_out_dir/web_audio/web_audio_module.js",
   "$resources_out_dir/webauthn/webauthn_module.js",
   "$resources_out_dir/workspace_diff/workspace_diff_module.js",
-  # dirac - start
   "$resources_out_dir/dirac_lazy/dirac_lazy_module.js",
-  # dirac - end
 ]
 
 generated_remote_modules = [

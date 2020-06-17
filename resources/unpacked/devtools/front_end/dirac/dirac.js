@@ -1,10 +1,14 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // @ts-nocheck
 import './keysim.js';
 import './parinfer.js';
 import './parinfer-codemirror.js';
 
-console.log("DJS imported!");
-(function () {
+console.log('DJS imported!');
+(function() {
   const window = this;
 
   // dirac namespace may not exist at this point, play safe
@@ -13,7 +17,7 @@ console.log("DJS imported!");
   }
 
   // note: if goog/cljs namespace system comes after us, they don't wipe our properties, they just merge theirs in
-  Object.assign(window.dirac, (function () {
+  Object.assign(window.dirac, (function() {
     const readyPromise = new Promise(fulfil => window.dirac._runtimeReadyPromiseCallback = fulfil);
 
     function getReadyPromise() {
@@ -28,15 +32,15 @@ console.log("DJS imported!");
 
     // WARNING: keep this in sync with dirac.background.tools/flag-keys
     const knownFeatureFlags = [
-      "enable-repl",
-      "enable-parinfer",
-      "enable-friendly-locals",
-      "enable-clustered-locals",
-      "inline-custom-formatters",
-      "welcome-message",
-      "clean-urls",
-      "beautify-function-names",
-      "link-actions"];
+      'enable-repl',
+      'enable-parinfer',
+      'enable-friendly-locals',
+      'enable-clustered-locals',
+      'inline-custom-formatters',
+      'welcome-message',
+      'clean-urls',
+      'beautify-function-names',
+      'link-actions'];
 
     function hasFeature(feature) {
       const flag = featureFlags[feature];
@@ -47,7 +51,7 @@ console.log("DJS imported!");
       if (featureIndex === -1) {
         return true;
       }
-      const activeFlags = Root.Runtime.queryParam("dirac_flags") || "";
+      const activeFlags = Root.Runtime.queryParam('dirac_flags') || '';
       const result = activeFlags[featureIndex] !== '0';
       featureFlags[feature] = result;
       return result;
@@ -68,16 +72,16 @@ console.log("DJS imported!");
     }
 
     function hasDebugFlag(flagName) {
-      if (Root.Runtime.queryParam("debug_all") === "1") {
+      if (Root.Runtime.queryParam('debug_all') === '1') {
         return true;
       }
-      const paramName = "debug_" + flagName.toLowerCase();
-      return Root.Runtime.queryParam(paramName) === "1";
+      const paramName = 'debug_' + flagName.toLowerCase();
+      return Root.Runtime.queryParam(paramName) === '1';
     }
 
     // taken from https://github.com/joliss/js-string-escape/blob/master/index.js
     function stringEscape(string) {
-      return ('' + string).replace(/["'\\\n\r\u2028\u2029]/g, function (character) {
+      return ('' + string).replace(/["'\\\n\r\u2028\u2029]/g, function(character) {
         // Escape all characters not included in SingleStringCharacters and
         // DoubleStringCharacters on
         // http://www.ecma-international.org/ecma-262/5.1/#sec-7.8.4
@@ -94,9 +98,9 @@ console.log("DJS imported!");
           case '\u2028':
             return '\\u2028';
           case '\u2029':
-            return '\\u2029'
+            return '\\u2029';
         }
-      })
+      });
     }
 
     function codeAsString(code) {
@@ -104,10 +108,10 @@ console.log("DJS imported!");
     }
 
     function loadLazyDirac() {
-      return window.runtime.loadModulePromise("dirac_lazy");
+      return window.runtime.loadModulePromise('dirac_lazy');
     }
 
-    function deduplicate(coll, keyFn = item => "" + item) {
+    function deduplicate(coll, keyFn = item => '' + item) {
       const store = new Set();
       return coll.filter(item => !store.has(keyFn(item)) && !!store.add(keyFn(item)));
     }
@@ -133,10 +137,10 @@ console.log("DJS imported!");
     }
 
     function dispatchEventsForAction(action) {
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         const continuation = () => resolve("performed document action: '" + action + "'");
         const keyboard = Keysim.Keyboard.US_ENGLISH;
-        keyboard.dispatchEventsForAction(action, window["document"], continuation);
+        keyboard.dispatchEventsForAction(action, window['document'], continuation);
       });
     }
 
@@ -144,7 +148,7 @@ console.log("DJS imported!");
      * @suppressGlobalPropertiesCheck
      **/
     function collectShadowRoots(root = null) {
-      let res = [];
+      const res = [];
       const startNode = root || document.body;
       for (let node = startNode; node; node = node.traverseNextNode(startNode)) {
         if (node instanceof ShadowRoot) {
@@ -158,7 +162,7 @@ console.log("DJS imported!");
       const roots = [node].concat(collectShadowRoots(node));
       let res = [];
       for (const node of roots) {
-        let partial = node.querySelectorAll(query);
+        const partial = node.querySelectorAll(query);
         res = res.concat(Array.from(partial));
       }
       return res;
@@ -251,27 +255,27 @@ console.log("DJS imported!");
 
     // don't forget to update externs.js too
     return {
-      _DEBUG_EVAL: hasDebugFlag("eval"),
-      _DEBUG_COMPLETIONS: hasDebugFlag("completions"),
-      _DEBUG_KEYSIM: hasDebugFlag("keysim"),
-      _DEBUG_FEEDBACK: hasDebugFlag("feedback"),
-      _DEBUG_WATCHING: hasDebugFlag("watching"),
-      _DEBUG_CACHES: hasDebugFlag("caches"),
-      _DEBUG_TOGGLES: hasDebugFlag("toggles"),
+      _DEBUG_EVAL: hasDebugFlag('eval'),
+      _DEBUG_COMPLETIONS: hasDebugFlag('completions'),
+      _DEBUG_KEYSIM: hasDebugFlag('keysim'),
+      _DEBUG_FEEDBACK: hasDebugFlag('feedback'),
+      _DEBUG_WATCHING: hasDebugFlag('watching'),
+      _DEBUG_CACHES: hasDebugFlag('caches'),
+      _DEBUG_TOGGLES: hasDebugFlag('toggles'),
 
       // we use can_dock url param indicator if we are launched as internal devtools
       hostedInExtension: !Root.Runtime.queryParam('can_dock'),
 
       // -- feature toggles -----------------------------------------------------------------------------------------------
-      hasREPL: hasFeature("enable-repl"),
-      hasParinfer: hasFeature("enable-parinfer"),
-      hasFriendlyLocals: hasFeature("enable-friendly-locals"),
-      hasClusteredLocals: hasFeature("enable-clustered-locals"),
-      hasInlineCFs: hasFeature("inline-custom-formatters"),
-      hasWelcomeMessage: hasFeature("welcome-message"),
-      hasCleanUrls: hasFeature("clean-urls"),
-      hasBeautifyFunctionNames: hasFeature("beautify-function-names"),
-      hasLinkActions: hasFeature("link-actions"),
+      hasREPL: hasFeature('enable-repl'),
+      hasParinfer: hasFeature('enable-parinfer'),
+      hasFriendlyLocals: hasFeature('enable-friendly-locals'),
+      hasClusteredLocals: hasFeature('enable-clustered-locals'),
+      hasInlineCFs: hasFeature('inline-custom-formatters'),
+      hasWelcomeMessage: hasFeature('welcome-message'),
+      hasCleanUrls: hasFeature('clean-urls'),
+      hasBeautifyFunctionNames: hasFeature('beautify-function-names'),
+      hasLinkActions: hasFeature('link-actions'),
 
       // -- INTERFACE -----------------------------------------------------------------------------------------------------
       getReadyPromise: getReadyPromise,

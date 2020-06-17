@@ -738,8 +738,8 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   moveCaretToIndex(index) {
-    var selection = this._element.getComponentSelection();
-    var selectionRange = this._createRange();
+    const selection = this._element.getComponentSelection();
+    const selectionRange = this._createRange();
 
     selectionRange.setStart(this._element.firstChild, index);
     selectionRange.setEnd(this._element.firstChild, index);
@@ -752,7 +752,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
    * @return {string}
    */
   getSuggestBoxRepresentation() {
-    return "getSuggestBoxRepresentation not implemented for UI.TextPrompt";
+    return 'getSuggestBoxRepresentation not implemented for UI.TextPrompt';
   }
 
   /**

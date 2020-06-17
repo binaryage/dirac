@@ -417,7 +417,7 @@ export class TreeOutlineInShadow extends TreeOutline {
     // Redefine element to the external one.
     this.element = createElement('div');
     this._shadowRoot = createShadowRootWithCoreStyles(this.element, 'ui/treeoutline.css');
-    UI.Utils.appendStyle(this._shadowRoot, "ui/treeoutline-dirac.css");
+    UI.Utils.appendStyle(this._shadowRoot, 'ui/treeoutline-dirac.css');
     this._disclosureElement = this._shadowRoot.createChild('div', 'tree-outline-disclosure');
     this._disclosureElement.appendChild(this.contentElement);
     this._renderSelection = true;

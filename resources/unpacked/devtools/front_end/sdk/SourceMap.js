@@ -343,7 +343,7 @@ export class TextSourceMap {
     const mappings = this._reversedMappings(sourceURL);
     const first = mappings.lowerBound(lineNumber, lineComparator);
     const last = mappings.upperBound(lineNumber, lineComparator);
-    if (first >= mappings.length || mappings[first].sourceLineNumber !==lineNumber ) {
+    if (first >= mappings.length || mappings[first].sourceLineNumber !== lineNumber) {
       return null;
     }
     const columnMappings = mappings.slice(first, last);
