@@ -20,17 +20,15 @@
 // JS Module Boilerplate
 // ------------------------------------------------------------------------------
 
-(function(root, factory) {
+(function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     define([], factory);
-  }
-  else if (typeof module === 'object' && module.exports) {
+  } else if (typeof module === 'object' && module.exports) {
     module.exports = factory();
-  }
-  else {
+  } else {
     root.parinfer = factory();
   }
-})(self, function() { // start module anonymous scope
+})(self, function () { // start module anonymous scope
   'use strict';
 
 // ------------------------------------------------------------------------------
@@ -281,17 +279,35 @@
 
     // merge options if they are valid
     if (options) {
-      if (isInteger(options.cursorX))            { result.cursorX            = options.cursorX;
-        result.origCursorX        = options.cursorX; }
-      if (isInteger(options.cursorLine))         { result.cursorLine         = options.cursorLine;
-        result.origCursorLine     = options.cursorLine; }
-      if (isInteger(options.prevCursorX))        { result.prevCursorX        = options.prevCursorX; }
-      if (isInteger(options.prevCursorLine))     { result.prevCursorLine     = options.prevCursorLine; }
-      if (isInteger(options.selectionStartLine)) { result.selectionStartLine = options.selectionStartLine; }
-      if (isArray(options.changes))              { result.changes            = transformChanges(options.changes); }
-      if (isBoolean(options.partialResult))      { result.partialResult      = options.partialResult; }
-      if (isBoolean(options.forceBalance))       { result.forceBalance       = options.forceBalance; }
-      if (isBoolean(options.returnParens))       { result.returnParens       = options.returnParens; }
+      if (isInteger(options.cursorX)) {
+        result.cursorX = options.cursorX;
+        result.origCursorX = options.cursorX;
+      }
+      if (isInteger(options.cursorLine)) {
+        result.cursorLine = options.cursorLine;
+        result.origCursorLine = options.cursorLine;
+      }
+      if (isInteger(options.prevCursorX)) {
+        result.prevCursorX = options.prevCursorX;
+      }
+      if (isInteger(options.prevCursorLine)) {
+        result.prevCursorLine = options.prevCursorLine;
+      }
+      if (isInteger(options.selectionStartLine)) {
+        result.selectionStartLine = options.selectionStartLine;
+      }
+      if (isArray(options.changes)) {
+        result.changes = transformChanges(options.changes);
+      }
+      if (isBoolean(options.partialResult)) {
+        result.partialResult = options.partialResult;
+      }
+      if (isBoolean(options.forceBalance)) {
+        result.forceBalance = options.forceBalance;
+      }
+      if (isBoolean(options.returnParens)) {
+        result.returnParens = options.returnParens;
+      }
     }
 
     return result;
@@ -357,8 +373,7 @@
           x: cache ? cache[keyX] : opener[keyX]
         };
       }
-    }
-    else if (name === ERROR_UNCLOSED_PAREN) {
+    } else if (name === ERROR_UNCLOSED_PAREN) {
       e.lineNo = opener[keyLineNo];
       e.x = opener[keyX];
     }
@@ -579,8 +594,7 @@
       if (result.isInCode && isWhitespace(result)) {
         result.trackingArgTabStop = 'arg';
       }
-    }
-    else if (state === 'arg') {
+    } else if (state === 'arg') {
       if (!isWhitespace(result)) {
         const opener = peek(result.parenStack, 0);
         opener.argX = result.x;
@@ -659,8 +673,7 @@
       if (!canRemove) {
         throw error(result, ERROR_UNMATCHED_CLOSE_PAREN);
       }
-    }
-    else if (result.mode === INDENT_MODE && !result.errorPosCache[ERROR_UNMATCHED_CLOSE_PAREN]) {
+    } else if (result.mode === INDENT_MODE && !result.errorPosCache[ERROR_UNMATCHED_CLOSE_PAREN]) {
       cacheErrorPos(result, ERROR_UNMATCHED_CLOSE_PAREN);
       const opener = peek(result.parenStack, 0);
       if (opener) {
@@ -676,8 +689,7 @@
     if (result.isInCode) {
       if (isValidCloseParen(result.parenStack, result.ch)) {
         onMatchedCloseParen(result);
-      }
-      else {
+      } else {
         onUnmatchedCloseParen(result);
       }
     }
@@ -705,14 +717,12 @@
   function onQuote(result) {
     if (result.isInStr) {
       result.isInStr = false;
-    }
-    else if (result.isInComment) {
+    } else if (result.isInComment) {
       result.quoteDanger = !result.quoteDanger;
       if (result.quoteDanger) {
         cacheErrorPos(result, ERROR_QUOTE_DANGER);
       }
-    }
-    else {
+    } else {
       result.isInStr = true;
       cacheErrorPos(result, ERROR_UNCLOSED_QUOTE);
     }
@@ -742,14 +752,23 @@
     let ch = result.ch;
     result.isEscaped = false;
 
-    if (result.isEscaping)        { afterBackslash(result); }
-    else if (isOpenParen(ch))     { onOpenParen(result); }
-    else if (isCloseParen(ch))    { onCloseParen(result); }
-    else if (ch === DOUBLE_QUOTE) { onQuote(result); }
-    else if (ch === SEMICOLON)    { onSemicolon(result); }
-    else if (ch === BACKSLASH)    { onBackslash(result); }
-    else if (ch === TAB)          { onTab(result); }
-    else if (ch === NEWLINE)      { onNewline(result); }
+    if (result.isEscaping) {
+      afterBackslash(result);
+    } else if (isOpenParen(ch)) {
+      onOpenParen(result);
+    } else if (isCloseParen(ch)) {
+      onCloseParen(result);
+    } else if (ch === DOUBLE_QUOTE) {
+      onQuote(result);
+    } else if (ch === SEMICOLON) {
+      onSemicolon(result);
+    } else if (ch === BACKSLASH) {
+      onBackslash(result);
+    } else if (ch === TAB) {
+      onTab(result);
+    } else if (ch === NEWLINE) {
+      onNewline(result);
+    }
 
     ch = result.ch;
 
@@ -938,8 +957,7 @@
     for (i = startX; i < endX; i++) {
       if (isCloseParen(line[i])) {
         newTrail += line[i];
-      }
-      else {
+      } else {
         spaceCount++;
       }
     }
@@ -982,8 +1000,7 @@
       const parent = peek(result.parenStack, 0);
       if (parent) {
         parent.maxChildIndent = opener.x;
-      }
-      else {
+      } else {
         result.maxIndent = opener.x;
       }
     }
@@ -1015,8 +1032,7 @@
     const trail = result.parenTrails[result.parenTrails.length - 1];
     if (!trail || trail.lineNo !== result.parenTrail.lineNo) {
       rememberParenTrail(result);
-    }
-    else {
+    } else {
       trail.endX = result.parenTrail.endX;
       if (result.returnParens) {
         const opener = result.parenTrail.openers[result.parenTrail.openers.length - 1];
@@ -1028,12 +1044,10 @@
   function finishNewParenTrail(result) {
     if (result.isInStr) {
       invalidateParenTrail(result);
-    }
-    else if (result.mode === INDENT_MODE) {
+    } else if (result.mode === INDENT_MODE) {
       clampParenTrailToCursor(result);
       popParenTrail(result);
-    }
-    else if (result.mode === PAREN_MODE) {
+    } else if (result.mode === PAREN_MODE) {
       setMaxIndent(result, peek(result.parenTrail.openers, 0));
       if (result.lineNo !== result.cursorLine) {
         cleanParenTrail(result);
@@ -1099,8 +1113,7 @@
       if (opener && shouldAddOpenerIndent(result, opener)) {
         addIndent(result, opener.indentDelta);
       }
-    }
-    else if (result.mode === PAREN_MODE) {
+    } else if (result.mode === PAREN_MODE) {
       correctIndent(result);
     }
   }
@@ -1128,16 +1141,13 @@
       if (!isValidCloseParen(result.parenStack, result.ch)) {
         if (result.smart) {
           result.skipChar = true;
-        }
-        else {
+        } else {
           throw error(result, ERROR_UNMATCHED_CLOSE_PAREN);
         }
-      }
-      else if (isCursorLeftOf(result.cursorX, result.cursorLine, result.x, result.lineNo)) {
+      } else if (isCursorLeftOf(result.cursorX, result.cursorLine, result.x, result.lineNo)) {
         resetParenTrail(result, result.lineNo, result.x);
         onIndent(result);
-      }
-      else {
+      } else {
         appendParenTrail(result);
         result.skipChar = true;
       }
@@ -1176,13 +1186,11 @@
   function checkIndent(result) {
     if (isCloseParen(result.ch)) {
       onLeadingCloseParen(result);
-    }
-    else if (result.ch === SEMICOLON) {
+    } else if (result.ch === SEMICOLON) {
       // comments don't count as indentation points
       onCommentLine(result);
       result.trackingIndent = false;
-    }
-    else if (result.ch !== NEWLINE &&
+    } else if (result.ch !== NEWLINE &&
       result.ch !== BLANK_SPACE &&
       result.ch !== TAB) {
       onIndent(result);
@@ -1249,8 +1257,7 @@
 
     if (result.skipChar) {
       result.ch = '';
-    }
-    else {
+    } else {
       onChar(result);
     }
 
@@ -1280,8 +1287,12 @@
   }
 
   function finalizeResult(result) {
-    if (result.quoteDanger) { throw error(result, ERROR_QUOTE_DANGER); }
-    if (result.isInStr)     { throw error(result, ERROR_UNCLOSED_QUOTE); }
+    if (result.quoteDanger) {
+      throw error(result, ERROR_QUOTE_DANGER);
+    }
+    if (result.isInStr) {
+      throw error(result, ERROR_UNCLOSED_QUOTE);
+    }
 
     if (result.parenStack.length !== 0) {
       if (result.mode === PAREN_MODE) {
@@ -1300,8 +1311,7 @@
     if (e.parinferError) {
       delete e.parinferError;
       result.error = e;
-    }
-    else {
+    } else {
       result.error.name = ERROR_UNHANDLED;
       result.error.message = e.stack;
       throw e;
@@ -1318,8 +1328,7 @@
         processLine(result, i);
       }
       finalizeResult(result);
-    }
-    catch (e) {
+    } catch (e) {
       if (e.leadingCloseParen || e.releaseCursorHold) {
         return processText(text, options, PAREN_MODE, smart);
       }
@@ -1348,8 +1357,7 @@
       if (result.returnParens) {
         final.parens = result.parens;
       }
-    }
-    else {
+    } else {
       final = {
         text: result.partialResult ? result.lines.join(lineEnding) : result.origText,
         cursorX: result.partialResult ? result.cursorX : result.origCursorX,
@@ -1362,9 +1370,15 @@
         final.parens = result.parens;
       }
     }
-    if (final.cursorX === UINT_NULL) { delete final.cursorX; }
-    if (final.cursorLine === UINT_NULL) { delete final.cursorLine; }
-    if (final.tabStops && final.tabStops.length === 0) { delete final.tabStops; }
+    if (final.cursorX === UINT_NULL) {
+      delete final.cursorX;
+    }
+    if (final.cursorLine === UINT_NULL) {
+      delete final.cursorLine;
+    }
+    if (final.tabStops && final.tabStops.length === 0) {
+      delete final.tabStops;
+    }
     return final;
   }
 

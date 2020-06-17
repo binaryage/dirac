@@ -93,7 +93,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
     if (this._suggestBox) {
       return this._suggestBox.visible();
     }
-      return false;
+    return false;
 
   }
 
@@ -162,8 +162,9 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
    * @param {!Array.<!CodeMirror.ChangeObject>} changes
    */
   _changes(codeMirror, changes) {
-    if (!changes.length)
-      {return;}
+    if (!changes.length) {
+      return;
+    }
 
     let singleCharInput = false;
     for (let changeIndex = 0; changeIndex < changes.length; ++changeIndex) {
@@ -186,16 +187,17 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
   }
 
   _onScroll() {
-    if (!this._isSuggestBoxVisible())
-      {return;}
+    if (!this._isSuggestBoxVisible()) {
+      return;
+    }
 
     const cursor = this._codeMirror.getCursor();
     const scrollInfo = this._codeMirror.getScrollInfo();
     const topmostLineNumber = this._codeMirror.lineAtHeight(scrollInfo.top, 'local');
     const bottomLine = this._codeMirror.lineAtHeight(scrollInfo.top + scrollInfo.clientHeight, 'local');
-    if (cursor.line < topmostLineNumber || cursor.line > bottomLine)
-      {this.finishAutocomplete();}
-    else {
+    if (cursor.line < topmostLineNumber || cursor.line > bottomLine) {
+      this.finishAutocomplete();
+    } else {
       this._updateAnchorBox();
       this._suggestBox.setPosition(this._anchorBox);
     }
@@ -446,7 +448,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
     const makeSuggestStyle = (style = '') => `suggest-cljs ${style}`;
 
     const namespaceSelector = name => {
-      return function(namespaceDescriptors) {
+      return function (namespaceDescriptors) {
         return namespaceDescriptors[name];
       };
     };
@@ -524,9 +526,9 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
             readyCallback([]);
             return;
           }
-            if (dirac.DEBUG_COMPLETIONS) {
-              console.log('namespace is a macro namespace', namespaceName);
-            }
+          if (dirac.DEBUG_COMPLETIONS) {
+            console.log('namespace is a macro namespace', namespaceName);
+          }
 
         }
 
@@ -810,8 +812,9 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
    * @return {?{x: number, y: number, height: number}}
    */
   cursorPositionToCoordinates(lineNumber, column) {
-    if (lineNumber >= this._codeMirror.lineCount() || lineNumber < 0 || column < 0 || column > this._codeMirror.getLine(lineNumber).length)
-      {return null;}
+    if (lineNumber >= this._codeMirror.lineCount() || lineNumber < 0 || column < 0 || column > this._codeMirror.getLine(lineNumber).length) {
+      return null;
+    }
 
     const metrics = this._codeMirror.cursorCoords(new CodeMirror.Pos(lineNumber, column));
 
@@ -901,14 +904,16 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
 
     switch (event.keyCode) {
       case UI.KeyboardShortcut.Keys.Up.code:
-        if (!this.isCaretOnFirstLine() || this._isSuggestBoxVisible())
-          {break;}
+        if (!this.isCaretOnFirstLine() || this._isSuggestBoxVisible()) {
+          break;
+        }
         newText = this._history.previous(this.text());
         isPrevious = true;
         break;
       case UI.KeyboardShortcut.Keys.Down.code:
-        if (!this.isCaretOnLastLine() || this._isSuggestBoxVisible())
-          {break;}
+        if (!this.isCaretOnLastLine() || this._isSuggestBoxVisible()) {
+          break;
+        }
         newText = this._history.next();
         break;
       case UI.KeyboardShortcut.Keys.P.code: // Ctrl+P = Previous
@@ -918,8 +923,9 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
         }
         break;
       case UI.KeyboardShortcut.Keys.N.code: // Ctrl+N = Next
-        if (Host.isMac() && event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey)
-          {newText = this._history.next();}
+        if (Host.isMac() && event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
+          newText = this._history.next();
+        }
         break;
     }
 

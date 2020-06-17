@@ -8,7 +8,7 @@ if (!window.dirac) {
   throw new Error('window.dirac was expected to exist when loading dirac_lazy overlay');
 }
 
-Object.assign(window.dirac, (function() {
+Object.assign(window.dirac, (function () {
 
   const namespacesSymbolsCache = new Map();
 
@@ -23,7 +23,7 @@ Object.assign(window.dirac, (function() {
       console.warn('Requested evalInContext with null context:', code);
       return;
     }
-    const resultCallback = function(result, exceptionDetails) {
+    const resultCallback = function (result, exceptionDetails) {
       if (dirac.DEBUG_EVAL) {
         console.log('evalInContext/resultCallback: result', result, 'exceptionDetails', exceptionDetails);
       }
@@ -225,10 +225,11 @@ Object.assign(window.dirac, (function() {
         break;
       case Protocol.Debugger.ScopeType.Closure:
         const scopeName = scope.name();
-        if (scopeName)
-          {title = Common.UIString('Closure (%s)', UI.beautifyFunctionName(scopeName));}
-        else
-          {title = Common.UIString('Closure');}
+        if (scopeName) {
+          title = Common.UIString('Closure (%s)', UI.beautifyFunctionName(scopeName));
+        } else {
+          title = Common.UIString('Closure');
+        }
         break;
       case Protocol.Debugger.ScopeType.Catch:
         title = Common.UIString('Catch');
@@ -257,12 +258,12 @@ Object.assign(window.dirac, (function() {
     const result = {title: title};
     let resolved = false;
 
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
 
       function processProperties(answer) {
         const properties = answer.properties;
         if (properties) {
-          result.props = properties.map(function(property) {
+          result.props = properties.map(function (property) {
             const propertyRecord = {name: property.name};
             if (property.resolutionSourceProperty) {
               const identifier = property.resolutionSourceProperty.name;
@@ -296,7 +297,7 @@ Object.assign(window.dirac, (function() {
       return Promise.resolve(null);
     }
 
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
       const scopeNamesPromises = [];
 
       const scopeChain = callFrame.scopeChain();
@@ -309,7 +310,7 @@ Object.assign(window.dirac, (function() {
         scopeNamesPromises.unshift(extractNamesFromScopePromise(scope));
       }
 
-      Promise.all(scopeNamesPromises).then(function(frames) {
+      Promise.all(scopeNamesPromises).then(function (frames) {
         const result = {frames: frames};
         resolve(result);
       });
@@ -324,7 +325,7 @@ Object.assign(window.dirac, (function() {
    */
   function prepareUrlMatcher(namespaceName) {
     const relativeNSPath = dirac.nsToRelpath(namespaceName, 'js');
-    return /** @suppressGlobalPropertiesCheck */ function(url) {
+    return /** @suppressGlobalPropertiesCheck */ function (url) {
       const parser = document.createElement('a');
       parser.href = url;
       return parser.pathname.endsWith(relativeNSPath);

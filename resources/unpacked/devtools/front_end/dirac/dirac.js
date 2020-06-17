@@ -8,7 +8,7 @@ import './parinfer.js';
 import './parinfer-codemirror.js';
 
 console.log('DJS imported!');
-(function() {
+(function () {
   const window = this;
 
   // dirac namespace may not exist at this point, play safe
@@ -17,7 +17,7 @@ console.log('DJS imported!');
   }
 
   // note: if goog/cljs namespace system comes after us, they don't wipe our properties, they just merge theirs in
-  Object.assign(window.dirac, (function() {
+  Object.assign(window.dirac, (function () {
     const readyPromise = new Promise(fulfil => window.dirac._runtimeReadyPromiseCallback = fulfil);
 
     function getReadyPromise() {
@@ -81,7 +81,7 @@ console.log('DJS imported!');
 
     // taken from https://github.com/joliss/js-string-escape/blob/master/index.js
     function stringEscape(string) {
-      return ('' + string).replace(/["'\\\n\r\u2028\u2029]/g, function(character) {
+      return ('' + string).replace(/["'\\\n\r\u2028\u2029]/g, function (character) {
         // Escape all characters not included in SingleStringCharacters and
         // DoubleStringCharacters on
         // http://www.ecma-international.org/ecma-262/5.1/#sec-7.8.4
@@ -247,6 +247,7 @@ console.log('DJS imported!');
     function evaluateCommandInConsole(...args) {
       return loadLazyDirac().then(() => window.dirac.evaluateCommandInConsole(...args));
     }
+
     function registerDiracLinkAction(...args) {
       return loadLazyDirac().then(() => window.dirac.registerDiracLinkAction(...args));
     }

@@ -15,17 +15,17 @@
 // ('parinfer' is a dependency handled differently depending on environment)
 // ------------------------------------------------------------------------------
 
-(function(root, factory) {
+(function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     define(['parinfer'], factory);
   }
-  // else if (typeof module === 'object' && module.exports) {
-  //   module.exports = factory(require('parinfer'));
+    // else if (typeof module === 'object' && module.exports) {
+    //   module.exports = factory(require('parinfer'));
   // }
   else {
     root.parinferCodeMirror = factory(root.parinfer);
   }
-})(self, function(parinfer) { // start module anonymous scope
+})(self, function (parinfer) { // start module anonymous scope
   'use strict';
 
 // ------------------------------------------------------------------------------
@@ -100,7 +100,7 @@
 // ------------------------------------------------------------------------------
 
   function convertChanges(changes) {
-    return changes.map(function(change) {
+    return changes.map(function (change) {
       return {
         x: change.from.ch,
         lineNo: change.from.line,
@@ -193,11 +193,20 @@
     let i, stop, right, left;
     for (i = 0; i < stops.length; i++) {
       stop = stops[i];
-      if (x < stop) { right = stop; break; }
-      if (x > stop) { left = stop; }
+      if (x < stop) {
+        right = stop;
+        break;
+      }
+      if (x > stop) {
+        left = stop;
+      }
     }
-    if (dx === -1) { return left; }
-    if (dx === 1) { return right; }
+    if (dx === -1) {
+      return left;
+    }
+    if (dx === 1) {
+      return right;
+    }
   }
 
   function getIndent(cm, lineNo) {
@@ -234,8 +243,7 @@
     if (delta > 0) {
       const spaces = Array(delta + 1).join(' ');
       cm.replaceSelection(spaces);
-    }
-    else {
+    } else {
       const x = cm.getCursor().ch;
       cm.replaceRange('', {line: lineNo, ch: x + delta}, {line: lineNo, ch: x}, '+indent');
     }
@@ -255,8 +263,7 @@
     if (indent != null && indent < x && x < nextX) {
       const spaces = Array(nextX - x + 1).join(' ');
       cm.replaceSelection(spaces);
-    }
-    else {
+    } else {
       indentLine(cm, lineNo, nextX - x);
     }
   }
@@ -268,8 +275,7 @@
 
     if (hasSelection) {
       indentSelection(cm, dx, stops);
-    }
-    else {
+    } else {
       indentAtCursor(cm, dx, stops);
     }
   }
@@ -487,10 +493,17 @@
     let result;
     const mode = state.fixMode ? PAREN_MODE : state.mode;
     switch (mode) {
-      case INDENT_MODE: result = parinfer.indentMode(text, options); break;
-      case PAREN_MODE:  result = parinfer.parenMode(text, options); break;
-      case SMART_MODE:  result = parinfer.smartMode(text, options); break;
-      default: ensureMode(mode);
+      case INDENT_MODE:
+        result = parinfer.indentMode(text, options);
+        break;
+      case PAREN_MODE:
+        result = parinfer.parenMode(text, options);
+        break;
+      case SMART_MODE:
+        result = parinfer.smartMode(text, options);
+        break;
+      default:
+        ensureMode(mode);
     }
 
     // Remember the paren tree.
@@ -517,7 +530,9 @@
       // Restore history to avoid pushing our edits to the history stack.
       cm.setHistory(hist);
 
-      setTimeout(function(){ state.monitorCursor = true; }, 0);
+      setTimeout(function () {
+        state.monitorCursor = true;
+      }, 0);
 
       // Update scroll position
       cm.scrollTo(scroller.scrollLeft, scroller.scrollTop);
@@ -553,7 +568,9 @@
   function onCursorChange(state) {
     clearTimeout(state.cursorTimeout);
     if (state.monitorCursor) {
-      state.cursorTimeout = setTimeout(function() { fixText(state); }, 0);
+      state.cursorTimeout = setTimeout(function () {
+        fixText(state);
+      }, 0);
     }
   }
 
@@ -569,18 +586,22 @@
     if (state.enabled) {
       return;
     }
-    state.callbackCursor = function(cm) {
+    state.callbackCursor = function (cm) {
       onCursorChange(state);
     };
-    state.callbackChanges = function(cm, changes) {
+    state.callbackChanges = function (cm, changes) {
       onTextChanges(state, changes);
     };
     const cm = state.cm;
     cm.on('cursorActivity', state.callbackCursor);
     cm.on('changes', state.callbackChanges);
     state.parinferKeys = {
-      'Tab': function(cm) { onTab(cm, 1); },
-      'Shift-Tab': function(cm) { onTab(cm, -1); }
+      'Tab': function (cm) {
+        onTab(cm, 1);
+      },
+      'Shift-Tab': function (cm) {
+        onTab(cm, -1);
+      }
     };
     cm.addKeyMap(state.parinferKeys);
     state.enabled = true;
