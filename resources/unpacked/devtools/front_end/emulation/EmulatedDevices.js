@@ -244,7 +244,10 @@ export class EmulatedDevice {
         throw new Error('Emulated device \'' + result.title + '\'has dual screen without spanned orientations');
       }
 
-      const modes = parseValue(json, 'modes', 'object', []);
+      const modes = parseValue(json, 'modes', 'object', [
+        {'title': 'default', 'orientation': 'vertical'},
+        {'title': 'default', 'orientation': 'horizontal'},
+      ]);
       if (!Array.isArray(modes)) {
         throw new Error('Emulated device modes must be an array');
       }
@@ -258,7 +261,7 @@ export class EmulatedDevice {
           throw new Error('Emulated device mode has wrong orientation \'' + mode.orientation + '\'');
         }
         const orientation = result.orientationByName(mode.orientation);
-        mode.insets = parseInsets(parseValue(modes[i], 'insets', 'object'));
+        mode.insets = parseInsets(parseValue(modes[i], 'insets', 'object', {left: 0, top: 0, right: 0, bottom: 0}));
         if (mode.insets.top < 0 || mode.insets.left < 0 || mode.insets.right < 0 || mode.insets.bottom < 0 ||
             mode.insets.top + mode.insets.bottom > orientation.height ||
             mode.insets.left + mode.insets.right > orientation.width) {
