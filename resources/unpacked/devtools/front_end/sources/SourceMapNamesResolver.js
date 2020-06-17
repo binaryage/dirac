@@ -52,10 +52,7 @@ export class MappingRecord {
   }
 }
 
-/**
- * @typedef {!Array<!MappingRecord>}
- */
-export class Mapping {
+export class Mapping extends Array {
 }
 
 /**
@@ -132,7 +129,7 @@ export const resolveScope = function(scope) {
   const script = scope.callFrame().script;
   const sourceMap = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().sourceMapForScript(script);
   if (!sourceMap) {
-    return Promise.resolve([]);
+    return Promise.resolve(/** @type {!Mapping} */([]));
   }
 
   /** @type {!Map<string, !TextUtils.Text.Text>} */
@@ -146,7 +143,7 @@ export const resolveScope = function(scope) {
    * @return {!Promise<!Mapping>}
    */
   function onIdentifiers(identifiers) {
-    const namesMapping = [];
+    const namesMapping = /** @type {!Mapping} */([]);
     const missingIdentifiers = [];
     // Extract as much as possible from SourceMap.
     for (let i = 0; i < identifiers.length; ++i) {
@@ -163,7 +160,8 @@ export const resolveScope = function(scope) {
 
     // Resolve missing identifier names from sourcemap ranges.
     const promises = missingIdentifiers.map(id => {
-      return resolveSourceName(id).then(onSourceNameResolved.bind(null, namesMapping, id));
+      return resolveSourceName(id).then(
+        (originalNameDescriptor) => onSourceNameResolved(namesMapping, id, originalNameDescriptor))
     });
     return Promise.all(promises)
         .then(() => namesMapping);
@@ -172,7 +170,7 @@ export const resolveScope = function(scope) {
   /**
    * @param {!Mapping} namesMapping
    * @param {!Identifier} id
-   * @param {!NameDescriptor} originalNameDescriptor
+   * @param {?NameDescriptor} originalNameDescriptor
    */
   function onSourceNameResolved(namesMapping, id, originalNameDescriptor) {
     if (!originalNameDescriptor) {
@@ -192,7 +190,7 @@ export const resolveScope = function(scope) {
     if (!startEntry || !endEntry || !startEntry.sourceURL || startEntry.sourceURL !== endEntry.sourceURL ||
         !startEntry.sourceLineNumber || !startEntry.sourceColumnNumber || !endEntry.sourceLineNumber ||
         !endEntry.sourceColumnNumber) {
-      return Promise.resolve(/** @type {?NameDescriptor} */null);
+      return Promise.resolve(null);
     }
     const sourceTextRange = new TextUtils.TextRange.TextRange(
         startEntry.sourceLineNumber, startEntry.sourceColumnNumber, endEntry.sourceLineNumber,
@@ -201,7 +199,7 @@ export const resolveScope = function(scope) {
         Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiSourceCodeForSourceMapSourceURL(
             script.debuggerModel, startEntry.sourceURL, script.isContentScript());
     if (!uiSourceCode) {
-      return Promise.resolve(/** @type {?NameDescriptor} */null);
+      return Promise.resolve(null);
     }
 
     return uiSourceCode.requestContent().then(deferredContent => {
@@ -257,7 +255,7 @@ export const allVariablesInCallFrame = function(callFrame) {
    * @return {!Mapping}
    */
   function mergeVariables(nameMappings) {
-    const mapping = /** @type {!Mapping} */Array.prototype.concat.apply([], nameMappings);
+    const mapping = /** @type {!Mapping} */(Array.prototype.concat.apply([], nameMappings));
     callFrame[cachedMapSymbol] = mapping;
     return mapping;
   }
@@ -401,7 +399,7 @@ export const resolveExpressionAsync =
  */
 export const resolveThisObject = function(callFrame) {
   if (!callFrame) {
-    return Promise.resolve(/** @type {?SDK.RemoteObject.RemoteObject} */ null);
+    return Promise.resolve(null);
   }
   if (!callFrame.scopeChain().length) {
     return Promise.resolve(callFrame.thisObject());

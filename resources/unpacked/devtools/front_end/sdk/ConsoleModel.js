@@ -529,6 +529,7 @@ export class ConsoleMessage {
     this.executionContextId = executionContextId || 0;
     this.scriptId = scriptId || null;
     this.workerId = workerId || null;
+    this.skipHistory = false;
 
     if (!this.executionContextId && this._runtimeModel) {
       if (this.scriptId) {

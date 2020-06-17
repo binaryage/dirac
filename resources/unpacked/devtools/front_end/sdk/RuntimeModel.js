@@ -284,8 +284,8 @@ export class RuntimeModel extends SDKModel {
   }
 
   /**
-   * @param {!string} name
-   * @param {!Common.Event} event
+   * @param {string} name
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _diracToggleChanged(name, event) {
     dirac.setToggle(name, event.data);

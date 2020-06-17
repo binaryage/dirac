@@ -25,7 +25,7 @@
 
 (defn post! [text]
   (when (options/should-automate?)
-    (let [debug? (gget "dirac._DEBUG_FEEDBACK")
+    (let [debug? (gget "dirac.DEBUG_FEEDBACK")
           message #js {:type     "marion-deliver-feedback"
                        :envelope #js {:type       "feedback-from-devtools"
                                       :devtools   (options/get-devtools-id)

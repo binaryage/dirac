@@ -1,3 +1,4 @@
+// @ts-nocheck
 /*
  * Copyright (C) 2007, 2008 Apple Inc.  All rights reserved.
  * Copyright (C) 2009 Joseph Pecoraro
@@ -269,7 +270,6 @@ export class ConsoleView extends UI.Widget.VBox {
     /** @type {!Object.<number, !SDK.ConsoleModel.ConsoleMessage>} */
     this._pendingDiracCommands = {};
     this._lastDiracCommandId = 1;
-    /** @type {!Array.<!object>} */
     this._prompts = [];
     this._prompts.push({id: 'js',
       prompt: this._prompt,
@@ -638,10 +638,10 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!object} event
+   * @param {!Event} event
    */
   _diracStatusBannerClick(event) {
-    if (!event.target || event.target.tagName != 'A') {
+    if (!event.target || event.target.tagName !== 'A') {
       return false;
     }
     if (this._diracPromptDescriptor.statusBannerCallback) {
@@ -791,7 +791,7 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {{ parameters: any[]; }} message
+   * @param {*} message
    */
   handleEvalCLJSConsoleDiracMessage(message) {
     const code = message.parameters[2];
@@ -801,7 +801,7 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {{ parameters: any[]; }} message
+   * @param {*} message
    */
   handleEvalJSConsoleDiracMessage(message) {
     const code = message.parameters[2];
@@ -837,7 +837,8 @@ export class ConsoleView extends UI.Widget.VBox {
 
 
   /**
-   * @param {SDK.ConsoleModel.ConsoleMessage} message
+   * @param {!SDK.ConsoleModel.ConsoleMessage} message
+   * @return {?string}
    */
   _alterDiracViewMessage(message) {
     const nestingLevel = this._currentGroup.nestingLevel();
@@ -851,12 +852,12 @@ export class ConsoleView extends UI.Widget.VBox {
     message.url = undefined;
     message.stackTrace = undefined;
 
-    let requestId = null;
+    let requestId = -1;
     let kind = '';
     try {
       if (message.parameters) {
-        requestId = message.parameters.shift().value; // request-id
-        kind = message.parameters.shift().value;
+        requestId = /** @type {number} */(message.parameters.shift().value); // request-id
+        kind = /** @type {string} */(message.parameters.shift().value);
       }
     } catch (e) {
     }
@@ -875,7 +876,7 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {SDK.ConsoleModel.MessageLevel|null} level
+   * @param {?SDK.ConsoleModel.MessageLevel} level
    * @returns {string}
    */
   _levelForFeedback(level) {
@@ -883,7 +884,7 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {SDK.ConsoleModel.MessageType} messageType
+   * @param {!SDK.ConsoleModel.MessageType} messageType
    * @param {boolean} isDiracFlavored
    * @returns {string}
    */
@@ -898,7 +899,7 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {SDK.ConsoleModel.ConsoleMessage} message
+   * @param {!SDK.ConsoleModel.ConsoleMessage} message
    */
   _createViewMessage(message) {
     // this is a HACK to treat REPL messages as Dirac results
@@ -921,7 +922,7 @@ export class ConsoleView extends UI.Widget.VBox {
 
     if (this._consoleFeedback) {
       const levelText = this._levelForFeedback(message.level);
-      const typeText = this._typeForFeedback(message.type, isDiracFlavoredMessage);
+      const typeText = this._typeForFeedback(/** @type {!SDK.ConsoleModel.MessageType} */(message.type), isDiracFlavoredMessage);
       const contentEl = result.contentElement();
       const consoleMessageTextEl = contentEl.querySelector('.console-message-text');
       if (consoleMessageTextEl) {
@@ -1041,12 +1042,12 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {number} id
+   * @param {string} promptId
    */
-  _findPromptIndexById(id) {
+  _findPromptIndexById(promptId) {
     for (let i = 0; i < this._prompts.length; i++) {
       const promptDescriptor = this._prompts[i];
-      if (promptDescriptor.id === id) {
+      if (promptDescriptor.id === promptId) {
         return i;
       }
     }
@@ -1054,7 +1055,7 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {number} promptId
+   * @param {string} promptId
    */
   _getPromptDescriptor(promptId) {
     const promptIndex = this._findPromptIndexById(promptId);
@@ -1065,7 +1066,7 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {number} promptId
+   * @param {string} promptId
    */
   switchPrompt(promptId) {
     const selectedPromptIndex = this._findPromptIndexById(promptId);
@@ -1084,7 +1085,7 @@ export class ConsoleView extends UI.Widget.VBox {
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   getTargetForPromptEvents() {
     const promptDescriptor = this.getCurrentPromptDescriptor();
@@ -1137,7 +1138,7 @@ export class ConsoleView extends UI.Widget.VBox {
 
   /**
    * @param {string} text
-   * @param {number} id
+   * @param {?number} id
    */
   appendDiracCommand(text, id) {
     if (!text)
@@ -1675,7 +1676,7 @@ export class ConsoleView extends UI.Widget.VBox {
    * @param {!Event} event
    */
   _promptKeyDown(event) {
-    const keyboardEvent = /** @type {!KeyboardEvent} */ event;
+    const keyboardEvent = /** @type {!KeyboardEvent} */(event);
     if (keyboardEvent.key === 'PageUp') {
       this._updateStickToBottomOnWheel();
       return;

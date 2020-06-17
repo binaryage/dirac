@@ -1,8 +1,8 @@
+// @ts-nocheck
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
 import './keysim.js';
 import './parinfer.js';
 import './parinfer-codemirror.js';
@@ -58,14 +58,14 @@ console.log('DJS imported!');
     }
 
     function getToggle(name) {
-      if (window.dirac._DEBUG_TOGGLES) {
+      if (window.dirac.DEBUG_TOGGLES) {
         console.log("dirac: get toggle '" + name + "' => " + window.dirac[name]);
       }
       return window.dirac[name];
     }
 
     function setToggle(name, value) {
-      if (window.dirac._DEBUG_TOGGLES) {
+      if (window.dirac.DEBUG_TOGGLES) {
         console.log("dirac: set toggle '" + name + "' => " + value);
       }
       window.dirac[name] = value;
@@ -129,11 +129,11 @@ console.log('DJS imported!');
     }
 
     function getNamespace(namespaceName) {
-      if (!dirac._namespacesCache) {
+      if (!dirac.namespacesCache) {
         return;
       }
 
-      return dirac._namespacesCache[namespaceName];
+      return dirac.namespacesCache[namespaceName];
     }
 
     function dispatchEventsForAction(action) {
@@ -255,13 +255,13 @@ console.log('DJS imported!');
 
     // don't forget to update externs.js too
     return {
-      _DEBUG_EVAL: hasDebugFlag('eval'),
-      _DEBUG_COMPLETIONS: hasDebugFlag('completions'),
-      _DEBUG_KEYSIM: hasDebugFlag('keysim'),
-      _DEBUG_FEEDBACK: hasDebugFlag('feedback'),
-      _DEBUG_WATCHING: hasDebugFlag('watching'),
-      _DEBUG_CACHES: hasDebugFlag('caches'),
-      _DEBUG_TOGGLES: hasDebugFlag('toggles'),
+      DEBUG_EVAL: hasDebugFlag('eval'),
+      DEBUG_COMPLETIONS: hasDebugFlag('completions'),
+      DEBUG_KEYSIM: hasDebugFlag('keysim'),
+      DEBUG_FEEDBACK: hasDebugFlag('feedback'),
+      DEBUG_WATCHING: hasDebugFlag('watching'),
+      DEBUG_CACHES: hasDebugFlag('caches'),
+      DEBUG_TOGGLES: hasDebugFlag('toggles'),
 
       // we use can_dock url param indicator if we are launched as internal devtools
       hostedInExtension: !Root.Runtime.queryParam('can_dock'),

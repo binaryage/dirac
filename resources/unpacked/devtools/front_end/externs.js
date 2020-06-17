@@ -333,7 +333,7 @@ diff_match_patch.prototype = {
 
 const dirac = {
     /** @type {boolean} */
-    _DEBUG_EVAL: true,
+    DEBUG_EVAL: true,
     /** @type {boolean} */
     hasFeature: true,
     /** @type {boolean} */
@@ -355,7 +355,23 @@ const dirac = {
     /** @type {boolean} */
     hasLinkActions: true,
     /** @type {?Object.<string, dirac.NamespaceDescriptor>} */
-    _namespacesCache: null,
+    namespacesCache: null,
+
+    /**
+     * @param {string} name
+     * @return {boolean}
+     */
+    getToggle:  function (name) {},
+
+    /**
+     * @param {string} name
+     * @param {*} value
+     */
+    setToggle: function (name, value) {},
+    /**
+     * @return {!Promise}
+     */
+    getReadyPromise: function () {},
     /**
     * @param {string} code
     * @return {string}
@@ -398,7 +414,7 @@ const dirac = {
     hasDefaultContext: function() {},
 
     /**
-     * @return {?SDK.DebuggerModel}
+     * @return {?}
      */
     getMainDebuggerModel: function() {},
     /**
@@ -581,34 +597,36 @@ dirac.ScopeInfo;
  */
 dirac.NamespaceDescriptor;
 
+const Keysim = {}
 
-const Keysim = {
-    Keyboard: {
-        US_ENGLISH: {}
-    },
+/** @constructor */
+Keysim.Keyboard = function() {};
+Keysim.Keyboard.prototype = {
+  /**
+   * Fires the correct sequence of events on the given target as if the given
+   * action was undertaken by a human.
+   *
+   * @param {string} action e.g. "alt+shift+left" or "backspace"
+   * @param {Element} target
+   * @param {?function()} callback
+   */
+  dispatchEventsForAction: function (action, target, callback) {
+  },
 
-    /**
-     * Fires the correct sequence of events on the given target as if the given
-     * action was undertaken by a human.
-     *
-     * @param {string} action e.g. "alt+shift+left" or "backspace"
-     * @param {HTMLElement} target
-     * @param {?function()} callback
-     */
-    dispatchEventsForAction: function(action, target, callback) {
-    },
-
-    /**
-     * Fires the correct sequence of events on the given target as if the given
-     * input had been typed by a human.
-     *
-     * @param {string} input
-     * @param {HTMLElement} target
-     * @param {?function()} callback
-     */
-    dispatchEventsForInput: function(input, target, callback) {
-    }
+  /**
+   * Fires the correct sequence of events on the given target as if the given
+   * input had been typed by a human.
+   *
+   * @param {string} input
+   * @param {Element} target
+   * @param {?function()} callback
+   */
+  dispatchEventsForInput: function (input, target, callback) {
+  },
 };
+
+/** @type {Keysim.Keyboard} */
+Keysim.Keyboard.US_ENGLISH;
 
 /** @constructor */
 const Doc = function() {};

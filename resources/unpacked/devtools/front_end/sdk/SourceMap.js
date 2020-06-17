@@ -103,7 +103,7 @@ export class SourceMap {
   }
 
   /**
-   * @return {?SDK.SourceMapV3}
+   * @return {?SourceMapV3}
    */
   payload() {
   }
@@ -279,7 +279,7 @@ export class TextSourceMap {
 
   /**
    * @override
-   * @return {?SDK.SourceMapV3}
+   * @return {?SourceMapV3}
    */
   payload() {
     return this._payload;
@@ -707,7 +707,7 @@ export class WasmSourceMap {
 
   /**
    * @override
-   * @return {?SDK.SourceMapV3}
+   * @return {?SourceMapV3}
    */
   payload() {
     return null;

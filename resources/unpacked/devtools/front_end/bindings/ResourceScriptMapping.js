@@ -294,7 +294,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @return {?SDK.Script}
+   * @return {?SDK.Script.Script}
    */
   getScript() {
     return this._script;

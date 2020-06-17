@@ -143,7 +143,7 @@ export class InspectorFrontendHostStub {
    */
   inspectedURLChanged(url) {
     // @ts-ignore
-    const dirac = window.dirac;
+    const dirac = window["dirac"];
     if (!dirac.isIntercomReady()) {
       // postpone this code, we use document.title for signalling of frontend loading completion, see inspector.js
       const that = this;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -148,7 +149,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
   }
 
   finishAutocomplete() {
-    if (dirac._DEBUG_COMPLETIONS) {
+    if (dirac.DEBUG_COMPLETIONS) {
       console.log('finishAutocomplete', (new Error()).stack);
     }
     this.clearAutocomplete();
@@ -170,7 +171,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
       singleCharInput = (changeObject.origin === '+input' && changeObject.text.length === 1 && changeObject.text[0].length === 1) ||
         (this._isSuggestBoxVisible() && changeObject.origin === '+delete' && changeObject.removed.length === 1 && changeObject.removed[0].length === 1);
     }
-    if (dirac._DEBUG_COMPLETIONS) {
+    if (dirac.DEBUG_COMPLETIONS) {
       console.log('_changes', singleCharInput, changes);
     }
     if (singleCharInput) {
@@ -229,7 +230,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
   async complete(force) {
     // override with empty implementation to disable TextPrompt's autocomplete implementation
     // we use CodeMirror's changes modelled after TextEditorAutocompleteController.js in DiracPrompt
-    if (dirac._DEBUG_COMPLETIONS) {
+    if (dirac.DEBUG_COMPLETIONS) {
       console.log('complete called => skip for disabling default auto-complete system');
     }
   }
@@ -279,23 +280,23 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
     const cursor = this._codeMirror.getCursor();
     const token = this._codeMirror.getTokenAt(cursor);
 
-    if (dirac._DEBUG_COMPLETIONS) {
+    if (dirac.DEBUG_COMPLETIONS) {
       console.log('autocomplete:', cursor, token);
     }
 
     if (!token) {
-      if (dirac._DEBUG_COMPLETIONS) {
+      if (dirac.DEBUG_COMPLETIONS) {
         console.log('no autocomplete because no token');
       }
       shouldExit = true;
     } else if (this._codeMirror.somethingSelected()) {
-      if (dirac._DEBUG_COMPLETIONS) {
+      if (dirac.DEBUG_COMPLETIONS) {
         console.log('no autocomplete because codeMirror.somethingSelected()');
       }
       shouldExit = true;
     } else if (!force) {
       if (token.end !== cursor.ch) {
-        if (dirac._DEBUG_COMPLETIONS) {
+        if (dirac.DEBUG_COMPLETIONS) {
           console.log('no autocomplete because cursor is not at the end of detected token');
         }
         shouldExit = true;
@@ -309,7 +310,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
 
     const prefix = this._codeMirror.getRange(new CodeMirror.Pos(cursor.line, token.start), cursor);
     const javascriptCompletion = this._javascriptCompletionTest(prefix);
-    if (dirac._DEBUG_COMPLETIONS) {
+    if (dirac.DEBUG_COMPLETIONS) {
       console.log("detected prefix='" + prefix + "'", javascriptCompletion);
     }
     if (javascriptCompletion) {
@@ -330,11 +331,11 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
    * @param {function(string, string, !UI.SuggestBox.Suggestions)} completionsReadyCallback
    */
   _loadJavascriptCompletions(requestId, input, force, completionsReadyCallback) {
-    if (dirac._DEBUG_COMPLETIONS) {
+    if (dirac.DEBUG_COMPLETIONS) {
       console.log('_loadJavascriptCompletions', input, force);
     }
     if (requestId !== this._lastAutocompleteRequest) {
-      if (dirac._DEBUG_COMPLETIONS) {
+      if (dirac.DEBUG_COMPLETIONS) {
         console.log('_loadJavascriptCompletions cancelled', requestId, this._lastAutocompleteRequest);
       }
       return;
@@ -369,11 +370,11 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
    * @param {!UI.SuggestBox.Suggestions} completions
    */
   _completionsForJavascriptReady(requestId, reverse, force, expression, prefix, completions) {
-    if (dirac._DEBUG_COMPLETIONS) {
+    if (dirac.DEBUG_COMPLETIONS) {
       console.log('_completionsForJavascriptReady', prefix, reverse, force, expression, completions);
     }
     if (requestId !== this._lastAutocompleteRequest) {
-      if (dirac._DEBUG_COMPLETIONS) {
+      if (dirac.DEBUG_COMPLETIONS) {
         console.log('_completionsForJavascriptReady cancelled', requestId, this._lastAutocompleteRequest);
       }
       return;
@@ -395,12 +396,12 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
 
     const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
     if (this._anchorBox) {
-      if (dirac._DEBUG_COMPLETIONS) {
+      if (dirac.DEBUG_COMPLETIONS) {
         console.log('calling SuggestBox.updateSuggestions', this._anchorBox, completions, shouldShowForSingleItem, this._userEnteredText);
       }
       this._suggestBox.updateSuggestions(this._anchorBox, completions, true, shouldShowForSingleItem, this._userEnteredText);
     } else {
-      if (dirac._DEBUG_COMPLETIONS) {
+      if (dirac.DEBUG_COMPLETIONS) {
         console.log('not calling SuggestBox.updateSuggestions because this._anchorBox is null', completions, shouldShowForSingleItem, this._userEnteredText);
       }
     }
@@ -409,24 +410,24 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
   }
 
   /**
-   * @param {number} requestIdonKeyDown
+   * @param {number} requestId
    * @param {string} input
    * @param {boolean} force
    * @param {function(string, string, !Array.<string>, number=)} completionsReadyCallback
    */
   _loadClojureScriptCompletions(requestId, input, force, completionsReadyCallback) {
-    if (dirac._DEBUG_COMPLETIONS) {
+    if (dirac.DEBUG_COMPLETIONS) {
       console.log('_loadClojureScriptCompletions', input, force);
     }
     if (requestId !== this._lastAutocompleteRequest) {
-      if (dirac._DEBUG_COMPLETIONS) {
+      if (dirac.DEBUG_COMPLETIONS) {
         console.log('_loadClojureScriptCompletions cancelled', requestId, this._lastAutocompleteRequest);
       }
       return;
     }
     const executionContext = self.UI.context.flavor(SDK.ExecutionContext);
     if (!executionContext) {
-      if (dirac._DEBUG_COMPLETIONS) {
+      if (dirac.DEBUG_COMPLETIONS) {
         console.warn('no execution context available');
       }
       completionsReadyCallback('', '', []);
@@ -435,7 +436,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
 
     const debuggerModel = executionContext.debuggerModel;
     if (!debuggerModel) {
-      if (dirac._DEBUG_COMPLETIONS) {
+      if (dirac.DEBUG_COMPLETIONS) {
         console.warn('no debugger model available');
       }
       completionsReadyCallback('', '', []);
@@ -500,7 +501,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
         return new Promise(resolve => {
           const resultHandler = (expression, prefix, completions) => {
             const annotatedCompletions = styleQualifiedSymbols('suggest-cljs-qualified suggest-cljs-pseudo', completions);
-            if (dirac._DEBUG_COMPLETIONS) {
+            if (dirac.DEBUG_COMPLETIONS) {
               console.log('resultHandler got', expression, prefix, completions, annotatedCompletions);
             }
             resolve(annotatedCompletions);
@@ -517,27 +518,27 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
         if (!namespace) {
           const macroNamespaceNames = dirac.getMacroNamespaceNames(namespaces);
           if (!macroNamespaceNames.includes(namespaceName)) {
-            if (dirac._DEBUG_COMPLETIONS) {
+            if (dirac.DEBUG_COMPLETIONS) {
               console.log('no known namespace for ', namespaceName);
             }
             readyCallback([]);
             return;
           }
-            if (dirac._DEBUG_COMPLETIONS) {
+            if (dirac.DEBUG_COMPLETIONS) {
               console.log('namespace is a macro namespace', namespaceName);
             }
 
         }
 
         if (namespace && namespace.pseudo) {
-          if (dirac._DEBUG_COMPLETIONS) {
+          if (dirac.DEBUG_COMPLETIONS) {
             console.log('pseudo namespace => falling back to JS completions', namespaceName);
           }
           prepareAnnotatedJavascriptCompletionsForPseudoNamespaceAsync(namespaceName).then(readyCallback);
           return;
         }
 
-        if (dirac._DEBUG_COMPLETIONS) {
+        if (dirac.DEBUG_COMPLETIONS) {
           console.log('cljs namespace => retrieving symbols and macros from caches', namespaceName);
         }
         const namespaceSymbolsPromise = dirac.extractNamespaceSymbolsAsync(namespaceName)
@@ -704,12 +705,12 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
    * @param {!Array.<string>} completions
    */
   _completionsForClojureScriptReady(requestId, reverse, force, expression, prefix, completions) {
-    if (dirac._DEBUG_COMPLETIONS) {
+    if (dirac.DEBUG_COMPLETIONS) {
       console.log('_completionsForClojureScriptReady', prefix, reverse, force, completions);
     }
 
     if (requestId !== this._lastAutocompleteRequest) {
-      if (dirac._DEBUG_COMPLETIONS) {
+      if (dirac.DEBUG_COMPLETIONS) {
         console.log('_loadClojureScriptCompletions cancelled', requestId, this._lastAutocompleteRequest);
       }
       return;
@@ -775,12 +776,12 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
       this._updateAnchorBox();
       const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
       if (this._anchorBox) {
-        if (dirac._DEBUG_COMPLETIONS) {
+        if (dirac.DEBUG_COMPLETIONS) {
           console.log('calling SuggestBox.updateSuggestions', this._anchorBox, processedCompletions, shouldShowForSingleItem, this._userEnteredText);
         }
         this._suggestBox.updateSuggestions(this._anchorBox, processedCompletions, true, shouldShowForSingleItem, this._userEnteredText);
       } else {
-        if (dirac._DEBUG_COMPLETIONS) {
+        if (dirac.DEBUG_COMPLETIONS) {
           console.log('not calling SuggestBox.updateSuggestions because this._anchorBox is null', processedCompletions, shouldShowForSingleItem, this._userEnteredText);
         }
       }
@@ -827,7 +828,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
    * @param {boolean=} isIntermediateSuggestion
    */
   applySuggestion(suggestion, isIntermediateSuggestion) {
-    if (dirac._DEBUG_COMPLETIONS) {
+    if (dirac.DEBUG_COMPLETIONS) {
       console.log('applySuggestion', this._lastExpression, suggestion);
     }
     const suggestionText = suggestion ? suggestion.text : '';
@@ -847,7 +848,7 @@ export class ConsoleDiracPrompt extends UI.TextPrompt.TextPrompt {
     }
 
     const selections = this._codeMirror.listSelections().slice();
-    if (dirac._DEBUG_COMPLETIONS) {
+    if (dirac.DEBUG_COMPLETIONS) {
       console.log('acceptSuggestion', this._prefixRange, selections);
     }
     const prefixLength = this._prefixRange.endColumn - this._prefixRange.startColumn;

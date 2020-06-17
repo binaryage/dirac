@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -18,9 +19,9 @@
   if (typeof define === 'function' && define.amd) {
     define(['parinfer'], factory);
   }
-  else if (typeof module === 'object' && module.exports) {
-    module.exports = factory(require('parinfer'));
-  }
+  // else if (typeof module === 'object' && module.exports) {
+  //   module.exports = factory(require('parinfer'));
+  // }
   else {
     root.parinferCodeMirror = factory(root.parinfer);
   }
@@ -408,7 +409,7 @@
     const pixelW = layer.container.clientWidth;
     const pixelH = layer.container.clientHeight;
 
-    layer.paper = Raphael(el, pixelW, pixelH);
+    // layer.paper = Raphael(el, pixelW, pixelH);
   }
 
   function clearLayer(cm) {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -23,7 +24,7 @@ Object.assign(window.dirac, (function() {
       return;
     }
     const resultCallback = function(result, exceptionDetails) {
-      if (dirac._DEBUG_EVAL) {
+      if (dirac.DEBUG_EVAL) {
         console.log('evalInContext/resultCallback: result', result, 'exceptionDetails', exceptionDetails);
       }
       if (callback) {
@@ -45,7 +46,7 @@ Object.assign(window.dirac, (function() {
       }
     };
     try {
-      if (dirac._DEBUG_EVAL) {
+      if (dirac.DEBUG_EVAL) {
         console.log('evalInContext', context, silent, code);
       }
       context.evaluate({
@@ -66,56 +67,56 @@ Object.assign(window.dirac, (function() {
   }
 
   function evalInCurrentContext(code, silent, callback) {
-    if (dirac._DEBUG_EVAL) {
+    if (dirac.DEBUG_EVAL) {
       console.log('evalInCurrentContext called:', code, silent, callback);
     }
     evalInContext(lookupCurrentContext(), code, silent, callback);
   }
 
   function lookupDefaultContext() {
-    if (dirac._DEBUG_EVAL) {
+    if (dirac.DEBUG_EVAL) {
       console.log('lookupDefaultContext called');
     }
     if (!SDK.targetManager) {
-      if (dirac._DEBUG_EVAL) {
+      if (dirac.DEBUG_EVAL) {
         console.log('  !SDK.targetManager => bail out');
       }
       return null;
     }
     const target = SDK.targetManager.mainTarget();
     if (!target) {
-      if (dirac._DEBUG_EVAL) {
+      if (dirac.DEBUG_EVAL) {
         console.log('  !target => bail out');
       }
       return null;
     }
     const runtimeModel = target.model(SDK.RuntimeModel);
     if (!runtimeModel) {
-      if (dirac._DEBUG_EVAL) {
+      if (dirac.DEBUG_EVAL) {
         console.log('  !runtimeModel => bail out');
       }
       return null;
     }
     const executionContexts = runtimeModel.executionContexts();
-    if (dirac._DEBUG_EVAL) {
+    if (dirac.DEBUG_EVAL) {
       console.log('  execution contexts:', executionContexts);
     }
     for (let i = 0; i < executionContexts.length; ++i) {
       const executionContext = executionContexts[i];
       if (executionContext.isDefault) {
-        if (dirac._DEBUG_EVAL) {
+        if (dirac.DEBUG_EVAL) {
           console.log('  execution context #' + i + ' isDefault:', executionContext);
         }
         return executionContext;
       }
     }
     if (executionContexts.length > 0) {
-      if (dirac._DEBUG_EVAL) {
+      if (dirac.DEBUG_EVAL) {
         console.log('  lookupDefaultContext failed to find valid context => return the first one');
       }
       return executionContexts[0];
     }
-    if (dirac._DEBUG_EVAL) {
+    if (dirac.DEBUG_EVAL) {
       console.log('  lookupDefaultContext failed to find valid context => no context avail');
     }
     return null;
@@ -126,7 +127,7 @@ Object.assign(window.dirac, (function() {
   }
 
   function evalInDefaultContext(code, silent, callback) {
-    if (dirac._DEBUG_EVAL) {
+    if (dirac.DEBUG_EVAL) {
       console.log('evalInDefaultContext called:', code, silent, callback);
     }
     evalInContext(lookupDefaultContext(), code, silent, callback);
@@ -286,7 +287,7 @@ Object.assign(window.dirac, (function() {
       }
 
       remoteObject.getAllProperties(false, false).then(processProperties);
-      setTimeout(timeoutProperties, dirac._REMOTE_OBJECT_PROPERTIES_FETCH_TIMEOUT);
+      setTimeout(timeoutProperties, dirac.REMOTE_OBJECT_PROPERTIES_FETCH_TIMEOUT);
     });
   }
 
@@ -351,7 +352,7 @@ Object.assign(window.dirac, (function() {
    * @return {!Array<dirac.NamespaceDescriptor>}
    */
   function parseClojureScriptNamespaces(url, cljsSourceCode) {
-    if (dirac._DEBUG_CACHES) {
+    if (dirac.DEBUG_CACHES) {
       console.log('parseClojureScriptNamespaces ', url, cljsSourceCode);
     }
     if (!cljsSourceCode) {
@@ -373,7 +374,7 @@ Object.assign(window.dirac, (function() {
    * @return {!Array<dirac.NamespaceDescriptor>}
    */
   function parsePseudoNamespaces(url, jsSourceCode) {
-    if (dirac._DEBUG_CACHES) {
+    if (dirac.DEBUG_CACHES) {
       console.log('parsePseudoNamespaces ', url, jsSourceCode);
     }
     if (!jsSourceCode) {
@@ -516,7 +517,7 @@ Object.assign(window.dirac, (function() {
 
     const uiSourceCodes = getRelevantSourceCodes(workspace);
     const promises = [];
-    if (dirac._DEBUG_CACHES) {
+    if (dirac.DEBUG_CACHES) {
       console.log('extractNamespacesAsyncWorker initial processing of ' + uiSourceCodes.length + ' source codes');
     }
     for (const uiSourceCode of uiSourceCodes) {
@@ -541,27 +542,27 @@ Object.assign(window.dirac, (function() {
       return extractNamespacesAsyncInFlightPromise;
     }
 
-    if (dirac._namespacesCache) {
-      return Promise.resolve(dirac._namespacesCache);
+    if (dirac.namespacesCache) {
+      return Promise.resolve(dirac.namespacesCache);
     }
 
-    dirac._namespacesCache = {};
+    dirac.namespacesCache = {};
     startListeningForWorkspaceChanges();
 
     extractNamespacesAsyncInFlightPromise = extractNamespacesAsyncWorker().then(descriptors => {
       const newDescriptors = prepareNamespacesFromDescriptors(descriptors);
       const newDescriptorsCount = Object.keys(newDescriptors).length;
-      if (!dirac._namespacesCache) {
-        dirac._namespacesCache = {};
+      if (!dirac.namespacesCache) {
+        dirac.namespacesCache = {};
       }
-      Object.assign(dirac._namespacesCache, newDescriptors);
-      const allDescriptorsCount = Object.keys(dirac._namespacesCache).length;
-      if (dirac._DEBUG_CACHES) {
-        console.log('extractNamespacesAsync finished _namespacesCache with ' + newDescriptorsCount + ' items ' +
+      Object.assign(dirac.namespacesCache, newDescriptors);
+      const allDescriptorsCount = Object.keys(dirac.namespacesCache).length;
+      if (dirac.DEBUG_CACHES) {
+        console.log('extractNamespacesAsync finished namespacesCache with ' + newDescriptorsCount + ' items ' +
           '(' + allDescriptorsCount + ' in total)');
       }
       dirac.reportNamespacesCacheMutation();
-      return dirac._namespacesCache;
+      return dirac.namespacesCache;
     });
 
     extractNamespacesAsyncInFlightPromise.then(result => extractNamespacesAsyncInFlightPromise = null);
@@ -569,10 +570,10 @@ Object.assign(window.dirac, (function() {
   }
 
   function invalidateNamespacesCache() {
-    if (dirac._DEBUG_CACHES) {
+    if (dirac.DEBUG_CACHES) {
       console.log('invalidateNamespacesCache');
     }
-    dirac._namespacesCache = null;
+    dirac.namespacesCache = null;
   }
 
   function extractSourceCodeNamespacesAsync(uiSourceCode) {
@@ -589,7 +590,7 @@ Object.assign(window.dirac, (function() {
       return;
     }
 
-    if (dirac._DEBUG_CACHES) {
+    if (dirac.DEBUG_CACHES) {
       console.log('extractAndMergeSourceCodeNamespacesAsync', uiSourceCode);
     }
     const jobs = [extractNamespacesAsync(), extractSourceCodeNamespacesAsync(uiSourceCode)];
@@ -597,8 +598,8 @@ Object.assign(window.dirac, (function() {
       const addedNamespaceNames = Object.keys(result);
       if (addedNamespaceNames.length) {
         Object.assign(namespaces, result);
-        if (dirac._DEBUG_CACHES) {
-          console.log('updated _namespacesCache by merging ', addedNamespaceNames,
+        if (dirac.DEBUG_CACHES) {
+          console.log('updated namespacesCache by merging ', addedNamespaceNames,
             'from', uiSourceCode.contentURL(),
             ' => new namespaces count:', Object.keys(namespaces).length);
         }
@@ -619,7 +620,7 @@ Object.assign(window.dirac, (function() {
         }
       }
 
-      if (dirac._DEBUG_CACHES) {
+      if (dirac.DEBUG_CACHES) {
         console.log('removeNamespacesMatchingUrl removed ' + removedNames.length + ' namespaces for url: ' + url +
           ' new namespaces count:' + Object.keys(namespaces).length);
       }
@@ -679,7 +680,7 @@ Object.assign(window.dirac, (function() {
       // see https://github.com/binaryage/dirac/issues/79
 
       // disabled to prevent console spam
-      if (dirac._DEBUG_CACHES) {
+      if (dirac.DEBUG_CACHES) {
         console.error(
           'uiSourceCode expected to have scriptFile associated\n' +
           `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
@@ -734,7 +735,7 @@ Object.assign(window.dirac, (function() {
       // figwheel reloading is just adding new files and not removing old ones
       const matchingSourceCodes = findMatchingSourceCodes(uiSourceCodes, urlMatcherFn);
       if (!matchingSourceCodes.length) {
-        if (dirac._DEBUG_CACHES) {
+        if (dirac.DEBUG_CACHES) {
           console.warn("cannot find any matching source file for ClojureScript namespace '" + namespaceName + "'");
         }
         resolve([]);
@@ -750,7 +751,7 @@ Object.assign(window.dirac, (function() {
       const allNames = [].concat.apply([], results);
       const filteredNames = unique(filterNamesForNamespace(allNames, namespaceName));
 
-      if (dirac._DEBUG_CACHES) {
+      if (dirac.DEBUG_CACHES) {
         console.log('extracted ' + filteredNames.length + ' symbol names for namespace', namespaceName, matchingSourceCodes.map(i => i.url()));
       }
 
@@ -776,7 +777,7 @@ Object.assign(window.dirac, (function() {
   }
 
   function invalidateNamespaceSymbolsCache(namespaceName = null) {
-    if (dirac._DEBUG_CACHES) {
+    if (dirac.DEBUG_CACHES) {
       console.log('invalidateNamespaceSymbolsCache', namespaceName);
     }
     if (namespaceName) {
@@ -822,7 +823,7 @@ Object.assign(window.dirac, (function() {
 
     const promisedResult = extractMacroNamespaceSymbolsAsyncWorker(namespaceName);
 
-    if (dirac._DEBUG_CACHES) {
+    if (dirac.DEBUG_CACHES) {
       promisedResult.then(result => {
         console.log('extractMacroNamespaceSymbolsAsync resolved', namespaceName, result);
       });
@@ -849,7 +850,7 @@ Object.assign(window.dirac, (function() {
     const uiSourceCode = event.data;
     if (uiSourceCode && isRelevantSourceCode(uiSourceCode)) {
       const url = uiSourceCode.url();
-      if (dirac._DEBUG_WATCHING) {
+      if (dirac.DEBUG_WATCHING) {
         console.log('handleSourceCodeAdded', url);
       }
       extractAndMergeSourceCodeNamespacesAsync(uiSourceCode);
@@ -861,7 +862,7 @@ Object.assign(window.dirac, (function() {
     const uiSourceCode = event.data;
     if (uiSourceCode && isRelevantSourceCode(uiSourceCode)) {
       const url = uiSourceCode.url();
-      if (dirac._DEBUG_WATCHING) {
+      if (dirac.DEBUG_WATCHING) {
         console.log('handleSourceCodeRemoved', url);
       }
       removeNamespacesMatchingUrl(url);
@@ -874,7 +875,7 @@ Object.assign(window.dirac, (function() {
       return;
     }
 
-    if (dirac._DEBUG_WATCHING) {
+    if (dirac.DEBUG_WATCHING) {
       console.log('startListeningForWorkspaceChanges');
     }
 
@@ -895,7 +896,7 @@ Object.assign(window.dirac, (function() {
       return;
     }
 
-    if (dirac._DEBUG_WATCHING) {
+    if (dirac.DEBUG_WATCHING) {
       console.log('stopListeningForWorkspaceChanges');
     }
 
@@ -922,10 +923,10 @@ Object.assign(window.dirac, (function() {
 
   // don't forget to update externs.js too
   return {
-    _lazyLoaded: true,
-    _namespacesSymbolsCache: namespacesSymbolsCache,
-    _namespacesCache: null,
-    _REMOTE_OBJECT_PROPERTIES_FETCH_TIMEOUT: 1000,
+    lazyLoaded: true,
+    namespacesSymbolsCache: namespacesSymbolsCache,
+    namespacesCache: null,
+    REMOTE_OBJECT_PROPERTIES_FETCH_TIMEOUT: 1000,
     lookupCurrentContext: lookupCurrentContext,
     evalInCurrentContext: evalInCurrentContext,
     hasCurrentContext: hasCurrentContext,
