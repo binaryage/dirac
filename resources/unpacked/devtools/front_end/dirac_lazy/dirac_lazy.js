@@ -326,11 +326,21 @@ Object.assign(window.dirac, (function () {
    * @return {function(string)}
    */
   function prepareUrlMatcher(namespaceName) {
-    const relativeNSPath = dirac.nsToRelpath(namespaceName, 'js');
+    // shadow-cljs uses slightly different convention to output files
+    // for example given namespaceName 'my.cool.ns'
+    // standard clojurescript outputs into directory structure $some-prefix/my/cool/ns.js
+    // cljs files are placed under the same names
+    //
+    // shadow-cljs outputs into flat directory structure cljs-runtime/my.cool.ns.js
+    // but shadow-cljs maintains tree-like structure for original cljs sources, similar to standard
+    //
+    const relativeNSPathStandard = dirac.nsToRelpath(namespaceName, 'js');
+    const relativeNSPathShadow = relativeNSPathStandard.replace('/', '.');
+    const parser = document.createElement('a');
     return /** @suppressGlobalPropertiesCheck */ function (url) {
-      const parser = document.createElement('a');
       parser.href = url;
-      return parser.pathname.endsWith(relativeNSPath);
+      // console.log("URL MATCH", relativeNSPathShadow, parser.pathname);
+      return parser.pathname.endsWith(relativeNSPathStandard) || parser.pathname.endsWith(relativeNSPathShadow);
     };
   }
 
@@ -356,7 +366,9 @@ Object.assign(window.dirac, (function () {
    */
   function parseClojureScriptNamespaces(url, cljsSourceCode) {
     if (dirac.DEBUG_CACHES) {
-      console.log('parseClojureScriptNamespaces ', url, cljsSourceCode);
+      console.groupCollapsed("parseClojureScriptNamespaces: " + url);
+      console.log(cljsSourceCode);
+      console.groupEnd();
     }
     if (!cljsSourceCode) {
       console.warn('unexpected empty source from ' + url);
@@ -378,7 +390,9 @@ Object.assign(window.dirac, (function () {
    */
   function parsePseudoNamespaces(url, jsSourceCode) {
     if (dirac.DEBUG_CACHES) {
-      console.log('parsePseudoNamespaces ', url, jsSourceCode);
+      console.groupCollapsed("parsePseudoNamespaces: " + url);
+      console.log(jsSourceCode);
+      console.groupEnd();
     }
     if (!jsSourceCode) {
       console.warn('unexpected empty source from ' + url);
@@ -386,10 +400,12 @@ Object.assign(window.dirac, (function () {
     }
 
     const result = [];
-    const re = /goog\.provide\('(.*?)'\);/gm;
+    // standard clojurescript emits: goog.provide('goog.something');
+    // shadow-cljs emits: goog.module("goog.something");
+    const re = /goog\.(provide|module)\(['"](.*?)['"]\);/gm;
     let m;
     while (m = re.exec(jsSourceCode)) {
-      const namespaceName = m[1];
+      const namespaceName = m[2];
       const descriptor = {
         name: namespaceName,
         url: url,
@@ -745,7 +761,7 @@ Object.assign(window.dirac, (function () {
         return;
       }
 
-      // we simply extract names from all matching source maps and then we filter then to match our namespace name and
+      // we simply extract names from all matching source maps and then we filter them to match our namespace name and
       // deduplicate them
       const results = [];
       for (const uiSourceCode of matchingSourceCodes) {
