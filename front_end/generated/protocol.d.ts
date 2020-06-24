@@ -824,6 +824,32 @@ declare namespace Protocol {
       reason: BlockedByResponseReason;
     }
 
+    export enum HeavyAdResolutionStatus {
+      HeavyAdBlocked = 'HeavyAdBlocked',
+      HeavyAdWarning = 'HeavyAdWarning',
+    }
+
+    export enum HeavyAdReason {
+      NetworkTotalLimit = 'NetworkTotalLimit',
+      CpuTotalLimit = 'CpuTotalLimit',
+      CpuPeakLimit = 'CpuPeakLimit',
+    }
+
+    export interface HeavyAdIssueDetails {
+      /**
+       * The resolution status, either blocking the content or warning.
+       */
+      resolution: HeavyAdResolutionStatus;
+      /**
+       * The reason the ad was blocked, total network or cpu or peak cpu.
+       */
+      reason: HeavyAdReason;
+      /**
+       * The frame that was blocked.
+       */
+      frame: AffectedFrame;
+    }
+
     /**
      * A unique identifier for the type of issue. Each type may use one of the
      * optional fields in InspectorIssueDetails to convey more specific
@@ -833,6 +859,7 @@ declare namespace Protocol {
       SameSiteCookieIssue = 'SameSiteCookieIssue',
       MixedContentIssue = 'MixedContentIssue',
       BlockedByResponseIssue = 'BlockedByResponseIssue',
+      HeavyAdIssue = 'HeavyAdIssue',
     }
 
     /**
@@ -844,6 +871,7 @@ declare namespace Protocol {
       sameSiteCookieIssueDetails?: SameSiteCookieIssueDetails;
       mixedContentIssueDetails?: MixedContentIssueDetails;
       blockedByResponseIssueDetails?: BlockedByResponseIssueDetails;
+      heavyAdIssueDetails?: HeavyAdIssueDetails;
     }
 
     /**
@@ -7766,6 +7794,10 @@ declare namespace Protocol {
        */
       showPositiveLineNumbers?: boolean;
       /**
+       * Show Negative line number labels (default: false).
+       */
+      showNegativeLineNumbers?: boolean;
+      /**
        * The grid container border highlight color (default: transparent).
        */
       gridBorderColor?: DOM.RGBA;
@@ -7815,6 +7847,10 @@ declare namespace Protocol {
        * Whether the rulers should be shown (default: false).
        */
       showRulers?: boolean;
+      /**
+       * Whether the a11y info should be shown (default: true).
+       */
+      showAccessibilityInfo?: boolean;
       /**
        * Whether the extension lines from node to the rulers should be shown (default: false).
        */
@@ -7907,9 +7943,13 @@ declare namespace Protocol {
        */
       includeStyle?: boolean;
       /**
-       * The color format to get config with (default: hex)
+       * The color format to get config with (default: hex).
        */
       colorFormat?: ColorFormat;
+      /**
+       * Whether to show accessibility info (default: true).
+       */
+      showAccessibilityInfo?: boolean;
     }
 
     export interface GetHighlightObjectForTestResponse extends ProtocolResponseWithError {
@@ -13786,6 +13826,13 @@ declare namespace Protocol {
        * `replMode` themselves.
        */
       replMode?: boolean;
+      /**
+       * The Content Security Policy (CSP) for the target might block 'unsafe-eval'
+       * which includes eval(), Function(), setTimeout() and setInterval()
+       * when called with non-callable arguments. This flag bypasses CSP for this
+       * evaluation and allows unsafe-eval. Defaults to true.
+       */
+      allowUnsafeEvalBlockedByCSP?: boolean;
     }
 
     export interface EvaluateResponse extends ProtocolResponseWithError {

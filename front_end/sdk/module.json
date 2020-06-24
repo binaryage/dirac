@@ -195,6 +195,16 @@
           "title": "Show positive grid line numbers",
           "text": "Positive",
           "value": "positive"
+        },
+        {
+          "title": "Show negative grid line numbers",
+          "text": "Negative",
+          "value": "negative"
+        },
+        {
+          "title": "Show both positive and negative grid line numbers",
+          "text": "Both",
+          "value": "both"
         }
       ]
     },
@@ -527,6 +537,7 @@
     "sdk.js",
     "sdk-legacy.js",
     "SDKModel.js",
+    "FrameAssociated.js",
     "Connections.js",
     "CompilerSourceMappingContentProvider.js",
     "Cookie.js",
@@ -535,6 +546,7 @@
     "ProfileTreeModel.js",
     "Issue.js",
     "IssuesModel.js",
+    "WebAuthnModel.js",
     "SameSiteCookieIssue.js",
     "MixedContentIssue.js",
     "CrossOriginEmbedderPolicyIssue.js",

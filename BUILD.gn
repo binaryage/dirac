@@ -930,7 +930,6 @@ devtools_frontend_resources_deps = [
   ":build_release_devtools",
   ":copy_embedder_scripts",
   ":copy_emulated_devices_images",
-  ":copy_htaccess",
   ":copy_inspector_images",
   ":copy_lighthouse_locale_files",
   ":copy_wasm_deps",
@@ -973,11 +972,6 @@ group("devtools_frontend_resources_data") {
 copy("copy_embedder_scripts") {
   sources = devtools_embedder_scripts
   outputs = [ "$resources_out_dir/{{source_file_part}}" ]
-}
-
-copy("copy_htaccess") {
-  sources = [ "htaccess" ]
-  outputs = [ "$resources_out_dir/.htaccess" ]
 }
 
 copy("copy_inspector_images") {
@@ -1053,6 +1047,7 @@ all_devtools_modules = [
   "browser_debugger/EventListenerBreakpointsSidebarPane.js",
   "browser_debugger/ObjectEventListenersSidebarPane.js",
   "browser_debugger/XHRBreakpointsSidebarPane.js",
+  "browser_sdk/FrameManager.js",
   "browser_sdk/LogManager.js",
   "browser_sdk/IssuesManager.js",
   "browser_sdk/RelatedIssue.js",
@@ -1170,6 +1165,7 @@ all_devtools_modules = [
   "extensions/ExtensionServer.js",
   "extensions/ExtensionTraceProvider.js",
   "extensions/ExtensionView.js",
+  "formatter_worker/Acorn.js",
   "formatter_worker/AcornTokenizer.js",
   "formatter_worker/CSSFormatter.js",
   "formatter_worker/CSSRuleParser.js",
@@ -1229,12 +1225,14 @@ all_devtools_modules = [
   "main/MainImpl.js",
   "main/SimpleApp.js",
   "media/EventDisplayTable.js",
+  "media/EventTimelineView.js",
   "media/MainView.js",
   "media/MediaModel.js",
   "media/PlayerDetailView.js",
   "media/PlayerListView.js",
   "media/PlayerMessagesView.js",
   "media/PlayerPropertiesView.js",
+  "media/TickingFlameChart.js",
   "mobile_throttling/MobileThrottlingSelector.js",
   "mobile_throttling/NetworkPanelIndicator.js",
   "mobile_throttling/NetworkThrottlingSelector.js",
@@ -1380,6 +1378,7 @@ all_devtools_modules = [
   "sdk/DOMModel.js",
   "sdk/EmulationModel.js",
   "sdk/FilmStripModel.js",
+  "sdk/FrameAssociated.js",
   "sdk/HARLog.js",
   "sdk/HeapProfilerModel.js",
   "sdk/IsolateManager.js",
@@ -1413,6 +1412,7 @@ all_devtools_modules = [
   "sdk/TracingManager.js",
   "sdk/TracingModel.js",
   "sdk/wasm_source_map/pkg/wasm_source_map.js",
+  "sdk/WebAuthnModel.js",
   "search/SearchConfig.js",
   "search/SearchResultsPane.js",
   "search/SearchView.js",
@@ -1480,6 +1480,7 @@ all_devtools_modules = [
   "text_utils/TextUtils.js",
   "third_party/acorn/package/dist/acorn.mjs",
   "third_party/acorn-loose/package/dist/acorn-loose.mjs",
+  "third_party/acorn-logical-assignment/package/dist/acorn-logical-assignment.mjs",
   "third_party/codemirror/package/addon/runmode/runmode-standalone.js",
   "third_party/codemirror/package/mode/clike/clike.js",
   "third_party/codemirror/package/mode/clojure/clojure.js",
