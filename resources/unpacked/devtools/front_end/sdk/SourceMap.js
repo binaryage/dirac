@@ -199,8 +199,10 @@ export class TextSourceMap {
    * @param {string} compiledURL
    * @param {string} sourceMappingURL
    * @param {!SourceMapV3} payload
+   * @param {string} frameId
    */
-  constructor(compiledURL, sourceMappingURL, payload) {
+  constructor(compiledURL, sourceMappingURL, payload, frameId) {
+    this._frameId = frameId;
     if (!TextSourceMap._base64Map) {
       const base64Digits = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
       TextSourceMap._base64Map = {};
@@ -232,11 +234,12 @@ export class TextSourceMap {
   /**
    * @param {string} sourceMapURL
    * @param {string} compiledURL
+   * @param {string} frameId
    * @return {!Promise<!TextSourceMap>}
    * @throws {!Error}
    * @this {TextSourceMap}
    */
-  static async load(sourceMapURL, compiledURL) {
+  static async load(sourceMapURL, compiledURL, frameId) {
     const {success, content, errorDescription} = await MultitargetNetworkManager.instance().loadResource(sourceMapURL);
     if (!content || !success) {
       throw new Error(ls`Could not load content for ${sourceMapURL}: ${errorDescription.message}`);
@@ -248,7 +251,7 @@ export class TextSourceMap {
 
     try {
       const payload = /** @type {!SourceMapV3} */ (JSON.parse(updatedContent));
-      return new TextSourceMap(compiledURL, sourceMapURL, payload);
+      return new TextSourceMap(compiledURL, sourceMapURL, payload, frameId);
     } catch (error) {
       throw new Error(ls`Could not parse content for ${sourceMapURL}: ${error.message}`);
     }
@@ -297,7 +300,7 @@ export class TextSourceMap {
     if (info.content) {
       return TextUtils.StaticContentProvider.StaticContentProvider.fromString(sourceURL, contentType, info.content);
     }
-    return new CompilerSourceMappingContentProvider(sourceURL, contentType);
+    return new CompilerSourceMappingContentProvider(sourceURL, contentType, this._frameId);
   }
 
   /**
@@ -648,10 +651,12 @@ export class WasmSourceMap {
    * Implements SourceMap interface for DWARF information in Wasm.
    * @param {string} wasmUrl
    * @param {!WasmResolver} resolver
+   * @param {!Protocol.Page.FrameId} frameId
    */
-  constructor(wasmUrl, resolver) {
+  constructor(wasmUrl, resolver, frameId) {
     this._wasmUrl = wasmUrl;
     this._resolver = resolver;
+    this._frameId = frameId;
   }
 
   /**
@@ -668,7 +673,10 @@ export class WasmSourceMap {
    * @private
    */
   static _loadBindingsOnce() {
-    return WasmSourceMap._asyncResolver = WasmSourceMap._asyncResolver || WasmSourceMap._loadBindings();
+    if (!WasmSourceMap._asyncResolver) {
+      WasmSourceMap._asyncResolver = WasmSourceMap._loadBindings();
+    }
+    return WasmSourceMap._asyncResolver;
   }
 
   /**
@@ -679,7 +687,7 @@ export class WasmSourceMap {
    */
   static async load(script, wasmUrl) {
     const [Resolver, wasm] = await Promise.all([WasmSourceMap._loadBindingsOnce(), script.getWasmBytecode()]);
-    return new WasmSourceMap(wasmUrl, new Resolver(new Uint8Array(wasm)));
+    return new WasmSourceMap(wasmUrl, new Resolver(new Uint8Array(wasm)), script.frameId);
   }
 
   /**
@@ -721,7 +729,7 @@ export class WasmSourceMap {
    * @return {!TextUtils.ContentProvider.ContentProvider}
    */
   sourceContentProvider(sourceURL, contentType) {
-    return new CompilerSourceMappingContentProvider(sourceURL, contentType);
+    return new CompilerSourceMappingContentProvider(sourceURL, contentType, this._frameId);
   }
 
   /**
