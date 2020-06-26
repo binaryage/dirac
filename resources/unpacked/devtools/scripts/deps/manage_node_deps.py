@@ -34,6 +34,7 @@ LICENSES = [
 # List all DEPS here.
 DEPS = {
     "@types/chai": "4.2.0",
+    "@types/estree": "0.0.45",
     "@types/filesystem": "0.0.29",
     "@types/mocha": "5.2.7",
     "@types/puppeteer": "2.0.0",
@@ -54,7 +55,7 @@ DEPS = {
     "karma-sourcemap-loader": "0.3.0",
     "license-checker": "25.0.1",
     "mocha": "7.1.1",
-    "puppeteer": "3.0.3",
+    "puppeteer": "4.0.0",
     "recast": "0.18.2",
     "rimraf": "3.0.2",
     "rollup": "2.3.3",

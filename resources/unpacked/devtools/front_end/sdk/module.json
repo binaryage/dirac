@@ -191,7 +191,7 @@
       "experiment": "cssGridFeatures",
       "settingName": "showGridLineNumbers",
       "settingType": "enum",
-      "defaultValue": "none",
+      "defaultValue": "both",
       "options": [
         {
           "title": "Do not show grid line numbers",
@@ -646,7 +646,8 @@
         "DebuggerModel.js",
         "EmulationModel.js",
         "HARLog.js",
-        "LayerTreeBase.js",
+        "HeavyAdIssue.js",
+    "LayerTreeBase.js",
         "LogModel.js",
         "ServiceWorkerManager.js",
         "TracingManager.js",

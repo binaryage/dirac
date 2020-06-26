@@ -212,6 +212,17 @@ export class TimelineModelImpl {
   }
 
   /**
+   * @return {!Map<string, !SDK.TracingModel.Event>}
+   */
+  navStartTimes() {
+    if (!this._tracingModel) {
+      return new Map();
+    }
+
+    return this._tracingModel.navStartTimes();
+  }
+
+  /**
    * @param {!SDK.TracingModel.TracingModel} tracingModel
    */
   setEvents(tracingModel) {
@@ -505,6 +516,11 @@ export class TimelineModelImpl {
     // rename its category.
     for (const trackEvent of track.events) {
       trackEvent.categoriesString = experienceCategory;
+      if (trackEvent.name === RecordType.LayoutShift) {
+        const eventData = trackEvent.args['data'] || trackEvent.args['beginData'] || {};
+        const timelineData = TimelineData.forEvent(trackEvent);
+        timelineData.backendNodeId = eventData['impacted_nodes'][0]['node_id'];
+      }
     }
   }
 
@@ -1493,6 +1509,7 @@ export const RecordType = {
   MarkFCP: 'firstContentfulPaint',
   MarkLCPCandidate: 'largestContentfulPaint::Candidate',
   MarkLCPInvalidate: 'largestContentfulPaint::Invalidate',
+  NavigationStart: 'navigationStart',
 
   TimeStamp: 'TimeStamp',
   ConsoleTime: 'ConsoleTime',

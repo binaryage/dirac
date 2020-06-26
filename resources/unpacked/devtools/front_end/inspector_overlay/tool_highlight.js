@@ -265,6 +265,27 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  --inner-corner-avoid-distance: 15px;
+}
+
+.grid-label-content.top-left.inner-shared-corner,
+.grid-label-content.top-right.inner-shared-corner {
+  transform: translateY(var(--inner-corner-avoid-distance));
+}
+
+.grid-label-content.bottom-left.inner-shared-corner,
+.grid-label-content.bottom-right.inner-shared-corner {
+  transform: translateY(calc(var(--inner-corner-avoid-distance) * -1));
+}
+
+.grid-label-content.left-top.inner-shared-corner,
+.grid-label-content.left-bottom.inner-shared-corner {
+  transform: translateX(var(--inner-corner-avoid-distance));
+}
+
+.grid-label-content.right-top.inner-shared-corner,
+.grid-label-content.right-bottom.inner-shared-corner {
+  transform: translateX(calc(var(--inner-corner-avoid-distance) * -1));
 }
 
 .grid-label-content::before {
@@ -352,7 +373,7 @@ body {
       background-color: transparent;
       forced-color-adjust: none;
   }
-  .tooltip-content {
+  .tooltip-content, .grid-label-content {
       border-color: Highlight;
       background-color: Canvas;
       color: Text;
@@ -360,6 +381,10 @@ body {
   }
   .tooltip-content::after {
       background-color: Highlight;
+  }
+  .grid-label-content::before {
+    background-color: Canvas;
+    border-color: Highlight;
   }
   .color-swatch-inner,
   .contrast-text,
