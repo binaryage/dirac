@@ -4,16 +4,16 @@
 
 vars = {
   'build_url': 'https://chromium.googlesource.com/chromium/src/build.git',
-  'build_revision': '55ed8e661da58707ae1bd665ec38e49a5a1f45f1',
+  'build_revision': '656292101b98c7e03aa2a9cebad0e6fdba40cd8b',
 
   'buildtools_url': 'https://chromium.googlesource.com/chromium/src/buildtools.git',
   'buildtools_revision': '1ed99573d57d4b6041261b531cdf876e631cf0bc',
 
   'depot_tools_url': 'https://chromium.googlesource.com/chromium/tools/depot_tools.git',
-  'depot_tools_revision': 'b7db183f0206a7002c31614a5c1cdb5782c5f894',
+  'depot_tools_revision': '0bfbd890c3e2f3aa734119507d14162248409664',
 
   'inspector_protocol_url': 'https://chromium.googlesource.com/deps/inspector_protocol',
-  'inspector_protocol_revision': 'b7cda08cd6e522df2159413ba5f29d2a953cc1c4',
+  'inspector_protocol_revision': '8c11f011735fedf71002e0f2f29a4a3a9546136e',
 
   'llvm_url': 'https://chromium.googlesource.com/external/github.com/llvm/llvm-project/',
   'llvm_revision': '7edc7f6edbcb5be439886c271a71df43b3f0a8e3',
@@ -33,11 +33,11 @@ vars = {
 
   # Chromium build number for unit tests. It should be regularly updated to
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/LAST_CHANGE
-  'chromium_linux': '781191',
+  'chromium_linux': '782865',
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/LAST_CHANGE
-  'chromium_win': '781188',
+  'chromium_win': '782860',
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/LAST_CHANGE
-  'chromium_mac': '781179',
+  'chromium_mac': '782856',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -253,6 +253,13 @@ hooks = [
     # clang not supported on aix
     'condition': 'host_os != "aix" and build_symbol_server',
     'action': ['python', 'devtools-frontend/third_party/clang/scripts/update.py'],
+  },
+  {
+    'name': 'sysroot_x64',
+    'pattern': '.',
+    'condition': 'checkout_linux and checkout_x64',
+    'action': ['python', 'devtools-frontend/build/linux/sysroot_scripts/install-sysroot.py',
+               '--arch=x64'],
   },
 
 ]

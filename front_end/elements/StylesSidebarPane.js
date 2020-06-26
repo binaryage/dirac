@@ -185,6 +185,8 @@ export class StylesSidebarPane extends ElementsSidebarPane {
    */
   static createPropertyFilterElement(placeholder, container, filterCallback) {
     const input = document.createElement('input');
+    input.type = 'search';
+    input.classList.add('custom-search-input');
     input.placeholder = placeholder;
 
     function searchHandler() {
@@ -600,6 +602,9 @@ export class StylesSidebarPane extends ElementsSidebarPane {
       this._decorator.perform();
       this._decorator = null;
     }
+
+    // Record the elements tool load time after the sidepane has loaded.
+    Host.userMetrics.panelLoaded('elements', 'DevTools.Launch.Elements');
   }
 
   /**
