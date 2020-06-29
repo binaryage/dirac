@@ -197,6 +197,8 @@
 > I refer to this mode of operation as "loopback REPL". Because there is no Dirac nREPL backend or runtime support. 
 > Dirac talks to page's context to do cljs evaluations. Some more advanced Dirac features are not supported.
 > When this mode is active, you should see purple "loopback" indicator when the REPL prompt is empty.
+>
+> <img src="https://box.binaryage.com/dirac-shadow-loopback.png" width="800">
 
 #### I have a great idea for contribution! How to hack on Dirac itself?
 
