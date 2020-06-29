@@ -14,8 +14,12 @@ export const LOG_LEVELS_VERBOSE_OPTION_SELECTOR = '[aria-label^="Verbose"]';
 export const CONSOLE_PROMPT_SELECTOR = '.console-prompt-editor-container';
 export const CONSOLE_VIEW_SELECTOR = '.console-view';
 export const STACK_PREVIEW_CONTAINER = '.stack-preview-container';
+export const CONSOLE_MESSAGE_WRAPPER_SELECTOR = '.console-group-messages .console-message-wrapper';
 
 export async function getConsoleMessages(testName: string, callback?: (page: puppeteer.Page) => Promise<void>) {
+  // Ensure Console is loaded before the page is loaded to avoid a race condition.
+  await getCurrentConsoleMessages();
+
   // Have the target load the page.
   await goToResource(`console/${testName}.html`);
 
@@ -49,6 +53,40 @@ export async function getCurrentConsoleMessages(callback?: (page: puppeteer.Page
   }, CONSOLE_FIRST_MESSAGES_SELECTOR);
 }
 
+export async function getStructuredConsoleMessages() {
+  const {frontend} = getBrowserAndPages();
+
+  await navigateToConsoleTab();
+
+  // Get console messages that were logged.
+  await waitFor(CONSOLE_MESSAGES_SELECTOR);
+
+  // Ensure all messages are populated.
+  await frontend.waitForFunction(CONSOLE_FIRST_MESSAGES_SELECTOR => {
+    return Array.from(document.querySelectorAll(CONSOLE_FIRST_MESSAGES_SELECTOR))
+        .every(message => message.childNodes.length > 0);
+  }, {timeout: 3000}, CONSOLE_FIRST_MESSAGES_SELECTOR);
+
+  return frontend.evaluate((CONSOLE_MESSAGE_WRAPPER_SELECTOR, STACK_PREVIEW_CONTAINER) => {
+    return Array.from(document.querySelectorAll(CONSOLE_MESSAGE_WRAPPER_SELECTOR)).map(wrapper => {
+      const message = wrapper.querySelector('.console-message-text').textContent;
+      const source = wrapper.querySelector('.devtools-link').textContent;
+      const consoleMessage = wrapper.querySelector('.console-message');
+      const repeatCount = wrapper.querySelector('.console-message-repeat-count');
+      const stackPreviewRoot = wrapper.querySelector('.hidden > span');
+      const stackPreview = stackPreviewRoot ? stackPreviewRoot.shadowRoot.querySelector(STACK_PREVIEW_CONTAINER) : null;
+      return {
+        message,
+        messageClasses: consoleMessage.className,
+        repeatCount: repeatCount ? repeatCount.textContent : null,
+        source,
+        stackPreview: stackPreview ? stackPreview.textContent : null,
+        wrapperClasses: wrapper.className,
+      };
+    });
+  }, CONSOLE_MESSAGE_WRAPPER_SELECTOR, STACK_PREVIEW_CONTAINER);
+}
+
 export async function focusConsolePrompt() {
   await waitFor(CONSOLE_PROMPT_SELECTOR);
   await click(CONSOLE_PROMPT_SELECTOR);
@@ -66,11 +104,28 @@ export async function typeIntoConsole(frontend: puppeteer.Page, message: string)
 
   // Wait for autocomplete text to catch up.
   const line = (await console.$('.CodeMirror-activeline'))!.asElement()!;
-  const autocomplete = (await line.$('.auto-complete-text'))!.asElement()!;
+  const autocompleteHandle = (await line.$('.auto-complete-text'));
+  // The autocomplete element doesn't exist until the first autocomplete suggestion
+  // is actaully given.
+  const autocomplete = autocompleteHandle ? autocompleteHandle.asElement()! : null;
   await frontend.waitFor(
-      (msg, ln, ac) => ln.textContent === msg && ac.textContent === '', undefined, message, line, autocomplete);
+      (msg, ln, ac) => ln.textContent === msg && (!ac || ac.textContent === ''), undefined, message, line,
+      autocomplete);
 
   await console.press('Enter');
+}
+
+export async function typeIntoConsoleAndWaitForResult(frontend: puppeteer.Page, message: string) {
+  // Get the current number of console results so we can check we increased it.
+  const originalLength = await frontend.evaluate(() => {
+    return document.querySelectorAll('.console-user-command-result').length;
+  });
+
+  await typeIntoConsole(frontend, message);
+
+  await frontend.waitForFunction(originalLength => {
+    return document.querySelectorAll('.console-user-command-result').length === originalLength + 1;
+  }, {}, originalLength);
 }
 
 export async function switchToTopExecutionContext(frontend: puppeteer.Page) {
