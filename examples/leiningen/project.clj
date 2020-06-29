@@ -1,5 +1,5 @@
 (def devtools-version "1.0.0")
-(def dirac-version "1.5.12")
+(def dirac-version "1.6.0")
 (def figwheel-version "0.5.20")
 (defproject binaryage/dirac-lein "0.1.0-SNAPSHOT"
   :description "An example integration of Dirac DevTools with a Leiningen-based project"
