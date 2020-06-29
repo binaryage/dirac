@@ -15,7 +15,7 @@
             [dirac.shared.async :refer [<! close! go go-channel go-wait put!]]
             [dirac.shared.utils :as utils]
             [goog.functions :as gfns]
-            [oops.core :refer [oapply ocall oget gget]])
+            [oops.core :refer [oapply gcall ocall oget gget]])
   (:import goog.net.WebSocket.ErrorEvent))
 
 (def required-repl-api-version 9)
@@ -27,10 +27,12 @@
 (defonce ^:dynamic *last-session-id* nil)
 (defonce ^:dynamic *last-connect-fn-id* 0)
 (defonce ^:dynamic *ignore-next-client-change* false)
+(defonce ^:dynamic *loopback-repl-ns* nil)
 
 (def dirac-agent-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-dirac-agent")
 (def dirac-runtime-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#install-the-dirac-runtime")
 (def dirac-upgrading-help-url "https://github.com/binaryage/dirac/blob/master/docs/upgrading.md")
+(def dirac-loopback-mode-url "https://github.com/binaryage/dirac/blob/master/docs/faq.md#what-is-loopback-mode")
 
 (defn ^:dynamic repl-api-mismatch-msg [current-api required-api]
   (str "Dirac REPL API version mismatch detected.\n"
@@ -109,6 +111,9 @@
        "Normally we would inject playground project to get ad-hoc REPL working here "
        "but it is currently not supported with shadow-cljs."))
 
+(defn ^:dynamic explain-loopback-mode-msg []
+  (str "Dirac REPL is running in loopback mode. See " dirac-loopback-mode-url "."))
+
 (defn check-agent-version! [agent-version]
   (let [our-version implant-version/version]
     (when-not (= agent-version our-version)
@@ -163,6 +168,22 @@
   (set! *repl-bootstrapped* false)
   (set! *repl-connected* false)
   (set! *last-connect-fn-id* 0))
+
+(defn loopback-repl? []
+  (= *last-connection-url* "loopback-repl"))
+
+(defn update-loopback-repl! []
+  (console/set-prompt-ns! *loopback-repl-ns*)
+  (console/set-prompt-compiler! "loopback" ""))
+
+(defn connect-to-loopback-repl! []
+  (set! *last-connection-url* "loopback-repl")
+  (set! *last-session-id* "loopback-session")
+  (set! *repl-bootstrapped* true)
+  (set! *repl-connected* true)
+  (set! *loopback-repl-ns* "cljs.user")
+  (update-repl-mode!)
+  (update-loopback-repl!))
 
 (defn on-client-change [_key _ref old new]
   (when-not *ignore-next-client-change*
@@ -263,15 +284,47 @@
     (js->clj scope-info-js :keywordize-keys true)
     {}))
 
+(def dirac-special-re #"\(?dirac!?.*\)?")
+(def in-ns-re #"\(in-ns\s+'?(.*)\)")
+
+(defn is-dirac-special? [code]
+  (some? (re-matches dirac-special-re code)))
+
+(defn is-in-ns-call? [code]
+  (some? (re-matches in-ns-re code)))
+
+(defn handle-dirac-special! []
+  (gcall "dirac.addConsoleMessageToMainTarget" "log" "info" (explain-loopback-mode-msg))
+  ::command-handled)
+
+(defn handle-in-ns-call! [code]
+  (let [m (re-matches in-ns-re code)
+        ns (second m)]
+    (when (some? ns)
+      (set! *loopback-repl-ns* ns)
+      (update-loopback-repl!)
+      ::command-handled)))
+
+(defn attempt-to-handle-loopback-repl-specials! [code]
+  (cond
+    (is-dirac-special? code) (handle-dirac-special!)
+    (is-in-ns-call? code) (handle-in-ns-call! code)))
+
+(defn do-loopback-repl-eval! [code]
+  (if-not (= ::command-handled (attempt-to-handle-loopback-repl-specials! code))
+    (eval/eval-cljs-in-console! code *loopback-repl-ns*)))
+
 (defn send-eval-request! [job-id code scope-info]
-  (when (repl-ready?)
-    (console/announce-job-start! job-id (str "eval: " code))
-    (let [message {:op         "eval"
-                   :dirac      "short-circuit-presentation"
-                   :id         job-id
-                   :code       code
-                   :scope-info (prepare-scope-info scope-info)}]
-      (nrepl-tunnel-client/tunnel-message! (utils/compact message)))))
+  (if-not (loopback-repl?)
+    (when (repl-ready?)
+      (console/announce-job-start! job-id (str "eval: " code))
+      (let [message {:op         "eval"
+                     :dirac      "short-circuit-presentation"
+                     :id         job-id
+                     :code       code
+                     :scope-info (prepare-scope-info scope-info)}]
+        (nrepl-tunnel-client/tunnel-message! (utils/compact message))))
+    (do-loopback-repl-eval! code)))
 
 (defn ws-url [host port]
   (str "ws://" host ":" port))
@@ -311,6 +364,12 @@
     (register-bootstrap-done-hook! enter-playground!)
     (<! (go-init-repl! true))))
 
+(defn go-start-loopback-repl! []
+  (feedback/post! "start-loopback-repl!")
+  (go
+    (connect-to-loopback-repl!)
+    (<! (go-init-repl! true))))
+
 (declare go-react-on-global-object-cleared!)
 
 (defn on-debugger-event [type & args]
@@ -342,11 +401,13 @@
           (if (<! (eval/go-ask-is-runtime-repl-enabled?))
             (<! (go-start-repl!))
             (display-prompt-status (repl-support-not-enabled-msg)))
-          (if (or no-playground? (hosted?))
-            (display-prompt-status (missing-runtime-msg runtime-present?))
-            (if (<! (eval/go-ask-is-shadow-present?))
-              (display-prompt-status (no-playground-due-to-shadow-msg))
-              (<! (go-start-playground-repl!)))))))))
+          (if (<! (eval/go-ask-is-cljs-eval-present?))
+            (<! (go-start-loopback-repl!))
+            (if (or no-playground? (hosted?))
+              (display-prompt-status (missing-runtime-msg runtime-present?))
+              (if (<! (eval/go-ask-is-shadow-present?))
+                (display-prompt-status (no-playground-due-to-shadow-msg))
+                (<! (go-start-playground-repl!))))))))))
 
 (defn go-react-on-global-object-cleared! []
   (reset-repl-state!)

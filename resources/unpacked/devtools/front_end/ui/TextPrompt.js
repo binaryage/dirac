@@ -67,7 +67,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {(function(this:null, string, string, boolean=):!Promise<!Suggestions>)} completions
+   * @param {function(this:null, string, string, boolean=):!Promise<!Suggestions>} completions
    * @param {string=} stopCharacters
    */
   initialize(completions, stopCharacters) {
@@ -104,7 +104,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
    * (since the "blur" event does not bubble.)
    *
    * @param {!Element} element
-   * @param {function(!Event)} blurListener
+   * @param {function(!Event):*} blurListener
    * @return {!Element}
    */
   attachAndStartEditing(element, blurListener) {
@@ -263,7 +263,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {function(!Event)=} blurListener
+   * @param {function(!Event):*=} blurListener
    */
   _startEditing(blurListener) {
     this._isEditing = true;
@@ -738,8 +738,8 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   moveCaretToIndex(index) {
-    var selection = this._element.getComponentSelection();
-    var selectionRange = this._createRange();
+    const selection = this._element.getComponentSelection();
+    const selectionRange = this._createRange();
 
     selectionRange.setStart(this._element.firstChild, index);
     selectionRange.setEnd(this._element.firstChild, index);
@@ -752,7 +752,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
    * @return {string}
    */
   getSuggestBoxRepresentation() {
-    return "getSuggestBoxRepresentation not implemented for UI.TextPrompt";
+    return 'getSuggestBoxRepresentation not implemented for UI.TextPrompt';
   }
 
   /**

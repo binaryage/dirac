@@ -166,7 +166,7 @@ export class Widget extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {function(this:Widget)} method
+   * @param {function(this:Widget):void} method
    */
   _callOnVisibleChildren(method) {
     const copy = this._children.slice();
@@ -218,7 +218,7 @@ export class Widget extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {function(this:Widget)} notification
+   * @param {function(this:Widget):void} notification
    */
   _notify(notification) {
     ++this._notificationDepth;
@@ -376,7 +376,7 @@ export class Widget extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {boolean=} overrideHideOnDetach
+   * @param {boolean=} overrideHideOnDetach remove element from DOM instead of hiding
    */
   detach(overrideHideOnDetach) {
     if (!this._parentWidget && !this._isRoot) {
@@ -718,7 +718,7 @@ export class HBox extends Widget {
  */
 export class VBoxWithResizeCallback extends VBox {
   /**
-   * @param {function()} resizeCallback
+   * @param {function():void} resizeCallback
    */
   constructor(resizeCallback) {
     super();

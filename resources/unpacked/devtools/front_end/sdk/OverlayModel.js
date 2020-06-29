@@ -22,6 +22,9 @@ export let HighlightColor;
  */
 export let HighlightRect;
 
+/** @typedef {!{width: number, height: number, x: number, y: number, contentColor:HighlightColor, outlineColor: HighlightColor}} */
+export let Hinge;
+
 /**
  * @implements {Protocol.OverlayDispatcher}
  */
@@ -54,6 +57,7 @@ export class OverlayModel extends SDKModel {
     }
 
     this._inspectModeEnabled = false;
+    this._gridFeaturesExperimentEnabled = Root.Runtime.experiments.isEnabled('cssGridFeatures');
     this._hideHighlightTimeout = null;
     this._defaultHighlighter = new DefaultHighlighter(this);
     this._highlighter = this._defaultHighlighter;
@@ -116,7 +120,7 @@ export class OverlayModel extends SDKModel {
 
   /**
    * @param {!HighlightRect} rect
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   highlightRect({x, y, width, height, color, outlineColor}) {
     const highlightColor = color || {r: 255, g: 0, b: 255, a: 0.3};
@@ -126,14 +130,14 @@ export class OverlayModel extends SDKModel {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   clearHighlight() {
     return this._overlayAgent.invoke_hideHighlight({});
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   _wireAgentToSettings() {
     this._registeredListeners = [
@@ -182,7 +186,7 @@ export class OverlayModel extends SDKModel {
 
   /**
    * @override
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   suspendModel() {
     Common.EventTarget.EventTarget.removeEventListeners(this._registeredListeners);
@@ -191,7 +195,7 @@ export class OverlayModel extends SDKModel {
 
   /**
    * @override
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   resumeModel() {
     this._overlayAgent.enable();
@@ -229,14 +233,14 @@ export class OverlayModel extends SDKModel {
 
   /**
    * @param {!Protocol.Overlay.InspectMode} mode
-   * @param {boolean=} showStyles
-   * @return {!Promise}
+   * @param {boolean=} showDetailedTooltip
+   * @return {!Promise<void>}
    */
-  async setInspectMode(mode, showStyles = true) {
+  async setInspectMode(mode, showDetailedTooltip = true) {
     await this._domModel.requestDocument();
     this._inspectModeEnabled = mode !== Protocol.Overlay.InspectMode.None;
     this.dispatchEventToListeners(Events.InspectModeWillBeToggled, this);
-    this._highlighter.setInspectMode(mode, this._buildHighlightConfig('all', showStyles));
+    this._highlighter.setInspectMode(mode, this._buildHighlightConfig('all', showDetailedTooltip));
   }
 
   /**
@@ -292,15 +296,132 @@ export class OverlayModel extends SDKModel {
   }
 
   /**
+   * @param {boolean} show
+   * @param {?Hinge} hinge
+   */
+  showHingeForDualScreen(show, hinge = null) {
+    if (show) {
+      const {x, y, width, height, contentColor, outlineColor} = hinge;
+      this._overlayAgent.setShowHinge(
+          {rect: {x: x, y: y, width: width, height: height}, contentColor: contentColor, outlineColor: outlineColor});
+    } else {
+      this._overlayAgent.setShowHinge();
+    }
+  }
+
+  /**
+   * @return {!Protocol.Overlay.GridHighlightConfig}
+   */
+  _buildGridHighlightConfig() {
+    const gridBorderSetting = Common.Settings.Settings.instance().moduleSetting('showGridBorder').get();
+    let showGridBorder = false;
+    let gridBorderDashed = false;
+    switch (gridBorderSetting) {
+      case 'dashed':
+        showGridBorder = true;
+        gridBorderDashed = true;
+        break;
+      case 'solid':
+        showGridBorder = true;
+        break;
+      default:
+        break;
+    }
+    const showGridLinesSetting = Common.Settings.Settings.instance().moduleSetting('showGridLines').get();
+    let showGridLines = false;
+    let gridLinesDashed = false;
+    let showGridExtensionLines;
+    switch (showGridLinesSetting) {
+      case 'dashed':
+        showGridLines = true;
+        gridLinesDashed = true;
+        break;
+      case 'solid':
+        showGridLines = true;
+        break;
+      case 'extended-dashed':
+        showGridLines = true;
+        gridLinesDashed = true;
+        showGridExtensionLines = true;
+        break;
+      case 'extended-solid':
+        showGridLines = true;
+        showGridExtensionLines = true;
+        break;
+      default:
+        break;
+    }
+    // Add background to help distinguish rows/columns when cell borders are not outlined
+    const addBackgroundsToGaps = !showGridLines;
+    const showGridLineNumbersSetting = Common.Settings.Settings.instance().moduleSetting('showGridLineNumbers').get();
+    let showPositiveLineNumbers = false;
+    let showNegativeLineNumbers = false;
+    switch (showGridLineNumbersSetting) {
+      case 'positive':
+        showPositiveLineNumbers = true;
+        break;
+      case 'negative':
+        showNegativeLineNumbers = true;
+        break;
+      case 'both':
+        showPositiveLineNumbers = true;
+        showNegativeLineNumbers = true;
+        break;
+      default:
+        break;
+    }
+    const showGridGapsSetting = Common.Settings.Settings.instance().moduleSetting('showGridGaps').get();
+    let showGridRowGaps = false;
+    let showGridColumnGaps = false;
+    switch (showGridGapsSetting) {
+      case 'both':
+        showGridRowGaps = true;
+        showGridColumnGaps = true;
+        break;
+      case 'row-gaps':
+        showGridRowGaps = true;
+        break;
+      case 'column-gaps':
+        showGridColumnGaps = true;
+        break;
+      default:
+        break;
+    }
+
+    return {
+      rowGapColor: (showGridRowGaps && addBackgroundsToGaps) ?
+          Common.Color.PageHighlight.GridRowGapBackground.toProtocolRGBA() :
+          undefined,
+      rowHatchColor: showGridRowGaps ? Common.Color.PageHighlight.GridRowGapHatch.toProtocolRGBA() : undefined,
+      columnGapColor: (showGridColumnGaps && addBackgroundsToGaps) ?
+          Common.Color.PageHighlight.GridColumnGapBackground.toProtocolRGBA() :
+          undefined,
+      columnHatchColor: showGridColumnGaps ? Common.Color.PageHighlight.GridColumnGapHatch.toProtocolRGBA() : undefined,
+      gridBorderColor: showGridBorder ? Common.Color.PageHighlight.GridBorder.toProtocolRGBA() : undefined,
+      gridBorderDash: gridBorderDashed,
+      cellBorderColor: showGridLines ? Common.Color.PageHighlight.GridCellBorder.toProtocolRGBA() : undefined,
+      cellBorderDash: gridLinesDashed,
+      showGridExtensionLines: showGridExtensionLines,
+      showPositiveLineNumbers,
+      showNegativeLineNumbers
+    };
+  }
+
+  /**
    * @param {string=} mode
-   * @param {boolean=} showStyles
+   * @param {boolean=} showDetailedToolip
    * @return {!Protocol.Overlay.HighlightConfig}
    */
-  _buildHighlightConfig(mode = 'all', showStyles = false) {
+  _buildHighlightConfig(mode = 'all', showDetailedToolip = false) {
     const showRulers = Common.Settings.Settings.instance().moduleSetting('showMetricsRulers').get();
     const colorFormat = Common.Settings.Settings.instance().moduleSetting('colorFormat').get();
-    const highlightConfig =
-        {showInfo: mode === 'all', showRulers: showRulers, showStyles, showExtensionLines: showRulers};
+    const highlightConfig = {
+      showInfo: mode === 'all',
+      showRulers: showRulers,
+      showStyles: showDetailedToolip,
+      showAccessibilityInfo: showDetailedToolip,
+      showExtensionLines: showRulers,
+    };
     if (mode === 'all' || mode === 'content') {
       highlightConfig.contentColor = Common.Color.PageHighlight.Content.toProtocolRGBA();
     }
@@ -324,7 +445,12 @@ export class OverlayModel extends SDKModel {
     }
 
     if (mode === 'all') {
-      highlightConfig.cssGridColor = Common.Color.PageHighlight.CssGrid.toProtocolRGBA();
+      if (this._gridFeaturesExperimentEnabled) {
+        highlightConfig.gridHighlightConfig = this._buildGridHighlightConfig();
+      } else {
+        // Support for the legacy grid cell highlight.
+        highlightConfig.cssGridColor = Common.Color.PageHighlight.CssGrid.toProtocolRGBA();
+      }
     }
 
     // the backend does not support the 'original' format because
@@ -412,7 +538,7 @@ export class Highlighter {
   /**
    * @param {!Protocol.Overlay.InspectMode} mode
    * @param {!Protocol.Overlay.HighlightConfig} config
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   setInspectMode(mode, config) {
   }
@@ -455,7 +581,7 @@ class DefaultHighlighter {
    * @override
    * @param {!Protocol.Overlay.InspectMode} mode
    * @param {!Protocol.Overlay.HighlightConfig} config
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   setInspectMode(mode, config) {
     return this._model._overlayAgent.setInspectMode(mode, config);

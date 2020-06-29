@@ -34,9 +34,7 @@ import * as Common from '../common/common.js';
 import * as SupportedCSSProperties from '../generated/SupportedCSSProperties.js';
 import * as Platform from '../platform/platform.js';
 
-/**
- * @unrestricted
- */
+
 export class CSSMetadata {
   /**
    * @param {!Array<!CSSPropertyDefinition>} properties
@@ -286,8 +284,8 @@ export class CSSMetadata {
    */
   isCSSPropertyName(propertyName) {
     propertyName = propertyName.toLowerCase();
-    if (propertyName.startsWith('-moz-') || propertyName.startsWith('-o-') || propertyName.startsWith('-webkit-') ||
-        propertyName.startsWith('-ms-')) {
+    if ((propertyName.startsWith('--') && propertyName.length > 2) || propertyName.startsWith('-moz-') ||
+        propertyName.startsWith('-ms-') || propertyName.startsWith('-o-') || propertyName.startsWith('-webkit-')) {
       return true;
     }
     return this._valuesSet.has(propertyName);
@@ -526,7 +524,10 @@ const _extraPropertyValues = {
   'content': {values: ['normal', 'close-quote', 'no-close-quote', 'no-open-quote', 'open-quote']},
   'baseline-shift': {values: ['baseline']},
   'max-height': {values: ['min-content', 'max-content', '-webkit-fill-available', 'fit-content']},
-  'box-shadow': {values: ['inset']},
+  'color': {values: ['black']},
+  'background-color': {values: ['white']},
+  'box-shadow': {values: ['inset', '0 0 black']},
+  'text-shadow': {values: ['0 0 black']},
   '-webkit-writing-mode': {values: ['horizontal-tb', 'vertical-rl', 'vertical-lr']},
   'writing-mode': {values: ['lr', 'rl', 'tb', 'lr-tb', 'rl-tb', 'tb-rl']},
   'page-break-inside': {values: ['avoid']},
@@ -561,8 +562,13 @@ const _extraPropertyValues = {
   'border-image': {values: ['repeat', 'stretch', 'space', 'round']},
   'text-decoration':
       {values: ['blink', 'line-through', 'overline', 'underline', 'wavy', 'double', 'solid', 'dashed', 'dotted']},
-  'font-family':
-      {values: ['serif', 'sans-serif', 'cursive', 'fantasy', 'monospace', '-webkit-body', '-webkit-pictograph']},
+  // List taken from https://drafts.csswg.org/css-fonts-4/#generic-font-families
+  'font-family': {
+    values: [
+      'serif', 'sans-serif', 'cursive', 'fantasy', 'monospace', 'system-ui', 'emoji', 'math', 'fangsong', 'ui-serif',
+      'ui-sans-serif', 'ui-monospace', 'ui-rounded', '-webkit-body', '-webkit-pictograph'
+    ]
+  },
   'zoom': {values: ['normal']},
   'max-width': {values: ['min-content', 'max-content', '-webkit-fill-available', 'fit-content']},
   '-webkit-font-smoothing': {values: ['antialiased', 'subpixel-antialiased']},

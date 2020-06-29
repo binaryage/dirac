@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 /** @type {!Object} */
 const SkipSubTreeObject = {};
 
@@ -14,7 +11,7 @@ const SkipSubTreeObject = {};
 export class ESTreeWalker {
   /**
    * @param {function(!ESTree.Node):(!Object|undefined)} beforeVisit
-   * @param {function(!ESTree.Node)=} afterVisit
+   * @param {function(!ESTree.Node):void=} afterVisit
    */
   constructor(beforeVisit, afterVisit) {
     this._beforeVisit = beforeVisit;
@@ -49,9 +46,11 @@ export class ESTreeWalker {
    */
   _innerWalk(node, parent) {
     if (!node && parent && this._walkNulls) {
-      const result = /** @type {!Object} */ ({raw: 'null', value: null});
+      const result = /** @type {!ESTree.SimpleLiteral} */ ({raw: 'null', value: null, parent: null});
+      // Otherwise Closure can't handle the definition
       result.type = 'Literal';
-      node = /** @type {!ESTree.Node} */ (result);
+
+      node = result;
     }
 
     if (!node) {
@@ -80,11 +79,14 @@ export class ESTreeWalker {
       this._innerWalk(templateLiteral.quasis[expressionsLength], templateLiteral);
     } else {
       for (let i = 0; i < walkOrder.length; ++i) {
-        const entity = node[walkOrder[i]];
+        // @ts-ignore We are doing type traversal here, but the strings
+        // in _walkOrder are not mapping. Preferably, we would use the
+        // properties as defined in the types, but we can't do that yet.
+        const entity = /** @type {?} */ (node[walkOrder[i]]);
         if (Array.isArray(entity)) {
-          this._walkArray(entity, node);
+          this._walkArray(/** @type {!Array<!ESTree.Node>} */ (entity), node);
         } else {
-          this._innerWalk(entity, node);
+          this._innerWalk(/** @type {!ESTree.Node} */ (entity), node);
         }
       }
     }
@@ -119,6 +121,7 @@ const _walkOrder = {
   'ClassBody': ['body'],
   'ClassDeclaration': ['id', 'superClass', 'body'],
   'ClassExpression': ['id', 'superClass', 'body'],
+  'ChainExpression': ['expression'],
   'ConditionalExpression': ['test', 'consequent', 'alternate'],
   'ContinueStatement': ['label'],
   'DebuggerStatement': [],
@@ -132,15 +135,20 @@ const _walkOrder = {
   'FunctionExpression': ['id', 'params', 'body'],
   'Identifier': [],
   'ImportDeclaration': ['specifiers', 'source'],
+  'ImportDefaultSpecifier': ['local'],
+  'ImportNamespaceSpecifier': ['local'],
+  'ImportSpecifier': ['imported', 'local'],
   'ImportExpression': ['source'],
   'ExportAllDeclaration': ['source'],
   'ExportDefaultDeclaration': ['declaration'],
   'ExportNamedDeclaration': ['specifiers', 'source', 'declaration'],
+  'ExportSpecifier': ['exported', 'local'],
   'IfStatement': ['test', 'consequent', 'alternate'],
   'LabeledStatement': ['label', 'body'],
   'Literal': [],
   'LogicalExpression': ['left', 'right'],
   'MemberExpression': ['object', 'property'],
+  'MetaProperty': ['meta', 'property'],
   'MethodDefinition': ['key', 'value'],
   'NewExpression': ['callee', 'arguments'],
   'ObjectExpression': ['properties'],

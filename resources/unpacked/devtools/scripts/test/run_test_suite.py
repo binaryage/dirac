@@ -23,6 +23,8 @@ import test_helpers
 
 CONDUCTOR_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'test', 'conductor')
 E2E_MOCHA_CONFIGURATION_LOCATION = os.path.join(ROOT_DIRECTORY, 'test', 'e2e', '.mocharc.js')
+PERF_MOCHA_CONFIGURATION_LOCATION = os.path.join(ROOT_DIRECTORY, 'test',
+                                                 'perf', '.mocharc.js')
 
 
 def parse_options(cli_args):
@@ -30,6 +32,12 @@ def parse_options(cli_args):
     parser.add_argument('--chrome-binary', dest='chrome_binary', help='path to Chromium binary')
     parser.add_argument('--test-suite', dest='test_suite', help='path to test suite')
     parser.add_argument('--test-file', dest='test_file', help='an absolute path for the file to test')
+    parser.add_argument(
+        '--target',
+        '-t',
+        default='Default',
+        dest='target',
+        help='The name of the Ninja output directory. Defaults to "Default"')
     parser.add_argument(
         '--chrome-features',
         dest='chrome_features',
@@ -59,16 +67,18 @@ def run_tests(chrome_binary, chrome_features, test_suite, test_suite_list_path, 
         env['TEST_FILE'] = test_file
 
     cwd = devtools_paths.devtools_root_path()
+    exec_command = [
+        devtools_paths.node_path(),
+        devtools_paths.mocha_path(), '--config'
+    ]
     if test_suite == 'e2e':
-        exec_command = [
-            devtools_paths.node_path(),
-            devtools_paths.mocha_path(),
-            '--config',
+        exec_command += [
             E2E_MOCHA_CONFIGURATION_LOCATION,
         ]
     else:
-        runner_path = os.path.join(cwd, 'test', 'shared', 'runner.js')
-        exec_command = [devtools_paths.node_path(), runner_path]
+        exec_command += [
+            PERF_MOCHA_CONFIGURATION_LOCATION,
+        ]
 
     exit_code = test_helpers.popen(exec_command, cwd=cwd, env=env)
     if exit_code != 0:

@@ -17,7 +17,8 @@
     "sdk",
     "ui",
     "data_grid",
-    "source_frame"
+    "source_frame",
+    "perf_ui"
   ],
   "modules": [
     "media.js",
@@ -26,9 +27,12 @@
     "MainView.js",
     "PlayerDetailView.js",
     "PlayerListView.js",
+    "PlayerMessagesView.js",
     "PlayerPropertiesView.js",
     "MediaModel.js",
-    "ChevronTabbedPanel.js"
+    "EventTimelineView.js",
+    "TickingFlameChart.js",
+    "TickingFlameChartHelpers.js"
   ],
   "scripts": [],
   "resources": [
@@ -36,6 +40,6 @@
     "mediaView.css",
     "playerListView.css",
     "playerPropertiesView.css",
-    "chevronTabbedPanel.css"
+    "playerMessagesView.css"
   ]
 }

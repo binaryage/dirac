@@ -166,6 +166,9 @@
   <message name="IDS_DEVTOOLS_4059b0251f66a18cb56f544728796875" desc="Sdk console message message level info of level Labels in Console View of the Console panel">
     Info
   </message>
+  <message name="IDS_DEVTOOLS_41de6d6cfb8953c021bbe4ba0701c8a1" desc="Text in Network Item View of the Network panel">
+    Messages
+  </message>
   <message name="IDS_DEVTOOLS_41fdb410354e76ef7674f98e1cc84c8f" desc="Text for throttling the network">
     Throttling
   </message>
@@ -262,6 +265,9 @@
   <message name="IDS_DEVTOOLS_5fb63579fc981698f97d55bfecb213ea" desc="Text for copying">
     Copy
   </message>
+  <message name="IDS_DEVTOOLS_61326117ed4a9ddf3f754e71e119e5b3" desc="The kind of resolution for a mixed content issue">
+    blocked
+  </message>
   <message name="IDS_DEVTOOLS_63041e09c8660107e507c9c27c08199c" desc="Text to expand something recursively">
     Expand recursively
   </message>
@@ -309,6 +315,9 @@
   </message>
   <message name="IDS_DEVTOOLS_787ae37366b7a8c53f381abfd315c647" desc="Text that refers to the Elements Panel">
     Elements Panel
+  </message>
+  <message name="IDS_DEVTOOLS_7a1920d61156abc05a60135aefe8bc67" desc="A context menu item in the Console View of the Console panel">
+    Default
   </message>
   <message name="IDS_DEVTOOLS_7a2ccf251ecb20b2b84ce0e3c3f72a29" desc="Text to show something is secure">
     Secure
@@ -363,6 +372,9 @@
   </message>
   <message name="IDS_DEVTOOLS_902b0d55fddef6f8d651fe1035b7d4bd" desc="Text for errors">
     Error
+  </message>
+  <message name="IDS_DEVTOOLS_90589c47f06eb971d548591f23c285af" desc="Text in Network Throttling Selector of the Network panel">
+    Custom
   </message>
   <message name="IDS_DEVTOOLS_90da6f38945a1c7e7ba11e3adcbe6919" desc="Text for pausing the debugger on exceptions">
     Pause on exceptions
@@ -520,6 +532,9 @@
   <message name="IDS_DEVTOOLS_be8545ae7ab0276e15898aae7acfbd7a" desc="Text that refers to the resources of the web page">
     Resource
   </message>
+  <message name="IDS_DEVTOOLS_bec25a46972e4fa86df9413508add5c2" desc="Text that refers to disabling local fonts">
+    Disable local fonts
+  </message>
   <message name="IDS_DEVTOOLS_c2cc7082a89c1ad6631a2f66af5f00c0" desc="Text that refers to the network connection">
     Connection
   </message>
@@ -594,6 +609,9 @@
   </message>
   <message name="IDS_DEVTOOLS_e0e4fc6213e8b3593495a7260c3a4c2e" desc="Text for accessibility of the web page">
     Accessibility
+  </message>
+  <message name="IDS_DEVTOOLS_e199c6bb662785b037c5f330f58878ce" desc="Show all text content in Show More Data Grid Node of a data grid">
+    Show all <ph name="TOTALSIZE">$1d<ex>50</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_e402c138065e7eece783dc30c6079192" desc="Text that appears on a button for the xhr resource type filter.">
     XHR

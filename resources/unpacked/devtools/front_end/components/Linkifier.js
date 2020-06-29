@@ -1,3 +1,4 @@
+// @ts-nocheck
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
  *
@@ -44,13 +45,15 @@ export class Linkifier {
   /**
    * @param {number=} maxLengthForDisplayedURLs
    * @param {boolean=} useLinkDecorator
+   * @param {function():void=} onLiveLocationUpdate
    */
-  constructor(maxLengthForDisplayedURLs, useLinkDecorator) {
+  constructor(maxLengthForDisplayedURLs, useLinkDecorator, onLiveLocationUpdate = () => {}) {
     this._maxLength = maxLengthForDisplayedURLs || UI.UIUtils.MaxLengthForDisplayedURLs;
     /** @type {!Map<!SDK.SDKModel.Target, !Array<!Element>>} */
     this._anchorsByTarget = new Map();
     /** @type {!Map<!SDK.SDKModel.Target, !Bindings.LiveLocation.LiveLocationPool>} */
     this._locationPoolByTarget = new Map();
+    this._onLiveLocationUpdate = onLiveLocationUpdate;
     this._useLinkDecorator = !!useLinkDecorator;
     _instances.add(this);
     SDK.SDKModel.TargetManager.instance().observeTargets(this);
@@ -203,6 +206,7 @@ export class Linkifier {
         .createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor), pool)
         .then(liveLocation => {
           info.liveLocation = liveLocation;
+          this._onLiveLocationUpdate();
         });
 
     const anchors = /** @type {!Array<!Element>} */ (this._anchorsByTarget.get(rawLocation.debuggerModel.target()));
@@ -286,6 +290,7 @@ export class Linkifier {
         .createStackTraceTopFrameLiveLocation(rawLocations, this._updateAnchor.bind(this, anchor), pool)
         .then(liveLocation => {
           info.liveLocation = liveLocation;
+          this._onLiveLocationUpdate();
         });
 
     const anchors = /** @type {!Array<!Element>} */ (this._anchorsByTarget.get(target));
@@ -311,6 +316,7 @@ export class Linkifier {
         .createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor), pool)
         .then(liveLocation => {
           info.liveLocation = liveLocation;
+          this._onLiveLocationUpdate();
         });
 
     const anchors = /** @type {!Array<!Element>} */ (this._anchorsByTarget.get(rawLocation.cssModel().target()));
@@ -351,12 +357,21 @@ export class Linkifier {
     Linkifier._setTrimmedText(anchor, text, this._maxLength);
 
     let titleText = uiLocation.uiSourceCode.url();
-    if (typeof uiLocation.lineNumber === 'number') {
+    if (uiLocation.uiSourceCode.mimeType() === 'application/wasm') {
+      titleText += `:0x${uiLocation.columnNumber.toString(16)}`;
+    } else if (typeof uiLocation.lineNumber === 'number') {
       titleText += ':' + (uiLocation.lineNumber + 1);
     }
     anchor.title = titleText;
     anchor.classList.toggle('webkit-html-blackbox-link', await liveLocation.isBlackboxed());
     Linkifier._updateLinkDecorations(anchor);
+  }
+
+  /**
+   * @param {function():void} callback
+   */
+  setLiveLocationUpdateCallback(callback) {
+    this._onLiveLocationUpdate = callback;
   }
 
   /**

@@ -29,13 +29,28 @@ RESOURCES_INSPECTOR_PATH = path.join(os.getcwd(), 'resources', 'inspector')
 
 GLOBAL_TYPESCRIPT_DEFINITION_FILES = [
     # legacy definitions used to help us bridge Closure and TypeScript
-    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'legacy', 'legacy-defs.d.ts'),
+    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'legacy',
+              'legacy-defs.d.ts'),
+    # global definitions that we need
+    # e.g. TypeScript doesn't provide ResizeObserver definitions so we host them ourselves
+    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'global_typings',
+              'global_defs.d.ts'),
+    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'global_typings',
+              'resize_observer.d.ts'),
     # generated protocol definitions
-    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'generated', 'protocol.d.ts'),
+    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'generated',
+              'protocol.d.ts'),
     # generated protocol api interactions
-    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'generated', 'protocol-proxy-api.d.ts'),
+    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'generated',
+              'protocol-proxy-api.d.ts'),
     # Types for W3C FileSystem API
-    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'node_modules', '@types', 'filesystem', 'index.d.ts'),
+    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'node_modules', '@types',
+              'filesystem', 'index.d.ts'),
+    # Global types required for our usage of ESTree (coming from Acorn)
+    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'node_modules', '@types', 'estree',
+              'index.d.ts'),
+    path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'legacy',
+              'estree-legacy.d.ts'),
 ]
 
 
@@ -55,8 +70,11 @@ def main():
     parser.add_argument('-dir', '--front_end_directory', required=True, help='Folder that contains source files')
     parser.add_argument('-b', '--tsconfig_output_location', required=True)
     parser.add_argument('--test-only', action='store_true')
-    parser.add_argument('--skip-lib-check', action='store_true')
-    parser.set_defaults(test_only=False, skip_lib_check=False)
+    parser.add_argument('--verify-lib-check', action='store_true')
+    parser.add_argument('--module', required=False)
+    parser.set_defaults(test_only=False,
+                        verify_lib_check=False,
+                        module='esnext')
 
     opts = parser.parse_args()
     with open(BASE_TS_CONFIG_LOCATION) as root_tsconfig:
@@ -83,7 +101,8 @@ def main():
     tsconfig['compilerOptions']['declaration'] = True
     tsconfig['compilerOptions']['composite'] = True
     tsconfig['compilerOptions']['sourceMap'] = True
-    if (opts.skip_lib_check):
+    tsconfig['compilerOptions']['module'] = opts.module
+    if (not opts.verify_lib_check):
         tsconfig['compilerOptions']['skipLibCheck'] = True
     tsconfig['compilerOptions']['rootDir'] = get_relative_path_from_output_directory(opts.front_end_directory)
     tsconfig['compilerOptions']['typeRoots'] = opts.test_only and [
@@ -102,7 +121,7 @@ def main():
     # If there are no sources to compile, we can bail out and don't call tsc.
     # That's because tsc can successfully compile dependents solely on the
     # the tsconfig.json
-    if len(sources) == 0:
+    if len(sources) == 0 and not opts.verify_lib_check:
         return 0
 
     found_errors, stderr = runTsc(tsconfig_location=tsconfig_output_location)
@@ -114,12 +133,7 @@ def main():
         print('')
         return 1
 
-    # The .tsbuildinfo is non-deterministic (https://github.com/microsoft/TypeScript/issues/37156)
-    # To make sure the output remains the same for consecutive invocations, we have to manually
-    # re-order the "json"-like output.
-    fix_non_determinism_in_ts_buildinfo(path.join(tsconfig_output_directory, tsbuildinfo_name))
-
-    if not opts.test_only:
+    if not opts.test_only and not opts.verify_lib_check:
         # We are currently still loading devtools from out/<NAME>/resources/inspector
         # but we generate our sources in out/<NAME>/gen/ (which is the proper location).
         # For now, copy paste the build output back into resources/inspector to keep
@@ -127,29 +141,6 @@ def main():
         copy_all_typescript_sources(sources, path.dirname(tsconfig_output_location))
 
     return 0
-
-
-def order_arrays_and_dicts_recursively(obj):
-    ordered_obj = collections.OrderedDict()
-    for key in sorted(obj):
-        value = obj[key]
-        if isinstance(value, dict):
-            ordered_obj[key] = order_arrays_and_dicts_recursively(value)
-        else:
-            if isinstance(value, list):
-                value.sort()
-            ordered_obj[key] = value
-    return ordered_obj
-
-
-def fix_non_determinism_in_ts_buildinfo(tsbuildinfo_location):
-    with open(tsbuildinfo_location, 'rt') as input:
-        tsbuildinfo_content = input.read()
-
-    tsbuildinfo_ordered = order_arrays_and_dicts_recursively(json.loads(tsbuildinfo_content))
-
-    with open(tsbuildinfo_location, 'wt') as output:
-        output.write(json.dumps(tsbuildinfo_ordered, indent=2))
 
 
 def copy_all_typescript_sources(sources, output_directory):

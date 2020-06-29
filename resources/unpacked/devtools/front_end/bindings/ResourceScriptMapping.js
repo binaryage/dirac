@@ -119,13 +119,9 @@ export class ResourceScriptMapping {
     if (!scriptFile._hasScripts([script])) {
       return null;
     }
-    let lineNumber = rawLocation.lineNumber - (script.isInlineScriptWithSourceURL() ? script.lineOffset : 0);
+    const lineNumber = rawLocation.lineNumber - (script.isInlineScriptWithSourceURL() ? script.lineOffset : 0);
     let columnNumber = rawLocation.columnNumber || 0;
-    if (script.hasWasmDisassembly()) {
-      // TODO(chromium:1056632) This produces the wrong result when the disassembly is not loaded yet.
-      lineNumber = script.wasmDisassemblyLine(columnNumber);
-      columnNumber = 0;
-    } else if (script.isInlineScriptWithSourceURL() && !lineNumber && columnNumber) {
+    if (script.isInlineScriptWithSourceURL() && !lineNumber && columnNumber) {
       columnNumber -= script.columnOffset;
     }
     return uiSourceCode.uiLocation(lineNumber, columnNumber);
@@ -144,9 +140,6 @@ export class ResourceScriptMapping {
       return [];
     }
     const script = scriptFile._script;
-    if (script.hasWasmDisassembly()) {
-      return [script.wasmByteLocation(lineNumber)];
-    }
     if (script.isInlineScriptWithSourceURL()) {
       return [this._debuggerModel.createRawLocation(
           script, lineNumber + script.lineOffset, lineNumber ? columnNumber : columnNumber + script.columnOffset)];
@@ -202,7 +195,8 @@ export class ResourceScriptMapping {
     const scriptFile = new ResourceScriptFile(this, uiSourceCode, [script]);
     this._uiSourceCodeToScriptFile.set(uiSourceCode, scriptFile);
 
-    project.addUISourceCodeWithProvider(uiSourceCode, originalContentProvider, metadata, 'text/javascript');
+    const mimeType = script.isWasm() ? 'application/wasm' : 'text/javascript';
+    project.addUISourceCodeWithProvider(uiSourceCode, originalContentProvider, metadata, mimeType);
     await this._debuggerWorkspaceBinding.updateLocations(script);
   }
 
@@ -300,7 +294,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @return {?SDK.Script}
+   * @return {?SDK.Script.Script}
    */
   getScript() {
     return this._script;

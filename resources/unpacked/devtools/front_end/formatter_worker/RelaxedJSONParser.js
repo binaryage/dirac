@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Acorn from './Acorn.js';
+import {ECMA_VERSION} from './AcornTokenizer.js';
 import {ESTreeWalker} from './ESTreeWalker.js';
 
 export const RelaxedJSONParser = {
@@ -14,7 +19,7 @@ export const RelaxedJSONParser = {
 
     let root;
     try {
-      root = acorn.parse(content, {});
+      root = Acorn.parse(content, {ecmaVersion: ECMA_VERSION});
     } catch (e) {
       return null;
     }

@@ -15,9 +15,7 @@ import {Dialog} from './Dialog.js';
 import {Descriptor, KeyboardShortcut, Modifiers, Type} from './KeyboardShortcut.js';  // eslint-disable-line no-unused-vars
 import {isEditing} from './UIUtils.js';
 
-/**
- * @unrestricted
- */
+
 export class ShortcutRegistry {
   /**
    * @param {!ActionRegistry} actionRegistry
@@ -35,12 +33,17 @@ export class ShortcutRegistry {
     this._activePrefixTimeout = null;
     /** @type {?function():Promise<void>} */
     this._consumePrefix = null;
+    /** @type {!Set.<string>} */
+    this._devToolsDefaultShortcutActions = new Set();
     const keybindSetSetting = self.Common.settings.moduleSetting('activeKeybindSet');
     if (!Root.Runtime.experiments.isEnabled('customKeyboardShortcuts') &&
         keybindSetSetting.get() !== DefaultShortcutSetting) {
       keybindSetSetting.set(DefaultShortcutSetting);
     }
-    keybindSetSetting.addChangeListener(this._registerBindings, this);
+    keybindSetSetting.addChangeListener(event => {
+      Host.userMetrics.keybindSetSettingChanged(event.data);
+      this._registerBindings();
+    });
 
     this._registerBindings();
   }
@@ -137,21 +140,29 @@ export class ShortcutRegistry {
   }
 
   /**
+   * @param {string} actionId
+   * return {boolean}
+   */
+  actionHasDefaultShortcut(actionId) {
+    return this._devToolsDefaultShortcutActions.has(actionId);
+  }
+
+  /**
    * @param {!Element} element
    * @param {!Object.<string, function():Promise.<boolean>>} handlers
    */
   addShortcutListener(element, handlers) {
     // We only want keys for these specific actions to get handled this
-    // way; all others should be allowed to bubble up
-    const whitelistKeyMap = new ShortcutTreeNode(0, 0);
+    // way; all others should be allowed to bubble up.
+    const allowlistKeyMap = new ShortcutTreeNode(0, 0);
     const shortcuts = Object.keys(handlers).flatMap(action => [...this._actionToShortcut.get(action)]);
     shortcuts.forEach(shortcut => {
-      whitelistKeyMap.addKeyMapping(shortcut.descriptors.map(descriptor => descriptor.key), shortcut.action);
+      allowlistKeyMap.addKeyMapping(shortcut.descriptors.map(descriptor => descriptor.key), shortcut.action);
     });
 
     element.addEventListener('keydown', event => {
       const key = KeyboardShortcut.makeKeyFromEvent(/** @type {!KeyboardEvent} */ (event));
-      let keyMap = whitelistKeyMap;
+      let keyMap = allowlistKeyMap;
       if (this._activePrefixKey) {
         keyMap = keyMap.getNode(this._activePrefixKey.key());
         if (!keyMap) {
@@ -298,7 +309,9 @@ export class ShortcutRegistry {
     this._keyMap.clear();
     const keybindSet = self.Common.settings.moduleSetting('activeKeybindSet').get();
     const extensions = self.runtime.extensions('action');
+    const forwardedKeys = [];
     extensions.forEach(registerExtension, this);
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setWhitelistedShortcuts(JSON.stringify(forwardedKeys));
 
     /**
      * @param {!Root.Runtime.Extension} extension
@@ -316,11 +329,19 @@ export class ShortcutRegistry {
         const shortcutDescriptors = keys.map(KeyboardShortcut.makeDescriptorFromBindingShortcut);
         if (shortcutDescriptors.length > 0) {
           const actionId = /** @type {string} */ (descriptor.actionId);
+          if (ForwardedActions.has(actionId)) {
+            forwardedKeys.push(
+                ...shortcutDescriptors.map(shortcut => KeyboardShortcut.keyCodeAndModifiersFromKey(shortcut.key)));
+          }
           if (!keybindSets) {
+            this._devToolsDefaultShortcutActions.add(actionId);
             this._registerShortcut(new KeyboardShortcut(shortcutDescriptors, actionId, Type.DefaultShortcut));
           } else {
+            if (keybindSets.includes(DefaultShortcutSetting)) {
+              this._devToolsDefaultShortcutActions.add(actionId);
+            }
             this._registerShortcut(
-                new KeyboardShortcut(shortcutDescriptors, actionId, Type.KeybindSetShortcut, keybindSet));
+                new KeyboardShortcut(shortcutDescriptors, actionId, Type.KeybindSetShortcut, new Set(keybindSets)));
           }
         }
       }
@@ -437,12 +458,13 @@ export class ShortcutTreeNode {
   }
 }
 
-/**
- * @unrestricted
- */
+
 export class ForwardedShortcut {}
 
 ForwardedShortcut.instance = new ForwardedShortcut();
 
+export const ForwardedActions = new Set([
+  'main.toggle-dock', 'debugger.toggle-breakpoints-active', 'debugger.toggle-pause', 'commandMenu.show', 'console.show'
+]);
 export const KeyTimeout = 1000;
 export const DefaultShortcutSetting = 'devToolsDefault';

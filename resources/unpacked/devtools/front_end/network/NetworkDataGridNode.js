@@ -749,7 +749,7 @@ export class NetworkRequestNode extends NetworkNode {
   showingInitiatorChainChanged() {
     const showInitiatorChain = this.showingInitiatorChain();
 
-    const initiatorGraph = self.SDK.networkLog.initiatorGraphForRequest(this._request);
+    const initiatorGraph = SDK.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this._request);
     for (const request of initiatorGraph.initiators) {
       if (request === this._request) {
         continue;
@@ -821,6 +821,10 @@ export class NetworkRequestNode extends NetworkNode {
     if (resourceType === Common.ResourceType.resourceTypes.Other ||
         resourceType === Common.ResourceType.resourceTypes.Image) {
       simpleType = mimeType.replace(/^(application|image)\//, '');
+    }
+
+    if (this._request.isRedirect()) {
+      simpleType += ' / ' + ls`Redirect`;
     }
 
     return simpleType;
@@ -1176,7 +1180,7 @@ export class NetworkRequestNode extends NetworkNode {
   _renderInitiatorCell(cell) {
     this._initiatorCell = cell;
     const request = this._request;
-    const initiator = self.SDK.networkLog.initiatorInfoForRequest(request);
+    const initiator = SDK.NetworkLog.NetworkLog.instance().initiatorInfoForRequest(request);
 
     const timing = request.timing;
     if (timing && timing.pushStart) {

@@ -12,13 +12,13 @@ set(SYMBOL_SERVER_LIBRARY_DIR ${PROJECT_BINARY_DIR}/lib)
 # Build dependencies.
 set(LLVM_TARGETS_TO_BUILD "WebAssembly" CACHE STRING "")
 set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lldb;lld" CACHE STRING "")
-set(LLVM_DEFAULT_EXTERNAL_LIT
-  ${CMAKE_CURRENT_BINARY_DIR}/third_party/llvm/llvm/bin/llvm-lit CACHE STRING "")
 set(LLDB_INCLUDE_TESTS "OFF" CACHE STRING "")
 add_subdirectory(third_party/llvm/llvm)
 set_property(DIRECTORY third_party/llvm/llvm
   PROPERTY EXCLUDE_FROM_ALL TRUE)
 
+# Required to enable llvm option parsing
+include(third_party/llvm/llvm/cmake/modules/DetermineGCCCompatible.cmake)
 
 option(SYMBOL_SERVER_BUILD_FORMATTERS
   "Build the formatters library for evaluator modules" OFF)
@@ -45,9 +45,16 @@ function(include_what_you_use TARGET)
   endif()
 endfunction()
 
+set(LLVM_RUNTIME_OUTPUT_INTDIR ${LLVM_BINARY_DIR}/${CMAKE_CFG_INTDIR}/bin)
+set(LLVM_LIBRARY_OUTPUT_INTDIR ${LLVM_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib${LLVM_LIBDIR_SUFFIX})
+set(LLVM_TOOLS_BINARY_DIR ${LLVM_RUNTIME_OUTPUT_INTDIR})
+
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${SYMBOL_SERVER_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${SYMBOL_SERVER_LIBRARY_DIR})
 
-add_subdirectory(src)
+add_subdirectory(lib)
+add_subdirectory(driver/lsp)
 add_subdirectory(unittests)
 add_subdirectory(tests)

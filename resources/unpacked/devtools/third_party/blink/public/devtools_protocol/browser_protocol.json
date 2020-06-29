@@ -1120,12 +1120,84 @@
                     ]
                 },
                 {
+                    "id": "BlockedByResponseReason",
+                    "description": "Enum indicating the reason a response has been blocked. These reasons are\nrefinements of the net error BLOCKED_BY_RESPONSE.",
+                    "type": "string",
+                    "enum": [
+                        "CoepFrameResourceNeedsCoepHeader",
+                        "CoopSandboxedIFrameCannotNavigateToCoopPage",
+                        "CorpNotSameOrigin",
+                        "CorpNotSameOriginAfterDefaultedToSameOriginByCoep",
+                        "CorpNotSameSite"
+                    ]
+                },
+                {
+                    "id": "BlockedByResponseIssueDetails",
+                    "description": "Details for a request that has been blocked with the BLOCKED_BY_RESPONSE\ncode. Currently only used for COEP/COOP, but may be extended to include\nsome CSP errors in the future.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "request",
+                            "$ref": "AffectedRequest"
+                        },
+                        {
+                            "name": "frame",
+                            "optional": true,
+                            "$ref": "AffectedFrame"
+                        },
+                        {
+                            "name": "reason",
+                            "$ref": "BlockedByResponseReason"
+                        }
+                    ]
+                },
+                {
+                    "id": "HeavyAdResolutionStatus",
+                    "type": "string",
+                    "enum": [
+                        "HeavyAdBlocked",
+                        "HeavyAdWarning"
+                    ]
+                },
+                {
+                    "id": "HeavyAdReason",
+                    "type": "string",
+                    "enum": [
+                        "NetworkTotalLimit",
+                        "CpuTotalLimit",
+                        "CpuPeakLimit"
+                    ]
+                },
+                {
+                    "id": "HeavyAdIssueDetails",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "resolution",
+                            "description": "The resolution status, either blocking the content or warning.",
+                            "$ref": "HeavyAdResolutionStatus"
+                        },
+                        {
+                            "name": "reason",
+                            "description": "The reason the ad was blocked, total network or cpu or peak cpu.",
+                            "$ref": "HeavyAdReason"
+                        },
+                        {
+                            "name": "frame",
+                            "description": "The frame that was blocked.",
+                            "$ref": "AffectedFrame"
+                        }
+                    ]
+                },
+                {
                     "id": "InspectorIssueCode",
                     "description": "A unique identifier for the type of issue. Each type may use one of the\noptional fields in InspectorIssueDetails to convey more specific\ninformation about the kind of issue.",
                     "type": "string",
                     "enum": [
                         "SameSiteCookieIssue",
-                        "MixedContentIssue"
+                        "MixedContentIssue",
+                        "BlockedByResponseIssue",
+                        "HeavyAdIssue"
                     ]
                 },
                 {
@@ -1142,6 +1214,16 @@
                             "name": "mixedContentIssueDetails",
                             "optional": true,
                             "$ref": "MixedContentIssueDetails"
+                        },
+                        {
+                            "name": "blockedByResponseIssueDetails",
+                            "optional": true,
+                            "$ref": "BlockedByResponseIssueDetails"
+                        },
+                        {
+                            "name": "heavyAdIssueDetails",
+                            "optional": true,
+                            "$ref": "HeavyAdIssueDetails"
                         }
                     ]
                 },
@@ -2052,6 +2134,11 @@
                         {
                             "name": "isInline",
                             "description": "Whether this stylesheet is created for STYLE tag by parser. This flag is not set for\ndocument.written STYLE tags.",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "isMutable",
+                            "description": "Whether this stylesheet is mutable. Inline stylesheets become mutable\nafter they have been modified via CSSOM API.\n<link> element's stylesheets are never mutable. Constructed stylesheets\n(new CSSStyleSheet()) are mutable immediately after creation.",
                             "type": "boolean"
                         },
                         {
@@ -3000,6 +3087,18 @@
                             "name": "timestamp",
                             "description": "Monotonically increasing time, in seconds.",
                             "type": "number"
+                        }
+                    ]
+                },
+                {
+                    "name": "setLocalFontsEnabled",
+                    "description": "Enables/disables rendering of local CSS fonts (enabled by default).",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "enabled",
+                            "description": "Whether rendering of local fonts is enabled.",
+                            "type": "boolean"
                         }
                     ]
                 }
@@ -7647,6 +7746,16 @@
                             "description": "Whether the event was from the left or right side of the keyboard. 1=Left, 2=Right (default:\n0).",
                             "optional": true,
                             "type": "integer"
+                        },
+                        {
+                            "name": "commands",
+                            "description": "Editing commands to send with the key event (e.g., 'selectAll') (default: []).\nThese are related to but not equal the command names used in `document.execCommand` and NSStandardKeyBindingResponding.\nSee https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/editing/commands/editor_command_names.h for valid command names.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
                         }
                     ]
                 },
@@ -8992,6 +9101,18 @@
                             "type": "number"
                         },
                         {
+                            "name": "workerFetchStart",
+                            "description": "Started fetch event.",
+                            "experimental": true,
+                            "type": "number"
+                        },
+                        {
+                            "name": "workerRespondWithSettled",
+                            "description": "Settled fetch event respondWith promise.",
+                            "experimental": true,
+                            "type": "number"
+                        },
+                        {
                             "name": "sendStart",
                             "description": "Started sending request.",
                             "type": "number"
@@ -9262,6 +9383,17 @@
                     ]
                 },
                 {
+                    "id": "ServiceWorkerResponseSource",
+                    "description": "Source of serviceworker response.",
+                    "type": "string",
+                    "enum": [
+                        "cache-storage",
+                        "http-cache",
+                        "fallback-code",
+                        "network"
+                    ]
+                },
+                {
                     "id": "Response",
                     "description": "HTTP response data.",
                     "type": "object",
@@ -9359,6 +9491,24 @@
                             "description": "Timing information for the given request.",
                             "optional": true,
                             "$ref": "ResourceTiming"
+                        },
+                        {
+                            "name": "serviceWorkerResponseSource",
+                            "description": "Response source of response from ServiceWorker.",
+                            "optional": true,
+                            "$ref": "ServiceWorkerResponseSource"
+                        },
+                        {
+                            "name": "responseTime",
+                            "description": "The time at which the returned response was generated.",
+                            "optional": true,
+                            "$ref": "TimeSinceEpoch"
+                        },
+                        {
+                            "name": "cacheStorageCacheName",
+                            "description": "Cache Storage Cache Name.",
+                            "optional": true,
+                            "type": "string"
                         },
                         {
                             "name": "protocol",
@@ -11150,6 +11300,79 @@
             ],
             "types": [
                 {
+                    "id": "GridHighlightConfig",
+                    "description": "Configuration data for the highlighting of Grid elements.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "showGridExtensionLines",
+                            "description": "Whether the extension lines from grid cells to the rulers should be shown (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showPositiveLineNumbers",
+                            "description": "Show Positive line number labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showNegativeLineNumbers",
+                            "description": "Show Negative line number labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "gridBorderColor",
+                            "description": "The grid container border highlight color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "cellBorderColor",
+                            "description": "The cell border color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "gridBorderDash",
+                            "description": "Whether the grid border is dashed (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "cellBorderDash",
+                            "description": "Whether the cell border is dashed (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "rowGapColor",
+                            "description": "The row gap highlight fill color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "rowHatchColor",
+                            "description": "The row gap hatching fill color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "columnGapColor",
+                            "description": "The column gap highlight fill color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "columnHatchColor",
+                            "description": "The column gap hatching fill color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        }
+                    ]
+                },
+                {
                     "id": "HighlightConfig",
                     "description": "Configuration data for the highlighting of page elements.",
                     "type": "object",
@@ -11169,6 +11392,12 @@
                         {
                             "name": "showRulers",
                             "description": "Whether the rulers should be shown (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showAccessibilityInfo",
+                            "description": "Whether the a11y info should be shown (default: true).",
                             "optional": true,
                             "type": "boolean"
                         },
@@ -11231,6 +11460,12 @@
                             "description": "The color format used to format color styles (default: hex).",
                             "optional": true,
                             "$ref": "ColorFormat"
+                        },
+                        {
+                            "name": "gridHighlightConfig",
+                            "description": "The grid layout highlight configuration (default: all transparent).",
+                            "optional": true,
+                            "$ref": "GridHighlightConfig"
                         }
                     ]
                 },
@@ -11311,9 +11546,15 @@
                         },
                         {
                             "name": "colorFormat",
-                            "description": "The color format to get config with (default: hex)",
+                            "description": "The color format to get config with (default: hex).",
                             "optional": true,
                             "$ref": "ColorFormat"
+                        },
+                        {
+                            "name": "showAccessibilityInfo",
+                            "description": "Whether to show accessibility info (default: true).",
+                            "optional": true,
+                            "type": "boolean"
                         }
                     ],
                     "returns": [
@@ -13442,6 +13683,11 @@
                             "name": "url",
                             "description": "URL of the resource being downloaded.",
                             "type": "string"
+                        },
+                        {
+                            "name": "suggestedFilename",
+                            "description": "Suggested file name of the resource (the actual name of the file saved on disk may differ).",
+                            "type": "string"
                         }
                     ]
                 },
@@ -15188,6 +15434,18 @@
                             "description": "If specified, disposes this context when debugging session disconnects.",
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "proxyServer",
+                            "description": "Proxy server, similar to the one passed to --proxy-server",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "proxyBypassList",
+                            "description": "Proxy bypass list, similar to the one passed to --proxy-bypass-list",
+                            "optional": true,
+                            "type": "string"
                         }
                     ],
                     "returns": [
@@ -19272,7 +19530,7 @@
                                 "f32",
                                 "f64",
                                 "v128",
-                                "anyref"
+                                "externref"
                             ]
                         },
                         {
@@ -20069,6 +20327,13 @@
                         {
                             "name": "replMode",
                             "description": "Setting this flag to true enables `let` re-declaration and top-level `await`.\nNote that `let` variables can only be re-declared if they originate from\n`replMode` themselves.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "allowUnsafeEvalBlockedByCSP",
+                            "description": "The Content Security Policy (CSP) for the target might block 'unsafe-eval'\nwhich includes eval(), Function(), setTimeout() and setInterval()\nwhen called with non-callable arguments. This flag bypasses CSP for this\nevaluation and allows unsafe-eval. Defaults to true.",
                             "experimental": true,
                             "optional": true,
                             "type": "boolean"

@@ -35,6 +35,7 @@ import * as Extensions from '../extensions/extensions.js';
 import * as Host from '../host/host.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as PerfUI from '../perf_ui/perf_ui.js';
+import * as Platform from '../platform/platform.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TimelineModel from '../timeline_model/timeline_model.js';
@@ -68,7 +69,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     this._recordingOptionUIControls = [];
     this._state = State.Idle;
     this._recordingPageReload = false;
-    this._millisecondsToRecordAfterLoadEvent = 3000;
+    this._millisecondsToRecordAfterLoadEvent = 5000;
     this._toggleRecordAction =
         /** @type {!UI.Action.Action }*/ (self.UI.actionRegistry.action('timeline.toggle-recording'));
     this._recordReloadAction =
@@ -400,7 +401,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
 
     const now = new Date();
-    const fileName = 'Profile-' + now.toISO8601Compact() + '.json';
+    const fileName = 'Profile-' + Platform.DateUtilities.toISO8601Compact(now) + '.json';
     const stream = new Bindings.FileUtils.FileOutputStream();
 
     const accepted = await stream.open(fileName);
@@ -697,6 +698,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     this._overviewPane.reset();
     if (model) {
       this._performanceModel.addEventListener(Events.WindowChanged, this._onModelWindowChanged, this);
+      this._overviewPane.setNavStartTimes(model.timelineModel().navStartTimes());
       this._overviewPane.setBounds(
           model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime());
       const lineLevelProfile = self.runtime.sharedInstance(PerfUI.LineLevelProfile.Performance);
@@ -890,6 +892,11 @@ export class TimelinePanel extends UI.Panel.Panel {
         continue;
       }
       markers.set(event.startTime, TimelineUIUtils.createEventDivider(event, zeroTime));
+    }
+
+    // Add markers for navigation start times.
+    for (const navStartTimeEvent of timelineModel.navStartTimes().values()) {
+      markers.set(navStartTimeEvent.startTime, TimelineUIUtils.createEventDivider(navStartTimeEvent, zeroTime));
     }
     this._overviewPane.setMarkers(markers);
   }

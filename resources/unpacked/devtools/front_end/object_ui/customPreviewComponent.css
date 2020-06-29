@@ -5,8 +5,8 @@
  */
 
 .custom-expandable-section {
-    display: inline-flex;
-    flex-direction: column;
+  display: inline-flex;
+  flex-direction: column;
 }
 
 .custom-expandable-section-header {
@@ -15,13 +15,13 @@
 }
 
 .custom-expand-icon {
-    user-select: none;
-    opacity: 0.5;
-    margin-right: 4px;
-    margin-bottom: -2px;
-    background: black;
+  user-select: none;
+  opacity: 50%;
+  margin-right: 4px;
+  margin-bottom: -2px;
+  background: black;
 }
 
 .custom-expandable-section-standard-section {
-    display: inline-flex;
+  display: inline-flex;
 }

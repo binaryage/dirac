@@ -25,7 +25,7 @@
 
 .console-eager-preview {
   padding-bottom: 2px;
-  opacity: 0.6;
+  opacity: 60%;
   position: relative;
   height: 15px;
 }
@@ -35,15 +35,7 @@
   overflow: hidden;
   margin-left: 4px;
   height: 100%;
-}
-
-.console-eager-inner-preview {
   white-space: nowrap;
-}
-
-.console-eager-inner-preview:empty,
-.console-eager-inner-preview:empty + .preview-result-icon {
-  opacity: 0;
 }
 
 .preview-result-icon {
@@ -52,6 +44,11 @@
   top: 1px;
 }
 
+.console-eager-inner-preview:empty,
+.console-eager-inner-preview:empty + .preview-result-icon {
+  opacity: 0%;
+}
+
 .console-prompt-icon.console-prompt-incomplete {
-  opacity: 0.65;
+  opacity: 65%;
 }

@@ -183,7 +183,6 @@
       "actionId": "debugger.toggle-breakpoints-active",
       "iconClass": "largeicon-deactivate-breakpoints",
       "toggleable": true,
-      "toggledIconClass": "largeicon-activate-breakpoints",
       "className": "Sources.SourcesPanel.DebuggingActionDelegate",
       "contextTypes": [
         "Sources.SourcesView"
@@ -687,10 +686,17 @@
           "shortcut": "Alt+w"
         },
         {
+          "platform": "windows,linux",
           "shortcut": "Ctrl+W",
           "keybindSets": ["vsCode"]
         },
         {
+          "platform": "mac",
+          "shortcut": "Meta+W",
+          "keybindSets": ["vsCode"]
+        },
+        {
+          "platform": "windows",
           "shortcut": "Ctrl+F4",
           "keybindSets": ["vsCode"]
         }
@@ -733,6 +739,12 @@
           "keybindSets": ["devToolsDefault", "vsCode"]
         },
         {
+          "platform": "mac",
+          "shortcut": "Meta+T",
+          "keybindSets": ["vsCode"]
+        },
+        {
+          "platform": "windows,linux",
           "shortcut": "Ctrl+T",
           "keybindSets": ["vsCode"]
         },
@@ -835,7 +847,13 @@
           "shortcut": "Meta+Alt+s"
         },
         {
+          "platform": "windows,linux",
           "shortcut": "Ctrl+K S",
+          "keybindSets": ["vsCode"]
+        },
+        {
+          "platform": "mac",
+          "shortcut": "Meta+Alt+S",
           "keybindSets": ["vsCode"]
         }
       ]
@@ -977,7 +995,8 @@
       "bindings": [
         {
           "platform": "mac",
-          "shortcut": "Meta+Alt+F"
+          "shortcut": "Meta+Alt+F",
+          "keybindSets": ["devToolsDefault"]
         },
         {
           "platform": "windows,linux",
@@ -985,7 +1004,18 @@
           "keybindSets": ["devToolsDefault", "vsCode"]
         },
         {
+          "platform": "windows,linux",
           "shortcut": "Ctrl+Shift+J",
+          "keybindSets": ["vsCode"]
+        },
+        {
+          "platform": "mac",
+          "shortcut": "Meta+Shift+F",
+          "keybindSets": ["vsCode"]
+        },
+        {
+          "platform": "mac",
+          "shortcut": "Meta+Shift+J",
           "keybindSets": ["vsCode"]
         }
       ]

@@ -36,7 +36,6 @@ import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 
-import {ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper} from './ColorSwatchPopoverIcon.js';
 import {linkifyDeferredNodeReference} from './DOMLinkifier.js';
 import {ElementsSidebarPane} from './ElementsSidebarPane.js';
 import {ImagePreviewPopover} from './ImagePreviewPopover.js';
@@ -86,6 +85,8 @@ export class StylesSidebarPane extends ElementsSidebarPane {
 
     /** @type {!Array<!SectionBlock>} */
     this._sectionBlocks = [];
+    /** @type {?IdleCallbackManager} */
+    this._idleCallbackManager = null;
     this._needsForceUpdate = false;
     StylesSidebarPane._instance = this;
     self.UI.context.addFlavorChangeListener(SDK.DOMModel.DOMNode, this.forceUpdate, this);
@@ -184,6 +185,8 @@ export class StylesSidebarPane extends ElementsSidebarPane {
    */
   static createPropertyFilterElement(placeholder, container, filterCallback) {
     const input = document.createElement('input');
+    input.type = 'search';
+    input.classList.add('custom-search-input');
     input.placeholder = placeholder;
 
     function searchHandler() {
@@ -399,7 +402,9 @@ export class StylesSidebarPane extends ElementsSidebarPane {
    */
   _innerResize() {
     const width = this.contentElement.getBoundingClientRect().width + 'px';
-    this.allSections().forEach(section => section.propertiesTreeOutline.element.style.width = width);
+    this.allSections().forEach(section => {
+      section.propertiesTreeOutline.element.style.width = width;
+    });
     return Promise.resolve();
   }
 
@@ -517,7 +522,13 @@ export class StylesSidebarPane extends ElementsSidebarPane {
   continueEditingElement(sectionIndex, propertyIndex) {
     const section = this.allSections()[sectionIndex];
     if (section) {
-      section.propertiesTreeOutline.rootElement().childAt(propertyIndex).startEditing();
+      const element = section.closestPropertyForEditing(propertyIndex);
+      if (!element) {
+        section.element.focus();
+        UI.UIUtils.markAsFocusedByKeyboard(section.element);
+        return;
+      }
+      element.startEditing();
     }
   }
 
@@ -534,10 +545,10 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     } else if (this._isEditingStyle || this._userOperation) {
       return;
     }
+
     const focusedIndex = this.focusedSectionIndex();
 
     this._linkifier.reset();
-    this._sectionsContainer.removeChildren();
     this._sectionBlocks = [];
 
     const node = this.node();
@@ -548,42 +559,32 @@ export class StylesSidebarPane extends ElementsSidebarPane {
 
     this._sectionBlocks = await this._rebuildSectionsForMatchedStyleRules(
         /** @type {!SDK.CSSMatchedStyles.CSSMatchedStyles} */ (matchedStyles));
-    let pseudoTypes = [];
-    const keys = matchedStyles.pseudoTypes();
-    if (keys.delete(Protocol.DOM.PseudoType.Before)) {
-      pseudoTypes.push(Protocol.DOM.PseudoType.Before);
-    }
-    pseudoTypes = pseudoTypes.concat([...keys].sort());
-    for (const pseudoType of pseudoTypes) {
-      const block = SectionBlock.createPseudoTypeBlock(pseudoType);
-      for (const style of matchedStyles.pseudoStyles(pseudoType)) {
-        const section = new StylePropertiesSection(this, matchedStyles, style);
-        block.sections.push(section);
-      }
-      this._sectionBlocks.push(block);
-    }
 
-    for (const keyframesRule of matchedStyles.keyframes()) {
-      const block = SectionBlock.createKeyframesBlock(keyframesRule.name().text);
-      for (const keyframe of keyframesRule.keyframes()) {
-        block.sections.push(new KeyframePropertiesSection(this, matchedStyles, keyframe.style));
-      }
-      this._sectionBlocks.push(block);
-    }
+    this._sectionsContainer.removeChildren();
+    const fragment = document.createDocumentFragment();
+
     let index = 0;
+    let elementToFocus = null;
     for (const block of this._sectionBlocks) {
       const titleElement = block.titleElement();
       if (titleElement) {
-        this._sectionsContainer.appendChild(titleElement);
+        fragment.appendChild(titleElement);
       }
       for (const section of block.sections) {
-        this._sectionsContainer.appendChild(section.element);
+        fragment.appendChild(section.element);
         if (index === focusedIndex) {
-          section.element.focus();
+          elementToFocus = section.element;
         }
         index++;
       }
     }
+
+    this._sectionsContainer.appendChild(fragment);
+
+    if (elementToFocus) {
+      elementToFocus.focus();
+    }
+
     if (focusedIndex >= index) {
       this._sectionBlocks[0].sections[0].element.focus();
     }
@@ -601,6 +602,9 @@ export class StylesSidebarPane extends ElementsSidebarPane {
       this._decorator.perform();
       this._decorator = null;
     }
+
+    // Record the elements tool load time after the sidepane has loaded.
+    Host.userMetrics.panelLoaded('elements', 'DevTools.Launch.Elements');
   }
 
   /**
@@ -616,6 +620,12 @@ export class StylesSidebarPane extends ElementsSidebarPane {
    * @return {!Promise<!Array.<!SectionBlock>>}
    */
   async _rebuildSectionsForMatchedStyleRules(matchedStyles) {
+    if (this._idleCallbackManager) {
+      this._idleCallbackManager.discard();
+    }
+
+    this._idleCallbackManager = new IdleCallbackManager();
+
     const blocks = [new SectionBlock(null)];
     let lastParentNode = null;
     for (const style of matchedStyles.nodeStyles()) {
@@ -625,9 +635,43 @@ export class StylesSidebarPane extends ElementsSidebarPane {
         const block = await SectionBlock._createInheritedNodeBlock(lastParentNode);
         blocks.push(block);
       }
-      const section = new StylePropertiesSection(this, matchedStyles, style);
-      blocks.peekLast().sections.push(section);
+
+      const lastBlock = blocks.peekLast();
+      this._idleCallbackManager.schedule(() => {
+        const section = new StylePropertiesSection(this, matchedStyles, style);
+        lastBlock.sections.push(section);
+      });
     }
+
+    let pseudoTypes = [];
+    const keys = matchedStyles.pseudoTypes();
+    if (keys.delete(Protocol.DOM.PseudoType.Before)) {
+      pseudoTypes.push(Protocol.DOM.PseudoType.Before);
+    }
+    pseudoTypes = pseudoTypes.concat([...keys].sort());
+    for (const pseudoType of pseudoTypes) {
+      const block = SectionBlock.createPseudoTypeBlock(pseudoType);
+      for (const style of matchedStyles.pseudoStyles(pseudoType)) {
+        this._idleCallbackManager.schedule(() => {
+          const section = new StylePropertiesSection(this, matchedStyles, style);
+          block.sections.push(section);
+        });
+      }
+      blocks.push(block);
+    }
+
+    for (const keyframesRule of matchedStyles.keyframes()) {
+      const block = SectionBlock.createKeyframesBlock(keyframesRule.name().text);
+      for (const keyframe of keyframesRule.keyframes()) {
+        this._idleCallbackManager.schedule(() => {
+          block.sections.push(new KeyframePropertiesSection(this, matchedStyles, keyframe.style));
+        });
+      }
+      blocks.push(block);
+    }
+
+    await this._idleCallbackManager.awaitDone();
+
     return blocks;
   }
 
@@ -903,6 +947,47 @@ export class SectionBlock {
   }
 }
 
+class IdleCallbackManager {
+  constructor() {
+    this._discarded = false;
+    /** @type {!Array<!Promise<void>>} */
+    this._promises = [];
+  }
+
+  discard() {
+    this._discarded = true;
+  }
+
+  /**
+   * @param {function():void} fn
+   */
+  schedule(fn) {
+    if (this._discarded) {
+      return;
+    }
+    this._promises.push(new Promise((resolve, reject) => {
+      const run = () => {
+        try {
+          fn();
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      };
+      window.requestIdleCallback(() => {
+        if (this._discarded) {
+          return resolve();
+        }
+        run();
+      }, {timeout: 100});
+    }));
+  }
+
+  awaitDone() {
+    return Promise.all(this._promises);
+  }
+}
+
 export class StylePropertiesSection {
   /**
    * @param {!StylesSidebarPane} parentPane
@@ -961,8 +1046,6 @@ export class StylePropertiesSection {
     const closeBrace = this._innerElement.createChild('div', 'sidebar-pane-closing-brace');
     closeBrace.textContent = '}';
 
-    this._createHoverMenuToolbar(closeBrace);
-
     this._selectorElement.addEventListener('click', this._handleSelectorClick.bind(this), false);
     this.element.addEventListener('mousedown', this._handleEmptySpaceMouseDown.bind(this), false);
     this.element.addEventListener('click', this._handleEmptySpaceClick.bind(this), false);
@@ -1018,6 +1101,17 @@ export class StylePropertiesSection {
     const ruleLocation = this._getRuleLocationFromCSSRule(rule);
 
     const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
+
+    if (header && header.isMutable) {
+      const label = header.isInline ? '<style>' : Common.UIString.UIString('constructed stylesheet');
+      if (header.ownerNode) {
+        const link = linkifyDeferredNodeReference(header.ownerNode);
+        link.textContent = label;
+        return link;
+      }
+      return createTextNode(label);
+    }
+
     if (ruleLocation && rule.styleSheetId && header && !header.isAnonymousInlineStyleSheet()) {
       return StylePropertiesSection._linkifyRuleLocation(
           matchedStyles.cssModel(), linkifier, rule.styleSheetId, ruleLocation);
@@ -1161,76 +1255,6 @@ export class StylePropertiesSection {
   }
 
   /**
-   * @param {!Element} container
-   */
-  _createHoverMenuToolbar(container) {
-    if (!this.editable) {
-      return;
-    }
-    const items = [];
-
-    const textShadowButton =
-        new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Add text-shadow'), 'largeicon-text-shadow');
-    textShadowButton.addEventListener(
-        UI.Toolbar.ToolbarButton.Events.Click, this._onInsertShadowPropertyClick.bind(this, 'text-shadow'));
-    textShadowButton.element.tabIndex = -1;
-    items.push(textShadowButton);
-
-    const boxShadowButton =
-        new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Add box-shadow'), 'largeicon-box-shadow');
-    boxShadowButton.addEventListener(
-        UI.Toolbar.ToolbarButton.Events.Click, this._onInsertShadowPropertyClick.bind(this, 'box-shadow'));
-    boxShadowButton.element.tabIndex = -1;
-    items.push(boxShadowButton);
-
-    const colorButton =
-        new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Add color'), 'largeicon-foreground-color');
-    colorButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._onInsertColorPropertyClick, this);
-    colorButton.element.tabIndex = -1;
-    items.push(colorButton);
-
-    const backgroundButton =
-        new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Add background-color'), 'largeicon-background-color');
-    backgroundButton.addEventListener(
-        UI.Toolbar.ToolbarButton.Events.Click, this._onInsertBackgroundColorPropertyClick, this);
-    backgroundButton.element.tabIndex = -1;
-    items.push(backgroundButton);
-
-    let newRuleButton = null;
-    if (this._style.parentRule) {
-      newRuleButton =
-          new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Insert Style Rule Below'), 'largeicon-add');
-      newRuleButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._onNewRuleClick, this);
-      newRuleButton.element.tabIndex = -1;
-      items.push(newRuleButton);
-    }
-
-    const sectionToolbar = new UI.Toolbar.Toolbar('sidebar-pane-section-toolbar', container);
-    for (let i = 0; i < items.length; ++i) {
-      sectionToolbar.appendToolbarItem(items[i]);
-    }
-
-    const menuButton = new UI.Toolbar.ToolbarButton('', 'largeicon-menu');
-    menuButton.element.tabIndex = -1;
-    sectionToolbar.appendToolbarItem(menuButton);
-    setItemsVisibility(items, false);
-    sectionToolbar.element.addEventListener('mouseenter', setItemsVisibility.bind(null, items, true));
-    sectionToolbar.element.addEventListener('mouseleave', setItemsVisibility.bind(null, items, false));
-    UI.ARIAUtils.markAsHidden(sectionToolbar.element);
-
-    /**
-     * @param {!Array<!UI.Toolbar.ToolbarButton>} items
-     * @param {boolean} value
-     */
-    function setItemsVisibility(items, value) {
-      for (let i = 0; i < items.length; ++i) {
-        items[i].setVisible(value);
-      }
-      menuButton.setVisible(!value);
-    }
-  }
-
-  /**
    * @return {!SDK.CSSStyleDeclaration.CSSStyleDeclaration}
    */
   style() {
@@ -1341,63 +1365,6 @@ export class StylePropertiesSection {
     } while (curElement && !curElement._section);
 
     return curElement ? curElement._section : null;
-  }
-
-  /**
-   * @param {!Common.EventTarget.EventTargetEvent} event
-   */
-  _onNewRuleClick(event) {
-    event.data.consume();
-    const rule = this._style.parentRule;
-    const range =
-        TextUtils.TextRange.TextRange.createFromLocation(rule.style.range.endLine, rule.style.range.endColumn + 1);
-    this._parentPane._addBlankSection(this, /** @type {string} */ (rule.styleSheetId), range);
-  }
-
-  /**
-   * @param {string} propertyName
-   * @param {!Common.EventTarget.EventTargetEvent} event
-   */
-  _onInsertShadowPropertyClick(propertyName, event) {
-    event.data.consume(true);
-    const treeElement = this.addNewBlankProperty();
-    treeElement.property.name = propertyName;
-    treeElement.property.value = '0 0 black';
-    treeElement.updateTitle();
-    const shadowSwatchPopoverHelper = ShadowSwatchPopoverHelper.forTreeElement(treeElement);
-    if (shadowSwatchPopoverHelper) {
-      shadowSwatchPopoverHelper.showPopover();
-    }
-  }
-
-  /**
-   * @param {!Common.EventTarget.EventTargetEvent} event
-   */
-  _onInsertColorPropertyClick(event) {
-    event.data.consume(true);
-    const treeElement = this.addNewBlankProperty();
-    treeElement.property.name = 'color';
-    treeElement.property.value = 'black';
-    treeElement.updateTitle();
-    const colorSwatch = ColorSwatchPopoverIcon.forTreeElement(treeElement);
-    if (colorSwatch) {
-      colorSwatch.showPopover();
-    }
-  }
-
-  /**
-   * @param {!Common.EventTarget.EventTargetEvent} event
-   */
-  _onInsertBackgroundColorPropertyClick(event) {
-    event.data.consume(true);
-    const treeElement = this.addNewBlankProperty();
-    treeElement.property.name = 'background-color';
-    treeElement.property.value = 'white';
-    treeElement.updateTitle();
-    const colorSwatch = ColorSwatchPopoverIcon.forTreeElement(treeElement);
-    if (colorSwatch) {
-      colorSwatch.showPopover();
-    }
   }
 
   /**
@@ -2094,6 +2061,22 @@ export class StylePropertiesSection {
     // Mark the selectors in group if necessary.
     // This is overridden by BlankStylePropertiesSection.
     this._markSelectorMatches();
+  }
+
+  /**
+   * A property at or near an index and suitable for subsequent editing.
+   * Either the last property, if index out-of-upper-bound,
+   * or property at index, if such a property exists,
+   * or otherwise, null.
+   * @param {number} propertyIndex
+   * @returns {?UI.TreeOutline.TreeElement}
+   */
+  closestPropertyForEditing(propertyIndex) {
+    const rootElement = this.propertiesTreeOutline.rootElement();
+    if (propertyIndex >= rootElement.childCount()) {
+      return rootElement.lastChild();
+    }
+    return rootElement.childAt(propertyIndex);
   }
 }
 

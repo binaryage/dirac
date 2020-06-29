@@ -1,9 +1,16 @@
+// @ts-nocheck
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+console.log('dirac-lazy module import!');
+
 if (!window.dirac) {
-  console.error("window.dirac was expected to exist when loading dirac_lazy overlay");
-  throw new Error("window.dirac was expected to exist when loading dirac_lazy overlay");
+  console.error('window.dirac was expected to exist when loading dirac_lazy overlay');
+  throw new Error('window.dirac was expected to exist when loading dirac_lazy overlay');
 }
 
-Object.assign(window.dirac, (function() {
+Object.assign(window.dirac, (function () {
 
   const namespacesSymbolsCache = new Map();
 
@@ -15,12 +22,12 @@ Object.assign(window.dirac, (function() {
 
   function evalInContext(context, code, silent, callback) {
     if (!context) {
-      console.warn("Requested evalInContext with null context:", code);
+      console.warn('Requested evalInContext with null context:', code);
       return;
     }
-    const resultCallback = function(result, exceptionDetails) {
-      if (dirac._DEBUG_EVAL) {
-        console.log("evalInContext/resultCallback: result", result, "exceptionDetails", exceptionDetails);
+    const resultCallback = function (result, exceptionDetails) {
+      if (dirac.DEBUG_EVAL) {
+        console.log('evalInContext/resultCallback: result', result, 'exceptionDetails', exceptionDetails);
       }
       if (callback) {
         let exceptionDescription = null;
@@ -33,7 +40,7 @@ Object.assign(window.dirac, (function() {
             exceptionDescription = exceptionDetails.text;
           }
           if (!exceptionDescription) {
-            exceptionDescription = "?";
+            exceptionDescription = '?';
           }
         }
 
@@ -41,8 +48,8 @@ Object.assign(window.dirac, (function() {
       }
     };
     try {
-      if (dirac._DEBUG_EVAL) {
-        console.log("evalInContext", context, silent, code);
+      if (dirac.DEBUG_EVAL) {
+        console.log('evalInContext', context, silent, code);
       }
       context.evaluate({
         expression: code,
@@ -53,7 +60,7 @@ Object.assign(window.dirac, (function() {
         generatePreview: false
       }, false, false).then(answer => resultCallback(answer.object, answer.exceptionDetails));
     } catch (e) {
-      console.error("failed js evaluation in context:", context, "code", code);
+      console.error('failed js evaluation in context:', context, 'code', code);
     }
   }
 
@@ -62,57 +69,57 @@ Object.assign(window.dirac, (function() {
   }
 
   function evalInCurrentContext(code, silent, callback) {
-    if (dirac._DEBUG_EVAL) {
-      console.log("evalInCurrentContext called:", code, silent, callback);
+    if (dirac.DEBUG_EVAL) {
+      console.log('evalInCurrentContext called:', code, silent, callback);
     }
     evalInContext(lookupCurrentContext(), code, silent, callback);
   }
 
   function lookupDefaultContext() {
-    if (dirac._DEBUG_EVAL) {
-      console.log("lookupDefaultContext called");
+    if (dirac.DEBUG_EVAL) {
+      console.log('lookupDefaultContext called');
     }
     if (!SDK.targetManager) {
-      if (dirac._DEBUG_EVAL) {
-        console.log("  !SDK.targetManager => bail out");
+      if (dirac.DEBUG_EVAL) {
+        console.log('  !SDK.targetManager => bail out');
       }
       return null;
     }
-    let target = SDK.targetManager.mainTarget();
+    const target = SDK.targetManager.mainTarget();
     if (!target) {
-      if (dirac._DEBUG_EVAL) {
-        console.log("  !target => bail out");
+      if (dirac.DEBUG_EVAL) {
+        console.log('  !target => bail out');
       }
       return null;
     }
     const runtimeModel = target.model(SDK.RuntimeModel);
     if (!runtimeModel) {
-      if (dirac._DEBUG_EVAL) {
-        console.log("  !runtimeModel => bail out");
+      if (dirac.DEBUG_EVAL) {
+        console.log('  !runtimeModel => bail out');
       }
       return null;
     }
     const executionContexts = runtimeModel.executionContexts();
-    if (dirac._DEBUG_EVAL) {
-      console.log("  execution contexts:", executionContexts);
+    if (dirac.DEBUG_EVAL) {
+      console.log('  execution contexts:', executionContexts);
     }
     for (let i = 0; i < executionContexts.length; ++i) {
       const executionContext = executionContexts[i];
       if (executionContext.isDefault) {
-        if (dirac._DEBUG_EVAL) {
-          console.log("  execution context #" + i + " isDefault:", executionContext);
+        if (dirac.DEBUG_EVAL) {
+          console.log('  execution context #' + i + ' isDefault:', executionContext);
         }
         return executionContext;
       }
     }
     if (executionContexts.length > 0) {
-      if (dirac._DEBUG_EVAL) {
-        console.log("  lookupDefaultContext failed to find valid context => return the first one");
+      if (dirac.DEBUG_EVAL) {
+        console.log('  lookupDefaultContext failed to find valid context => return the first one');
       }
       return executionContexts[0];
     }
-    if (dirac._DEBUG_EVAL) {
-      console.log("  lookupDefaultContext failed to find valid context => no context avail");
+    if (dirac.DEBUG_EVAL) {
+      console.log('  lookupDefaultContext failed to find valid context => no context avail');
     }
     return null;
   }
@@ -122,8 +129,8 @@ Object.assign(window.dirac, (function() {
   }
 
   function evalInDefaultContext(code, silent, callback) {
-    if (dirac._DEBUG_EVAL) {
-      console.log("evalInDefaultContext called:", code, silent, callback);
+    if (dirac.DEBUG_EVAL) {
+      console.log('evalInDefaultContext called:', code, silent, callback);
     }
     evalInContext(lookupDefaultContext(), code, silent, callback);
   }
@@ -132,23 +139,23 @@ Object.assign(window.dirac, (function() {
     return SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
   }
 
-  let debuggerEventsUnsubscribers = new Map();
+  const debuggerEventsUnsubscribers = new Map();
 
   /**
    * @return {boolean}
    */
   function subscribeDebuggerEvents(callback) {
     if (debuggerEventsUnsubscribers.has(callback)) {
-      throw new Error("subscribeDebuggerEvents called without prior unsubscribeDebuggerEvents for callback " + callback);
+      throw new Error('subscribeDebuggerEvents called without prior unsubscribeDebuggerEvents for callback ' + callback);
     }
     const globalObjectClearedHandler = (...args) => {
-      callback("GlobalObjectCleared", ...args);
+      callback('GlobalObjectCleared', ...args);
     };
     const debuggerPausedHandler = (...args) => {
-      callback("DebuggerPaused", ...args);
+      callback('DebuggerPaused', ...args);
     };
     const debuggerResumedHandler = (...args) => {
-      callback("DebuggerResumed", ...args);
+      callback('DebuggerResumed', ...args);
     };
 
     SDK.targetManager.addModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
@@ -170,7 +177,7 @@ Object.assign(window.dirac, (function() {
    */
   function unsubscribeDebuggerEvents(callback) {
     if (!debuggerEventsUnsubscribers.has(callback)) {
-      throw new Error("unsubscribeDebuggerEvents called without prior subscribeDebuggerEvents for callback " + callback);
+      throw new Error('unsubscribeDebuggerEvents called without prior subscribeDebuggerEvents for callback ' + callback);
     }
 
     const unsubscriber = debuggerEventsUnsubscribers.get(callback);
@@ -183,18 +190,30 @@ Object.assign(window.dirac, (function() {
   function addConsoleMessageToMainTarget(type, level, text, parameters) {
     const target = SDK.targetManager.mainTarget();
     if (!target) {
-      console.warn("Unable to add console message to main target (no target): ", text);
+      console.warn('Unable to add console message to main target (no target): ', text);
       return;
     }
     const runtimeModel = target.model(SDK.RuntimeModel);
     if (!runtimeModel) {
-      console.warn("Unable to add console message to main target (no runtime model): ", text);
+      console.warn('Unable to add console message to main target (no runtime model): ', text);
       return;
     }
-    const sanitizedText = text || "";
+    const sanitizedText = text || '';
     const msg = new SDK.ConsoleMessage(runtimeModel, SDK.ConsoleMessage.MessageSource.Other, level,
       sanitizedText, type, undefined, undefined, undefined, parameters);
     SDK.consoleModel.addMessage(msg);
+  }
+
+  function evaluateCommandInConsole(contextName, code) {
+    const context = contextName === 'current' ? lookupCurrentContext() : lookupDefaultContext();
+    if (!context) {
+      console.warn("evaluateCommandInConsole got null '" + contextName + "' context:", code);
+      return;
+    }
+    const commandMessage = new SDK.ConsoleMessage(context.runtimeModel, SDK.ConsoleMessage.MessageSource.JS, null, code, SDK.ConsoleMessage.MessageType.Command);
+    commandMessage.setExecutionContextId(context.id);
+    commandMessage.skipHistory = true;
+    SDK.consoleModel.evaluateCommandInConsole(context, commandMessage, code, false);
   }
 
   // --- scope info -------------------------------------------------------------------------------------------------------
@@ -204,29 +223,30 @@ Object.assign(window.dirac, (function() {
 
     switch (scope.type()) {
       case Protocol.Debugger.ScopeType.Local:
-        title = Common.UIString("Local");
+        title = Common.UIString('Local');
         break;
       case Protocol.Debugger.ScopeType.Closure:
         const scopeName = scope.name();
-        if (scopeName)
-          title = Common.UIString("Closure (%s)", UI.beautifyFunctionName(scopeName));
-        else
-          title = Common.UIString("Closure");
+        if (scopeName) {
+          title = Common.UIString('Closure (%s)', UI.beautifyFunctionName(scopeName));
+        } else {
+          title = Common.UIString('Closure');
+        }
         break;
       case Protocol.Debugger.ScopeType.Catch:
-        title = Common.UIString("Catch");
+        title = Common.UIString('Catch');
         break;
       case Protocol.Debugger.ScopeType.Block:
-        title = Common.UIString("Block");
+        title = Common.UIString('Block');
         break;
       case Protocol.Debugger.ScopeType.Script:
-        title = Common.UIString("Script");
+        title = Common.UIString('Script');
         break;
       case Protocol.Debugger.ScopeType.With:
-        title = Common.UIString("With Block");
+        title = Common.UIString('With Block');
         break;
       case Protocol.Debugger.ScopeType.Global:
-        title = Common.UIString("Global");
+        title = Common.UIString('Global');
         break;
     }
 
@@ -240,12 +260,12 @@ Object.assign(window.dirac, (function() {
     const result = {title: title};
     let resolved = false;
 
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
 
       function processProperties(answer) {
         const properties = answer.properties;
         if (properties) {
-          result.props = properties.map(function(property) {
+          result.props = properties.map(function (property) {
             const propertyRecord = {name: property.name};
             if (property.resolutionSourceProperty) {
               const identifier = property.resolutionSourceProperty.name;
@@ -265,12 +285,12 @@ Object.assign(window.dirac, (function() {
         if (resolved) {
           return;
         }
-        console.warn("Unable to retrieve properties from remote object", remoteObject);
+        console.warn('Unable to retrieve properties from remote object', remoteObject);
         resolve(result);
       }
 
       remoteObject.getAllProperties(false, false).then(processProperties);
-      setTimeout(timeoutProperties, dirac._REMOTE_OBJECT_PROPERTIES_FETCH_TIMEOUT);
+      setTimeout(timeoutProperties, dirac.REMOTE_OBJECT_PROPERTIES_FETCH_TIMEOUT);
     });
   }
 
@@ -279,7 +299,7 @@ Object.assign(window.dirac, (function() {
       return Promise.resolve(null);
     }
 
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
       const scopeNamesPromises = [];
 
       const scopeChain = callFrame.scopeChain();
@@ -292,7 +312,7 @@ Object.assign(window.dirac, (function() {
         scopeNamesPromises.unshift(extractNamesFromScopePromise(scope));
       }
 
-      Promise.all(scopeNamesPromises).then(function(frames) {
+      Promise.all(scopeNamesPromises).then(function (frames) {
         const result = {frames: frames};
         resolve(result);
       });
@@ -306,11 +326,21 @@ Object.assign(window.dirac, (function() {
    * @return {function(string)}
    */
   function prepareUrlMatcher(namespaceName) {
-    const relativeNSPath = dirac.nsToRelpath(namespaceName, "js");
-    return /** @suppressGlobalPropertiesCheck */ function(url) {
-      const parser = document.createElement('a');
+    // shadow-cljs uses slightly different convention to output files
+    // for example given namespaceName 'my.cool.ns'
+    // standard clojurescript outputs into directory structure $some-prefix/my/cool/ns.js
+    // cljs files are placed under the same names
+    //
+    // shadow-cljs outputs into flat directory structure cljs-runtime/my.cool.ns.js
+    // but shadow-cljs maintains tree-like structure for original cljs sources, similar to standard
+    //
+    const relativeNSPathStandard = dirac.nsToRelpath(namespaceName, 'js');
+    const relativeNSPathShadow = relativeNSPathStandard.replace('/', '.');
+    const parser = document.createElement('a');
+    return /** @suppressGlobalPropertiesCheck */ function (url) {
       parser.href = url;
-      return parser.pathname.endsWith(relativeNSPath);
+      // console.log("URL MATCH", relativeNSPathShadow, parser.pathname);
+      return parser.pathname.endsWith(relativeNSPathStandard) || parser.pathname.endsWith(relativeNSPathShadow);
     };
   }
 
@@ -335,11 +365,13 @@ Object.assign(window.dirac, (function() {
    * @return {!Array<dirac.NamespaceDescriptor>}
    */
   function parseClojureScriptNamespaces(url, cljsSourceCode) {
-    if (dirac._DEBUG_CACHES) {
-      console.log("parseClojureScriptNamespaces ", url, cljsSourceCode);
+    if (dirac.DEBUG_CACHES) {
+      console.groupCollapsed("parseClojureScriptNamespaces: " + url);
+      console.log(cljsSourceCode);
+      console.groupEnd();
     }
     if (!cljsSourceCode) {
-      console.warn("unexpected empty source from " + url);
+      console.warn('unexpected empty source from ' + url);
       return [];
     }
     const descriptor = dirac.parseNsFromSource(cljsSourceCode);
@@ -357,19 +389,23 @@ Object.assign(window.dirac, (function() {
    * @return {!Array<dirac.NamespaceDescriptor>}
    */
   function parsePseudoNamespaces(url, jsSourceCode) {
-    if (dirac._DEBUG_CACHES) {
-      console.log("parsePseudoNamespaces ", url, jsSourceCode);
+    if (dirac.DEBUG_CACHES) {
+      console.groupCollapsed("parsePseudoNamespaces: " + url);
+      console.log(jsSourceCode);
+      console.groupEnd();
     }
     if (!jsSourceCode) {
-      console.warn("unexpected empty source from " + url);
+      console.warn('unexpected empty source from ' + url);
       return [];
     }
 
     const result = [];
-    const re = /goog\.provide\('(.*?)'\);/gm;
+    // standard clojurescript emits: goog.provide('goog.something');
+    // shadow-cljs emits: goog.module("goog.something");
+    const re = /goog\.(provide|module)\(['"](.*?)['"]\);/gm;
     let m;
     while (m = re.exec(jsSourceCode)) {
-      const namespaceName = m[1];
+      const namespaceName = m[2];
       const descriptor = {
         name: namespaceName,
         url: url,
@@ -421,10 +457,10 @@ Object.assign(window.dirac, (function() {
     // Bindings.debuggerWorkspaceBinding.maybeLoadSourceMap(script);
     return ensureSourceMapLoadedAsync(script).then(/** @suppressGlobalPropertiesCheck */sourceMap => {
       const scriptUrl = script.contentURL();
-      let promises = [];
+      const promises = [];
       let realNamespace = false;
       if (sourceMap) {
-        for (let url of sourceMap.sourceURLs()) {
+        for (const url of sourceMap.sourceURLs()) {
           // take only .cljs or .cljc urls, make sure url params and fragments get matched properly
           // examples:
           //   http://localhost:9977/.compiled/demo/clojure/browser/event.cljs?rel=1463085025939
@@ -462,7 +498,7 @@ Object.assign(window.dirac, (function() {
 
   function getMacroNamespaceNames(namespaces) {
     let names = [];
-    for (let descriptor of Object.values(namespaces)) {
+    for (const descriptor of Object.values(namespaces)) {
       if (!descriptor.detectedMacroNamespaces) {
         continue;
       }
@@ -479,13 +515,13 @@ Object.assign(window.dirac, (function() {
     if (!script) {
       return Promise.resolve([]);
     }
-    //noinspection JSCheckFunctionSignatures
+    // noinspection JSCheckFunctionSignatures
     return parseNamespacesDescriptorsAsync(script);
   }
 
   function prepareNamespacesFromDescriptors(namespaceDescriptors) {
     const result = {};
-    for (let descriptor of namespaceDescriptors) {
+    for (const descriptor of namespaceDescriptors) {
       result[descriptor.name] = descriptor;
     }
     return result;
@@ -494,16 +530,16 @@ Object.assign(window.dirac, (function() {
   function extractNamespacesAsyncWorker() {
     const workspace = Workspace.workspace;
     if (!workspace) {
-      console.error("unable to locate Workspace when extracting all ClojureScript namespace names");
+      console.error('unable to locate Workspace when extracting all ClojureScript namespace names');
       return Promise.resolve([]);
     }
 
     const uiSourceCodes = getRelevantSourceCodes(workspace);
     const promises = [];
-    if (dirac._DEBUG_CACHES) {
-      console.log("extractNamespacesAsyncWorker initial processing of " + uiSourceCodes.length + " source codes");
+    if (dirac.DEBUG_CACHES) {
+      console.log('extractNamespacesAsyncWorker initial processing of ' + uiSourceCodes.length + ' source codes');
     }
-    for (let uiSourceCode of uiSourceCodes) {
+    for (const uiSourceCode of uiSourceCodes) {
       const namespaceDescriptorsPromise = getSourceCodeNamespaceDescriptorsAsync(uiSourceCode);
       promises.push(namespaceDescriptorsPromise);
     }
@@ -525,27 +561,27 @@ Object.assign(window.dirac, (function() {
       return extractNamespacesAsyncInFlightPromise;
     }
 
-    if (dirac._namespacesCache) {
-      return Promise.resolve(dirac._namespacesCache);
+    if (dirac.namespacesCache) {
+      return Promise.resolve(dirac.namespacesCache);
     }
 
-    dirac._namespacesCache = {};
+    dirac.namespacesCache = {};
     startListeningForWorkspaceChanges();
 
     extractNamespacesAsyncInFlightPromise = extractNamespacesAsyncWorker().then(descriptors => {
       const newDescriptors = prepareNamespacesFromDescriptors(descriptors);
       const newDescriptorsCount = Object.keys(newDescriptors).length;
-      if (!dirac._namespacesCache) {
-        dirac._namespacesCache = {};
+      if (!dirac.namespacesCache) {
+        dirac.namespacesCache = {};
       }
-      Object.assign(dirac._namespacesCache, newDescriptors);
-      const allDescriptorsCount = Object.keys(dirac._namespacesCache).length;
-      if (dirac._DEBUG_CACHES) {
-        console.log("extractNamespacesAsync finished _namespacesCache with " + newDescriptorsCount + " items " +
-          "(" + allDescriptorsCount + " in total)");
+      Object.assign(dirac.namespacesCache, newDescriptors);
+      const allDescriptorsCount = Object.keys(dirac.namespacesCache).length;
+      if (dirac.DEBUG_CACHES) {
+        console.log('extractNamespacesAsync finished namespacesCache with ' + newDescriptorsCount + ' items ' +
+          '(' + allDescriptorsCount + ' in total)');
       }
       dirac.reportNamespacesCacheMutation();
-      return dirac._namespacesCache;
+      return dirac.namespacesCache;
     });
 
     extractNamespacesAsyncInFlightPromise.then(result => extractNamespacesAsyncInFlightPromise = null);
@@ -553,10 +589,10 @@ Object.assign(window.dirac, (function() {
   }
 
   function invalidateNamespacesCache() {
-    if (dirac._DEBUG_CACHES) {
-      console.log("invalidateNamespacesCache");
+    if (dirac.DEBUG_CACHES) {
+      console.log('invalidateNamespacesCache');
     }
-    dirac._namespacesCache = null;
+    dirac.namespacesCache = null;
   }
 
   function extractSourceCodeNamespacesAsync(uiSourceCode) {
@@ -569,22 +605,22 @@ Object.assign(window.dirac, (function() {
 
   function extractAndMergeSourceCodeNamespacesAsync(uiSourceCode) {
     if (!isRelevantSourceCode(uiSourceCode)) {
-      console.warn("extractAndMergeSourceCodeNamespacesAsync called on irrelevant source code", uiSourceCode);
+      console.warn('extractAndMergeSourceCodeNamespacesAsync called on irrelevant source code', uiSourceCode);
       return;
     }
 
-    if (dirac._DEBUG_CACHES) {
-      console.log("extractAndMergeSourceCodeNamespacesAsync", uiSourceCode);
+    if (dirac.DEBUG_CACHES) {
+      console.log('extractAndMergeSourceCodeNamespacesAsync', uiSourceCode);
     }
     const jobs = [extractNamespacesAsync(), extractSourceCodeNamespacesAsync(uiSourceCode)];
     return Promise.all(jobs).then(([namespaces, result]) => {
       const addedNamespaceNames = Object.keys(result);
       if (addedNamespaceNames.length) {
         Object.assign(namespaces, result);
-        if (dirac._DEBUG_CACHES) {
-          console.log("updated _namespacesCache by merging ", addedNamespaceNames,
-            "from", uiSourceCode.contentURL(),
-            " => new namespaces count:", Object.keys(namespaces).length);
+        if (dirac.DEBUG_CACHES) {
+          console.log('updated namespacesCache by merging ', addedNamespaceNames,
+            'from', uiSourceCode.contentURL(),
+            ' => new namespaces count:', Object.keys(namespaces).length);
         }
         dirac.reportNamespacesCacheMutation();
       }
@@ -595,7 +631,7 @@ Object.assign(window.dirac, (function() {
   function removeNamespacesMatchingUrl(url) {
     extractNamespacesAsync().then(namespaces => {
       const removedNames = [];
-      for (let namespaceName of Object.keys(namespaces)) {
+      for (const namespaceName of Object.keys(namespaces)) {
         const descriptor = namespaces[namespaceName];
         if (descriptor.url === url) {
           delete namespaces[namespaceName];
@@ -603,9 +639,9 @@ Object.assign(window.dirac, (function() {
         }
       }
 
-      if (dirac._DEBUG_CACHES) {
-        console.log("removeNamespacesMatchingUrl removed " + removedNames.length + " namespaces for url: " + url +
-          " new namespaces count:" + Object.keys(namespaces).length);
+      if (dirac.DEBUG_CACHES) {
+        console.log('removeNamespacesMatchingUrl removed ' + removedNames.length + ' namespaces for url: ' + url +
+          ' new namespaces count:' + Object.keys(namespaces).length);
       }
     });
   }
@@ -634,7 +670,7 @@ Object.assign(window.dirac, (function() {
    * @return {!Array<string>}
    */
   function filterNamesForNamespace(names, namespaceName) {
-    const prefix = namespaceName + "/";
+    const prefix = namespaceName + '/';
     const prefixLength = prefix.length;
 
     return names.filter(name => name.startsWith(prefix)).map(name => name.substring(prefixLength));
@@ -648,7 +684,7 @@ Object.assign(window.dirac, (function() {
     const target = SDK.targetManager.mainTarget();
     if (!target) {
       throw new Error(
-        `getScriptFromSourceCode called when there is no main target\n` +
+        'getScriptFromSourceCode called when there is no main target\n' +
         `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
     }
     const debuggerModel = /** @type {!SDK.DebuggerModel} */ (target.model(SDK.DebuggerModel));
@@ -663,9 +699,9 @@ Object.assign(window.dirac, (function() {
       // see https://github.com/binaryage/dirac/issues/79
 
       // disabled to prevent console spam
-      if (dirac._DEBUG_CACHES) {
+      if (dirac.DEBUG_CACHES) {
         console.error(
-          `uiSourceCode expected to have scriptFile associated\n` +
+          'uiSourceCode expected to have scriptFile associated\n' +
           `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
       }
       return null;
@@ -673,12 +709,12 @@ Object.assign(window.dirac, (function() {
     const script = scriptFile.getScript();
     if (!script) {
       throw new Error(
-        `uiSourceCode expected to have _script associated\n` +
+        'uiSourceCode expected to have _script associated\n' +
         `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
     }
     if (!(script instanceof SDK.Script)) {
       throw new Error(
-        `getScriptFromSourceCode expected to return an instance of SDK.Script\n` +
+        'getScriptFromSourceCode expected to return an instance of SDK.Script\n' +
         `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
     }
     return script;
@@ -718,24 +754,24 @@ Object.assign(window.dirac, (function() {
       // figwheel reloading is just adding new files and not removing old ones
       const matchingSourceCodes = findMatchingSourceCodes(uiSourceCodes, urlMatcherFn);
       if (!matchingSourceCodes.length) {
-        if (dirac._DEBUG_CACHES) {
+        if (dirac.DEBUG_CACHES) {
           console.warn("cannot find any matching source file for ClojureScript namespace '" + namespaceName + "'");
         }
         resolve([]);
         return;
       }
 
-      // we simply extract names from all matching source maps and then we filter then to match our namespace name and
+      // we simply extract names from all matching source maps and then we filter them to match our namespace name and
       // deduplicate them
       const results = [];
-      for (let uiSourceCode of matchingSourceCodes) {
+      for (const uiSourceCode of matchingSourceCodes) {
         results.push(extractNamesFromSourceMap(uiSourceCode, namespaceName));
       }
       const allNames = [].concat.apply([], results);
       const filteredNames = unique(filterNamesForNamespace(allNames, namespaceName));
 
-      if (dirac._DEBUG_CACHES) {
-        console.log("extracted " + filteredNames.length + " symbol names for namespace", namespaceName, matchingSourceCodes.map(i => i.url()));
+      if (dirac.DEBUG_CACHES) {
+        console.log('extracted ' + filteredNames.length + ' symbol names for namespace', namespaceName, matchingSourceCodes.map(i => i.url()));
       }
 
       resolve(filteredNames);
@@ -760,8 +796,8 @@ Object.assign(window.dirac, (function() {
   }
 
   function invalidateNamespaceSymbolsCache(namespaceName = null) {
-    if (dirac._DEBUG_CACHES) {
-      console.log("invalidateNamespaceSymbolsCache", namespaceName);
+    if (dirac.DEBUG_CACHES) {
+      console.log('invalidateNamespaceSymbolsCache', namespaceName);
     }
     if (namespaceName) {
       namespacesSymbolsCache.delete(namespaceName);
@@ -806,9 +842,9 @@ Object.assign(window.dirac, (function() {
 
     const promisedResult = extractMacroNamespaceSymbolsAsyncWorker(namespaceName);
 
-    if (dirac._DEBUG_CACHES) {
+    if (dirac.DEBUG_CACHES) {
       promisedResult.then(result => {
-        console.log("extractMacroNamespaceSymbolsAsync resolved", namespaceName, result);
+        console.log('extractMacroNamespaceSymbolsAsync resolved', namespaceName, result);
       });
     }
 
@@ -821,7 +857,7 @@ Object.assign(window.dirac, (function() {
   let listeningForWorkspaceChanges = false;
 
   function invalidateNamespaceSymbolsMatchingUrl(url) {
-    for (let namespaceName of namespacesSymbolsCache.keys()) {
+    for (const namespaceName of namespacesSymbolsCache.keys()) {
       const matcherFn = prepareUrlMatcher(namespaceName);
       if (matcherFn(url)) {
         dirac.invalidateNamespaceSymbolsCache(namespaceName);
@@ -833,8 +869,8 @@ Object.assign(window.dirac, (function() {
     const uiSourceCode = event.data;
     if (uiSourceCode && isRelevantSourceCode(uiSourceCode)) {
       const url = uiSourceCode.url();
-      if (dirac._DEBUG_WATCHING) {
-        console.log("handleSourceCodeAdded", url);
+      if (dirac.DEBUG_WATCHING) {
+        console.log('handleSourceCodeAdded', url);
       }
       extractAndMergeSourceCodeNamespacesAsync(uiSourceCode);
       invalidateNamespaceSymbolsMatchingUrl(url);
@@ -845,8 +881,8 @@ Object.assign(window.dirac, (function() {
     const uiSourceCode = event.data;
     if (uiSourceCode && isRelevantSourceCode(uiSourceCode)) {
       const url = uiSourceCode.url();
-      if (dirac._DEBUG_WATCHING) {
-        console.log("handleSourceCodeRemoved", url);
+      if (dirac.DEBUG_WATCHING) {
+        console.log('handleSourceCodeRemoved', url);
       }
       removeNamespacesMatchingUrl(url);
       invalidateNamespaceSymbolsMatchingUrl(url);
@@ -858,13 +894,13 @@ Object.assign(window.dirac, (function() {
       return;
     }
 
-    if (dirac._DEBUG_WATCHING) {
-      console.log("startListeningForWorkspaceChanges");
+    if (dirac.DEBUG_WATCHING) {
+      console.log('startListeningForWorkspaceChanges');
     }
 
     const workspace = Workspace.workspace;
     if (!workspace) {
-      console.error("unable to locate Workspace in startListeningForWorkspaceChanges");
+      console.error('unable to locate Workspace in startListeningForWorkspaceChanges');
       return;
     }
 
@@ -879,13 +915,13 @@ Object.assign(window.dirac, (function() {
       return;
     }
 
-    if (dirac._DEBUG_WATCHING) {
-      console.log("stopListeningForWorkspaceChanges");
+    if (dirac.DEBUG_WATCHING) {
+      console.log('stopListeningForWorkspaceChanges');
     }
 
     const workspace = Workspace.workspace;
     if (!workspace) {
-      console.error("unable to locate Workspace in stopListeningForWorkspaceChanges");
+      console.error('unable to locate Workspace in stopListeningForWorkspaceChanges');
       return;
     }
 
@@ -897,7 +933,7 @@ Object.assign(window.dirac, (function() {
 
   function registerDiracLinkAction(action) {
     if (Components.Linkifier.diracLinkHandlerAction) {
-      throw new Error("registerDiracLinkAction already set");
+      throw new Error('registerDiracLinkAction already set');
     }
     Components.Linkifier.diracLinkHandlerAction = action;
   }
@@ -906,10 +942,10 @@ Object.assign(window.dirac, (function() {
 
   // don't forget to update externs.js too
   return {
-    _lazyLoaded: true,
-    _namespacesSymbolsCache: namespacesSymbolsCache,
-    _namespacesCache: null,
-    _REMOTE_OBJECT_PROPERTIES_FETCH_TIMEOUT: 1000,
+    lazyLoaded: true,
+    namespacesSymbolsCache: namespacesSymbolsCache,
+    namespacesCache: null,
+    REMOTE_OBJECT_PROPERTIES_FETCH_TIMEOUT: 1000,
     lookupCurrentContext: lookupCurrentContext,
     evalInCurrentContext: evalInCurrentContext,
     hasCurrentContext: hasCurrentContext,
@@ -919,6 +955,7 @@ Object.assign(window.dirac, (function() {
     subscribeDebuggerEvents: subscribeDebuggerEvents,
     unsubscribeDebuggerEvents: unsubscribeDebuggerEvents,
     addConsoleMessageToMainTarget: addConsoleMessageToMainTarget,
+    evaluateCommandInConsole: evaluateCommandInConsole,
     startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,
     stopListeningForWorkspaceChanges: stopListeningForWorkspaceChanges,
     extractScopeInfoFromScopeChainAsync: extractScopeInfoFromScopeChainAsync,
@@ -933,3 +970,5 @@ Object.assign(window.dirac, (function() {
   };
 
 })());
+
+console.log('dirac-lazy module imported!');

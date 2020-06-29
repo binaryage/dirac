@@ -4,19 +4,19 @@
 
 import {assert} from 'chai';
 import {describe, it} from 'mocha';
-import {$, $$, getBrowserAndPages, resourcesPath, waitFor} from '../../shared/helper.js';
+import {$, $$, getBrowserAndPages, goToResource, waitFor} from '../../shared/helper.js';
 import {triggerFindDialog} from '../helpers/search-helpers.js';
 
 describe('The Search Panel', async () => {
   it('provides results across scopes', async () => {
-    const {target, frontend} = getBrowserAndPages();
+    const {frontend} = getBrowserAndPages();
     const SEARCH_QUERY = '[aria-label="Search Query"]';
     const SEARCH_RESULTS = '.search-results';
     const SEARCH_FILE_RESULT = '.search-result';
     const SEARCH_CHILDREN_RESULT = '.search-match-link';
 
     // Load the search page, which has results in the HTML, JS, and CSS.
-    await target.goto(`${resourcesPath}/search/search.html`);
+    await goToResource('search/search.html');
 
     // Launch the search panel.
     await triggerFindDialog(frontend);
@@ -40,21 +40,31 @@ describe('The Search Panel', async () => {
 
     // Process the results into something manageable.
     const fileResults = await $$(SEARCH_FILE_RESULT, resultsContainer);
-    const files = await fileResults.evaluate(result => result.map((value: Element) => {
+
+    interface FileSearchResult {
+      matchesCount: number;
+      fileName: string;
+    }
+
+    const files: FileSearchResult[] = await fileResults.evaluate(result => result.map((value: Element) => {
       const SEARCH_RESULT_FILE_NAME = '.search-result-file-name';
       const SEARCH_RESULT_MATCHES_COUNT = '.search-result-matches-count';
 
       // Wrap the entries with the file details.
       return {
         fileName: value.querySelector(SEARCH_RESULT_FILE_NAME)!.firstChild!.textContent,
-        matchesCount: value.querySelector(SEARCH_RESULT_MATCHES_COUNT)!.textContent,
+        matchesCount: parseInt(value.querySelector(SEARCH_RESULT_MATCHES_COUNT)!.textContent!, 10),
       };
     }));
 
+    files.sort((a, b) => {
+      return a.matchesCount - b.matchesCount;
+    });
+
     assert.deepEqual(files, [
-      {fileName: 'search.css', matchesCount: '3'},
-      {fileName: 'search.js', matchesCount: '5'},
-      {fileName: 'search.html', matchesCount: '4'},
+      {fileName: 'search.css', matchesCount: 3},
+      {fileName: 'search.html', matchesCount: 4},
+      {fileName: 'search.js', matchesCount: 5},
     ]);
 
     // Now step through the actual entries of the search result.

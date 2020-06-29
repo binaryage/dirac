@@ -1,10 +1,10 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.30")
 (def figwheel-version "0.5.20")
-(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.764"))
+(def selected-clojurescript-version (or (System/getenv "CANARY_CLOJURESCRIPT_VERSION") "1.10.773"))
 (def selected-clojure-version "1.10.1")
 (def selenium-version "3.141.59")
-(def lein-cljsbuild-version "1.1.7")
+(def lein-cljsbuild-version "1.1.8")
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
@@ -26,7 +26,7 @@
    ['clj-sub-command "0.6.0"]
    ['ring/ring-core "1.8.1"]
    ['ring/ring-defaults "0.3.2"]
-   ['binaryage/devtools "1.0.0"]])
+   ['binaryage/devtools "1.0.2"]])
 
 (def test-deps
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
@@ -37,13 +37,13 @@
    ['cljs-http "0.1.46" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
-   ['rum "0.11.5" :scope "test"]
+   ['rum "0.12.1" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "1.0.0" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
    ['fipp "0.6.23" :scope "test"]
-   ['nubank/matcher-combinators "1.5.2" :scope "test"]
+   ['nubank/matcher-combinators "2.1.1" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
@@ -64,7 +64,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.5.12"
+(defproject binaryage/dirac "1.6.0"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

@@ -331,9 +331,9 @@ diff_match_patch.prototype = {
   diff_cleanupSemantic(diff) {}
 };
 
-var dirac = {
+const dirac = {
     /** @type {boolean} */
-    _DEBUG_EVAL: true,
+    DEBUG_EVAL: true,
     /** @type {boolean} */
     hasFeature: true,
     /** @type {boolean} */
@@ -355,17 +355,33 @@ var dirac = {
     /** @type {boolean} */
     hasLinkActions: true,
     /** @type {?Object.<string, dirac.NamespaceDescriptor>} */
-    _namespacesCache: null,
+    namespacesCache: null,
+
+    /**
+     * @param {string} name
+     * @return {boolean}
+     */
+    getToggle:  function (name) {},
+
+    /**
+     * @param {string} name
+     * @param {*} value
+     */
+    setToggle: function (name, value) {},
+    /**
+     * @return {!Promise}
+     */
+    getReadyPromise: function () {},
     /**
     * @param {string} code
     * @return {string}
     */
-    codeAsString: function (code) {},
+    codeAsString: function(code) {},
     /**
     * @param {string} string
     * @return {string}
     */
-    stringEscape: function (string) {},
+    stringEscape: function(string) {},
     /**
     * @param {string} action
     */
@@ -398,7 +414,7 @@ var dirac = {
     hasDefaultContext: function() {},
 
     /**
-     * @return {?SDK.DebuggerModel}
+     * @return {?}
      */
     getMainDebuggerModel: function() {},
     /**
@@ -438,7 +454,7 @@ var dirac = {
     /**
     * @param {string=} namespaceName
     */
-    invalidateNamespaceSymbolsCache: function (namespaceName) {},
+    invalidateNamespaceSymbolsCache: function(namespaceName) {},
     invalidateNamespacesCache: function() {},
 
     /**
@@ -541,7 +557,7 @@ var dirac = {
   /**
    * @return {boolean}
    * */
-  isIntercomReady: function () {
+  isIntercomReady: function() {
   },
 
     reportNamespacesCacheMutation: function() {},
@@ -581,34 +597,36 @@ dirac.ScopeInfo;
  */
 dirac.NamespaceDescriptor;
 
+const Keysim = {}
 
-var Keysim = {
-    Keyboard: {
-        US_ENGLISH: {}
-    },
+/** @constructor */
+Keysim.Keyboard = function() {};
+Keysim.Keyboard.prototype = {
+  /**
+   * Fires the correct sequence of events on the given target as if the given
+   * action was undertaken by a human.
+   *
+   * @param {string} action e.g. "alt+shift+left" or "backspace"
+   * @param {Element} target
+   * @param {?function()} callback
+   */
+  dispatchEventsForAction: function (action, target, callback) {
+  },
 
-    /**
-     * Fires the correct sequence of events on the given target as if the given
-     * action was undertaken by a human.
-     *
-     * @param {string} action e.g. "alt+shift+left" or "backspace"
-     * @param {HTMLElement} target
-     * @param {?function()} callback
-     */
-    dispatchEventsForAction: function(action, target, callback) {
-    },
-
-    /**
-     * Fires the correct sequence of events on the given target as if the given
-     * input had been typed by a human.
-     *
-     * @param {string} input
-     * @param {HTMLElement} target
-     * @param {?function()} callback
-     */
-    dispatchEventsForInput: function(input, target, callback) {
-    }
+  /**
+   * Fires the correct sequence of events on the given target as if the given
+   * input had been typed by a human.
+   *
+   * @param {string} input
+   * @param {Element} target
+   * @param {?function()} callback
+   */
+  dispatchEventsForInput: function (input, target, callback) {
+  },
 };
+
+/** @type {Keysim.Keyboard} */
+Keysim.Keyboard.US_ENGLISH;
 
 /** @constructor */
 const Doc = function() {};
@@ -837,11 +855,16 @@ CodeMirror.Pos.prototype.ch;
  */
 CodeMirror.cmpPos = function(pos1, pos2) {};
 
-/** @constructor */
-CodeMirror.StringStream = function(line) {
+/**
+ * @constructor
+ * @param {(!Array<string>|string)} line
+ * @param {number=} index
+ */
+CodeMirror.StringStream = function(line, index) {
   this.pos = 0;
   this.start = 0;
 };
+
 CodeMirror.StringStream.prototype = {
   backUp: function(n) {},
   column: function() {},
@@ -892,76 +915,6 @@ CodeMirror.defineMIME = function(mime, mode) {};
 
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;
-
-const acorn = {
-  /**
-   * @param {string} text
-   * @param {Object.<string, boolean>} options
-   * @return {!ESTree.Node}
-   */
-  parse: function(text, options) {},
-
-  /**
-   * @param {string} text
-   * @param {Object.<string, boolean>} options
-   * @return {!Acorn.Tokenizer}
-   */
-  tokenizer: function(text, options) {},
-
-  tokTypes: {
-    _true: new Acorn.TokenType(),
-    _false: new Acorn.TokenType(),
-    _null: new Acorn.TokenType(),
-    num: new Acorn.TokenType(),
-    regexp: new Acorn.TokenType(),
-    string: new Acorn.TokenType(),
-    name: new Acorn.TokenType(),
-    eof: new Acorn.TokenType()
-  }
-};
-
-acorn.loose = {};
-
-/**
- * @param {string} text
- * @param {Object.<string, boolean>} options
- * @return {!ESTree.Node}
- */
-acorn.loose.parse = function(text, options) {};
-
-const Acorn = {};
-/**
- * @constructor
- */
-Acorn.Tokenizer = function() {
-  /** @type {function():!Acorn.Token} */
-  this.getToken;
-};
-
-/**
- * @constructor
- */
-Acorn.TokenType = function() {
-  /** @type {string} */
-  this.label;
-  /** @type {(string|undefined)} */
-  this.keyword;
-};
-
-/**
- * @typedef {{type: !Acorn.TokenType, value: string, start: number, end: number}}
- */
-Acorn.Token;
-
-/**
- * @typedef {{type: string, value: string, start: number, end: number}}
- */
-Acorn.Comment;
-
-/**
- * @typedef {(!Acorn.Token|!Acorn.Comment)}
- */
-Acorn.TokenOrComment;
 
 const dagre = {};
 dagre.graphlib = {};
@@ -1055,6 +1008,62 @@ ESTree.TemplateLiteralNode = function() {
   /** @type {!Array.<!ESTree.Node>} */
   this.expressions;
 };
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.SimpleLiteral = function() {
+  /** @type {?(string|boolean|number)} */
+  this.value;
+  /** @type {(string|undefined)} */
+  this.raw;
+};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.ForStatement = function() {
+  /** @type {(!ESTree.Node|undefined)} */
+  this.update;
+};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.ForInStatement = function() {};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.ForOfStatement = function() {};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.IfStatement = function() {
+  /** @type {(!ESTree.Node|undefined)} */
+  this.consequent;
+};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.TryStatement = function() {
+  /** @type {(!ESTree.Node|undefined)} */
+  this.block;
+};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.CatchClause = function() {};
 
 /**
  * @type {string}

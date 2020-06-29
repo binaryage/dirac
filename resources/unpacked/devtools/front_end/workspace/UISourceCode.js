@@ -153,12 +153,12 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
       // @ts-ignore
       if (dirac.hasCleanUrls) {
         // strip all after ? in the name
-        const qmarkIndex = name.indexOf("?");
+        const qmarkIndex = name.indexOf('?');
         if (qmarkIndex != -1) {
           name = name.substring(0, qmarkIndex);
         }
         // strip all after # in the name
-        const hashIndex = name.indexOf("#");
+        const hashIndex = name.indexOf('#');
         if (hashIndex != -1) {
           name = name.substring(0, hashIndex);
         }
@@ -182,7 +182,9 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
   rename(newName) {
     /** @type {function(boolean):void} */
     let fulfill;
-    const promise = new Promise(x => fulfill = x);
+    const promise = new Promise(x => {
+      fulfill = x;
+    });
     this._project.rename(this, newName, innerCallback.bind(this));
     return promise;
 
@@ -290,7 +292,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
       }
     } catch (err) {
       this._contentLoaded = true;
-      this._content = {error: err ? String(err) : '', isEncoded: false};
+      this._content = {content: null, error: err ? String(err) : '', isEncoded: false};
     }
 
     return /** @type {!TextUtils.ContentProvider.DeferredContent} */ (this._content);
@@ -687,7 +689,11 @@ export class UILocation {
    */
   linkText(skipTrim) {
     let linkText = this.uiSourceCode.displayName(skipTrim);
-    if (typeof this.lineNumber === 'number') {
+    if (this.uiSourceCode.mimeType() === 'application/wasm') {
+      // For WebAssembly locations, we follow the conventions described in
+      // github.com/WebAssembly/design/blob/master/Web.md#developer-facing-display-conventions
+      linkText += `:0x${this.columnNumber.toString(16)}`;
+    } else if (typeof this.lineNumber === 'number') {
       linkText += ':' + (this.lineNumber + 1);
     }
     return linkText;

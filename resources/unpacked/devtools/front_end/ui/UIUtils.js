@@ -35,6 +35,7 @@
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {Dialog} from './Dialog.js';
@@ -60,8 +61,8 @@ export {markAsFocusedByKeyboard} from './utils/focus-changed.js';
 /**
  * @param {!Element} element
  * @param {?function(!MouseEvent): boolean} elementDragStart
- * @param {function(!MouseEvent)} elementDrag
- * @param {?function(!MouseEvent)} elementDragEnd
+ * @param {function(!MouseEvent):void} elementDrag
+ * @param {?function(!MouseEvent):void} elementDragEnd
  * @param {?string} cursor
  * @param {?string=} hoverCursor
  * @param {number=} startDelay
@@ -102,8 +103,8 @@ export function installDragHandle(
 /**
  * @param {!Element} targetElement
  * @param {?function(!MouseEvent):boolean} elementDragStart
- * @param {function(!MouseEvent)} elementDrag
- * @param {?function(!MouseEvent)} elementDragEnd
+ * @param {function(!MouseEvent):void} elementDrag
+ * @param {?function(!MouseEvent):void} elementDragEnd
  * @param {?string} cursor
  * @param {!Event} event
  */
@@ -147,8 +148,8 @@ class DragHandler {
   /**
    * @param {!Element} targetElement
    * @param {?function(!MouseEvent):boolean} elementDragStart
-   * @param {function(!MouseEvent)} elementDrag
-   * @param {?function(!MouseEvent)} elementDragEnd
+   * @param {function(!MouseEvent):void} elementDrag
+   * @param {?function(!MouseEvent):void} elementDragEnd
    * @param {?string} cursor
    * @param {!Event} event
    */
@@ -508,8 +509,8 @@ export function createReplacementString(wordString, event, customNumberHandler) 
 /**
  * @param {!Event} event
  * @param {!Element} element
- * @param {function(string,string)=} finishHandler
- * @param {function(string)=} suggestionHandler
+ * @param {function(string,string):void=} finishHandler
+ * @param {(function(string):*)=} suggestionHandler
  * @param {function(string, number, string):string=} customNumberHandler
  * @return {boolean}
  */
@@ -677,7 +678,7 @@ Number.withThousandsSeparator = function(num) {
 
 /**
  * @param {string} format
- * @param {?ArrayLike} substitutions
+ * @param {?ArrayLike<*>} substitutions
  * @return {!Element}
  */
 export function formatLocalized(format, substitutions) {
@@ -821,13 +822,13 @@ export class ElementFocusRestorer {
  * @return {?Element}
  */
 export function highlightSearchResult(element, offset, length, domChanges) {
-  const result = highlightSearchResults(element, [new TextUtils.SourceRange(offset, length)], domChanges);
+  const result = highlightSearchResults(element, [new TextUtils.TextRange.SourceRange(offset, length)], domChanges);
   return result.length ? result[0] : null;
 }
 
 /**
  * @param {!Element} element
- * @param {!Array.<!TextUtils.SourceRange>} resultRanges
+ * @param {!Array.<!TextUtils.TextRange.SourceRange>} resultRanges
  * @param {!Array.<!Object>=} changes
  * @return {!Array.<!Element>}
  */
@@ -855,7 +856,7 @@ export function runCSSAnimationOnce(element, className) {
 
 /**
  * @param {!Element} element
- * @param {!Array.<!TextUtils.SourceRange>} resultRanges
+ * @param {!Array.<!TextUtils.TextRange.SourceRange>} resultRanges
  * @param {string} styleClass
  * @param {!Array.<!Object>=} changes
  * @return {!Array.<!Element>}
@@ -1011,7 +1012,7 @@ class InvokeOnceHandlers {
 
   /**
    * @param {!Object} object
-   * @param {function()} method
+   * @param {function():void} method
    */
   add(object, method) {
     if (!this._handlers) {
@@ -1067,7 +1068,7 @@ export function endBatchUpdate() {
 
 /**
  * @param {!Object} object
- * @param {function()} method
+ * @param {function():void} method
  */
 export function invokeOnceAfterBatchUpdate(object, method) {
   if (!_postUpdateHandlers) {
@@ -1081,8 +1082,8 @@ export function invokeOnceAfterBatchUpdate(object, method) {
  * @param {!Function} func
  * @param {!Array.<{from:number, to:number}>} params
  * @param {number} duration
- * @param {function()=} animationComplete
- * @return {function()}
+ * @param {function():*=} animationComplete
+ * @return {function():void}
  */
 export function animateFunction(window, func, params, duration, animationComplete) {
   const start = window.performance.now();
@@ -1107,8 +1108,8 @@ export function animateFunction(window, func, params, duration, animationComplet
 export class LongClickController extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!Element} element
-   * @param {function(!Event)} callback
-   * @param {function(!Event)} isEditKeyFunc
+   * @param {function(!Event):void} callback
+   * @param {function(!Event):void} isEditKeyFunc
    */
   constructor(element, callback, isEditKeyFunc = event => isEnterOrSpaceKey(event)) {
     super();
@@ -1209,12 +1210,14 @@ LongClickController.TIME_MS = 200;
 
 function _trackKeyboardFocus() {
   UI._keyboardFocus = true;
-  document.defaultView.requestAnimationFrame(() => void (UI._keyboardFocus = false));
+  document.defaultView.requestAnimationFrame(() => {
+    UI._keyboardFocus = false;
+  });
 }
 
 /**
  * @param {!Document} document
- * @param {!Common.Settings.Setting} themeSetting
+ * @param {!Common.Settings.Setting<string>} themeSetting
  */
 export function initializeUIUtils(document, themeSetting) {
   document.body.classList.toggle('inactive', !document.hasFocus());
@@ -1251,7 +1254,7 @@ export function beautifyFunctionName(name) {
 
 /**
  * @param {string} text
- * @param {function(!Event)=} clickHandler
+ * @param {function(!Event):*=} clickHandler
  * @param {string=} className
  * @param {boolean=} primary
  * @return {!Element}
@@ -1570,11 +1573,11 @@ registerCustomElement('div', 'dt-close-button', class extends HTMLDivElement {
 
 /**
  * @param {!Element} input
- * @param {function(string)} apply
+ * @param {function(string):void} apply
  * @param {function(string):{valid: boolean, errorMessage: (string|undefined)}} validate
  * @param {boolean} numeric
  * @param {number=} modifierMultiplier
- * @return {function(string)}
+ * @return {function(string):void}
  */
 export function bindInput(input, apply, validate, numeric, modifierMultiplier) {
   input.addEventListener('change', onChange, false);
@@ -1732,7 +1735,7 @@ export function measureTextWidth(context, text) {
  */
 export class ThemeSupport {
   /**
-   * @param {!Common.Settings.Setting} setting
+   * @param {!Common.Settings.Setting<string>} setting
    */
   constructor(setting) {
     const systemPreferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
@@ -1989,7 +1992,7 @@ export class ThemeSupport {
 
     switch (this._themeName) {
       case 'dark': {
-        const minCap = colorUsage & ThemeSupport.ColorUsage.Background ? 0.14 : 0;
+        const minCap = colorUsage & ThemeSupport.ColorUsage.Background ? 0.14 : 0.58;
         const maxCap = colorUsage & ThemeSupport.ColorUsage.Foreground ? 0.9 : 1;
         lit = 1 - lit;
         if (lit < minCap * 2) {
@@ -2088,7 +2091,7 @@ export function loadImageFromData(data) {
 }
 
 /**
- * @param {function(!File)} callback
+ * @param {function(!File):*} callback
  * @return {!Node}
  */
 export function createFileSelectorElement(callback) {
@@ -2113,7 +2116,7 @@ export class MessageDialog {
   /**
    * @param {string} message
    * @param {!Document|!Element=} where
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   static async show(message, where) {
     const dialog = new Dialog();

@@ -17,6 +17,123 @@ const commandMenuShortcut = Host.Platform.isMac() ? 'Command+Shift+P' : 'Control
 /** @type {!Array<!ReleaseNote>} */
 export const releaseNoteText = [
   {
+    version: 27,
+    header: 'Highlights from the Chrome 85 update',
+    highlights: [
+      {
+        title: 'Style editing for CSS-in-JS',
+        subtitle: 'Styles created with CSS Object Model APIs and Constructible Stylesheets are now editable.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#css-in-js',
+      },
+      {
+        title: 'Lighthouse 6',
+        subtitle:
+            'New metrics that align with Google’s Core Web Vitals, a new weighting of the Performance score, and more.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#lighthouse',
+      },
+      {
+        title: 'First Meaningful Paint (FMP) deprecation',
+        subtitle: 'FMP has been removed from the Performance panel and deprecated in Lighthouse 6.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#fmp-deprecation',
+      },
+      {
+        title: 'Support for new JavaScript features',
+        subtitle:
+            'Syntax and autocompletion support for optional chaining, private fields, and the nullish coalescing operator.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#javascript',
+      },
+      {
+        title: 'New app shortcut warnings in the Manifest pane',
+        subtitle: 'Warnings for when an app icon image is too small or not the correct shape.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#app-shortcut-warnings',
+      },
+      {
+        title: 'Service worker respondWith events in the Timing tab',
+        subtitle: 'More visibility into how long a service worker takes to respond to a fetch event.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#timing-tab',
+      },
+      {
+        title: 'Consistent display of the Computed pane',
+        subtitle: 'The pane now always displays as a separate pane, rather than collapsing into the Styles pane.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#computed-pane',
+      },
+      {
+        title: 'Bytecode offsets for WebAssembly files',
+        subtitle: 'Bytecode offsets are now displayed next to Wasm disassembly rather than line numbers.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#wasm',
+      },
+      {
+        title: 'Line-wise copy and cut in the Sources Panel',
+        subtitle: 'Cut or copy an entire line of code.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#sources-panel',
+      },
+      {
+        title: 'Console Settings updates',
+        subtitle:
+            'The “Group similar” option now applies to duplicate messages and the “Selected context only” option is now persisted.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#console-settings',
+      },
+      {
+        title: 'Performance panel updates',
+        subtitle:
+            'Display JavaScript compilation cache information and align navigation timing in the Performance panel.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#perf-panel',
+      },
+      {
+        title: 'New icons for breakpoints, conditional breakpoints, and logpoints',
+        subtitle:
+            'Breakpoints get a refreshed flag design with brighter and friendlier colors. Icons are added to differentiate conditional breakpoints and logpoints.',
+        link: 'https://developers.google.com/web/updates/2020/06/devtools#breakpoints',
+      },
+    ],
+    link: 'https://developers.google.com/web/updates/2020/06/devtools',
+  },
+  {
+    version: 26,
+    header: 'Highlights from the Chrome 84 update',
+    highlights: [
+      {
+        title: 'The new Issues tab',
+        subtitle:
+            'The Issues tab presents warnings from the browser in a structured, aggregated, and actionable way, links to affected resources within DevTools, and provides guidance on how to fix the issues.',
+        link: 'https://developers.google.com/web/updates/2020/05/devtools#issues',
+      },
+      {
+        title: 'New accessibility information in the Inspect Mode tooltip',
+        subtitle:
+            'The tooltip now indicates whether an element has an accessible name and role and is keyboard-focusable.',
+        link: 'https://developers.google.com/web/updates/2020/05/devtools#a11y',
+      },
+      {
+        title: 'Performance panel updates',
+        subtitle: 'New features related to Total Blocking Time (TBT) and Cumulative Layout Shift (CLS).',
+        link: 'https://developers.google.com/web/updates/2020/05/devtools#performance',
+      },
+      {
+        title: 'More accurate Promise terminology',
+        subtitle: 'When logging Promises in the Console, the status now matches the Promise spec.',
+        link: 'https://developers.google.com/web/updates/2020/05/devtools#performance',
+      },
+      {
+        title: 'Styles pane updates',
+        subtitle:
+            'Support for the revert keyword, image previews, and more usage of space-separated functional color notation by default.',
+        link: 'https://developers.google.com/web/updates/2020/05/devtools#styles',
+      },
+      {
+        title: 'Deprecation of the Properties pane',
+        subtitle: 'Use console.dir($0) instead.',
+        link: 'https://developers.google.com/web/updates/2020/05/devtools#properties',
+      },
+      {
+        title: 'App shortcuts support in the Manifest pane',
+        subtitle: 'Verify your app shortcuts are set up correctly for your PWA.',
+        link: 'https://developers.google.com/web/updates/2020/05/devtools#app-shortcuts',
+      },
+    ],
+    link: 'https://developers.google.com/web/updates/2020/05/devtools',
+  },
+  {
     version: 25,
     header: 'Highlights from the Chrome 83 update',
     highlights: [

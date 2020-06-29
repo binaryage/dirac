@@ -12,7 +12,6 @@ import './ProfileTreeModel.js';
 import './NetworkRequest.js';
 import './NetworkManager.js';
 import './RuntimeModel.js';
-import './wasm_source_map/pkg/wasm_source_map.js';
 
 import * as ChildTargetManager from './ChildTargetManager.js';
 import * as CompilerSourceMappingContentProvider from './CompilerSourceMappingContentProvider.js';
@@ -38,6 +37,7 @@ import * as EmulationModel from './EmulationModel.js';
 import * as FilmStripModel from './FilmStripModel.js';
 import * as HARLog from './HARLog.js';
 import * as HeapProfilerModel from './HeapProfilerModel.js';
+import * as HeavyAdIssue from './HeavyAdIssue.js';
 import * as IsolateManager from './IsolateManager.js';
 import * as Issue from './Issue.js';
 import * as IssuesModel from './IssuesModel.js';
@@ -66,6 +66,7 @@ import * as SourceMap from './SourceMap.js';
 import * as SourceMapManager from './SourceMapManager.js';
 import * as TracingManager from './TracingManager.js';
 import * as TracingModel from './TracingModel.js';
+import * as WebAuthnModel from './WebAuthnModel.js';
 
 export {
   ChildTargetManager,
@@ -92,6 +93,7 @@ export {
   FilmStripModel,
   HARLog,
   HeapProfilerModel,
+  HeavyAdIssue,
   IsolateManager,
   Issue,
   IssuesModel,
@@ -120,4 +122,5 @@ export {
   SourceMapManager,
   TracingManager,
   TracingModel,
+  WebAuthnModel
 };

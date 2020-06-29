@@ -225,7 +225,7 @@ class ModelInfo {
    */
   async _styleSheetChanged(event) {
     const header = this._cssModel.styleSheetHeaderForId(event.data.styleSheetId);
-    if (!header || !header.isInline) {
+    if (!header || !header.isInline || (header.isInline && header.isMutable)) {
       return;
     }
     const binding = this._bindings.get(header.resourceURL());
@@ -292,6 +292,9 @@ class ModelInfo {
         continue;
       }
       const binding = this._bindings.get(resource.url);
+      if (!binding) {
+        continue;
+      }
       if (binding._resources.size === 1) {
         binding.dispose();
         this._bindings.delete(resource.url);

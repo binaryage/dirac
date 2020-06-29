@@ -6,12 +6,12 @@ const path = require('path');
 const glob = require('glob');
 const fs = require('fs');
 
-// true by default
-const COVERAGE_ENABLED = !process.env['NOCOVERAGE'];
-const TEXT_COVERAGE_ENABLED = COVERAGE_ENABLED && !process.env['NO_TEXT_COVERAGE'];
-
 // false by default
 const DEBUG_ENABLED = !!process.env['DEBUG'];
+const COVERAGE_ENABLED = !!process.env['COVERAGE'];
+
+// true by default
+const TEXT_COVERAGE_ENABLED = COVERAGE_ENABLED && !process.env['NO_TEXT_COVERAGE'];
 
 const GEN_DIRECTORY = path.join(__dirname, '..', '..', '..');
 const ROOT_DIRECTORY = path.join(GEN_DIRECTORY, '..', '..', '..');
@@ -53,6 +53,8 @@ module.exports = function(config) {
       {pattern: path.join(GEN_DIRECTORY, 'front_end/Images/*.{svg,png}'), served: true, included: false},
       {pattern: path.join(GEN_DIRECTORY, 'front_end/**/*.js'), served: true, included: false},
       {pattern: path.join(GEN_DIRECTORY, 'front_end/**/*.js.map'), served: true, included: false},
+      {pattern: path.join(GEN_DIRECTORY, 'front_end/**/*.mjs'), served: true, included: false},
+      {pattern: path.join(GEN_DIRECTORY, 'front_end/**/*.mjs.map'), served: true, included: false},
       {pattern: path.join(ROOT_DIRECTORY, 'front_end/**/*.ts'), served: true, included: false},
     ],
 
@@ -74,8 +76,8 @@ module.exports = function(config) {
     ],
 
     preprocessors: {
-      '**/*.js': ['sourcemap'],
-      [path.join(GEN_DIRECTORY, 'front_end/**/*.js')]: [...coveragePreprocessors],
+      '**/*.{js,mjs}': ['sourcemap'],
+      [path.join(GEN_DIRECTORY, 'front_end/**/*.{js,mjs}')]: [...coveragePreprocessors],
     },
 
     proxies: {'/Images': 'front_end/Images'},

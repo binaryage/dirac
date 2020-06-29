@@ -34,7 +34,7 @@
 import * as Common from '../common/common.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
 
-import {DOMModel} from './DOMModel.js';
+import {DeferredDOMNode, DOMModel} from './DOMModel.js';  // eslint-disable-line no-unused-vars
 import {Events as NetworkManagerEvents, NetworkManager} from './NetworkManager.js';
 import {NetworkRequest} from './NetworkRequest.js';  // eslint-disable-line no-unused-vars
 import {Resource} from './Resource.js';
@@ -136,7 +136,12 @@ export class ResourceTreeModel extends SDKModel {
    * @param {?Protocol.Page.FrameResourceTree} mainFramePayload
    */
   _processCachedResources(mainFramePayload) {
-    if (mainFramePayload) {
+    // TODO(caseq): the url check below is a mergeable, conservative
+    // workaround for a problem caused by us requesting resources from a
+    // subtarget frame before it has committed. The proper fix is likely
+    // to be too complicated to be safely merged.
+    // See https://crbug.com/1081270 for details.
+    if (mainFramePayload && mainFramePayload.frame.url !== ':') {
       this.dispatchEventToListeners(Events.WillLoadCachedResources);
       this._addFramesRecursively(null, mainFramePayload);
       this.target().setInspectedURL(mainFramePayload.frame.url);
@@ -421,7 +426,7 @@ export class ResourceTreeModel extends SDKModel {
 
   /**
    * @param {string} url
-   * @return {!Promise}
+   * @return {!Promise<?>}
    */
   navigate(url) {
     return this._agent.navigate(url);
@@ -755,12 +760,19 @@ export class ResourceTreeFrame {
   }
 
   /**
+   * Returns true if this is the main frame of its target. For example, this returns true for the main frame
+   * of an out-of-process iframe (OOPIF).
    * @return {boolean}
    */
   isMainFrame() {
     return !this._parentFrame;
   }
 
+  /**
+   * Returns true if this is the top frame of the main target, i.e. if this is the top-most frame in the inspected
+   * tab.
+   * @return {boolean}
+   */
   isTopFrame() {
     return !this._parentFrame && !this._crossTargetParentFrameId;
   }
@@ -886,10 +898,25 @@ export class ResourceTreeFrame {
     }
     return Common.UIString.UIString('<iframe>');
   }
+
+  /**
+   * @returns {!Promise<?DeferredDOMNode>}
+   */
+  getOwnerDOMNode() {
+    return this.resourceTreeModel().domModel().getOwnerNodeForFrame(this.id);
+  }
+
+
+  /**
+   * @returns {void}
+   */
+  highlight() {
+    this.resourceTreeModel().domModel().overlayModel().highlightFrame(this.id);
+  }
 }
 
 /**
- * @implements {Protocol.PageDispatcher}
+ * @implements {ProtocolProxyApiWorkaround_PageDispatcher}
  * @unrestricted
  */
 export class PageDispatcher {
@@ -901,101 +928,108 @@ export class PageDispatcher {
   }
 
   /**
-   * @override
-   * @param {number} time
+   * @return {!Protocol.UsesObjectNotation}
    */
-  domContentEventFired(time) {
-    this._resourceTreeModel.dispatchEventToListeners(Events.DOMContentLoaded, time);
+  usesObjectNotation() {
+    return true;
   }
 
   /**
    * @override
-   * @param {number} time
+   * @param {!Protocol.Page.DomContentEventFiredEvent} event
    */
-  loadEventFired(time) {
+  domContentEventFired({timestamp}) {
+    this._resourceTreeModel.dispatchEventToListeners(Events.DOMContentLoaded, timestamp);
+  }
+
+  /**
+   * @override
+   * @param {!Protocol.Page.LoadEventFiredEvent} event
+   */
+  loadEventFired({timestamp}) {
     this._resourceTreeModel.dispatchEventToListeners(
-        Events.Load, {resourceTreeModel: this._resourceTreeModel, loadTime: time});
+        Events.Load, {resourceTreeModel: this._resourceTreeModel, loadTime: timestamp});
   }
 
   /**
    * @override
-   * @param {!Protocol.Page.FrameId} frameId
-   * @param {!Protocol.Network.LoaderId} loaderId
-   * @param {string} name
-   * @param {number} time
+   * @param {!Protocol.Page.LifecycleEventEvent} event
    */
-  lifecycleEvent(frameId, loaderId, name, time) {
+  lifecycleEvent({frameId, loaderId, name, timestamp}) {
     this._resourceTreeModel.dispatchEventToListeners(Events.LifecycleEvent, {frameId, name});
   }
 
   /**
    * @override
-   * @param {!Protocol.Page.FrameId} frameId
-   * @param {!Protocol.Page.FrameId} parentFrameId
-   * @param {!Protocol.Runtime.StackTrace=} stackTrace
+   * @param {!Protocol.Page.FrameAttachedEvent} event
    */
-  frameAttached(frameId, parentFrameId, stackTrace) {
-    this._resourceTreeModel._frameAttached(frameId, parentFrameId, stackTrace);
+  frameAttached({frameId, parentFrameId, stack}) {
+    this._resourceTreeModel._frameAttached(frameId, parentFrameId, stack);
   }
 
   /**
    * @override
-   * @param {!Protocol.Page.Frame} frame
+   * @param {!Protocol.Page.FrameNavigatedEvent} event
    */
-  frameNavigated(frame) {
+  frameNavigated({frame}) {
+    const url = new URL(frame.url);
+    if (url.protocol === 'chrome-error:' && url.hostname === 'chromewebdata' && frame.parentId) {
+      // Skip navigation to heavy ads interstitials to
+      // allow developers to see resources of the origin they
+      // originally intended to see.
+      return;
+    }
     this._resourceTreeModel._frameNavigated(frame);
   }
 
   /**
    * @override
-   * @param {!Protocol.Page.FrameId} frameId
+   * @param {!Protocol.Page.FrameDetachedEvent} event
    */
-  frameDetached(frameId) {
+  frameDetached({frameId}) {
     this._resourceTreeModel._frameDetached(frameId);
   }
 
   /**
    * @override
-   * @param {!Protocol.Page.FrameId} frameId
+   * @param {!Protocol.Page.FrameStartedLoadingEvent} event
    */
-  frameStartedLoading(frameId) {
+  frameStartedLoading({frameId}) {
   }
 
   /**
    * @override
-   * @param {!Protocol.Page.FrameId} frameId
+   * @param {!Protocol.Page.FrameStoppedLoadingEvent} event
    */
-  frameStoppedLoading(frameId) {
+  frameStoppedLoading({frameId}) {
   }
 
   /**
    * @override
-   * @param {!Protocol.Page.FrameId} frameId
+   * @param {!Protocol.Page.FrameRequestedNavigationEvent} event
    */
-  frameRequestedNavigation(frameId) {
+  frameRequestedNavigation({frameId}) {
   }
 
   /**
    * @override
-   * @param {!Protocol.Page.FrameId} frameId
-   * @param {number} delay
+   * @param {!Protocol.Page.FrameScheduledNavigationEvent} event
    */
-  frameScheduledNavigation(frameId, delay) {
+  frameScheduledNavigation({frameId, delay}) {
   }
 
   /**
    * @override
-   * @param {!Protocol.Page.FrameId} frameId
+   * @param {!Protocol.Page.FrameClearedScheduledNavigationEvent} event
    */
-  frameClearedScheduledNavigation(frameId) {
+  frameClearedScheduledNavigation({frameId}) {
   }
 
   /**
    * @override
-   * @param {!Protocol.Page.FrameId} frameId
-   * @param {string} url
+   * @param {!Protocol.Page.NavigatedWithinDocumentEvent} event
    */
-  navigatedWithinDocument(frameId, url) {
+  navigatedWithinDocument({frameId, url}) {
   }
 
   /**
@@ -1007,13 +1041,9 @@ export class PageDispatcher {
 
   /**
    * @override
-   * @param {string} url
-   * @param {string} message
-   * @param {string} dialogType
-   * @param {boolean} hasBrowserHandler
-   * @param {string=} prompt
+   * @param {!Protocol.Page.JavascriptDialogOpeningEvent} event
    */
-  javascriptDialogOpening(url, message, dialogType, hasBrowserHandler, prompt) {
+  javascriptDialogOpening({url, message, type, hasBrowserHandler, defaultPrompt}) {
     if (!hasBrowserHandler) {
       this._resourceTreeModel._agent.handleJavaScriptDialog(false);
     }
@@ -1021,26 +1051,23 @@ export class PageDispatcher {
 
   /**
    * @override
-   * @param {boolean} result
-   * @param {string} userInput
+   * @param {!Protocol.Page.JavascriptDialogClosedEvent} event
    */
-  javascriptDialogClosed(result, userInput) {
+  javascriptDialogClosed({result, userInput}) {
   }
 
   /**
    * @override
-   * @param {string} data
-   * @param {!Protocol.Page.ScreencastFrameMetadata} metadata
-   * @param {number} sessionId
+   * @param {!Protocol.Page.ScreencastFrameEvent} event
    */
-  screencastFrame(data, metadata, sessionId) {
+  screencastFrame({data, metadata, sessionId}) {
   }
 
   /**
    * @override
-   * @param {boolean} visible
+   * @param {!Protocol.Page.ScreencastVisibilityChangedEvent} event
    */
-  screencastVisibilityChanged(visible) {
+  screencastVisibilityChanged({visible}) {
   }
 
   /**
@@ -1061,35 +1088,30 @@ export class PageDispatcher {
 
   /**
    * @override
-   * @param {string} url
-   * @param {string} windowName
-   * @param {!Array<string>} windowFeatures
-   * @param {boolean} userGesture
+   * @param {!Protocol.Page.WindowOpenEvent} event
    */
-  windowOpen(url, windowName, windowFeatures, userGesture) {
+  windowOpen({url, windowName, windowFeatures, userGesture}) {
   }
 
   /**
    * @override
-   * @param {string} url
-   * @param {string} data
+   * @param {!Protocol.Page.CompilationCacheProducedEvent} event
    */
-  compilationCacheProduced(url, data) {
+  compilationCacheProduced({url, data}) {
   }
 
   /**
    * @override
-   * @param {string} mode
+   * @param {!Protocol.Page.FileChooserOpenedEvent} event
    */
-  fileChooserOpened(mode) {
+  fileChooserOpened({mode}) {
   }
 
   /**
    * @override
-   * @param {!Protocol.Page.FrameId} frameId
-   * @param {string} url
+   * @param {!Protocol.Page.DownloadWillBeginEvent} event
    */
-  downloadWillBegin(frameId, url) {
+  downloadWillBegin({frameId, url}) {
   }
 
   /**

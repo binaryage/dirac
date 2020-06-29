@@ -139,7 +139,7 @@ export class ScreencastView extends UI.Widget.VBox {
     dimensions.height *= window.devicePixelRatio;
     // Note: startScreencast width and height are expected to be integers so must be floored.
     this._screenCaptureModel.startScreencast(
-        'jpeg', 80, Math.floor(Math.min(maxImageDimension, dimensions.width)),
+        Protocol.Page.StartScreencastRequestFormat.Jpeg, 80, Math.floor(Math.min(maxImageDimension, dimensions.width)),
         Math.floor(Math.min(maxImageDimension, dimensions.height)), undefined, this._screencastFrame.bind(this),
         this._screencastVisibilityChanged.bind(this));
     for (const emulationModel of SDK.SDKModel.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
@@ -806,9 +806,9 @@ export class ProgressTracker {
     if (!this._navigationProgressVisible()) {
       return;
     }
-    const request = /** @type {!SDK.NetworkRequest.NetworkRequest} */ (event.data);
+    const request = /** @type {!SDK.NetworkRequest.NetworkRequest} */ (event.data.request);
     // Ignore long-living WebSockets for the sake of progress indicator, as we won't be waiting them anyway.
-    if (request.type === Common.ResourceType.resourceTypes.WebSocket) {
+    if (request.resourceType() === Common.ResourceType.resourceTypes.WebSocket) {
       return;
     }
     this._requestIds[request.requestId()] = request;

@@ -126,6 +126,15 @@ export const typeText = async (text: string) => {
   await frontend.keyboard.type(text);
 };
 
+export const pasteText = async (text: string) => {
+  const {frontend} = getBrowserAndPages();
+  if (!frontend) {
+    throw new Error('Unable to locate DevTools frontend page. Was it stored first?');
+  }
+
+  await frontend.keyboard.sendCharacter(text);
+};
+
 // Get a single element handle, across Shadow DOM boundaries.
 export const $ = async (selector: string, root?: puppeteer.JSHandle) => {
   const {frontend} = getBrowserAndPages();
@@ -262,14 +271,24 @@ export const logFailure = () => {
 
 export const resourcesPath = 'http://localhost:8090/test/e2e/resources';
 
-export const enableExperiment = async (experiment: string) => {
+export const enableExperiment = async (
+    experiment: string, options: {selectedPanel?: {name: string, selector?: string}, canDock?: boolean} = {}) => {
   const {frontend} = getBrowserAndPages();
   await frontend.evaluate(experiment => {
     // @ts-ignore
     globalThis.Root.Runtime.experiments.setEnabled(experiment, true);
   }, experiment);
 
-  await reloadDevTools();
+  await reloadDevTools(options);
+};
+
+export const goTo = async (url: string) => {
+  const {target} = getBrowserAndPages();
+  await target.goto(url);
+};
+
+export const goToResource = async (path: string) => {
+  await goTo(`${resourcesPath}/${path}`);
 };
 
 export const step = async (description: string, step: Function) => {
@@ -287,6 +306,30 @@ export const step = async (description: string, step: Function) => {
       error.message += ` in Step "${description}"`;
       throw error;
     }
+  }
+};
+
+export const closePanelTab = async (panelTabSelector: string) => {
+  // Get close button from tab element
+  const selector = `${panelTabSelector} > .tabbed-pane-close-button`;
+  await click(selector);
+  await waitForNone(selector);
+};
+
+export const closeAllCloseableTabs = async () => {
+  // get all closeable tools by looking for the available x buttons on tabs
+  const selector = '.tabbed-pane-close-button';
+  const allCloseButtons = await $$(selector);
+
+  // Get all panel ids
+  const panelTabIds = await allCloseButtons.evaluate((buttons: HTMLElement[]) => {
+    return buttons.map(button => button.parentElement ? button.parentElement.id : '');
+  });
+
+  // Close each tab
+  for (const tabId of panelTabIds) {
+    const selector = `#${tabId}`;
+    await closePanelTab(selector);
   }
 };
 

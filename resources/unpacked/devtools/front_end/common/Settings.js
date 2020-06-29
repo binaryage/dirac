@@ -211,9 +211,9 @@ export class Settings {
 export class SettingsStorage {
   /**
    * @param {!Object<string,string>} object
-   * @param {function(string, string)=} setCallback
-   * @param {function(string)=} removeCallback
-   * @param {function(string=)=} removeAllCallback
+   * @param {function(string, string):void=} setCallback
+   * @param {function(string):void=} removeCallback
+   * @param {function(string=):void=} removeAllCallback
    * @param {string=} storagePrefix
    */
   constructor(object, setCallback, removeCallback, removeAllCallback, storagePrefix) {
@@ -442,7 +442,7 @@ export class RegExpSetting extends Setting {
    * @param {string=} regexFlags
    */
   constructor(settings, name, defaultValue, eventSupport, storage, regexFlags) {
-    super(settings, name, defaultValue ? (typeof defaultValue === "string" ? [{pattern: defaultValue}] : defaultValue) : [], eventSupport, storage);
+    super(settings, name, defaultValue ? (typeof defaultValue === 'string' ? [{pattern: defaultValue}] : defaultValue) : [], eventSupport, storage);
     this._regexFlags = regexFlags;
   }
 
@@ -514,7 +514,7 @@ export class VersionController {
   }
 
   static get currentVersion() {
-    return 29;
+    return 30;
   }
 
   updateVersion() {
@@ -971,6 +971,25 @@ export class VersionController {
     renameKeyInObjectSetting('panel-tabOrder', 'audits', 'lighthouse');
     renameKeyInObjectSetting('panel-closeableTabs', 'audits', 'lighthouse');
     renameInStringSetting('panel-selectedTab', 'audits', 'lighthouse');
+  }
+
+  _updateVersionFrom29To30() {
+    // Create new location agnostic setting
+    const closeableTabSetting = Settings.instance().createSetting('closeableTabs', {});
+
+    // Read current settings
+    const panelCloseableTabSetting = Settings.instance().createSetting('panel-closeableTabs', {});
+    const drawerCloseableTabSetting = Settings.instance().createSetting('drawer-view-closeableTabs', {});
+    const openTabsInPanel = panelCloseableTabSetting.get();
+    const openTabsInDrawer = panelCloseableTabSetting.get();
+
+    // Set value of new setting
+    const newValue = Object.assign(openTabsInDrawer, openTabsInPanel);
+    closeableTabSetting.set(newValue);
+
+    // Remove old settings
+    panelCloseableTabSetting.remove();
+    drawerCloseableTabSetting.remove();
   }
 
   _migrateSettingsFromLocalStorage() {

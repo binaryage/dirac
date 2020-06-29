@@ -8,6 +8,7 @@ import * as App from './App.js';
 import * as AppProvider from './AppProvider.js';
 import * as CharacterIdMap from './CharacterIdMap.js';
 import * as Color from './Color.js';
+import * as ColorUtils from './ColorUtils.js';
 import * as Console from './Console.js';
 import * as EventTarget from './EventTarget.js';
 import * as JavaScriptMetaData from './JavaScriptMetaData.js';
@@ -26,6 +27,7 @@ import * as StringOutputStream from './StringOutputStream.js';
 import * as TextDictionary from './TextDictionary.js';
 import * as Throttler from './Throttler.js';
 import * as Trie from './Trie.js';
+import * as WasmDisassembly from './WasmDisassembly.js';
 import * as Worker from './Worker.js';
 
 /* This is re-exported here because we moved UIString into platform from
@@ -47,6 +49,7 @@ export {
   AppProvider,
   CharacterIdMap,
   Color,
+  ColorUtils,
   Console,
   EventTarget,
   JavaScriptMetaData,
@@ -66,4 +69,5 @@ export {
   Throttler,
   Trie,
   Worker,
+  WasmDisassembly,
 };

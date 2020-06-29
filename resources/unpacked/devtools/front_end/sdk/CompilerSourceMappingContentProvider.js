@@ -28,9 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as TextUtils from '../text_utils/text_utils.js';
 
@@ -44,10 +41,12 @@ export class CompilerSourceMappingContentProvider {
   /**
    * @param {string} sourceURL
    * @param {!Common.ResourceType.ResourceType} contentType
+   * @param {!Protocol.Page.FrameId} frameId
    */
-  constructor(sourceURL, contentType) {
+  constructor(sourceURL, contentType, frameId) {
     this._sourceURL = sourceURL;
     this._contentType = contentType;
+    this._frameId = frameId;
   }
 
   /**
@@ -78,19 +77,15 @@ export class CompilerSourceMappingContentProvider {
    * @override
    * @return {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
-  requestContent() {
-    return new Promise(resolve => {
-      MultitargetNetworkManager.instance().loadResource(
-          this._sourceURL, (success, _headers, content, errorDescription) => {
-            if (!success) {
-              const error = ls`Could not load content for ${this._sourceURL} (${errorDescription.message})`;
-              console.error(error);
-              resolve({error, isEncoded: false});
-            } else {
-              resolve({content, isEncoded: false});
-            }
-          });
-    });
+  async requestContent() {
+    const {success, content, errorDescription} =
+        await MultitargetNetworkManager.instance().loadResource(this._sourceURL);
+    if (!success) {
+      const error = ls`Could not load content for ${this._sourceURL} (${errorDescription.message})`;
+      console.error(error);
+      return {content: null, error, isEncoded: false};
+    }
+    return {content, isEncoded: false};
   }
 
   /**

@@ -92,7 +92,7 @@ export class PlatformFileSystem {
    * @returns {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   async requestFileContent(path) {
-    return {error: ls`Unable to read files with this implementation.`, isEncoded: false};
+    return {content: null, error: ls`Unable to read files with this implementation.`, isEncoded: false};
   }
 
   /**
@@ -107,7 +107,7 @@ export class PlatformFileSystem {
   /**
    * @param {string} path
    * @param {string} newName
-   * @param {function(boolean, string=)} callback
+   * @param {function(boolean, string=):void} callback
    */
   renameFile(path, newName, callback) {
     callback(false);

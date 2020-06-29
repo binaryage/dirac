@@ -110,7 +110,6 @@ export class TimelineUIUtils {
     eventStyles[type.MarkDOMContent] = new TimelineRecordStyle(ls`DOMContentLoaded Event`, scripting, true);
     eventStyles[type.MarkFirstPaint] = new TimelineRecordStyle(ls`First Paint`, painting, true);
     eventStyles[type.MarkFCP] = new TimelineRecordStyle(ls`First Contentful Paint`, rendering, true);
-    eventStyles[type.MarkFMP] = new TimelineRecordStyle(ls`First Meaningful Paint`, rendering, true);
     eventStyles[type.MarkLCPCandidate] = new TimelineRecordStyle(ls`Largest Contentful Paint`, rendering, true);
     eventStyles[type.TimeStamp] = new TimelineRecordStyle(ls`Timestamp`, scripting);
     eventStyles[type.ConsoleTime] = new TimelineRecordStyle(ls`Console Time`, scripting);
@@ -788,15 +787,32 @@ export class TimelineUIUtils {
         link = 'https://web.dev/first-contentful-paint';
         name = 'first contentful paint';
         break;
-      case recordType.MarkFMP:
-        link = 'https://web.dev/first-meaningful-paint/';
-        name = 'first meaningful paint';
-        break;
       default:
         break;
     }
 
     return UI.Fragment.html`<div>${UI.XLink.XLink.create(link, ls`Learn more`)} about ${name}.</div>`;
+  }
+
+  /**
+   * @param {!Object} eventData
+   * @param {!TimelineDetailsContentHelper} contentHelper
+   */
+  static buildCompilationCacheDetails(eventData, contentHelper) {
+    if ('producedCacheSize' in eventData) {
+      contentHelper.appendTextRow(ls`Compilation cache status`, ls`script saved to cache`);
+      contentHelper.appendTextRow(
+          ls`Compilation cache size`, Platform.NumberUtilities.bytesToString(eventData['producedCacheSize']));
+    } else if ('consumedCacheSize' in eventData) {
+      contentHelper.appendTextRow(ls`Compilation cache status`, ls`script loaded from cache`);
+      contentHelper.appendTextRow(
+          ls`Compilation cache size`, Platform.NumberUtilities.bytesToString(eventData['consumedCacheSize']));
+    } else if (eventData && eventData['cacheRejected']) {
+      // Version mismatch or similar.
+      contentHelper.appendTextRow(ls`Compilation cache status`, ls`failed to load script from cache`);
+    } else {
+      contentHelper.appendTextRow(ls`Compilation cache status`, ls`script not eligible`);
+    }
   }
 
   /**
@@ -961,17 +977,10 @@ export class TimelineUIUtils {
         if (url) {
           contentHelper.appendLocationRow(ls`Script`, url, eventData['lineNumber'], eventData['columnNumber']);
         }
-        contentHelper.appendTextRow(ls`Streamed`, eventData['streamed']);
-        const producedCacheSize = eventData && eventData['producedCacheSize'];
-        if (producedCacheSize) {
-          contentHelper.appendTextRow(ls`Produced Cache Size`, producedCacheSize);
-        }
-        const cacheConsumeOptions = eventData && eventData['cacheConsumeOptions'];
-        if (cacheConsumeOptions) {
-          contentHelper.appendTextRow(ls`Cache Consume Options`, cacheConsumeOptions);
-          contentHelper.appendTextRow(ls`Consumed Cache Size`, eventData['consumedCacheSize']);
-          contentHelper.appendTextRow(ls`Cache Rejected`, eventData['cacheRejected']);
-        }
+        const isStreamed = eventData['streamed'];
+        contentHelper.appendTextRow(
+            ls`Streamed`, isStreamed + (isStreamed ? '' : `: ${eventData['notStreamedReason']}`));
+        TimelineUIUtils.buildCompilationCacheDetails(eventData, contentHelper);
         break;
       }
 
@@ -1128,11 +1137,21 @@ export class TimelineUIUtils {
 
       case recordTypes.MarkFirstPaint:
       case recordTypes.MarkFCP:
-      case recordTypes.MarkFMP:
       case recordTypes.MarkLoad:
       case recordTypes.MarkDOMContent: {
-        contentHelper.appendTextRow(
-            ls`Timestamp`, Number.preciseMillisToString(event.startTime - model.minimumRecordTime(), 1));
+        let eventTime = event.startTime - model.minimumRecordTime();
+
+        // Find the appropriate navStart based on the navigation ID.
+        const {navigationId} = event.args.data;
+        if (navigationId) {
+          const navStartTime = model.navStartTimes().get(navigationId);
+
+          if (navStartTime) {
+            eventTime = event.startTime - navStartTime.startTime;
+          }
+        }
+
+        contentHelper.appendTextRow(ls`Timestamp`, Number.preciseMillisToString(eventTime, 1));
         contentHelper.appendElementRow(ls`Details`, TimelineUIUtils.buildDetailsNodeForPerformanceEvent(event));
         break;
       }
@@ -1996,8 +2015,6 @@ export class TimelineUIUtils {
         return ls`FP`;
       case recordTypes.MarkFCP:
         return ls`FCP`;
-      case recordTypes.MarkFMP:
-        return ls`FMP`;
       case recordTypes.MarkLCPCandidate:
         return ls`LCP`;
     }
@@ -2011,9 +2028,11 @@ export class TimelineUIUtils {
   static markerStyleForEvent(event) {
     const tallMarkerDashStyle = [6, 4];
     const title = TimelineUIUtils.eventTitle(event);
+    const recordTypes = TimelineModel.TimelineModel.RecordType;
 
-    if (event.hasCategory(TimelineModel.TimelineModel.TimelineModelImpl.Category.Console) ||
-        event.hasCategory(TimelineModel.TimelineModel.TimelineModelImpl.Category.UserTiming)) {
+    if (event.name !== recordTypes.NavigationStart &&
+        (event.hasCategory(TimelineModel.TimelineModel.TimelineModelImpl.Category.Console) ||
+         event.hasCategory(TimelineModel.TimelineModel.TimelineModelImpl.Category.UserTiming))) {
       return {
         title: title,
         dashStyle: tallMarkerDashStyle,
@@ -2024,10 +2043,13 @@ export class TimelineUIUtils {
         lowPriority: false,
       };
     }
-    const recordTypes = TimelineModel.TimelineModel.RecordType;
     let tall = false;
     let color = 'grey';
     switch (event.name) {
+      case recordTypes.NavigationStart:
+        color = '#FF9800';
+        tall = true;
+        break;
       case recordTypes.FrameStartedLoading:
         color = 'green';
         tall = true;
@@ -2046,10 +2068,6 @@ export class TimelineUIUtils {
         break;
       case recordTypes.MarkFCP:
         color = '#1A6937';
-        tall = true;
-        break;
-      case recordTypes.MarkFMP:
-        color = '#134A26';
         tall = true;
         break;
       case recordTypes.MarkLCPCandidate:

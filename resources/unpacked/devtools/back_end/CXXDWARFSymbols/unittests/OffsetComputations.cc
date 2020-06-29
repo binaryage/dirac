@@ -202,7 +202,7 @@ TEST_F(SymbolServerTest, GlobalVariable) {
 #ifdef SYMBOL_SERVER_BUILD_FORMATTERS
   auto snippet = module->GetVariableFormatScript("I", 0x10, cache.Printer());
   EXPECT_TRUE(!!snippet);
-  EXPECT_FALSE(snippet->empty());
+  EXPECT_GT(snippet->get()->getBufferSize(), 0);
 #endif
 }
 
@@ -220,8 +220,21 @@ TEST_F(SymbolServerTest, ClassStaticVariable) {
   auto snippet =
       module->GetVariableFormatScript("MyClass::I", 0x10, cache.Printer());
   EXPECT_TRUE(!!snippet);
-  EXPECT_FALSE(snippet->empty());
+  EXPECT_GT(snippet->get()->getBufferSize(), 0);
 #endif
+}
+
+TEST_F(SymbolServerTest, NamespacedGlobalVariables) {
+  auto* m = GetModule("namespaces.wasm");
+  ASSERT_TRUE(m);
+  lldb::addr_t code_section_start = 0x139;
+  auto variables = m->GetVariablesInScope(0x19c - code_section_start);
+  llvm::SmallVector<llvm::StringRef, 5> names;
+  for (auto& v : variables)
+    names.push_back(v.name);
+  EXPECT_THAT(names, testing::UnorderedElementsAre("L", "n1::n2::I", "n1::I",
+                                                   "n1::MyClass::I",
+                                                   "(anonymous namespace)::K"));
 }
 
 TEST_F(SymbolServerTest, InlineLocalVariable) {
@@ -231,7 +244,7 @@ TEST_F(SymbolServerTest, InlineLocalVariable) {
   {
     const int location = 0x167 - code_section_start;
     auto variables = m->GetVariablesInScope(location);
-    llvm::SmallVector<llvm::StringRef, 1> names;
+    llvm::SmallVector<llvm::StringRef, 2> names;
     for (auto& v : variables) {
       names.push_back(v.name);
     }
@@ -241,13 +254,13 @@ TEST_F(SymbolServerTest, InlineLocalVariable) {
     auto snippet =
         m->GetVariableFormatScript("result", location, cache.Printer());
     EXPECT_TRUE(!!snippet);
-    EXPECT_FALSE(snippet->empty());
+    EXPECT_GT(snippet->get()->getBufferSize(), 0);
 #endif
   }
   {
     const int location = 0x19F - code_section_start;
     auto variables = m->GetVariablesInScope(location);
-    llvm::SmallVector<llvm::StringRef, 1> names;
+    llvm::SmallVector<llvm::StringRef, 2> names;
     for (auto& v : variables) {
       names.push_back(v.name);
     }
@@ -257,13 +270,13 @@ TEST_F(SymbolServerTest, InlineLocalVariable) {
     auto snippet =
         m->GetVariableFormatScript("result", location, cache.Printer());
     EXPECT_TRUE(!!snippet);
-    EXPECT_FALSE(snippet->empty());
+    EXPECT_GT(snippet->get()->getBufferSize(), 0);
 #endif
   }
   {
     const int location = 0x1BB - code_section_start;
     auto variables = m->GetVariablesInScope(location);
-    llvm::SmallVector<llvm::StringRef, 1> names;
+    llvm::SmallVector<llvm::StringRef, 3> names;
     for (auto& v : variables) {
       names.push_back(v.name);
     }
@@ -272,7 +285,7 @@ TEST_F(SymbolServerTest, InlineLocalVariable) {
 #ifdef SYMBOL_SERVER_BUILD_FORMATTERS
     auto snippet = m->GetVariableFormatScript("dsq", location, cache.Printer());
     EXPECT_TRUE(!!snippet);
-    EXPECT_FALSE(snippet->empty());
+    EXPECT_GT(snippet->get()->getBufferSize(), 0);
 #endif
   }
   {
@@ -287,7 +300,7 @@ TEST_F(SymbolServerTest, InlineLocalVariable) {
 #ifdef SYMBOL_SERVER_BUILD_FORMATTERS
     auto snippet = m->GetVariableFormatScript("I", location, cache.Printer());
     EXPECT_TRUE(!!snippet);
-    EXPECT_FALSE(snippet->empty());
+    EXPECT_GT(snippet->get()->getBufferSize(), 0);
 #endif
   }
 }
@@ -306,7 +319,7 @@ TEST_F(SymbolServerTest, Strings) {
   auto snippet =
       module->GetVariableFormatScript("String", 0x11, cache.Printer());
   EXPECT_TRUE(!!snippet);
-  EXPECT_FALSE(snippet->empty());
+  EXPECT_GT(snippet->get()->getBufferSize(), 0);
 #endif
 }
 
@@ -327,6 +340,6 @@ TEST_F(SymbolServerTest, Arrays) {
   auto snippet = module->GetVariableFormatScript("A", 0xe7 - code_section_start,
                                                  cache.Printer());
   EXPECT_TRUE(!!snippet) << snippet.takeError();
-  EXPECT_FALSE(snippet->empty());
+  EXPECT_GT(snippet->get()->getBufferSize(), 0);
 #endif
 }

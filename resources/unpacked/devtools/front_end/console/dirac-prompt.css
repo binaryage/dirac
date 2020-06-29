@@ -81,7 +81,7 @@
     height: 10px;
     margin-top: -4px;
     -webkit-user-select: none;
-    background-image: -webkit-image-set(url(Images/smallIcons.png) 1x, url(Images/smallIcons_2x.png) 2x);
+    background-image: url(Images/smallIcons.svg);
 }
 
 #console-status-dirac .status-banner {

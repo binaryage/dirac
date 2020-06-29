@@ -6,6 +6,11 @@
     height: inherit;
     font-family: Menlo, monospace;
     line-height: 1em;
+    /* darwin: this min-height is important for some reason
+               in some cases empty dirac prompt wasn't visible because it had 0 height and
+               it was impossible to activate it by clicking to give it focus
+    */
+    min-height: 1em;
 }
 
 /* PADDING */
@@ -272,14 +277,14 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
 }
 
 #console-prompt-dirac .CodeMirror-scroll {
-    overflow: auto !important; /* Things will break if this is overridden */
-    /* 30px is the magic margin used to hide the element's real scrollbars */
-    /* See overflow: hidden in .CodeMirror */
-    margin-bottom: -30px;
-    margin-right: -30px;
-    padding-bottom: 30px;
-    outline: none; /* Prevent dragging from highlighting the element */
-    position: relative;
+    /* darwin: I had to force these styles to make codemirror auto-resize working
+               see http://web.mit.edu/xavid/Public/bazki/lib/ext/codemirror/demo/resize.html
+    */
+    outline: none !important; /* Prevent dragging from highlighting the element */
+    position: initial !important;
+    height: auto !important;
+    overflow-y: hidden !important;
+    overflow-x: auto !important;
 }
 
 #console-prompt-dirac .CodeMirror-sizer {

@@ -14,6 +14,11 @@ declare namespace Protocol {
     /** Returns an error message if the request failed. */
     getError(): string|undefined;
   }
+  export type UsesObjectNotation = true;
+  export interface Dispatcher {
+    /** This dispatcher requires objects as parameters, rather than multiple arguments */
+    usesObjectNotation(): UsesObjectNotation;
+  }
 
   export namespace Accessibility {
 
@@ -797,6 +802,55 @@ declare namespace Protocol {
     }
 
     /**
+     * Enum indicating the reason a response has been blocked. These reasons are
+     * refinements of the net error BLOCKED_BY_RESPONSE.
+     */
+    export enum BlockedByResponseReason {
+      CoepFrameResourceNeedsCoepHeader = 'CoepFrameResourceNeedsCoepHeader',
+      CoopSandboxedIFrameCannotNavigateToCoopPage = 'CoopSandboxedIFrameCannotNavigateToCoopPage',
+      CorpNotSameOrigin = 'CorpNotSameOrigin',
+      CorpNotSameOriginAfterDefaultedToSameOriginByCoep = 'CorpNotSameOriginAfterDefaultedToSameOriginByCoep',
+      CorpNotSameSite = 'CorpNotSameSite',
+    }
+
+    /**
+     * Details for a request that has been blocked with the BLOCKED_BY_RESPONSE
+     * code. Currently only used for COEP/COOP, but may be extended to include
+     * some CSP errors in the future.
+     */
+    export interface BlockedByResponseIssueDetails {
+      request: AffectedRequest;
+      frame?: AffectedFrame;
+      reason: BlockedByResponseReason;
+    }
+
+    export enum HeavyAdResolutionStatus {
+      HeavyAdBlocked = 'HeavyAdBlocked',
+      HeavyAdWarning = 'HeavyAdWarning',
+    }
+
+    export enum HeavyAdReason {
+      NetworkTotalLimit = 'NetworkTotalLimit',
+      CpuTotalLimit = 'CpuTotalLimit',
+      CpuPeakLimit = 'CpuPeakLimit',
+    }
+
+    export interface HeavyAdIssueDetails {
+      /**
+       * The resolution status, either blocking the content or warning.
+       */
+      resolution: HeavyAdResolutionStatus;
+      /**
+       * The reason the ad was blocked, total network or cpu or peak cpu.
+       */
+      reason: HeavyAdReason;
+      /**
+       * The frame that was blocked.
+       */
+      frame: AffectedFrame;
+    }
+
+    /**
      * A unique identifier for the type of issue. Each type may use one of the
      * optional fields in InspectorIssueDetails to convey more specific
      * information about the kind of issue.
@@ -804,6 +858,8 @@ declare namespace Protocol {
     export enum InspectorIssueCode {
       SameSiteCookieIssue = 'SameSiteCookieIssue',
       MixedContentIssue = 'MixedContentIssue',
+      BlockedByResponseIssue = 'BlockedByResponseIssue',
+      HeavyAdIssue = 'HeavyAdIssue',
     }
 
     /**
@@ -814,6 +870,8 @@ declare namespace Protocol {
     export interface InspectorIssueDetails {
       sameSiteCookieIssueDetails?: SameSiteCookieIssueDetails;
       mixedContentIssueDetails?: MixedContentIssueDetails;
+      blockedByResponseIssueDetails?: BlockedByResponseIssueDetails;
+      heavyAdIssueDetails?: HeavyAdIssueDetails;
     }
 
     /**
@@ -1430,6 +1488,13 @@ declare namespace Protocol {
        * document.written STYLE tags.
        */
       isInline: boolean;
+      /**
+       * Whether this stylesheet is mutable. Inline stylesheets become mutable
+       * after they have been modified via CSSOM API.
+       * <link> element's stylesheets are never mutable. Constructed stylesheets
+       * (new CSSStyleSheet()) are mutable immediately after creation.
+       */
+      isMutable: boolean;
       /**
        * Line offset of the stylesheet within the resource (zero based).
        */
@@ -2057,6 +2122,13 @@ declare namespace Protocol {
        * Monotonically increasing time, in seconds.
        */
       timestamp: number;
+    }
+
+    export interface SetLocalFontsEnabledRequest {
+      /**
+       * Whether rendering of local fonts is enabled.
+       */
+      enabled: boolean;
     }
 
     /**
@@ -5134,6 +5206,12 @@ declare namespace Protocol {
        * 0).
        */
       location?: integer;
+      /**
+       * Editing commands to send with the key event (e.g., 'selectAll') (default: []).
+       * These are related to but not equal the command names used in `document.execCommand` and NSStandardKeyBindingResponding.
+       * See https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/editing/commands/editor_command_names.h for valid command names.
+       */
+      commands?: string[];
     }
 
     export interface InsertTextRequest {
@@ -6075,6 +6153,14 @@ declare namespace Protocol {
        */
       workerReady: number;
       /**
+       * Started fetch event.
+       */
+      workerFetchStart: number;
+      /**
+       * Settled fetch event respondWith promise.
+       */
+      workerRespondWithSettled: number;
+      /**
        * Started sending request.
        */
       sendStart: number;
@@ -6289,6 +6375,16 @@ declare namespace Protocol {
     }
 
     /**
+     * Source of serviceworker response.
+     */
+    export enum ServiceWorkerResponseSource {
+      CacheStorage = 'cache-storage',
+      HttpCache = 'http-cache',
+      FallbackCode = 'fallback-code',
+      Network = 'network',
+    }
+
+    /**
      * HTTP response data.
      */
     export interface Response {
@@ -6360,6 +6456,18 @@ declare namespace Protocol {
        * Timing information for the given request.
        */
       timing?: ResourceTiming;
+      /**
+       * Response source of response from ServiceWorker.
+       */
+      serviceWorkerResponseSource?: ServiceWorkerResponseSource;
+      /**
+       * The time at which the returned response was generated.
+       */
+      responseTime?: TimeSinceEpoch;
+      /**
+       * Cache Storage Cache Name.
+       */
+      cacheStorageCacheName?: string;
       /**
        * Protocol used to fetch this request.
        */
@@ -7687,6 +7795,56 @@ declare namespace Protocol {
   export namespace Overlay {
 
     /**
+     * Configuration data for the highlighting of Grid elements.
+     */
+    export interface GridHighlightConfig {
+      /**
+       * Whether the extension lines from grid cells to the rulers should be shown (default: false).
+       */
+      showGridExtensionLines?: boolean;
+      /**
+       * Show Positive line number labels (default: false).
+       */
+      showPositiveLineNumbers?: boolean;
+      /**
+       * Show Negative line number labels (default: false).
+       */
+      showNegativeLineNumbers?: boolean;
+      /**
+       * The grid container border highlight color (default: transparent).
+       */
+      gridBorderColor?: DOM.RGBA;
+      /**
+       * The cell border color (default: transparent).
+       */
+      cellBorderColor?: DOM.RGBA;
+      /**
+       * Whether the grid border is dashed (default: false).
+       */
+      gridBorderDash?: boolean;
+      /**
+       * Whether the cell border is dashed (default: false).
+       */
+      cellBorderDash?: boolean;
+      /**
+       * The row gap highlight fill color (default: transparent).
+       */
+      rowGapColor?: DOM.RGBA;
+      /**
+       * The row gap hatching fill color (default: transparent).
+       */
+      rowHatchColor?: DOM.RGBA;
+      /**
+       * The column gap highlight fill color (default: transparent).
+       */
+      columnGapColor?: DOM.RGBA;
+      /**
+       * The column gap hatching fill color (default: transparent).
+       */
+      columnHatchColor?: DOM.RGBA;
+    }
+
+    /**
      * Configuration data for the highlighting of page elements.
      */
     export interface HighlightConfig {
@@ -7702,6 +7860,10 @@ declare namespace Protocol {
        * Whether the rulers should be shown (default: false).
        */
       showRulers?: boolean;
+      /**
+       * Whether the a11y info should be shown (default: true).
+       */
+      showAccessibilityInfo?: boolean;
       /**
        * Whether the extension lines from node to the rulers should be shown (default: false).
        */
@@ -7742,6 +7904,10 @@ declare namespace Protocol {
        * The color format used to format color styles (default: hex).
        */
       colorFormat?: ColorFormat;
+      /**
+       * The grid layout highlight configuration (default: all transparent).
+       */
+      gridHighlightConfig?: GridHighlightConfig;
     }
 
     export enum ColorFormat {
@@ -7790,9 +7956,13 @@ declare namespace Protocol {
        */
       includeStyle?: boolean;
       /**
-       * The color format to get config with (default: hex)
+       * The color format to get config with (default: hex).
        */
       colorFormat?: ColorFormat;
+      /**
+       * Whether to show accessibility info (default: true).
+       */
+      showAccessibilityInfo?: boolean;
     }
 
     export interface GetHighlightObjectForTestResponse extends ProtocolResponseWithError {
@@ -9226,6 +9396,10 @@ declare namespace Protocol {
        * URL of the resource being downloaded.
        */
       url: string;
+      /**
+       * Suggested file name of the resource (the actual name of the file saved on disk may differ).
+       */
+      suggestedFilename: string;
     }
 
     export enum DownloadProgressEventState {
@@ -10375,6 +10549,14 @@ declare namespace Protocol {
        * If specified, disposes this context when debugging session disconnects.
        */
       disposeOnDetach?: boolean;
+      /**
+       * Proxy server, similar to the one passed to --proxy-server
+       */
+      proxyServer?: string;
+      /**
+       * Proxy bypass list, similar to the one passed to --proxy-bypass-list
+       */
+      proxyBypassList?: string;
     }
 
     export interface CreateBrowserContextResponse extends ProtocolResponseWithError {
@@ -13056,7 +13238,7 @@ declare namespace Protocol {
       F32 = 'f32',
       F64 = 'f64',
       V128 = 'v128',
-      Anyref = 'anyref',
+      Externref = 'externref',
     }
 
     /**
@@ -13657,6 +13839,13 @@ declare namespace Protocol {
        * `replMode` themselves.
        */
       replMode?: boolean;
+      /**
+       * The Content Security Policy (CSP) for the target might block 'unsafe-eval'
+       * which includes eval(), Function(), setTimeout() and setInterval()
+       * when called with non-callable arguments. This flag bypasses CSP for this
+       * evaluation and allows unsafe-eval. Defaults to true.
+       */
+      allowUnsafeEvalBlockedByCSP?: boolean;
     }
 
     export interface EvaluateResponse extends ProtocolResponseWithError {

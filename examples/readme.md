@@ -8,5 +8,4 @@ Here are some example projects showing Dirac integration in various scenarios.
 Would be nice to have in the future (PRs welcome):
 
 * boot example (https://github.com/binaryage/dirac/issues/88)
-* shadow-cljs example
 * plain deps.edn

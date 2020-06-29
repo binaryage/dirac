@@ -261,7 +261,9 @@ ElementsTestRunner.nodeWithClass = function(classValue, callback) {
 
 ElementsTestRunner.expandedNodeWithId = function(idValue) {
   let result;
-  ElementsTestRunner.nodeWithId(idValue, node => result = node);
+  ElementsTestRunner.nodeWithId(idValue, node => {
+    result = node;
+  });
   return result;
 };
 
@@ -831,7 +833,7 @@ ElementsTestRunner.dumpDOMUpdateHighlights = function(rootNode, callback, depth)
         if (classList.contains('webkit-html-attribute-name')) {
           xpath += '/@' + element.textContent + ' (empty)';
         } else if (classList.contains('webkit-html-attribute-value')) {
-          name = element.parentElement.querySelector('.webkit-html-attribute-name').textContent;
+          const name = element.parentElement.querySelector('.webkit-html-attribute-name').textContent;
           xpath += '/@' + name + ' ' + element.textContent;
         } else if (classList.contains('webkit-html-text-node')) {
           xpath += '/text() "' + element.textContent + '"';
@@ -890,7 +892,9 @@ ElementsTestRunner.expandElementsTree = function(callback) {
 ElementsTestRunner.expandAndDump = function() {
   TestRunner.addResult('\nDump tree');
   let callback;
-  const result = new Promise(f => callback = f);
+  const result = new Promise(f => {
+    callback = f;
+  });
   ElementsTestRunner.expandElementsTree(() => {
     ElementsTestRunner.dumpElementsTree();
     callback();

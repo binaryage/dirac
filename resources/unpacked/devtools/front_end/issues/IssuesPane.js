@@ -108,12 +108,12 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
    * @return {!Array<!SDK.NetworkRequest.NetworkRequest>}
    */
   _resolveRequestId(requestId) {
-    const requests = self.SDK.networkLog.requestsForId(requestId);
+    const requests = SDK.NetworkLog.NetworkLog.instance().requestsForId(requestId);
     if (!requests.length) {
       this._unresolvedRequestIds.add(requestId);
       if (!this._listener) {
-        this._listener =
-            self.SDK.networkLog.addEventListener(SDK.NetworkLog.Events.RequestAdded, this._onRequestAdded, this);
+        this._listener = SDK.NetworkLog.NetworkLog.instance().addEventListener(
+            SDK.NetworkLog.Events.RequestAdded, this._onRequestAdded, this);
       }
     }
     return requests;
@@ -364,6 +364,7 @@ class AffectedSourcesView extends AffectedResourcesView {
     const anchorElement = Components.Linkifier.Linkifier.linkifyURL(url, linkifierURLOptions);
     cellElement.appendChild(anchorElement);
     const rowElement = document.createElement('tr');
+    rowElement.classList.add('affected-resource-source');
     rowElement.appendChild(cellElement);
     this._affectedResources.appendChild(rowElement);
   }
@@ -468,6 +469,135 @@ class AffectedMixedContentView extends AffectedResourcesView {
   }
 }
 
+class AffectedHeavyAdView extends AffectedResourcesView {
+  /**
+   * @param {!IssueView} parent
+   * @param {!SDK.Issue.Issue} issue
+   */
+  constructor(parent, issue) {
+    super(parent, {singular: ls`resource`, plural: ls`resources`});
+    /** @type {!SDK.Issue.Issue} */
+    this._issue = issue;
+  }
+
+  /**
+   * @param {!Iterable<!Protocol.Audits.HeavyAdIssueDetails>} heavyAds
+   */
+  _appendAffectedHeavyAds(heavyAds) {
+    const header = document.createElement('tr');
+
+    const reason = document.createElement('td');
+    reason.classList.add('affected-resource-header');
+    reason.textContent = ls`Limit exceeded`;
+    header.appendChild(reason);
+
+    const resolution = document.createElement('td');
+    resolution.classList.add('affected-resource-header');
+    resolution.textContent = ls`Resolution Status`;
+    header.appendChild(resolution);
+
+    const frame = document.createElement('td');
+    frame.classList.add('affected-resource-header');
+    frame.textContent = ls`Frame URL`;
+    header.appendChild(frame);
+
+    this._affectedResources.appendChild(header);
+
+    let count = 0;
+    for (const heavyAd of heavyAds) {
+      this._appendAffectedHeavyAd(heavyAd);
+      count++;
+    }
+    this.updateAffectedResourceCount(count);
+  }
+
+  /**
+   * @param {!Protocol.Audits.HeavyAdResolutionStatus} status
+   * @return {string}
+   */
+  _statusToString(status) {
+    switch (status) {
+      case Protocol.Audits.HeavyAdResolutionStatus.HeavyAdBlocked:
+        return ls`blocked`;
+      case Protocol.Audits.HeavyAdResolutionStatus.HeavyAdWarning:
+        return ls`warning`;
+    }
+    return '';
+  }
+
+  /**
+   * @param {!Protocol.Audits.HeavyAdReason} status
+   * @return {string}
+   */
+  _limitToString(status) {
+    switch (status) {
+      case Protocol.Audits.HeavyAdReason.CpuPeakLimit:
+        return ls`CPU peak limit`;
+      case Protocol.Audits.HeavyAdReason.CpuTotalLimit:
+        return ls`CPU total limit`;
+      case Protocol.Audits.HeavyAdReason.NetworkTotalLimit:
+        return ls`Network limit`;
+    }
+    return '';
+  }
+
+  /**
+   * @param {!Protocol.Audits.HeavyAdIssueDetails} heavyAd
+   */
+  _appendAffectedHeavyAd(heavyAd) {
+    const element = document.createElement('tr');
+    element.classList.add('affected-resource-heavy-ad');
+
+    const frameId = heavyAd.frame.frameId;
+    const frame = BrowserSDK.FrameManager.FrameManager.instance().getFrame(frameId);
+    const url = frame && (frame.unreachableUrl() || frame.url) || '';
+
+    const reason = document.createElement('td');
+    reason.classList.add('affected-resource-heavy-ad-info');
+    reason.textContent = this._limitToString(heavyAd.reason);
+    element.appendChild(reason);
+
+    const status = document.createElement('td');
+    status.classList.add('affected-resource-heavy-ad-info');
+    status.textContent = this._statusToString(heavyAd.resolution);
+    element.appendChild(status);
+
+    const frameUrl = document.createElement('td');
+    frameUrl.classList.add('affected-resource-heavy-ad-info-frame');
+    const icon = UI.Icon.Icon.create('largeicon-node-search', 'icon');
+    icon.onclick = async () => {
+      const frame = BrowserSDK.FrameManager.FrameManager.instance().getFrame(frameId);
+      if (frame) {
+        const deferedNode = await frame.getOwnerDOMNode();
+        if (deferedNode) {
+          Common.Revealer.reveal(deferedNode);
+        }
+      }
+    };
+    UI.Tooltip.Tooltip.install(icon, ls`Click to reveal the frame's DOM node in the Elements panel`);
+    frameUrl.appendChild(icon);
+    frameUrl.appendChild(document.createTextNode(url));
+    frameUrl.onmouseenter = () => {
+      const frame = BrowserSDK.FrameManager.FrameManager.instance().getFrame(frameId);
+      if (frame) {
+        frame.highlight();
+      }
+    };
+    frameUrl.onmouseleave = () => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    element.appendChild(frameUrl);
+
+    this._affectedResources.appendChild(element);
+  }
+
+  /**
+   * @override
+   */
+  update() {
+    this.clear();
+    this._appendAffectedHeavyAds(this._issue.heavyAds());
+  }
+}
+
 class IssueView extends UI.TreeOutline.TreeElement {
   /**
    *
@@ -487,11 +617,12 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this.childrenListElement.classList.add('body');
 
     this._affectedResources = this._createAffectedResources();
-    this._affectedCookiesView = new AffectedCookiesView(this, this._issue);
-    this._affectedElementsView = new AffectedElementsView(this, this._issue);
-    this._affectedRequestsView = new AffectedRequestsView(this, this._issue);
-    this._affectedMixedContentView = new AffectedMixedContentView(this, this._issue);
-    this._affectedSourcesView = new AffectedSourcesView(this, this._issue);
+    /** @type {!Array<!AffectedResourcesView>} */
+    this._affectedResourceViews = [
+      new AffectedCookiesView(this, this._issue), new AffectedElementsView(this, this._issue),
+      new AffectedRequestsView(this, this._issue), new AffectedMixedContentView(this, this._issue),
+      new AffectedSourcesView(this, this._issue), new AffectedHeavyAdView(this, this._issue)
+    ];
 
     this._aggregatedIssuesCount = null;
   }
@@ -503,18 +634,12 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this._appendHeader();
     this._createBody();
     this.appendChild(this._affectedResources);
-    this.appendAffectedResource(this._affectedCookiesView);
-    this._affectedCookiesView.update();
-    this.appendAffectedResource(this._affectedElementsView);
-    this._affectedElementsView.update();
-    this.appendAffectedResource(this._affectedRequestsView);
-    this._affectedRequestsView.update();
-    this.appendAffectedResource(this._affectedMixedContentView);
-    this._affectedMixedContentView.update();
-    this.appendAffectedResource(this._affectedSourcesView);
-    this._affectedSourcesView.update();
-    this._createReadMoreLinks();
+    for (const view of this._affectedResourceViews) {
+      this.appendAffectedResource(view);
+      view.update();
+    }
 
+    this._createReadMoreLinks();
     this.updateAffectedResourceVisibility();
   }
 
@@ -551,12 +676,7 @@ class IssueView extends UI.TreeOutline.TreeElement {
   }
 
   updateAffectedResourceVisibility() {
-    const noCookies = !this._affectedCookiesView || this._affectedCookiesView.isEmpty();
-    const noElements = !this._affectedElementsView || this._affectedElementsView.isEmpty();
-    const noRequests = !this._affectedRequestsView || this._affectedRequestsView.isEmpty();
-    const noMixedContent = !this._affectedMixedContentView || this._affectedMixedContentView.isEmpty();
-    const noSources = !this._affectedSourcesView || this._affectedSourcesView.isEmpty();
-    const noResources = noCookies && noElements && noRequests && noMixedContent && noSources;
+    const noResources = this._affectedResourceViews.every(view => view.isEmpty());
     this._affectedResources.hidden = noResources;
   }
 
@@ -606,10 +726,7 @@ class IssueView extends UI.TreeOutline.TreeElement {
   }
 
   update() {
-    this._affectedCookiesView.update();
-    this._affectedRequestsView.update();
-    this._affectedMixedContentView.update();
-    this._affectedSourcesView.update();
+    this._affectedResourceViews.forEach(view => view.update());
     this.updateAffectedResourceVisibility();
     this._updateAggregatedIssuesCount();
   }
@@ -665,6 +782,14 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     /** @type {?Element} */
     this._infoBarDiv = null;
     this._showReloadInfobarIfNeeded();
+  }
+
+  /**
+   * @override
+   * @return {!Array<!Element>}
+   */
+  elementsToRestoreScrollPositionsFor() {
+    return [this._issuesTree.element];
   }
 
   /**

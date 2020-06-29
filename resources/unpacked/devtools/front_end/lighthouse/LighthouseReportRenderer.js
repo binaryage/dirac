@@ -5,6 +5,7 @@
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as HostModule from '../host/host.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as Timeline from '../timeline/timeline.js';
 import * as UI from '../ui/ui.js';
@@ -25,16 +26,16 @@ export class LighthouseReportRenderer extends ReportRenderer {
     }
 
     const container = el.querySelector('.lh-audit-group');
-    const columnsEl = container.querySelector('.lh-columns');
-    // There will be no columns if just the PWA category.
-    if (!columnsEl) {
+    const disclaimerEl = container.querySelector('.lh-metrics__disclaimer');
+    // If it was a PWA-only run, we'd have a trace but no perf category to add the button to
+    if (!disclaimerEl) {
       return;
     }
 
     const defaultPassTrace = artifacts.traces.defaultPass;
     const timelineButton =
         UI.UIUtils.createTextButton(Common.UIString.UIString('View Trace'), onViewTraceClick, 'view-trace');
-    container.insertBefore(timelineButton, columnsEl.nextSibling);
+    container.insertBefore(timelineButton, disclaimerEl.nextSibling);
 
     async function onViewTraceClick() {
       HostModule.userMetrics.actionTaken(Host.UserMetrics.Action.LighthouseViewTrace);
@@ -149,7 +150,7 @@ export class LighthouseReportUIFeatures extends ReportUIFeatures {
   async _saveFile(blob) {
     const domain = new Common.ParsedURL.ParsedURL(this.json.finalUrl).domain();
     const sanitizedDomain = domain.replace(/[^a-z0-9.-]+/gi, '_');
-    const timestamp = new Date(this.json.fetchTime).toISO8601Compact();
+    const timestamp = Platform.DateUtilities.toISO8601Compact(new Date(this.json.fetchTime));
     const ext = blob.type.match('json') ? '.json' : '.html';
     const basename = `${sanitizedDomain}-${timestamp}${ext}`;
     const text = await blob.text();

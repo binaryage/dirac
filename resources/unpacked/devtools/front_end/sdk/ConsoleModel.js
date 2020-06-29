@@ -202,8 +202,8 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
     }
 
     if (msg.parameters) {
-      var firstParam = msg.parameters[0];
-      if (firstParam && firstParam.value === "~~$DIRAC-MSG$~~") {
+      const firstParam = msg.parameters[0];
+      if (firstParam && firstParam.value === '~~$DIRAC-MSG$~~') {
         this.dispatchEventToListeners(SDK.ConsoleModel.Events.DiracMessage, msg);
         return;
       }
@@ -480,7 +480,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
 /** @enum {symbol} */
 export const Events = {
   ConsoleCleared: Symbol('ConsoleCleared'),
-  DiracMessage: Symbol("DiracMessage"),
+  DiracMessage: Symbol('DiracMessage'),
   MessageAdded: Symbol('MessageAdded'),
   MessageUpdated: Symbol('MessageUpdated'),
   CommandEvaluated: Symbol('CommandEvaluated')
@@ -500,7 +500,7 @@ export class ConsoleMessage {
    * @param {?string=} url
    * @param {number=} line
    * @param {number=} column
-   * @param {!Array.<!Protocol.Runtime.RemoteObject>=} parameters
+   * @param {!Array.<!Protocol.Runtime.RemoteObject|string>=} parameters
    * @param {!Protocol.Runtime.StackTrace=} stackTrace
    * @param {number=} timestamp
    * @param {!Protocol.Runtime.ExecutionContextId=} executionContextId
@@ -529,6 +529,7 @@ export class ConsoleMessage {
     this.executionContextId = executionContextId || 0;
     this.scriptId = scriptId || null;
     this.workerId = workerId || null;
+    this.skipHistory = false;
 
     if (!this.executionContextId && this._runtimeModel) {
       if (this.scriptId) {
@@ -677,8 +678,7 @@ export class ConsoleMessage {
 
     return (this.runtimeModel() === msg.runtimeModel()) && (this.source === msg.source) && (this.type === msg.type) &&
         (this.level === msg.level) && (this.line === msg.line) && (this.url === msg.url) &&
-        (this.messageText === msg.messageText) && (this.request === msg.request) &&
-        (this.executionContextId === msg.executionContextId);
+        (this.messageText === msg.messageText) && (this.executionContextId === msg.executionContextId);
   }
 
   /**
@@ -752,8 +752,8 @@ export const MessageType = {
   Result: 'result',
   Profile: 'profile',
   ProfileEnd: 'profileEnd',
-  DiracCommand: "diracCommand",
-  DiracMarkup: "diracMarkup",
+  DiracCommand: 'diracCommand',
+  DiracMarkup: 'diracMarkup',
   Command: 'command',
   System: 'system',
   QueryObjectResult: 'queryObjectResult'

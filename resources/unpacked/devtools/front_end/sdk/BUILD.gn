@@ -29,8 +29,10 @@ ts_library("sdk") {
     "DebuggerModel.js",
     "EmulationModel.js",
     "FilmStripModel.js",
+    "FrameAssociated.js",
     "HARLog.js",
     "HeapProfilerModel.js",
+    "HeavyAdIssue.js",
     "IsolateManager.js",
     "Issue.js",
     "IssuesModel.js",
@@ -60,8 +62,8 @@ ts_library("sdk") {
     "SourceMapManager.js",
     "TracingManager.js",
     "TracingModel.js",
+    "WebAuthnModel.js",
     "sdk.js",
-    "wasm_source_map/pkg/wasm_source_map.js",
   ]
 
   deps = [
@@ -71,5 +73,6 @@ ts_library("sdk") {
     "../platform",
     "../protocol_client",
     "../text_utils",
+    "wasm_source_map",
   ]
 }

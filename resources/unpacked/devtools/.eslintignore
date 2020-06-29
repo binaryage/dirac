@@ -4,9 +4,7 @@
 // glob into this file it willl not mean that the
 // clang-format check also ignores that file
 front_end/.eslintrc.js
-front_end/cm/
 front_end/diff/diff_match_patch.js
-front_end/formatter_worker/acorn/
 front_end/protocol_externs.js
 front_end/javascript_metadata/NativeFunctions.js
 front_end/sdk/wasm_source_map/pkg/wasm_source_map.js

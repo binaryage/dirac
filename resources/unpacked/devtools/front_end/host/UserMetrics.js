@@ -117,6 +117,16 @@ export class UserMetrics {
   }
 
   /**
+   * @param {string} keybindSet
+   */
+  keybindSetSettingChanged(keybindSet) {
+    const size = Object.keys(KeybindSetSettings).length + 1;
+    const value = KeybindSetSettings[keybindSet] || 0;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.KeybindSetSettingChanged', value, size);
+    Common.EventTarget.fireEvent('DevTools.KeybindSetSettingChanged', {value});
+  }
+
+  /**
    * @param {string} actionId
    */
   keyboardShortcutFired(actionId) {
@@ -133,6 +143,15 @@ export class UserMetrics {
     const size = Object.keys(IssueOpener).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.IssuesPanelOpenedFrom', issueOpener, size);
     Common.EventTarget.fireEvent('DevTools.IssuesPanelOpenedFrom', {value: issueOpener});
+  }
+
+  /**
+   * @param {!DualScreenDeviceEmulated} emulationAction
+   */
+  dualScreenDeviceEmulated(emulationAction) {
+    const size = Object.keys(DualScreenDeviceEmulated).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.DualScreenDeviceEmulated', emulationAction, size);
+    Common.EventTarget.fireEvent('DevTools.DualScreenDeviceEmulated', {value: emulationAction});
   }
 }
 
@@ -180,7 +199,9 @@ export const Action = {
   CoverageStartedPerBlock: 35,
   SettingsOpenedFromGear: 36,
   SettingsOpenedFromMenu: 37,
-  SettingsOpenedFromCommandMenu: 38
+  SettingsOpenedFromCommandMenu: 38,
+  TabMovedToDrawer: 39,
+  TabMovedToMainPanel: 40
 };
 
 /** @type {!Object<string, number>} */
@@ -220,10 +241,16 @@ export const PanelCodes = {
   'settings-blackbox': 32,
   'settings-devices': 33,
   'settings-throttling-conditions': 34,
-  'settings-emulation-geolocations': 35,
+  'settings-emulation-locations': 35,
   'settings-shortcuts': 36,
   'drawer-issues-pane': 37,
   'settings-keybinds': 38
+};
+
+/** @type {!Object<string, number>} */
+export const KeybindSetSettings = {
+  'devToolsDefault': 0,
+  'vsCode': 1,
 };
 
 /** @type {!Object<string, number>} */
@@ -261,4 +288,11 @@ export const IssueOpener = {
   StatusBarIssuesCounter: 2,
   HamburgerMenu: 3,
   Adorner: 4
+};
+
+/** @enum {number} */
+export const DualScreenDeviceEmulated = {
+  DualScreenDeviceSelected: 0,  // a dual screen or fold device is selected
+  SpanButtonClicked: 1,         // span button is clicked when emulating a dual screen/fold device
+  PlatformSupportUsed: 2        // user starts to use platform dual screen support feature.
 };

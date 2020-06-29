@@ -33,6 +33,7 @@ import * as Components from '../components/components.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';  // eslint-disable-line no-unused-vars
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
@@ -71,10 +72,18 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     this._expandedChildrenLimit = InitialChildrenLimit;
     this._decorationsThrottler = new Common.Throttler.Throttler(100);
 
-    this._adornerContainer = this.listItemElement.createChild('div', 'adorner-container hidden');
-    /** @type {!Array<!Adorner>} */
-    this._adorners = [];
-    this._adornersThrottler = new Common.Throttler.Throttler(100);
+    if (!isClosingTag) {
+      this._adornerContainer = this.listItemElement.createChild('div', 'adorner-container hidden');
+      /** @type {!Array<!Adorner>} */
+      this._adorners = [];
+      this._adornersThrottler = new Common.Throttler.Throttler(100);
+
+      if (Root.Runtime.experiments.isEnabled('cssGridFeatures')) {
+        // This flag check is put here because currently the only style adorner is Grid;
+        // we will refactor this logic when we have more style-related adorners
+        this._updateStyleAdorners();
+      }
+    }
 
     /**
      * @type {!Element|undefined}
@@ -306,6 +315,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
    * @override
    */
   onunbind() {
+    if (this._editing) {
+      this._editing.cancel();
+    }
     if (this._node[this.treeOutline.treeElementSymbol()] === this) {
       this._node[this.treeOutline.treeElementSymbol()] = null;
     }
@@ -780,7 +792,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     }
 
     const tagName = tagNameElement.textContent;
-    if (EditTagBlacklist.has(tagName.toLowerCase())) {
+    if (EditTagBlocklist.has(tagName.toLowerCase())) {
       return false;
     }
 
@@ -1183,7 +1195,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
       this.title = highlightElement;
       this.updateDecorations();
       this.listItemElement.insertBefore(this._gutterContainer, this.listItemElement.firstChild);
-      this.listItemElement.appendChild(this._adornerContainer);
+      if (!this._isClosingTag) {
+        this.listItemElement.appendChild(this._adornerContainer);
+      }
       delete this._highlightResult;
       delete this.selectionElement;
       delete this._hintElement;
@@ -1283,6 +1297,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
       this._decorationsElement.removeChildren();
       this._decorationsElement.classList.add('hidden');
       this._gutterContainer.classList.toggle('has-decorations', decorations.length || descendantDecorations.length);
+      UI.ARIAUtils.setAccessibleName(this._decorationsElement, '');
 
       if (!decorations.length && !descendantDecorations.length) {
         return;
@@ -1318,6 +1333,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         processColors.call(this, descendantColors, 'elements-gutter-decoration elements-has-decorated-children');
       }
       UI.Tooltip.Tooltip.install(this._decorationsElement, titles);
+      UI.ARIAUtils.setAccessibleName(this._decorationsElement, titles.textContent);
 
       /**
        * @param {!Set<string>} colors
@@ -1845,6 +1861,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     promise.then(() => self.UI.actionRegistry.action('elements.edit-as-html').execute());
   }
 
+  // TODO: add unit tests for adorner-related methods after component and TypeScript works are done
   /**
    *
    * @param {string} text
@@ -1912,6 +1929,20 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     adornerContainer.classList.remove('hidden');
     return Promise.resolve();
   }
+
+  async _updateStyleAdorners() {
+    const node = this.node();
+    const styles = await node.domModel().cssModel().computedStylePromise(node.id);
+    if (!styles) {
+      return;
+    }
+
+    if (styles.get('display') === 'grid') {
+      const gridAdorner = this.adornText('grid', AdornerCategories.Layout);
+      gridAdorner.classList.add('grid');
+      // TODO(changhaohan): enable interactivity once persistent overlay is implemented
+    }
+  }
 }
 
 export const InitialChildrenLimit = 500;
@@ -1924,14 +1955,15 @@ export const ForbiddenClosingTagElements = new Set([
 ]);
 
 // These tags we do not allow editing their tag name.
-export const EditTagBlacklist = new Set(['html', 'head', 'body']);
+export const EditTagBlocklist = new Set(['html', 'head', 'body']);
 
 const OrderedAdornerCategories = [
   AdornerCategories.Security,
   AdornerCategories.Layout,
   AdornerCategories.Default,
 ];
-const AdornerCategoryOrder = new Map(OrderedAdornerCategories.map((category, i) => [category, i]));
+// Use idx + 1 for the order to avoid JavaScript's 0 == false issue
+const AdornerCategoryOrder = new Map(OrderedAdornerCategories.map((category, idx) => [category, idx + 1]));
 
 /**
  *
@@ -1945,6 +1977,5 @@ function adornerComparator(adornerA, adornerB) {
   if (orderA === orderB) {
     return adornerA.name.localeCompare(adornerB.name);
   }
-
   return orderA - orderB;
 }

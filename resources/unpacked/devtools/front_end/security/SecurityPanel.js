@@ -200,7 +200,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onResponseReceived(event) {
-    const request = /** @type {!SDK.NetworkRequest.NetworkRequest} */ (event.data);
+    const request = /** @type {!SDK.NetworkRequest.NetworkRequest} */ (event.data.request);
     if (request.resourceType() === Common.ResourceType.resourceTypes.Document) {
       this._lastResponseReceivedForLoaderId.set(request.loaderId, request);
     }
@@ -1040,6 +1040,9 @@ export class SecurityMainView extends UI.Widget.VBox {
   refreshExplanations() {
     this._securityExplanationsMain.removeChildren();
     this._securityExplanationsExtra.removeChildren();
+    if (!this._explanations) {
+      return;
+    }
     for (const explanation of this._explanations) {
       if (explanation.securityState === Protocol.Security.SecurityState.Info) {
         this._addExplanation(this._securityExplanationsExtra, explanation);

@@ -28,6 +28,7 @@
  */
 
 import * as Platform from '../platform/platform.js';
+import {blendColors, rgbaToHsla} from './ColorUtils.js';
 
 /** @type {?Map<string, string>} */
 let _rgbaToNickname;
@@ -350,67 +351,12 @@ export class Color {
    * @param {!Array<number>} out_rgba
    */
   static hsva2rgba(hsva, out_rgba) {
-    Color._hsva2hsla(hsva, Color.hsva2rgba._tmpHSLA);
-    Color.hsl2rgb(Color.hsva2rgba._tmpHSLA, out_rgba);
+    Color._hsva2hsla(hsva, _tmpHSLA);
+    Color.hsl2rgb(_tmpHSLA, out_rgba);
 
-    for (let i = 0; i < Color.hsva2rgba._tmpHSLA.length; i++) {
-      Color.hsva2rgba._tmpHSLA[i] = 0;
+    for (let i = 0; i < _tmpHSLA.length; i++) {
+      _tmpHSLA[i] = 0;
     }
-  }
-
-  /**
-   * Calculate the luminance of this color using the WCAG algorithm.
-   * See http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
-   * @param {!Array<number>} rgba
-   * @return {number}
-   */
-  static luminance(rgba) {
-    const rSRGB = rgba[0];
-    const gSRGB = rgba[1];
-    const bSRGB = rgba[2];
-
-    const r = rSRGB <= 0.03928 ? rSRGB / 12.92 : Math.pow(((rSRGB + 0.055) / 1.055), 2.4);
-    const g = gSRGB <= 0.03928 ? gSRGB / 12.92 : Math.pow(((gSRGB + 0.055) / 1.055), 2.4);
-    const b = bSRGB <= 0.03928 ? bSRGB / 12.92 : Math.pow(((bSRGB + 0.055) / 1.055), 2.4);
-
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  }
-
-  /**
-   * Combine the two given color according to alpha blending.
-   * @param {!Array<number>} fgRGBA
-   * @param {!Array<number>} bgRGBA
-   * @param {!Array<number>} out_blended
-   */
-  static blendColors(fgRGBA, bgRGBA, out_blended) {
-    const alpha = fgRGBA[3];
-
-    out_blended[0] = ((1 - alpha) * bgRGBA[0]) + (alpha * fgRGBA[0]);
-    out_blended[1] = ((1 - alpha) * bgRGBA[1]) + (alpha * fgRGBA[1]);
-    out_blended[2] = ((1 - alpha) * bgRGBA[2]) + (alpha * fgRGBA[2]);
-    out_blended[3] = alpha + (bgRGBA[3] * (1 - alpha));
-  }
-
-  /**
-   * Calculate the contrast ratio between a foreground and a background color.
-   * Returns the ratio to 1, for example for two two colors with a contrast ratio of 21:1, this function will return 21.
-   * See http://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef
-   * @param {!Array<number>} fgRGBA
-   * @param {!Array<number>} bgRGBA
-   * @return {number}
-   */
-  static calculateContrastRatio(fgRGBA, bgRGBA) {
-    Color.blendColors(fgRGBA, bgRGBA, Color.calculateContrastRatio._blendedFg);
-
-    const fgLuminance = Color.luminance(Color.calculateContrastRatio._blendedFg);
-    const bgLuminance = Color.luminance(bgRGBA);
-    const contrastRatio = (Math.max(fgLuminance, bgLuminance) + 0.05) / (Math.min(fgLuminance, bgLuminance) + 0.05);
-
-    for (let i = 0; i < Color.calculateContrastRatio._blendedFg.length; i++) {
-      Color.calculateContrastRatio._blendedFg[i] = 0;
-    }
-
-    return contrastRatio;
   }
 
   /**
@@ -453,39 +399,7 @@ export class Color {
     if (this._hsla) {
       return this._hsla;
     }
-    const r = this._rgba[0];
-    const g = this._rgba[1];
-    const b = this._rgba[2];
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    const diff = max - min;
-    const add = max + min;
-
-    let h;
-    if (min === max) {
-      h = 0;
-    } else if (r === max) {
-      h = ((1 / 6 * (g - b) / diff) + 1) % 1;
-    } else if (g === max) {
-      h = (1 / 6 * (b - r) / diff) + 1 / 3;
-    } else {
-      h = (1 / 6 * (r - g) / diff) + 2 / 3;
-    }
-
-    const l = 0.5 * add;
-
-    let s;
-    if (l === 0) {
-      s = 0;
-    } else if (l === 1) {
-      s = 0;
-    } else if (l <= 0.5) {
-      s = diff / add;
-    } else {
-      s = diff / (2 - add);
-    }
-
-    this._hsla = /** @type {!Array.<number>} */ ([h, s, l, this._rgba[3]]);
+    this._hsla = rgbaToHsla(this._rgba);
     return this._hsla;
   }
 
@@ -724,8 +638,7 @@ export class Color {
    */
   blendWith(fgColor) {
     /** @type {!Array.<number>} */
-    const rgba = [];
-    Color.blendColors(fgColor._rgba, this._rgba, rgba);
+    const rgba = blendColors(fgColor._rgba, this._rgba);
     return new Color(rgba, Format.RGBA);
   }
 
@@ -922,7 +835,13 @@ export const PageHighlight = {
   EventTarget: Color.fromRGBA([255, 196, 196, .66]),
   Shape: Color.fromRGBA([96, 82, 177, 0.8]),
   ShapeMargin: Color.fromRGBA([96, 82, 127, .6]),
-  CssGrid: Color.fromRGBA([0x4b, 0, 0x82, 1])
+  CssGrid: Color.fromRGBA([0x4b, 0, 0x82, 1]),
+  GridCellBorder: Color.fromRGBA([147, 52, 230, 1]),
+  GridBorder: Color.fromRGBA([147, 52, 230, 1]),
+  GridRowGapBackground: Color.fromRGBA([147, 52, 230, .3]),
+  GridColumnGapBackground: Color.fromRGBA([147, 52, 230, .3]),
+  GridRowGapHatch: Color.fromRGBA([147, 52, 230, .8]),
+  GridColumnGapHatch: Color.fromRGBA([147, 52, 230, .8]),
 };
 
 export class Generator {
@@ -994,7 +913,4 @@ export class Generator {
   }
 }
 
-/** @type {!Array<number>} */
-Color.hsva2rgba._tmpHSLA = [0, 0, 0, 0];
-
-Color.calculateContrastRatio._blendedFg = [0, 0, 0, 0];
+const _tmpHSLA = [0, 0, 0, 0];

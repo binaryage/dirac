@@ -8,4 +8,4 @@ startApplication('inspector');
 
 // this is here to signal our extension that we are done with our work,
 // cannot easily inject script myself: https://bugs.chromium.org/p/chromium/issues/detail?id=30756
-document.title = "#";
+document.title = '#';

@@ -700,10 +700,6 @@
 
     function selectTopAutoFill() {
       self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
-          {type: 'rawKeyDown', key: 'Down', windowsVirtualKeyCode: 40, nativeVirtualKeyCode: 40});
-      self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
-          {type: 'keyUp', key: 'Down', windowsVirtualKeyCode: 40, nativeVirtualKeyCode: 40});
-      self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
           {type: 'rawKeyDown', key: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13});
       self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
           {type: 'keyUp', key: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13});
@@ -770,6 +766,23 @@
         Host.InspectorFrontendHostAPI.Events.KeyEventUnhandled, onKeyEventUnhandledKeyDown, this);
     self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
         {type: 'rawKeyDown', key: 'F8', windowsVirtualKeyCode: 119, nativeVirtualKeyCode: 119});
+  };
+
+  // Tests that the keys that are forwarded from the browser update
+  // when their shortcuts change
+  TestSuite.prototype.testForwardedKeysChanged = function() {
+    this.takeControl();
+
+    this.addSniffer(self.UI.shortcutRegistry, '_registerBindings', () => {
+      self.SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+          {type: 'rawKeyDown', key: 'F1', windowsVirtualKeyCode: 112, nativeVirtualKeyCode: 112});
+    });
+    this.addSniffer(self.UI.shortcutRegistry, 'handleKey', key => {
+      this.assertEquals(112, key);
+      this.releaseControl();
+    });
+
+    self.Common.settings.moduleSetting('activeKeybindSet').set('vsCode');
   };
 
   TestSuite.prototype.testDispatchKeyEventDoesNotCrash = function() {
@@ -1103,7 +1116,7 @@
 
     let count = 0;
     function onResponseReceived(event) {
-      const networkRequest = event.data;
+      const networkRequest = event.data.request;
       if (!networkRequest.url().startsWith('http')) {
         return;
       }

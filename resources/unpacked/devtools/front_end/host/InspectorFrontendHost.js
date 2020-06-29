@@ -143,7 +143,7 @@ export class InspectorFrontendHostStub {
    */
   inspectedURLChanged(url) {
     // @ts-ignore
-    const dirac = window.dirac;
+    const dirac = window["dirac"];
     if (!dirac.isIntercomReady()) {
       // postpone this code, we use document.title for signalling of frontend loading completion, see inspector.js
       const that = this;
@@ -159,12 +159,12 @@ export class InspectorFrontendHostStub {
          */
       function(tag) {
         if (!tag) {
-          tag = "[no runtime] " + url;
+          tag = '[no runtime] ' + url;
         }
-        document.title = "Dirac v" + version + " <-> " + tag;
+        document.title = 'Dirac v' + version + ' <-> ' + tag;
       });
     // this is just for a temporary display, we will update it when get_runtime_tag calls us back with full runtime info
-    document.title = "Dirac v" + version + " <-> " + url;
+    document.title = 'Dirac v' + version + ' <-> ' + url;
   }
 
   /**
@@ -243,7 +243,13 @@ export class InspectorFrontendHostStub {
   close(url) {
     const buffer = this._urlsBeingSaved.get(url) || [];
     this._urlsBeingSaved.delete(url);
-    const fileName = url ? Platform.StringUtilities.trimURL(url).removeURLFragment() : '';
+    let fileName = '';
+
+    if (url) {
+      const trimmed = Platform.StringUtilities.trimURL(url);
+      fileName = Platform.StringUtilities.removeURLFragment(trimmed);
+    }
+
     const link = document.createElement('a');
     link.download = fileName;
     const blob = new Blob([buffer.join('')], {type: 'text/plain'});

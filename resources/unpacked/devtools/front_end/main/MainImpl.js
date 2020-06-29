@@ -1,3 +1,8 @@
+// @ts-nocheck
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /*
  * Copyright (C) 2006, 2007, 2008 Apple Inc.  All rights reserved.
  * Copyright (C) 2007 Matt Lilek (pewtermoose@gmail.com).
@@ -91,8 +96,8 @@ export class MainImpl {
       self.runtime.useTestBase();
     }
     // for dirac testing
-    if (Root.Runtime.queryParam("reset_settings")) {
-      console.info("DIRAC TESTING: clear devtools settings because reset_settings is present in url params");
+    if (Root.Runtime.queryParam('reset_settings')) {
+      console.info('DIRAC TESTING: clear devtools settings because reset_settings is present in url params');
       window.localStorage.clear(); // also wipe-out local storage to prevent tests flakiness
       prefs = {};
     }
@@ -164,6 +169,7 @@ export class MainImpl {
         'Show option to take heap snapshot where globals are not treated as root');
     Root.Runtime.experiments.register('sourceDiff', 'Source diff');
     Root.Runtime.experiments.register('spotlight', 'Spotlight', true);
+    Root.Runtime.experiments.register('webauthnPane', 'WebAuthn Pane');
     Root.Runtime.experiments.register(
         'customKeyboardShortcuts', 'Enable custom keyboard shortcuts settings tab (requires reload)');
 
@@ -177,6 +183,17 @@ export class MainImpl {
     Root.Runtime.experiments.register('timelineWebGL', 'Timeline: WebGL-based flamechart');
     Root.Runtime.experiments.register('timelineReplayEvent', 'Timeline: Replay input events', true);
     Root.Runtime.experiments.register('wasmDWARFDebugging', 'WebAssembly Debugging: Enable DWARF support');
+
+    // Dual-screen
+    Root.Runtime.experiments.register('dualScreenSupport', 'Emulation: Support dual screen mode');
+
+    // CSS Grid
+    Root.Runtime.experiments.register(
+        'cssGridFeatures',
+        'Enable new CSS Grid debugging features (configuration options available in Settings after restart)');
+
+    // Layout personalization
+    Root.Runtime.experiments.register('movableTabs', 'Enable support to move tabs between panels');
 
     Root.Runtime.experiments.cleanUpStaleExperiments();
     const enabledExperiments = Root.Runtime.queryParam('enabledExperiments');
@@ -287,7 +304,6 @@ export class MainImpl {
     self.UI.actionRegistry = new UI.ActionRegistry.ActionRegistry();
     self.UI.shortcutRegistry = new UI.ShortcutRegistry.ShortcutRegistry(self.UI.actionRegistry);
     UI.ShortcutsScreen.ShortcutsScreen.registerShortcuts();
-    this._registerForwardedShortcuts();
     this._registerMessageSinkListener();
 
     MainImpl.timeEnd('Main._createAppUI');
@@ -339,7 +355,7 @@ export class MainImpl {
     // Allow UI cycles to repaint prior to creating connection.
     setTimeout(this._initializeTarget.bind(this), 0);
     MainImpl.timeEnd('Main._showAppUI');
-    dirac.feedback("devtools ready");
+    dirac.feedback('devtools ready');
   }
 
   async _initializeTarget() {
@@ -391,16 +407,6 @@ export class MainImpl {
    */
   lateInitDonePromiseForTest() {
     return this._lateInitDonePromise;
-  }
-
-  _registerForwardedShortcuts() {
-    /** @const */ const forwardedActions = [
-      'main.toggle-dock', 'debugger.toggle-breakpoints-active', 'debugger.toggle-pause', 'commandMenu.show',
-      'console.show'
-    ];
-    const actionKeys = self.UI.shortcutRegistry.keysForActions(forwardedActions)
-                           .map(UI.KeyboardShortcut.KeyboardShortcut.keyCodeAndModifiersFromKey);
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setWhitelistedShortcuts(JSON.stringify(actionKeys));
   }
 
   _registerMessageSinkListener() {

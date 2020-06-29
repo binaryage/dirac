@@ -123,17 +123,6 @@ String.prototype.compareTo = function(other) {
 };
 
 /**
- * @return {string}
- */
-String.prototype.removeURLFragment = function() {
-  let fragmentIndex = this.indexOf('#');
-  if (fragmentIndex === -1) {
-    fragmentIndex = this.length;
-  }
-  return this.substring(0, fragmentIndex);
-};
-
-/**
  * @param {string|undefined} string
  * @return {number}
  */
@@ -230,21 +219,6 @@ Number.toFixedIfFloating = function(value) {
   }
   const number = Number(value);
   return number % 1 ? number.toFixed(3) : String(number);
-};
-
-/**
- * @return {string}
- */
-Date.prototype.toISO8601Compact = function() {
-  /**
-   * @param {number} x
-   * @return {string}
-   */
-  function leadZero(x) {
-    return (x > 9 ? '' : '0') + x;
-  }
-  return this.getFullYear() + leadZero(this.getMonth() + 1) + leadZero(this.getDate()) + 'T' +
-      leadZero(this.getHours()) + leadZero(this.getMinutes()) + leadZero(this.getSeconds());
 };
 
 (function() {

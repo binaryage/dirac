@@ -1524,7 +1524,9 @@ export class HeapProfileHeader extends ProfileHeader {
     /** @type {?HeapSnapshotProxy} */
     this._snapshotProxy = null;
     /** @type {!Promise<!HeapSnapshotProxy>} */
-    this._loadPromise = new Promise(resolve => this._fulfillLoad = resolve);
+    this._loadPromise = new Promise(resolve => {
+      this._fulfillLoad = resolve;
+    });
     this._totalNumberOfChunks = 0;
     this._bufferedWriter = null;
     /** @type {?Bindings.TempFile.TempFile} */
@@ -1696,7 +1698,8 @@ export class HeapProfileHeader extends ProfileHeader {
    */
   saveToFile() {
     const fileOutputStream = new Bindings.FileUtils.FileOutputStream();
-    this._fileName = this._fileName || 'Heap-' + new Date().toISO8601Compact() + this.profileType().fileExtension();
+    this._fileName = this._fileName ||
+        'Heap-' + Platform.DateUtilities.toISO8601Compact(new Date()) + this.profileType().fileExtension();
     fileOutputStream.open(this._fileName).then(onOpen.bind(this));
 
     /**

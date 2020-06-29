@@ -4,9 +4,10 @@
 
 import("../../../third_party/typescript/typescript.gni")
 
-ts_library("elements") {
-  testonly = true
+node_ts_library("elements") {
   sources = [
+    "adornment_test.ts",
+    "computed-pane-properties_test.ts",
     "element-breadcrumbs_test.ts",
     "pseudo-states_test.ts",
     "selection-after-delete_test.ts",

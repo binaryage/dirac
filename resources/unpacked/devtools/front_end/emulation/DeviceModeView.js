@@ -191,6 +191,12 @@ export class DeviceModeView extends UI.Widget.VBox {
     }
   }
 
+  exitHingeMode() {
+    if (this._model) {
+      this._model.exitHingeMode();
+    }
+  }
+
   /**
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
@@ -501,7 +507,12 @@ export class DeviceModeView extends UI.Widget.VBox {
    */
   _saveScreenshot(canvas) {
     const url = this._model.inspectedURL();
-    let fileName = url ? Platform.StringUtilities.trimURL(url).removeURLFragment() : '';
+    let fileName = '';
+    if (url) {
+      const withoutFragment = Platform.StringUtilities.removeURLFragment(url);
+      fileName = Platform.StringUtilities.trimURL(withoutFragment);
+    }
+
     if (this._model.type() === Type.Device) {
       fileName += Common.UIString.UIString('(%s)', this._model.device().title);
     }

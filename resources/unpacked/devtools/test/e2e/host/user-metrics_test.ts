@@ -6,7 +6,8 @@ import {assert} from 'chai';
 import {describe, it} from 'mocha';
 import * as puppeteer from 'puppeteer';
 
-import {click, getBrowserAndPages, platform, reloadDevTools, waitFor} from '../../shared/helper.js';
+import {$, click, enableExperiment, getBrowserAndPages, platform, reloadDevTools, waitFor} from '../../shared/helper.js';
+import {clickToggleButton, selectDualScreen, startEmulationWithDualScreenFlag} from '../helpers/emulation-helpers.js';
 import {openPanelViaMoreTools} from '../helpers/settings-helpers.js';
 
 interface UserMetric {
@@ -33,6 +34,8 @@ declare global {
     __actionTaken: (evt: Event) => void;
     __keyboardShortcutFired: (evt: Event) => void;
     __issuesPanelOpenedFrom: (evt: Event) => void;
+    __keybindSetSettingChanged: (evt: Event) => void;
+    __dualScreenDeviceEmulated: (evt: Event) => void;
     Host: {UserMetrics: UserMetrics; userMetrics: {actionTaken(name: number): void;}};
     UI: {inspectorView: {_showDrawer(show: boolean): void; showView(name: string): void;}};
   }
@@ -65,6 +68,16 @@ async function beginCatchEvents(frontend: puppeteer.Page) {
       window.__caughtEvents.push({name: 'DevTools.IssuesPanelOpenedFrom', value: customEvt.detail.value});
     };
 
+    window.__keybindSetSettingChanged = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.KeybindSetSettingChanged', value: customEvt.detail.value});
+    };
+
+    window.__dualScreenDeviceEmulated = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.DualScreenDeviceEmulated', value: customEvt.detail.value});
+    };
+
     window.__caughtEvents = [];
     window.__beginCatchEvents = () => {
       window.addEventListener('DevTools.PanelShown', window.__panelShown);
@@ -72,6 +85,8 @@ async function beginCatchEvents(frontend: puppeteer.Page) {
       window.addEventListener('DevTools.ActionTaken', window.__actionTaken);
       window.addEventListener('DevTools.KeyboardShortcutFired', window.__keyboardShortcutFired);
       window.addEventListener('DevTools.IssuesPanelOpenedFrom', window.__issuesPanelOpenedFrom);
+      window.addEventListener('DevTools.KeybindSetSettingChanged', window.__keybindSetSettingChanged);
+      window.addEventListener('DevTools.DualScreenDeviceEmulated', window.__dualScreenDeviceEmulated);
     };
 
     window.__endCatchEvents = () => {
@@ -80,6 +95,8 @@ async function beginCatchEvents(frontend: puppeteer.Page) {
       window.removeEventListener('DevTools.ActionTaken', window.__actionTaken);
       window.removeEventListener('DevTools.KeyboardShortcutFired', window.__keyboardShortcutFired);
       window.removeEventListener('DevTools.IssuesPanelOpenedFrom', window.__issuesPanelOpenedFrom);
+      window.removeEventListener('DevTools.KeybindSetSettingChanged', window.__keybindSetSettingChanged);
+      window.removeEventListener('DevTools.DualScreenDeviceEmulated', window.__dualScreenDeviceEmulated);
     };
 
     window.__beginCatchEvents();
@@ -259,6 +276,40 @@ describe('User Metrics', () => {
     ]);
   });
 
+  it('dispatches an event when the keybindSet setting is changed', async () => {
+    const {frontend} = getBrowserAndPages();
+    await enableExperiment('customKeyboardShortcuts');
+    // enableExperiment reloads the DevTools and removes our listeners
+    await beginCatchEvents(frontend);
+
+    await frontend.keyboard.press('F1');
+    await waitFor('.settings-window-main');
+    await click('[aria-label="Shortcuts"]');
+    await waitFor('.keybinds-set-select');
+
+    const keybindSetSelect = await $('.keybinds-set-select select') as puppeteer.ElementHandle<HTMLSelectElement>;
+    keybindSetSelect.select('vsCode');
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.PanelShown',
+        value: 29,  // settings-preferences
+      },
+      {
+        name: 'DevTools.KeyboardShortcutFired',
+        value: 22,  // settings.show
+      },
+      {
+        name: 'DevTools.PanelShown',
+        value: 38,  // settings-keybinds
+      },
+      {
+        name: 'DevTools.KeybindSetSettingChanged',
+        value: 1,  // vsCode
+      },
+    ]);
+  });
+
   // Flaky test
   it.skip('[crbug.com/1071850]: tracks panel loading', async () => {
     // We specify the selected panel here because the default behavior is to go to the
@@ -282,5 +333,42 @@ describe('User Metrics', () => {
         },
       },
     ]);
+  });
+});
+
+describe('User Metrics for dual screen emulation', () => {
+  beforeEach(async () => {
+    await startEmulationWithDualScreenFlag();
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+  });
+
+  it('dispatch events when dual screen emulation started and span button hit', async () => {
+    await selectDualScreen();
+    await clickToggleButton();
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.DualScreenDeviceEmulated',
+        value: 0,  // Dual screen/fold device selected
+      },
+      {
+        name: 'DevTools.ActionTaken',
+        value: 10,  // Device mode enabled
+      },
+      {
+        name: 'DevTools.DualScreenDeviceEmulated',
+        value: 1,  // Toggle single/dual screen mode (span button)
+      },
+      {
+        name: 'DevTools.ActionTaken',
+        value: 10,  // Device mode enabled.
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    const {frontend} = getBrowserAndPages();
+    await endCatchEvents(frontend);
   });
 });

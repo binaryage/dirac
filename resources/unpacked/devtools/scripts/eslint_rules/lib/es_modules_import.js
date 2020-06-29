@@ -11,12 +11,17 @@
 const path = require('path');
 
 const FRONT_END_DIRECTORY = path.join(__dirname, '..', '..', '..', 'front_end');
+const INSPECTOR_OVERLAY_DIRECTORY = path.join(__dirname, '..', '..', '..', 'front_end', 'inspector_overlay');
 
 const EXEMPTED_THIRD_PARTY_MODULES = new Set([
   // lit-html is exempt as it doesn't expose all its modules from the root file
   path.join(FRONT_END_DIRECTORY, 'third_party', 'lit-html'),
   // wasmparser is exempt as it doesn't expose all its modules from the root file
   path.join(FRONT_END_DIRECTORY, 'third_party', 'wasmparser'),
+  // acorn is exempt as it doesn't expose all its modules from the root file
+  path.join(FRONT_END_DIRECTORY, 'third_party', 'acorn'),
+  // acorn-loose is exempt as it doesn't expose all its modules from the root file
+  path.join(FRONT_END_DIRECTORY, 'third_party', 'acorn-loose'),
 ]);
 
 const CROSS_NAMESPACE_MESSAGE =
@@ -53,7 +58,7 @@ function checkImportExtension(importPath, context, node) {
     return;
   }
 
-  if (!importPath.endsWith('.js')) {
+  if (!importPath.endsWith('.js') && !importPath.endsWith('.mjs')) {
     context.report({
       node,
       message: 'Missing file extension for import "{{importPath}}"',
@@ -149,7 +154,7 @@ module.exports = {
         //
         // Don't use `importPath` here, as `path.normalize` removes
         // the `./` from same-folder import paths.
-        if (!node.source.value.startsWith('.') && !/^\w+$/.test(node.source.value)) {
+        if (!node.source.value.startsWith('.') && !/^[\w\-_]+$/.test(node.source.value)) {
           context.report({
             node,
             message: 'Invalid relative URL import. An import should start with either "../" or "./".',
@@ -157,6 +162,10 @@ module.exports = {
         }
 
         if (!importingFileName.startsWith(FRONT_END_DIRECTORY)) {
+          return;
+        }
+
+        if (importingFileName.startsWith(INSPECTOR_OVERLAY_DIRECTORY)) {
           return;
         }
 

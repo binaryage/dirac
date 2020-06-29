@@ -6,10 +6,11 @@ import {assert} from 'chai';
 import {describe, it} from 'mocha';
 import * as puppeteer from 'puppeteer';
 
-import {$, click, getBrowserAndPages, resourcesPath} from '../../shared/helper.js';
-import {addBreakpointForLine, clearSourceFilesAdded, getBreakpointDecorators, getNonBreakableLines, listenForSourceFilesAdded, openSourceCodeEditorForFile, openSourcesPanel, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
+import {$, click, getBrowserAndPages, goToResource, step, waitFor} from '../../shared/helper.js';
+import {addBreakpointForLine, checkBreakpointDidNotActivate, checkBreakpointIsActive, checkBreakpointIsNotActive, clearSourceFilesAdded, getBreakpointDecorators, getNonBreakableLines, listenForSourceFilesAdded, openSourceCodeEditorForFile, openSourcesPanel, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, retrieveTopCallFrameWithoutResuming, sourceLineNumberSelector, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
 
-describe('Source Tab', async () => {
+describe('Sources Tab', async () => {
+  // Disabled to the Chromium binary -> DevTools roller working again.
   it('shows the correct wasm source on load and reload', async () => {
     async function checkSources(frontend: puppeteer.Page) {
       await waitForAdditionalSourceFiles(frontend, 2);
@@ -22,7 +23,7 @@ describe('Source Tab', async () => {
     await openSourcesPanel();
 
     await listenForSourceFilesAdded(frontend);
-    await target.goto(`${resourcesPath}/sources/wasm/call-to-add-wasm.html`);
+    await goToResource('sources/wasm/call-to-add-wasm.html');
     await checkSources(frontend);
 
     await clearSourceFilesAdded(frontend);
@@ -33,40 +34,98 @@ describe('Source Tab', async () => {
   it('can add a breakpoint in raw wasm', async () => {
     const {target, frontend} = getBrowserAndPages();
 
-    await openSourceCodeEditorForFile(target, 'add.wasm', 'wasm/call-to-add-wasm.html');
-    await addBreakpointForLine(frontend, 5);
+    await openSourceCodeEditorForFile('add.wasm', 'wasm/call-to-add-wasm.html');
+    await addBreakpointForLine(frontend, 3);
 
     const scriptLocation = await retrieveTopCallFrameScriptLocation('main();', target);
-    assert.deepEqual(scriptLocation, 'add.wasm:5');
+    assert.deepEqual(scriptLocation, 'add.wasm:0x23');
+  });
+
+  it('hits two breakpoints that are set and activated separately', async function() {
+    const {target, frontend} = getBrowserAndPages();
+
+    await step('navigate to a page and open the Sources tab', async () => {
+      await openSourceCodeEditorForFile('add.wasm', 'wasm/call-to-add-wasm.html');
+    });
+
+    await step('add a breakpoint to line No.5', async () => {
+      await addBreakpointForLine(frontend, 5);
+    });
+
+    await step('reload the page', async () => {
+      await target.reload();
+    });
+
+    await step('wait for all the source code to appear', async () => {
+      await waitFor(await sourceLineNumberSelector(5));
+    });
+
+    await checkBreakpointIsActive(5);
+
+    await step('check that the code has paused on the breakpoint at the correct script location', async () => {
+      const scriptLocation = await retrieveTopCallFrameWithoutResuming();
+      assert.deepEqual(scriptLocation, 'add.wasm:0x27');
+    });
+
+    await step('remove the breakpoint from the fifth line', async () => {
+      await frontend.click(await sourceLineNumberSelector(5));
+    });
+
+    await step('reload the page', async () => {
+      await target.reload();
+    });
+
+    await step('wait for all the source code to appear', async () => {
+      await waitFor(await sourceLineNumberSelector(5));
+    });
+
+    await checkBreakpointIsNotActive(5);
+    await checkBreakpointDidNotActivate();
+
+    await step('add a breakpoint to line No.6', async () => {
+      await addBreakpointForLine(frontend, 6);
+    });
+
+    await step('reload the page', async () => {
+      await target.reload();
+    });
+
+    await step('wait for all the source code to appear', async () => {
+      await waitFor(await sourceLineNumberSelector(6));
+    });
+
+    await checkBreakpointIsActive(6);
+
+    await step('check that the code has paused on the breakpoint at the correct script location', async () => {
+      const scriptLocation = await retrieveTopCallFrameWithoutResuming();
+      assert.deepEqual(scriptLocation, 'add.wasm:0x28');
+    });
   });
 
   it('cannot set a breakpoint on non-breakable line in raw wasm', async () => {
-    const {target, frontend} = getBrowserAndPages();
+    const {frontend} = getBrowserAndPages();
 
-    await openSourceCodeEditorForFile(target, 'add.wasm', 'wasm/call-to-add-wasm.html');
+    await openSourceCodeEditorForFile('add.wasm', 'wasm/call-to-add-wasm.html');
     assert.deepEqual(await getNonBreakableLines(frontend), [
-      1,
-      2,
-      3,
-      4,
-      9,
+      0x000,
+      0x020,
+      0x04b,
     ]);
-    // Line 3 is non-breakable.
-    await addBreakpointForLine(frontend, 3, true);
+    // Line 1 is non-breakable.
+    await addBreakpointForLine(frontend, 1, true);
     assert.deepEqual(await getBreakpointDecorators(frontend), []);
-    // Line 5 is breakable.
-    await addBreakpointForLine(frontend, 5);
-    assert.deepEqual(await getBreakpointDecorators(frontend), [5]);
+    // Line 3 is breakable.
+    await addBreakpointForLine(frontend, 3);
+    assert.deepEqual(await getBreakpointDecorators(frontend), [0x023]);
   });
 });
 
-// Disabled to the Chromium binary -> DevTools roller working again.
-describe.skip('[crbug.com/1079328] Raw-Wasm', async () => {
+describe('Raw-Wasm', async () => {
   it('displays correct location in Wasm source', async () => {
-    const {target, frontend} = getBrowserAndPages();
+    const {frontend} = getBrowserAndPages();
 
     // Have the target load the page.
-    await target.goto(`${resourcesPath}/sources/wasm/callstack-wasm-to-js.html`);
+    await goToResource('sources/wasm/callstack-wasm-to-js.html');
 
     // This page automatically enters debugging.
     const messageElement = await frontend.waitForSelector('.paused-message');
@@ -107,7 +166,7 @@ describe.skip('[crbug.com/1079328] Raw-Wasm', async () => {
     const location = await callFrameLocation.evaluate(n => n.textContent);
 
     assert.strictEqual(title, 'foo');
-    assert.strictEqual(location, 'callstack-wasm-to-js.wasm:1');
+    assert.strictEqual(location, 'callstack-wasm-to-js.wasm:0x32');
 
     // Select next call frame.
     await callFrame.press('ArrowDown');

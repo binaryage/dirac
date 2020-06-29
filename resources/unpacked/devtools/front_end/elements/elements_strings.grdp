@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
-  <message name="IDS_DEVTOOLS_034119b03fc07deec5fcb28a85957fdc" desc="Explanation of elements reference in PropertiesWidget deprecation message">
-    ($0 is a reference to the currently selected DOM node in the elements tree.)
-  </message>
   <message name="IDS_DEVTOOLS_068bc495b79facfaa7918369fa9909eb" desc="Text in Elements Tree Element of the Elements panel">
     Cut element
   </message>
@@ -11,9 +8,6 @@
   </message>
   <message name="IDS_DEVTOOLS_07f01edb2a05909a9c0d04031d7c43e1" desc="Aria accessible name in Styles Sidebar Pane of the Elements panel">
     Filter Styles
-  </message>
-  <message name="IDS_DEVTOOLS_081c9f670acb11b080077b3fb6127b4c" desc="Tooltip text that appears when hovering over the largeicon box shadow button in the Styles Sidebar Pane of the Elements panel">
-    Add box-shadow
   </message>
   <message name="IDS_DEVTOOLS_084cd932d6dd317197a20945c76603e2" desc="Text of a DOM element in Styles Sidebar Pane of the Elements panel">
     Inherited from<ph name="___">$1s<ex>''' '''</ex></ph>
@@ -153,6 +147,9 @@
   <message name="IDS_DEVTOOLS_605e072850e19521394f8bad7082acf4" desc="Text of a DOM element in Element State Pane Widget of the Elements panel">
     Force element state
   </message>
+  <message name="IDS_DEVTOOLS_685db349070d4d06c11a83153b7ed4c0" desc="Text that describes the console placeholder used to to reference the currently selected element in the DOM tree">
+    (<ph name="DOLLAR_ZERO"><ex>DollarSignZero</ex>$1s</ph> is a reference to the currently selected DOM node in the elements tree.)
+  </message>
   <message name="IDS_DEVTOOLS_686676f33cf19ca00788564f43b992cb" desc="Aria accessible name in Computed Style Widget of the Elements panel">
     Filter Computed Styles
   </message>
@@ -210,6 +207,9 @@
   <message name="IDS_DEVTOOLS_924843c5b24bc69ed7da2bff699de4f1" desc="Context menu item in Elements panel to navigate to css selector source">
     Navigate to selector source
   </message>
+  <message name="IDS_DEVTOOLS_92c2cabd05b5ccef986c062a504cbcfb" desc="Accessible label for Elements panel adorners (suffix badges in Elements Tree Outline)">
+    adorner active
+  </message>
   <message name="IDS_DEVTOOLS_97d28fbc573f9f331f5b1886b5c1eeef" desc="Text in Elements Tree Element of the Elements panel">
     Copy full XPath
   </message>
@@ -230,9 +230,6 @@
   </message>
   <message name="IDS_DEVTOOLS_abdf882c25e08d9ba219fe33f17591fe" desc="Link text content in Elements Tree Outline of the Elements panel">
     reveal
-  </message>
-  <message name="IDS_DEVTOOLS_ad4ac01e4a5688063dace5ba5d0f04de" desc="Tooltip text that appears when hovering over the largeicon add button in the Styles Sidebar Pane of the Elements panel">
-    Insert Style Rule Below
   </message>
   <message name="IDS_DEVTOOLS_b0351810a5721f657b088608865849dd" desc="Text in Styles Sidebar Pane of the Elements panel">
     via inspector
@@ -261,9 +258,6 @@
   <message name="IDS_DEVTOOLS_c736f6b512801b5fe4670e5968ee7be7" desc="Text in Element State Pane Widget of the Elements panel">
     Toggle Element State
   </message>
-  <message name="IDS_DEVTOOLS_c8997c00026b49aa07e0a8c11511e390" desc="Tooltip text that appears when hovering over the largeicon text shadow button in the Styles Sidebar Pane of the Elements panel">
-    Add text-shadow
-  </message>
   <message name="IDS_DEVTOOLS_c8f439c7ee24c34bc0b2e39a976509ad" desc="Text in Platform Fonts Widget of the Elements panel">
     (<ph name="USAGE">$1d<ex>4</ex></ph> glyphs)
   </message>
@@ -272,6 +266,9 @@
   </message>
   <message name="IDS_DEVTOOLS_d0ad356f675744ef8f0311e83400b6ba" desc="Text in Platform Fonts Widget of the Elements panel">
     Network resource
+  </message>
+  <message name="IDS_DEVTOOLS_d2303f7f6800bc01a1036c7fbd5bc0f0" desc="Text in Styles Sidebar Pane of the Elements panel">
+    constructed stylesheet
   </message>
   <message name="IDS_DEVTOOLS_d42f4851e770aa0f758b01388874f67b" desc="Text in Metrics Sidebar Pane of the Elements panel">
     margin
@@ -282,20 +279,20 @@
   <message name="IDS_DEVTOOLS_eb92025cb8c66f1850c13a9b602a1856" desc="Text in Computed Style Widget of the Elements panel">
     Show all
   </message>
+  <message name="IDS_DEVTOOLS_ec409e94ae4378283bc1ae36bf28a62e" desc="Accessible label for Elements panel adorners (suffix badges in Elements Tree Outline)">
+    adorner
+  </message>
+  <message name="IDS_DEVTOOLS_eeb120863c8112ad8bac38556ae8c58b" desc="Accessible label for Elements panel adorners (suffix badges in Elements Tree Outline)">
+    <ph name="THIS_NAME">$1s<ex>grid</ex></ph> adorner
+  </message>
   <message name="IDS_DEVTOOLS_eeb9a8e813f34f5f036332efc0257246" desc="Title of an action in the elements tool to capture area screenshot">
     Capture area screenshot
   </message>
   <message name="IDS_DEVTOOLS_f0e82f268931d7aed566ed41457fceb4" desc="Screen reader announcement string when adding a class via the Classes Pane Widget.">
     Class <ph name="ANNOUNCEMENTSTRING">$1s<ex>title-container</ex></ph> added.
   </message>
-  <message name="IDS_DEVTOOLS_f2a70e3a6d14a56de7ebbb5b748ed127" desc="Tooltip text that appears when hovering over the largeicon foreground color button in the Styles Sidebar Pane of the Elements panel">
-    Add color
-  </message>
   <message name="IDS_DEVTOOLS_f3d48b9ad0a801282e3adc8b452d5fc0" desc="A context menu item in the Elements Tree Element of the Elements panel">
     Edit as HTML
-  </message>
-  <message name="IDS_DEVTOOLS_f750c8807bc5f4a7bd259788114a4ebd" desc="Tooltip text that appears when hovering over the largeicon background color button in the Styles Sidebar Pane of the Elements panel">
-    Add background-color
   </message>
   <message name="IDS_DEVTOOLS_f8d0f1896a9e4ad16d43caa28534df32" desc="Show all button text content in Styles Sidebar Pane of the Elements panel">
     Show All Properties (<ph name="PROPERTIES_LENGTH___COUNT">$1s<ex>3</ex></ph> more)

@@ -2,14 +2,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("../../scripts/build/copy_to_gen.gni")
 import("../../third_party/typescript/typescript.gni")
 
-ts_library("perf") {
+group("perf") {
+  deps = [
+    ":config",
+    ":tests",
+  ]
+}
+
+ts_library("tests") {
   testonly = true
-  sources = [ "test-list.ts" ]
 
   deps = [
     "application",
     "helpers",
   ]
+}
+
+copy_to_gen("config") {
+  sources = [ ".mocharc.js" ]
 }
