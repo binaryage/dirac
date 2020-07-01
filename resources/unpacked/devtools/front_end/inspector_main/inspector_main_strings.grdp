@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
-  <message name="IDS_DEVTOOLS_035f93937dfd06c795a75877c9e6ddeb" desc="Checkbox subtitle for 'FPS meter' in the Rendering tool">
-    Plots frames per second, frame rate distribution, and GPU memory.
+  <message name="IDS_DEVTOOLS_79eabc5ef01281e5513568fb4f8674d2" desc="Text in Rendering Options">
+    Frame Rendering Stats
+  </message>
+  <message name="IDS_DEVTOOLS_82064341bcde66b437c0d657b44ac0be" desc="Checkbox subtitle for 'Frame Rendering Stats' in the Rendering tool">
+    Plots frame throughput, dropped frames distribution, and GPU memory.
   </message>
   <message name="IDS_DEVTOOLS_05934928102b17827b8f03ed60c3e6e0" desc="Command Menu search query that points to the Rendering tool">
     fps
@@ -48,6 +51,9 @@
   <message name="IDS_DEVTOOLS_508386d4665c7d3d7b4958a52e28eab1" desc="Command Menu search query that points to the Rendering tool">
     CSS media feature
   </message>
+  <message name="IDS_DEVTOOLS_528927d3c247929aa7f1bbe5133dbe17" desc="Subtitle of the checkbox to disable local fonts in Rendering panel">
+    Disables local() sources in @font-face rules. Requires a page reload to apply.
+  </message>
   <message name="IDS_DEVTOOLS_53f2f05226edcd77bd4351cb27d07ba8" desc="Text in Rendering Options">
     Highlights frames (red) detected to be ads.
   </message>
@@ -59,9 +65,6 @@
   </message>
   <message name="IDS_DEVTOOLS_6526f858ca97d80241dacb00b40504bb" desc="Checkbox subtitle for 'Hit-test borders' in the Rendering tool">
     Shows borders around hit-test regions.
-  </message>
-  <message name="IDS_DEVTOOLS_6eac03f446434baa29ece59d88410812" desc="Text in Rendering Options">
-    FPS meter
   </message>
   <message name="IDS_DEVTOOLS_7962fd6013e985379fd3a4964d769703" desc="Text in Rendering Options">
     Hit-test borders
@@ -96,6 +99,9 @@
   <message name="IDS_DEVTOOLS_a4c766a2e6eb33e7575331b6affd9778" desc="Checkbox subtitle for 'Paint flashing' in the Rendering tool">
     Highlights areas of the page (green) that need to be repainted. May not be suitable for people prone to photosensitive epilepsy.
   </message>
+  <message name="IDS_DEVTOOLS_acedccca82f1cf8be95ce70905a0c9be" desc="Subtitle for a select box under the Rendering drawer">
+    Forces CSS prefers-reduced-data media feature
+  </message>
   <message name="IDS_DEVTOOLS_c1940aeeb9693a02e28c52eb85ce261c" desc="Command Menu search query that points to the Rendering tool">
     paint
   </message>
@@ -104,9 +110,6 @@
   </message>
   <message name="IDS_DEVTOOLS_d543dbe64db0c952d6e13c9519218b3e" desc="Title of an action in the inspector main tool to hard reload">
     Hard reload page
-  </message>
-  <message name="IDS_DEVTOOLS_f0e576f5f713bfcd84dceaf16f785598" desc="Subtitle of the checkbox to disable local fonts in Rendering panel">
-    Requires a page reload to apply.
   </message>
   <message name="IDS_DEVTOOLS_f23c9ba06e7123f0b4c906de90fbcc9f" desc="Title of a setting under the DevTools category that can be invoked through the Command Menu">
     Auto-open <ph name="LOCKED_1">DevTools</ph> for popups

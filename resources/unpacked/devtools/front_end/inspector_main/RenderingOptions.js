@@ -31,6 +31,28 @@
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as UI from '../ui/ui.js';
 
+// TODO(1096068): remove this feature detection and expose the UI
+// unconditionally once prefers-reduced-data ships unflagged. At that
+// point, we can also add `category` and `tags` to the entry in
+// `front_end/sdk/module.json` to make this feature available in the
+// Command Menu.
+/**
+ * @return {boolean}
+ */
+const supportsPrefersReducedData = () => {
+  const style = document.createElement('style');
+  style.textContent = `
+    @media (prefers-reduced-data: reduce), (prefers-reduced-data: no-preference) {
+      html { --supports-prefers-reduced-data: yass; }
+    }
+  `;
+  document.head.append(style);
+  const hasSupport =
+      Boolean(getComputedStyle(document.documentElement).getPropertyValue('--supports-prefers-reduced-data'));
+  style.remove();
+  return hasSupport;
+};
+
 export class RenderingOptionsView extends UI.Widget.VBox {
   constructor() {
     super(true);
@@ -38,50 +60,52 @@ export class RenderingOptionsView extends UI.Widget.VBox {
 
     this._appendCheckbox(
         ls`Paint flashing`,
-        ls
-        `Highlights areas of the page (green) that need to be repainted. May not be suitable for people prone to photosensitive epilepsy.`,
+        ls`Highlights areas of the page (green) that need to be repainted. May not be suitable for people prone to photosensitive epilepsy.`,
         Common.Settings.Settings.instance().moduleSetting('showPaintRects'));
     this._appendCheckbox(
         ls`Layout Shift Regions`,
-        ls
-        `Highlights areas of the page (blue) that were shifted. May not be suitable for people prone to photosensitive epilepsy.`,
+        ls`Highlights areas of the page (blue) that were shifted. May not be suitable for people prone to photosensitive epilepsy.`,
         Common.Settings.Settings.instance().moduleSetting('showLayoutShiftRegions'));
-        this._appendCheckbox(
-            ls`Layer borders`, ls`Shows layer borders (orange/olive) and tiles (cyan).`,
-            Common.Settings.Settings.instance().moduleSetting('showDebugBorders'));
-        this._appendCheckbox(
-            ls`FPS meter`, ls`Plots frames per second, frame rate distribution, and GPU memory.`,
-            Common.Settings.Settings.instance().moduleSetting('showFPSCounter'));
+    this._appendCheckbox(
+        ls`Layer borders`, ls`Shows layer borders (orange/olive) and tiles (cyan).`,
+        Common.Settings.Settings.instance().moduleSetting('showDebugBorders'));
+    this._appendCheckbox(
+        ls`Frame Rendering Stats`, ls`Plots frame throughput, dropped frames distribution, and GPU memory.`,
+        Common.Settings.Settings.instance().moduleSetting('showFPSCounter'));
     this._appendCheckbox(
         ls`Scrolling performance issues`,
-        ls
-        `Highlights elements (teal) that can slow down scrolling, including touch & wheel event handlers and other main-thread scrolling situations.`,
+        ls`Highlights elements (teal) that can slow down scrolling, including touch & wheel event handlers and other main-thread scrolling situations.`,
         Common.Settings.Settings.instance().moduleSetting('showScrollBottleneckRects'));
-        this._appendCheckbox(
-            ls`Highlight ad frames`, ls`Highlights frames (red) detected to be ads.`,
-            Common.Settings.Settings.instance().moduleSetting('showAdHighlights'));
-        this._appendCheckbox(
-            ls`Hit-test borders`, ls`Shows borders around hit-test regions.`,
-            Common.Settings.Settings.instance().moduleSetting('showHitTestBorders'));
-        this._appendCheckbox(
-            ls`Disable local fonts`, ls`Requires a page reload to apply.`,
-            Common.Settings.Settings.instance().moduleSetting('localFontsDisabled'));
-        this.contentElement.createChild('div').classList.add('panel-section-separator');
+    this._appendCheckbox(
+        ls`Highlight ad frames`, ls`Highlights frames (red) detected to be ads.`,
+        Common.Settings.Settings.instance().moduleSetting('showAdHighlights'));
+    this._appendCheckbox(
+        ls`Hit-test borders`, ls`Shows borders around hit-test regions.`,
+        Common.Settings.Settings.instance().moduleSetting('showHitTestBorders'));
+    this._appendCheckbox(
+        ls`Disable local fonts`, ls`Disables local() sources in @font-face rules. Requires a page reload to apply.`,
+        Common.Settings.Settings.instance().moduleSetting('localFontsDisabled'));
+    this.contentElement.createChild('div').classList.add('panel-section-separator');
 
-        this._appendSelect(
-            ls`Forces media type for testing print and screen styles`,
-            Common.Settings.Settings.instance().moduleSetting('emulatedCSSMedia'));
-        this._appendSelect(
-            ls`Forces CSS prefers-color-scheme media feature`,
-            Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersColorScheme'));
-        this._appendSelect(
-            ls`Forces CSS prefers-reduced-motion media feature`,
-            Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion'));
-        this.contentElement.createChild('div').classList.add('panel-section-separator');
+    this._appendSelect(
+        ls`Forces media type for testing print and screen styles`,
+        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMedia'));
+    this._appendSelect(
+        ls`Forces CSS prefers-color-scheme media feature`,
+        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersColorScheme'));
+    this._appendSelect(
+        ls`Forces CSS prefers-reduced-motion media feature`,
+        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion'));
+    if (supportsPrefersReducedData()) {
+      this._appendSelect(
+          ls`Forces CSS prefers-reduced-data media feature`,
+          Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedData'));
+    }
+    this.contentElement.createChild('div').classList.add('panel-section-separator');
 
-        this._appendSelect(
-            ls`Forces vision deficiency emulation`,
-            Common.Settings.Settings.instance().moduleSetting('emulatedVisionDeficiency'));
+    this._appendSelect(
+        ls`Forces vision deficiency emulation`,
+        Common.Settings.Settings.instance().moduleSetting('emulatedVisionDeficiency'));
   }
 
   /**
