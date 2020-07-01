@@ -58,6 +58,18 @@ export class OverlayModel extends SDKModel {
 
     this._inspectModeEnabled = false;
     this._gridFeaturesExperimentEnabled = Root.Runtime.experiments.isEnabled('cssGridFeatures');
+
+    /** @type {?Common.Settings.Setting<*>} */
+    this._showGridBorderSetting = null;
+    /** @type {?Common.Settings.Setting<*>} */
+    this._showGridLinesSetting = null;
+    /** @type {?Common.Settings.Setting<*>} */
+    this._showGridLineNumbersSetting = null;
+    /** @type {?Common.Settings.Setting<*>} */
+    this._showGridGapsSetting = null;
+    if (this._gridFeaturesExperimentEnabled) {
+      this._registerGridSettingsTelemetry();
+    }
     this._hideHighlightTimeout = null;
     this._defaultHighlighter = new DefaultHighlighter(this);
     this._highlighter = this._defaultHighlighter;
@@ -182,6 +194,29 @@ export class OverlayModel extends SDKModel {
       this._updatePausedInDebuggerMessage();
     }
     return this._overlayAgent.setShowViewportSizeOnResize(this._showViewportSizeOnResize);
+  }
+
+  _registerGridSettingsTelemetry() {
+    this._showGridBorderSetting = Common.Settings.Settings.instance().moduleSetting('showGridBorder');
+    this._showGridLinesSetting = Common.Settings.Settings.instance().moduleSetting('showGridLines');
+    this._showGridLineNumbersSetting = Common.Settings.Settings.instance().moduleSetting('showGridLineNumbers');
+    this._showGridGapsSetting = Common.Settings.Settings.instance().moduleSetting('showGridGaps');
+
+    this._showGridBorderSetting.addChangeListener(() => this._recordGridSettingChange(this._showGridBorderSetting));
+    this._showGridLinesSetting.addChangeListener(() => this._recordGridSettingChange(this._showGridLinesSetting));
+    this._showGridLineNumbersSetting.addChangeListener(
+        () => this._recordGridSettingChange(this._showGridLineNumbersSetting));
+    this._showGridGapsSetting.addChangeListener(() => this._recordGridSettingChange(this._showGridGapsSetting));
+  }
+
+  /**
+   * @param {?Common.Settings.Setting<*>} setting
+   */
+  _recordGridSettingChange(setting) {
+    if (!setting) {
+      return;
+    }
+    Host.userMetrics.gridSettingChanged(`${setting.name}.${setting.get()}`);
   }
 
   /**
@@ -313,10 +348,9 @@ export class OverlayModel extends SDKModel {
    * @return {!Protocol.Overlay.GridHighlightConfig}
    */
   _buildGridHighlightConfig() {
-    const gridBorderSetting = Common.Settings.Settings.instance().moduleSetting('showGridBorder').get();
     let showGridBorder = false;
     let gridBorderDashed = false;
-    switch (gridBorderSetting) {
+    switch (this._showGridBorderSetting.get()) {
       case 'dashed':
         showGridBorder = true;
         gridBorderDashed = true;
@@ -327,11 +361,10 @@ export class OverlayModel extends SDKModel {
       default:
         break;
     }
-    const showGridLinesSetting = Common.Settings.Settings.instance().moduleSetting('showGridLines').get();
     let showGridLines = false;
     let gridLinesDashed = false;
     let showGridExtensionLines;
-    switch (showGridLinesSetting) {
+    switch (this._showGridLinesSetting.get()) {
       case 'dashed':
         showGridLines = true;
         gridLinesDashed = true;
@@ -353,10 +386,9 @@ export class OverlayModel extends SDKModel {
     }
     // Add background to help distinguish rows/columns when cell borders are not outlined
     const addBackgroundsToGaps = !showGridLines;
-    const showGridLineNumbersSetting = Common.Settings.Settings.instance().moduleSetting('showGridLineNumbers').get();
     let showPositiveLineNumbers = false;
     let showNegativeLineNumbers = false;
-    switch (showGridLineNumbersSetting) {
+    switch (this._showGridLineNumbersSetting.get()) {
       case 'positive':
         showPositiveLineNumbers = true;
         break;
@@ -370,10 +402,9 @@ export class OverlayModel extends SDKModel {
       default:
         break;
     }
-    const showGridGapsSetting = Common.Settings.Settings.instance().moduleSetting('showGridGaps').get();
     let showGridRowGaps = false;
     let showGridColumnGaps = false;
-    switch (showGridGapsSetting) {
+    switch (this._showGridGapsSetting.get()) {
       case 'both':
         showGridRowGaps = true;
         showGridColumnGaps = true;
@@ -450,6 +481,25 @@ export class OverlayModel extends SDKModel {
       } else {
         // Support for the legacy grid cell highlight.
         highlightConfig.cssGridColor = Common.Color.PageHighlight.CssGrid.toProtocolRGBA();
+      }
+    }
+
+    if (mode.endsWith('gap') && this._gridFeaturesExperimentEnabled) {
+      highlightConfig.gridHighlightConfig = {
+        gridBorderColor: Common.Color.PageHighlight.GridBorder.toProtocolRGBA(),
+        gridBorderDash: true
+      };
+
+      if (mode === 'gap' || mode === 'row-gap') {
+        highlightConfig.gridHighlightConfig.rowGapColor =
+            Common.Color.PageHighlight.GridRowGapBackground.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.rowHatchColor = Common.Color.PageHighlight.GridRowGapHatch.toProtocolRGBA();
+      }
+      if (mode === 'gap' || mode === 'column-gap') {
+        highlightConfig.gridHighlightConfig.columnGapColor =
+            Common.Color.PageHighlight.GridColumnGapBackground.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.columnHatchColor =
+            Common.Color.PageHighlight.GridColumnGapHatch.toProtocolRGBA();
       }
     }
 
