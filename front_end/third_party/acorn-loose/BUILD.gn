@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../../scripts/build/copy_to_gen.gni")
+import("../../../scripts/build/ninja/copy.gni")
 
 copy_to_gen("acorn-loose") {
   sources = [
@@ -10,5 +10,6 @@ copy_to_gen("acorn-loose") {
     "package/dist/acorn-loose.d.ts",
     "package/dist/acorn-loose.js",
     "package/dist/acorn-loose.js.map",
+    "package/dist/acorn-loose.mjs",
   ]
 }

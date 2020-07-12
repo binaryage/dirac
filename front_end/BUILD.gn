@@ -11,6 +11,7 @@ group("front_end") {
     ":front_end_html_entrypoints",
     ":ts_library-verification",
     "component_docs",
+    "i18n:bundle_i18n",
   ]
 }
 
@@ -50,7 +51,6 @@ ts_library("ts_library-verification") {
     "browser_sdk",
     "color_picker",
     "common",
-    "elements",
     "formatter_worker",
     "host",
     "inspector_overlay",

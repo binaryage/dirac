@@ -39,14 +39,6 @@ finally:
 
 FRONT_END_DIRECTORY = path.join(os.path.dirname(path.abspath(__file__)), '..', '..', 'front_end')
 
-MODULE_LIST = [
-    path.join(FRONT_END_DIRECTORY, subfolder, subfolder + '.js')
-    for subfolder in os.listdir(FRONT_END_DIRECTORY)
-    if path.isdir(os.path.join(FRONT_END_DIRECTORY, subfolder))
-]
-EXTERNAL_MODULE_LIST = ','.join(
-    [path.abspath(module) for module in MODULE_LIST])
-
 
 def main(argv):
     try:
@@ -176,7 +168,8 @@ class ReleaseBuilder(object):
                 if len(non_autostart_deps):
                     bail_error(
                         'Non-autostart dependencies specified for the autostarted module "%s": %s' % (name, non_autostart_deps))
-                self._rollup_module(name, desc.get('modules', []))
+                self._rollup_module(name, desc.get('modules', []),
+                                    desc.get('skip_rollup', False))
             else:
                 non_autostart.add(name)
 
@@ -204,12 +197,27 @@ class ReleaseBuilder(object):
         if resources:
             self._write_module_resources(resources, output)
         if modules:
-            self._rollup_module(module_name, modules)
+            self._rollup_module(module_name, modules,
+                                module.get('skip_rollup', False))
         output_file_path = concatenated_module_filename(module_name, self.output_dir)
         write_file(output_file_path, minify_js(output.getvalue()))
         output.close()
 
-    def _rollup_module(self, module_name, modules):
+    def _rollup_module(self, module_name, modules, skip_rollup):
+        legacyFileName = module_name + '-legacy.js'
+        if legacyFileName in modules:
+            write_file(
+                join(self.output_dir, module_name, legacyFileName),
+                minify_js(
+                    read_file(
+                        join(self.application_dir, module_name,
+                             legacyFileName))))
+
+        # Temporary hack, as we use `devtools_entrypoint` for this module now
+        # TODO(crbug.com/1101738): remove once all folders are migrated
+        if skip_rollup:
+            return
+
         js_entrypoint = join(self.application_dir, module_name, module_name + '.js')
         out = ''
         if self.use_rollup:
@@ -217,7 +225,7 @@ class ReleaseBuilder(object):
                 devtools_paths.node_path(),
                 devtools_paths.rollup_path(), '--config',
                 join(FRONT_END_DIRECTORY, 'rollup.config.js'), '--input',
-                js_entrypoint, '--external', EXTERNAL_MODULE_LIST
+                js_entrypoint
             ],
                                               stdout=subprocess.PIPE,
                                               stderr=subprocess.PIPE)
@@ -229,12 +237,6 @@ class ReleaseBuilder(object):
             out = read_file(js_entrypoint)
         write_file(join(self.output_dir, module_name, module_name + '.js'),
                    minify_js(out))
-
-        legacyFileName = module_name + '-legacy.js'
-        if legacyFileName in modules:
-            write_file(
-                join(self.output_dir, module_name, legacyFileName),
-                minify_js(read_file(join(self.application_dir, module_name, legacyFileName))))
 
 
 if __name__ == '__main__':

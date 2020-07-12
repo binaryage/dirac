@@ -2033,22 +2033,6 @@ export class ResourcesSection {
   }
 
   /**
-   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
-   * @returns {?SDK.ResourceTreeModel.ResourceTreeFrame}
-   */
-  static _getParentFrame(frame) {
-    const parentFrame = frame.parentFrame;
-    if (parentFrame) {
-      return parentFrame;
-    }
-    const parentTarget = frame.resourceTreeModel().target().parentTarget();
-    if (!parentTarget) {
-      return null;
-    }
-    return parentTarget.model(SDK.ResourceTreeModel.ResourceTreeModel).mainFrame;
-  }
-
-  /**
    * @param {?SDK.ResourceTreeModel.ResourceTreeFrame} frame
    * @return {boolean}
    */
@@ -2057,7 +2041,7 @@ export class ResourcesSection {
       return false;
     }
     let treeElement = this._treeElementForFrameId.get(frame.id);
-    if (!treeElement && !this._expandFrame(ResourcesSection._getParentFrame(frame))) {
+    if (!treeElement && !this._expandFrame(frame.parentFrame())) {
       return false;
     }
     treeElement = this._treeElementForFrameId.get(frame.id);
@@ -2088,7 +2072,7 @@ export class ResourcesSection {
    * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
    */
   _frameAdded(frame) {
-    const parentFrame = ResourcesSection._getParentFrame(frame);
+    const parentFrame = frame.parentFrame();
     const parentTreeElement = parentFrame ? this._treeElementForFrameId.get(parentFrame.id) : this._treeElement;
     if (!parentTreeElement) {
       return;
@@ -2192,10 +2176,13 @@ export class FrameTreeElement extends BaseStorageTreeElement {
     return false;
   }
 
+  /**
+   * @param {boolean} hovered
+   */
   set hovered(hovered) {
     if (hovered) {
       this.listItemElement.classList.add('hovered');
-      this._frame.resourceTreeModel().domModel().overlayModel().highlightFrame(this._frameId);
+      this._frame.highlight();
     } else {
       this.listItemElement.classList.remove('hovered');
       SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
@@ -2222,10 +2209,10 @@ export class FrameTreeElement extends BaseStorageTreeElement {
       categoryElement =
           new StorageCategoryTreeElement(this._section._panel, resource.resourceType().category().title, categoryName);
       this._categoryElements[resourceType.name()] = categoryElement;
-      this._insertInPresentationOrder(this, categoryElement);
+      this.appendChild(categoryElement, FrameTreeElement._presentationOrderCompare);
     }
     const resourceTreeElement = new FrameResourceTreeElement(this._section._panel, resource);
-    this._insertInPresentationOrder(categoryElement, resourceTreeElement);
+    categoryElement.appendChild(resourceTreeElement, FrameTreeElement._presentationOrderCompare);
     this._treeElementForResource[resource.url] = resourceTreeElement;
   }
 
@@ -2246,11 +2233,19 @@ export class FrameTreeElement extends BaseStorageTreeElement {
     if (!this._populated) {
       return;
     }
-    this._insertInPresentationOrder(this, treeElement);
+    super.appendChild(treeElement, FrameTreeElement._presentationOrderCompare);
   }
 
-  _insertInPresentationOrder(parentTreeElement, childTreeElement) {
-    // Insert in the alphabetical order, first frames, then resources. Document resource goes last.
+  /**
+   * Order elements by type (first frames, then resources, last Document resources)
+   * and then each of these groups in the alphabetical order.
+   * @param {!UI.TreeOutline.TreeElement} treeElement1
+   * @param {!UI.TreeOutline.TreeElement} treeElement2
+   */
+  static _presentationOrderCompare(treeElement1, treeElement2) {
+    /**
+     * @param {*} treeElement
+     */
     function typeWeight(treeElement) {
       if (treeElement instanceof StorageCategoryTreeElement) {
         return 2;
@@ -2261,34 +2256,14 @@ export class FrameTreeElement extends BaseStorageTreeElement {
       return 3;
     }
 
-    function compare(treeElement1, treeElement2) {
-      const typeWeight1 = typeWeight(treeElement1);
-      const typeWeight2 = typeWeight(treeElement2);
-
-      let result;
-      if (typeWeight1 > typeWeight2) {
-        result = 1;
-      } else if (typeWeight1 < typeWeight2) {
-        result = -1;
-      } else {
-        result = treeElement1.titleAsText().localeCompare(treeElement2.titleAsText());
-      }
-      return result;
-    }
-
-    const childCount = parentTreeElement.childCount();
-    let i;
-    for (i = 0; i < childCount; ++i) {
-      if (compare(childTreeElement, parentTreeElement.childAt(i)) < 0) {
-        break;
-      }
-    }
-    parentTreeElement.insertChild(childTreeElement, i);
+    const typeWeight1 = typeWeight(treeElement1);
+    const typeWeight2 = typeWeight(treeElement2);
+    return typeWeight1 - typeWeight2 || treeElement1.titleAsText().localeCompare(treeElement2.titleAsText());
   }
 
   /**
    * @override
-   * @returns {!Promise}
+   * @return {!Promise<void>}
    */
   async onpopulate() {
     this._populated = true;

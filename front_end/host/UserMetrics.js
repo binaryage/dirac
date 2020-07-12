@@ -34,6 +34,7 @@ import * as Common from '../common/common.js';
  * @unrestricted
  */
 import {InspectorFrontendHostInstance} from './InspectorFrontendHost.js';
+import {EnumeratedHistogram} from './InspectorFrontendHostAPI.js';
 
 export class UserMetrics {
   constructor() {
@@ -48,8 +49,8 @@ export class UserMetrics {
   panelShown(panelName) {
     const code = PanelCodes[panelName] || 0;
     const size = Object.keys(PanelCodes).length + 1;
-    InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.PanelShown', code, size);
-    Common.EventTarget.fireEvent('DevTools.PanelShown', {value: code});
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.PanelShown, code, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.PanelShown, {value: code});
     // Store that the user has changed the panel so we know launch histograms should not be fired.
     this._panelChangedSinceLaunch = true;
   }
@@ -73,8 +74,8 @@ export class UserMetrics {
    */
   actionTaken(action) {
     const size = Object.keys(Action).length + 1;
-    InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.ActionTaken', action, size);
-    Common.EventTarget.fireEvent('DevTools.ActionTaken', {value: action});
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.ActionTaken, action, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.ActionTaken, {value: action});
   }
 
   /**
@@ -122,8 +123,8 @@ export class UserMetrics {
   keybindSetSettingChanged(keybindSet) {
     const size = Object.keys(KeybindSetSettings).length + 1;
     const value = KeybindSetSettings[keybindSet] || 0;
-    InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.KeybindSetSettingChanged', value, size);
-    Common.EventTarget.fireEvent('DevTools.KeybindSetSettingChanged', {value});
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.KeybindSetSettingChanged, value, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.KeybindSetSettingChanged, {value});
   }
 
   /**
@@ -132,8 +133,8 @@ export class UserMetrics {
   keyboardShortcutFired(actionId) {
     const size = Object.keys(KeyboardShortcutAction).length + 1;
     const action = KeyboardShortcutAction[actionId] || KeyboardShortcutAction.OtherShortcut;
-    InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.KeyboardShortcutFired', action, size);
-    Common.EventTarget.fireEvent('DevTools.KeyboardShortcutFired', {value: action});
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.KeyboardShortcutFired, action, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.KeyboardShortcutFired, {value: action});
   }
 
   /**
@@ -141,8 +142,9 @@ export class UserMetrics {
    */
   issuesPanelOpenedFrom(issueOpener) {
     const size = Object.keys(IssueOpener).length + 1;
-    InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.IssuesPanelOpenedFrom', issueOpener, size);
-    Common.EventTarget.fireEvent('DevTools.IssuesPanelOpenedFrom', {value: issueOpener});
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+        EnumeratedHistogram.IssuesPanelOpenedFrom, issueOpener, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.IssuesPanelOpenedFrom, {value: issueOpener});
   }
 
   /**
@@ -150,8 +152,9 @@ export class UserMetrics {
    */
   dualScreenDeviceEmulated(emulationAction) {
     const size = Object.keys(DualScreenDeviceEmulated).length + 1;
-    InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.DualScreenDeviceEmulated', emulationAction, size);
-    Common.EventTarget.fireEvent('DevTools.DualScreenDeviceEmulated', {value: emulationAction});
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+        EnumeratedHistogram.DualScreenDeviceEmulated, emulationAction, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.DualScreenDeviceEmulated, {value: emulationAction});
   }
 
   /**
@@ -163,8 +166,8 @@ export class UserMetrics {
     if (!gridSetting) {
       return;
     }
-    InspectorFrontendHostInstance.recordEnumeratedHistogram('DevTools.GridSettingChanged', gridSetting, size);
-    Common.EventTarget.fireEvent('DevTools.GridSettingChanged', {value: gridSetting});
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.GridSettingChanged, gridSetting, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.GridSettingChanged, {value: gridSetting});
   }
 }
 
@@ -214,7 +217,8 @@ export const Action = {
   SettingsOpenedFromMenu: 37,
   SettingsOpenedFromCommandMenu: 38,
   TabMovedToDrawer: 39,
-  TabMovedToMainPanel: 40
+  TabMovedToMainPanel: 40,
+  CaptureCssOverviewClicked: 41
 };
 
 /** @type {!Object<string, number>} */
@@ -257,7 +261,8 @@ export const PanelCodes = {
   'settings-emulation-locations': 35,
   'settings-shortcuts': 36,
   'drawer-issues-pane': 37,
-  'settings-keybinds': 38
+  'settings-keybinds': 38,
+  'cssoverview': 39
 };
 
 /** @type {!Object<string, number>} */
@@ -292,6 +297,75 @@ export const KeyboardShortcutAction = {
   'quickOpen.show': 21,
   'settings.show': 22,
   'sources.search': 23,
+  'background-service.toggle-recording': 24,
+  'components.collect-garbage': 25,
+  'console.clear.history': 26,
+  'console.create-pin': 27,
+  'coverage.start-with-reload': 28,
+  'coverage.toggle-recording': 29,
+  'debugger.breakpoint-input-window': 30,
+  'debugger.evaluate-selection': 31,
+  'debugger.next-call-frame': 32,
+  'debugger.previous-call-frame': 33,
+  'debugger.run-snippet': 34,
+  'debugger.toggle-breakpoints-active': 35,
+  'elements.capture-area-screenshot': 36,
+  'emulation.capture-full-height-screenshot': 37,
+  'emulation.capture-node-screenshot': 38,
+  'emulation.capture-screenshot': 39,
+  'emulation.show-sensors': 40,
+  'emulation.toggle-device-mode': 41,
+  'help.release-notes': 42,
+  'help.report-issue': 43,
+  'input.start-replaying': 44,
+  'input.toggle-pause': 45,
+  'input.toggle-recording': 46,
+  'inspector_main.focus-debuggee': 47,
+  'inspector_main.hard-reload': 48,
+  'inspector_main.reload': 49,
+  'live-heap-profile.start-with-reload': 50,
+  'live-heap-profile.toggle-recording': 51,
+  'main.debug-reload': 52,
+  'main.next-tab': 53,
+  'main.previous-tab': 54,
+  'main.search-in-panel.cancel': 55,
+  'main.search-in-panel.find-next': 56,
+  'main.search-in-panel.find-previous': 57,
+  'main.toggle-dock': 58,
+  'main.zoom-in': 59,
+  'main.zoom-out': 60,
+  'main.zoom-reset': 61,
+  'network-conditions.network-low-end-mobile': 62,
+  'network-conditions.network-mid-tier-mobile': 63,
+  'network-conditions.network-offline': 64,
+  'network-conditions.network-online': 65,
+  'profiler.heap-toggle-recording': 66,
+  'profiler.js-toggle-recording': 67,
+  'resources.clear': 68,
+  'settings.documentation': 69,
+  'settings.shortcuts': 70,
+  'sources.add-folder-to-workspace': 71,
+  'sources.add-to-watch': 72,
+  'sources.close-all': 73,
+  'sources.close-editor-tab': 74,
+  'sources.create-snippet': 75,
+  'sources.go-to-line': 76,
+  'sources.go-to-member': 77,
+  'sources.jump-to-next-location': 78,
+  'sources.jump-to-previous-location': 79,
+  'sources.rename': 80,
+  'sources.save': 81,
+  'sources.save-all': 82,
+  'sources.switch-file': 83,
+  'timeline.jump-to-next-frame': 84,
+  'timeline.jump-to-previous-frame': 85,
+  'timeline.load-from-file': 86,
+  'timeline.next-recording': 87,
+  'timeline.previous-recording': 88,
+  'timeline.record-reload': 89,
+  'timeline.save-to-file': 90,
+  'timeline.show-history': 91,
+  'timeline.toggle-recording': 92,
 };
 
 /** @enum {number} */
@@ -327,5 +401,7 @@ export const GridSettings = {
   'showGridGaps.none': 12,
   'showGridGaps.row-gaps': 13,
   'showGridGaps.column-gaps': 14,
-  'showGridGaps.both': 15
+  'showGridGaps.both': 15,
+  'showGridAreas.false': 16,
+  'showGridAreas.true': 17
 };

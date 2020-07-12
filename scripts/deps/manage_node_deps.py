@@ -4,7 +4,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """
-Helper to manage DEPS.
+Helper to manage DEPS. Use this script to update node_modules instead of
+running npm install manually. To upgrade a dependency, change the version
+number in DEPS below and run this script.
 """
 
 import os
@@ -33,6 +35,7 @@ LICENSES = [
 
 # List all DEPS here.
 DEPS = {
+    "@rollup/plugin-commonjs": "13.0.0",
     "@types/chai": "4.2.0",
     "@types/estree": "0.0.45",
     "@types/filesystem": "0.0.29",
@@ -54,7 +57,7 @@ DEPS = {
     "karma-mocha": "2.0.1",
     "karma-sourcemap-loader": "0.3.0",
     "license-checker": "25.0.1",
-    "mocha": "7.1.1",
+    "mocha": "8.0.1",
     "puppeteer": "4.0.0",
     "recast": "0.18.2",
     "rimraf": "3.0.2",
@@ -68,7 +71,12 @@ DEPS = {
 
 def exec_command(cmd):
     try:
-        cmd_proc_result = subprocess.check_call(cmd, cwd=devtools_paths.root_path())
+        new_env = os.environ.copy()
+        # Prevent large files from being checked in to git.
+        new_env["PUPPETEER_SKIP_CHROMIUM_DOWNLOAD"] = "true"
+        cmd_proc_result = subprocess.check_call(cmd,
+                                                cwd=devtools_paths.root_path(),
+                                                env=new_env)
     except Exception as error:
         print(error)
         return True

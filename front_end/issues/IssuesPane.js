@@ -193,6 +193,68 @@ class AffectedElementsView extends AffectedResourcesView {
   }
 }
 
+class AffectedDirectivesView extends AffectedResourcesView {
+  /**
+   * @param {!IssueView} parent
+   * @param {!AggregatedIssue} issue
+   */
+  constructor(parent, issue) {
+    super(parent, {singular: ls`directive`, plural: ls`directives`});
+    /** @type {!AggregatedIssue} */
+    this._issue = issue;
+  }
+
+  /**
+   * @param {!Set<!Protocol.Audits.ContentSecurityPolicyIssueDetails>} cspViolations
+   */
+  _appendAffectedDirectives(cspViolations) {
+    const header = document.createElement('tr');
+    const info = document.createElement('td');
+    info.classList.add('affected-resource-header');
+    info.classList.add('affected-resource-directive-info-header');
+    info.textContent = ls`Resource`;
+    header.appendChild(info);
+    const name = document.createElement('td');
+    name.classList.add('affected-resource-header');
+    name.textContent = ls`Directive`;
+    header.appendChild(name);
+    this._affectedResources.appendChild(header);
+    let count = 0;
+    for (const cspViolation of cspViolations) {
+      count++;
+      this.appendAffectedDirective(cspViolation);
+    }
+    this.updateAffectedResourceCount(count);
+  }
+
+  /**
+   * @param {!Protocol.Audits.ContentSecurityPolicyIssueDetails} cspViolation
+   */
+  appendAffectedDirective(cspViolation) {
+    const url = cspViolation.blockedURL;
+    if (url) {
+      const element = document.createElement('tr');
+      element.classList.add('affected-resource-directive');
+      const name = document.createElement('td');
+      name.textContent = cspViolation.violatedDirective;
+      const info = document.createElement('td');
+      info.classList.add('affected-resource-directive-info');
+      info.textContent = url;
+      element.appendChild(info);
+      element.appendChild(name);
+      this._affectedResources.appendChild(element);
+    }
+  }
+
+  /**
+   * @override
+   */
+  update() {
+    this.clear();
+    this._appendAffectedDirectives(this._issue.cspViolations());
+  }
+}
+
 class AffectedCookiesView extends AffectedResourcesView {
   /**
    * @param {!IssueView} parent
@@ -518,9 +580,9 @@ class AffectedHeavyAdView extends AffectedResourcesView {
   _statusToString(status) {
     switch (status) {
       case Protocol.Audits.HeavyAdResolutionStatus.HeavyAdBlocked:
-        return ls`blocked`;
+        return ls`Removed`;
       case Protocol.Audits.HeavyAdResolutionStatus.HeavyAdWarning:
-        return ls`warning`;
+        return ls`Warned`;
     }
     return '';
   }
@@ -549,7 +611,7 @@ class AffectedHeavyAdView extends AffectedResourcesView {
     element.classList.add('affected-resource-heavy-ad');
 
     const frameId = heavyAd.frame.frameId;
-    const frame = BrowserSDK.FrameManager.FrameManager.instance().getFrame(frameId);
+    const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
     const url = frame && (frame.unreachableUrl() || frame.url) || '';
 
     const reason = document.createElement('td');
@@ -566,7 +628,7 @@ class AffectedHeavyAdView extends AffectedResourcesView {
     frameUrl.classList.add('affected-resource-heavy-ad-info-frame');
     const icon = UI.Icon.Icon.create('largeicon-node-search', 'icon');
     icon.onclick = async () => {
-      const frame = BrowserSDK.FrameManager.FrameManager.instance().getFrame(frameId);
+      const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
       if (frame) {
         const deferedNode = await frame.getOwnerDOMNode();
         if (deferedNode) {
@@ -578,7 +640,7 @@ class AffectedHeavyAdView extends AffectedResourcesView {
     frameUrl.appendChild(icon);
     frameUrl.appendChild(document.createTextNode(url));
     frameUrl.onmouseenter = () => {
-      const frame = BrowserSDK.FrameManager.FrameManager.instance().getFrame(frameId);
+      const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
       if (frame) {
         frame.highlight();
       }
@@ -621,10 +683,18 @@ class IssueView extends UI.TreeOutline.TreeElement {
     this._affectedResourceViews = [
       new AffectedCookiesView(this, this._issue), new AffectedElementsView(this, this._issue),
       new AffectedRequestsView(this, this._issue), new AffectedMixedContentView(this, this._issue),
-      new AffectedSourcesView(this, this._issue), new AffectedHeavyAdView(this, this._issue)
+      new AffectedSourcesView(this, this._issue), new AffectedHeavyAdView(this, this._issue),
+      new AffectedDirectivesView(this, this._issue)
     ];
 
     this._aggregatedIssuesCount = null;
+  }
+
+  /**
+   * @returns {string}
+   */
+  getIssueTitle() {
+    return this._description.title;
   }
 
   /**
@@ -839,7 +909,13 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     if (!this._issueViews.has(issue.code())) {
       const view = new IssueView(this, issue, description);
       this._issueViews.set(issue.code(), view);
-      this._issuesTree.appendChild(view);
+      this._issuesTree.appendChild(view, (a, b) => {
+        if (a instanceof IssueView && b instanceof IssueView) {
+          return a.getIssueTitle().localeCompare(b.getIssueTitle());
+        }
+        console.error('The issues tree should only contain IssueView objects as direct children');
+        return 0;
+      });
     }
     this._issueViews.get(issue.code()).update();
     this._updateCounts();

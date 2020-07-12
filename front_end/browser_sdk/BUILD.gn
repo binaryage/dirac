@@ -6,7 +6,6 @@ import("../../third_party/typescript/typescript.gni")
 
 ts_library("browser_sdk") {
   sources = [
-    "FrameManager.js",
     "IssuesManager.js",
     "LogManager.js",
     "RelatedIssue.js",
@@ -15,6 +14,6 @@ ts_library("browser_sdk") {
 
   deps = [
     "../common",
-    "../sdk",
+    "../sdk:bundle",
   ]
 }

@@ -116,7 +116,6 @@ APPLICATION_DESCRIPTORS = [
     'inspector',
     'toolbox',
     'integration_test_runner',
-    'formatter_worker_entrypoint',
     'heap_snapshot_worker_entrypoint',
 ]
 
@@ -344,7 +343,7 @@ def prepare_closure_frontend_compile(temp_devtools_path, descriptors, namespace_
             if os.path.basename(generated_file) in [
                     'wasm_source_map.js', 'acorn.mjs', 'acorn-loose.mjs',
                     'acorn-logical-assignment.mjs',
-                    'acorn-numeric-separator.mjs'
+                    'acorn-numeric-separator.mjs', 'marked.esm.js'
             ]:
                 with open(
                         generated_file.replace('.js', '_types.js').replace(

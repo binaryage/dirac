@@ -241,6 +241,26 @@
     },
     {
       "type": "setting",
+      "category": "Grid",
+      "title": "Grid Areas",
+      "experiment": "cssGridFeatures",
+      "settingName": "showGridAreas",
+      "settingType": "boolean",
+      "storageType": "session",
+      "options": [
+        {
+          "value": true,
+          "title": "Show grid named areas"
+        },
+        {
+          "value": false,
+          "title": "Do not show grid named areas"
+        }
+      ],
+      "defaultValue": false
+    },
+    {
+      "type": "setting",
       "category": "Rendering",
       "settingName": "showPaintRects",
       "settingType": "boolean",
@@ -570,6 +590,7 @@
     }
   ],
   "scripts": [],
+  "skip_rollup": true,
   "modules": [
     "../generated/SupportedCSSProperties.js",
     "sdk.js",
@@ -587,6 +608,7 @@
     "WebAuthnModel.js",
     "SameSiteCookieIssue.js",
     "MixedContentIssue.js",
+    "ContentSecurityPolicyIssue.js",
     "CrossOriginEmbedderPolicyIssue.js",
     "ServerTiming.js",
     "CPUProfileDataModel.js",
@@ -604,6 +626,7 @@
     "DOMModel.js",
     "DebuggerModel.js",
     "EmulationModel.js",
+    "FrameManager.js",
     "HARLog.js",
     "HeavyAdIssue.js",
     "LayerTreeBase.js",

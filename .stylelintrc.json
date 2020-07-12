@@ -1,7 +1,16 @@
 {
   "rules": {
+    "extends": "stylelint-config-standard",
     "alpha-value-notation": "percentage",
     "color-function-notation": "modern",
-    "hue-degree-notation": "angle"
+    "hue-degree-notation": "angle",
+    "selector-type-no-unknown": [
+      true,
+      {
+        "ignoreTypes": [
+          "/^devtools-.+/"
+        ]
+      }
+    ]
   }
 }
