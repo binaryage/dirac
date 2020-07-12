@@ -33,4 +33,6 @@ solutions = [
 EOF
 
 # do initial sync
-"$SCRIPTS/depot-sync.sh"
+if [[ -z "$DIRAC_SKIP_INITIAL_DEPOT_SYNC" ]]; then
+  "$SCRIPTS/depot-sync.sh"
+fi

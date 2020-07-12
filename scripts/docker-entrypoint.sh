@@ -5,6 +5,8 @@
 set -e -o pipefail
 
 TRAVIS_BUILD_DIR=/dirac
+# shellcheck disable=SC2034
+DIRAC_IN_DOCKER=1
 
 color_enabled() {
     local -i colors
