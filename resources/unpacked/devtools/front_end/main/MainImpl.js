@@ -157,10 +157,10 @@ export class MainImpl {
     Root.Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Root.Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Root.Runtime.experiments.register('liveHeapProfile', 'Live heap profile', true);
-    Root.Runtime.experiments.register('mediaInspector', 'Media Element Inspection');
     Root.Runtime.experiments.register('nativeHeapProfiler', 'Native memory sampling heap profiler', true);
     Root.Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
     Root.Runtime.experiments.register('issuesPane', 'Issues Pane');
+    Root.Runtime.experiments.register('developerResourcesView', 'Show developer resources view');
     Root.Runtime.experiments.register(
         'recordCoverageWithPerformanceTracing', 'Record coverage while performance tracing');
     Root.Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
@@ -228,9 +228,14 @@ export class MainImpl {
     self.Persistence.isolatedFileSystemManager =
         Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
 
-    const themeSetting = Common.Settings.Settings.instance().createSetting('uiTheme', 'systemPreferred');
+    const defaultThemeSetting = 'systemPreferred';
+    const themeSetting = Common.Settings.Settings.instance().createSetting('uiTheme', defaultThemeSetting);
     UI.UIUtils.initializeUIUtils(document, themeSetting);
     themeSetting.addChangeListener(Components.Reload.reload.bind(Components));
+    if (themeSetting.get() === defaultThemeSetting) {
+      const darkThemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      darkThemeMediaQuery.addEventListener('change', Components.Reload.reload.bind(Components));
+    }
 
     UI.UIUtils.installComponentRootStyles(/** @type {!Element} */ (document.body));
 

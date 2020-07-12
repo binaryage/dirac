@@ -323,7 +323,12 @@ export class ElementsPanel extends UI.Panel.Panel {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _selectedNodeChanged(event) {
-    const selectedNode = /** @type {?SDK.DOMModel.DOMNode} */ (event.data.node);
+    let selectedNode = /** @type {?SDK.DOMModel.DOMNode} */ (event.data.node);
+
+    // If the selectedNode is a pseudoNode, we want to ensure that it has a valid parentNode
+    if (selectedNode && (selectedNode.pseudoType() && !selectedNode.parentNode)) {
+      selectedNode = null;
+    }
     const focus = /** @type {boolean} */ (event.data.focus);
     for (const treeOutline of this._treeOutlines) {
       if (!selectedNode || ElementsTreeOutline.forDOMModel(selectedNode.domModel()) !== treeOutline) {
@@ -585,7 +590,8 @@ export class ElementsPanel extends UI.Panel.Panel {
         searchResult.node = node;
 
         // If any of these properties are undefined, this means the search/highlight request is outdated.
-        const highlightRequestValid = this._searchConfig && this._currentSearchResultIndex && this._searchResults;
+        const highlightRequestValid =
+            this._searchConfig && this._searchResults && (this._currentSearchResultIndex !== undefined);
         if (highlightRequestValid) {
           this._highlightCurrentSearchResult();
         }

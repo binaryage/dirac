@@ -67,6 +67,8 @@ export class OverlayModel extends SDKModel {
     this._showGridLineNumbersSetting = null;
     /** @type {?Common.Settings.Setting<*>} */
     this._showGridGapsSetting = null;
+    /** @type {?Common.Settings.Setting<*>} */
+    this._showGridAreasSetting = null;
     if (this._gridFeaturesExperimentEnabled) {
       this._registerGridSettingsTelemetry();
     }
@@ -201,12 +203,14 @@ export class OverlayModel extends SDKModel {
     this._showGridLinesSetting = Common.Settings.Settings.instance().moduleSetting('showGridLines');
     this._showGridLineNumbersSetting = Common.Settings.Settings.instance().moduleSetting('showGridLineNumbers');
     this._showGridGapsSetting = Common.Settings.Settings.instance().moduleSetting('showGridGaps');
+    this._showGridAreasSetting = Common.Settings.Settings.instance().moduleSetting('showGridAreas');
 
     this._showGridBorderSetting.addChangeListener(() => this._recordGridSettingChange(this._showGridBorderSetting));
     this._showGridLinesSetting.addChangeListener(() => this._recordGridSettingChange(this._showGridLinesSetting));
     this._showGridLineNumbersSetting.addChangeListener(
         () => this._recordGridSettingChange(this._showGridLineNumbersSetting));
     this._showGridGapsSetting.addChangeListener(() => this._recordGridSettingChange(this._showGridGapsSetting));
+    this._showGridAreasSetting.addChangeListener(() => this._recordGridSettingChange(this._showGridAreasSetting));
   }
 
   /**
@@ -432,9 +436,11 @@ export class OverlayModel extends SDKModel {
       gridBorderDash: gridBorderDashed,
       cellBorderColor: showGridLines ? Common.Color.PageHighlight.GridCellBorder.toProtocolRGBA() : undefined,
       cellBorderDash: gridLinesDashed,
-      showGridExtensionLines: showGridExtensionLines,
+      showGridExtensionLines,
       showPositiveLineNumbers,
-      showNegativeLineNumbers
+      showNegativeLineNumbers,
+      showAreaNames: this._showGridAreasSetting.get(),
+      areaBorderColor: Common.Color.PageHighlight.GridAreaBorder.toProtocolRGBA()
     };
   }
 
@@ -501,6 +507,15 @@ export class OverlayModel extends SDKModel {
         highlightConfig.gridHighlightConfig.columnHatchColor =
             Common.Color.PageHighlight.GridColumnGapHatch.toProtocolRGBA();
       }
+    }
+
+    if (mode === 'grid-areas' && this._gridFeaturesExperimentEnabled) {
+      highlightConfig.gridHighlightConfig = {
+        cellBorderColor: Common.Color.PageHighlight.GridCellBorder.toProtocolRGBA(),
+        cellBorderDash: true,
+        showAreaNames: true,
+        areaBorderColor: Common.Color.PageHighlight.GridAreaBorder.toProtocolRGBA()
+      };
     }
 
     // the backend does not support the 'original' format because
