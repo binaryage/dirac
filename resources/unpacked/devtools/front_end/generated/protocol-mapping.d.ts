@@ -1790,6 +1790,13 @@ export namespace ProtocolMapping {
       returnType: Protocol.Overlay.GetHighlightObjectForTestResponse;
     };
     /**
+     * For Persistent Grid testing.
+     */
+    'Overlay.getGridHighlightObjectsForTest': {
+      paramsType: [Protocol.Overlay.GetGridHighlightObjectsForTestRequest];
+      returnType: Protocol.Overlay.GetGridHighlightObjectsForTestResponse;
+    };
+    /**
      * Hides any highlight.
      */
     'Overlay.hideHighlight': {paramsType: []; returnType: void;};
@@ -1829,6 +1836,10 @@ export namespace ProtocolMapping {
      * Requests that backend shows the FPS counter
      */
     'Overlay.setShowFPSCounter': {paramsType: [Protocol.Overlay.SetShowFPSCounterRequest]; returnType: void;};
+    /**
+     * Highlight multiple elements with the CSS Grid overlay.
+     */
+    'Overlay.setShowGridOverlays': {paramsType: [Protocol.Overlay.SetShowGridOverlaysRequest]; returnType: void;};
     /**
      * Requests that backend shows paint rectangles
      */
@@ -2431,6 +2442,12 @@ export namespace ProtocolMapping {
      * The default is true.
      */
     'WebAuthn.setUserVerified': {paramsType: [Protocol.WebAuthn.SetUserVerifiedRequest]; returnType: void;};
+    /**
+     * Sets whether tests of user presence will succeed immediately (if true) or fail to resolve (if false) for an authenticator.
+     * The default is true.
+     */
+    'WebAuthn.setAutomaticPresenceSimulation':
+        {paramsType: [Protocol.WebAuthn.SetAutomaticPresenceSimulationRequest]; returnType: void;};
     /**
      * Enables the Media domain
      */
