@@ -11,8 +11,11 @@ group("front_end") {
     ":front_end_html_entrypoints",
     ":ts_library-verification",
     "component_docs",
+    "formatter_worker:bundle",
     "i18n:bundle_i18n",
   ]
+
+  data_deps = [ ":front_end_html_entrypoints" ]
 }
 
 copy("front_end_html_entrypoints") {
@@ -51,7 +54,6 @@ ts_library("ts_library-verification") {
     "browser_sdk",
     "color_picker",
     "common",
-    "formatter_worker",
     "host",
     "inspector_overlay",
     "issues",

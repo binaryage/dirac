@@ -1869,6 +1869,12 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.Overlay.GetHighlightObjectForTestResponse>;
 
     /**
+     * For Persistent Grid testing.
+     */
+    invoke_getGridHighlightObjectsForTest(params: Protocol.Overlay.GetGridHighlightObjectsForTestRequest):
+        Promise<Protocol.Overlay.GetGridHighlightObjectsForTestResponse>;
+
+    /**
      * Hides any highlight.
      */
     invoke_hideHighlight(): Promise<Protocol.ProtocolResponseWithError>;
@@ -1919,6 +1925,12 @@ declare namespace ProtocolProxyApi {
      * Requests that backend shows the FPS counter
      */
     invoke_setShowFPSCounter(params: Protocol.Overlay.SetShowFPSCounterRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Highlight multiple elements with the CSS Grid overlay.
+     */
+    invoke_setShowGridOverlays(params: Protocol.Overlay.SetShowGridOverlaysRequest):
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
@@ -3029,6 +3041,13 @@ declare namespace ProtocolProxyApi {
      * The default is true.
      */
     invoke_setUserVerified(params: Protocol.WebAuthn.SetUserVerifiedRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Sets whether tests of user presence will succeed immediately (if true) or fail to resolve (if false) for an authenticator.
+     * The default is true.
+     */
+    invoke_setAutomaticPresenceSimulation(params: Protocol.WebAuthn.SetAutomaticPresenceSimulationRequest):
         Promise<Protocol.ProtocolResponseWithError>;
   }
   export interface WebAuthnDispatcher extends Protocol.Dispatcher {}

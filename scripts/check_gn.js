@@ -75,6 +75,9 @@ const EXCLUDED_FILE_NAMES = [
   // Included as part of `elements`
   '../generated/SupportedCSSProperties.js',
 ];
+const allDevToolsModulesPath = path.resolve(__dirname, '..', 'all_devtools_modules.gni');
+const allDevToolsModulesFile = fs.readFileSync(allDevToolsModulesPath, 'utf-8');
+const allDevToolsModulesLines = allDevToolsModulesFile.split('\n');
 
 function checkAllDevToolsModules() {
   return checkGNVariable(
@@ -90,7 +93,8 @@ function checkAllDevToolsModules() {
       buildGNPath => filename => {
         const relativePath = path.normalize(`${buildGNPath}/${filename}`);
         return `"${relativePath}",`;
-      });
+      },
+      allDevToolsModulesLines);
 }
 
 function checkAllTypescriptModules() {
@@ -146,10 +150,23 @@ function checkGeneratedTypescriptEntrypoints() {
       });
 }
 
+const VARIABLE_TO_FILE_MAPPGING = new Map([
+  ['all_typescript_modules', 'all_devtools_modules.gni'],
+  ['generated_typescript_entrypoints', 'devtools_module_entrypoints.gni'],
+]);
+
 function checkGNVariable(gnVariable, obtainFiles, obtainRelativePath) {
+  let gniFileLocation = `${gnVariable}.gni`;
+  if (VARIABLE_TO_FILE_MAPPGING.has(gnVariable)) {
+    gniFileLocation = VARIABLE_TO_FILE_MAPPGING.get(gnVariable);
+  }
+  const filePath = path.resolve(__dirname, '..', gniFileLocation);
+  const fileContent = fs.readFileSync(filePath, 'utf-8');
+  const linesToCheck = fileContent.split('\n');
+
   const errors = [];
   const excludedFiles = ['axe.js', 'formatter_worker/', 'third_party/lighthouse/'].map(path.normalize);
-  const lines = selectGNLines(`${gnVariable} = [`, ']').map(path.normalize);
+  const lines = selectGNLines(`${gnVariable} = [`, ']', linesToCheck).map(path.normalize);
   if (!lines.length) {
     return [
       `Could not identify ${gnVariable} list in gn file`,
@@ -200,8 +217,8 @@ function checkGNVariable(gnVariable, obtainFiles, obtainRelativePath) {
   return errors;
 }
 
-function selectGNLines(startLine, endLine) {
-  const lines = gnLines.map(line => line.trim());
+function selectGNLines(startLine, endLine, linesToCheck = gnLines) {
+  const lines = linesToCheck.map(line => line.trim());
   const startIndex = lines.indexOf(startLine);
   if (startIndex === -1) {
     return [];
