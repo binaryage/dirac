@@ -36,14 +36,14 @@ LICENSES = [
 # List all DEPS here.
 DEPS = {
     "@rollup/plugin-commonjs": "13.0.0",
-    "@types/chai": "4.2.0",
+    "@types/chai": "4.2.11",
     "@types/codemirror": "0.0.97",
     "@types/estree": "0.0.45",
     "@types/filesystem": "0.0.29",
     "@types/mocha": "5.2.7",
     "@types/puppeteer": "2.0.0",
-    "@typescript-eslint/parser": "2.16.0",
-    "@typescript-eslint/eslint-plugin": "2.16.0",
+    "@typescript-eslint/parser": "3.6.1",
+    "@typescript-eslint/eslint-plugin": "3.6.1",
     "chai": "4.2.0",
     "escodegen": "1.12.0",
     "eslint": "6.8.0",
