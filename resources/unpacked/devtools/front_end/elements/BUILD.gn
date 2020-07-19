@@ -12,13 +12,19 @@ devtools_module("elements") {
     "Adorner.js",
     "ElementsBreadcrumbsUtils.ts",
     "NewElementsBreadcrumbs.ts",
+    "NewElementsBreadcrumbs_bridge.js",
   ]
 
   deps = [
     "../common:bundle",
-    "../lit_html:bundle",
-    "../platform",
+    "../platform:bundle",
+    "../third_party/lit-html:bundle",
     "../ui",
+  ]
+
+  visibility = [
+    "../component_docs/elements_breadcrumbs",
+    "../../test/unittests/front_end/elements",
   ]
 }
 
@@ -31,7 +37,6 @@ devtools_pre_built("elements-pre-built") {
     "DOMLinkifier.js",
     "DOMPath.js",
     "ElementStatePaneWidget.js",
-    "ElementsBreadcrumbs.js",
     "ElementsPanel.js",
     "ElementsSidebarPane.js",
     "ElementsTreeElement.js",

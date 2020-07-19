@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("../../../devtools_module_entrypoints.gni")
 import("../../../third_party/typescript/typescript.gni")
 import("./copy.gni")
 import("./rollup.gni")
@@ -139,7 +140,7 @@ template("devtools_entrypoint") {
       # is the same. So Ninja will detect that no output has changed for
       # "_typescript_target_name" and bail out. This would then *also* skip
       # the Rollup action.
-      deps = [ ":$_prebundle_target_name" ] + invoker.deps
+      public_deps = [ ":$_prebundle_target_name" ] + invoker.deps
     }
 
     if (_is_typescript_file) {
@@ -217,4 +218,12 @@ template("devtools_entrypoint") {
 
     public_deps = [ ":$_entrypoint_target_name" ]
   }
+
+  _target_outputs = get_target_outputs(":" + target_name + "-copy")
+  _target_name = invoker.entrypoint
+  _filtered_target_outputs =
+      filter_exclude(_target_outputs, generated_typescript_entrypoints)
+  assert(
+      _filtered_target_outputs == [],
+      "Entrypoint ($_target_name) is not listed in devtools_module_entrypoints")
 }

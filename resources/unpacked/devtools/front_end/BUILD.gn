@@ -2,9 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("../scripts/build/ninja/copy.gni")
 import("../third_party/typescript/typescript.gni")
-
-resources_out_dir = "$root_out_dir/resources/inspector"
 
 group("front_end") {
   public_deps = [
@@ -16,14 +15,19 @@ group("front_end") {
     "formatter_worker:bundle",
     "i18n:bundle_i18n",
     "sdk:bundle",
+    "third_party/lighthouse",
   ]
 
-  data_deps = [ ":front_end_html_entrypoints" ]
+  data_deps = [
+    ":embedder-scripts",
+    ":front_end_html_entrypoints",
+  ]
 }
 
-copy("front_end_html_entrypoints") {
+copy_sources_to_resources("front_end_html_entrypoints") {
   sources = [
     "devtools_app.html",
+    "formatter_worker_entrypoint.js",
     "inspector.html",
     "integration_test_runner.html",
     "js_app.html",
@@ -32,8 +36,13 @@ copy("front_end_html_entrypoints") {
     "toolbox.html",
     "worker_app.html",
   ]
+}
 
-  outputs = [ "$resources_out_dir/{{source_file_part}}" ]
+copy_sources_to_resources("embedder-scripts") {
+  sources = [
+    "Tests.js",
+    "devtools_compatibility.js",
+  ]
 }
 
 # This target is used to perform checks on all generated `.d.ts` files.
@@ -56,13 +65,13 @@ ts_library("ts_library-verification") {
     "bindings",
     "browser_sdk",
     "color_picker",
-    "common",
+    "common:bundle",
     "host",
     "inspector_overlay",
     "issues",
     "protocol_client",
     "root",
-    "sdk",
+    "sdk:bundle",
     "workspace",
   ]
 }

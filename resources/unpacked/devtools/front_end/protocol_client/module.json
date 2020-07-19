@@ -4,7 +4,6 @@
     "dirac",
     "host"
   ],
-  "scripts": [],
   "modules": [
     "../generated/InspectorBackendCommands.js",
     "protocol_client.js",

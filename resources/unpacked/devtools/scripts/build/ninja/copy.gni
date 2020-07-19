@@ -21,7 +21,6 @@ template("copy_sources_to_resources") {
     forward_variables_from(invoker,
                            [
                              "sources",
-                             "visibility",
                              "deps",
                              "public_deps",
                            ])
@@ -33,7 +32,7 @@ template("copy_sources_to_resources") {
     # resolve to the correct location.
     _front_end_module_name =
         string_replace(get_path_info(target_gen_dir, "abspath"),
-                       root_gen_dir + "/" + devtools_location + "front_end/",
+                       root_gen_dir + "/" + devtools_location + "front_end",
                        "")
 
     outputs = [
@@ -44,6 +43,8 @@ template("copy_sources_to_resources") {
   group(target_name) {
     public_deps = [ ":$_copy_action_name" ]
     data_deps = [ ":$_copy_action_name" ]
+
+    forward_variables_from(invoker, [ "visibility" ])
   }
 }
 
@@ -53,7 +54,6 @@ template("copy_gen_to_resources") {
     forward_variables_from(invoker,
                            [
                              "sources",
-                             "visibility",
                              "deps",
                              "public_deps",
                            ])
@@ -75,5 +75,7 @@ template("copy_gen_to_resources") {
   group(target_name) {
     public_deps = [ ":$_copy_action_name" ]
     data_deps = [ ":$_copy_action_name" ]
+
+    forward_variables_from(invoker, [ "visibility" ])
   }
 }
