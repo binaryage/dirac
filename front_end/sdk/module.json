@@ -589,7 +589,6 @@
       ]
     }
   ],
-  "scripts": [],
   "skip_rollup": true,
   "modules": [
     "../generated/SupportedCSSProperties.js",
@@ -613,11 +612,13 @@
     "ServerTiming.js",
     "CPUProfileDataModel.js",
     "CPUProfilerModel.js",
+    "CSSFontFace.js",
     "CSSMatchedStyles.js",
     "CSSMedia.js",
     "CSSMetadata.js",
     "CSSModel.js",
     "CSSProperty.js",
+    "CSSPropertyParser.js",
     "CSSRule.js",
     "CSSStyleDeclaration.js",
     "CSSStyleSheetHeader.js",

@@ -858,6 +858,12 @@ declare namespace Protocol {
       KTrustedTypesPolicyViolation = 'kTrustedTypesPolicyViolation',
     }
 
+    export interface SourceCodeLocation {
+      url: string;
+      lineNumber: integer;
+      columnNumber: integer;
+    }
+
     export interface ContentSecurityPolicyIssueDetails {
       /**
        * The url not included in allowed sources.
@@ -869,6 +875,7 @@ declare namespace Protocol {
       violatedDirective: string;
       contentSecurityPolicyViolationType: ContentSecurityPolicyViolationType;
       frameAncestor?: AffectedFrame;
+      sourceCodeLocation?: SourceCodeLocation;
     }
 
     /**
@@ -8299,6 +8306,15 @@ declare namespace Protocol {
     export type FrameId = string;
 
     /**
+     * Indicates whether a frame has been identified as an ad.
+     */
+    export enum AdFrameType {
+      None = 'none',
+      Child = 'child',
+      Root = 'root',
+    }
+
+    /**
      * Information about the Frame on the page.
      */
     export interface Frame {
@@ -8338,6 +8354,10 @@ declare namespace Protocol {
        * If the frame failed to load, this contains the URL that could not be loaded. Note that unlike url above, this URL may contain a fragment.
        */
       unreachableUrl?: string;
+      /**
+       * Indicates whether this frame was tagged as an ad.
+       */
+      adFrameType?: AdFrameType;
     }
 
     /**

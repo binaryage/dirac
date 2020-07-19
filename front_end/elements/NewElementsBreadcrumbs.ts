@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as LitHtml from '../lit_html/lit_html.js';
+import * as LitHtml from '../third_party/lit-html/lit-html.js';
 
 import {crumbsToRender, CrumbTitle, DOMNode, NodeSelectedEvent, UserScrollPosition} from './ElementsBreadcrumbsUtils.js';
 
@@ -16,7 +16,7 @@ export class ElementsBreadcrumbs extends HTMLElement {
   private userScrollPosition: UserScrollPosition = 'start';
   private isObservingResize = false;
 
-  set data(data: {selectedNode: Readonly<DOMNode>|null, crumbs: ReadonlyArray<DOMNode>}) {
+  set data(data: {selectedNode: DOMNode|null, crumbs: DOMNode[]}) {
     this.selectedDOMNode = data.selectedNode;
     this.crumbsData = data.crumbs;
     this.update();
@@ -246,9 +246,18 @@ export class ElementsBreadcrumbs extends HTMLElement {
         }
 
         .crumb.selected,
-        .crumb:hover,
-        .overflow:not(:disabled):hover {
+        .crumb:hover {
           background-color: var(--toolbar-bg-color);
+        }
+
+        .overflow {
+          background-color: var(--toolbar-bg-color);
+        }
+
+
+        .overflow:not(:disabled):hover {
+          background-color: var(--toolbar-hover-bg-color);
+          cursor: pointer;
         }
 
         .crumb:not(.selected) .node-label-name {
@@ -262,6 +271,12 @@ export class ElementsBreadcrumbs extends HTMLElement {
         .crumb-link {
           text-decoration: none;
           color: inherit;
+        }
+
+        @media(prefers-color-scheme: dark) {
+          .overflow:not(:disabled) {
+            color: #fff;
+          }
         }
       </style>
 
