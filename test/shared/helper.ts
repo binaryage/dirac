@@ -26,6 +26,7 @@ switch (os.platform()) {
 }
 
 // TODO: Remove once Chromium updates its version of Node.js to 12+.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const globalThis: any = global;
 
 /**
@@ -38,6 +39,7 @@ const globalThis: any = global;
 const collectAllElementsFromPage = async (root?: puppeteer.JSHandle) => {
   const {frontend} = getBrowserAndPages();
   await frontend.evaluate(root => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const container = (self as any);
     container.__elements = [];
     const collect = (root: HTMLElement|ShadowRoot) => {
@@ -245,7 +247,7 @@ export const $textContent = async (textContent: string, root?: puppeteer.JSHandl
 
 export const timeout = (duration: number) => new Promise(resolve => setTimeout(resolve, duration));
 
-export const waitFor = async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
+export const waitFor = async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 3000) => {
   return waitForFunction(async () => {
     const element = await $(selector, root);
     if (element.asElement()) {
@@ -255,7 +257,7 @@ export const waitFor = async (selector: string, root?: puppeteer.JSHandle, maxTo
   }, `Unable to find element with selector ${selector}`, maxTotalTimeout);
 };
 
-export const waitForNone = async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
+export const waitForNone = async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 3000) => {
   return waitForFunction(async () => {
     const elements = await $$(selector, root);
     if (elements.evaluate(list => list.length === 0)) {
@@ -265,18 +267,19 @@ export const waitForNone = async (selector: string, root?: puppeteer.JSHandle, m
   }, `At least one element with selector ${selector} still exists`, maxTotalTimeout);
 };
 
-export const waitForElementWithTextContent = (textContent: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
-  return waitForFunction(async () => {
-    const element = await $textContent(textContent, root);
-    if (element.asElement()) {
-      return element;
-    }
-    return undefined;
-  }, `No element with content ${textContent} exists`, maxTotalTimeout);
-};
+export const waitForElementWithTextContent =
+    (textContent: string, root?: puppeteer.JSHandle, maxTotalTimeout = 3000) => {
+      return waitForFunction(async () => {
+        const element = await $textContent(textContent, root);
+        if (element.asElement()) {
+          return element;
+        }
+        return undefined;
+      }, `No element with content ${textContent} exists`, maxTotalTimeout);
+    };
 
 export const waitForFunction =
-    async<T>(fn: () => Promise<T|undefined>, errorMessage: string, maxTotalTimeout = 0): Promise<T> => {
+    async<T>(fn: () => Promise<T|undefined>, errorMessage: string, maxTotalTimeout = 3000): Promise<T> => {
   if (maxTotalTimeout === 0) {
     maxTotalTimeout = Number.POSITIVE_INFINITY;
   }

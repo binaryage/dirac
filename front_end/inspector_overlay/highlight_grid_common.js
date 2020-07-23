@@ -55,7 +55,6 @@ export const gridStyle = `
   box-sizing: border-box;
   z-index: 1;
   background-clip: padding-box;
-  will-change: transform;
   pointer-events: none;
   text-align: center;
   display: flex;
@@ -63,6 +62,7 @@ export const gridStyle = `
   align-items: center;
 }
 
+.track-sizes .grid-label-content,
 .line-numbers .grid-label-content {
   border: 1px solid white;
   --inner-corner-avoid-distance: 15px;
@@ -88,6 +88,7 @@ export const gridStyle = `
   transform: translateX(calc(var(--inner-corner-avoid-distance) * -1));
 }
 
+.track-sizes .grid-label-content::before,
 .line-numbers .grid-label-content::before {
   position: absolute;
   z-index: 1;
@@ -244,10 +245,10 @@ export function drawLayoutGridHighlight(highlight, context) {
   // Draw gaps
   _drawGridGap(
       context, highlight.rowGaps, highlight.gridHighlightConfig.rowGapColor,
-      highlight.gridHighlightConfig.rowHatchColor, /* flipDirection */ true);
+      highlight.gridHighlightConfig.rowHatchColor, highlight.rotationAngle, /* flipDirection */ true);
   _drawGridGap(
       context, highlight.columnGaps, highlight.gridHighlightConfig.columnGapColor,
-      highlight.gridHighlightConfig.columnHatchColor);
+      highlight.gridHighlightConfig.columnHatchColor, highlight.rotationAngle);
 
   // Draw named grid areas
   const areaBounds = _drawGridAreas(context, highlight.areaNames, highlight.gridHighlightConfig.areaBorderColor);
@@ -294,7 +295,7 @@ function _drawGridAreas(context, areas, borderColor) {
   return areaBounds;
 }
 
-function _drawGridGap(context, gapCommands, gapColor, hatchColor, flipDirection) {
+function _drawGridGap(context, gapCommands, gapColor, hatchColor, rotationAngle, flipDirection) {
   if (!gapColor && !hatchColor) {
     return;
   }
@@ -314,7 +315,7 @@ function _drawGridGap(context, gapCommands, gapColor, hatchColor, flipDirection)
 
   // And draw the hatch pattern if needed.
   if (hatchColor) {
-    _hatchFillPath(context, path, bounds, /* delta */ 10, hatchColor, flipDirection);
+    _hatchFillPath(context, path, bounds, /* delta */ 10, hatchColor, rotationAngle, flipDirection);
   }
   context.restore();
 }
@@ -334,10 +335,10 @@ function _drawGridGap(context, gapCommands, gapColor, hatchColor, flipDirection)
  * @param {Object} bounds
  * @param {number} delta - vertical gap between hatching lines in pixels
  * @param {string} color
+ * @param {number} rotationAngle
  * @param {boolean=} flipDirection - lines are drawn from top right to bottom left
- *
  */
-function _hatchFillPath(context, path, bounds, delta, color, flipDirection) {
+function _hatchFillPath(context, path, bounds, delta, color, rotationAngle, flipDirection) {
   const dx = bounds.maxX - bounds.minX;
   const dy = bounds.maxY - bounds.minY;
   context.rect(bounds.minX, bounds.minY, dx, dy);
@@ -346,6 +347,11 @@ function _hatchFillPath(context, path, bounds, delta, color, flipDirection) {
   context.setLineDash([5, 3]);
   const majorAxis = Math.max(dx, dy);
   context.strokeStyle = color;
+  const centerX = bounds.minX + dx / 2;
+  const centerY = bounds.minY + dy / 2;
+  context.translate(centerX, centerY);
+  context.rotate(rotationAngle * Math.PI / 180);
+  context.translate(-centerX, -centerY);
   if (flipDirection) {
     for (let i = -majorAxis; i < majorAxis; i += delta) {
       context.beginPath();
