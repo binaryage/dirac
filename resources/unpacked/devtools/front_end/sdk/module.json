@@ -325,7 +325,6 @@
       "experiment": "cssGridFeatures",
       "settingName": "showGridAreas",
       "settingType": "boolean",
-      "storageType": "session",
       "options": [
         {
           "value": true,
@@ -334,6 +333,25 @@
         {
           "value": false,
           "title": "Do not show grid named areas"
+        }
+      ],
+      "defaultValue": false
+    },
+    {
+      "type": "setting",
+      "category": "Grid",
+      "title": "Grid Track Sizes",
+      "experiment": "cssGridFeatures",
+      "settingName": "showGridTrackSizes",
+      "settingType": "boolean",
+      "options": [
+        {
+          "value": true,
+          "title": "Show grid track sizes"
+        },
+        {
+          "value": false,
+          "title": "Do not show grid track sizes"
         }
       ],
       "defaultValue": false

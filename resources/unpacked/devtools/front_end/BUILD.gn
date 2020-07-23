@@ -9,11 +9,17 @@ group("front_end") {
   public_deps = [
     ":front_end_html_entrypoints",
     ":ts_library-verification",
+    "accessibility:bundle",
+    "bindings:bundle",
+    "browser_sdk:bundle",
     "common:bundle",
     "component_docs",
+    "data_grid:bundle",
+    "dom_extension:bundle",
     "elements:bundle",
     "formatter_worker:bundle",
     "i18n:bundle_i18n",
+    "issues:bundle",
     "sdk:bundle",
     "third_party/lighthouse",
   ]
@@ -62,15 +68,15 @@ ts_library("ts_library-verification") {
   sources = [ "verification.ts" ]
 
   deps = [
-    "bindings",
-    "browser_sdk",
+    "bindings:bundle",
+    "browser_sdk:bundle",
     "color_picker",
     "common:bundle",
-    "host",
+    "dom_extension:bundle",
+    "host:bundle",
     "inspector_overlay",
-    "issues",
     "protocol_client",
-    "root",
+    "root:bundle",
     "sdk:bundle",
     "workspace",
   ]
