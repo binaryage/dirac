@@ -33,7 +33,10 @@
       "bindings": [
         {
           "shortcut": "Ctrl+`",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         }
       ]
     },
@@ -248,5 +251,6 @@
     "dirac-codemirror.css",
     "dirac-theme.css",
     "dirac-prompt.css"
-  ]
+  ],
+  "skip_rollup": true
 }

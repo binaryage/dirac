@@ -49,4 +49,12 @@ describe('bridges CLI fixture tests', () => {
   it('correctly parses interfaces wrapped in Readonly or ReadonlyArray', () => {
     runFixtureTestAndAssertMatch('setters-readonly');
   });
+
+  it('correctly parses multiple interfaces that are imported', () => {
+    runFixtureTestAndAssertMatch('multiple-interfaces');
+  });
+
+  it('complex union types and types extending other types', () => {
+    runFixtureTestAndAssertMatch('complex-union-types-extending-types');
+  });
 });

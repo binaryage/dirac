@@ -33,6 +33,7 @@
     "../third_party/codemirror/package/addon/runmode/runmode.js",
     "../third_party/codemirror/package/addon/display/placeholder.js"
   ],
+  "skip_rollup": true,
   "resources": [
     "codemirror.css"
   ]

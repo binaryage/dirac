@@ -116,5 +116,6 @@
     "treeoutline.css",
     "treeoutline-dirac.css",
     "viewContainers.css"
-  ]
+  ],
+  "skip_rollup": true
 }

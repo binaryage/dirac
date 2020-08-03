@@ -472,6 +472,8 @@ experimental domain Audits
     enum
       ExcludeSameSiteUnspecifiedTreatedAsLax
       ExcludeSameSiteNoneInsecure
+      ExcludeSameSiteLax
+      ExcludeSameSiteStrict
 
   type SameSiteCookieWarningReason extends string
     enum
@@ -574,7 +576,8 @@ experimental domain Audits
   type BlockedByResponseIssueDetails extends object
     properties
       AffectedRequest request
-      optional AffectedFrame frame
+      optional AffectedFrame parentFrame
+      optional AffectedFrame blockedFrame
       BlockedByResponseReason reason
 
   type HeavyAdResolutionStatus extends string
@@ -3146,6 +3149,17 @@ domain Emulation
       # Mock accuracy
       optional number accuracy
 
+  # Overrides the Idle state.
+  experimental command setIdleOverride
+    parameters
+      # Mock isUserActive
+      boolean isUserActive
+      # Mock isScreenUnlocked
+      boolean isScreenUnlocked
+
+  # Clears Idle state overrides.
+  experimental command clearIdleOverride
+
   # Overrides value returned by the javascript navigator object.
   experimental deprecated command setNavigatorOverrides
     parameters
@@ -4260,6 +4274,11 @@ domain Network
       High
       VeryHigh
 
+  # Post data entry for HTTP request
+  type PostDataEntry extends object
+    properties
+      optional binary bytes
+
   # HTTP request data.
   type Request extends object
     properties
@@ -4275,6 +4294,8 @@ domain Network
       optional string postData
       # True when the request has POST data. Note that postData might still be omitted when this flag is true when the data is too long.
       optional boolean hasPostData
+      # Request body elements. This will be converted from base64 to binary
+      experimental optional array of PostDataEntry postDataEntries
       # The mixed content type of the request.
       optional Security.MixedContentType mixedContentType
       # Priority of the resource request at the time request is sent.
@@ -4853,7 +4874,9 @@ domain Network
   # detailed cookie information in the `cookies` field.
   command getCookies
     parameters
-      # The list of URLs for which applicable cookies will be fetched
+      # The list of URLs for which applicable cookies will be fetched.
+      # If not specified, it's assumed to be set to the list containing
+      # the URLs of the page and all of its subframes.
       optional array of string urls
     returns
       # Array of cookie objects.
@@ -5276,6 +5299,14 @@ experimental domain Overlay
   depends on Page
   depends on Runtime
 
+  # Configuration data for drawing the source order of an elements children.
+  type SourceOrderConfig extends object
+    properties
+      # the color to outline the givent element in.
+      DOM.RGBA parentOutlineColor
+      # the color to outline the child elements in.
+      DOM.RGBA childOutlineColor
+
   # Configuration data for the highlighting of Grid elements.
   type GridHighlightConfig extends object
     properties
@@ -5287,6 +5318,10 @@ experimental domain Overlay
       optional boolean showNegativeLineNumbers
       # Show area name labels (default: false).
       optional boolean showAreaNames
+      # Show line name labels (default: false).
+      optional boolean showLineNames
+      # Show track size labels (default: false).
+      optional boolean showTrackSizes
       # The grid container border highlight color (default: transparent).
       optional DOM.RGBA gridBorderColor
       # The cell border color (default: transparent).
@@ -5404,6 +5439,15 @@ experimental domain Overlay
       # Grid Highlight data for the node ids provided.
       object highlights
 
+  # For Source Order Viewer testing.
+  command getSourceOrderHighlightObjectForTest
+    parameters
+      # Id of the node to highlight.
+      DOM.NodeId nodeId
+    returns
+      # Source order highlight data for the node id provided.
+      object highlight
+
   # Hides any highlight.
   command hideHighlight
 
@@ -5457,6 +5501,19 @@ experimental domain Overlay
       optional DOM.RGBA color
       # The highlight outline color (default: transparent).
       optional DOM.RGBA outlineColor
+
+  # Highlights the source order of the children of the DOM node with given id or with the given
+  # JavaScript object wrapper. Either nodeId or objectId must be specified.
+  command highlightSourceOrder
+    parameters
+      # A descriptor for the appearance of the overlay drawing.
+      SourceOrderConfig sourceOrderConfig
+      # Identifier of the node to highlight.
+      optional DOM.NodeId nodeId
+      # Identifier of the backend node to highlight.
+      optional DOM.BackendNodeId backendNodeId
+      # JavaScript object id of the node to be highlighted.
+      optional Runtime.RemoteObjectId objectId
 
   # Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted.
   # Backend then generates 'inspectNodeRequested' event upon element selection.
@@ -7635,7 +7692,7 @@ experimental domain Fetch
       # If set, the request method is overridden.
       optional string method
       # If set, overrides the post data in the request.
-      optional string postData
+      optional binary postData
       # If set, overrides the request headers.
       optional array of HeaderEntry headers
 

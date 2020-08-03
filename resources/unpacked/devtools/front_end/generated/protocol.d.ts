@@ -698,6 +698,8 @@ declare namespace Protocol {
     export enum SameSiteCookieExclusionReason {
       ExcludeSameSiteUnspecifiedTreatedAsLax = 'ExcludeSameSiteUnspecifiedTreatedAsLax',
       ExcludeSameSiteNoneInsecure = 'ExcludeSameSiteNoneInsecure',
+      ExcludeSameSiteLax = 'ExcludeSameSiteLax',
+      ExcludeSameSiteStrict = 'ExcludeSameSiteStrict',
     }
 
     export enum SameSiteCookieWarningReason {
@@ -820,7 +822,8 @@ declare namespace Protocol {
      */
     export interface BlockedByResponseIssueDetails {
       request: AffectedRequest;
-      frame?: AffectedFrame;
+      parentFrame?: AffectedFrame;
+      blockedFrame?: AffectedFrame;
       reason: BlockedByResponseReason;
     }
 
@@ -4624,6 +4627,17 @@ declare namespace Protocol {
       accuracy?: number;
     }
 
+    export interface SetIdleOverrideRequest {
+      /**
+       * Mock isUserActive
+       */
+      isUserActive: boolean;
+      /**
+       * Mock isScreenUnlocked
+       */
+      isScreenUnlocked: boolean;
+    }
+
     export interface SetNavigatorOverridesRequest {
       /**
        * The platform navigator.platform should return.
@@ -6282,6 +6296,13 @@ declare namespace Protocol {
       VeryHigh = 'VeryHigh',
     }
 
+    /**
+     * Post data entry for HTTP request
+     */
+    export interface PostDataEntry {
+      bytes?: binary;
+    }
+
     export enum RequestReferrerPolicy {
       UnsafeUrl = 'unsafe-url',
       NoReferrerWhenDowngrade = 'no-referrer-when-downgrade',
@@ -6321,6 +6342,10 @@ declare namespace Protocol {
        * True when the request has POST data. Note that postData might still be omitted when this flag is true when the data is too long.
        */
       hasPostData?: boolean;
+      /**
+       * Request body elements. This will be converted from base64 to binary
+       */
+      postDataEntries?: PostDataEntry[];
       /**
        * The mixed content type of the request.
        */
@@ -7191,7 +7216,9 @@ declare namespace Protocol {
 
     export interface GetCookiesRequest {
       /**
-       * The list of URLs for which applicable cookies will be fetched
+       * The list of URLs for which applicable cookies will be fetched.
+       * If not specified, it's assumed to be set to the list containing
+       * the URLs of the page and all of its subframes.
        */
       urls?: string[];
     }
@@ -7884,6 +7911,20 @@ declare namespace Protocol {
   export namespace Overlay {
 
     /**
+     * Configuration data for drawing the source order of an elements children.
+     */
+    export interface SourceOrderConfig {
+      /**
+       * the color to outline the givent element in.
+       */
+      parentOutlineColor: DOM.RGBA;
+      /**
+       * the color to outline the child elements in.
+       */
+      childOutlineColor: DOM.RGBA;
+    }
+
+    /**
      * Configuration data for the highlighting of Grid elements.
      */
     export interface GridHighlightConfig {
@@ -7903,6 +7944,14 @@ declare namespace Protocol {
        * Show area name labels (default: false).
        */
       showAreaNames?: boolean;
+      /**
+       * Show line name labels (default: false).
+       */
+      showLineNames?: boolean;
+      /**
+       * Show track size labels (default: false).
+       */
+      showTrackSizes?: boolean;
       /**
        * The grid container border highlight color (default: transparent).
        */
@@ -8097,6 +8146,20 @@ declare namespace Protocol {
       highlights: any;
     }
 
+    export interface GetSourceOrderHighlightObjectForTestRequest {
+      /**
+       * Id of the node to highlight.
+       */
+      nodeId: DOM.NodeId;
+    }
+
+    export interface GetSourceOrderHighlightObjectForTestResponse extends ProtocolResponseWithError {
+      /**
+       * Source order highlight data for the node id provided.
+       */
+      highlight: any;
+    }
+
     export interface HighlightFrameRequest {
       /**
        * Identifier of the frame to highlight.
@@ -8175,6 +8238,25 @@ declare namespace Protocol {
        * The highlight outline color (default: transparent).
        */
       outlineColor?: DOM.RGBA;
+    }
+
+    export interface HighlightSourceOrderRequest {
+      /**
+       * A descriptor for the appearance of the overlay drawing.
+       */
+      sourceOrderConfig: SourceOrderConfig;
+      /**
+       * Identifier of the node to highlight.
+       */
+      nodeId?: DOM.NodeId;
+      /**
+       * Identifier of the backend node to highlight.
+       */
+      backendNodeId?: DOM.BackendNodeId;
+      /**
+       * JavaScript object id of the node to be highlighted.
+       */
+      objectId?: Runtime.RemoteObjectId;
     }
 
     export interface SetInspectModeRequest {
@@ -11304,7 +11386,7 @@ declare namespace Protocol {
       /**
        * If set, overrides the post data in the request.
        */
-      postData?: string;
+      postData?: binary;
       /**
        * If set, overrides the request headers.
        */
@@ -12773,6 +12855,10 @@ declare namespace Protocol {
        * The language of the script.
        */
       scriptLanguage?: Debugger.ScriptLanguage;
+      /**
+       * The name the embedder supplied for this script.
+       */
+      embedderName?: string;
     }
 
     /**
@@ -12852,6 +12938,10 @@ declare namespace Protocol {
        * If the scriptLanguage is WebASsembly, the source of debug symbols for the module.
        */
       debugSymbols?: Debugger.DebugSymbols;
+      /**
+       * The name the embedder supplied for this script.
+       */
+      embedderName?: string;
     }
   }
 

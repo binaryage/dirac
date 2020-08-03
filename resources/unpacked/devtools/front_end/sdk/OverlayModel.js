@@ -8,7 +8,7 @@
 import * as Common from '../common/common.js';
 
 import {DebuggerModel, Events as DebuggerModelEvents} from './DebuggerModel.js';
-import {DeferredDOMNode, DOMModel, DOMNode} from './DOMModel.js';  // eslint-disable-line no-unused-vars
+import {DeferredDOMNode, DOMModel, DOMNode, Events as DOMModelEvents} from './DOMModel.js';  // eslint-disable-line no-unused-vars
 import {RemoteObject} from './RemoteObject.js';                    // eslint-disable-line no-unused-vars
 import {Capability, SDKModel, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
@@ -58,6 +58,7 @@ export class OverlayModel extends SDKModel {
 
     this._inspectModeEnabled = false;
     this._gridFeaturesExperimentEnabled = Root.Runtime.experiments.isEnabled('cssGridFeatures');
+    this._sourceOrderViewerExperimentEnabled = Root.Runtime.experiments.isEnabled('sourceOrderViewer');
 
     /** @type {?Common.Settings.Setting<*>} */
     this._showGridBorderSetting = null;
@@ -92,6 +93,8 @@ export class OverlayModel extends SDKModel {
       this._wireAgentToSettings();
     }
 
+    this._isPersistentGridModeOn = false;
+
     if (this._gridFeaturesExperimentEnabled) {
       this._showGridBorderSetting = Common.Settings.Settings.instance().moduleSetting('showGridBorder');
       this._showGridLinesSetting = Common.Settings.Settings.instance().moduleSetting('showGridLines');
@@ -99,7 +102,19 @@ export class OverlayModel extends SDKModel {
       this._showGridGapsSetting = Common.Settings.Settings.instance().moduleSetting('showGridGaps');
       this._showGridAreasSetting = Common.Settings.Settings.instance().moduleSetting('showGridAreas');
       this._showGridTrackSizesSetting = Common.Settings.Settings.instance().moduleSetting('showGridTrackSizes');
-      this._logCurentGridSettings();
+      this._logCurrentGridSettings();
+
+      this._persistentGridHighlighter = new DefaultPersistentGridHighlighter(this);
+      this._domModel.addEventListener(DOMModelEvents.NodeRemoved, event => {
+        const nodeId = event.data.node.id;
+        if (nodeId !== undefined) {
+          this._persistentGridHighlighter.hideInOverlay(nodeId);
+        }
+      });
+    }
+    if (this._sourceOrderViewerExperimentEnabled) {
+      this._sourceOrderHighlighter = new SourceOrderHighlighter(this);
+      this._sourceOrderModeActive = false;
     }
   }
 
@@ -156,7 +171,7 @@ export class OverlayModel extends SDKModel {
     OverlayModel.gridTelemetryLogged = isLogged;
   }
 
-  _logCurentGridSettings() {
+  _logCurrentGridSettings() {
     if (OverlayModel.getGridTelemetryLogged()) {
       return;
     }
@@ -274,6 +289,13 @@ export class OverlayModel extends SDKModel {
     this._overlayAgent.setShowViewportSizeOnResize(show);
   }
 
+  /**
+   * @param {boolean} isPersistentGridModeOn
+   */
+  setPersistentGridMode(isPersistentGridModeOn) {
+    this._isPersistentGridModeOn = isPersistentGridModeOn;
+  }
+
   _updatePausedInDebuggerMessage() {
     if (this.target().suspended()) {
       return;
@@ -302,6 +324,10 @@ export class OverlayModel extends SDKModel {
     this._inspectModeEnabled = mode !== Protocol.Overlay.InspectMode.None;
     this.dispatchEventToListeners(Events.InspectModeWillBeToggled, this);
     this._highlighter.setInspectMode(mode, this._buildHighlightConfig('all', showDetailedTooltip));
+    if (this._inspectModeEnabled && this._gridFeaturesExperimentEnabled) {
+      this._persistentGridHighlighter.hideAllInOverlay();
+      this.dispatchEventToListeners(Events.PersistentGridOverlayCleared);
+    }
   }
 
   /**
@@ -317,6 +343,16 @@ export class OverlayModel extends SDKModel {
    * @param {boolean=} showInfo
    */
   highlightInOverlay(data, mode, showInfo) {
+    if (this._isPersistentGridModeOn) {
+      // TODO: Currently the backend doesn't support normal highlights when
+      // the persistent highlight is turned on: https://crbug.com/1109224.
+      return;
+    }
+    if (this._sourceOrderModeActive) {
+      // Return early if the source order is currently being shown the in the
+      // overlay, so that it is not cleared by the highlight
+      return;
+    }
     if (this._hideHighlightTimeout) {
       clearTimeout(this._hideHighlightTimeout);
       this._hideHighlightTimeout = null;
@@ -334,6 +370,46 @@ export class OverlayModel extends SDKModel {
   highlightInOverlayForTwoSeconds(data) {
     this.highlightInOverlay(data);
     this._delayedHideHighlight(2000);
+  }
+
+  /**
+   * @param {number} nodeId
+   */
+  highlightGridInPersistentOverlay(nodeId) {
+    this._persistentGridHighlighter.highlightInOverlay(nodeId, this._buildGridHighlightConfig());
+  }
+
+  /**
+   * @param {number} nodeId
+   */
+  hideGridInPersistentOverlay(nodeId) {
+    this._persistentGridHighlighter.hideInOverlay(nodeId);
+  }
+
+  /**
+   * @param {!DOMNode} node
+   */
+  highlightSourceOrderInOverlay(node) {
+    const sourceOrderConfig = {
+      parentOutlineColor: Common.Color.SourceOrderHighlight.ParentOutline.toProtocolRGBA(),
+      childOutlineColor: Common.Color.SourceOrderHighlight.ChildOutline.toProtocolRGBA(),
+    };
+    this._sourceOrderHighlighter.highlightSourceOrderInOverlay(node, sourceOrderConfig);
+  }
+
+  hideSourceOrderInOverlay() {
+    this._sourceOrderHighlighter.hideSourceOrderHighlight();
+  }
+
+  /**
+   * @param {boolean} isActive
+   */
+  setSourceOrderActive(isActive) {
+    this._sourceOrderModeActive = isActive;
+  }
+
+  sourceOrderModeActive() {
+    return this._sourceOrderModeActive;
   }
 
   /**
@@ -414,6 +490,7 @@ export class OverlayModel extends SDKModel {
     const addBackgroundsToGaps = !showGridLines;
     let showPositiveLineNumbers = false;
     let showNegativeLineNumbers = false;
+    let showLineNames = false;
     switch (this._showGridLineNumbersSetting.get()) {
       case 'positive':
         showPositiveLineNumbers = true;
@@ -424,6 +501,9 @@ export class OverlayModel extends SDKModel {
       case 'both':
         showPositiveLineNumbers = true;
         showNegativeLineNumbers = true;
+        break;
+      case 'names':
+        showLineNames = true;
         break;
       default:
         break;
@@ -461,6 +541,7 @@ export class OverlayModel extends SDKModel {
       showGridExtensionLines,
       showPositiveLineNumbers,
       showNegativeLineNumbers,
+      showLineNames,
       showAreaNames: /** @type {boolean} */ (this._showGridAreasSetting.get()),
       showTrackSizes: /** @type {boolean} */ (this._showGridTrackSizesSetting.get()),
       areaBorderColor: Common.Color.PageHighlight.GridAreaBorder.toProtocolRGBA(),
@@ -612,6 +693,7 @@ export const Events = {
   ExitedInspectMode: Symbol('InspectModeExited'),
   HighlightNodeRequested: Symbol('HighlightNodeRequested'),
   ScreenshotRequested: Symbol('ScreenshotRequested'),
+  PersistentGridOverlayCleared: Symbol('PersistentGridOverlayCleared'),
 };
 
 /**
@@ -661,9 +743,9 @@ class DefaultHighlighter {
     const backendNodeId = deferredNode ? deferredNode.backendNodeId() : undefined;
     const objectId = object ? object.objectId : undefined;
     if (nodeId || backendNodeId || objectId) {
-      this._model._overlayAgent.highlightNode(config, nodeId, backendNodeId, objectId, selectorList);
+      this._model.target().overlayAgent().highlightNode(config, nodeId, backendNodeId, objectId, selectorList);
     } else {
-      this._model._overlayAgent.hideHighlight();
+      this._model.target().overlayAgent().hideHighlight();
     }
   }
 
@@ -674,7 +756,7 @@ class DefaultHighlighter {
    * @return {!Promise<void>}
    */
   setInspectMode(mode, config) {
-    return this._model._overlayAgent.setInspectMode(mode, config);
+    return this._model.target().overlayAgent().setInspectMode(mode, config);
   }
 
   /**
@@ -682,9 +764,116 @@ class DefaultHighlighter {
    * @param {!Protocol.Page.FrameId} frameId
    */
   highlightFrame(frameId) {
-    this._model._overlayAgent.highlightFrame(
+    this._model.target().overlayAgent().highlightFrame(
         frameId, Common.Color.PageHighlight.Content.toProtocolRGBA(),
         Common.Color.PageHighlight.ContentOutline.toProtocolRGBA());
+  }
+}
+
+/**
+ * @interface
+ */
+export class PersistentGridHighlighter {
+  /**
+   * @param {number} nodeId
+   * @param {!Protocol.Overlay.GridHighlightConfig} config
+   */
+  highlightInOverlay(nodeId, config) {
+  }
+
+  /**
+   * @param {number} nodeId
+   */
+  hideInOverlay(nodeId) {
+  }
+
+  hideAllInOverlay() {
+  }
+}
+
+/**
+ * @implements {PersistentGridHighlighter}
+ */
+class DefaultPersistentGridHighlighter {
+  /**
+   * @param {!OverlayModel} model
+   */
+  constructor(model) {
+    this._model = model;
+    this._gridHighlights = new Map();
+  }
+
+  /**
+   * @override
+   * @param {number} nodeId
+   * @param {!Protocol.Overlay.GridHighlightConfig} config
+   */
+  highlightInOverlay(nodeId, config) {
+    if (this._gridHighlights.size === 0) {
+      this._model.setPersistentGridMode(true);
+      this._model.setShowViewportSizeOnResize(false);
+    }
+    this._gridHighlights.set(nodeId, config);
+    this._updateHighlightsInOverlay();
+  }
+
+  /**
+   * @override
+   * @param {number} nodeId
+   */
+  hideInOverlay(nodeId) {
+    if (this._gridHighlights.has(nodeId)) {
+      this._gridHighlights.delete(nodeId);
+      if (this._gridHighlights.size === 0) {
+        this._model.setPersistentGridMode(false);
+        this._model.setShowViewportSizeOnResize(true);
+      }
+      this._updateHighlightsInOverlay();
+    }
+  }
+
+  /**
+   * @override
+   */
+  hideAllInOverlay() {
+    this._gridHighlights.clear();
+    this._model.setPersistentGridMode(false);
+    this._model.setShowViewportSizeOnResize(true);
+    this._updateHighlightsInOverlay();
+  }
+
+  _updateHighlightsInOverlay() {
+    const overlayModel = this._model;
+    const gridNodeHighlightConfigs = [];
+    for (const [nodeId, gridHighlightConfig] of this._gridHighlights.entries()) {
+      gridNodeHighlightConfigs.push({nodeId, gridHighlightConfig});
+    }
+    overlayModel.target().overlayAgent().setShowGridOverlays(gridNodeHighlightConfigs);
+  }
+}
+
+export class SourceOrderHighlighter {
+  /**
+   * @param {!OverlayModel} model
+   */
+  constructor(model) {
+    this._model = model;
+  }
+
+  /**
+   * @param {!DOMNode} node
+   * @param {!Protocol.Overlay.SourceOrderConfig} config
+   */
+  highlightSourceOrderInOverlay(node, config) {
+    this._model.setSourceOrderActive(true);
+    this._model.setShowViewportSizeOnResize(false);
+    this._model._overlayAgent.highlightSourceOrder(config, node.id);
+  }
+
+  hideSourceOrderHighlight() {
+    this._model.setSourceOrderActive(false);
+    this._model.setShowViewportSizeOnResize(true);
+    this._model.clearHighlight();
   }
 }
 
