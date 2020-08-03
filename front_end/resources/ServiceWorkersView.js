@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
@@ -35,32 +38,9 @@ export class ServiceWorkersView extends UI.Widget.VBox {
     /** @type {?SDK.SecurityOriginManager.SecurityOriginManager} */
     this._securityOriginManager = null;
 
-    this._filterThrottler = new Common.Throttler.Throttler(300);
-
-    this._otherWorkers = this.contentElement.createChild('div', 'service-workers-other-origin');
-    this._otherSWFilter = this._otherWorkers.createChild('div', 'service-worker-filter');
-    this._otherSWFilter.setAttribute('tabindex', 0);
-    this._otherSWFilter.setAttribute('role', 'switch');
-    this._otherSWFilter.setAttribute('aria-checked', false);
-    const filterLabel = this._otherSWFilter.createChild('label', 'service-worker-filter-label');
-    filterLabel.textContent = Common.UIString.UIString('Service workers from other origins');
-    self.onInvokeElement(this._otherSWFilter, event => {
-      if (event.target === this._otherSWFilter || event.target === filterLabel) {
-        this._toggleFilter();
-      }
-    });
-
-    const toolbar = new UI.Toolbar.Toolbar('service-worker-filter-toolbar', this._otherSWFilter);
-    this._filter = new UI.Toolbar.ToolbarInput(ls`Filter service worker`, '', 1);
-    this._filter.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, () => this._filterChanged());
-    toolbar.appendToolbarItem(this._filter);
-
-    this._otherWorkersView = new UI.ReportView.ReportView();
-    this._otherWorkersView.setBodyScrollable(false);
-    this._otherWorkersView.show(this._otherWorkers);
-    this._otherWorkersView.element.classList.add('service-workers-for-other-origins');
-
-    this._updateCollapsedStyle();
+    // TODO(nidhijaju): Add a link to the chrome://servicworker-internals page
+    // here, along with a UMA counter to see how many people actually click on
+    // this link.
 
     this._toolbar.appendToolbarItem(
         MobileThrottling.ThrottlingManager.throttlingManager().createOfflineToolbarCheckbox());
@@ -154,12 +134,10 @@ export class ServiceWorkersView extends UI.Widget.VBox {
   }
 
   _updateSectionVisibility() {
-    let hasOthers = false;
     let hasThis = false;
     const movedSections = [];
     for (const section of this._sections.values()) {
       const expectedView = this._getReportViewForOrigin(section._registration.securityOrigin);
-      hasOthers |= expectedView === this._otherWorkersView;
       hasThis |= expectedView === this._currentWorkersView;
       if (section._section.parentWidget() !== expectedView) {
         movedSections.push(section);
@@ -179,11 +157,6 @@ export class ServiceWorkersView extends UI.Widget.VBox {
       return bTimestamp - aTimestamp;
     });
 
-    const scorer = new Sources.FilePathScoreFunction(this._filter.value());
-    this._otherWorkersView.sortSections((a, b) => {
-      const cmp = scorer.score(b.title(), null) - scorer.score(a.title(), null);
-      return cmp === 0 ? a.title().localeCompare(b.title()) : cmp;
-    });
     for (const section of this._sections.values()) {
       if (section._section.parentWidget() === this._currentWorkersView ||
           this._isRegistrationVisible(section._registration)) {
@@ -193,7 +166,6 @@ export class ServiceWorkersView extends UI.Widget.VBox {
       }
     }
     this.contentElement.classList.toggle('service-worker-has-current', !!hasThis);
-    this._otherWorkers.classList.toggle('hidden', !hasOthers);
     this._updateListVisibility();
   }
 
@@ -240,7 +212,7 @@ export class ServiceWorkersView extends UI.Widget.VBox {
         this._securityOriginManager.unreachableMainSecurityOrigin() === origin) {
       return this._currentWorkersView;
     }
-    return this._otherWorkersView;
+    return new UI.ReportView.ReportView();
   }
 
   /**
@@ -290,39 +262,14 @@ export class ServiceWorkersView extends UI.Widget.VBox {
    * @return {boolean}
    */
   _isRegistrationVisible(registration) {
-    const filterString = this._filter.value();
-    if (!filterString || !registration.scopeURL) {
+    if (!registration.scopeURL) {
       return true;
     }
-
-    const regex = String.filterRegex(filterString);
-    return regex.test(registration.scopeURL);
-  }
-
-  _filterChanged() {
-    this._updateCollapsedStyle();
-    this._filterThrottler.schedule(() => Promise.resolve(this._updateSectionVisibility()));
-  }
-
-  _updateCollapsedStyle() {
-    const expanded = this._otherSWFilter.getAttribute('aria-checked') === 'true';
-    this._otherWorkers.classList.toggle('service-worker-filter-collapsed', !expanded);
-    if (expanded) {
-      this._otherWorkersView.showWidget();
-    } else {
-      this._otherWorkersView.hideWidget();
-    }
-    this._otherWorkersView.setHeaderVisible(false);
+    return false;
   }
 
   _updateListVisibility() {
     this.contentElement.classList.toggle('service-worker-list-empty', this._sections.size === 0);
-  }
-
-  _toggleFilter() {
-    const expanded = this._otherSWFilter.getAttribute('aria-checked') === 'true';
-    this._otherSWFilter.setAttribute('aria-checked', `${!expanded}`);
-    this._filterChanged();
   }
 }
 

@@ -28,6 +28,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Bindings from '../bindings/bindings.js';
 import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';
@@ -1083,10 +1086,9 @@ export class NetworkLogView extends UI.Widget.VBox {
   }
 
   _onDataGridFocus() {
-    if (!UI.UIUtils.elementIsFocusedByKeyboard(this._dataGrid.element)) {
-      return;
+    if (UI.UIUtils.elementIsFocusedByKeyboard(this._dataGrid.element)) {
+      this.element.classList.add('grid-focused');
     }
-    this.element.classList.add('grid-focused');
     this.updateNodeBackground();
   }
 

@@ -969,7 +969,9 @@
                     "type": "string",
                     "enum": [
                         "ExcludeSameSiteUnspecifiedTreatedAsLax",
-                        "ExcludeSameSiteNoneInsecure"
+                        "ExcludeSameSiteNoneInsecure",
+                        "ExcludeSameSiteLax",
+                        "ExcludeSameSiteStrict"
                     ]
                 },
                 {
@@ -1141,7 +1143,12 @@
                             "$ref": "AffectedRequest"
                         },
                         {
-                            "name": "frame",
+                            "name": "parentFrame",
+                            "optional": true,
+                            "$ref": "AffectedFrame"
+                        },
+                        {
+                            "name": "blockedFrame",
                             "optional": true,
                             "$ref": "AffectedFrame"
                         },
@@ -6932,6 +6939,28 @@
                     ]
                 },
                 {
+                    "name": "setIdleOverride",
+                    "description": "Overrides the Idle state.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "isUserActive",
+                            "description": "Mock isUserActive",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "isScreenUnlocked",
+                            "description": "Mock isScreenUnlocked",
+                            "type": "boolean"
+                        }
+                    ]
+                },
+                {
+                    "name": "clearIdleOverride",
+                    "description": "Clears Idle state overrides.",
+                    "experimental": true
+                },
+                {
                     "name": "setNavigatorOverrides",
                     "description": "Overrides value returned by the javascript navigator object.",
                     "experimental": true,
@@ -9293,6 +9322,18 @@
                     ]
                 },
                 {
+                    "id": "PostDataEntry",
+                    "description": "Post data entry for HTTP request",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "bytes",
+                            "optional": true,
+                            "type": "binary"
+                        }
+                    ]
+                },
+                {
                     "id": "Request",
                     "description": "HTTP request data.",
                     "type": "object",
@@ -9329,6 +9370,16 @@
                             "description": "True when the request has POST data. Note that postData might still be omitted when this flag is true when the data is too long.",
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "postDataEntries",
+                            "description": "Request body elements. This will be converted from base64 to binary",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "$ref": "PostDataEntry"
+                            }
                         },
                         {
                             "name": "mixedContentType",
@@ -10521,7 +10572,7 @@
                     "parameters": [
                         {
                             "name": "urls",
-                            "description": "The list of URLs for which applicable cookies will be fetched",
+                            "description": "The list of URLs for which applicable cookies will be fetched.\nIf not specified, it's assumed to be set to the list containing\nthe URLs of the page and all of its subframes.",
                             "optional": true,
                             "type": "array",
                             "items": {
@@ -11439,6 +11490,23 @@
             ],
             "types": [
                 {
+                    "id": "SourceOrderConfig",
+                    "description": "Configuration data for drawing the source order of an elements children.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "parentOutlineColor",
+                            "description": "the color to outline the givent element in.",
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "childOutlineColor",
+                            "description": "the color to outline the child elements in.",
+                            "$ref": "DOM.RGBA"
+                        }
+                    ]
+                },
+                {
                     "id": "GridHighlightConfig",
                     "description": "Configuration data for the highlighting of Grid elements.",
                     "type": "object",
@@ -11464,6 +11532,18 @@
                         {
                             "name": "showAreaNames",
                             "description": "Show area name labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showLineNames",
+                            "description": "Show line name labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showTrackSizes",
+                            "description": "Show track size labels (default: false).",
                             "optional": true,
                             "type": "boolean"
                         },
@@ -11755,6 +11835,24 @@
                     ]
                 },
                 {
+                    "name": "getSourceOrderHighlightObjectForTest",
+                    "description": "For Source Order Viewer testing.",
+                    "parameters": [
+                        {
+                            "name": "nodeId",
+                            "description": "Id of the node to highlight.",
+                            "$ref": "DOM.NodeId"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "highlight",
+                            "description": "Source order highlight data for the node id provided.",
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
                     "name": "hideHighlight",
                     "description": "Hides any highlight."
                 },
@@ -11874,6 +11972,35 @@
                             "description": "The highlight outline color (default: transparent).",
                             "optional": true,
                             "$ref": "DOM.RGBA"
+                        }
+                    ]
+                },
+                {
+                    "name": "highlightSourceOrder",
+                    "description": "Highlights the source order of the children of the DOM node with given id or with the given\nJavaScript object wrapper. Either nodeId or objectId must be specified.",
+                    "parameters": [
+                        {
+                            "name": "sourceOrderConfig",
+                            "description": "A descriptor for the appearance of the overlay drawing.",
+                            "$ref": "SourceOrderConfig"
+                        },
+                        {
+                            "name": "nodeId",
+                            "description": "Identifier of the node to highlight.",
+                            "optional": true,
+                            "$ref": "DOM.NodeId"
+                        },
+                        {
+                            "name": "backendNodeId",
+                            "description": "Identifier of the backend node to highlight.",
+                            "optional": true,
+                            "$ref": "DOM.BackendNodeId"
+                        },
+                        {
+                            "name": "objectId",
+                            "description": "JavaScript object id of the node to be highlighted.",
+                            "optional": true,
+                            "$ref": "Runtime.RemoteObjectId"
                         }
                     ]
                 },
@@ -16559,7 +16686,7 @@
                             "name": "postData",
                             "description": "If set, overrides the post data in the request.",
                             "optional": true,
-                            "type": "string"
+                            "type": "binary"
                         },
                         {
                             "name": "headers",
@@ -18814,6 +18941,13 @@
                             "experimental": true,
                             "optional": true,
                             "$ref": "Debugger.ScriptLanguage"
+                        },
+                        {
+                            "name": "embedderName",
+                            "description": "The name the embedder supplied for this script.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "string"
                         }
                     ]
                 },
@@ -18925,6 +19059,13 @@
                             "experimental": true,
                             "optional": true,
                             "$ref": "Debugger.DebugSymbols"
+                        },
+                        {
+                            "name": "embedderName",
+                            "description": "The name the embedder supplied for this script.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "string"
                         }
                     ]
                 }

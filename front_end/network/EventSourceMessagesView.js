@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as DataGrid from '../data_grid/data_grid.js';
+import * as Host from '../host/host.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -30,6 +34,7 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
     this._dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({displayName: ls`Event Source`, columns});
     this._dataGrid.setStriped(true);
     this._dataGrid.setStickToBottom(true);
+    this._dataGrid.setRowContextMenuCallback(this._onRowContextMenu.bind(this));
     this._dataGrid.markColumnAsSortedBy('time', DataGrid.DataGrid.Order.Ascending);
     this._sortItems();
     this._dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this._sortItems, this);
@@ -76,6 +81,17 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
       return;
     }
     this._dataGrid.sortNodes(comparator, !this._dataGrid.isSortOrderAscending());
+  }
+
+  /**
+   * @param {!UI.ContextMenu.ContextMenu} contextMenu
+   * @param {!DataGrid.DataGrid.DataGridNode<!EventSourceMessageNode>} node
+   */
+  _onRowContextMenu(contextMenu, node) {
+    contextMenu.clipboardSection().appendItem(
+        Common.UIString.UIString('Copy message'),
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance, node.data.data));
   }
 }
 

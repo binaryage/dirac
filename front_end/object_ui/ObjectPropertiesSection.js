@@ -24,6 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';  // eslint-disable-line no-unused-vars
 import * as Host from '../host/host.js';
@@ -615,6 +618,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     this._linkifier = linkifier;
     this._maxNumPropertiesToShow = InitialVisibleChildrenLimit;
     this.listItemElement.addEventListener('contextmenu', this._contextMenuFired.bind(this), false);
+    UI.ARIAUtils.setAccessibleName(this.listItemElement, this.property.name);
   }
 
   /**

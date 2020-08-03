@@ -22,7 +22,16 @@ describe('walkTree', () => {
       return x.name.escapedText.toString();
     });
 
-    assert.deepEqual(foundInterfaceNames, ['Dog', 'Person']);
+    assert.deepEqual(foundInterfaceNames, ['Dog', 'Person', 'DogOwner']);
+  });
+
+  it('finds nested imports to convert from another file', () => {
+    const filePath = path.resolve(path.join(fixturesPath, 'component-with-external-interface.ts'));
+
+    const source = createTypeScriptSourceFromFilePath(filePath);
+    const result = walkTree(source, filePath);
+
+    assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['Person', 'Dog', 'DogOwner']);
   });
 
   it('errors if a user references an interface via a qualifier', () => {
@@ -74,6 +83,98 @@ describe('walkTree', () => {
     });
 
     assert.deepEqual(foundInterfaceNames, ['Person', 'Dog']);
+  });
+
+  describe('nested interfaces', () => {
+    it('correctly identifies interfaces that reference other interfaces', () => {
+      const code = `interface WebVitalsTimelineTask {
+        start: number;
+        duration: number;
+      }
+
+      interface WebVitalsTimelineData {
+        layoutshifts: number;
+        longTasks: WebVitalsTimelineTask;
+      }
+
+      class WebVitals extends HTMLElement {
+        set data(data: {timeline: WebVitalsTimelineData}) {}
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['WebVitalsTimelineData', 'WebVitalsTimelineTask']);
+    });
+
+    it('correctly identifies interfaces that reference arrays of other interfaces', () => {
+      const code = `interface WebVitalsTimelineTask {
+        start: number;
+        duration: number;
+      }
+
+      interface WebVitalsTimelineData {
+        layoutshifts: number[];
+        longTasks: WebVitalsTimelineTask[];
+      }
+
+      class WebVitals extends HTMLElement {
+        set data(data: {timeline: WebVitalsTimelineData}) {}
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['WebVitalsTimelineData', 'WebVitalsTimelineTask']);
+    });
+
+    it('correctly identifies interfaces that reference interfaces in nested object literals', () => {
+      const code = `interface WebVitalsTimelineTask {
+        start: number;
+        duration: number;
+      }
+
+      interface WebVitalsTimelineData {
+        longTask: {
+          name: string;
+          task: WebVitalsTimelineTask
+        }
+      }
+
+      class WebVitals extends HTMLElement {
+        set data(data: {timeline: WebVitalsTimelineData}) {}
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['WebVitalsTimelineData', 'WebVitalsTimelineTask']);
+    });
+
+    it('correctly identifies interfaces that are deeply nested', () => {
+      const code = `interface Timing {
+        start: number;
+        end: number;
+      }
+
+      interface LongTask {
+        id: number;
+        timings: Timing[]
+      }
+
+      interface WebVitalsTimelineData {
+        longTasks: LongTask[]
+      }
+
+      class WebVitals extends HTMLElement {
+        set data(data: {timeline: WebVitalsTimelineData}) {}
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['WebVitalsTimelineData', 'LongTask', 'Timing']);
+    });
   });
 
   describe('finding the custom element class', () => {
@@ -263,6 +364,38 @@ describe('walkTree', () => {
         }
 
         public set data(data: {x: Person, y: Dog) {
+        }
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      if (!result.componentClass) {
+        assert.fail('No component class was found');
+      }
+
+      const setterNames = Array.from(result.setters, method => {
+        return (method.name as ts.Identifier).escapedText as string;
+      });
+
+      assert.deepEqual(setterNames, ['data']);
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['Person', 'Dog']);
+    });
+
+    it('can deal with setters taking optional arguments', () => {
+      const code = `interface Person { name: string }
+
+      interface Dog {
+        name: string
+      }
+
+      class Breadcrumbs extends HTMLElement {
+
+        private render() {
+          console.log('render')
+        }
+
+        public set data(data: {x: Person|null, y: Dog}) {
         }
       }`;
 
