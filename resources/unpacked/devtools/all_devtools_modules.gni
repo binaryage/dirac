@@ -6,9 +6,6 @@ import("./scripts/build/ninja/vars.gni")
 
 all_devtools_module_sources = [
   # dirac - start
-  "third_party/codemirror/package/addon/runmode/runmode.js",
-  "third_party/codemirror/package/addon/display/placeholder.js",
-  "console/ConsoleDiracPrompt.js",
   "dirac/parinfer.js",
   "dirac/parinfer-codemirror.js",
   "dirac/keysim.js",
@@ -164,6 +161,7 @@ all_typescript_module_sources = [
   "console/ConsolePanel.js",
   "console/ConsolePinPane.js",
   "console/ConsolePrompt.js",
+  "console/ConsoleDiracPrompt.js",
   "console/ConsoleSidebar.js",
   "console/ConsoleView.js",
   "console/ConsoleViewMessage.js",
@@ -551,6 +549,10 @@ all_typescript_module_sources = [
   "third_party/codemirror/package/addon/runmode/runmode-standalone.js",
   "third_party/codemirror/package/addon/selection/active-line.js",
   "third_party/codemirror/package/addon/selection/mark-selection.js",
+  # dirac - start
+  "third_party/codemirror/package/addon/runmode/runmode.js",
+  "third_party/codemirror/package/addon/display/placeholder.js",
+  # dirac - end
   "third_party/codemirror/package/lib/codemirror.js",
   "third_party/codemirror/package/mode/clike/clike.js",
   "third_party/codemirror/package/mode/clojure/clojure.js",

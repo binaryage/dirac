@@ -32,7 +32,6 @@
 // TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as ARIAUtils from './ARIAUtils.js';
-import * as UI from '../ui/ui.js';
 import {Size} from './Geometry.js';
 import {AnchorBehavior, GlassPane} from './GlassPane.js';
 import {Icon} from './Icon.js';
@@ -91,7 +90,6 @@ export class SuggestBox {
     this._glassPane.setAnchorBehavior(AnchorBehavior.PreferBottom);
     this._glassPane.setOutsideClickCallback(this.hide.bind(this));
     const shadowRoot = createShadowRootWithCoreStyles(this._glassPane.contentElement, 'ui/suggestBox.css');
-    UI.Utils.appendStyle(shadowRoot, 'ui/suggestBox-dirac.css');
     shadowRoot.appendChild(this._element);
   }
 
