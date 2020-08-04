@@ -45,6 +45,7 @@ devtools #1      repl eval job started
 devtools #1      setCurrentPanel: sources
 automate #1      focus-best-console-prompt!
 devtools #1      showDrawer
+devtools #1      setCurrentPanel: console-view
 automate #1      exec-and-match-in-console! ["(inc a)" "info> 43"]
 devtools #1      DC.info> (inc a)
 devtools #1      send-eval-request: (inc a)
