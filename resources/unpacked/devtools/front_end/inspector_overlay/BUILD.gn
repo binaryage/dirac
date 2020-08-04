@@ -13,8 +13,12 @@ action("build_inspector_overlay") {
     "./common.css",
     "$target_gen_dir/common.js",
     "$target_gen_dir/css_grid_label_helpers.js",
+    "$target_gen_dir/highlight_common.js",
+    "$target_gen_dir/highlight_grid_common.js",
     "$target_gen_dir/tool_highlight_impl.js",
     "$target_gen_dir/tool_highlight.js",
+    "$target_gen_dir/tool_highlight_grid_impl.js",
+    "$target_gen_dir/tool_highlight_grid.js",
     "$target_gen_dir/tool_paused_impl.js",
     "$target_gen_dir/tool_paused.js",
     "$target_gen_dir/tool_screenshot_impl.js",
@@ -23,15 +27,19 @@ action("build_inspector_overlay") {
     "$target_gen_dir/tool_viewport_size.js",
     "$target_gen_dir/tool_distances_impl.js",
     "$target_gen_dir/tool_distances.js",
+    "$target_gen_dir/tool_source_order_impl.js",
+    "$target_gen_dir/tool_source_order.js",
   ]
 
   outputs = [
     "$resources_out_dir/common.css",
     "$resources_out_dir/tool_highlight.js",
+    "$resources_out_dir/tool_highlight_grid.js",
     "$resources_out_dir/tool_distances.js",
     "$resources_out_dir/tool_paused.js",
     "$resources_out_dir/tool_screenshot.js",
     "$resources_out_dir/tool_viewport_size.js",
+    "$resources_out_dir/tool_source_order.js",
   ]
 
   args = [
@@ -39,6 +47,8 @@ action("build_inspector_overlay") {
     "1200",  # max_size in bytes
     "tool_highlight.js",
     "50000",  # max_size in bytes
+    "tool_highlight_grid.js",
+    "28000",  # max_size in bytes
     "tool_distances.js",
     "5000",  # max_size in bytes
     "tool_paused.js",
@@ -47,6 +57,8 @@ action("build_inspector_overlay") {
     "5000",  # max_size in bytes
     "tool_viewport_size.js",
     "5000",  # max_size in bytes
+    "tool_source_order.js",
+    "10000",  # max_size in bytes
     "--input_path",
     rebase_path(".", root_build_dir),
     "--output_path",
@@ -68,16 +80,22 @@ ts_library("inspector_overlay") {
   sources = [
     "common.js",
     "css_grid_label_helpers.js",
+    "highlight_common.js",
+    "highlight_grid_common.js",
     "tool_distances.js",
     "tool_distances_impl.js",
     "tool_highlight.js",
+    "tool_highlight_grid.js",
+    "tool_highlight_grid_impl.js",
     "tool_highlight_impl.js",
     "tool_paused.js",
     "tool_paused_impl.js",
     "tool_screenshot.js",
     "tool_screenshot_impl.js",
+    "tool_source_order.js",
+    "tool_source_order_impl.js",
     "tool_viewport_size.js",
     "tool_viewport_size_impl.js",
   ]
-  deps = [ "../common" ]
+  deps = [ "../common:bundle" ]
 }

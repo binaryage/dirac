@@ -3,10 +3,27 @@
 // found in the LICENSE file.
 
 import * as puppeteer from 'puppeteer';
+declare module 'puppeteer' {
+  interface QueryHandler {
+    queryOne?: (element: Element|Document, selector: string) => Element | null;
+    queryAll?: (element: Element|Document, selector: string) => Element[] | NodeListOf<Element>;
+  }
+
+  function __experimental_registerCustomQueryHandler(name: string, queryHandler: QueryHandler): void;
+  function __experimental_unregisterCustomQueryHandler(name: string): void;
+  function __experimental_customQueryHandlers(): Map<string, QueryHandler>;
+  function __experimental_clearQueryHandlers(): void;
+}
+
+import {querySelectorShadowAll, querySelectorShadowOne, querySelectorShadowTextAll, querySelectorShadowTextOne} from './custom-query-handlers.js';
 
 let target: puppeteer.Page;
 let frontend: puppeteer.Page;
 let browser: puppeteer.Browser;
+
+// Set when we launch the hosted mode server. It will be different for each
+// sub-process runner when running in parallel.
+let hostedModeServerPort: number;
 
 export interface BrowserAndPages {
   target: puppeteer.Page;
@@ -40,4 +57,34 @@ export const getBrowserAndPages = (): BrowserAndPages => {
     frontend,
     browser,
   };
+};
+
+export const setHostedModeServerPort = (port: number) => {
+  if (hostedModeServerPort) {
+    throw new Error('Can\'t set the hosted mode server port twice.');
+  }
+  hostedModeServerPort = port;
+};
+
+export const getHostedModeServerPort = () => {
+  if (!hostedModeServerPort) {
+    throw new Error(
+        'Unable to locate hosted mode server port. Was it stored first?' +
+        '\nYou might be calling this function at module instantiation time, instead of ' +
+        'at runtime when the port is available.');
+  }
+  return hostedModeServerPort;
+};
+
+export const registerHandlers = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  puppeteer.__experimental_registerCustomQueryHandler('pierceShadow', {
+    queryOne: querySelectorShadowOne,
+    queryAll: querySelectorShadowAll,
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  puppeteer.__experimental_registerCustomQueryHandler('pierceShadowText', {
+    queryOne: querySelectorShadowTextOne,
+    queryAll: querySelectorShadowTextAll,
+  });
 };

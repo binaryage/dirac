@@ -11,7 +11,10 @@ const SELECTED_TREE_ELEMENT_SELECTOR = '.selected[role="treeitem"]';
 const CSS_PROPERTY_NAME_SELECTOR = '.webkit-css-property';
 const CSS_PROPERTY_SWATCH_SELECTOR = '.color-swatch-inner';
 const CSS_STYLE_RULE_SELECTOR = '[aria-label*="css selector"]';
-const COMPUTED_PROPERTY_SELECTOR = '.computed-style-property';
+export const COMPUTED_PROPERTY_SELECTOR = '.computed-style-property';
+const COMPUTED_STYLES_PANEL_SELECTOR = '[aria-label="Computed panel"]';
+const COMPUTED_STYLES_SHOW_ALL_SELECTOR = '[aria-label="Show all"]';
+const COMPUTED_STYLE_TRACES_SELECTOR = '.expanded .property-trace';
 const ELEMENTS_PANEL_SELECTOR = '.panel[aria-label="elements"]';
 const SECTION_SUBTITLE_SELECTOR = '.styles-section-subtitle';
 
@@ -114,6 +117,14 @@ export const getAllPropertiesFromComputedPane = async () => {
   });
 };
 
+export const getTracesFromComputedStyle = async (computedStyleSelector: string) => {
+  const computedStyleProperty = await $(computedStyleSelector);
+  await click(computedStyleProperty);
+  await waitFor(COMPUTED_STYLE_TRACES_SELECTOR);  // avoid flakiness
+  const propertyTraces = await $$(COMPUTED_STYLE_TRACES_SELECTOR);
+  return propertyTraces.evaluate((nodes: Element[]) => nodes.map(node => node.textContent));
+};
+
 export const expandSelectedNodeRecursively = async () => {
   const EXPAND_RECURSIVELY = '[aria-label="Expand recursively"]';
 
@@ -148,6 +159,15 @@ export const getComputedStylesForDomNode = async (elementSelector: string, style
     }
     return getComputedStyle(element)[styleAttribute];
   }, elementSelector, styleAttribute);
+};
+
+export const toggleShowAllComputedProperties = async () => {
+  const initialContent = await getContentOfComputedPane();
+
+  const computedPanel = await $(COMPUTED_STYLES_PANEL_SELECTOR);
+  const showAllButton = await $(COMPUTED_STYLES_SHOW_ALL_SELECTOR, computedPanel);
+  await click(showAllButton);
+  await waitForComputedPaneChange(initialContent);
 };
 
 export const waitForDomNodeToBeVisible = async (elementSelector: string) => {
@@ -196,6 +216,7 @@ export const getDisplayedStyleRules = async () => {
   return rules;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getDisplayedCSSPropertyNames = async (propertiesSection: puppeteer.JSHandle<any>) => {
   const listNodesContent = (nodes: Element[]) => {
     const rawContent = nodes.map(node => node.textContent);
@@ -211,6 +232,7 @@ export const getStyleRule = async (selector: string) => {
   return await $(`[aria-label="${selector}, css selector"]`);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getCSSPropertySwatchStyle = async (ruleSection: puppeteer.JSHandle<any>) => {
   const swatches = await $$(CSS_PROPERTY_SWATCH_SELECTOR, ruleSection);
   return await swatches.evaluate(async (nodes: Element[]) => {
@@ -225,6 +247,7 @@ export const getStyleSectionSubtitles = async () => {
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getCSSPropertyInRule = async (ruleSection: puppeteer.JSHandle<any>, name: string) => {
   const propertyNames = await $$(CSS_PROPERTY_NAME_SELECTOR, ruleSection);
   return await propertyNames.evaluateHandle(async (nodes: Element[], name) => {
@@ -249,7 +272,7 @@ export async function editCSSProperty(selector: string, propertyName: string, ne
 }
 
 export const getBreadcrumbsTextContent = async () => {
-  const crumbs = await $$('span.crumb');
+  const crumbs = await $$('li.crumb > a');
 
   const crumbsAsText: string[] = await crumbs.evaluate((nodes: HTMLElement[]) => {
     return nodes.map((node: HTMLElement) => node.textContent || '');
@@ -259,7 +282,7 @@ export const getBreadcrumbsTextContent = async () => {
 };
 
 export const getSelectedBreadcrumbTextContent = async () => {
-  const selectedCrumb = await $('span.crumb.selected');
+  const selectedCrumb = await $('li.crumb.selected > a');
   const text = selectedCrumb.evaluate((node: HTMLElement) => node.textContent || '');
   return text;
 };

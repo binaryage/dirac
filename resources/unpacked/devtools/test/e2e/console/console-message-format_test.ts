@@ -5,6 +5,7 @@
 import {assert} from 'chai';
 import {describe, it} from 'mocha';
 
+import {getHostedModeServerPort} from '../../shared/helper.js';
 import {getConsoleMessages, showVerboseMessages} from '../helpers/console-helpers.js';
 
 describe('The Console Tab', async () => {
@@ -29,8 +30,9 @@ describe('The Console Tab', async () => {
       `Uncaught (in promise) Error: err2
     at uncaught-promise.html:25`,
       `Uncaught (in promise) DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-    at throwDOMException (http://localhost:8090/test/e2e/resources/console/uncaught-promise.html:40:7)
-    at catcher (http://localhost:8090/test/e2e/resources/console/uncaught-promise.html:33:5)`,
+    at throwDOMException (http://localhost:${
+          getHostedModeServerPort()}/test/e2e/resources/console/uncaught-promise.html:40:7)
+    at catcher (http://localhost:${getHostedModeServerPort()}/test/e2e/resources/console/uncaught-promise.html:33:5)`,
     ]);
   });
 
@@ -202,7 +204,7 @@ describe('The Console Tab', async () => {
   });
 
   it('can show verbose promise unhandledrejections', async () => {
-    const messages = await getConsoleMessages('onunhandledrejection', showVerboseMessages);
+    const messages = await getConsoleMessages('onunhandledrejection', false, showVerboseMessages);
 
     assert.deepEqual(messages, [
       'onunhandledrejection1',
@@ -221,7 +223,7 @@ describe('The Console Tab', async () => {
       assert.deepEqual(messages, [
         'A message with first argument string Second argument which should not be discarded',
         '2011 "A message with first argument integer"',
-        'Window\xA0{parent: Window, opener: null, top: Window, length: 0, frames: Window,\xA0…} "A message with first argument window"',
+        'Window\xA0{window: Window, self: Window, document: document, name: \"\", location: Location,\xA0…} "A message with first argument window"',
       ]);
     });
 
@@ -231,7 +233,7 @@ describe('The Console Tab', async () => {
       assert.deepEqual(messages, [
         'A message with first argument string Second argument which should not be discarded',
         '2011 "A message with first argument integer"',
-        'Window\xA0{parent: Window, opener: null, top: Window, length: 0, frames: Window,\xA0…} "A message with first argument window"',
+        'Window\xA0{window: Window, self: Window, document: document, name: \"\", location: Location,\xA0…} "A message with first argument window"',
         'After iframe navigation.',
       ]);
     });

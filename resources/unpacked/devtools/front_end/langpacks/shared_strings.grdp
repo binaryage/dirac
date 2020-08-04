@@ -19,6 +19,9 @@
   <message name="IDS_DEVTOOLS_07ba8a9247a0f91e025d8036a28c3b56" desc="A tag of Application Panel that can be searched in the command menu">
     pwa
   </message>
+  <message name="IDS_DEVTOOLS_0945359809dad1fbf3dea1c95a0da951" desc="Name of a network resource type">
+    Document
+  </message>
   <message name="IDS_DEVTOOLS_0b484cfcf50c8fabff48c0aad426f544" desc="Text to dock the DevTools to the left of the browser tab">
     Dock to left
   </message>
@@ -265,9 +268,6 @@
   <message name="IDS_DEVTOOLS_5fb63579fc981698f97d55bfecb213ea" desc="Text for copying">
     Copy
   </message>
-  <message name="IDS_DEVTOOLS_61326117ed4a9ddf3f754e71e119e5b3" desc="The kind of resolution for a mixed content issue">
-    blocked
-  </message>
   <message name="IDS_DEVTOOLS_63041e09c8660107e507c9c27c08199c" desc="Text to expand something recursively">
     Expand recursively
   </message>
@@ -304,6 +304,12 @@
   <message name="IDS_DEVTOOLS_6f6cb72d544962fa333e2e34ce64f719" desc="Text for the size of something">
     Size
   </message>
+  <message name="IDS_DEVTOOLS_6feab1a8f70b4209f82a628b7395ede3" desc="Message to display if a setting change requires a reload of DevTools">
+    One or more settings have changed which requires a reload to take effect.
+  </message>
+  <message name="IDS_DEVTOOLS_72507d307327a430052f9fcd914dfaee" desc="Title of an action that reloads the DevTools">
+    Reload DevTools
+  </message>
   <message name="IDS_DEVTOOLS_74540c79e377bea903e1023a46df5574" desc="Text to open a file">
     Open file
   </message>
@@ -336,6 +342,9 @@
   </message>
   <message name="IDS_DEVTOOLS_81aa2078d1eceede831b2976dbf32e62" desc="Text to clear everything">
     Clear all
+  </message>
+  <message name="IDS_DEVTOOLS_832e506a71f4a57ed15ecbcd771f9247" desc="Text in Coverage List View of the Coverage tab">
+    Total Bytes
   </message>
   <message name="IDS_DEVTOOLS_84d0c431d1472a0609d69b39dcb3a287" desc="Text for the index of something">
     (index)
@@ -376,6 +385,9 @@
   <message name="IDS_DEVTOOLS_90589c47f06eb971d548591f23c285af" desc="Text in Network Throttling Selector of the Network panel">
     Custom
   </message>
+  <message name="IDS_DEVTOOLS_9066c4d254b4c8ab67e107a1b59e925d" desc="Accessible text for a file size of 1 byte">
+    1 byte
+  </message>
   <message name="IDS_DEVTOOLS_90da6f38945a1c7e7ba11e3adcbe6919" desc="Text for pausing the debugger on exceptions">
     Pause on exceptions
   </message>
@@ -390,6 +402,9 @@
   </message>
   <message name="IDS_DEVTOOLS_939aaa05e0943b39eab3a34fd609384d" desc="Text to scroll the displayed content into view">
     Scroll into view
+  </message>
+  <message name="IDS_DEVTOOLS_93cba07454f06a4a960172bbd6e2a435" desc="Text in Timeline indicating that input has happened recently">
+    Yes
   </message>
   <message name="IDS_DEVTOOLS_9446a98ad14416153cc4d45ab8b531bf" desc="Text for the performance of something">
     Performance
@@ -516,6 +531,9 @@
   </message>
   <message name="IDS_DEVTOOLS_ba5b676ccf658f863ef2e3df082ee262" desc="Text for the event that an animation frame is fired">
     Animation Frame Fired
+  </message>
+  <message name="IDS_DEVTOOLS_bafd7322c6e97d25b6299b5d6fe8920b" desc="Text in Timeline indicating that input has not happened recently">
+    No
   </message>
   <message name="IDS_DEVTOOLS_bc28aa52ba5b534ad9d198157c375d67" desc="Text to clear storage of the web page">
     Clear storage
@@ -646,11 +664,17 @@
   <message name="IDS_DEVTOOLS_ec211f7c20af43e742bf2570c3cb84f9" desc="Text to add something">
     Add
   </message>
+  <message name="IDS_DEVTOOLS_ec21eddec143497cea80ab45444a5dab" desc="Related node label in Timeline UIUtils of the Performance panel">
+    Owner Element
+  </message>
   <message name="IDS_DEVTOOLS_ec53a8c4f07baed5d8825072c89799be" desc="Text for the status of something">
     Status
   </message>
   <message name="IDS_DEVTOOLS_edd24cce7afedea5a1b2f90675880687" desc="Text to preserve the log after refreshing">
     Preserve log
+  </message>
+  <message name="IDS_DEVTOOLS_ee1cab1975e28575b1631ee8fc4ea749" desc="Title of an action in the emulation tool to capture node screenshot">
+    Capture node screenshot
   </message>
   <message name="IDS_DEVTOOLS_ee33e909372d935d190f4fcb2a92d542" desc="The milisecond unit">
     ms

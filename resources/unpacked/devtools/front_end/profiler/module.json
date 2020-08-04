@@ -119,7 +119,6 @@
     "heap_snapshot_model",
     "object_ui"
   ],
-  "scripts": [],
   "modules": [
     "profiler.js",
     "profiler-legacy.js",
@@ -151,5 +150,6 @@
     "profileLauncherView.css",
     "profilesPanel.css",
     "profilesSidebarTree.css"
-  ]
+  ],
+  "skip_rollup": true
 }

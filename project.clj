@@ -11,12 +11,12 @@
    ['org.clojure/clojurescript selected-clojurescript-version :scope "provided"]])
 
 (def required-deps
-  [['org.clojure/core.async "1.2.603"]
+  [['org.clojure/core.async "1.3.610"]
    ['org.clojure/tools.logging "1.1.0"]
    ['org.clojure/tools.cli "1.0.194"]
-   ['nrepl/nrepl "0.7.0"]
+   ['nrepl/nrepl "0.8.0"]
    ['binaryage/env-config "0.2.2"]
-   ['http-kit "2.3.0"]
+   ['http-kit "2.4.0"]
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
    ['funcool/cuerdas "2020.03.26-3"]
@@ -37,13 +37,13 @@
    ['cljs-http "0.1.46" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
    ['reforms "0.4.3" :scope "test"]
-   ['rum "0.12.1" :scope "test"]
+   ['rum "0.12.3" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "1.0.0" :scope "test"]
    ['org.clojure/tools.reader "1.3.2" :scope "test"]
    ['fipp "0.6.23" :scope "test"]
-   ['nubank/matcher-combinators "2.1.1" :scope "test"]
+   ['nubank/matcher-combinators "3.1.1" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
@@ -64,7 +64,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.6.0"
+(defproject binaryage/dirac "1.6.1"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

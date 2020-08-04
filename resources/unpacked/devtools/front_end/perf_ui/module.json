@@ -71,7 +71,6 @@
     "source_frame",
     "text_editor"
   ],
-  "scripts": [],
   "modules": [
     "perf_ui.js",
     "perf_ui-legacy.js",
@@ -95,5 +94,6 @@
     "pieChart.css",
     "timelineGrid.css",
     "timelineOverviewInfo.css"
-  ]
+  ],
+  "skip_rollup": true
 }

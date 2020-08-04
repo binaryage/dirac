@@ -2,17 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../third_party/typescript/typescript.gni")
+import("../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../scripts/build/ninja/devtools_module.gni")
 
-ts_library("sdk") {
+devtools_module("sdk") {
   sources = [
     "CPUProfileDataModel.js",
     "CPUProfilerModel.js",
+    "CSSFontFace.js",
     "CSSMatchedStyles.js",
     "CSSMedia.js",
     "CSSMetadata.js",
     "CSSModel.js",
     "CSSProperty.js",
+    "CSSPropertyParser.js",
     "CSSRule.js",
     "CSSStyleDeclaration.js",
     "CSSStyleSheetHeader.js",
@@ -20,6 +23,7 @@ ts_library("sdk") {
     "CompilerSourceMappingContentProvider.js",
     "Connections.js",
     "ConsoleModel.js",
+    "ContentSecurityPolicyIssue.js",
     "Cookie.js",
     "CookieModel.js",
     "CookieParser.js",
@@ -30,6 +34,7 @@ ts_library("sdk") {
     "EmulationModel.js",
     "FilmStripModel.js",
     "FrameAssociated.js",
+    "FrameManager.js",
     "HARLog.js",
     "HeapProfilerModel.js",
     "HeavyAdIssue.js",
@@ -43,6 +48,7 @@ ts_library("sdk") {
     "NetworkManager.js",
     "NetworkRequest.js",
     "OverlayModel.js",
+    "PageResourceLoader.js",
     "PaintProfiler.js",
     "PerformanceMetricsModel.js",
     "ProfileTreeModel.js",
@@ -63,16 +69,23 @@ ts_library("sdk") {
     "TracingManager.js",
     "TracingModel.js",
     "WebAuthnModel.js",
-    "sdk.js",
   ]
 
   deps = [
-    "../common",
+    "../common:bundle",
     "../generated",
-    "../host",
-    "../platform",
-    "../protocol_client",
-    "../text_utils",
+    "../host:bundle",
+    "../platform:bundle",
+    "../protocol_client:bundle",
+    "../text_utils:bundle",
     "wasm_source_map",
   ]
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "sdk.js"
+
+  is_legacy_javascript_entrypoint = [ "crbug.com/1011811" ]
+
+  deps = [ ":sdk" ]
 }

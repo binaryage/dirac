@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Formatter from '../formatter/formatter.js';
 import * as Platform from '../platform/platform.js';
@@ -908,7 +911,7 @@ export class SourceFrameImpl extends UI.View.SimpleView {
 export class LineDecorator {
   /**
    * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
-   * @param {!TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor} textEditor
+   * @param {!SourcesTextEditor} textEditor
    * @param {string} type
    */
   decorate(uiSourceCode, textEditor, type) {}

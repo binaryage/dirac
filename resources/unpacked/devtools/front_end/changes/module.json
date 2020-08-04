@@ -27,7 +27,6 @@
     "snippets",
     "ui"
   ],
-  "scripts": [],
   "modules": [
     "changes.js",
     "changes-legacy.js",
@@ -39,5 +38,6 @@
   "resources": [
     "changesView.css",
     "changesSidebar.css"
-  ]
+  ],
+  "skip_rollup": true
 }

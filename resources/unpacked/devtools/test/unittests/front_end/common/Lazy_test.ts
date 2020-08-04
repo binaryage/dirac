@@ -4,13 +4,15 @@
 
 const {assert} = chai;
 
-import {lazy} from '../../../../front_end/common/Lazy.js';
+import * as Common from '../../../../front_end/common/common.js';
+
+const lazy = Common.Lazy.lazy;
 
 describe('lazy', () => {
   it('evaluates callback once', () => {
     const initializeArrayOnce = lazy(() => []);
-    const arrayOne: any = initializeArrayOnce();
-    const arrayTwo: any = initializeArrayOnce();
+    const arrayOne = initializeArrayOnce();
+    const arrayTwo = initializeArrayOnce();
 
     assert.strictEqual(arrayOne, arrayTwo);
     assert.notStrictEqual([], arrayOne);

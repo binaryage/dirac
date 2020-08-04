@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Diff from '../diff/diff.js';
 import * as Host from '../host/host.js';
@@ -55,13 +58,20 @@ export class CommandMenu {
   static createSettingCommand(extension, title, value) {
     const category = extension.descriptor()['category'] || '';
     const tags = extension.descriptor()['tags'] || '';
+    const reloadRequired = !!extension.descriptor()['reloadRequired'];
     const setting = Common.Settings.Settings.instance().moduleSetting(extension.descriptor()['settingName']);
     return CommandMenu.createCommand({
       category: ls(category),
       keys: tags,
       title,
       shortcut: '',
-      executeHandler: setting.set.bind(setting, value),
+      executeHandler: () => {
+        setting.set(value);
+        if (reloadRequired) {
+          UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning(
+              ls`One or more settings have changed which requires a reload to take effect.`);
+        }
+      },
       availableHandler,
     });
 
@@ -267,14 +277,7 @@ export class CommandMenuProvider extends Provider {
    */
   itemScoreAt(itemIndex, query) {
     const command = this._commands[itemIndex];
-    const opcodes = Diff.Diff.DiffWrapper.charDiff(query.toLowerCase(), command.title().toLowerCase());
-    let score = 0;
-    // Score longer sequences higher.
-    for (let i = 0; i < opcodes.length; ++i) {
-      if (opcodes[i][0] === Diff.Diff.Operation.Equal) {
-        score += opcodes[i][1].length * opcodes[i][1].length;
-      }
-    }
+    let score = Diff.Diff.DiffWrapper.characterScore(query.toLowerCase(), command.title().toLowerCase());
 
     // Score panel/drawer reveals above regular actions.
     if (command.category().startsWith('Panel')) {

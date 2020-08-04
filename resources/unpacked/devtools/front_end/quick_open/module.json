@@ -21,16 +21,24 @@
         {
           "platform": "windows,linux",
           "shortcut": "Ctrl+Shift+P",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "mac",
           "shortcut": "Meta+Shift+P",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "shortcut": "F1",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
         }
       ]
     },
@@ -50,22 +58,34 @@
         {
           "platform": "mac",
           "shortcut": "Meta+P",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "mac",
           "shortcut": "Meta+O",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "windows,linux",
           "shortcut": "Ctrl+P",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "windows,linux",
           "shortcut": "Ctrl+O",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         }
       ]
     },
@@ -79,16 +99,18 @@
     "ui",
     "diff"
   ],
-  "scripts": [],
   "modules": [
     "quick_open.js",
     "quick_open-legacy.js",
     "FilteredListWidget.js",
     "QuickOpen.js",
     "CommandMenu.js",
-    "HelpQuickOpen.js"
+    "HelpQuickOpen.js",
+    "QuickInput.js",
+    "QuickPick.js"
   ],
   "resources": [
     "filteredListWidget.css"
-  ]
+  ],
+  "skip_rollup": true
 }

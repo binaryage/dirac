@@ -13,7 +13,6 @@
   "dependencies": [
     "elements"
   ],
-  "scripts": [],
   "modules": [
     "../generated/ARIAProperties.js",
     "accessibility.js",
@@ -25,11 +24,13 @@
     "AccessibilitySubPane.js",
     "ARIAAttributesView.js",
     "ARIAMetadata.js",
-    "AXBreadcrumbsPane.js"
+    "AXBreadcrumbsPane.js",
+    "SourceOrderView.js"
   ],
   "resources": [
     "accessibilityNode.css",
     "accessibilityProperties.css",
     "axBreadcrumbs.css"
-  ]
+  ],
+  "skip_rollup": true
 }

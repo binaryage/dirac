@@ -6,7 +6,6 @@
     "ui",
     "perf_ui"
   ],
-  "scripts": [],
   "modules": [
     "layer_viewer.js",
     "layer_viewer-legacy.js",
@@ -21,5 +20,6 @@
     "layers3DView.css",
     "paintProfiler.css",
     "layerDetailsView.css"
-  ]
+  ],
+  "skip_rollup": true
 }

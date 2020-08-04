@@ -4,7 +4,6 @@
     "browser_sdk",
     "common"
   ],
-  "scripts": [],
   "modules": [
     "extensions.js",
     "extensions-legacy.js",
@@ -12,6 +11,8 @@
     "ExtensionTraceProvider.js",
     "ExtensionServer.js",
     "ExtensionPanel.js",
-    "ExtensionView.js"
-  ]
+    "ExtensionView.js",
+    "LanguageExtensionEndpoint.js"
+  ],
+  "skip_rollup": true
 }

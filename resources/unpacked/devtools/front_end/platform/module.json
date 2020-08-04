@@ -1,6 +1,5 @@
 {
   "dependencies": [],
-  "scripts": [],
   "modules": [
     "platform.js",
     "utilities.js",
@@ -10,5 +9,7 @@
     "number-utilities.js",
     "array-utilities.js",
     "UIString.js"
-  ]
+  ],
+
+  "skip_rollup": true
 }

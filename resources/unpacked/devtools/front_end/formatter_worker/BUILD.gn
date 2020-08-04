@@ -2,32 +2,37 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../third_party/typescript/typescript.gni")
+import("../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../scripts/build/ninja/devtools_module.gni")
 
-ts_library("formatter_worker") {
+devtools_module("formatter_worker") {
   sources = [
-    "Acorn.js",
     "AcornTokenizer.js",
     "CSSFormatter.js",
     "CSSRuleParser.js",
     "ESTreeWalker.js",
-    "FormattedContentBuilder.js",
+    "FormattedContentBuilder.ts",
     "FormatterWorker.js",
     "HTMLFormatter.js",
-    "IdentityFormatter.js",
+    "IdentityFormatter.ts",
     "JavaScriptFormatter.js",
     "JavaScriptOutline.js",
-    "RelaxedJSONParser.js",
-    "formatter_worker.js",
   ]
 
   deps = [
     "../cm_headless",
-    "../platform",
-    "../text_utils",
-    "../third_party/acorn",
-    "../third_party/acorn-logical-assignment",
+    "../platform:bundle",
+    "../text_utils:bundle",
+    "../third_party/acorn:bundle",
     "../third_party/acorn-loose",
     "../third_party/codemirror",
   ]
+
+  is_web_worker = true
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "formatter_worker.ts"
+
+  deps = [ ":formatter_worker" ]
 }

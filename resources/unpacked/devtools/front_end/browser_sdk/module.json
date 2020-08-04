@@ -20,11 +20,10 @@
       ]
     }
   ],
-  "scripts": [],
+  "skip_rollup": true,
   "modules": [
     "browser_sdk.js",
     "browser_sdk-legacy.js",
-    "FrameManager.js",
     "LogManager.js",
     "IssuesManager.js",
     "RelatedIssue.js"

@@ -2,7 +2,6 @@
   "dependencies": [
     "ui"
   ],
-  "scripts": [],
   "modules": [
     "inline_editor.js",
     "inline_editor-legacy.js",
@@ -20,5 +19,6 @@
     "cssShadowSwatch.css",
     "cssShadowEditor.css",
     "swatchPopover.css"
-  ]
+  ],
+  "skip_rollup": true
 }

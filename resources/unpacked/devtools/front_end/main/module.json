@@ -342,6 +342,7 @@
       "settingName": "uiTheme",
       "settingType": "enum",
       "defaultValue": "systemPreferred",
+      "reloadRequired": true,
       "options": [
         {
           "title": "Switch to system preferred color theme",
@@ -507,7 +508,6 @@
     "dirac",
     "persistence"
   ],
-  "scripts": [],
   "modules": [
     "main.js",
     "main-legacy.js",

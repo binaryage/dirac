@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as Host from '../host/host.js';
@@ -363,6 +366,8 @@ export class ExperimentsSettingsTab extends SettingsTab {
     input.name = experiment.name;
     function listener() {
       experiment.setEnabled(input.checked);
+      UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning(
+          ls`One or more settings have changed which requires a reload to take effect.`);
     }
     input.addEventListener('click', listener, false);
 

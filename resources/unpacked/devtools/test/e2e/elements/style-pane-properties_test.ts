@@ -16,6 +16,7 @@ const SECOND_PROPERTY_NAME_SELECTOR = '.tree-outline li:nth-of-type(2) > .webkit
 const RULE1_SELECTOR = '.rule1';
 const RULE2_SELECTOR = '.rule2';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const deletePropertyByBackspace = async (selector: string, root?: puppeteer.JSHandle<any>) => {
   const {frontend} = getBrowserAndPages();
   await click(selector, {root});
@@ -38,7 +39,7 @@ describe('The Styles pane', async () => {
 
     const h1Rules = await getDisplayedStyleRules();
     // Checking the first h1 rule, that's the authored rule, right after the element style.
-    assert.deepEqual(h1Rules[1], {selectorText: 'h1', propertyNames: ['color']}, 'The correct rule is displayed');
+    assert.deepEqual(h1Rules[1], {selectorText: 'body h1', propertyNames: ['color']}, 'The correct rule is displayed');
 
     // Select the H2 element by pressing down.
     const onH2RuleAppeared = waitForStyleRule('h2');

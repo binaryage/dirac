@@ -12,8 +12,8 @@
   min-height: var(--metrics-height);
   display: flex;
   flex-direction: column;
-  -webkit-align-items: center;
-  -webkit-justify-content: center;
+  align-items: center;
+  justify-content: center;
 }
 
 :host {
@@ -23,38 +23,11 @@
   contain: strict;
 }
 
-/* All computed layout attributes except position have a quite light
- * background colour applied to them, so the default light font in dark
- * mode is very low contrast. Therefore we swap back to a dark font by
- * default in dark mode because the background colours are lighter.
+/* The font we use on Windows takes up more vertical space, so adjust
+ * the height of the metrics sidebar pane accordingly.
  */
-
-:host-context(.-theme-with-dark-background) .metrics .margin,
-:host-context(.-theme-with-dark-background) .metrics .border,
-:host-context(.-theme-with-dark-background) .metrics .padding,
-:host-context(.-theme-with-dark-background) .metrics .content {
-  color: #222;
-}
-
-/* When you hover over margin the rest of the items get given a black
- * background and so then the black text we set above means the numbers
- * are invisible. So if you're hovering over the margin we set the
- * color of the text for all the children to light. This also fixes
- * hovering over anything within margin such as border/padding.
- */
-
-:host-context(.-theme-with-dark-background) .metrics .margin:hover div {
-  color: #ccc;
-}
-
-/* In dark mode the hover colour that is used when hovering on border
- * constrasts very poorly with the lighter text colour used in dark
- * mode. So when you hover over the border we apply a dark font colour
- * that contrasts much better with the background.
- */
-
-:host-context(.-theme-with-dark-background) .metrics .border:hover > div:not(.padding) {
-  color: #222;
+:host-context(.platform-windows) {
+  --metrics-height: 214px;
 }
 
 .metrics .label {
@@ -75,7 +48,7 @@
 }
 
 .metrics .margin {
-  border: 1px dashed;
+  border: 1px dashed rgb(48 57 66);
   background-color: white;
   display: inline-block;
   text-align: center;
@@ -143,4 +116,26 @@
 
 .metrics .bottom {
   display: inline-block;
+}
+
+/* All computed layout attributes except position have a quite light
+ * background color applied to them, so the default light font in dark
+ * mode is very low contrast. Therefore we swap back to a dark font by
+ * default in dark mode because the background colors are lighter.
+ */
+:host-context(.-theme-with-dark-background) .metrics .margin,
+:host-context(.-theme-with-dark-background) .metrics .border,
+:host-context(.-theme-with-dark-background) .metrics .padding,
+:host-context(.-theme-with-dark-background) .metrics .content {
+  color: #222;
+}
+
+/* When you hover over margin the rest of the items get given a black
+ * background and so then the black text we set above means the numbers
+ * are invisible. So if you're hovering over the margin we set the
+ * color of the text for all the children to light. This also fixes
+ * hovering over anything within margin such as border/padding.
+ */
+:host-context(.-theme-with-dark-background) .metrics .margin:hover div {
+  color: #ccc;
 }

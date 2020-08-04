@@ -9,6 +9,7 @@
 *  npm run generate-bridge-file test/unittests/scripts/component_bridges/fixtures/basic-component.ts
 */
 
+import './basic-component.js';
 /**
 * @typedef {{
 * name:string,
@@ -18,11 +19,12 @@
 // @ts-ignore we export this for Closure not TS
 export let Dog;
 // eslint-disable-next-line no-unused-vars
-class BasicComponentClosureInterface extends HTMLElement {
+export class BasicComponentClosureInterface extends HTMLElement {
   /**
   * @param {!Dog} dog
   */
-  update(dog) {}
+  update(dog) {
+  }
 }
 /**
 * @return {!BasicComponentClosureInterface}

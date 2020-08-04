@@ -1180,6 +1180,17 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
+     * Overrides the Idle state.
+     */
+    invoke_setIdleOverride(params: Protocol.Emulation.SetIdleOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Clears Idle state overrides.
+     */
+    invoke_clearIdleOverride(): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
      * Overrides value returned by the javascript navigator object.
      */
     invoke_setNavigatorOverrides(params: Protocol.Emulation.SetNavigatorOverridesRequest):
@@ -1869,6 +1880,18 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.Overlay.GetHighlightObjectForTestResponse>;
 
     /**
+     * For Persistent Grid testing.
+     */
+    invoke_getGridHighlightObjectsForTest(params: Protocol.Overlay.GetGridHighlightObjectsForTestRequest):
+        Promise<Protocol.Overlay.GetGridHighlightObjectsForTestResponse>;
+
+    /**
+     * For Source Order Viewer testing.
+     */
+    invoke_getSourceOrderHighlightObjectForTest(params: Protocol.Overlay.GetSourceOrderHighlightObjectForTestRequest):
+        Promise<Protocol.Overlay.GetSourceOrderHighlightObjectForTestResponse>;
+
+    /**
      * Hides any highlight.
      */
     invoke_hideHighlight(): Promise<Protocol.ProtocolResponseWithError>;
@@ -1895,6 +1918,13 @@ declare namespace ProtocolProxyApi {
     invoke_highlightRect(params: Protocol.Overlay.HighlightRectRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
+     * Highlights the source order of the children of the DOM node with given id or with the given
+     * JavaScript object wrapper. Either nodeId or objectId must be specified.
+     */
+    invoke_highlightSourceOrder(params: Protocol.Overlay.HighlightSourceOrderRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
      * Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted.
      * Backend then generates 'inspectNodeRequested' event upon element selection.
      */
@@ -1919,6 +1949,12 @@ declare namespace ProtocolProxyApi {
      * Requests that backend shows the FPS counter
      */
     invoke_setShowFPSCounter(params: Protocol.Overlay.SetShowFPSCounterRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Highlight multiple elements with the CSS Grid overlay.
+     */
+    invoke_setShowGridOverlays(params: Protocol.Overlay.SetShowGridOverlaysRequest):
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
@@ -3029,6 +3065,13 @@ declare namespace ProtocolProxyApi {
      * The default is true.
      */
     invoke_setUserVerified(params: Protocol.WebAuthn.SetUserVerifiedRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Sets whether tests of user presence will succeed immediately (if true) or fail to resolve (if false) for an authenticator.
+     * The default is true.
+     */
+    invoke_setAutomaticPresenceSimulation(params: Protocol.WebAuthn.SetAutomaticPresenceSimulationRequest):
         Promise<Protocol.ProtocolResponseWithError>;
   }
   export interface WebAuthnDispatcher extends Protocol.Dispatcher {}

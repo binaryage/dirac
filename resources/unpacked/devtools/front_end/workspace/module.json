@@ -4,12 +4,12 @@
     "host",
     "platform"
   ],
-  "scripts": [],
   "modules": [
     "workspace.js",
     "workspace-legacy.js",
     "FileManager.js",
     "UISourceCode.js",
     "WorkspaceImpl.js"
-  ]
+  ],
+  "skip_rollup": true
 }

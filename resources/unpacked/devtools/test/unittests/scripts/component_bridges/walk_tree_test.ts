@@ -11,9 +11,8 @@ import {createTypeScriptSourceFile, createTypeScriptSourceFromFilePath} from './
 
 const fixturesPath = path.join(process.cwd(), 'test', 'unittests', 'scripts', 'component_bridges', 'fixtures');
 
-
 describe('walkTree', () => {
-  it('understands interfaces that are imported and can find them', () => {
+  it('understands interfaces that are imported as named imports and can find them', () => {
     const filePath = path.resolve(path.join(fixturesPath, 'component-with-external-interface.ts'));
 
     const source = createTypeScriptSourceFromFilePath(filePath);
@@ -23,7 +22,25 @@ describe('walkTree', () => {
       return x.name.escapedText.toString();
     });
 
-    assert.deepEqual(foundInterfaceNames, ['Dog', 'Person']);
+    assert.deepEqual(foundInterfaceNames, ['Dog', 'Person', 'DogOwner']);
+  });
+
+  it('finds nested imports to convert from another file', () => {
+    const filePath = path.resolve(path.join(fixturesPath, 'component-with-external-interface.ts'));
+
+    const source = createTypeScriptSourceFromFilePath(filePath);
+    const result = walkTree(source, filePath);
+
+    assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['Person', 'Dog', 'DogOwner']);
+  });
+
+  it('errors if a user references an interface via a qualifier', () => {
+    const filePath = path.resolve(path.join(fixturesPath, 'component-with-external-interface-import-star.ts'));
+
+    const source = createTypeScriptSourceFromFilePath(filePath);
+    assert.throws(() => {
+      walkTree(source, filePath);
+    }, 'Found an interface that was referenced indirectly. You must reference interfaces directly, rather than via a qualifier. For example, `Person` rather than `Foo.Person`');
   });
 
   it('errors loudly if it cannot find an interface', () => {
@@ -66,6 +83,98 @@ describe('walkTree', () => {
     });
 
     assert.deepEqual(foundInterfaceNames, ['Person', 'Dog']);
+  });
+
+  describe('nested interfaces', () => {
+    it('correctly identifies interfaces that reference other interfaces', () => {
+      const code = `interface WebVitalsTimelineTask {
+        start: number;
+        duration: number;
+      }
+
+      interface WebVitalsTimelineData {
+        layoutshifts: number;
+        longTasks: WebVitalsTimelineTask;
+      }
+
+      class WebVitals extends HTMLElement {
+        set data(data: {timeline: WebVitalsTimelineData}) {}
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['WebVitalsTimelineData', 'WebVitalsTimelineTask']);
+    });
+
+    it('correctly identifies interfaces that reference arrays of other interfaces', () => {
+      const code = `interface WebVitalsTimelineTask {
+        start: number;
+        duration: number;
+      }
+
+      interface WebVitalsTimelineData {
+        layoutshifts: number[];
+        longTasks: WebVitalsTimelineTask[];
+      }
+
+      class WebVitals extends HTMLElement {
+        set data(data: {timeline: WebVitalsTimelineData}) {}
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['WebVitalsTimelineData', 'WebVitalsTimelineTask']);
+    });
+
+    it('correctly identifies interfaces that reference interfaces in nested object literals', () => {
+      const code = `interface WebVitalsTimelineTask {
+        start: number;
+        duration: number;
+      }
+
+      interface WebVitalsTimelineData {
+        longTask: {
+          name: string;
+          task: WebVitalsTimelineTask
+        }
+      }
+
+      class WebVitals extends HTMLElement {
+        set data(data: {timeline: WebVitalsTimelineData}) {}
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['WebVitalsTimelineData', 'WebVitalsTimelineTask']);
+    });
+
+    it('correctly identifies interfaces that are deeply nested', () => {
+      const code = `interface Timing {
+        start: number;
+        end: number;
+      }
+
+      interface LongTask {
+        id: number;
+        timings: Timing[]
+      }
+
+      interface WebVitalsTimelineData {
+        longTasks: LongTask[]
+      }
+
+      class WebVitals extends HTMLElement {
+        set data(data: {timeline: WebVitalsTimelineData}) {}
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['WebVitalsTimelineData', 'LongTask', 'Timing']);
+    });
   });
 
   describe('finding the custom element class', () => {
@@ -114,6 +223,28 @@ describe('walkTree', () => {
       });
 
       assert.deepEqual(publicMethodNames, ['update']);
+    });
+
+    it('ignores any component lifecycle methods in the class', () => {
+      const code = `class Breadcrumbs extends HTMLElement {
+        connectedCallback() {
+        }
+        disconnectedCallback() {
+        }
+        attributeChangedCallback() {
+        }
+        adoptedCallback() {
+        }
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      if (!result.componentClass) {
+        assert.fail('No component class was found');
+      }
+
+      assert.strictEqual(result.publicMethods.size, 0);
     });
 
     it('finds any public getter functions on the class and notes its return interface', () => {
@@ -172,6 +303,53 @@ describe('walkTree', () => {
       assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['Person']);
     });
 
+    it('can parse interfaces out of the Readonly helper type', () => {
+      const code = `interface Person{}
+
+      class Breadcrumbs extends HTMLElement {
+
+        private render() {
+          console.log('render')
+        }
+
+        public set foo(x: Readonly<Person>) {
+        }
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      if (!result.componentClass) {
+        assert.fail('No component class was found');
+      }
+
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['Person']);
+    });
+
+    it('can parse interfaces out of the ReadonlyArray helper type', () => {
+      const code = `interface Person{}
+
+      class Breadcrumbs extends HTMLElement {
+
+        private render() {
+          console.log('render')
+        }
+
+        public set foo(x: ReadonlyArray<Person>) {
+        }
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      if (!result.componentClass) {
+        assert.fail('No component class was found');
+      }
+
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['Person']);
+    });
+
+
     it('deals with setters that take an object and pulls out the interfaces', () => {
       const code = `interface Person { name: string }
 
@@ -186,6 +364,38 @@ describe('walkTree', () => {
         }
 
         public set data(data: {x: Person, y: Dog) {
+        }
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      if (!result.componentClass) {
+        assert.fail('No component class was found');
+      }
+
+      const setterNames = Array.from(result.setters, method => {
+        return (method.name as ts.Identifier).escapedText as string;
+      });
+
+      assert.deepEqual(setterNames, ['data']);
+      assert.deepEqual(Array.from(result.interfaceNamesToConvert), ['Person', 'Dog']);
+    });
+
+    it('can deal with setters taking optional arguments', () => {
+      const code = `interface Person { name: string }
+
+      interface Dog {
+        name: string
+      }
+
+      class Breadcrumbs extends HTMLElement {
+
+        private render() {
+          console.log('render')
+        }
+
+        public set data(data: {x: Person|null, y: Dog}) {
         }
       }`;
 

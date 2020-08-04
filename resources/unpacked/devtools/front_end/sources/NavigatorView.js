@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
@@ -595,7 +598,7 @@ export class NavigatorView extends UI.Widget.VBox {
     frameNode.setHoverCallback(hoverCallback);
     this._frameNodes.set(frame, frameNode);
 
-    const parentFrame = frame.parentFrame || frame.crossTargetParentFrame();
+    const parentFrame = frame.parentFrame();
     this._frameNode(project, parentFrame ? parentFrame.resourceTreeModel().target() : target, parentFrame)
         .appendChild(frameNode);
     if (!parentFrame) {
@@ -750,6 +753,8 @@ export class NavigatorView extends UI.Widget.VBox {
     this._subfolderNodes.clear();
     this._frameNodes.clear();
     this._rootNode.reset();
+    // Reset the workspace to repopulate filesystem folders.
+    this._resetWorkspace(Workspace.Workspace.WorkspaceImpl.instance());
   }
 
   /**

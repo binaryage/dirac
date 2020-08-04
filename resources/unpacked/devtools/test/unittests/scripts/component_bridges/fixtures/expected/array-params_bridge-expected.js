@@ -9,6 +9,7 @@
 *  npm run generate-bridge-file test/unittests/scripts/component_bridges/fixtures/array-params.ts
 */
 
+import './array-params.js';
 /**
 * @typedef {{
 * name:string,
@@ -18,11 +19,12 @@
 // @ts-ignore we export this for Closure not TS
 export let Dog;
 // eslint-disable-next-line no-unused-vars
-class ArrayParamsClosureInterface extends HTMLElement {
+export class ArrayParamsClosureInterface extends HTMLElement {
   /**
   * @param {!Array.<!Dog>} dogs
   */
-  update(dogs) {}
+  update(dogs) {
+  }
 }
 /**
 * @return {!ArrayParamsClosureInterface}

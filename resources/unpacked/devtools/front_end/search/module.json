@@ -2,7 +2,7 @@
   "dependencies": [
     "components"
   ],
-  "scripts": [],
+  "skip_rollup": true,
   "modules": [
     "search.js",
     "search-legacy.js",

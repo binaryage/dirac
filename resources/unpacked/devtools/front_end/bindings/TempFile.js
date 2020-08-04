@@ -27,6 +27,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 
@@ -72,7 +74,7 @@ export class TempFile {
   async readRange(startOffset, endOffset) {
     if (!this._lastBlob) {
       Common.Console.Console.instance().error('Attempt to read a temp file that was never written');
-      return Promise.resolve('');
+      return '';
     }
     const blob = typeof startOffset === 'number' || typeof endOffset === 'number' ?
         this._lastBlob.slice(/** @type {number} */ (startOffset), /** @type {number} */ (endOffset)) :

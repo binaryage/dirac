@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as DataGrid from '../data_grid/data_grid.js';
@@ -792,14 +795,14 @@ export const _defaultColumns = [
     title: ls`Path`,
     hideable: true,
     hideableGroup: 'path',
-    sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, 'path')
+    sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, 'pathname')
   },
   {
     id: 'url',
     title: ls`Url`,
     hideable: true,
     hideableGroup: 'path',
-    sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, 'url')
+    sortingFunction: NetworkRequestNode.RequestURLComparator
   },
   {
     id: 'method',

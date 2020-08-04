@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
@@ -344,14 +347,21 @@ export class Automapping {
    * @return {!Promise<?AutomappingStatus>}
    */
   _createBinding(networkSourceCode) {
-    if (networkSourceCode.url().startsWith('file://') || networkSourceCode.url().startsWith('snippet://')) {
-      const decodedUrl = decodeURI(networkSourceCode.url());
-      const fileSourceCode = this._fileSystemUISourceCodes.get(decodedUrl);
+    const url = networkSourceCode.url();
+    if (url.startsWith('file://') || url.startsWith('snippet://')) {
+      let fileSourceCode;
+      try {
+        const decodedUrl = decodeURI(url);
+        fileSourceCode = this._fileSystemUISourceCodes.get(decodedUrl);
+      } catch (error) {
+        Common.Console.Console.instance().error(
+            ls`The attempt to bind "${url}" in the workspace failed as this URI is malformed.`);
+      }
       const status = fileSourceCode ? new AutomappingStatus(networkSourceCode, fileSourceCode, false) : null;
       return Promise.resolve(status);
     }
 
-    let networkPath = Common.ParsedURL.ParsedURL.extractPath(networkSourceCode.url());
+    let networkPath = Common.ParsedURL.ParsedURL.extractPath(url);
     if (networkPath === null) {
       return Promise.resolve(/** @type {?AutomappingStatus} */ (null));
     }

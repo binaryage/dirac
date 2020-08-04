@@ -2,12 +2,17 @@ file://ENG_REVIEW_OWNERS
 
 per-file .*=file://INFRA_OWNERS
 per-file AUTHORS=file://COMMON_OWNERS
-per-file BUILD.gn=file://COMMON_OWNERS
+per-file BUILD.gn=file://INFRA_OWNERS
 per-file DEPS=file://INFRA_OWNERS
 per-file PRESUBMIT.py=file://INFRA_OWNERS
 per-file README.md=file://COMMON_OWNERS
 per-file WATCHLISTS=file://INFRA_OWNERS
+per-file all_devtools_files.gni=file://COMMON_OWNERS
+per-file all_devtools_modules.gni=file://COMMON_OWNERS
+per-file devtools_grd_files.gni=file://COMMON_OWNERS
 per-file codereview.settings=file://INFRA_OWNERS
+per-file devtools_image_files.gni=file://COMMON_OWNERS
+per-file devtools_module_entrypoints.gni=file://COMMON_OWNERS
 per-file htaccess=file://INFRA_OWNERS
 per-file karma.conf.json=file://INFRA_OWNERS
 per-file package-lock.json=file://INFRA_OWNERS

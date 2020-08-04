@@ -1,6 +1,8 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
@@ -542,7 +544,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
   /**
    * @override
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnId) {
     if (columnId === 'activity') {
@@ -553,7 +555,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
 
   /**
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _createNameCell(columnId) {
     const cell = this.createTD(columnId);
@@ -593,7 +595,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
 
   /**
    * @param {string} columnId
-   * @return {?Element}
+   * @return {?HTMLElement}
    */
   _createValueCell(columnId) {
     if (columnId !== 'self' && columnId !== 'total' && columnId !== 'startTime') {

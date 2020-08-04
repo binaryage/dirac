@@ -8,7 +8,7 @@ import {performance} from 'perf_hooks';
 import * as puppeteer from 'puppeteer';
 
 import {reloadDevTools} from '../conductor/hooks.js';
-import {getBrowserAndPages} from '../conductor/puppeteer-state.js';
+import {getBrowserAndPages, getHostedModeServerPort} from '../conductor/puppeteer-state.js';
 
 export let platform: string;
 switch (os.platform()) {
@@ -26,6 +26,7 @@ switch (os.platform()) {
 }
 
 // TODO: Remove once Chromium updates its version of Node.js to 12+.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const globalThis: any = global;
 
 /**
@@ -38,6 +39,7 @@ const globalThis: any = global;
 const collectAllElementsFromPage = async (root?: puppeteer.JSHandle) => {
   const {frontend} = getBrowserAndPages();
   await frontend.evaluate(root => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const container = (self as any);
     container.__elements = [];
     const collect = (root: HTMLElement|ShadowRoot) => {
@@ -58,7 +60,15 @@ const collectAllElementsFromPage = async (root?: puppeteer.JSHandle) => {
   }, root || '');
 };
 
-export const getElementPosition = async (selector: string|puppeteer.JSHandle, root?: puppeteer.JSHandle) => {
+/**
+ * Returns an {x, y} position within the element identified by the selector within the root.
+ * By default the position is the center of the bounding box. If the element's bounding box
+ * extends beyond that of a containing element, this position may not correspond to the element.
+ * In this case, specifying maxPixelsFromLeft will constrain the returned point to be close to
+ * the left edge of the bounding box.
+ */
+export const getElementPosition =
+    async (selector: string|puppeteer.JSHandle, root?: puppeteer.JSHandle, maxPixelsFromLeft?: number) => {
   let element: puppeteer.JSHandle;
   if (typeof selector === 'string') {
     element = await $(selector, root);
@@ -66,31 +76,39 @@ export const getElementPosition = async (selector: string|puppeteer.JSHandle, ro
     element = selector;
   }
 
-  const position = await element.evaluate(element => {
+  const rect = await element.evaluate(element => {
     if (!element) {
       return {};
     }
-    // Extract the location values.
+
     const {left, top, width, height} = element.getBoundingClientRect();
-    return {
-      x: left + width * 0.5,
-      y: top + height * 0.5,
-    };
+    return {left, top, width, height};
   });
-  if (position.x === undefined || position.y === undefined) {
+
+  if (rect.left === undefined) {
     throw new Error(`Unable to find element with selector "${selector}"`);
   }
-  return position;
+
+  let pixelsFromLeft = rect.width * 0.5;
+  if (maxPixelsFromLeft && pixelsFromLeft > maxPixelsFromLeft) {
+    pixelsFromLeft = maxPixelsFromLeft;
+  }
+
+  return {
+    x: rect.left + pixelsFromLeft,
+    y: rect.top + rect.height * 0.5,
+  };
 };
 
 export const click = async (
     selector: string|puppeteer.JSHandle,
-    options?: {root?: puppeteer.JSHandle, clickOptions?: puppeteer.ClickOptions}) => {
+    options?: {root?: puppeteer.JSHandle, clickOptions?: puppeteer.ClickOptions, maxPixelsFromLeft?: number}) => {
   const {frontend} = getBrowserAndPages();
   if (!frontend) {
     throw new Error('Unable to locate DevTools frontend page. Was it stored first?');
   }
-  const clickableElement = await getElementPosition(selector, options && options.root);
+  const clickableElement =
+      await getElementPosition(selector, options && options.root, options && options.maxPixelsFromLeft);
 
   if (!clickableElement) {
     throw new Error(`Unable to locate clickable element "${selector}".`);
@@ -124,6 +142,43 @@ export const typeText = async (text: string) => {
   }
 
   await frontend.keyboard.type(text);
+};
+
+export const pressKey = async (key: string, modifiers?: {control?: boolean, alt?: boolean, shift?: boolean}) => {
+  const {frontend} = getBrowserAndPages();
+  if (modifiers) {
+    if (modifiers.control) {
+      if (platform === 'mac') {
+        // Use command key on mac
+        await frontend.keyboard.down('Meta');
+      } else {
+        await frontend.keyboard.down('Control');
+      }
+    }
+    if (modifiers.alt) {
+      await frontend.keyboard.down('Alt');
+    }
+    if (modifiers.shift) {
+      await frontend.keyboard.down('Shift');
+    }
+  }
+  await frontend.keyboard.press(key);
+  if (modifiers) {
+    if (modifiers.shift) {
+      await frontend.keyboard.up('Shift');
+    }
+    if (modifiers.alt) {
+      await frontend.keyboard.up('Alt');
+    }
+    if (modifiers.control) {
+      if (platform === 'mac') {
+        // Use command key on mac
+        await frontend.keyboard.up('Meta');
+      } else {
+        await frontend.keyboard.up('Control');
+      }
+    }
+  }
 };
 
 export const pasteText = async (text: string) => {
@@ -192,7 +247,7 @@ export const $textContent = async (textContent: string, root?: puppeteer.JSHandl
 
 export const timeout = (duration: number) => new Promise(resolve => setTimeout(resolve, duration));
 
-export const waitFor = async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
+export const waitFor = async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 3000) => {
   return waitForFunction(async () => {
     const element = await $(selector, root);
     if (element.asElement()) {
@@ -202,7 +257,7 @@ export const waitFor = async (selector: string, root?: puppeteer.JSHandle, maxTo
   }, `Unable to find element with selector ${selector}`, maxTotalTimeout);
 };
 
-export const waitForNone = async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
+export const waitForNone = async (selector: string, root?: puppeteer.JSHandle, maxTotalTimeout = 3000) => {
   return waitForFunction(async () => {
     const elements = await $$(selector, root);
     if (elements.evaluate(list => list.length === 0)) {
@@ -212,18 +267,19 @@ export const waitForNone = async (selector: string, root?: puppeteer.JSHandle, m
   }, `At least one element with selector ${selector} still exists`, maxTotalTimeout);
 };
 
-export const waitForElementWithTextContent = (textContent: string, root?: puppeteer.JSHandle, maxTotalTimeout = 0) => {
-  return waitForFunction(async () => {
-    const element = await $textContent(textContent, root);
-    if (element.asElement()) {
-      return element;
-    }
-    return undefined;
-  }, `No element with content ${textContent} exists`, maxTotalTimeout);
-};
+export const waitForElementWithTextContent =
+    (textContent: string, root?: puppeteer.JSHandle, maxTotalTimeout = 3000) => {
+      return waitForFunction(async () => {
+        const element = await $textContent(textContent, root);
+        if (element.asElement()) {
+          return element;
+        }
+        return undefined;
+      }, `No element with content ${textContent} exists`, maxTotalTimeout);
+    };
 
 export const waitForFunction =
-    async<T>(fn: () => Promise<T|undefined>, errorMessage: string, maxTotalTimeout = 0): Promise<T> => {
+    async<T>(fn: () => Promise<T|undefined>, errorMessage: string, maxTotalTimeout = 3000): Promise<T> => {
   if (maxTotalTimeout === 0) {
     maxTotalTimeout = Number.POSITIVE_INFINITY;
   }
@@ -269,8 +325,6 @@ export const logFailure = () => {
   });
 };
 
-export const resourcesPath = 'http://localhost:8090/test/e2e/resources';
-
 export const enableExperiment = async (
     experiment: string, options: {selectedPanel?: {name: string, selector?: string}, canDock?: boolean} = {}) => {
   const {frontend} = getBrowserAndPages();
@@ -288,7 +342,11 @@ export const goTo = async (url: string) => {
 };
 
 export const goToResource = async (path: string) => {
-  await goTo(`${resourcesPath}/${path}`);
+  await goTo(`${getResourcesPath()}/${path}`);
+};
+
+export const getResourcesPath = () => {
+  return `http://localhost:${getHostedModeServerPort()}/test/e2e/resources`;
 };
 
 export const step = async (description: string, step: Function) => {
@@ -333,4 +391,13 @@ export const closeAllCloseableTabs = async () => {
   }
 };
 
-export {getBrowserAndPages, reloadDevTools};
+// Noisy! Do not leave this in your test but it may be helpful
+// when debugging.
+export const enableCDPLogging = async () => {
+  const {frontend} = getBrowserAndPages();
+  await frontend.evaluate(() => {
+    globalThis.ProtocolClient.test.dumpProtocol = console.log;  // eslint-disable-line no-console
+  });
+};
+
+export {getBrowserAndPages, getHostedModeServerPort, reloadDevTools};

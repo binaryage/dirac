@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 /**
  * @unrestricted
  */
@@ -74,7 +77,7 @@ export class CSSOverviewUnusedDeclarations {
   }
 
   static checkForInvalidVerticalAlignment(unusedDeclarations, nodeId, strings, displayIdx, verticalAlignIdx) {
-    if (strings[displayIdx] === 'inline' || strings[displayIdx].startsWith('table')) {
+    if (!strings[displayIdx] || strings[displayIdx] === 'inline' || strings[displayIdx].startsWith('table')) {
       return;
     }
 

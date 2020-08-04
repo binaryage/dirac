@@ -28,12 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
+import * as Acorn from '../third_party/acorn/acorn.js';
 
-import * as Acorn from './Acorn.js';
 import {AcornTokenizer, ECMA_VERSION} from './AcornTokenizer.js';
 import {CSSFormatter} from './CSSFormatter.js';
 import {parseCSS} from './CSSRuleParser.js';
@@ -43,22 +41,32 @@ import {HTMLFormatter} from './HTMLFormatter.js';
 import {IdentityFormatter} from './IdentityFormatter.js';
 import {JavaScriptFormatter} from './JavaScriptFormatter.js';
 import {javaScriptOutline} from './JavaScriptOutline.js';
-import {RelaxedJSONParser} from './RelaxedJSONParser.js';
 
 /**
  * @param {string} mimeType
- * @return {function(string, function(string, ?string, number, number):(!Object|undefined))}
+ * @return {function(string, function(string, ?string, number, number):(!Object|undefined|void))}
  */
 export function createTokenizer(mimeType) {
   const mode = CodeMirror.getMode({indentUnit: 2}, mimeType);
   const state = CodeMirror.startState(mode);
+
+  if (!mode) {
+    throw new Error(`Could not find CodeMirror mode for MimeType: ${mimeType}`);
+  }
+
+  if (!mode.token) {
+    throw new Error(`Could not find CodeMirror mode with token method: ${mimeType}`);
+  }
+
   /**
    * @param {string} line
    * @param {function(string, ?string, number, number):?} callback
    */
-  function tokenize(line, callback) {
+  return (line, callback) => {
+    // @ts-expect-error Broken in @types/codemirror
     const stream = new CodeMirror.StringStream([line], 0);
     while (!stream.eol()) {
+      // @ts-expect-error TypeScript can't determine that `mode.token` is defined based on lines above
       const style = mode.token(stream, state);
       const value = stream.current();
       if (callback(value, style, stream.start, stream.start + value.length) === AbortTokenization) {
@@ -66,15 +74,17 @@ export function createTokenizer(mimeType) {
       }
       stream.start = stream.pos;
     }
-  }
-  return tokenize;
+  };
 }
 
 export const AbortTokenization = {};
 
+/**
+ * @param {!MessageEvent} event
+ */
 self.onmessage = function(event) {
   const method = /** @type {string} */ (event.data.method);
-  const params = /** @type !{indentString: string, content: string, mimeType: string} */ (event.data.params);
+  const params = /** @type {!{indentString: string, content: string, mimeType: string}} */ (event.data.params);
   if (!method) {
     return;
   }
@@ -98,9 +108,6 @@ self.onmessage = function(event) {
     case 'evaluatableJavaScriptSubstring':
       evaluatableJavaScriptSubstring(params.content);
       break;
-    case 'parseJSONRelaxed':
-      parseJSONRelaxed(params.content);
-      break;
     case 'findLastExpression':
       postMessage(findLastExpression(params.content));
       break;
@@ -114,13 +121,6 @@ self.onmessage = function(event) {
       console.error('Unsupport method name: ' + method);
   }
 };
-
-/**
- * @param {string} content
- */
-export function parseJSONRelaxed(content) {
-  postMessage(RelaxedJSONParser.parse(content));
-}
 
 /**
  * @param {string} content
@@ -171,9 +171,10 @@ export function evaluatableJavaScriptSubstring(content) {
  * @param {string} content
  */
 export function javaScriptIdentifiers(content) {
+  /** @type {?ESTree.Node} */
   let root = null;
   try {
-    root = Acorn.parse(content, {ecmaVersion: ECMA_VERSION, ranges: false});
+    root = /** @type {?ESTree.Node} */ (Acorn.parse(content, {ecmaVersion: ECMA_VERSION, ranges: false}));
   } catch (e) {
   }
 
@@ -192,6 +193,7 @@ export function javaScriptIdentifiers(content) {
 
   /**
    * @param {!ESTree.Node} node
+   * @return {!(Object | undefined)}
    */
   function beforeVisit(node) {
     if (isFunction(node)) {
@@ -205,11 +207,14 @@ export function javaScriptIdentifiers(content) {
       return;
     }
 
-    if (node.parent && node.parent.type === 'MemberExpression' && node.parent.property === node &&
-        !node.parent.computed) {
-      return;
+    if (node.parent && node.parent.type === 'MemberExpression') {
+      const parent = /** @type {!ESTree.MemberExpression} */ (node.parent);
+      if (parent.property === node && !parent.computed) {
+        return;
+      }
     }
     identifiers.push(node);
+    return;
   }
 
   if (!root || root.type !== 'Program' || root.body.length !== 1 || !isFunction(root.body[0])) {
@@ -217,13 +222,14 @@ export function javaScriptIdentifiers(content) {
     return;
   }
 
-  const functionNode = root.body[0];
+  const functionNode = /** @type {!ESTree.FunctionDeclaration} */ (root.body[0]);
   for (const param of functionNode.params) {
     walker.walk(param);
   }
   walker.walk(functionNode.body);
-  const reduced = identifiers.map(id => ({name: id.name, offset: id.start}));
+  const reduced = identifiers.map(id => ({name: 'name' in id && id.name, offset: id.start}));
   postMessage(reduced);
+  return;
 }
 
 /**
@@ -259,7 +265,7 @@ export function format(mimeType, text, indentString) {
         formatter.format(text, lineEndings, 0, text.length);
       }
     }
-    result.mapping = builder.mapping();
+    result.mapping = builder.mapping;
     result.content = builder.content();
   } catch (e) {
     console.error(e);
@@ -290,15 +296,19 @@ export function findLastFunctionCall(content) {
   if (!base) {
     return null;
   }
+  if (base.baseNode.type !== 'CallExpression' && base.baseNode.type !== 'NewExpression') {
+    return null;
+  }
   const callee = base.baseNode['callee'];
 
   let functionName = '';
-  const functionProperty = callee.type === 'Identifier' ? callee : callee.property;
+  const functionProperty =
+      callee.type === 'Identifier' ? callee : /** @type {!ESTree.MemberExpression} */ (callee).property;
   if (functionProperty) {
     if (functionProperty.type === 'Identifier') {
       functionName = functionProperty.name;
     } else if (functionProperty.type === 'Literal') {
-      functionName = functionProperty.value;
+      functionName = /** @type {string} */ (functionProperty.value);
     }
   }
 
@@ -322,20 +332,22 @@ export function argumentsList(content) {
   if (content.length > 10000) {
     return [];
   }
+  /** @type {?ESTree.Node} */
   let parsed = null;
   try {
     // Try to parse as a function, anonymous function, or arrow function.
-    parsed = Acorn.parse(`(${content})`, {ecmaVersion: ECMA_VERSION});
+    parsed = /** @type {?ESTree.Node} */ (Acorn.parse(`(${content})`, {ecmaVersion: ECMA_VERSION}));
   } catch (e) {
   }
   if (!parsed) {
     try {
       // Try to parse as a method.
-      parsed = Acorn.parse(`({${content}})`, {ecmaVersion: ECMA_VERSION});
+      parsed = /** @type {?ESTree.Node} */ (Acorn.parse(`({${content}})`, {ecmaVersion: ECMA_VERSION}));
     } catch (e) {
     }
   }
-  if (!parsed || !parsed.body || !parsed.body[0] || !parsed.body[0].expression) {
+  if (!parsed || !('body' in parsed) || !Array.isArray(parsed.body) || !parsed.body[0] ||
+      !('expression' in parsed.body[0])) {
     return [];
   }
   const expression = parsed.body[0].expression;
@@ -352,7 +364,8 @@ export function argumentsList(content) {
       break;
     }
     case 'ObjectExpression': {
-      if (!expression.properties[0] || !expression.properties[0].value) {
+      if (!expression.properties[0] || !('value' in expression.properties[0]) ||
+          !('params' in expression.properties[0].value)) {
         break;
       }
       params = expression.properties[0].value.params;
@@ -369,6 +382,10 @@ export function argumentsList(content) {
   }
   return params.map(paramName);
 
+  /**
+   * @param {!ESTree.Node} param
+   * @return {string}
+   */
   function paramName(param) {
     switch (param.type) {
       case 'Identifier':
@@ -425,14 +442,14 @@ export function findLastExpression(content) {
  * @return {?{baseNode: !ESTree.Node, baseExpression: string}}
  */
 export function _lastCompleteExpression(content, suffix, types) {
-  /** @type {!ESTree.Node} */
-  let ast;
+  /** @type {?ESTree.Node} */
+  let ast = null;
   let parsedContent = '';
   for (let i = 0; i < content.length; i++) {
     try {
       // Wrap content in paren to successfully parse object literals
       parsedContent = content[i] === '{' ? `(${content.substring(i)})${suffix}` : `${content.substring(i)}${suffix}`;
-      ast = Acorn.parse(parsedContent, {ecmaVersion: ECMA_VERSION});
+      ast = /** @type {!ESTree.Node} */ (Acorn.parse(parsedContent, {ecmaVersion: ECMA_VERSION}));
       break;
     } catch (e) {
     }
@@ -440,20 +457,24 @@ export function _lastCompleteExpression(content, suffix, types) {
   if (!ast) {
     return null;
   }
+  const astEnd = ast.end;
+  /** @type {?ESTree.Node} */
   let baseNode = null;
   const walker = new ESTreeWalker(node => {
-    if (baseNode || node.end < ast.end) {
+    if (baseNode || node.end < astEnd) {
       return ESTreeWalker.SkipSubtree;
     }
     if (types.has(node.type)) {
       baseNode = node;
     }
+    return;
   });
   walker.walk(ast);
   if (!baseNode) {
     return null;
   }
-  let baseExpression = parsedContent.substring(baseNode.start, parsedContent.length - suffix.length);
+  let baseExpression =
+      parsedContent.substring(/** @type {!ESTree.Node} */ (baseNode).start, parsedContent.length - suffix.length);
   if (baseExpression.startsWith('{')) {
     baseExpression = `(${baseExpression})`;
   }
@@ -468,7 +489,9 @@ export class FormatterWorkerContentParser {
    * @param {string} content
    * @return {!Object}
    */
-  parse(content) {}
+  parse(content) {
+    throw new Error('Not implemented yet');
+  }
 }
 
 /**
@@ -476,10 +499,13 @@ export class FormatterWorkerContentParser {
  * @param {string} mimeType
  */
 FormatterWorkerContentParser.parse = function(content, mimeType) {
-  const extension = self.runtime.extensions(FormatterWorkerContentParser).find(findExtension);
-  console.assert(extension);
+  const extension = Root.Runtime.Runtime.instance().extensions(FormatterWorkerContentParser).find(findExtension);
+  console.assert(!!extension);
+  if (!extension) {
+    return;
+  }
   extension.instance()
-      .then(instance => instance.parse(content))
+      .then(instance => /** @type {!FormatterWorkerContentParser} */ (instance).parse(content))
       .catch(error => {
         console.error(error);
       })
@@ -490,12 +516,13 @@ FormatterWorkerContentParser.parse = function(content, mimeType) {
    * @return {boolean}
    */
   function findExtension(extension) {
-    return extension.descriptor()['mimeType'] === mimeType;
+    const descriptor = extension.descriptor();
+    return 'mimeType' in descriptor && descriptor['mimeType'] === mimeType;
   }
 };
 
 (function disableLoggingForTest() {
-  if (Root.Runtime.queryParam('test')) {
+  if (Root.Runtime.Runtime.queryParam('test')) {
     console.error = () => undefined;
   }
 })();

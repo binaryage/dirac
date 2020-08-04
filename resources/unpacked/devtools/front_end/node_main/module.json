@@ -20,7 +20,6 @@
     "host",
     "components"
   ],
-  "scripts": [],
   "modules": [
     "node_main.js",
     "node_main-legacy.js",
@@ -29,5 +28,6 @@
   ],
   "resources": [
     "nodeConnectionsPanel.css"
-  ]
+  ],
+  "skip_rollup": true
 }

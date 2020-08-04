@@ -2,7 +2,6 @@
   "dependencies": [
     "platform"
   ],
-  "scripts": [],
   "modules": [
     "ContentProvider.js",
     "StaticContentProvider.js",
@@ -12,5 +11,6 @@
     "TextCursor.js",
     "TextUtils.js",
     "TextRange.js"
-  ]
+  ],
+  "skip_rollup": true
 }

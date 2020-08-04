@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as DataGrid from '../data_grid/data_grid.js';
 import * as SDK from '../sdk/sdk.js';
@@ -298,7 +301,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
   /**
    * @override
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnId) {
     const cell = this.createTD(columnId);
@@ -311,7 +314,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
         cell.createChild('span', 'size-units').textContent = ls`KB`;
         break;
       case 'isolates':
-        cell.textContent = this._isolateCount;
+        cell.textContent = `${this._isolateCount}`;
         break;
     }
     return cell;

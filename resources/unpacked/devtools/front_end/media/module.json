@@ -8,8 +8,7 @@
       "persistence": "closeable",
       "order": 100,
       "className": "Media.MainView",
-      "tags": "media, video",
-      "experiment": "mediaInspector"
+      "tags": "media, video"
     }
   ],
   "dependencies": [
@@ -34,7 +33,6 @@
     "TickingFlameChart.js",
     "TickingFlameChartHelpers.js"
   ],
-  "scripts": [],
   "resources": [
     "eventDisplayTable.css",
     "mediaView.css",

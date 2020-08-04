@@ -36,7 +36,6 @@
 import * as Common from '../common/common.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
-import * as UI from '../ui/ui.js';
 import {Icon} from './Icon.js';                            // eslint-disable-line no-unused-vars
 import {Config, InplaceEditor} from './InplaceEditor.js';  // eslint-disable-line no-unused-vars
 import {Keys} from './KeyboardShortcut.js';
@@ -117,9 +116,10 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {!TreeElement} child
+   * @param {(function(!TreeElement, !TreeElement):number)=} comparator
    */
-  appendChild(child) {
-    this._rootElement.appendChild(child);
+  appendChild(child, comparator) {
+    this._rootElement.appendChild(child, comparator);
   }
 
   /**
@@ -417,7 +417,6 @@ export class TreeOutlineInShadow extends TreeOutline {
     // Redefine element to the external one.
     this.element = createElement('div');
     this._shadowRoot = createShadowRootWithCoreStyles(this.element, 'ui/treeoutline.css');
-    UI.Utils.appendStyle(this._shadowRoot, 'ui/treeoutline-dirac.css');
     this._disclosureElement = this._shadowRoot.createChild('div', 'tree-outline-disclosure');
     this._disclosureElement.appendChild(this.contentElement);
     this._renderSelection = true;
@@ -574,14 +573,17 @@ export class TreeElement {
 
   /**
    * @param {!TreeElement} child
+   * @param {(function(!TreeElement, !TreeElement):number)=} comparator
    */
-  appendChild(child) {
+  appendChild(child, comparator) {
     if (!this._children) {
       this._children = [];
     }
 
     let insertionIndex;
-    if (this.treeOutline && this.treeOutline._comparator) {
+    if (comparator) {
+      insertionIndex = this._children.lowerBound(child, comparator);
+    } else if (this.treeOutline && this.treeOutline._comparator) {
       insertionIndex = this._children.lowerBound(child, this.treeOutline._comparator);
     } else {
       insertionIndex = this._children.length;

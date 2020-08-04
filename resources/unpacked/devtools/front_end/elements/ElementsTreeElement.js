@@ -30,6 +30,7 @@
 
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
+import * as Emulation from '../emulation/emulation.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';  // eslint-disable-line no-unused-vars
@@ -627,6 +628,10 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
 
     contextMenu.viewSection().appendItem(ls`Expand recursively`, this.expandRecursively.bind(this));
     contextMenu.viewSection().appendItem(ls`Collapse children`, this.collapseChildren.bind(this));
+    const deviceModeWrapperAction = new Emulation.DeviceModeWrapper.ActionDelegate();
+    contextMenu.viewSection().appendItem(
+        ls`Capture node screenshot`,
+        deviceModeWrapperAction.handleAction.bind(null, self.UI.context, 'emulation.capture-node-screenshot'));
   }
 
   _startEditing() {
@@ -1932,15 +1937,37 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
 
   async _updateStyleAdorners() {
     const node = this.node();
-    const styles = await node.domModel().cssModel().computedStylePromise(node.id);
+    const nodeId = node.id;
+    if (node.nodeType() === Node.COMMENT_NODE || nodeId === undefined) {
+      return;
+    }
+
+    const styles = await node.domModel().cssModel().computedStylePromise(nodeId);
     if (!styles) {
       return;
     }
 
-    if (styles.get('display') === 'grid') {
+    const display = styles.get('display');
+    if (display === 'grid' || display === 'inline-grid') {
       const gridAdorner = this.adornText('grid', AdornerCategories.Layout);
       gridAdorner.classList.add('grid');
-      // TODO(changhaohan): enable interactivity once persistent overlay is implemented
+      const onClick = /** @type {!EventListener} */ (() => {
+        if (gridAdorner.isActive()) {
+          node.domModel().overlayModel().highlightGridInPersistentOverlay(nodeId);
+        } else {
+          node.domModel().overlayModel().hideGridInPersistentOverlay(nodeId);
+        }
+      });
+      gridAdorner.addInteraction(onClick, {
+        isToggle: true,
+        shouldPropagateOnKeydown: false,
+        ariaLabelDefault: ls`Enable grid mode`,
+        ariaLabelActive: ls`Disable grid mode`,
+      });
+
+      node.domModel().overlayModel().addEventListener(SDK.OverlayModel.Events.PersistentGridOverlayCleared, () => {
+        gridAdorner.toggle(false /* force inactive state */);
+      });
     }
   }
 }

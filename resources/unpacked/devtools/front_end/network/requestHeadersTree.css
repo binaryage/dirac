@@ -20,7 +20,6 @@
   font-weight: bold;
   color: #616161;
   margin-top: -1px;
-  height: 20px;
   display: flex;
   align-items: center;
   height: 26px;
@@ -160,6 +159,12 @@
 
 .header-highlight {
   background-color: #ffff78;
+}
+
+.x-client-data-details {
+  padding-left: 10px;
+  word-break: break-word;
+  white-space: initial;
 }
 
 @media (forced-colors: active) {

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Diff from '../diff/diff.js';
 import * as Platform from '../platform/platform.js';
@@ -115,14 +118,28 @@ export class FilteredListWidget extends UI.Widget.VBox {
     this._prompt.setPlaceholder(placeholder, ariaPlaceholder);
   }
 
-  showAsDialog() {
+  /**
+   * Sets the text prompt's accessible title. By default, it is "Quick open prompt".
+   * @param {string} title
+   */
+  setPromptTitle(title) {
+    UI.ARIAUtils.setAccessibleName(this._promptElement, title);
+  }
+
+  /**
+   * @param {string=} dialogTitle
+   */
+  showAsDialog(dialogTitle = ls`Quick open`) {
     this._dialog = new UI.Dialog.Dialog();
-    UI.ARIAUtils.setAccessibleName(this._dialog.contentElement, ls`Quick open`);
+    UI.ARIAUtils.setAccessibleName(this._dialog.contentElement, dialogTitle);
     this._dialog.setMaxContentSize(new UI.Geometry.Size(504, 340));
     this._dialog.setSizeBehavior(UI.GlassPane.SizeBehavior.SetExactWidthMaxHeight);
     this._dialog.setContentPosition(null, 22);
     this.show(this._dialog.contentElement);
     UI.ARIAUtils.setExpanded(this.contentElement, true);
+    this._dialog.once('hidden').then(() => {
+      this.dispatchEventToListeners('hidden');
+    });
     this._dialog.show();
   }
 
@@ -150,6 +167,14 @@ export class FilteredListWidget extends UI.Widget.VBox {
     if (this.isShowing()) {
       this._attachProvider();
     }
+  }
+
+  /**
+   * @param {number} startIndex
+   * @param {number} endIndex
+   */
+  setQuerySelectedRange(startIndex, endIndex) {
+    this._prompt.setSelectedRange(startIndex, endIndex);
   }
 
   _attachProvider() {

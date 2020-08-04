@@ -2,7 +2,6 @@
   "dependencies": [
     "common"
   ],
-  "scripts": [],
   "modules": [
     "diff.js",
     "diff-legacy.js",
@@ -11,5 +10,6 @@
   ],
   "skip_compilation": [
     "diff_match_patch.js"
-  ]
+  ],
+  "skip_rollup": true
 }

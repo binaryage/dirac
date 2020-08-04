@@ -5,7 +5,6 @@
     "services",
     "workspace"
   ],
-  "scripts": [],
   "modules": [
     "bindings.js",
     "bindings-legacy.js",
@@ -18,7 +17,6 @@
     "CSSWorkspaceBinding.js",
     "DebuggerWorkspaceBinding.js",
     "DebuggerLanguagePlugins.js",
-    "language_plugins/CXXDWARFLanguagePlugin.js",
     "BreakpointManager.js",
     "ContentProviderBasedProject.js",
     "DefaultScriptMapping.js",
@@ -28,5 +26,6 @@
     "PresentationConsoleMessageHelper.js",
     "ResourceUtils.js",
     "TempFile.js"
-  ]
+  ],
+  "skip_rollup": true
 }

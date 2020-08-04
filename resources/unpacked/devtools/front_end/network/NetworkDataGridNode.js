@@ -28,6 +28,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
@@ -241,7 +244,7 @@ export class NetworkNode extends DataGrid.SortableDataGrid.SortableDataGridNode 
   /**
    * @override
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnId) {
     const cell = this.createTD(columnId);
@@ -494,7 +497,7 @@ export class NetworkRequestNode extends NetworkNode {
 
   /**
    * @param {!NetworkNode} a
-   * @param {!Network.NetworkNode} b
+   * @param {!NetworkNode} b
    * @return {number}
    */
   static NameComparator(a, b) {
@@ -504,7 +507,7 @@ export class NetworkRequestNode extends NetworkNode {
       const aRequest = a.requestOrFirstKnownChildRequest();
       const bRequest = b.requestOrFirstKnownChildRequest();
       if (aRequest && bRequest) {
-        return aRequest.indentityCompare(bRequest);
+        return aRequest.identityCompare(bRequest);
       }
       return aRequest ? -1 : 1;
     }
@@ -513,7 +516,7 @@ export class NetworkRequestNode extends NetworkNode {
 
   /**
    * @param {!NetworkNode} a
-   * @param {!Network.NetworkNode} b
+   * @param {!NetworkNode} b
    * @return {number}
    */
   static RemoteAddressComparator(a, b) {
@@ -531,12 +534,12 @@ export class NetworkRequestNode extends NetworkNode {
     if (bRemoteAddress > aRemoteAddress) {
       return -1;
     }
-    return aRequest.indentityCompare(bRequest);
+    return aRequest.identityCompare(bRequest);
   }
 
   /**
    * @param {!NetworkNode} a
-   * @param {!Network.NetworkNode} b
+   * @param {!NetworkNode} b
    * @return {number}
    */
   static SizeComparator(a, b) {
@@ -553,12 +556,12 @@ export class NetworkRequestNode extends NetworkNode {
       return -1;
     }
     return (aRequest.transferSize - bRequest.transferSize) || (aRequest.resourceSize - bRequest.resourceSize) ||
-        aRequest.indentityCompare(bRequest);
+        aRequest.identityCompare(bRequest);
   }
 
   /**
    * @param {!NetworkNode} a
-   * @param {!Network.NetworkNode} b
+   * @param {!NetworkNode} b
    * @return {number}
    */
   static TypeComparator(a, b) {
@@ -577,12 +580,12 @@ export class NetworkRequestNode extends NetworkNode {
     if (bSimpleType > aSimpleType) {
       return -1;
     }
-    return aRequest.indentityCompare(bRequest);
+    return aRequest.identityCompare(bRequest);
   }
 
   /**
    * @param {!NetworkNode} a
-   * @param {!Network.NetworkNode} b
+   * @param {!NetworkNode} b
    * @return {number}
    */
   static InitiatorComparator(a, b) {
@@ -602,7 +605,7 @@ export class NetworkRequestNode extends NetworkNode {
 
   /**
    * @param {!NetworkNode} a
-   * @param {!Network.NetworkNode} b
+   * @param {!NetworkNode} b
    * @return {number}
    */
   static RequestCookiesCountComparator(a, b) {
@@ -614,7 +617,7 @@ export class NetworkRequestNode extends NetworkNode {
     }
     const aScore = aRequest.includedRequestCookies().length;
     const bScore = bRequest.includedRequestCookies().length;
-    return (aScore - bScore) || aRequest.indentityCompare(bRequest);
+    return (aScore - bScore) || aRequest.identityCompare(bRequest);
   }
 
   // TODO(allada) This function deserves to be in a network-common of some sort.
@@ -632,12 +635,12 @@ export class NetworkRequestNode extends NetworkNode {
     }
     const aScore = aRequest.responseCookies ? aRequest.responseCookies.length : 0;
     const bScore = bRequest.responseCookies ? bRequest.responseCookies.length : 0;
-    return (aScore - bScore) || aRequest.indentityCompare(bRequest);
+    return (aScore - bScore) || aRequest.identityCompare(bRequest);
   }
 
   /**
    * @param {!NetworkNode} a
-   * @param {!Network.NetworkNode} b
+   * @param {!NetworkNode} b
    * @return {number}
    */
   static PriorityComparator(a, b) {
@@ -654,13 +657,13 @@ export class NetworkRequestNode extends NetworkNode {
     let bScore = bPriority ? PerfUI.NetworkPriorities.networkPriorityWeight(bPriority) : 0;
     bScore = bScore || 0;
 
-    return aScore - bScore || aRequest.indentityCompare(bRequest);
+    return aScore - bScore || aRequest.identityCompare(bRequest);
   }
 
   /**
    * @param {string} propertyName
    * @param {!NetworkNode} a
-   * @param {!Network.NetworkNode} b
+   * @param {!NetworkNode} b
    * @return {number}
    */
   static RequestPropertyComparator(propertyName, a, b) {
@@ -672,15 +675,34 @@ export class NetworkRequestNode extends NetworkNode {
     const aValue = aRequest[propertyName];
     const bValue = bRequest[propertyName];
     if (aValue === bValue) {
-      return aRequest.indentityCompare(bRequest);
+      return aRequest.identityCompare(bRequest);
     }
     return aValue > bValue ? 1 : -1;
   }
 
   /**
+   * @param {!NetworkNode} a
+   * @param {!NetworkNode} b
+   * @return {number}
+   */
+  static RequestURLComparator(a, b) {
+    const aRequest = a.requestOrFirstKnownChildRequest();
+    const bRequest = b.requestOrFirstKnownChildRequest();
+    if (!aRequest || !bRequest) {
+      return !aRequest ? -1 : 1;
+    }
+    const aURL = aRequest.url();
+    const bURL = bRequest.url();
+    if (aURL === bURL) {
+      return aRequest.identityCompare(bRequest);
+    }
+    return aURL > bURL ? 1 : -1;
+  }
+
+  /**
    * @param {string} propertyName
    * @param {!NetworkNode} a
-   * @param {!Network.NetworkNode} b
+   * @param {!NetworkNode} b
    * @return {number}
    */
   static ResponseHeaderStringComparator(propertyName, a, b) {
@@ -692,13 +714,13 @@ export class NetworkRequestNode extends NetworkNode {
     }
     const aValue = String(aRequest.responseHeaderValue(propertyName) || '');
     const bValue = String(bRequest.responseHeaderValue(propertyName) || '');
-    return aValue.localeCompare(bValue) || aRequest.indentityCompare(bRequest);
+    return aValue.localeCompare(bValue) || aRequest.identityCompare(bRequest);
   }
 
   /**
    * @param {string} propertyName
    * @param {!NetworkNode} a
-   * @param {!Network.NetworkNode} b
+   * @param {!NetworkNode} b
    * @return {number}
    */
   static ResponseHeaderNumberComparator(propertyName, a, b) {
@@ -715,7 +737,7 @@ export class NetworkRequestNode extends NetworkNode {
         parseFloat(bRequest.responseHeaderValue(propertyName)) :
         -Infinity;
     if (aValue === bValue) {
-      return aRequest.indentityCompare(bRequest);
+      return aRequest.identityCompare(bRequest);
     }
     return aValue > bValue ? 1 : -1;
   }
@@ -723,7 +745,7 @@ export class NetworkRequestNode extends NetworkNode {
   /**
    * @param {string} propertyName
    * @param {!NetworkNode} a
-   * @param {!Network.NetworkNode} b
+   * @param {!NetworkNode} b
    * @return {number}
    */
   static ResponseHeaderDateComparator(propertyName, a, b) {
@@ -738,7 +760,7 @@ export class NetworkRequestNode extends NetworkNode {
     const aValue = aHeader ? new Date(aHeader).getTime() : -Infinity;
     const bValue = bHeader ? new Date(bHeader).getTime() : -Infinity;
     if (aValue === bValue) {
-      return aRequest.indentityCompare(bRequest);
+      return aRequest.identityCompare(bRequest);
     }
     return aValue > bValue ? 1 : -1;
   }

@@ -4,11 +4,11 @@
 
 /* eslint-disable no-console */
 
-import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
+import {ChildProcess, spawn} from 'child_process';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 
-import {getBrowserAndPages, setBrowserAndPages} from './puppeteer-state.js';
+import {getBrowserAndPages, registerHandlers, setBrowserAndPages, setHostedModeServerPort} from './puppeteer-state.js';
 
 const HOSTED_MODE_SERVER_PATH = path.join(__dirname, '..', '..', 'scripts', 'hosted_mode', 'server.js');
 const EMPTY_PAGE = 'data:text/html,';
@@ -22,12 +22,19 @@ const {execPath} = process;
 const width = 1280;
 const height = 720;
 
-const envPort = 9222;
 const headless = !process.env['DEBUG'];
 const envSlowMo = process.env['STRESS'] ? 50 : undefined;
 const envThrottleRate = process.env['STRESS'] ? 3 : 1;
 
-let hostedModeServer: ChildProcessWithoutNullStreams;
+const logLevels = {
+  log: 'I',
+  info: 'I',
+  error: 'E',
+  exception: 'E',
+  assert: 'E',
+};
+
+let hostedModeServer: ChildProcess;
 let browser: puppeteer.Browser;
 let frontendUrl: string;
 
@@ -36,14 +43,11 @@ interface DevToolsTarget {
   id: string;
 }
 
-function handleHostedModeError(error: Error) {
-  throw new Error(`Hosted mode server: ${error}`);
-}
-
 const envChromeBinary = process.env['CHROME_BIN'];
 
-async function loadTargetPageAndDevToolsFrontend() {
-  const launchArgs = [`--remote-debugging-port=${envPort}`];
+function launchChrome() {
+  // Use port 0 to request any free port.
+  const launchArgs = ['--remote-debugging-port=0'];
   const opts: puppeteer.LaunchOptions = {
     headless,
     executablePath: envChromeBinary,
@@ -60,15 +64,30 @@ async function loadTargetPageAndDevToolsFrontend() {
   }
 
   opts.args = launchArgs;
+  return puppeteer.launch(opts);
+}
 
-  browser = await puppeteer.launch(opts);
+function getDebugPort(browser: puppeteer.Browser) {
+  const websocketUrl = browser.wsEndpoint();
+  const url = new URL(websocketUrl);
+  if (url.port) {
+    return url.port;
+  }
+  throw new Error(`Unable to find debug port: ${websocketUrl}`);
+}
+
+async function loadTargetPageAndDevToolsFrontend(hostedModeServerPort: number) {
+  browser = await launchChrome();
+  const chromeDebugPort = getDebugPort(browser);
+  console.log(`Opened chrome with debug port: ${chromeDebugPort}`);
+
   // Load the target page.
   const srcPage = await browser.newPage();
   await srcPage.goto(EMPTY_PAGE);
 
   // Now get the DevTools listings.
   const devtools = await browser.newPage();
-  await devtools.goto(`http://localhost:${envPort}/json`);
+  await devtools.goto(`http://localhost:${chromeDebugPort}/json`);
 
   // Find the appropriate item to inspect the target page.
   const listing = await devtools.$('pre');
@@ -84,7 +103,8 @@ async function loadTargetPageAndDevToolsFrontend() {
 
   // Connect to the DevTools frontend.
   const frontend = await browser.newPage();
-  frontendUrl = `http://localhost:8090/front_end/devtools_app.html?ws=localhost:${envPort}/devtools/page/${id}`;
+  frontendUrl = `http://localhost:${hostedModeServerPort}/front_end/devtools_app.html?ws=localhost:${
+      chromeDebugPort}/devtools/page/${id}`;
   await frontend.goto(frontendUrl, {waitUntil: ['networkidle2', 'domcontentloaded']});
 
   frontend.on('error', error => {
@@ -97,6 +117,17 @@ async function loadTargetPageAndDevToolsFrontend() {
 
   process.on('unhandledRejection', error => {
     throw new Error(`Unhandled rejection in Frontend: ${error}`);
+  });
+
+  frontend.on('console', msg => {
+    const logLevel = logLevels[msg.type() as keyof typeof logLevels] as string;
+    if (logLevel) {
+      let filename = '<unknown>';
+      if (msg.location() && msg.location().url) {
+        filename = msg.location()!.url!.replace(/^.*\//, '');
+      }
+      console.log(`${logLevel} ${filename}:${msg.location().lineNumber}: ${msg.text()}`);
+    }
   });
 
   setBrowserAndPages({target: srcPage, frontend, browser});
@@ -157,19 +188,56 @@ export async function reloadDevTools(options: ReloadDevToolsOptions = {}) {
   }
 }
 
-export async function globalSetup() {
+function startHostedModeServer(): Promise<number> {
   console.log('Spawning hosted mode server');
 
-  hostedModeServer = spawn(execPath, [HOSTED_MODE_SERVER_PATH], {cwd});
-  hostedModeServer.on('error', handleHostedModeError);
-  hostedModeServer.stderr.on('data', handleHostedModeError);
+  function handleHostedModeError(error: Error) {
+    throw new Error(`Hosted mode server: ${error}`);
+  }
 
-  await loadTargetPageAndDevToolsFrontend();
+  // Copy the current env and append the port.
+  const env = Object.create(process.env);
+  env.PORT = 0;  // 0 means request a free port from the OS.
+  return new Promise((resolve, reject) => {
+    // We open the server with an IPC channel so that it can report the port it
+    // used back to us. For parallel test mode, we need to avoid specifying a
+    // port directly and instead request any free port, which is what port 0
+    // signifies to the OS.
+    hostedModeServer = spawn(execPath, [HOSTED_MODE_SERVER_PATH], {cwd, env, stdio: ['pipe', 'pipe', 'pipe', 'ipc']});
+    hostedModeServer.on('message', message => {
+      if (message === 'ERROR') {
+        reject('Could not start hosted mode server');
+      } else {
+        resolve(parseInt(message, 10));
+      }
+    });
+    hostedModeServer.on('error', handleHostedModeError);
+    if (hostedModeServer.stderr) {
+      hostedModeServer.stderr.on('data', handleHostedModeError);
+    }
+  });
+}
+
+export async function globalSetup() {
+  try {
+    const port = await startHostedModeServer();
+    console.log(`Started hosted mode server on port ${port}`);
+    registerHandlers();
+    setHostedModeServerPort(port);
+    await loadTargetPageAndDevToolsFrontend(port);
+  } catch (message) {
+    throw new Error(message);
+  }
 }
 
 export async function globalTeardown() {
+  // We need to kill the browser before we stop the hosted mode server.
+  // That's because the browser could continue to make network requests,
+  // even after we would have closed the server. If we did so, the requests
+  // would fail and the test would crash on closedown. This only happens
+  // for the very last test that runs.
+  await browser.close();
+
   console.log('Stopping hosted mode server');
   hostedModeServer.kill();
-
-  await browser.close();
 }

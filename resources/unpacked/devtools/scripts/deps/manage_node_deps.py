@@ -4,7 +4,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """
-Helper to manage DEPS.
+Helper to manage DEPS. Use this script to update node_modules instead of
+running npm install manually. To upgrade a dependency, change the version
+number in DEPS below and run this script.
 """
 
 import os
@@ -33,13 +35,15 @@ LICENSES = [
 
 # List all DEPS here.
 DEPS = {
-    "@types/chai": "4.2.0",
+    "@rollup/plugin-commonjs": "13.0.0",
+    "@types/chai": "4.2.11",
+    "@types/codemirror": "0.0.97",
     "@types/estree": "0.0.45",
     "@types/filesystem": "0.0.29",
     "@types/mocha": "5.2.7",
     "@types/puppeteer": "2.0.0",
-    "@typescript-eslint/parser": "2.16.0",
-    "@typescript-eslint/eslint-plugin": "2.16.0",
+    "@typescript-eslint/parser": "3.6.1",
+    "@typescript-eslint/eslint-plugin": "3.6.1",
     "chai": "4.2.0",
     "escodegen": "1.12.0",
     "eslint": "6.8.0",
@@ -54,21 +58,27 @@ DEPS = {
     "karma-mocha": "2.0.1",
     "karma-sourcemap-loader": "0.3.0",
     "license-checker": "25.0.1",
-    "mocha": "7.1.1",
-    "puppeteer": "4.0.0",
+    "mocha": "8.0.1",
+    "puppeteer": "5.2.1",
     "recast": "0.18.2",
     "rimraf": "3.0.2",
     "rollup": "2.3.3",
     "rollup-plugin-terser": "5.3.0",
+    "source-map-support": "0.5.19",
     "stylelint": "13.5.0",
     "stylelint-config-standard": "20.0.0",
-    "typescript": "3.9.3",
+    "typescript": "4.0.0-beta",
     "yargs": "15.3.1",
 }
 
 def exec_command(cmd):
     try:
-        cmd_proc_result = subprocess.check_call(cmd, cwd=devtools_paths.root_path())
+        new_env = os.environ.copy()
+        # Prevent large files from being checked in to git.
+        new_env["PUPPETEER_SKIP_CHROMIUM_DOWNLOAD"] = "true"
+        cmd_proc_result = subprocess.check_call(cmd,
+                                                cwd=devtools_paths.root_path(),
+                                                env=new_env)
     except Exception as error:
         print(error)
         return True

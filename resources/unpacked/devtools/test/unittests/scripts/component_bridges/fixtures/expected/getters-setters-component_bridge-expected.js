@@ -9,6 +9,7 @@
 *  npm run generate-bridge-file test/unittests/scripts/component_bridges/fixtures/getters-setters-component.ts
 */
 
+import './getters-setters-component.js';
 /**
 * @typedef {{
 * name:string,
@@ -18,15 +19,17 @@
 // @ts-ignore we export this for Closure not TS
 export let Dog;
 // eslint-disable-next-line no-unused-vars
-class BasicComponentClosureInterface extends HTMLElement {
+export class BasicComponentClosureInterface extends HTMLElement {
   /**
   * @return {!Dog}
   */
-  get dog() {}
+  get dog() {
+  }
   /**
   * @param {!Dog} dog
   */
-  set dog(dog) {}
+  set dog(dog) {
+  }
 }
 /**
 * @return {!BasicComponentClosureInterface}

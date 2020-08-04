@@ -9,6 +9,7 @@
 *  npm run generate-bridge-file test/unittests/scripts/component_bridges/fixtures/multiple-methods.ts
 */
 
+import './multiple-methods.js';
 /**
 * @typedef {{
 * name:string,
@@ -18,15 +19,17 @@
 // @ts-ignore we export this for Closure not TS
 export let Dog;
 // eslint-disable-next-line no-unused-vars
-class MultipleMethodsClosureInterface extends HTMLElement {
+export class MultipleMethodsClosureInterface extends HTMLElement {
   /**
   * @param {!Dog} dog
   */
-  update(dog) {}
+  update(dog) {
+  }
   /**
   * @param {string} name
   */
-  otherMethod(name) {}
+  otherMethod(name) {
+  }
 }
 /**
 * @return {!MultipleMethodsClosureInterface}

@@ -22,7 +22,6 @@
     "components",
     "emulation"
   ],
-  "scripts": [],
   "modules": [
     "screencast.js",
     "screencast-legacy.js",
@@ -32,5 +31,6 @@
   ],
   "resources": [
     "screencastView.css"
-  ]
+  ],
+  "skip_rollup": true
 }

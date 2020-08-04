@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';
 
@@ -74,6 +77,10 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
 
       // Parse the color, discard transparent ones.
       const colorText = strings[id];
+      if (!colorText) {
+        return;
+      }
+
       const color = Common.Color.Color.parse(colorText);
       if (!color || color.rgba()[3] === 0) {
         return;
@@ -156,7 +163,7 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
          *                \
          *                 \ line-height (Map) -- nodes (Array)
          */
-        if (fontFamilyIdx !== -1) {
+        if (fontFamilyIdx && fontFamilyIdx !== -1) {
           const fontFamily = strings[fontFamilyIdx];
           const fontFamilyInfo = fontInfo.get(fontFamily) || new Map();
 

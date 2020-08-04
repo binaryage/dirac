@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../../scripts/build/copy_to_gen.gni")
+import("../../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../../scripts/build/ninja/devtools_pre_built.gni")
 
-copy_to_gen("acorn") {
+devtools_pre_built("acorn") {
   sources = [
     "acorn-tsconfig.json",
     "package/dist/acorn.d.ts",
@@ -12,5 +13,15 @@ copy_to_gen("acorn") {
     "package/dist/acorn.mjs",
     "package/dist/acorn.mjs.d.ts",
     "package/dist/acorn.mjs.map",
+  ]
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "acorn.ts"
+
+  deps = [
+    ":acorn",
+    "../acorn-logical-assignment",
+    "../acorn-numeric-separator",
   ]
 }

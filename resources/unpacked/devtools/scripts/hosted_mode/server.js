@@ -7,25 +7,42 @@ const path = require('path');
 const parseURL = require('url').parse;
 
 const remoteDebuggingPort = parseInt(process.env.REMOTE_DEBUGGING_PORT, 10) || 9222;
-const serverPort = parseInt(process.env.PORT, 10) || 8090;
+const port = parseInt(process.env.PORT, 10);
+const requestedPort = port || port === 0 ? port : 8090;
 const devtoolsFolder = path.resolve(path.join(__dirname, '..', '..'));
 
-http.createServer(requestHandler).listen(serverPort);
-console.log(`Started hosted mode server at http://localhost:${serverPort}\n`);
-console.log('For info on using the hosted mode server, see our contributing docs:');
-console.log('https://bit.ly/devtools-contribution-guide');
-console.log('Tip: Look for the \'Development server options\' section\n');
+const server = http.createServer(requestHandler);
+server.once('error', error => {
+  if (process.send) {
+    process.send('ERROR');
+  }
+  throw error;
+});
+server.once('listening', () => {
+  // If port 0 was used, then requested and actual port will be different.
+  const actualPort = server.address().port;
+  if (process.send) {
+    process.send(actualPort);
+  }
+  console.log(`Started hosted mode server at http://localhost:${actualPort}\n`);
+  console.log('For info on using the hosted mode server, see our contributing docs:');
+  console.log('https://bit.ly/devtools-contribution-guide');
+  console.log('Tip: Look for the \'Development server options\' section\n');
+});
+server.listen(requestedPort);
 
 function requestHandler(request, response) {
-  const filePath = parseURL(request.url).pathname;
+  const filePath = unescape(parseURL(request.url).pathname);
   if (filePath === '/') {
     const landingURL = `http://localhost:${remoteDebuggingPort}#custom=true`;
     sendResponse(200, `<html>Please go to <a href="${landingURL}">${landingURL}</a></html>`);
     return;
   }
 
-  const absoluteFilePath = path.join(devtoolsFolder, filePath);
-  if (!path.resolve(absoluteFilePath).startsWith(devtoolsFolder)) {
+  const replacedName = filePath.replace('front_end', '../resources/inspector');
+
+  const absoluteFilePath = path.join(devtoolsFolder, replacedName);
+  if (!path.resolve(absoluteFilePath).startsWith(path.join(devtoolsFolder, '..'))) {
     console.log(`File requested (${absoluteFilePath}) is outside of devtools folder: ${devtoolsFolder}`);
     sendResponse(403, `403 - Access denied. File requested is outside of devtools folder: ${devtoolsFolder}`);
     return;

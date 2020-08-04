@@ -969,7 +969,9 @@
                     "type": "string",
                     "enum": [
                         "ExcludeSameSiteUnspecifiedTreatedAsLax",
-                        "ExcludeSameSiteNoneInsecure"
+                        "ExcludeSameSiteNoneInsecure",
+                        "ExcludeSameSiteLax",
+                        "ExcludeSameSiteStrict"
                     ]
                 },
                 {
@@ -1141,7 +1143,12 @@
                             "$ref": "AffectedRequest"
                         },
                         {
-                            "name": "frame",
+                            "name": "parentFrame",
+                            "optional": true,
+                            "$ref": "AffectedFrame"
+                        },
+                        {
+                            "name": "blockedFrame",
                             "optional": true,
                             "$ref": "AffectedFrame"
                         },
@@ -1190,6 +1197,66 @@
                     ]
                 },
                 {
+                    "id": "ContentSecurityPolicyViolationType",
+                    "type": "string",
+                    "enum": [
+                        "kInlineViolation",
+                        "kEvalViolation",
+                        "kURLViolation",
+                        "kTrustedTypesSinkViolation",
+                        "kTrustedTypesPolicyViolation"
+                    ]
+                },
+                {
+                    "id": "SourceCodeLocation",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "url",
+                            "type": "string"
+                        },
+                        {
+                            "name": "lineNumber",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "columnNumber",
+                            "type": "integer"
+                        }
+                    ]
+                },
+                {
+                    "id": "ContentSecurityPolicyIssueDetails",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "blockedURL",
+                            "description": "The url not included in allowed sources.",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "violatedDirective",
+                            "description": "Specific directive that is violated, causing the CSP issue.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "contentSecurityPolicyViolationType",
+                            "$ref": "ContentSecurityPolicyViolationType"
+                        },
+                        {
+                            "name": "frameAncestor",
+                            "optional": true,
+                            "$ref": "AffectedFrame"
+                        },
+                        {
+                            "name": "sourceCodeLocation",
+                            "optional": true,
+                            "$ref": "SourceCodeLocation"
+                        }
+                    ]
+                },
+                {
                     "id": "InspectorIssueCode",
                     "description": "A unique identifier for the type of issue. Each type may use one of the\noptional fields in InspectorIssueDetails to convey more specific\ninformation about the kind of issue.",
                     "type": "string",
@@ -1197,7 +1264,8 @@
                         "SameSiteCookieIssue",
                         "MixedContentIssue",
                         "BlockedByResponseIssue",
-                        "HeavyAdIssue"
+                        "HeavyAdIssue",
+                        "ContentSecurityPolicyIssue"
                     ]
                 },
                 {
@@ -1224,6 +1292,11 @@
                             "name": "heavyAdIssueDetails",
                             "optional": true,
                             "$ref": "HeavyAdIssueDetails"
+                        },
+                        {
+                            "name": "contentSecurityPolicyIssueDetails",
+                            "optional": true,
+                            "$ref": "ContentSecurityPolicyIssueDetails"
                         }
                     ]
                 },
@@ -2518,8 +2591,40 @@
                     ]
                 },
                 {
+                    "id": "FontVariationAxis",
+                    "description": "Information about font variation axes for variable fonts",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "tag",
+                            "description": "The font-variation-setting tag (a.k.a. \"axis tag\").",
+                            "type": "string"
+                        },
+                        {
+                            "name": "name",
+                            "description": "Human-readable variation name in the default language (normally, \"en\").",
+                            "type": "string"
+                        },
+                        {
+                            "name": "minValue",
+                            "description": "The minimum value (inclusive) the font supports for this tag.",
+                            "type": "number"
+                        },
+                        {
+                            "name": "maxValue",
+                            "description": "The maximum value (inclusive) the font supports for this tag.",
+                            "type": "number"
+                        },
+                        {
+                            "name": "defaultValue",
+                            "description": "The default value.",
+                            "type": "number"
+                        }
+                    ]
+                },
+                {
                     "id": "FontFace",
-                    "description": "Properties of a web font: https://www.w3.org/TR/2008/REC-CSS2-20080411/fonts.html#font-descriptions",
+                    "description": "Properties of a web font: https://www.w3.org/TR/2008/REC-CSS2-20080411/fonts.html#font-descriptions\nand additional information such as platformFontFamily and fontVariationAxes.",
                     "type": "object",
                     "properties": [
                         {
@@ -2561,6 +2666,15 @@
                             "name": "platformFontFamily",
                             "description": "The resolved platform font family",
                             "type": "string"
+                        },
+                        {
+                            "name": "fontVariationAxes",
+                            "description": "Available variation settings (a.k.a. \"axes\").",
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "$ref": "FontVariationAxis"
+                            }
                         }
                     ]
                 },
@@ -6462,6 +6576,31 @@
                     ]
                 },
                 {
+                    "id": "DisplayFeature",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "orientation",
+                            "description": "Orientation of a display feature in relation to screen",
+                            "type": "string",
+                            "enum": [
+                                "vertical",
+                                "horizontal"
+                            ]
+                        },
+                        {
+                            "name": "offset",
+                            "description": "The offset from the screen origin in either the x (for vertical\norientation) or y (for horizontal orientation) direction.",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "maskLength",
+                            "description": "A display feature may mask content such that it is not physically\ndisplayed - this length along with the offset describes this area.\nA display feature that only splits content will have a 0 mask_length.",
+                            "type": "integer"
+                        }
+                    ]
+                },
+                {
                     "id": "MediaFeature",
                     "type": "object",
                     "properties": [
@@ -6681,6 +6820,13 @@
                             "experimental": true,
                             "optional": true,
                             "$ref": "Page.Viewport"
+                        },
+                        {
+                            "name": "displayFeature",
+                            "description": "If set, the display feature of a multi-segment screen. If not set, multi-segment support\nis turned-off.",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "DisplayFeature"
                         }
                     ]
                 },
@@ -6791,6 +6937,28 @@
                             "type": "number"
                         }
                     ]
+                },
+                {
+                    "name": "setIdleOverride",
+                    "description": "Overrides the Idle state.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "isUserActive",
+                            "description": "Mock isUserActive",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "isScreenUnlocked",
+                            "description": "Mock isScreenUnlocked",
+                            "type": "boolean"
+                        }
+                    ]
+                },
+                {
+                    "name": "clearIdleOverride",
+                    "description": "Clears Idle state overrides.",
+                    "experimental": true
                 },
                 {
                     "name": "setNavigatorOverrides",
@@ -9154,6 +9322,18 @@
                     ]
                 },
                 {
+                    "id": "PostDataEntry",
+                    "description": "Post data entry for HTTP request",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "bytes",
+                            "optional": true,
+                            "type": "binary"
+                        }
+                    ]
+                },
+                {
                     "id": "Request",
                     "description": "HTTP request data.",
                     "type": "object",
@@ -9190,6 +9370,16 @@
                             "description": "True when the request has POST data. Note that postData might still be omitted when this flag is true when the data is too long.",
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "postDataEntries",
+                            "description": "Request body elements. This will be converted from base64 to binary",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "$ref": "PostDataEntry"
+                            }
                         },
                         {
                             "name": "mixedContentType",
@@ -10382,7 +10572,7 @@
                     "parameters": [
                         {
                             "name": "urls",
-                            "description": "The list of URLs for which applicable cookies will be fetched",
+                            "description": "The list of URLs for which applicable cookies will be fetched.\nIf not specified, it's assumed to be set to the list containing\nthe URLs of the page and all of its subframes.",
                             "optional": true,
                             "type": "array",
                             "items": {
@@ -11300,6 +11490,23 @@
             ],
             "types": [
                 {
+                    "id": "SourceOrderConfig",
+                    "description": "Configuration data for drawing the source order of an elements children.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "parentOutlineColor",
+                            "description": "the color to outline the givent element in.",
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "childOutlineColor",
+                            "description": "the color to outline the child elements in.",
+                            "$ref": "DOM.RGBA"
+                        }
+                    ]
+                },
+                {
                     "id": "GridHighlightConfig",
                     "description": "Configuration data for the highlighting of Grid elements.",
                     "type": "object",
@@ -11319,6 +11526,24 @@
                         {
                             "name": "showNegativeLineNumbers",
                             "description": "Show Negative line number labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showAreaNames",
+                            "description": "Show area name labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showLineNames",
+                            "description": "Show line name labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showTrackSizes",
+                            "description": "Show track size labels (default: false).",
                             "optional": true,
                             "type": "boolean"
                         },
@@ -11367,6 +11592,12 @@
                         {
                             "name": "columnHatchColor",
                             "description": "The column gap hatching fill color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "areaBorderColor",
+                            "description": "The named grid areas border color (Default: transparent).",
                             "optional": true,
                             "$ref": "DOM.RGBA"
                         }
@@ -11479,6 +11710,23 @@
                     ]
                 },
                 {
+                    "id": "GridNodeHighlightConfig",
+                    "description": "Configurations for Persistent Grid Highlight",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "gridHighlightConfig",
+                            "description": "A descriptor for the highlight appearance.",
+                            "$ref": "GridHighlightConfig"
+                        },
+                        {
+                            "name": "nodeId",
+                            "description": "Identifier of the node to highlight.",
+                            "$ref": "DOM.NodeId"
+                        }
+                    ]
+                },
+                {
                     "id": "HingeConfig",
                     "description": "Configuration for dual screen hinge",
                     "type": "object",
@@ -11561,6 +11809,45 @@
                         {
                             "name": "highlight",
                             "description": "Highlight data for the node.",
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "name": "getGridHighlightObjectsForTest",
+                    "description": "For Persistent Grid testing.",
+                    "parameters": [
+                        {
+                            "name": "nodeIds",
+                            "description": "Ids of the node to get highlight object for.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "DOM.NodeId"
+                            }
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "highlights",
+                            "description": "Grid Highlight data for the node ids provided.",
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "name": "getSourceOrderHighlightObjectForTest",
+                    "description": "For Source Order Viewer testing.",
+                    "parameters": [
+                        {
+                            "name": "nodeId",
+                            "description": "Id of the node to highlight.",
+                            "$ref": "DOM.NodeId"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "highlight",
+                            "description": "Source order highlight data for the node id provided.",
                             "type": "object"
                         }
                     ]
@@ -11689,6 +11976,35 @@
                     ]
                 },
                 {
+                    "name": "highlightSourceOrder",
+                    "description": "Highlights the source order of the children of the DOM node with given id or with the given\nJavaScript object wrapper. Either nodeId or objectId must be specified.",
+                    "parameters": [
+                        {
+                            "name": "sourceOrderConfig",
+                            "description": "A descriptor for the appearance of the overlay drawing.",
+                            "$ref": "SourceOrderConfig"
+                        },
+                        {
+                            "name": "nodeId",
+                            "description": "Identifier of the node to highlight.",
+                            "optional": true,
+                            "$ref": "DOM.NodeId"
+                        },
+                        {
+                            "name": "backendNodeId",
+                            "description": "Identifier of the backend node to highlight.",
+                            "optional": true,
+                            "$ref": "DOM.BackendNodeId"
+                        },
+                        {
+                            "name": "objectId",
+                            "description": "JavaScript object id of the node to be highlighted.",
+                            "optional": true,
+                            "$ref": "Runtime.RemoteObjectId"
+                        }
+                    ]
+                },
+                {
                     "name": "setInspectMode",
                     "description": "Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted.\nBackend then generates 'inspectNodeRequested' event upon element selection.",
                     "parameters": [
@@ -11746,6 +12062,20 @@
                             "name": "show",
                             "description": "True for showing the FPS counter",
                             "type": "boolean"
+                        }
+                    ]
+                },
+                {
+                    "name": "setShowGridOverlays",
+                    "description": "Highlight multiple elements with the CSS Grid overlay.",
+                    "parameters": [
+                        {
+                            "name": "gridNodeHighlightConfigs",
+                            "description": "An array of node identifiers and descriptors for the highlight appearance.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "GridNodeHighlightConfig"
+                            }
                         }
                     ]
                 },
@@ -11873,6 +12203,17 @@
                     "type": "string"
                 },
                 {
+                    "id": "AdFrameType",
+                    "description": "Indicates whether a frame has been identified as an ad.",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "child",
+                        "root"
+                    ]
+                },
+                {
                     "id": "Frame",
                     "description": "Information about the Frame on the page.",
                     "type": "object",
@@ -11927,6 +12268,13 @@
                             "experimental": true,
                             "optional": true,
                             "type": "string"
+                        },
+                        {
+                            "name": "adFrameType",
+                            "description": "Indicates whether this frame was tagged as an ad.",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "AdFrameType"
                         }
                     ]
                 },
@@ -16338,7 +16686,7 @@
                             "name": "postData",
                             "description": "If set, overrides the post data in the request.",
                             "optional": true,
-                            "type": "string"
+                            "type": "binary"
                         },
                         {
                             "name": "headers",
@@ -17183,6 +17531,20 @@
                         },
                         {
                             "name": "isUserVerified",
+                            "type": "boolean"
+                        }
+                    ]
+                },
+                {
+                    "name": "setAutomaticPresenceSimulation",
+                    "description": "Sets whether tests of user presence will succeed immediately (if true) or fail to resolve (if false) for an authenticator.\nThe default is true.",
+                    "parameters": [
+                        {
+                            "name": "authenticatorId",
+                            "$ref": "AuthenticatorId"
+                        },
+                        {
+                            "name": "enabled",
                             "type": "boolean"
                         }
                     ]
@@ -18579,6 +18941,13 @@
                             "experimental": true,
                             "optional": true,
                             "$ref": "Debugger.ScriptLanguage"
+                        },
+                        {
+                            "name": "embedderName",
+                            "description": "The name the embedder supplied for this script.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "string"
                         }
                     ]
                 },
@@ -18690,6 +19059,13 @@
                             "experimental": true,
                             "optional": true,
                             "$ref": "Debugger.DebugSymbols"
+                        },
+                        {
+                            "name": "embedderName",
+                            "description": "The name the embedder supplied for this script.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "string"
                         }
                     ]
                 }

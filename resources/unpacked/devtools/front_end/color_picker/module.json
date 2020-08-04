@@ -3,7 +3,6 @@
     "ui",
     "sdk"
   ],
-  "scripts": [],
   "modules": [
     "color_picker.js",
     "color_picker-legacy.js",
@@ -14,5 +13,6 @@
   ],
   "resources": [
     "spectrum.css"
-  ]
+  ],
+  "skip_rollup": true
 }

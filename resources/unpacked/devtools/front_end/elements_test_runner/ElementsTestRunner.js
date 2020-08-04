@@ -364,8 +364,8 @@ ElementsTestRunner.selectNodeAndWaitForStylesWithComputed = function(idValue, ca
   callback = TestRunner.safeWrap(callback);
   ElementsTestRunner.selectNodeAndWaitForStyles(idValue, onSidebarRendered);
 
-  function onSidebarRendered(node) {
-    ElementsTestRunner.computedStyleWidget().doUpdate().then(callback.bind(null, node));
+  async function onSidebarRendered(node) {
+    await ElementsTestRunner.computedStyleWidget().doUpdate().then(callback.bind(null, node));
   }
 };
 
@@ -1205,6 +1205,18 @@ ElementsTestRunner.dumpInspectorHighlightJSON = function(idValue, callback) {
     TestRunner.addResult(idValue + JSON.stringify(result, null, 2));
     callback();
   }
+};
+
+ElementsTestRunner.dumpInspectorGridHighlightsJSON = async function(idValues, callback) {
+  const nodeIds = [];
+  for (const id of idValues) {
+    const node = await ElementsTestRunner.nodeWithIdPromise(id);
+    nodeIds.push(node.id);
+  }
+
+  const result = await TestRunner.OverlayAgent.getGridHighlightObjectsForTest(nodeIds);
+  TestRunner.addResult(JSON.stringify(result, null, 2));
+  callback();
 };
 
 ElementsTestRunner.dumpInspectorDistanceJSON = function(idValue, callback) {

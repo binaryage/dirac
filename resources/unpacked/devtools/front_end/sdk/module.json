@@ -227,7 +227,7 @@
       "experiment": "cssGridFeatures",
       "settingName": "showGridLines",
       "settingType": "enum",
-      "defaultValue": "dashed",
+      "defaultValue": "extended-dashed",
       "options": [
         {
           "title": "Do not show grid lines",
@@ -259,31 +259,36 @@
     {
       "type": "setting",
       "category": "Grid",
-      "title": "Grid Line Numbers",
+      "title": "Grid Line Labels",
       "experiment": "cssGridFeatures",
       "settingName": "showGridLineNumbers",
       "settingType": "enum",
       "defaultValue": "both",
       "options": [
         {
-          "title": "Do not show grid line numbers",
+          "title": "Do not show labels for grid line",
           "text": "None",
           "value": "none"
         },
         {
           "title": "Show positive grid line numbers",
-          "text": "Positive",
+          "text": "Positive numbers",
           "value": "positive"
         },
         {
           "title": "Show negative grid line numbers",
-          "text": "Negative",
+          "text": "Negative numbers",
           "value": "negative"
         },
         {
-          "title": "Show both positive and negative grid line numbers",
-          "text": "Both",
+          "title": "Show all grid line numbers",
+          "text": "All numbers",
           "value": "both"
+        },
+        {
+          "title": "Show grid line names",
+          "text": "Names",
+          "value": "names"
         }
       ]
     },
@@ -317,6 +322,44 @@
           "value": "both"
         }
       ]
+    },
+    {
+      "type": "setting",
+      "category": "Grid",
+      "title": "Grid Areas",
+      "experiment": "cssGridFeatures",
+      "settingName": "showGridAreas",
+      "settingType": "boolean",
+      "options": [
+        {
+          "value": true,
+          "title": "Show grid named areas"
+        },
+        {
+          "value": false,
+          "title": "Do not show grid named areas"
+        }
+      ],
+      "defaultValue": false
+    },
+    {
+      "type": "setting",
+      "category": "Grid",
+      "title": "Grid Track Sizes",
+      "experiment": "cssGridFeatures",
+      "settingName": "showGridTrackSizes",
+      "settingType": "boolean",
+      "options": [
+        {
+          "value": true,
+          "title": "Show grid track sizes"
+        },
+        {
+          "value": false,
+          "title": "Do not show grid track sizes"
+        }
+      ],
+      "defaultValue": false
     },
     {
       "type": "setting",
@@ -522,6 +565,26 @@
     },
     {
       "type": "setting",
+      "settingName": "emulatedCSSMediaFeaturePrefersReducedData",
+      "settingType": "enum",
+      "storageType": "session",
+      "defaultValue": "",
+      "options": [
+        {
+          "title": "Do not emulate CSS prefers-reduced-data",
+          "text": "No emulation",
+          "value": ""
+        },
+        {
+          "title": "Emulate CSS prefers-reduced-data: reduce",
+          "text": "prefers-reduced-data: reduce",
+          "value": "reduce"
+        }
+      ],
+      "title": "Emulate CSS media feature prefers-reduced-data"
+    },
+    {
+      "type": "setting",
       "category": "Rendering",
       "settingName": "emulatedVisionDeficiency",
       "settingType": "enum",
@@ -628,7 +691,7 @@
       ]
     }
   ],
-  "scripts": [],
+  "skip_rollup": true,
   "modules": [
     "../generated/SupportedCSSProperties.js",
     "sdk.js",
@@ -646,15 +709,18 @@
     "WebAuthnModel.js",
     "SameSiteCookieIssue.js",
     "MixedContentIssue.js",
+    "ContentSecurityPolicyIssue.js",
     "CrossOriginEmbedderPolicyIssue.js",
     "ServerTiming.js",
     "CPUProfileDataModel.js",
     "CPUProfilerModel.js",
+    "CSSFontFace.js",
     "CSSMatchedStyles.js",
     "CSSMedia.js",
     "CSSMetadata.js",
     "CSSModel.js",
     "CSSProperty.js",
+    "CSSPropertyParser.js",
     "CSSRule.js",
     "CSSStyleDeclaration.js",
     "CSSStyleSheetHeader.js",
@@ -663,6 +729,7 @@
     "DOMModel.js",
     "DebuggerModel.js",
     "EmulationModel.js",
+    "FrameManager.js",
     "HARLog.js",
     "HeavyAdIssue.js",
     "LayerTreeBase.js",
@@ -690,7 +757,8 @@
     "PerformanceMetricsModel.js",
     "FilmStripModel.js",
     "ConsoleModel.js",
-    "wasm_source_map/pkg/wasm_source_map.js"
+    "wasm_source_map/pkg/wasm_source_map.js",
+    "PageResourceLoader.js"
   ],
   "skip_compilation": [
     "wasm_source_map/pkg/wasm_source_map.js"

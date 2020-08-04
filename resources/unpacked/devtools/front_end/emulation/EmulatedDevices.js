@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
@@ -234,8 +237,8 @@ export class EmulatedDevice {
 
       result.vertical = parseOrientation(parseValue(json['screen'], 'vertical', 'object'));
       result.horizontal = parseOrientation(parseValue(json['screen'], 'horizontal', 'object'));
+      result.isDualScreen = /** @type {boolean} */ (parseValue(json, 'dual-screen', 'boolean', false));
 
-      result.isDualScreen = /** @type {boolean} */ (parseValue(json, 'dual-screen', 'boolean', null));
       if (result.isDualScreen) {
         result.verticalSpanned = parseOrientation(parseValue(json['screen'], 'vertical-spanned', 'object', null));
         result.horizontalSpanned = parseOrientation(parseValue(json['screen'], 'horizontal-spanned', 'object', null));

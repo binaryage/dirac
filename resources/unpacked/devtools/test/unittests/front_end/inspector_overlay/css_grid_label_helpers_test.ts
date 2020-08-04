@@ -4,11 +4,10 @@
 
 const {assert} = chai;
 
-import {assertNotNull} from '../helpers/DOMHelpers.js';
-import {drawGridNumbersAndAssertLabels, getGridLabelContainer, initFrameForGridLabels} from '../helpers/InspectorOverlayHelpers.js';
-import {drawGridNumbers, _normalizeOffsetData} from '../../../../front_end/inspector_overlay/css_grid_label_helpers.js';
+import {drawGridAreaNamesAndAssertLabels, drawGridLineNumbersAndAssertLabels, drawMultipleGridLineNumbersAndAssertLabels, getGridLineNumberLabelContainer, getGridTrackSizesLabelContainer, initFrameForGridLabels, initFrameForMultipleGridLabels} from '../helpers/InspectorOverlayHelpers.js';
+import {drawGridLineNumbers, drawGridTrackSizes, _normalizePositionData} from '../../../../front_end/inspector_overlay/css_grid_label_helpers.js';
 
-describe('drawGridNumbers label creation', () => {
+describe('drawGridLineNumbers label creation', () => {
   beforeEach(initFrameForGridLabels);
 
   const bounds = {
@@ -25,7 +24,7 @@ describe('drawGridNumbers label creation', () => {
         gridHighlightConfig: {
           showPositiveLineNumbers: true,
         },
-        positiveRowLineNumberOffsets: [0, 50, 100, 150],
+        positiveRowLineNumberPositions: [{x: 0, y: 0}, {x: 0, y: 50}, {x: 0, y: 100}, {x: 0, y: 150}],
       },
       bounds,
       expectedLabels: [1, 2, 3, 4],
@@ -36,7 +35,7 @@ describe('drawGridNumbers label creation', () => {
         gridHighlightConfig: {
           showNegativeLineNumbers: true,
         },
-        negativeRowLineNumberOffsets: [0, 50, 100, 150],
+        negativeRowLineNumberPositions: [{x: 0, y: 0}, {x: 0, y: 50}, {x: 0, y: 100}, {x: 0, y: 150}],
       },
       bounds,
       expectedLabels: [-4, -3, -2, -1],
@@ -47,7 +46,7 @@ describe('drawGridNumbers label creation', () => {
         gridHighlightConfig: {
           showPositiveLineNumbers: true,
         },
-        positiveColumnLineNumberOffsets: [0, 50, 100],
+        positiveColumnLineNumberPositions: [{x: 0, y: 0}, {x: 50, y: 0}, {x: 100, y: 0}],
       },
       bounds,
       expectedLabels: [1, 2, 3],
@@ -58,7 +57,7 @@ describe('drawGridNumbers label creation', () => {
         gridHighlightConfig: {
           showNegativeLineNumbers: true,
         },
-        negativeColumnLineNumberOffsets: [0, 50, 100],
+        negativeColumnLineNumberPositions: [{x: 0, y: 0}, {x: 50, y: 0}, {x: 100, y: 0}],
       },
       bounds,
       expectedLabels: [-3, -2, -1],
@@ -70,10 +69,10 @@ describe('drawGridNumbers label creation', () => {
           showPositiveLineNumbers: true,
           showNegativeLineNumbers: true,
         },
-        positiveColumnLineNumberOffsets: [0, 50, 100],
-        positiveRowLineNumberOffsets: [0, 50, 100, 150],
-        negativeColumnLineNumberOffsets: [0, 50, 100],
-        negativeRowLineNumberOffsets: [0, 50, 100, 150],
+        positiveColumnLineNumberPositions: [{x: 0, y: 0}, {x: 50, y: 0}, {x: 100, y: 0}],
+        positiveRowLineNumberPositions: [{x: 0, y: 0}, {x: 0, y: 50}, {x: 0, y: 100}, {x: 0, y: 150}],
+        negativeColumnLineNumberPositions: [{x: 0, y: 0}, {x: 50, y: 0}, {x: 100, y: 0}],
+        negativeRowLineNumberPositions: [{x: 0, y: 0}, {x: 0, y: 50}, {x: 0, y: 100}, {x: 0, y: 150}],
       },
       bounds,
       expectedLabels: [1, 2, 3, 1, 2, 3, 4, -3, -2, -1, -4, -3, -2, -1],
@@ -82,10 +81,9 @@ describe('drawGridNumbers label creation', () => {
 
   for (const {description, config, bounds, expectedLabels} of TESTS) {
     it(description, () => {
-      drawGridNumbers(config, bounds);
-
-      const el = getGridLabelContainer();
-      assertNotNull(el);
+      const el = getGridLineNumberLabelContainer();
+      const data = _normalizePositionData(config, bounds);
+      drawGridLineNumbers(el, data);
 
       assert.strictEqual(el.children.length, expectedLabels.length, 'The right number of labels got created');
       assert.strictEqual(el.textContent, expectedLabels.join(''), 'The labels text is correct');
@@ -93,7 +91,7 @@ describe('drawGridNumbers label creation', () => {
   }
 });
 
-describe('drawGridNumbers label placement', () => {
+describe('drawGridLineNumbers label placement', () => {
   beforeEach(initFrameForGridLabels);
 
   const bounds = {
@@ -111,8 +109,8 @@ describe('drawGridNumbers label placement', () => {
           showPositiveLineNumbers: true,
           showNegativeLineNumbers: true,
         },
-        positiveRowLineNumberOffsets: [40, 80, 120, 160],
-        negativeRowLineNumberOffsets: [40, 80, 120, 160],
+        positiveRowLineNumberPositions: [{x: 100, y: 140}, {x: 100, y: 180}, {x: 100, y: 220}, {x: 100, y: 260}],
+        negativeRowLineNumberPositions: [{x: 300, y: 140}, {x: 300, y: 180}, {x: 300, y: 220}, {x: 300, y: 260}],
       },
       bounds,
       expectedLabels: [
@@ -127,8 +125,8 @@ describe('drawGridNumbers label placement', () => {
           showPositiveLineNumbers: true,
           showNegativeLineNumbers: true,
         },
-        positiveColumnLineNumberOffsets: [40, 80, 120, 160],
-        negativeColumnLineNumberOffsets: [40, 80, 120, 160],
+        positiveColumnLineNumberPositions: [{x: 140, y: 100}, {x: 180, y: 100}, {x: 220, y: 100}, {x: 260, y: 100}],
+        negativeColumnLineNumberPositions: [{x: 140, y: 300}, {x: 180, y: 300}, {x: 220, y: 300}, {x: 260, y: 300}],
       },
       bounds,
       expectedLabels: [
@@ -142,8 +140,8 @@ describe('drawGridNumbers label placement', () => {
         gridHighlightConfig: {
           showPositiveLineNumbers: true,
         },
-        positiveRowLineNumberOffsets: [0, 40],
-        positiveColumnLineNumberOffsets: [0, 40],
+        positiveRowLineNumberPositions: [{x: 100, y: 100}, {x: 100, y: 140}],
+        positiveColumnLineNumberPositions: [{x: 100, y: 100}, {x: 140, y: 100}],
       },
       bounds,
       expectedLabels: [
@@ -156,7 +154,7 @@ describe('drawGridNumbers label placement', () => {
       description: 'moves positive row labels inside the grid when they are too close to the edge',
       config: {
         gridHighlightConfig: {showPositiveLineNumbers: true},
-        positiveRowLineNumberOffsets: [20, 40],
+        positiveRowLineNumberPositions: [{x: 0, y: 20}, {x: 0, y: 40}],
       },
       bounds: {
         minX: 5,
@@ -172,7 +170,7 @@ describe('drawGridNumbers label placement', () => {
       description: 'moves negative row labels inside the grid when they are too close to the edge',
       config: {
         gridHighlightConfig: {showNegativeLineNumbers: true},
-        negativeRowLineNumberOffsets: [20, 40],
+        negativeRowLineNumberPositions: [{x: 995, y: 120}, {x: 995, y: 140}],
       },
       bounds: {
         minX: 5,
@@ -188,7 +186,7 @@ describe('drawGridNumbers label placement', () => {
       description: 'moves positive column labels inside the grid when they are too close to the edge',
       config: {
         gridHighlightConfig: {showPositiveLineNumbers: true},
-        positiveColumnLineNumberOffsets: [20, 40],
+        positiveColumnLineNumberPositions: [{x: 20, y: 0}, {x: 40, y: 0}],
       },
       bounds: {
         minX: 100,
@@ -204,7 +202,7 @@ describe('drawGridNumbers label placement', () => {
       description: 'moves negative column labels inside the grid when they are too close to the edge',
       config: {
         gridHighlightConfig: {showNegativeLineNumbers: true},
-        negativeColumnLineNumberOffsets: [20, 40],
+        negativeColumnLineNumberPositions: [{x: 20, y: 995}, {x: 40, y: 995}],
       },
       bounds: {
         minX: 100,
@@ -219,11 +217,11 @@ describe('drawGridNumbers label placement', () => {
   ];
 
   for (const {description, config, bounds, expectedLabels} of TESTS) {
-    it(description, () => drawGridNumbersAndAssertLabels(config, bounds, expectedLabels));
+    it(description, () => drawGridLineNumbersAndAssertLabels(config, bounds, expectedLabels));
   }
 });
 
-describe('drawGridNumbers inner-grid label placement', () => {
+describe('drawGridLineNumbers inner-grid label placement', () => {
   beforeEach(initFrameForGridLabels);
 
   // Making a grid bounds object that's the size of the viewport so all labels flip inside the grid.
@@ -241,7 +239,7 @@ describe('drawGridNumbers inner-grid label placement', () => {
         gridHighlightConfig: {
           showPositiveLineNumbers: true,
         },
-        positiveRowLineNumberOffsets: [0, 500, 1000],
+        positiveRowLineNumberPositions: [{x: 0, y: 0}, {x: 0, y: 500}, {x: 0, y: 1000}],
       },
       bounds,
       expectedLabels: [
@@ -256,7 +254,7 @@ describe('drawGridNumbers inner-grid label placement', () => {
         gridHighlightConfig: {
           showNegativeLineNumbers: true,
         },
-        negativeRowLineNumberOffsets: [0, 500, 1000],
+        negativeRowLineNumberPositions: [{x: 1000, y: 0}, {x: 1000, y: 500}, {x: 1000, y: 1000}],
       },
       bounds,
       expectedLabels: [
@@ -271,7 +269,7 @@ describe('drawGridNumbers inner-grid label placement', () => {
         gridHighlightConfig: {
           showPositiveLineNumbers: true,
         },
-        positiveColumnLineNumberOffsets: [0, 500, 1000],
+        positiveColumnLineNumberPositions: [{x: 0, y: 0}, {x: 500, y: 0}, {x: 1000, y: 0}],
       },
       bounds,
       expectedLabels: [
@@ -286,7 +284,7 @@ describe('drawGridNumbers inner-grid label placement', () => {
         gridHighlightConfig: {
           showNegativeLineNumbers: true,
         },
-        negativeColumnLineNumberOffsets: [0, 500, 1000],
+        negativeColumnLineNumberPositions: [{x: 0, y: 1000}, {x: 500, y: 1000}, {x: 1000, y: 1000}],
       },
       bounds,
       expectedLabels: [
@@ -298,24 +296,28 @@ describe('drawGridNumbers inner-grid label placement', () => {
   ];
 
   for (const {description, config, bounds, expectedLabels} of TESTS) {
-    it(description, () => drawGridNumbersAndAssertLabels(config, bounds, expectedLabels));
+    it(description, () => drawGridLineNumbersAndAssertLabels(config, bounds, expectedLabels));
   }
 });
 
-describe('drawGridNumbers label skipping logic', () => {
+describe('drawGridLineNumbers label skipping logic', () => {
   beforeEach(initFrameForGridLabels);
 
   it('skips labels on all sides when they are too close to each other', () => {
-    drawGridNumbersAndAssertLabels(
+    drawGridLineNumbersAndAssertLabels(
         {
           gridHighlightConfig: {
             showPositiveLineNumbers: true,
             showNegativeLineNumbers: true,
           },
-          positiveRowLineNumberOffsets: [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200],
-          negativeRowLineNumberOffsets: [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200],
-          positiveColumnLineNumberOffsets: [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200],
-          negativeColumnLineNumberOffsets: [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200],
+          positiveRowLineNumberPositions:
+              [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200].map(y => ({x: 100, y: y + 100})),
+          negativeRowLineNumberPositions:
+              [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200].map(y => ({x: 300, y: y + 100})),
+          positiveColumnLineNumberPositions:
+              [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200].map(x => ({y: 100, x: x + 100})),
+          negativeColumnLineNumberPositions:
+              [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200].map(x => ({y: 300, x: x + 100})),
         },
         {
           minX: 100,
@@ -344,9 +346,9 @@ describe('drawGridNumbers label skipping logic', () => {
   });
 });
 
-describe('_normalizeOffsetData', () => {
+describe('_normalizePositionData', () => {
   it('returns an object with default values', () => {
-    const data = _normalizeOffsetData({}, {minX: 0, maxX: 100, minY: 0, maxY: 100});
+    const data = _normalizePositionData({gridHighlightConfig: {}}, {minX: 0, maxX: 100, minY: 0, maxY: 100});
     assert.deepStrictEqual(data, {
       bounds: {
         minX: 0,
@@ -358,24 +360,24 @@ describe('_normalizeOffsetData', () => {
       },
       rows: {
         positive: {
-          offsets: [],
+          positions: [],
           hasFirst: false,
           hasLast: false,
         },
         negative: {
-          offsets: [],
+          positions: [],
           hasFirst: false,
           hasLast: false,
         },
       },
       columns: {
         positive: {
-          offsets: [],
+          positions: [],
           hasFirst: false,
           hasLast: false,
         },
         negative: {
-          offsets: [],
+          positions: [],
           hasFirst: false,
           hasLast: false,
         },
@@ -383,29 +385,31 @@ describe('_normalizeOffsetData', () => {
     });
   });
 
-  it('rounds offsets', () => {
-    const data = _normalizeOffsetData(
+  it('rounds positions', () => {
+    const data = _normalizePositionData(
         {
-          positiveRowLineNumberOffsets: [1.54, 5.89, 10, 123.7564353278],
-          negativeRowLineNumberOffsets: [3, 6.3265, 28.463532, 50],
-          positiveColumnLineNumberOffsets: [0.654535365378, 1.1323256, 1.896057],
-          negativeColumnLineNumberOffsets: [2, 6, 10.564543],
+          positiveRowLineNumberPositions: [{y: 1.54, x: 0}, {y: 5.89, x: 0}, {y: 10, x: 0}, {y: 123.7564353278, x: 0}],
+          negativeRowLineNumberPositions: [{y: 3, x: 0}, {y: 6.3265, x: 0}, {y: 28.463532, x: 0}, {y: 50, x: 0}],
+          positiveColumnLineNumberPositions: [{x: 0.654535365378, y: 0}, {x: 1.1323256, y: 0}, {x: 1.896057, y: 0}],
+          negativeColumnLineNumberPositions: [{x: 2, y: 0}, {x: 6, y: 0}, {x: 10.564543, y: 0}],
+          gridHighlightConfig: {},
         },
         {minX: 0, maxX: 100, minY: 0, maxY: 100});
 
-    assert.deepStrictEqual(data.rows.positive.offsets, [2, 6, 10, 124]);
-    assert.deepStrictEqual(data.rows.negative.offsets, [3, 6, 28, 50]);
-    assert.deepStrictEqual(data.columns.positive.offsets, [1, 1, 2]);
-    assert.deepStrictEqual(data.columns.negative.offsets, [2, 6, 11]);
+    assert.deepStrictEqual(data.rows.positive.positions.map(p => p.y), [2, 6, 10, 124]);
+    assert.deepStrictEqual(data.rows.negative.positions.map(p => p.y), [3, 6, 28, 50]);
+    assert.deepStrictEqual(data.columns.positive.positions.map(p => p.x), [1, 1, 2]);
+    assert.deepStrictEqual(data.columns.negative.positions.map(p => p.x), [2, 6, 11]);
   });
 
-  it('detects first and last offsets', () => {
-    const data = _normalizeOffsetData(
+  it('detects first and last positions', () => {
+    const data = _normalizePositionData(
         {
-          positiveRowLineNumberOffsets: [0, 10, 20],
-          negativeRowLineNumberOffsets: [10, 20, 30],
-          positiveColumnLineNumberOffsets: [10, 20],
-          negativeColumnLineNumberOffsets: [0, 30],
+          positiveRowLineNumberPositions: [{y: 0, x: 0}, {y: 10, x: 0}, {y: 20, x: 0}],
+          negativeRowLineNumberPositions: [{y: 10, x: 30}, {y: 20, x: 30}, {y: 30, x: 30}],
+          positiveColumnLineNumberPositions: [{x: 10, y: 0}, {x: 20, y: 0}],
+          negativeColumnLineNumberPositions: [{x: 0, y: 30}, {x: 30, y: 30}],
+          gridHighlightConfig: {},
         },
         {minX: 0, maxX: 30, minY: 0, maxY: 30});
 
@@ -418,4 +422,165 @@ describe('_normalizeOffsetData', () => {
     assert.isTrue(data.columns.negative.hasFirst);
     assert.isTrue(data.columns.negative.hasLast);
   });
+
+  it('prefers line names over line numbers when present', () => {
+    const data = _normalizePositionData(
+        {
+          gridHighlightConfig: {showLineNames: true},
+          positiveRowLineNumberPositions: [{x: 0, y: 10}, {x: 0, y: 20}, {x: 0, y: 30}],
+          positiveColumnLineNumberPositions: [{x: 10, y: 0}, {x: 20, y: 0}, {x: 30, y: 0}],
+          rowLineNameOffsets: [{name: 'foo', offset: 5}],
+          columnLineNameOffsets: [{name: 'bar', offset: 15}, {name: 'baz', offset: 17}],
+        },
+        {minX: 0, maxX: 30, minY: 0, maxY: 30});
+
+    assert.strictEqual(data.rows.negative.positions.length, 0);
+    assert.strictEqual(data.columns.negative.positions.length, 0);
+    assert.strictEqual(
+        data.rows.positive.positions.length, 1, 'There should be only one row offset since there is only one name');
+    assert.strictEqual(
+        data.columns.positive.positions.length, 2, 'There should be 2 column offsets since there are 2 names');
+  });
+
+  it('returns the correct line name structure', () => {
+    const data = _normalizePositionData(
+        {
+          gridHighlightConfig: {showLineNames: true},
+          rowLineNameOffsets: [
+            {name: 'foo', offset: 5},
+            {name: 'bar', offset: 5},
+            {name: 'baz', offset: 5},
+            {name: 'test', offset: 20},
+          ],
+          columnLineNameOffsets: [{name: 'edge-start', offset: 15}, {name: 'edge-end', offset: 17}],
+        },
+        {minX: 0, maxX: 30, minY: 0, maxY: 30});
+
+    assert.deepStrictEqual(data.rows.positive.positions.map(p => p.y), [5, 20]);
+    assert.deepStrictEqual(data.rows.positive.names, [['foo', 'bar', 'baz'], ['test']]);
+    assert.deepStrictEqual(data.columns.positive.positions.map(p => p.x), [15, 17]);
+    assert.deepStrictEqual(data.columns.positive.names, [['edge-start'], ['edge-end']]);
+  });
+});
+
+describe('drawGridAreaNames', () => {
+  beforeEach(initFrameForGridLabels);
+
+  const TESTS = [
+    {
+      description: 'does not create labels when not needed',
+      areaBounds: [],
+      expectedLabels: [],
+    },
+    {
+      description: 'creates the necessary number of area labels',
+      areaBounds: [
+        {
+          name: 'foo',
+          bounds: {minX: 0, maxX: 0, minY: 0, maxY: 0},
+        },
+        {
+          name: 'bar',
+          bounds: {minX: 0, maxX: 0, minY: 0, maxY: 0},
+        },
+      ],
+      expectedLabels: [
+        {textContent: 'foo'},
+        {textContent: 'bar'},
+      ],
+    },
+    {
+      description: 'positions area labels correctly',
+      areaBounds: [
+        {
+          name: 'foo',
+          bounds: {minX: 125, maxX: 376, minY: 22, maxY: 428},
+        },
+        {
+          name: 'bar',
+          bounds: {minX: 678, maxX: 1092, minY: 435, maxY: 450},
+        },
+      ],
+      expectedLabels: [
+        {textContent: 'foo', top: '22px', left: '125px'},
+        {textContent: 'bar', top: '435px', left: '678px'},
+      ],
+    },
+  ];
+
+  for (const {description, areaBounds, expectedLabels} of TESTS) {
+    it(description, () => drawGridAreaNamesAndAssertLabels(areaBounds, expectedLabels));
+  }
+});
+
+describe('drawMultipleGridLabels', () => {
+  it('can set labels on multiple grid nodes', () => {
+    initFrameForMultipleGridLabels(2);
+    const bounds = {
+      minX: 100,
+      maxX: 500,
+      minY: 100,
+      maxY: 500,
+    };
+    const configs = [
+      {
+        layerId: 1,
+        gridHighlightConfig: {
+          showPositiveLineNumbers: true,
+        },
+        positiveRowLineNumberPositions: [{x: 100, y: 100}, {x: 100, y: 150}, {x: 100, y: 200}],
+      },
+      {
+        layerId: 2,
+        gridHighlightConfig: {
+          showPositiveLineNumbers: true,
+        },
+        positiveRowLineNumberPositions: [{x: 100, y: 100}, {x: 100, y: 150}, {x: 100, y: 200}],
+      },
+    ];
+    const expectedLayers = [
+      {
+        layerId: 1,
+        expectedLabels: [
+          {className: 'right-mid', count: 3},
+        ],
+      },
+      {
+        layerId: 2,
+        expectedLabels: [
+          {className: 'right-mid', count: 3},
+        ],
+      },
+    ];
+    drawMultipleGridLineNumbersAndAssertLabels(configs, bounds, expectedLayers);
+  });
+});
+
+describe('drawGridTrackSizes label creation', () => {
+  beforeEach(initFrameForGridLabels);
+
+  const TESTS = [
+    {
+      description: 'can display track sizes',
+      config: {
+        gridHighlightConfig: {
+          showTrackSizes: true,
+        },
+        columnTrackSizes: [{computedSize: 10, x: 10, y: 0}, {computedSize: 20, x: 20, y: 0}],
+        rowTrackSizes: [{computedSize: 10, x: 0, y: 10}, {computedSize: 20, x: 0, y: 20}],
+        rotationAngle: 0,
+      },
+      expectedLabels: ['10px', '20px', '10px', '20px'],
+    },
+  ];
+
+  for (const {description, config, expectedLabels} of TESTS) {
+    it(description, () => {
+      const el = getGridTrackSizesLabelContainer();
+      drawGridTrackSizes(el, config.rotationAngle, config.rowTrackSizes, 'row');
+      drawGridTrackSizes(el, config.rotationAngle, config.columnTrackSizes, 'column');
+      assert.strictEqual(el.children.length, expectedLabels.length, 'The right number of labels got created');
+      assert.strictEqual(el.textContent, expectedLabels.join(''), 'The labels text is correct');
+    });
+  }
 });

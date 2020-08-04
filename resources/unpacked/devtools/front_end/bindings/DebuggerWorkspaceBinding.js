@@ -1,6 +1,8 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as SDK from '../sdk/sdk.js';
@@ -10,7 +12,6 @@ import {BlackboxManager} from './BlackboxManager.js';
 import {CompilerScriptMapping} from './CompilerScriptMapping.js';
 import {DebuggerLanguagePluginManager} from './DebuggerLanguagePlugins.js';
 import {DefaultScriptMapping} from './DefaultScriptMapping.js';
-import {CXXDWARFLanguagePlugin} from './language_plugins/CXXDWARFLanguagePlugin.js';
 import {LiveLocation, LiveLocationPool, LiveLocationWithPool} from './LiveLocation.js';  // eslint-disable-line no-unused-vars
 import {ResourceMapping} from './ResourceMapping.js';
 import {ResourceScriptFile, ResourceScriptMapping} from './ResourceScriptMapping.js';  // eslint-disable-line no-unused-vars
@@ -358,7 +359,6 @@ class ModelData {
 
     if (Root.Runtime.experiments.isEnabled('wasmDWARFDebugging')) {
       this._pluginManager = new DebuggerLanguagePluginManager(debuggerModel, workspace, debuggerWorkspaceBinding);
-      this._pluginManager.addPlugin(new CXXDWARFLanguagePlugin());
     }
 
 
@@ -487,7 +487,7 @@ class ModelData {
 /**
  * @unrestricted
  */
-class Location extends LiveLocationWithPool {
+export class Location extends LiveLocationWithPool {
   /**
    * @param {!SDK.Script.Script} script
    * @param {!SDK.DebuggerModel.Location} rawLocation

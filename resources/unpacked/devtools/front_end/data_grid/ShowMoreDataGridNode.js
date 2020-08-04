@@ -27,6 +27,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Common from '../common/common.js';
 
@@ -50,16 +52,19 @@ export class ShowMoreDataGridNode extends DataGridNode {
     this._chunkSize = chunkSize;
 
     this.showNext = createElement('button');
-    this.showNext.setAttribute('type', 'button');
+    this.showNext.classList.add('text-button');
+    this.showNext.type = 'button';
     this.showNext.addEventListener('click', this._showNextChunk.bind(this), false);
     this.showNext.textContent = Common.UIString.UIString('Show %d before', this._chunkSize);
 
     this.showAll = createElement('button');
-    this.showAll.setAttribute('type', 'button');
+    this.showAll.classList.add('text-button');
+    this.showAll.type = 'button';
     this.showAll.addEventListener('click', this._showAll.bind(this), false);
 
     this.showLast = createElement('button');
-    this.showLast.setAttribute('type', 'button');
+    this.showLast.classList.add('text-button');
+    this.showLast.type = 'button';
     this.showLast.addEventListener('click', this._showLastChunk.bind(this), false);
     this.showLast.textContent = Common.UIString.UIString('Show %d after', this._chunkSize);
 
@@ -103,7 +108,7 @@ export class ShowMoreDataGridNode extends DataGridNode {
   /**
    * @override
    * @param {string} columnIdentifier
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnIdentifier) {
     const cell = this.createTD(columnIdentifier);

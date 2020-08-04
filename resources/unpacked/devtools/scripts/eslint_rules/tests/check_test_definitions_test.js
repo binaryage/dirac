@@ -31,6 +31,27 @@ ruleTester.run('check_e2e_tests', rule, {
       `,
       filename: 'test/e2e/folder/file.ts',
     },
+    {
+      code: `import {describe, it} from 'mocha';
+
+      describe('e2e-test', async () => {
+        // Explaining comment
+        it.skip(\`[crbug.com/123456] normal test \${withVariable}\`, async () => {
+        });
+      });
+      `,
+      filename: 'test/e2e/folder/file.ts',
+    },
+    {
+      code: `import {describe, it} from 'mocha';
+
+      // Explaining comment
+      it.skip = function (name, callback) {
+        callback(name);
+      };
+      `,
+      filename: 'test/e2e/folder/file.ts',
+    }
   ],
 
   invalid: [
@@ -56,6 +77,18 @@ ruleTester.run('check_e2e_tests', rule, {
       `,
       filename: 'test/e2e/folder/file.ts',
       errors: [{message: rule.meta.messages.comment}],
+    },
+    {
+      code: `import {describe, it} from 'mocha';
+
+      describe('e2e-test', async () => {
+        // Explaining comment
+        it.skip(\`normal test \${withVariable}\`, async () => {
+        });
+      });
+      `,
+      filename: 'test/e2e/folder/file.ts',
+      errors: [{message: rule.meta.messages.description}],
     },
   ]
 });

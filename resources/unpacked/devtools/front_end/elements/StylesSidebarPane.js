@@ -36,12 +36,23 @@ import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 
+import {ComputedStyleModel} from './ComputedStyleModel.js';
 import {linkifyDeferredNodeReference} from './DOMLinkifier.js';
 import {ElementsSidebarPane} from './ElementsSidebarPane.js';
 import {ImagePreviewPopover} from './ImagePreviewPopover.js';
 import {StylePropertyHighlighter} from './StylePropertyHighlighter.js';
 import {StylePropertyTreeElement} from './StylePropertyTreeElement.js';
 import {Context} from './StylePropertyTreeElement.js';  // eslint-disable-line no-unused-vars
+
+// Highlightable properties are those that can be hovered in the sidebar to trigger a specific
+// highlighting mode on the current element.
+const HIGHLIGHTABLE_PROPERTIES = [
+  {property: 'padding', mode: 'padding'}, {property: 'border', mode: 'border'}, {property: 'margin', mode: 'margin'},
+  {property: 'grid-gap', mode: 'gap'}, {property: 'gap', mode: 'gap'},
+  {property: 'grid-column-gap', mode: 'column-gap'}, {property: 'grid-row-gap', mode: 'row-gap'},
+  {property: 'column-gap', mode: 'column-gap'}, {property: 'row-gap', mode: 'row-gap'},
+  {property: 'grid-template-areas', mode: 'grid-areas'}
+];
 
 export class StylesSidebarPane extends ElementsSidebarPane {
   constructor() {
@@ -61,6 +72,7 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     /** @type {?UI.Toolbar.ToolbarToggle} */
     this._pendingWidgetToggle = null;
     this._toolbarPaneElement = this._createStylesSidebarToolbar();
+    this._computedStyleModel = new ComputedStyleModel();
 
     this._noMatchesElement = this.contentElement.createChild('div', 'gray-info-message hidden');
     this._noMatchesElement.textContent = ls`No matching selector or style`;
@@ -80,6 +92,7 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     /** @type {?RegExp} */
     this._filterRegex = null;
     this._isActivePropertyHighlighted = false;
+    this._initialUpdateCompleted = false;
 
     this.contentElement.classList.add('styles-pane');
 
@@ -118,17 +131,22 @@ export class StylesSidebarPane extends ElementsSidebarPane {
 
   /**
    * @param {!SDK.CSSProperty.CSSProperty} property
+   * @param {?string} title
    * @return {!Element}
    */
-  static createExclamationMark(property) {
+  static createExclamationMark(property, title) {
     const exclamationElement = createElement('span', 'dt-icon-label');
     exclamationElement.className = 'exclamation-mark';
     if (!StylesSidebarPane.ignoreErrorsForProperty(property)) {
       exclamationElement.type = 'smallicon-warning';
     }
-    exclamationElement.title = SDK.CSSMetadata.cssMetadata().isCSSPropertyName(property.name) ?
-        Common.UIString.UIString('Invalid property value') :
-        Common.UIString.UIString('Unknown property name');
+    if (title) {
+      exclamationElement.title = title;
+    } else {
+      exclamationElement.title = SDK.CSSMetadata.cssMetadata().isCSSPropertyName(property.name) ?
+          Common.UIString.UIString('Invalid property value') :
+          Common.UIString.UIString('Unknown property name');
+    }
     return exclamationElement;
   }
 
@@ -386,8 +404,26 @@ export class StylesSidebarPane extends ElementsSidebarPane {
    * @override
    * @return {!Promise.<?>}
    */
-  doUpdate() {
-    return this._fetchMatchedCascade().then(this._innerRebuildUpdate.bind(this));
+  async doUpdate() {
+    if (!this._initialUpdateCompleted) {
+      setTimeout(() => {
+        if (!this._initialUpdateCompleted) {
+          // the spinner will get automatically removed when _innerRebuildUpdate is called
+          this._sectionsContainer.createChild('span', 'spinner');
+        }
+      }, 200 /* only spin for loading time > 200ms to avoid unpleasant render flashes */);
+    }
+
+    const matchedStyles = await this._fetchMatchedCascade();
+    await this._innerRebuildUpdate(matchedStyles);
+    if (!this._initialUpdateCompleted) {
+      this._initialUpdateCompleted = true;
+      this.dispatchEventToListeners(Events.InitialUpdateCompleted);
+    }
+  }
+
+  initialUpdateCompleted() {
+    return this._initialUpdateCompleted;
   }
 
   /**
@@ -467,8 +503,8 @@ export class StylesSidebarPane extends ElementsSidebarPane {
 
     const rule = treeElement.property.ownerStyle.parentRule;
     const selectorList = (rule instanceof SDK.CSSRule.CSSStyleRule) ? rule.selectorText() : undefined;
-    for (const mode of ['padding', 'border', 'margin']) {
-      if (!treeElement.name.startsWith(mode)) {
+    for (const {property, mode} of HIGHLIGHTABLE_PROPERTIES) {
+      if (!treeElement.name.startsWith(property)) {
         continue;
       }
       this.node().domModel().overlayModel().highlightInOverlay(
@@ -879,6 +915,11 @@ export class StylesSidebarPane extends ElementsSidebarPane {
   }
 }
 
+/** @enum {symbol} */
+export const Events = {
+  InitialUpdateCompleted: Symbol('InitialUpdateCompleted'),
+};
+
 export const _maxLinkLength = 23;
 
 export class SectionBlock {
@@ -947,7 +988,7 @@ export class SectionBlock {
   }
 }
 
-class IdleCallbackManager {
+export class IdleCallbackManager {
   constructor() {
     this._discarded = false;
     /** @type {!Array<!Promise<void>>} */
@@ -960,8 +1001,9 @@ class IdleCallbackManager {
 
   /**
    * @param {function():void} fn
+   * @param {number} timeout
    */
-  schedule(fn) {
+  schedule(fn, timeout = 100) {
     if (this._discarded) {
       return;
     }
@@ -979,7 +1021,7 @@ class IdleCallbackManager {
           return resolve();
         }
         run();
-      }, {timeout: 100});
+      }, {timeout});
     }));
   }
 
@@ -2305,6 +2347,15 @@ export class KeyframePropertiesSection extends StylePropertiesSection {
   }
 }
 
+/**
+ * @param {string} familyName
+ * @return {string}
+ * @suppress {missingProperties} Closure doesn't know String.p.replaceAll exists.
+ */
+export function quoteFamilyName(familyName) {
+  return `'${familyName.replaceAll('\'', '\\\'')}'`;
+}
+
 export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
   /**
    * @param {!StylePropertyTreeElement} treeElement
@@ -2314,17 +2365,22 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
     // Use the same callback both for applyItemCallback and acceptItemCallback.
     super();
     this.initialize(this._buildPropertyCompletions.bind(this), UI.UIUtils.StyleValueDelimiters);
+    const cssMetadata = SDK.CSSMetadata.cssMetadata();
     this._isColorAware = SDK.CSSMetadata.cssMetadata().isColorAwareProperty(treeElement.property.name);
     /** @type {!Array<string>} */
     this._cssCompletions = [];
+    const node = treeElement.node();
     if (isEditingName) {
-      this._cssCompletions = SDK.CSSMetadata.cssMetadata().allProperties();
-      if (!treeElement.node().isSVGNode()) {
-        this._cssCompletions =
-            this._cssCompletions.filter(property => !SDK.CSSMetadata.cssMetadata().isSVGProperty(property));
+      this._cssCompletions = cssMetadata.allProperties();
+      if (node && !node.isSVGNode()) {
+        this._cssCompletions = this._cssCompletions.filter(property => !cssMetadata.isSVGProperty(property));
       }
     } else {
-      this._cssCompletions = SDK.CSSMetadata.cssMetadata().propertyValues(treeElement.nameElement.textContent);
+      this._cssCompletions = cssMetadata.propertyValues(treeElement.property.name);
+      if (node && cssMetadata.isFontFamilyProperty(treeElement.property.name)) {
+        const fontFamilies = node.domModel().cssModel().fontFaces().map(font => quoteFamilyName(font.getFontFamily()));
+        this._cssCompletions.unshift(...fontFamilies);
+      }
     }
 
     this._treeElement = treeElement;

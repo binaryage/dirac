@@ -146,7 +146,7 @@ export const generateClosureClass = (state: WalkerState): string[] => {
   const generatedClassName = generatedClassInterfaceName(customElementClass);
   // the line is used as a Closure typedoc so it is used
   output.push('// eslint-disable-next-line no-unused-vars');
-  output.push(`class ${generatedClassName} extends HTMLElement {`);
+  output.push(`export class ${generatedClassName} extends HTMLElement {`);
 
   state.publicMethods.forEach(method => {
     let methodName = '';
@@ -180,7 +180,12 @@ export const generateClosureClass = (state: WalkerState): string[] => {
     jsDocForFunc = jsDocForFunc.map(line => indent(line, 2));
 
     output.push(jsDocForFunc.join('\n'));
-    output.push(indent(`${methodName}(${argsForFunc}) {}`, 2));
+    /* We split the closing brace onto its own line as that's how Clang format
+     * does things - so doing it here means we save an extra change when the presubmit
+     * checks run Clang and reformat the braces.
+     */
+    output.push(indent(`${methodName}(${argsForFunc}) {`, 2));
+    output.push(indent('}', 2));
   });
 
   state.getters.forEach(getter => {
@@ -205,7 +210,8 @@ export const generateClosureClass = (state: WalkerState): string[] => {
     jsDocForFunc = jsDocForFunc.map(line => indent(line, 2));
 
     output.push(jsDocForFunc.join('\n'));
-    output.push(indent(`get ${getterName}() {}`, 2));
+    output.push(indent(`get ${getterName}() {`, 2));
+    output.push(indent('}', 2));
   });
 
   state.setters.forEach(setter => {
@@ -234,7 +240,8 @@ export const generateClosureClass = (state: WalkerState): string[] => {
     jsDocForFunc = jsDocForFunc.map(line => indent(line, 2));
     output.push(jsDocForFunc.join('\n'));
 
-    output.push(indent(`set ${setterName}(${setterParamName}) {}`, 2));
+    output.push(indent(`set ${setterName}(${setterParamName}) {`, 2));
+    output.push(indent('}', 2));
   });
 
   output.push('}');
@@ -242,7 +249,7 @@ export const generateClosureClass = (state: WalkerState): string[] => {
 };
 
 
-const generateInterfaceMembers = (members: ts.NodeArray<ts.TypeElement>): string[] => {
+const generateInterfaceMembers = (members: ts.NodeArray<ts.TypeElement|ts.TypeNode>): string[] => {
   const output: string[] = [];
 
   members.forEach(member => {
@@ -271,28 +278,135 @@ const generateInterfaceMembers = (members: ts.NodeArray<ts.TypeElement>): string
   return output;
 };
 
+/**
+ * Takes a type reference node, looks up the state of found interface for it,
+ * and returns its members.
+ */
+const membersForTypeReference = (foundInterfaces: WalkerState['foundInterfaces'],
+                                 typeReference: ts.TypeReferenceNode): ts.NodeArray<ts.TypeElement|ts.TypeNode> => {
+  if (!ts.isIdentifierOrPrivateIdentifier(typeReference.typeName)) {
+    throw new Error('Unexpected type reference without an identifier.');
+  }
+  const interfaceName = typeReference.typeName.escapedText.toString();
+
+  const interfaceOrTypeAlias = Array.from(foundInterfaces).find(dec => {
+    return dec.name.escapedText === interfaceName;
+  });
+
+  if (!interfaceOrTypeAlias) {
+    throw new Error(`Could not find interface or type alias: ${interfaceName}`);
+  }
+
+  if (ts.isInterfaceDeclaration(interfaceOrTypeAlias)) {
+    return interfaceOrTypeAlias.members;
+  }
+
+  if (ts.isTypeAliasDeclaration(interfaceOrTypeAlias) && ts.isUnionTypeNode(interfaceOrTypeAlias.type)) {
+    return interfaceOrTypeAlias.type.types;
+  }
+
+  if (ts.isTypeAliasDeclaration(interfaceOrTypeAlias) && ts.isTypeLiteralNode(interfaceOrTypeAlias.type)) {
+    return interfaceOrTypeAlias.type.members;
+  }
+
+  throw new Error(`Unexpected type reference: ${ts.SyntaxKind[interfaceOrTypeAlias.kind]}`);
+};
+
+const generateClosureForInterface =
+    (foundInterfaces: WalkerState['foundInterfaces'], interfaceName: string): string[] => {
+      const interfaceOrTypeAlias = Array.from(foundInterfaces).find(dec => {
+        return dec.name.escapedText === interfaceName;
+      });
+
+      if (!interfaceOrTypeAlias) {
+        throw new Error(`Could not find interface or type alias: ${interfaceName}`);
+      }
+
+      const interfaceBits: string[] = ['/**'];
+
+      if (ts.isInterfaceDeclaration(interfaceOrTypeAlias)) {
+        // e.g. interface X { ... }
+        interfaceBits.push('* @typedef {{');
+        interfaceBits.push(...generateInterfaceMembers(interfaceOrTypeAlias.members));
+        interfaceBits.push('* }}');
+        interfaceBits.push('*/');
+      } else if (ts.isTypeAliasDeclaration(interfaceOrTypeAlias) && ts.isUnionTypeNode(interfaceOrTypeAlias.type)) {
+        // e.g. type X = A|B, type Y = string|number, etc
+        const unionTypeConverted = interfaceOrTypeAlias.type.types.map(v => valueForTypeNode(v)).join('|');
+        interfaceBits.push(`* @typedef {{${unionTypeConverted}}}`);
+        interfaceBits.push('*/');
+      } else if (ts.isTypeAliasDeclaration(interfaceOrTypeAlias) && ts.isTypeLiteralNode(interfaceOrTypeAlias.type)) {
+        // e.g. type X = { name: string; }
+        interfaceBits.push('* @typedef {{');
+        interfaceBits.push(...generateInterfaceMembers(interfaceOrTypeAlias.type.members));
+        interfaceBits.push('* }}');
+        interfaceBits.push('*/');
+      } else if (
+          ts.isTypeAliasDeclaration(interfaceOrTypeAlias) && ts.isIntersectionTypeNode(interfaceOrTypeAlias.type)) {
+        // e.g. type Foo = Bar & {...}
+        /* Closure types don't support being extended, so in this case we define the type Foo
+      * in Closure as all the members of Foo and all the members of Bar
+      */
+        interfaceBits.push('* @typedef {{');
+        const allMembers: (ts.TypeNode|ts.TypeElement)[] = [];
+        interfaceOrTypeAlias.type.types.forEach(typePart => {
+          if (ts.isTypeLiteralNode(typePart)) {
+            allMembers.push(...typePart.members);
+          } else if (ts.isTypeReferenceNode(typePart)) {
+            /** This means it's a reference to either an interface or a type alias
+         * So we need to find that object in the interfaces that the tree walker found
+         * And then parse out the members to Closure.
+         */
+            const members = membersForTypeReference(foundInterfaces, typePart);
+            allMembers.push(...members);
+          } else {
+            throw new Error(`Unsupported: a type extended something that the bridges generator doesn't understand: ${
+                ts.SyntaxKind[typePart.kind]}`);
+          }
+        });
+
+        /**
+          * Now we have all the members, we need to check if any override each other.
+          * e.g.:
+          * type Person = { name: string }
+          * type Jack = Person & { name: 'jack' }
+          *
+          * Should generate a typedef with one `name` key, set to the string "jack".
+          *
+          * Because we populate the array of allMembers from left to right, that
+          * means we can loop over them now and set the keys in the map as we
+          * go. Any that are overriden will have their entry in the map
+          * overriden accordingly
+          * and then we can take the final list of members and convert those to Closure syntax.
+          */
+        const membersToOutput = new Map<string, ts.TypeNode|ts.TypeElement>();
+        allMembers.forEach(member => {
+          if (!ts.isPropertySignature(member)) {
+            throw new Error(`Unexpected member without a property signature: ${ts.SyntaxKind[member.kind]}`);
+          }
+          const keyIdentifer = (member.name as ts.Identifier).escapedText.toString();
+          membersToOutput.set(keyIdentifer, member);
+        });
+        const finalMembers = ts.createNodeArray([...membersToOutput.values()]);
+        interfaceBits.push(...generateInterfaceMembers(finalMembers));
+
+        interfaceBits.push('* }}');
+        interfaceBits.push('*/');
+      } else {
+        throw new Error(`Unsupported type alias nested type: ${ts.SyntaxKind[interfaceOrTypeAlias.type.kind]}.`);
+      }
+
+      interfaceBits.push('// @ts-ignore we export this for Closure not TS');
+      interfaceBits.push(`export let ${interfaceName};`);
+
+      return interfaceBits;
+    };
+
 export const generateInterfaces = (state: WalkerState): Array<string[]> => {
   const finalCode: Array<string[]> = [];
 
   state.interfaceNamesToConvert.forEach(interfaceName => {
-    const interfaceDec = Array.from(state.foundInterfaces).find(dec => {
-      return dec.name.escapedText === interfaceName;
-    });
-
-    if (!interfaceDec) {
-      throw new Error(`Could not find interface: ${interfaceName}`);
-    }
-
-    const interfaceBits: string[] = [];
-    interfaceBits.push('/**');
-    interfaceBits.push('* @typedef {{');
-    interfaceBits.push(...generateInterfaceMembers(interfaceDec.members));
-    interfaceBits.push('* }}');
-    interfaceBits.push('*/');
-    interfaceBits.push('// @ts-ignore we export this for Closure not TS');
-    interfaceBits.push(`export let ${interfaceName};`);
-
-    finalCode.push(interfaceBits);
+    finalCode.push(generateClosureForInterface(state.foundInterfaces, interfaceName));
   });
 
   return finalCode;
@@ -305,28 +419,6 @@ export interface GeneratedCode {
 }
 
 export const generateClosureBridge = (state: WalkerState): GeneratedCode => {
-  /* To find the interfaces to convert we go through all the public
-   * methods that we found and look at any interfaces that they take in
-   * as arguments
-   */
-  const interfacesToConvert = new Set<string>();
-
-  state.publicMethods.forEach(method => {
-    method.parameters.forEach(param => {
-      if (!param.type) {
-        return;
-      }
-      // this case matches foo: Array<X> or foo: X[] and pulls out X as an interface we care about
-      if (ts.isArrayTypeNode(param.type) && ts.isTypeReferenceNode(param.type.elementType) &&
-          ts.isIdentifier(param.type.elementType.typeName)) {
-        interfacesToConvert.add(param.type.elementType.typeName.escapedText.toString());
-
-      } else if (ts.isTypeReferenceNode(param.type) && ts.isIdentifier(param.type.typeName)) {
-        interfacesToConvert.add(param.type.typeName.escapedText.toString());
-      }
-    });
-  });
-
   const result: GeneratedCode = {
     interfaces: generateInterfaces(state),
     closureClass: generateClosureClass(state),
