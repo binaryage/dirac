@@ -457,6 +457,22 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.CSS.GetStyleSheetTextResponse>;
 
     /**
+     * Starts tracking the given computed styles for updates. The specified array of properties
+     * replaces the one previously specified. Pass empty array to disable tracking.
+     * Use takeComputedStyleUpdates to retrieve the list of nodes that had properties modified.
+     * The changes to computed style properties are only tracked for nodes pushed to the front-end
+     * by the DOM agent. If no changes to the tracked properties occur after the node has been pushed
+     * to the front-end, no updates will be issued for the node.
+     */
+    invoke_trackComputedStyleUpdates(params: Protocol.CSS.TrackComputedStyleUpdatesRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Polls the next batch of computed style updates.
+     */
+    invoke_takeComputedStyleUpdates(): Promise<Protocol.CSS.TakeComputedStyleUpdatesResponse>;
+
+    /**
      * Find a rule with the given active property for the given node and set the new value for this
      * property
      */
@@ -690,6 +706,8 @@ declare namespace ProtocolProxyApi {
 
     /**
      * Returns the root DOM node (and optionally the subtree) to the caller.
+     * Deprecated, as it is not designed to work well with the rest of the DOM agent.
+     * Use DOMSnapshot.captureSnapshot instead.
      */
     invoke_getFlattenedDocument(params: Protocol.DOM.GetFlattenedDocumentRequest):
         Promise<Protocol.DOM.GetFlattenedDocumentResponse>;
@@ -3329,7 +3347,7 @@ declare namespace ProtocolProxyApi {
     /**
      * Steps over the statement.
      */
-    invoke_stepOver(): Promise<Protocol.ProtocolResponseWithError>;
+    invoke_stepOver(params: Protocol.Debugger.StepOverRequest): Promise<Protocol.ProtocolResponseWithError>;
   }
   export interface DebuggerDispatcher extends Protocol.Dispatcher {
     /**

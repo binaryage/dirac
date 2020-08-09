@@ -6,7 +6,9 @@ const {assert} = chai;
 
 import * as SDK from '../../../../front_end/sdk/sdk.js';
 import * as BrowserSDK from '../../../../front_end/browser_sdk/browser_sdk.js';
-import {StubIssue} from '../sdk/StubIssue.js';
+
+import {resetSettingsStorage} from '../common/SettingsHelper.js';
+import {StubIssue, ThirdPartyStubIssue} from '../sdk/StubIssue.js';
 import {MockIssuesModel} from '../sdk/MockIssuesModel.js';
 
 describe('IssuesManager', () => {
@@ -33,5 +35,40 @@ describe('IssuesManager', () => {
     // was instantiated.
     const issueCodes = Array.from(issuesManager.issues()).map(r => r.code());
     assert.deepStrictEqual(issueCodes, ['StubIssue2', 'StubIssue2']);
+  });
+
+  beforeEach(resetSettingsStorage);
+  afterEach(resetSettingsStorage);
+
+  it('filters third-party issues when the third-party issues setting is false, includes them otherwise', () => {
+    const issues = [
+      new ThirdPartyStubIssue('AllowedStubIssue1', false),
+      new ThirdPartyStubIssue('StubIssue2', true),
+      new ThirdPartyStubIssue('AllowedStubIssue3', false),
+      new ThirdPartyStubIssue('StubIssue4', true),
+    ];
+
+    SDK.Issue.getShowThirdPartyIssuesSetting().set(false);
+
+    const issuesManager = new BrowserSDK.IssuesManager.IssuesManager();
+    const mockModel = new MockIssuesModel([]);
+    issuesManager.modelAdded(mockModel as unknown as SDK.IssuesModel.IssuesModel);
+
+    const firedIssueAddedEventCodes: string[] = [];
+    issuesManager.addEventListener(
+        BrowserSDK.IssuesManager.Events.IssueAdded, event => firedIssueAddedEventCodes.push(event.data.issue.code()));
+
+    for (const issue of issues) {
+      mockModel.dispatchEventToListeners(SDK.IssuesModel.Events.IssueAdded, {issuesModel: mockModel, issue: issue});
+    }
+
+    let issueCodes = Array.from(issuesManager.issues()).map(i => i.code());
+    assert.deepStrictEqual(issueCodes, ['AllowedStubIssue1', 'AllowedStubIssue3']);
+    assert.deepStrictEqual(firedIssueAddedEventCodes, ['AllowedStubIssue1', 'AllowedStubIssue3']);
+
+    SDK.Issue.getShowThirdPartyIssuesSetting().set(true);
+
+    issueCodes = Array.from(issuesManager.issues()).map(i => i.code());
+    assert.deepStrictEqual(issueCodes, ['AllowedStubIssue1', 'StubIssue2', 'AllowedStubIssue3', 'StubIssue4']);
   });
 });

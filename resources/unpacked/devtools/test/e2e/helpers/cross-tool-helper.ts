@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$, click, closeAllCloseableTabs, goToResource, waitFor} from '../../shared/helper.js';
+import {click, closeAllCloseableTabs, goToResource, waitFor} from '../../shared/helper.js';
 
 export async function prepareForCrossToolScenario() {
   await navigateToCrossToolIntegrationSite();
@@ -15,7 +15,7 @@ export async function navigateToCrossToolIntegrationSite() {
 
 export async function clickOnContextMenuItemFromTab(tabId: string, menuItemSelector: string) {
   // Find the selected node, right click.
-  const selectedNode = await $(tabId);
+  const selectedNode = await waitFor(tabId);
   await click(selectedNode, {clickOptions: {button: 'right'}});
 
   // Click on the context menu option
@@ -26,11 +26,11 @@ const MAIN_PANEL_SELECTOR = 'div[class*="main-tabbed-pane"][slot*="insertion-poi
 const DRAWER_PANEL_SELECTOR = 'div[class*="drawer-tabbed-pane"][slot*="insertion-point-sidebar"]';
 
 export async function tabExistsInMainPanel(tabId: string) {
-  const mainPanel = await $(MAIN_PANEL_SELECTOR);
+  const mainPanel = await waitFor(MAIN_PANEL_SELECTOR);
   await waitFor(tabId, mainPanel);
 }
 
 export async function tabExistsInDrawer(tabId: string) {
-  const drawer = await $(DRAWER_PANEL_SELECTOR);
+  const drawer = await waitFor(DRAWER_PANEL_SELECTOR);
   await waitFor(tabId, drawer);
 }

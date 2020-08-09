@@ -879,6 +879,7 @@ declare namespace Protocol {
       contentSecurityPolicyViolationType: ContentSecurityPolicyViolationType;
       frameAncestor?: AffectedFrame;
       sourceCodeLocation?: SourceCodeLocation;
+      violatingNodeId?: DOM.BackendNodeId;
     }
 
     /**
@@ -2103,6 +2104,17 @@ declare namespace Protocol {
        * The stylesheet text.
        */
       text: string;
+    }
+
+    export interface TrackComputedStyleUpdatesRequest {
+      propertiesToTrack: CSSComputedStyleProperty[];
+    }
+
+    export interface TakeComputedStyleUpdatesResponse extends ProtocolResponseWithError {
+      /**
+       * The list of node Ids that have their tracked computed styles updated
+       */
+      nodeIds: DOM.NodeId[];
     }
 
     export interface SetEffectivePropertyValueForNodeRequest {
@@ -7957,17 +7969,33 @@ declare namespace Protocol {
        */
       gridBorderColor?: DOM.RGBA;
       /**
-       * The cell border color (default: transparent).
+       * The cell border color (default: transparent). Deprecated, please use rowLineColor and columnLineColor instead.
        */
       cellBorderColor?: DOM.RGBA;
+      /**
+       * The row line color (default: transparent).
+       */
+      rowLineColor?: DOM.RGBA;
+      /**
+       * The column line color (default: transparent).
+       */
+      columnLineColor?: DOM.RGBA;
       /**
        * Whether the grid border is dashed (default: false).
        */
       gridBorderDash?: boolean;
       /**
-       * Whether the cell border is dashed (default: false).
+       * Whether the cell border is dashed (default: false). Deprecated, please us rowLineDash and columnLineDash instead.
        */
       cellBorderDash?: boolean;
+      /**
+       * Whether row lines are dashed (default: false).
+       */
+      rowLineDash?: boolean;
+      /**
+       * Whether column lines are dashed (default: false).
+       */
+      columnLineDash?: boolean;
       /**
        * The row gap highlight fill color (default: transparent).
        */
@@ -8424,6 +8452,13 @@ declare namespace Protocol {
        * Frame document's URL fragment including the '#'.
        */
       urlFragment?: string;
+      /**
+       * Frame document's registered domain, taking the public suffixes list into account.
+       * Extracted from the Frame's url.
+       * Example URLs: http://www.google.com/file.html -> "google.com"
+       *               http://a.b.co.uk/file.html      -> "b.co.uk"
+       */
+      domainAndRegistry: string;
       /**
        * Frame document's security origin.
        */
@@ -10719,6 +10754,10 @@ declare namespace Protocol {
        * Opener target Id
        */
       openerId?: TargetID;
+      /**
+       * Whether the opened window has access to the originating window.
+       */
+      canAccessOpener: boolean;
       browserContextId?: Browser.BrowserContextID;
     }
 
@@ -12120,6 +12159,15 @@ declare namespace Protocol {
     }
 
     /**
+     * Location range within one script.
+     */
+    export interface LocationRange {
+      scriptId: Runtime.ScriptId;
+      start: ScriptPosition;
+      end: ScriptPosition;
+    }
+
+    /**
      * JavaScript call frame. Array of call frames form the call stack.
      */
     export interface CallFrame {
@@ -12723,6 +12771,17 @@ declare namespace Protocol {
        * before next pause.
        */
       breakOnAsyncCall?: boolean;
+      /**
+       * The skipList specifies location ranges that should be skipped on step into.
+       */
+      skipList?: LocationRange[];
+    }
+
+    export interface StepOverRequest {
+      /**
+       * The skipList specifies location ranges that should be skipped on step over.
+       */
+      skipList?: LocationRange[];
     }
 
     /**

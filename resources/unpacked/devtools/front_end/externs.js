@@ -1759,6 +1759,7 @@ InspectorFrontendHostAPI.LoadNetworkResourceResult;
  */
 InspectorFrontendHostAPI.EnumeratedHistogram = {
   ActionTaken: 'DevTools.ActionTaken',
+  PanelClosed: 'DevTools.PanelClosed',
   PanelShown: 'DevTools.PanelShown',
   KeyboardShortcutFired: 'DevTools.KeyboardShortcutFired',
   IssuesPanelOpenedFrom: 'DevTools.IssuesPanelOpenedFrom',

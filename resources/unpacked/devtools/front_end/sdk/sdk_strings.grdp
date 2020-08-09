@@ -12,7 +12,7 @@
   <message name="IDS_DEVTOOLS_044b149f2d31de7a7f43518045f61642" desc="Title of a media query that can be emulated via the Rendering drawer">
     prefers-reduced-data: reduce
   </message>
-  <message name="IDS_DEVTOOLS_04a8e1d4d35de0097dba4846b17f1c97" desc="Title for CSP inline link">
+  <message name="IDS_DEVTOOLS_04a8e1d4d35de0097dba4846b17f1c97" desc="Title for CSP inline issue link">
     Learn more: Content Security Policy - Inline Code
   </message>
   <message name="IDS_DEVTOOLS_05dfd3a2f7eebfad702620a4a7e182eb" desc="Tooltip to explain why a cookie was blocked">
@@ -23,6 +23,9 @@
   </message>
   <message name="IDS_DEVTOOLS_07553a11db31a4433684be32cc4716e3" desc="Text in Network Manager">
     Cross-Origin Read Blocking (CORB) blocked cross-origin response <ph name="NETWORKREQUEST_URL__">$1s<ex>https://example.com</ex></ph> with MIME type <ph name="NETWORKREQUEST_MIMETYPE">$2s<ex>application</ex></ph>. See https://www.chromestatus.com/feature/5629709824032768 for more details.
+  </message>
+  <message name="IDS_DEVTOOLS_07679e61ddbb0c96b7db3516e85bcf1b" desc="Title for a SameSiteCookie issue">
+    Migrate entirely to HTTPS to have cookies sent on same-site requests
   </message>
   <message name="IDS_DEVTOOLS_07ba1c48fc0b478df5462700f993fa5e" desc="Message in Network Manager">
     <ph name="NETWORKREQUEST_RESOURCETYPE___TITLE__">$1s<ex>XHR</ex></ph> failed loading: <ph name="NETWORKREQUEST_REQUESTMETHOD">$2s<ex>GET</ex></ph> &quot;<ph name="NETWORKREQUEST_URL__">$3s<ex>https://example.com</ex></ph>&quot;.
@@ -76,6 +79,11 @@
   <message name="IDS_DEVTOOLS_1629102ff8f1fee3f79d199758cab928" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Do not emulate any vision deficiency
   </message>
+  <message name="IDS_DEVTOOLS_176342de3f8b9f83074735156049a0ee" desc="Description of a SameSiteCookie issue">
+    A cookie was not set by <ph name="ORIGIN">$1s<ex>a secure</ex></ph> origin in <ph name="DESTINATION">$2s<ex>an insecure</ex></ph> context.
+        Because this cookie would have been set across schemes on the same site, it was blocked.
+        This behavior enhances the <ph name="LOCKED_1">|SameSite|</ph> attribute’s protection of user data from request forgery by network attackers.
+  </message>
   <message name="IDS_DEVTOOLS_17ef39d79c395cc2274bf685b1d70b2c" desc="Name of a color vision deficiency that can be emulated via the Rendering drawer">
     Achromatopsia
   </message>
@@ -121,7 +129,7 @@
   <message name="IDS_DEVTOOLS_22af645d1859cb5ca6da0c484f1f37ea" desc="Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel">
     new
   </message>
-  <message name="IDS_DEVTOOLS_22bd750a4363491a10742105f6c6c777" desc="Part of the issue message for CSP url issues">
+  <message name="IDS_DEVTOOLS_22bd750a4363491a10742105f6c6c777" desc="Part of issue message for CSP url issues">
     To solve this, carefully check that all of the blocked resources listed below are trustworthy; if they are,
      include their sources in the content security policy of your site. You can set a policy as a HTTP header (recommended),
      or via an HTML <ph name="LOCKED_1">&lt;meta&gt;</ph> tag.
@@ -135,11 +143,6 @@
   <message name="IDS_DEVTOOLS_242dd6b02f1ff7db7cbba7f7226abb4a" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Do not emulate CSS prefers-color-scheme
   </message>
-  <message name="IDS_DEVTOOLS_28d877f94dad332daec6ef71087d4b94" desc="Description of a SameSiteCookie issue">
-    A cookie is being sent from <ph name="ORIGIN">$1s<ex>a secure</ex></ph> context to <ph name="DESTINATION">$2s<ex>an insecure</ex></ph> origin on a navigation and is specified with <ph name="LOCKED_1">|SameSite=Strict|</ph>.
-        Because this cookie is being sent across schemes on the same site, it will not be sent in a future version of Chrome.
-        This behavior protects user data from request forgery by network attackers.
-  </message>
   <message name="IDS_DEVTOOLS_28e486be4b3bad598b6e9eaa34ebec76" desc="Text in Network Manager">
     Set-Cookie header is ignored in response from url: <ph name="RESPONSE_URL">$1s<ex>https://example.com</ex></ph>. Cookie length should be less than or equal to 4096 characters.
   </message>
@@ -152,7 +155,7 @@
   <message name="IDS_DEVTOOLS_2d4f58197f03de72c0472189fd18c162" desc="Title of a setting under the Rendering drawer">
     Emulate vision deficiencies
   </message>
-  <message name="IDS_DEVTOOLS_2e14ec7819d8f48f0b3a0bcc2092ef29" desc="Part of the issue message for CSP inline issues">
+  <message name="IDS_DEVTOOLS_2e14ec7819d8f48f0b3a0bcc2092ef29" desc="Part of issue message for CSP inline issues">
     ⚠️ Allowing inline execution comes at the risk of script injection via injection of HTML script elements.
      If you absolutely must, you can allow inline script and styles by:
   </message>
@@ -204,6 +207,16 @@
   <message name="IDS_DEVTOOLS_3f23f0e9da2803d48c2d67aa09f01bf5" desc="Tooltip to explain why a cookie was blocked">
     This Set-Cookie didn&apos;t specify a &quot;SameSite&quot; attribute and was defaulted to &quot;SameSite=Lax,&quot; and was blocked because it came from a cross-site response which was not the response to a top-level navigation. The Set-Cookie had to have been set with &quot;SameSite=None&quot; to enable cross-site usage.
   </message>
+  <message name="IDS_DEVTOOLS_3fd3771f616eea7c212f93f2c6096cde" desc="Description of a SameSiteCookie issue">
+    A cookie is being set by <ph name="ORIGIN">$1s<ex>a secure</ex></ph> origin in <ph name="DESTINATION">$2s<ex>an insecure</ex></ph> context.
+        Because this cookie is being set across schemes on the same site, it will be blocked in a future version of Chrome.
+        This behavior enhances the <ph name="LOCKED_1">|SameSite|</ph> attribute’s protection of user data from request forgery by network attackers.
+  </message>
+  <message name="IDS_DEVTOOLS_424b0ecacee3b5ea1f14a7c9b8f4fe1a" desc="Description of a SameSiteCookie issue">
+    A cookie is being sent to <ph name="DESTINATION">$1s<ex>a secure</ex></ph> origin from <ph name="ORIGIN">$2s<ex>an insecure</ex></ph> context on a navigation.
+        Because this cookie is being sent across schemes on the same site, it will not be sent in a future version of Chrome.
+        This behavior enhances the <ph name="LOCKED_1">|SameSite|</ph> attribute’s protection of user data from request forgery by network attackers.
+  </message>
   <message name="IDS_DEVTOOLS_46141cdfd02fdac3a846783c4acb7c8e" desc="Context for Heavy Ads issue description">
     '''
   Chrome identifies heavy ads on your site that use too many resources without a user gesture. Heavy ads have an impact on performance and harm the user’s browsing experience. They increase battery drain, consume mobile data, and make your site slow. To improve the user experience, Chrome warns about or removes heavy ads.
@@ -222,14 +235,11 @@
   <message name="IDS_DEVTOOLS_4cbb2bdce4db02a995cdd7a237a63d69" desc="Title of a setting under the Grid category that turns CSS Grid Area highlighting on">
     Show grid named areas
   </message>
-  <message name="IDS_DEVTOOLS_5988f13c0976ce6b6edbc4d667f1bb7a" desc="Part of the issue message for CSP inline issues">
+  <message name="IDS_DEVTOOLS_5988f13c0976ce6b6edbc4d667f1bb7a" desc="Part of issue message for CSP inline issues">
     Content Security Policy blocks inline execution of scripts and stylesheets
   </message>
   <message name="IDS_DEVTOOLS_5bf12c4c7d2579c8586373ced46b5398" desc="Title for CSS Grid tooling option">
     Show all grid line numbers
-  </message>
-  <message name="IDS_DEVTOOLS_61326117ed4a9ddf3f754e71e119e5b3" desc="The kind of resolution for a mixed content issue">
-    blocked
   </message>
   <message name="IDS_DEVTOOLS_6e434cf220a5334cfb7c8b8944686adf" desc="Title for CSS Grid tooling option">
     Show grid track sizes
@@ -243,14 +253,28 @@
   <message name="IDS_DEVTOOLS_83551c20aa46bf996b5f9a989ad44948" desc="Part of issue message for CSP issues of url type">
     Content Security Policy of your site blockes some resources because their origin is not included in the content security policy header
   </message>
+  <message name="IDS_DEVTOOLS_8483e29deb85890986985e47b0ec8ccf" desc="Title for a SameSiteCookie issue">
+    Migrate entirely to HTTPS to have cookies sent to same-site subresources
+  </message>
+  <message name="IDS_DEVTOOLS_87d9ba4d9f1c832fff7132d0855229b4" desc="Resolution for a SameSiteCookie issue">
+    Resolve this issue by migrating your site (as defined by the eTLD+1) entirely to HTTPS. It is also recommended to mark the cookie with the |Secure| attribute if that is not already the case.
+  </message>
   <message name="IDS_DEVTOOLS_9485d0acccd869b51a96f2b35fd0b620" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Do not emulate CSS prefers-reduced-data
   </message>
   <message name="IDS_DEVTOOLS_9915b8ef9885af8c4381daed280b5248" desc="Title for CSS Grid tooling option">
     Do not show grid track sizes
   </message>
+  <message name="IDS_DEVTOOLS_a26318572bfd756daa1d6035d60bd51a" desc="Description of a SameSiteCookie issue">
+    A cookie was not sent to <ph name="DESTINATION">$1s<ex>a secure</ex></ph> origin from <ph name="ORIGIN">$2s<ex>an insecure</ex></ph> context.
+        Because this cookie would have been sent across schemes on the same site, it was not sent.
+        This behavior enhances the <ph name="LOCKED_1">|SameSite|</ph> attribute’s protection of user data from request forgery by network attackers.
+  </message>
   <message name="IDS_DEVTOOLS_a9dbce0348c4df57c727ce7df2e7a8e6" desc="Title for CSP url link">
     Content Security Policy - Source Allowlists
+  </message>
+  <message name="IDS_DEVTOOLS_ad6cd0dc14b9f610f20d88d5596ead7b" desc="Title for a SameSiteCookie issue">
+    Migrate entirely to HTTPS to allow cookies to be set by same-site subresources
   </message>
   <message name="IDS_DEVTOOLS_b40b37431c71726db1bd4e1bc44cbfac" desc="Error message for canceled source map loads">
     Load canceled due to reload of inspected page
@@ -497,11 +521,6 @@
   <message name="IDS_DEVTOOLS_9028784c589c0c809700c7fbc66a5d96" desc="Text in Network Manager">
     Resource interpreted as <ph name="NETWORKREQUEST_RESOURCETYPE___TITLE__">$1s<ex>application</ex></ph> but transferred with MIME type <ph name="NETWORKREQUEST_MIMETYPE">$2s<ex>image</ex></ph>: &quot;<ph name="NETWORKREQUEST_URL__">$3s<ex>https://example.com</ex></ph>&quot;.
   </message>
-  <message name="IDS_DEVTOOLS_22df5120d2f19abe6833fd44b82511e9" desc="Description of a SameSiteCookie issue">
-    A cookie is being set by <ph name="ORIGIN">$1s<ex>a secure</ex></ph> origin in <ph name="DESTINATION">$2s<ex>an insecure</ex></ph> context and is specified with <ph name="LOCKED_1">|SameSite=Strict|</ph> or <ph name="LOCKED_1">|SameSite=Lax|</ph>.
-        Because this cookie is being set across schemes on the same site, it will be blocked in a future version of Chrome.
-        This behavior protects user data from request forgery by network attackers.
-  </message>
   <message name="IDS_DEVTOOLS_9108ae673b7efa9620aec771edc9d4de" desc="Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel">
     setTimeout fired
   </message>
@@ -606,7 +625,7 @@
   <message name="IDS_DEVTOOLS_b600e0facf21b7d4a9a769a60b236ba1" desc="Title of a setting under the Debugger category that can be invoked through the Command Menu">
     Enable JavaScript
   </message>
-  <message name="IDS_DEVTOOLS_b9192f20af774cee9221afdc60f1b11c" desc="Bullet point of resolving CSP inline violation">
+  <message name="IDS_DEVTOOLS_b9192f20af774cee9221afdc60f1b11c" desc="Bullet point for issue message for CSP inline issues">
     adding unsafe-inline as a source to the CSP header
   </message>
   <message name="IDS_DEVTOOLS_b9a5a0162829cba9db8b77daa75ec604" desc="Title of a setting under the Rendering category that can be invoked through the Command Menu">
@@ -637,7 +656,7 @@
   <message name="IDS_DEVTOOLS_beff15b1acf49b84bf1080cceb920ebf" desc="Title of a media query that can be emulated via the Rendering drawer">
     prefers-color-scheme: dark
   </message>
-  <message name="IDS_DEVTOOLS_bfbdda72803f950364e1ff10adbc64f3" desc="Part of the issue message for CSP inline violations">
+  <message name="IDS_DEVTOOLS_bfbdda72803f950364e1ff10adbc64f3" desc="Part of issue message for CSP inline issues">
     The Content Security Policy (CSP) prevents cross-site scripting attacks by blocking inline execution of scripts
      and style sheets.
   </message>
@@ -708,6 +727,11 @@
   <message name="IDS_DEVTOOLS_d0b1b6bcc47d95785771c3bcc0b1f88a" desc="Option for CSS Grid tooling">
     Positive numbers
   </message>
+  <message name="IDS_DEVTOOLS_d134922c6e94663a05edfac7921efc35" desc="Description of a SameSiteCookie issue">
+    A cookie was not sent to <ph name="DESTINATION">$1s<ex>a secure</ex></ph> origin from <ph name="ORIGIN">$2s<ex>an insecure</ex></ph> context on a navigation.
+        Because this cookie would have been sent across schemes on the same site, it was not sent.
+        This behavior enhances the <ph name="LOCKED_1">|SameSite|</ph> attribute’s protection of user data from request forgery by network attackers.
+  </message>
   <message name="IDS_DEVTOOLS_d24a22fef757966373800aa9795458dc" desc="Text in Source Map">
     ? [sm]
   </message>
@@ -723,10 +747,10 @@
   <message name="IDS_DEVTOOLS_d7eb928d99f0528e1929c9283d74080a" desc="Error message for canceled source map loads">
     Load canceled due to load timeout
   </message>
-  <message name="IDS_DEVTOOLS_d8e859dc455c59c30b396adf797d6005" desc="Description of a SameSiteCookie issue">
-    A cookie is being sent from <ph name="ORIGIN">$1s<ex>a secure</ex></ph> context to <ph name="DESTINATION">$2s<ex>an insecure</ex></ph> origin and is specified with |SameSite=Strict| or |SameSite=Lax|.
+  <message name="IDS_DEVTOOLS_dbd992dc8c97fdc824d56dd5732d7e1a" desc="Description of a SameSiteCookie issue">
+    A cookie is being sent to <ph name="DESTINATION">$1s<ex>a secure</ex></ph> origin from <ph name="ORIGIN">$2s<ex>an insecure</ex></ph> context.
         Because this cookie is being sent across schemes on the same site, it will not be sent in a future version of Chrome.
-        This behavior protects user data from request forgery by network attackers.
+        This behavior enhances the <ph name="LOCKED_1">|SameSite|</ph> attribute’s protection of user data from request forgery by network attackers.
   </message>
   <message name="IDS_DEVTOOLS_dc63af9ea86e7ce364eda357bd7d7dfe" desc="Part of explanatory text for CSP issue of URL violation type">
     ⚠️ Never add a source you don&apos;t trust to your site&apos;s Content Security Policy. If you don&apos;t trust the source, consider
@@ -776,9 +800,6 @@
   </message>
   <message name="IDS_DEVTOOLS_eb261559d77dfe90101434b17d03e932" desc="Title for CSS Grid tooling option">
     Do not show grid lines
-  </message>
-  <message name="IDS_DEVTOOLS_eb5a5c3103571cb6e64dd186a8780f90" desc="Resolution for a SameSiteCookie issue">
-    Resolve this issue by migrating your site entirely to HTTPS. It is also recommended to mark the cookie with the |Secure| attribute if that is not already the case.
   </message>
   <message name="IDS_DEVTOOLS_eb656e41b6da91494775ecf47a51da91" desc="Option for Borders of CSS Grid tooling">
     Dashed
