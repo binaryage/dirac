@@ -56,6 +56,19 @@ export class UserMetrics {
   }
 
   /**
+   * Fired when a panel is closed (regardless if it exists in the main panel or the drawer)
+   * @param {string} panelName
+   */
+  panelClosed(panelName) {
+    const code = PanelCodes[panelName] || 0;
+    const size = Object.keys(PanelCodes).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.PanelClosed, code, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.PanelClosed, {value: code});
+    // Store that the user has changed the panel so we know launch histograms should not be fired.
+    this._panelChangedSinceLaunch = true;
+  }
+
+  /**
    * @param {string} settingsViewId
    */
   settingsPanelShown(settingsViewId) {
@@ -211,7 +224,8 @@ export const Action = {
   SettingsOpenedFromCommandMenu: 38,
   TabMovedToDrawer: 39,
   TabMovedToMainPanel: 40,
-  CaptureCssOverviewClicked: 41
+  CaptureCssOverviewClicked: 41,
+  VirtualAuthenticatorEnvironmentEnabled: 42
 };
 
 /** @type {!Object<string, number>} */

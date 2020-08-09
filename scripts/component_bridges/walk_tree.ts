@@ -5,6 +5,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as ts from 'typescript';
+import {findNodeForTypeReferenceName} from './utils';
 
 interface ExternalImport {
   namedImports: Set<string>;
@@ -17,7 +18,8 @@ export interface WalkerState {
    * overhead of an extra piece of state and another set to check isn't worth it
    */
   foundInterfaces: Set<ts.InterfaceDeclaration|ts.TypeAliasDeclaration>;
-  interfaceNamesToConvert: Set<string>;
+  foundEnums: Set<ts.EnumDeclaration>;
+  typeReferencesToConvert: Set<string>;
   componentClass?: ts.ClassDeclaration;
   publicMethods: Set<ts.MethodDeclaration>;
   customElementsDefineCall?: ts.ExpressionStatement;
@@ -127,8 +129,9 @@ const CUSTOM_ELEMENTS_LIFECYCLE_METHODS = new Set([
 const walkNode = (node: ts.Node, startState?: WalkerState): WalkerState => {
   const state: WalkerState = startState || {
     foundInterfaces: new Set(),
+    foundEnums: new Set(),
     publicMethods: new Set(),
-    interfaceNamesToConvert: new Set(),
+    typeReferencesToConvert: new Set(),
     componentClass: undefined,
     customElementsDefineCall: undefined,
     imports: new Set(),
@@ -166,7 +169,7 @@ const walkNode = (node: ts.Node, startState?: WalkerState): WalkerState => {
               return;
             }
             const foundInterfaces = findInterfacesFromType(param.type);
-            foundInterfaces.forEach(i => state.interfaceNamesToConvert.add(i));
+            foundInterfaces.forEach(i => state.typeReferencesToConvert.add(i));
           });
         } else if (ts.isGetAccessorDeclaration(member)) {
           if (isPrivate(member)) {
@@ -177,7 +180,7 @@ const walkNode = (node: ts.Node, startState?: WalkerState): WalkerState => {
 
           if (member.type) {
             const foundInterfaces = findInterfacesFromType(member.type);
-            foundInterfaces.forEach(i => state.interfaceNamesToConvert.add(i));
+            foundInterfaces.forEach(i => state.typeReferencesToConvert.add(i));
           }
         } else if (ts.isSetAccessorDeclaration(member)) {
           if (isPrivate(member)) {
@@ -190,7 +193,7 @@ const walkNode = (node: ts.Node, startState?: WalkerState): WalkerState => {
             const setterParamType = member.parameters[0].type;
             if (setterParamType) {
               const foundInterfaces = findInterfacesFromType(setterParamType);
-              foundInterfaces.forEach(i => state.interfaceNamesToConvert.add(i));
+              foundInterfaces.forEach(i => state.typeReferencesToConvert.add(i));
             }
           }
         }
@@ -294,9 +297,7 @@ const findNestedReferencesForTypeReference =
               // This means we have a reference to another interface so we have to
               // find the interface and check for any nested interfaces within it.
               const typeReferenceName = nestedType.typeName.escapedText.toString();
-              const nestedTypeReference = Array.from(state.foundInterfaces).find(dec => {
-                return dec.name.escapedText === typeReferenceName;
-              });
+              const nestedTypeReference = findNodeForTypeReferenceName(state, typeReferenceName);
               if (!nestedTypeReference) {
                 throw new Error(`Could not find definition for type reference ${typeReferenceName}.`);
               }
@@ -311,15 +312,38 @@ const findNestedReferencesForTypeReference =
         // If it wasn't a type alias, it's an interface, so walk through the interface and add any found nested types.
         const nestedInterfaces = findNestedInterfacesInInterface(interfaceOrTypeAliasDeclaration);
         nestedInterfaces.forEach(nestedInterface => foundNestedReferences.add(nestedInterface));
+
+        // if the interface has any extensions, we need to dive into those too
+        // e.g. interface X extends Y means we have to check Y for any additional type references
+        if (interfaceOrTypeAliasDeclaration.heritageClauses) {
+          interfaceOrTypeAliasDeclaration.heritageClauses.forEach(heritageClause => {
+            const extendNames = heritageClause.types.map(heritageClauseName => {
+              if (ts.isIdentifier(heritageClauseName.expression)) {
+                return heritageClauseName.expression.escapedText.toString();
+              }
+              throw new Error('Unexpected heritageClauseName with no identifier.');
+            });
+
+            extendNames.forEach(interfaceName => {
+              const interfaceDec = findNodeForTypeReferenceName(state, interfaceName);
+              if (!interfaceDec) {
+                throw new Error(`Could not find interface: ${interfaceName}`);
+              }
+              if (!ts.isInterfaceDeclaration(interfaceDec)) {
+                throw new Error('Found invalid TypeScript: an interface cannot extend a type.');
+              }
+              const nestedInterfaces = findNestedInterfacesInInterface(interfaceDec);
+              nestedInterfaces.forEach(nestedInterface => foundNestedReferences.add(nestedInterface));
+            });
+          });
+        }
       }
       return foundNestedReferences;
     };
 
 const populateInterfacesToConvert = (state: WalkerState): WalkerState => {
-  state.interfaceNamesToConvert.forEach(interfaceNameToConvert => {
-    const interfaceOrTypeAliasDeclaration = Array.from(state.foundInterfaces).find(dec => {
-      return dec.name.escapedText === interfaceNameToConvert;
-    });
+  state.typeReferencesToConvert.forEach(interfaceNameToConvert => {
+    const interfaceOrTypeAliasDeclaration = findNodeForTypeReferenceName(state, interfaceNameToConvert);
 
     // if the interface isn't found, it might be imported, so just move on.
     if (!interfaceOrTypeAliasDeclaration) {
@@ -327,7 +351,7 @@ const populateInterfacesToConvert = (state: WalkerState): WalkerState => {
     }
 
     const foundNestedInterfaces = findNestedReferencesForTypeReference(state, interfaceOrTypeAliasDeclaration);
-    foundNestedInterfaces.forEach(nested => state.interfaceNamesToConvert.add(nested));
+    foundNestedInterfaces.forEach(nested => state.typeReferencesToConvert.add(nested));
   });
 
   return state;
@@ -335,26 +359,6 @@ const populateInterfacesToConvert = (state: WalkerState): WalkerState => {
 
 export const walkTree = (startNode: ts.SourceFile, resolvedFilePath: string): WalkerState => {
   let state = walkNode(startNode);
-
-  /**
-   * Now we have a list of top level interfaces we need to convert, we need to
-   * go through each one and look for any interfaces referenced within e.g.:
-   *
-   * ```
-   * interface Baz {...}
-   *
-   * interface Foo {
-   *   x: Baz
-   * }
-   *
-   * // in the component
-   * set data(data: { foo: Foo }) {}
-   * ```
-   *
-   * We know we have to convert the Foo interface in the _bridge.js, but we need
-   * to also convert Baz because Foo references it.
-   */
-  state = populateInterfacesToConvert(state);
 
   /* if we are here and found an interface passed to a public method
    * that we didn't find the definition for, that means it's imported
@@ -367,9 +371,9 @@ export const walkTree = (startNode: ts.SourceFile, resolvedFilePath: string): Wa
   // Some components may (rarely) use the TypeScript Object type
   // But that's defined by TypeScript, not us, and maps directly to Closure's Object
   // So we don't need to generate any typedefs for the `Object` type.
-  state.interfaceNamesToConvert.delete('Object');
+  state.typeReferencesToConvert.delete('Object');
 
-  const missingInterfaces = Array.from(state.interfaceNamesToConvert).filter(name => {
+  const missingInterfaces = Array.from(state.typeReferencesToConvert).filter(name => {
     return foundInterfaceNames.has(name) === false;
   });
 
@@ -398,7 +402,32 @@ export const walkTree = (startNode: ts.SourceFile, resolvedFilePath: string): Wa
     stateFromSubFile.foundInterfaces.forEach(foundInterface => {
       state.foundInterfaces.add(foundInterface);
     });
+
+    stateFromSubFile.typeReferencesToConvert.forEach(interfaceToConvert => {
+      state.typeReferencesToConvert.add(interfaceToConvert);
+    });
   });
+
+  /**
+   * Now we have a list of top level interfaces we need to convert, we need to
+   * go through each one and look for any interfaces referenced within e.g.:
+   *
+   * ```
+   * interface Baz {...}
+   *
+   * interface Foo {
+   *   x: Baz
+   * }
+   *
+   * // in the component
+   * set data(data: { foo: Foo }) {}
+   * ```
+   *
+   * We know we have to convert the Foo interface in the _bridge.js, but we need
+   * to also convert Baz because Foo references it.
+   */
+
+  state = populateInterfacesToConvert(state);
 
   return state;
 };

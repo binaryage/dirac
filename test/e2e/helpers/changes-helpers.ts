@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$, $$, getBrowserAndPages, goToResource, waitFor, waitForFunction} from '../../shared/helper.js';
+import {$$, getBrowserAndPages, goToResource, waitFor, waitForFunction} from '../../shared/helper.js';
 
 import {openCommandMenu} from '../helpers/quick_open-helpers.js';
 
@@ -21,19 +21,19 @@ export async function openChangesPanelAndNavigateTo(testName: string) {
 }
 
 export async function getChangesList() {
-  const root = await $(PANEL_ROOT_SELECTOR);
+  const root = await waitFor(PANEL_ROOT_SELECTOR);
   const items = await $$('.tree-element-title', root);
 
-  return items.evaluate((nodes: Element[]) => {
-    return nodes.map(node => node.textContent || '');
-  });
+  return Promise.all(items.map(node => {
+    return node.evaluate(node => node.textContent as string);
+  }));
 }
 
 export async function waitForNewChanges(initialChanges: string[]) {
   let newChanges = [];
 
-  await waitForFunction(async () => {
+  return waitForFunction(async () => {
     newChanges = await getChangesList();
     return newChanges.length !== initialChanges.length;
-  }, `Expected the list of changes length to change from ${initialChanges.length} to ${newChanges.length}.`);
+  });
 }

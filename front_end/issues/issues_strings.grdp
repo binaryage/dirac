@@ -6,6 +6,12 @@
   <message name="IDS_DEVTOOLS_05bb50eae282e818b1a9a4b0ada16150" desc="Reason for a Heavy Ad being flagged in issue view">
     Network limit
   </message>
+  <message name="IDS_DEVTOOLS_2631c466911c8c8de9c6b3332b1a0768" desc="Title for a checkbox. Whether the issues tab should include third-party issues or not.">
+    Include Issues caused by third-party sites
+  </message>
+  <message name="IDS_DEVTOOLS_07fad2e297fd65e042fa00d6977b4f2d" desc="Tooltip for button linking to the Elements panel">
+    Click to reveal the violating DOM node in the Elements panel
+  </message>
   <message name="IDS_DEVTOOLS_26d528c2e706eb2c3f4d4f90fc72632a" desc="Reason for a Heavy Ad being flagged in issue view">
     CPU peak limit
   </message>
@@ -17,6 +23,9 @@
   </message>
   <message name="IDS_DEVTOOLS_3298f13049d19cffaa37ca931dd4d421" desc="Label for number of affected resources indication in issue view">
     requests
+  </message>
+  <message name="IDS_DEVTOOLS_4c256011797a3f452ce4955e7f0c396f" desc="Label for a checkbox. Whether the issues tab should include third-party issues or not.">
+    Include third-party issues
   </message>
   <message name="IDS_DEVTOOLS_55b558c7ef820e6e00e5993b9e55d93b" desc="Label for number of affected resources indication in issue view">
     resources
@@ -32,6 +41,12 @@
   </message>
   <message name="IDS_DEVTOOLS_6a7f245843454cf4f28ad7c5e2572aa2" desc="Plural label for number of affected element resource indication in issue view">
     elements
+  </message>
+  <message name="IDS_DEVTOOLS_6bc90532b96243fd3deae4514bbb5dc4" desc="Title for a link to a request in the network panel">
+    Click to show request in the network panel
+  </message>
+  <message name="IDS_DEVTOOLS_712e023413c1a2069cb68c5cb4a914a0" desc="Title for an unavailable link a request in the network panel">
+    Request unavailable in the network panel, try reloading the inspected page
   </message>
   <message name="IDS_DEVTOOLS_8e2dcfd7e7e24b1ca76c1193f645902b" desc="Singular label for number of affected element resource indication in issue view">
     element
@@ -69,6 +84,12 @@
   <message name="IDS_DEVTOOLS_c8f2c7aa04b8080f5d0bb020dc886d82" desc="Title for a column in an Heavy Ads issue view">
     Frame URL
   </message>
+  <message name="IDS_DEVTOOLS_d09fde8cce3e04fe6dfc89c15e3c449f" desc="Title for a column in an issue view">
+    Blocked Resource
+  </message>
+  <message name="IDS_DEVTOOLS_d63605063a480a98396822bd7ee88a11" desc="Title for a column in an issue view">
+    Parent Frame
+  </message>
   <message name="IDS_DEVTOOLS_e1317e393c4c13c1bba0195dd20eceb8" desc="Singular label for number of affected directive resource indication in issue view">
     directive
   </message>
@@ -80,9 +101,6 @@
   </message>
   <message name="IDS_DEVTOOLS_f2ab5fb218da8b84623f45579aa4ba11" desc="Plural label for number of affected source resource indication in issue view">
     sources
-  </message>
-  <message name="IDS_DEVTOOLS_7b255ecb0466cedcea013f62b87c83cc" desc="Explanatory message why a reload of the inspected page is required. Next to reload button.">
-    Some issues might be missing or incomplete, reload the inspected page to get the full information.
   </message>
   <message name="IDS_DEVTOOLS_fae3520ad615b90014c2f2991ff32edf" desc="Reason for a Heavy Ad being flagged in issue view">
     CPU total limit

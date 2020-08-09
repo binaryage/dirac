@@ -5,7 +5,7 @@
 import {assert} from 'chai';
 import {describe, it} from 'mocha';
 
-import {$, click, enableExperiment, getBrowserAndPages, getResourcesPath, goToResource, waitFor} from '../../shared/helper.js';
+import {click, enableExperiment, getBrowserAndPages, getResourcesPath, goToResource, waitFor} from '../../shared/helper.js';
 import {addBreakpointForLine, getValuesForScope, listenForSourceFilesAdded, openFileInEditor, openFileInSourcesPanel, openSourcesPanel, PAUSE_ON_EXCEPTION_BUTTON, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
 
 
@@ -141,8 +141,8 @@ describe('The Debugger Language Plugins', async () => {
     await goToResource('sources/wasm/unreachable.html');
     await waitFor('.paused-status');
 
-    const scriptLocation =
-        await (await $('.call-frame-location')).evaluate((location: HTMLElement) => location.textContent);
+    const callFrameLoc = await waitFor('.call-frame-location');
+    const scriptLocation = await callFrameLoc.evaluate(location => location.textContent);
     assert.deepEqual(scriptLocation, 'unreachable.ll:6');
   });
 

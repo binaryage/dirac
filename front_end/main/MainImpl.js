@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 /*
  * Copyright (C) 2006, 2007, 2008 Apple Inc.  All rights reserved.
  * Copyright (C) 2007 Matt Lilek (pewtermoose@gmail.com).
@@ -161,7 +164,7 @@ export class MainImpl {
         'showOptionToNotTreatGlobalObjectsAsRoots',
         'Show option to take heap snapshot where globals are not treated as root');
     Root.Runtime.experiments.register('sourceDiff', 'Source diff');
-    Root.Runtime.experiments.register('sourceOrderViewer', 'Source order viewer', true);
+    Root.Runtime.experiments.register('sourceOrderViewer', 'Source order viewer');
     Root.Runtime.experiments.register('spotlight', 'Spotlight', true);
     Root.Runtime.experiments.register('webauthnPane', 'WebAuthn Pane');
     Root.Runtime.experiments.register(
@@ -199,6 +202,7 @@ export class MainImpl {
       'backgroundServicesNotifications',
       'backgroundServicesPushMessaging',
       'backgroundServicesPaymentHandler',
+      'customKeyboardShortcuts',
       'issuesPane',
     ]);
 

@@ -609,7 +609,7 @@ describe('generateClosure', () => {
 * }}`);
       assert.include(interfaces[0].join('\n'), 'export let Person');
 
-      assert.include(interfaces[1].join('\n'), '* @typedef {{"jack"|"paul"|"tim"}}');
+      assert.include(interfaces[1].join('\n'), '* @typedef {"jack"|"paul"|"tim"}');
       assert.include(interfaces[1].join('\n'), 'export let Name');
     });
 
@@ -631,7 +631,7 @@ describe('generateClosure', () => {
       const interfaces = generateInterfaces(state);
 
       assert.strictEqual(interfaces.length, 3);
-      assert.include(interfaces[0].join('\n'), '* @typedef {{Dog|Cat}}');
+      assert.include(interfaces[0].join('\n'), '* @typedef {Dog|Cat}');
       assert.include(interfaces[0].join('\n'), 'export let Animal');
 
       assert.include(interfaces[1].join('\n'), `* @typedef {{
@@ -663,7 +663,7 @@ describe('generateClosure', () => {
       const interfaces = generateInterfaces(state);
 
       assert.strictEqual(interfaces.length, 3);
-      assert.include(interfaces[0].join('\n'), '* @typedef {{Dog|Cat}}');
+      assert.include(interfaces[0].join('\n'), '* @typedef {Dog|Cat}');
       assert.include(interfaces[0].join('\n'), 'export let Animal');
 
       assert.include(interfaces[1].join('\n'), `* @typedef {{
@@ -695,7 +695,7 @@ describe('generateClosure', () => {
       const interfaces = generateInterfaces(state);
 
       assert.strictEqual(interfaces.length, 3);
-      assert.include(interfaces[0].join('\n'), '* @typedef {{Dog|Cat|string|number}}');
+      assert.include(interfaces[0].join('\n'), '* @typedef {Dog|Cat|string|number}');
       assert.include(interfaces[0].join('\n'), 'export let Animal');
 
       assert.include(interfaces[1].join('\n'), `* @typedef {{
@@ -732,7 +732,7 @@ describe('generateClosure', () => {
       const interfaces = generateInterfaces(state);
 
       assert.strictEqual(interfaces.length, 4);
-      assert.include(interfaces[0].join('\n'), '* @typedef {{Dog|Cat}}');
+      assert.include(interfaces[0].join('\n'), '* @typedef {Dog|Cat}');
       assert.include(interfaces[0].join('\n'), 'export let Animal');
 
       assert.include(interfaces[1].join('\n'), `* @typedef {{
@@ -1017,6 +1017,7 @@ export let Person`);
 * }}`);
       assert.include(interfaces[1].join('\n'), 'export let Detail');
     });
+
     it('ignores the Object type', () => {
       const state = parseCode(`
       class Breadcrumbs extends HTMLElement {
@@ -1025,6 +1026,118 @@ export let Person`);
       }`);
       const interfaces = generateInterfaces(state);
       assert.strictEqual(interfaces.length, 0);
+    });
+
+    it('understands interfaces that extend other interfaces and fully defines them', () => {
+      const state = parseCode(`interface NamedThing {
+        name: string;
+      }
+
+      interface Person extends NamedThing {
+        age: number;
+      }
+
+      class Breadcrumbs extends HTMLElement {
+        public update(person: Person) {}
+      }`);
+
+      const interfaces = generateInterfaces(state);
+
+      assert.strictEqual(interfaces.length, 1);
+      assert.include(interfaces[0].join('\n'), `* @typedef {{
+* name:string,
+* age:number,
+* }}`);
+      assert.include(interfaces[0].join('\n'), 'export let Person');
+    });
+
+    it('understands interfaces that extend multiple interfaces', () => {
+      const state = parseCode(`interface NamedThing {
+        name: string;
+      }
+
+      interface AgedThing {
+        age: number
+      }
+
+      interface Person extends NamedThing, AgedThing {
+        favouriteColour: string;
+      }
+
+      class Breadcrumbs extends HTMLElement {
+        public update(person: Person) {}
+      }`);
+
+      const interfaces = generateInterfaces(state);
+
+      assert.strictEqual(interfaces.length, 1);
+      assert.include(interfaces[0].join('\n'), `* @typedef {{
+* name:string,
+* age:number,
+* favouriteColour:string,
+* }}`);
+      assert.include(interfaces[0].join('\n'), 'export let Person');
+    });
+
+    it('understands interfaces that extend interfaces that extend interfaces', () => {
+      const state = parseCode(`interface NamedThing {
+        name: string;
+      }
+
+      interface AgedThing extends NamedThing {
+        age: number
+      }
+
+      interface Person extends AgedThing {
+        favouriteColour: string;
+      }
+
+      class Breadcrumbs extends HTMLElement {
+        public update(person: Person) {}
+      }`);
+
+      const interfaces = generateInterfaces(state);
+
+      assert.strictEqual(interfaces.length, 1);
+      assert.include(interfaces[0].join('\n'), `* @typedef {{
+* name:string,
+* age:number,
+* favouriteColour:string,
+* }}`);
+      assert.include(interfaces[0].join('\n'), 'export let Person');
+    });
+
+    it('will include nested types from interfaces that get extended', () => {
+      const state = parseCode(`interface NamedThing {
+        name: Name;
+      }
+
+      interface Name {
+        first: string;
+        last: string;
+      }
+
+      interface Person extends NamedThing {
+        favouriteColour: string;
+      }
+
+      class Breadcrumbs extends HTMLElement {
+        public update(person: Person) {}
+      }`);
+
+      const interfaces = generateInterfaces(state);
+
+      assert.strictEqual(interfaces.length, 2);
+      assert.include(interfaces[0].join('\n'), `* @typedef {{
+* name:Name,
+* favouriteColour:string,
+* }}`);
+      assert.include(interfaces[0].join('\n'), 'export let Person');
+      assert.include(interfaces[1].join('\n'), `* @typedef {{
+* first:string,
+* last:string,
+* }}`);
+      assert.include(interfaces[1].join('\n'), 'export let Name');
     });
   });
 });

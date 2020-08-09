@@ -33,7 +33,7 @@
 // TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import {drawGridLabels} from './css_grid_label_helpers.js';
-import {buildPath, drawRulers, emptyBounds} from './highlight_common.js';
+import {buildPath, DEFAULT_RULER_COLOR, emptyBounds} from './highlight_common.js';
 
 export const gridStyle = `
 /* Grid row and column labels */
@@ -214,49 +214,9 @@ export function drawLayoutGridHighlight(highlight, context) {
     context.restore();
   }
 
-  // Draw Cell Border
-  if (highlight.gridHighlightConfig.cellBorderColor) {
-    const rowBounds = emptyBounds();
-    const columnBounds = emptyBounds();
-    const rowPath = buildPath(highlight.rows, rowBounds);
-    const columnPath = buildPath(highlight.columns, columnBounds);
-    context.save();
-    context.translate(0.5, 0.5);
-    if (highlight.gridHighlightConfig.cellBorderDash) {
-      context.setLineDash([3, 3]);
-    }
-    context.lineWidth = 0;
-    context.strokeStyle = highlight.gridHighlightConfig.cellBorderColor;
-
-    context.save();
-    context.stroke(rowPath);
-    context.restore();
-
-    context.save();
-    context.stroke(columnPath);
-    context.restore();
-
-    context.restore();
-
-    if (highlight.gridHighlightConfig.showGridExtensionLines) {
-      // Extend row gap lines left/up.
-      drawRulers(
-          context, rowBounds, /* rulerAtRight */ false, /* rulerAtBottom */ false,
-          highlight.gridHighlightConfig.cellBorderColor, highlight.gridHighlightConfig.cellBorderDash);
-      // Extend row gap right/down.
-      drawRulers(
-          context, rowBounds, /* rulerAtRight */ true, /* rulerAtBottom */ true,
-          highlight.gridHighlightConfig.cellBorderColor, highlight.gridHighlightConfig.cellBorderDash);
-      // Extend column lines left/up.
-      drawRulers(
-          context, columnBounds, /* rulerAtRight */ false, /* rulerAtBottom */ false,
-          highlight.gridHighlightConfig.cellBorderColor, highlight.gridHighlightConfig.cellBorderDash);
-      // Extend column right/down.
-      drawRulers(
-          context, columnBounds, /* rulerAtRight */ true, /* rulerAtBottom */ true,
-          highlight.gridHighlightConfig.cellBorderColor, highlight.gridHighlightConfig.cellBorderDash);
-    }
-  }
+  // Draw grid lines
+  _drawGridLines(context, highlight, 'row');
+  _drawGridLines(context, highlight, 'column');
 
   // Draw gaps
   _drawGridGap(
@@ -271,6 +231,93 @@ export function drawLayoutGridHighlight(highlight, context) {
 
   // Draw all the labels
   drawGridLabels(highlight, gridBounds, areaBounds);
+}
+
+function _drawGridLines(context, highlight, direction) {
+  const tracks = highlight[`${direction}s`];
+  const color = highlight.gridHighlightConfig[`${direction}LineColor`];
+  const dash = highlight.gridHighlightConfig[`${direction}LineDash`];
+  const extensionLines = highlight.gridHighlightConfig.showGridExtensionLines;
+
+  if (!color) {
+    return;
+  }
+
+  const bounds = emptyBounds();
+  const path = buildPath(tracks, bounds);
+
+  context.save();
+  context.translate(0.5, 0.5);
+  if (dash) {
+    context.setLineDash([3, 3]);
+  }
+  context.lineWidth = 0;
+  context.strokeStyle = color;
+
+  context.save();
+  context.stroke(path);
+  context.restore();
+
+  context.restore();
+
+  if (extensionLines) {
+    _drawExtendedGridLines(context, bounds, dash);
+  }
+}
+
+function _drawExtendedGridLines(context, bounds, dash) {
+  context.save();
+  context.strokeStyle = DEFAULT_RULER_COLOR;
+  context.lineWidth = 1;
+  context.translate(0.5, 0.5);
+  if (dash) {
+    context.setLineDash([3, 3]);
+  }
+
+  // A grid track path is a list of lines defined by 2 points.
+  // Here we're going through the list of all points 2 by 2, so we can draw the extensions at the edges of each line.
+  for (let i = 0; i < bounds.allPoints.length; i += 2) {
+    let point1 = bounds.allPoints[i];
+    let point2 = bounds.allPoints[i + 1];
+    let edgePoint1;
+    let edgePoint2;
+
+    if (point1.x === point2.x) {
+      // Special case for a vertical line.
+      edgePoint1 = {x: point1.x, y: 0};
+      edgePoint2 = {x: point1.x, y: canvasHeight};
+      if (point2.y < point1.y) {
+        [point1, point2] = [point2, point1];
+      }
+    } else if (point1.y === point2.y) {
+      // Special case for a horizontal line.
+      edgePoint1 = {x: 0, y: point1.y};
+      edgePoint2 = {x: canvasWidth, y: point1.y};
+      if (point2.x < point1.x) {
+        [point1, point2] = [point2, point1];
+      }
+    } else {
+      // When the line isn't straight, we need to do some maths.
+      const a = (point2.y - point1.y) / (point2.x - point1.x);
+      const b = (point1.y * point2.x - point2.y * point1.x) / (point2.x - point1.x);
+
+      edgePoint1 = {x: 0, y: b};
+      edgePoint2 = {x: canvasWidth, y: (canvasWidth * a) + b};
+
+      if (point2.x < point1.x) {
+        [point1, point2] = [point2, point1];
+      }
+    }
+
+    context.beginPath();
+    context.moveTo(edgePoint1.x, edgePoint1.y);
+    context.lineTo(point1.x, point1.y);
+    context.moveTo(point2.x, point2.y);
+    context.lineTo(edgePoint2.x, edgePoint2.y);
+    context.stroke();
+  }
+
+  context.restore();
 }
 
 /**

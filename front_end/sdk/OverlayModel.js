@@ -60,19 +60,6 @@ export class OverlayModel extends SDKModel {
     this._gridFeaturesExperimentEnabled = Root.Runtime.experiments.isEnabled('cssGridFeatures');
     this._sourceOrderViewerExperimentEnabled = Root.Runtime.experiments.isEnabled('sourceOrderViewer');
 
-    /** @type {?Common.Settings.Setting<*>} */
-    this._showGridBorderSetting = null;
-    /** @type {?Common.Settings.Setting<*>} */
-    this._showGridLinesSetting = null;
-    /** @type {?Common.Settings.Setting<*>} */
-    this._showGridLineNumbersSetting = null;
-    /** @type {?Common.Settings.Setting<*>} */
-    this._showGridGapsSetting = null;
-    /** @type {?Common.Settings.Setting<*>} */
-    this._showGridAreasSetting = null;
-    /** @type {?Common.Settings.Setting<*>} */
-    this._showGridTrackSizesSetting = null;
-
     this._hideHighlightTimeout = null;
     this._defaultHighlighter = new DefaultHighlighter(this);
     this._highlighter = this._defaultHighlighter;
@@ -96,20 +83,12 @@ export class OverlayModel extends SDKModel {
     this._isPersistentGridModeOn = false;
 
     if (this._gridFeaturesExperimentEnabled) {
-      this._showGridBorderSetting = Common.Settings.Settings.instance().moduleSetting('showGridBorder');
-      this._showGridLinesSetting = Common.Settings.Settings.instance().moduleSetting('showGridLines');
-      this._showGridLineNumbersSetting = Common.Settings.Settings.instance().moduleSetting('showGridLineNumbers');
-      this._showGridGapsSetting = Common.Settings.Settings.instance().moduleSetting('showGridGaps');
-      this._showGridAreasSetting = Common.Settings.Settings.instance().moduleSetting('showGridAreas');
-      this._showGridTrackSizesSetting = Common.Settings.Settings.instance().moduleSetting('showGridTrackSizes');
-      this._logCurrentGridSettings();
-
       this._persistentGridHighlighter = new DefaultPersistentGridHighlighter(this);
-      this._domModel.addEventListener(DOMModelEvents.NodeRemoved, event => {
-        const nodeId = event.data.node.id;
-        if (nodeId !== undefined) {
-          this._persistentGridHighlighter.hideInOverlay(nodeId);
-        }
+      this._domModel.addEventListener(DOMModelEvents.NodeRemoved, () => {
+        this._persistentGridHighlighter.refreshHighlights();
+      });
+      this._domModel.addEventListener(DOMModelEvents.DocumentUpdated, () => {
+        this._persistentGridHighlighter.hideAllInOverlay();
       });
     }
     if (this._sourceOrderViewerExperimentEnabled) {
@@ -158,40 +137,10 @@ export class OverlayModel extends SDKModel {
   }
 
   /**
-   * @returns {boolean}
+   * @return {!DOMModel}
    */
-  static getGridTelemetryLogged() {
-    return OverlayModel.gridTelemetryLogged;
-  }
-
-  /**
-   * @param {boolean} isLogged
-   */
-  static setGridTelemetryLogged(isLogged) {
-    OverlayModel.gridTelemetryLogged = isLogged;
-  }
-
-  _logCurrentGridSettings() {
-    if (OverlayModel.getGridTelemetryLogged()) {
-      return;
-    }
-    this._recordGridSetting(this._showGridBorderSetting);
-    this._recordGridSetting(this._showGridLinesSetting);
-    this._recordGridSetting(this._showGridLineNumbersSetting);
-    this._recordGridSetting(this._showGridGapsSetting);
-    this._recordGridSetting(this._showGridAreasSetting);
-    this._recordGridSetting(this._showGridTrackSizesSetting);
-    OverlayModel.setGridTelemetryLogged(true);
-  }
-
-  /**
-   * @param {?Common.Settings.Setting<*>} setting
-   */
-  _recordGridSetting(setting) {
-    if (!setting) {
-      return;
-    }
-    Host.userMetrics.cssGridSettings(`${setting.name}.${setting.get()}`);
+  getDOMModel() {
+    return this._domModel;
   }
 
   /**
@@ -282,6 +231,10 @@ export class OverlayModel extends SDKModel {
    * @param {boolean} show
    */
   setShowViewportSizeOnResize(show) {
+    if (this._showViewportSizeOnResize === show) {
+      return;
+    }
+
     this._showViewportSizeOnResize = show;
     if (this.target().suspended()) {
       return;
@@ -376,7 +329,7 @@ export class OverlayModel extends SDKModel {
    * @param {number} nodeId
    */
   highlightGridInPersistentOverlay(nodeId) {
-    this._persistentGridHighlighter.highlightInOverlay(nodeId, this._buildGridHighlightConfig());
+    this._persistentGridHighlighter.highlightInOverlay(nodeId);
   }
 
   /**
@@ -447,108 +400,6 @@ export class OverlayModel extends SDKModel {
   }
 
   /**
-   * @return {!Protocol.Overlay.GridHighlightConfig}
-   */
-  _buildGridHighlightConfig() {
-    let showGridBorder = false;
-    let gridBorderDashed = false;
-    switch (this._showGridBorderSetting.get()) {
-      case 'dashed':
-        showGridBorder = true;
-        gridBorderDashed = true;
-        break;
-      case 'solid':
-        showGridBorder = true;
-        break;
-      default:
-        break;
-    }
-    let showGridLines = false;
-    let gridLinesDashed = false;
-    let showGridExtensionLines;
-    switch (this._showGridLinesSetting.get()) {
-      case 'dashed':
-        showGridLines = true;
-        gridLinesDashed = true;
-        break;
-      case 'solid':
-        showGridLines = true;
-        break;
-      case 'extended-dashed':
-        showGridLines = true;
-        gridLinesDashed = true;
-        showGridExtensionLines = true;
-        break;
-      case 'extended-solid':
-        showGridLines = true;
-        showGridExtensionLines = true;
-        break;
-      default:
-        break;
-    }
-    // Add background to help distinguish rows/columns when cell borders are not outlined
-    const addBackgroundsToGaps = !showGridLines;
-    let showPositiveLineNumbers = false;
-    let showNegativeLineNumbers = false;
-    let showLineNames = false;
-    switch (this._showGridLineNumbersSetting.get()) {
-      case 'positive':
-        showPositiveLineNumbers = true;
-        break;
-      case 'negative':
-        showNegativeLineNumbers = true;
-        break;
-      case 'both':
-        showPositiveLineNumbers = true;
-        showNegativeLineNumbers = true;
-        break;
-      case 'names':
-        showLineNames = true;
-        break;
-      default:
-        break;
-    }
-    let showGridRowGaps = false;
-    let showGridColumnGaps = false;
-    switch (this._showGridGapsSetting.get()) {
-      case 'both':
-        showGridRowGaps = true;
-        showGridColumnGaps = true;
-        break;
-      case 'row-gaps':
-        showGridRowGaps = true;
-        break;
-      case 'column-gaps':
-        showGridColumnGaps = true;
-        break;
-      default:
-        break;
-    }
-
-    return {
-      rowGapColor: (showGridRowGaps && addBackgroundsToGaps) ?
-          Common.Color.PageHighlight.GridRowGapBackground.toProtocolRGBA() :
-          undefined,
-      rowHatchColor: showGridRowGaps ? Common.Color.PageHighlight.GridRowGapHatch.toProtocolRGBA() : undefined,
-      columnGapColor: (showGridColumnGaps && addBackgroundsToGaps) ?
-          Common.Color.PageHighlight.GridColumnGapBackground.toProtocolRGBA() :
-          undefined,
-      columnHatchColor: showGridColumnGaps ? Common.Color.PageHighlight.GridColumnGapHatch.toProtocolRGBA() : undefined,
-      gridBorderColor: showGridBorder ? Common.Color.PageHighlight.GridBorder.toProtocolRGBA() : undefined,
-      gridBorderDash: gridBorderDashed,
-      cellBorderColor: showGridLines ? Common.Color.PageHighlight.GridCellBorder.toProtocolRGBA() : undefined,
-      cellBorderDash: gridLinesDashed,
-      showGridExtensionLines,
-      showPositiveLineNumbers,
-      showNegativeLineNumbers,
-      showLineNames,
-      showAreaNames: /** @type {boolean} */ (this._showGridAreasSetting.get()),
-      showTrackSizes: /** @type {boolean} */ (this._showGridTrackSizesSetting.get()),
-      areaBorderColor: Common.Color.PageHighlight.GridAreaBorder.toProtocolRGBA(),
-    };
-  }
-
-  /**
    * @param {string=} mode
    * @param {boolean=} showDetailedToolip
    * @return {!Protocol.Overlay.HighlightConfig}
@@ -556,13 +407,16 @@ export class OverlayModel extends SDKModel {
   _buildHighlightConfig(mode = 'all', showDetailedToolip = false) {
     const showRulers = Common.Settings.Settings.instance().moduleSetting('showMetricsRulers').get();
     const colorFormat = Common.Settings.Settings.instance().moduleSetting('colorFormat').get();
+
     const highlightConfig = {
       showInfo: mode === 'all',
       showRulers: showRulers,
       showStyles: showDetailedToolip,
       showAccessibilityInfo: showDetailedToolip,
       showExtensionLines: showRulers,
+      gridHighlightConfig: {},
     };
+
     if (mode === 'all' || mode === 'content') {
       highlightConfig.contentColor = Common.Color.PageHighlight.Content.toProtocolRGBA();
     }
@@ -583,15 +437,17 @@ export class OverlayModel extends SDKModel {
       highlightConfig.eventTargetColor = Common.Color.PageHighlight.EventTarget.toProtocolRGBA();
       highlightConfig.shapeColor = Common.Color.PageHighlight.Shape.toProtocolRGBA();
       highlightConfig.shapeMarginColor = Common.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
-    }
 
-    if (mode === 'all') {
-      if (this._gridFeaturesExperimentEnabled) {
-        highlightConfig.gridHighlightConfig = this._buildGridHighlightConfig();
-      } else {
-        // Support for the legacy grid cell highlight.
-        highlightConfig.cssGridColor = Common.Color.PageHighlight.CssGrid.toProtocolRGBA();
-      }
+      highlightConfig.gridHighlightConfig = {
+        rowGapColor: Common.Color.PageHighlight.GridRowGapBackground.toProtocolRGBA(),
+        rowHatchColor: Common.Color.PageHighlight.GridRowGapHatch.toProtocolRGBA(),
+        columnGapColor: Common.Color.PageHighlight.GridColumnGapBackground.toProtocolRGBA(),
+        columnHatchColor: Common.Color.PageHighlight.GridColumnGapHatch.toProtocolRGBA(),
+        rowLineColor: Common.Color.PageHighlight.GridRowLine.toProtocolRGBA(),
+        columnLineColor: Common.Color.PageHighlight.GridColumnLine.toProtocolRGBA(),
+        rowLineDash: true,
+        columnLineDash: true,
+      };
     }
 
     if (mode.endsWith('gap') && this._gridFeaturesExperimentEnabled) {
@@ -615,10 +471,28 @@ export class OverlayModel extends SDKModel {
 
     if (mode === 'grid-areas' && this._gridFeaturesExperimentEnabled) {
       highlightConfig.gridHighlightConfig = {
-        cellBorderColor: Common.Color.PageHighlight.GridCellBorder.toProtocolRGBA(),
-        cellBorderDash: true,
+        rowLineColor: Common.Color.PageHighlight.GridRowLine.toProtocolRGBA(),
+        columnLineColor: Common.Color.PageHighlight.GridColumnLine.toProtocolRGBA(),
+        rowLineDash: true,
+        columnLineDash: true,
         showAreaNames: true,
         areaBorderColor: Common.Color.PageHighlight.GridAreaBorder.toProtocolRGBA()
+      };
+    }
+
+    if (mode === 'grid-template-columns' && this._gridFeaturesExperimentEnabled) {
+      highlightConfig.contentColor = Common.Color.PageHighlight.Content.toProtocolRGBA();
+      highlightConfig.gridHighlightConfig = {
+        columnLineColor: Common.Color.PageHighlight.GridColumnLine.toProtocolRGBA(),
+        columnLineDash: true
+      };
+    }
+
+    if (mode === 'grid-template-rows' && this._gridFeaturesExperimentEnabled) {
+      highlightConfig.contentColor = Common.Color.PageHighlight.Content.toProtocolRGBA();
+      highlightConfig.gridHighlightConfig = {
+        rowLineColor: Common.Color.PageHighlight.GridRowLine.toProtocolRGBA(),
+        rowLineDash: true
       };
     }
 
@@ -684,8 +558,6 @@ export class OverlayModel extends SDKModel {
     this.dispatchEventToListeners(Events.ExitedInspectMode);
   }
 }
-
-OverlayModel.gridTelemetryLogged = false;
 
 /** @enum {symbol} */
 export const Events = {
@@ -789,6 +661,9 @@ export class PersistentGridHighlighter {
 
   hideAllInOverlay() {
   }
+
+  refreshHighlights() {
+  }
 }
 
 /**
@@ -801,19 +676,165 @@ class DefaultPersistentGridHighlighter {
   constructor(model) {
     this._model = model;
     this._gridHighlights = new Map();
+
+    /** @type {?Common.Settings.Setting<*>} */
+    this._showGridBorderSetting = Common.Settings.Settings.instance().moduleSetting('showGridBorder');
+    /** @type {?Common.Settings.Setting<*>} */
+    this._showGridLinesSetting = Common.Settings.Settings.instance().moduleSetting('showGridLines');
+    /** @type {?Common.Settings.Setting<*>} */
+    this._showGridLineNumbersSetting = Common.Settings.Settings.instance().moduleSetting('showGridLineNumbers');
+    /** @type {?Common.Settings.Setting<*>} */
+    this._showGridGapsSetting = Common.Settings.Settings.instance().moduleSetting('showGridGaps');
+    /** @type {?Common.Settings.Setting<*>} */
+    this._showGridAreasSetting = Common.Settings.Settings.instance().moduleSetting('showGridAreas');
+    /** @type {?Common.Settings.Setting<*>} */
+    this._showGridTrackSizesSetting = Common.Settings.Settings.instance().moduleSetting('showGridTrackSizes');
+
+    this._logCurrentGridSettings();
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  static getGridTelemetryLogged() {
+    return DefaultPersistentGridHighlighter.gridTelemetryLogged;
+  }
+
+  /**
+   * @param {boolean} isLogged
+   */
+  static setGridTelemetryLogged(isLogged) {
+    DefaultPersistentGridHighlighter.gridTelemetryLogged = isLogged;
+  }
+
+  _logCurrentGridSettings() {
+    if (DefaultPersistentGridHighlighter.getGridTelemetryLogged()) {
+      return;
+    }
+    this._recordGridSetting(this._showGridBorderSetting);
+    this._recordGridSetting(this._showGridLinesSetting);
+    this._recordGridSetting(this._showGridLineNumbersSetting);
+    this._recordGridSetting(this._showGridGapsSetting);
+    this._recordGridSetting(this._showGridAreasSetting);
+    this._recordGridSetting(this._showGridTrackSizesSetting);
+    DefaultPersistentGridHighlighter.setGridTelemetryLogged(true);
+  }
+
+  /**
+   * @param {?Common.Settings.Setting<*>} setting
+   */
+  _recordGridSetting(setting) {
+    if (!setting) {
+      return;
+    }
+    Host.userMetrics.cssGridSettings(`${setting.name}.${setting.get()}`);
+  }
+
+  /**
+   * @return {!Protocol.Overlay.GridHighlightConfig}
+   */
+  _buildGridHighlightConfig() {
+    let showGridBorder = false;
+    let gridBorderDashed = false;
+    switch (this._showGridBorderSetting.get()) {
+      case 'dashed':
+        showGridBorder = true;
+        gridBorderDashed = true;
+        break;
+      case 'solid':
+        showGridBorder = true;
+        break;
+      default:
+        break;
+    }
+    let showGridLines = false;
+    let gridLinesDashed = false;
+    let showGridExtensionLines;
+    switch (this._showGridLinesSetting.get()) {
+      case 'dashed':
+        showGridLines = true;
+        gridLinesDashed = true;
+        break;
+      case 'solid':
+        showGridLines = true;
+        break;
+      case 'extended-dashed':
+        showGridLines = true;
+        gridLinesDashed = true;
+        showGridExtensionLines = true;
+        break;
+      case 'extended-solid':
+        showGridLines = true;
+        showGridExtensionLines = true;
+        break;
+      default:
+        break;
+    }
+    let showPositiveLineNumbers = false;
+    let showNegativeLineNumbers = false;
+    let showLineNames = false;
+    switch (this._showGridLineNumbersSetting.get()) {
+      case 'positive':
+        showPositiveLineNumbers = true;
+        break;
+      case 'negative':
+        showNegativeLineNumbers = true;
+        break;
+      case 'both':
+        showPositiveLineNumbers = true;
+        showNegativeLineNumbers = true;
+        break;
+      case 'names':
+        showLineNames = true;
+        break;
+      default:
+        break;
+    }
+    let showGridRowGaps = false;
+    let showGridColumnGaps = false;
+    switch (this._showGridGapsSetting.get()) {
+      case 'both':
+        showGridRowGaps = true;
+        showGridColumnGaps = true;
+        break;
+      case 'row-gaps':
+        showGridRowGaps = true;
+        break;
+      case 'column-gaps':
+        showGridColumnGaps = true;
+        break;
+      default:
+        break;
+    }
+
+    return {
+      rowGapColor: showGridRowGaps ? Common.Color.PageHighlight.GridRowGapBackground.toProtocolRGBA() : undefined,
+      rowHatchColor: showGridRowGaps ? Common.Color.PageHighlight.GridRowGapHatch.toProtocolRGBA() : undefined,
+      columnGapColor: showGridColumnGaps ? Common.Color.PageHighlight.GridColumnGapBackground.toProtocolRGBA() :
+                                           undefined,
+      columnHatchColor: showGridColumnGaps ? Common.Color.PageHighlight.GridColumnGapHatch.toProtocolRGBA() : undefined,
+      gridBorderColor: showGridBorder ? Common.Color.PageHighlight.GridBorder.toProtocolRGBA() : undefined,
+      gridBorderDash: gridBorderDashed,
+      rowLineColor: showGridLines ? Common.Color.PageHighlight.GridRowLine.toProtocolRGBA() : undefined,
+      columnLineColor: showGridLines ? Common.Color.PageHighlight.GridColumnLine.toProtocolRGBA() : undefined,
+      rowLineDash: gridLinesDashed,
+      columnLineDash: gridLinesDashed,
+      showGridExtensionLines,
+      showPositiveLineNumbers,
+      showNegativeLineNumbers,
+      showLineNames,
+      showAreaNames: /** @type {boolean} */ (this._showGridAreasSetting.get()),
+      showTrackSizes: /** @type {boolean} */ (this._showGridTrackSizesSetting.get()),
+      areaBorderColor: Common.Color.PageHighlight.GridAreaBorder.toProtocolRGBA(),
+    };
   }
 
   /**
    * @override
    * @param {number} nodeId
-   * @param {!Protocol.Overlay.GridHighlightConfig} config
    */
-  highlightInOverlay(nodeId, config) {
-    if (this._gridHighlights.size === 0) {
-      this._model.setPersistentGridMode(true);
-      this._model.setShowViewportSizeOnResize(false);
-    }
-    this._gridHighlights.set(nodeId, config);
+  highlightInOverlay(nodeId) {
+    this._gridHighlights.set(nodeId, this._buildGridHighlightConfig());
     this._updateHighlightsInOverlay();
   }
 
@@ -824,10 +845,6 @@ class DefaultPersistentGridHighlighter {
   hideInOverlay(nodeId) {
     if (this._gridHighlights.has(nodeId)) {
       this._gridHighlights.delete(nodeId);
-      if (this._gridHighlights.size === 0) {
-        this._model.setPersistentGridMode(false);
-        this._model.setShowViewportSizeOnResize(true);
-      }
       this._updateHighlightsInOverlay();
     }
   }
@@ -837,12 +854,29 @@ class DefaultPersistentGridHighlighter {
    */
   hideAllInOverlay() {
     this._gridHighlights.clear();
-    this._model.setPersistentGridMode(false);
-    this._model.setShowViewportSizeOnResize(true);
     this._updateHighlightsInOverlay();
   }
 
+  /**
+   * @override
+   */
+  refreshHighlights() {
+    let needsUpdate = false;
+    for (const nodeId of this._gridHighlights.keys()) {
+      if (this._model.getDOMModel().nodeForId(nodeId) === null) {
+        this._gridHighlights.delete(nodeId);
+        needsUpdate = true;
+      }
+    }
+    if (needsUpdate) {
+      this._updateHighlightsInOverlay();
+    }
+  }
+
   _updateHighlightsInOverlay() {
+    const hasGridNodesToHighlight = this._gridHighlights.size > 0;
+    this._model.setPersistentGridMode(hasGridNodesToHighlight);
+    this._model.setShowViewportSizeOnResize(!hasGridNodesToHighlight);
     const overlayModel = this._model;
     const gridNodeHighlightConfigs = [];
     for (const [nodeId, gridHighlightConfig] of this._gridHighlights.entries()) {
@@ -851,6 +885,8 @@ class DefaultPersistentGridHighlighter {
     overlayModel.target().overlayAgent().setShowGridOverlays(gridNodeHighlightConfigs);
   }
 }
+
+DefaultPersistentGridHighlighter.gridTelemetryLogged = false;
 
 export class SourceOrderHighlighter {
   /**
