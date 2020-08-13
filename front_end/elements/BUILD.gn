@@ -4,39 +4,25 @@
 
 import("../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../scripts/build/ninja/devtools_module.gni")
-import("../../scripts/build/ninja/devtools_pre_built.gni")
 import("../../third_party/typescript/typescript.gni")
 
 devtools_module("elements") {
   sources = [
     "Adorner.js",
-    "ElementsBreadcrumbs.ts",
-    "ElementsBreadcrumbsUtils.ts",
-    "ElementsBreadcrumbs_bridge.js",
-  ]
-
-  deps = [
-    "../common:bundle",
-    "../platform:bundle",
-    "../third_party/lit-html:bundle",
-    "../ui:bundle",
-  ]
-
-  visibility = [
-    "../component_docs/elements_breadcrumbs",
-    "../../test/unittests/front_end/elements",
-  ]
-}
-
-devtools_pre_built("elements-pre-built") {
-  sources = [
     "ClassesPaneWidget.js",
     "ColorSwatchPopoverIcon.js",
     "ComputedStyleModel.js",
+    "ComputedStyleProperty.ts",
+    "ComputedStyleProperty_bridge.js",
+    "ComputedStyleTrace.ts",
+    "ComputedStyleTrace_bridge.js",
     "ComputedStyleWidget.js",
     "DOMLinkifier.js",
     "DOMPath.js",
     "ElementStatePaneWidget.js",
+    "ElementsBreadcrumbs.ts",
+    "ElementsBreadcrumbsUtils.ts",
+    "ElementsBreadcrumbs_bridge.js",
     "ElementsPanel.js",
     "ElementsSidebarPane.js",
     "ElementsTreeElement.js",
@@ -45,6 +31,10 @@ devtools_pre_built("elements-pre-built") {
     "EventListenersWidget.js",
     "ImagePreviewPopover.js",
     "InspectElementModeController.js",
+    "LayoutPane.ts",
+    "LayoutPaneUtils.ts",
+    "LayoutPane_bridge.js",
+    "LayoutSidebarPane.js",
     "MarkerDecorator.js",
     "MetricsSidebarPane.js",
     "NodeStackTraceWidget.js",
@@ -54,13 +44,43 @@ devtools_pre_built("elements-pre-built") {
     "StylePropertyTreeElement.js",
     "StylesSidebarPane.js",
   ]
+
+  deps = [
+    "../bindings:bundle",
+    "../color_picker:bundle",
+    "../common:bundle",
+    "../component_helpers:bundle",
+    "../components:bundle",
+    "../emulation:bundle",
+    "../event_listeners:bundle",
+    "../extensions:bundle",
+    "../formatter:bundle",
+    "../generated",
+    "../inline_editor:bundle",
+    "../mobile_throttling:bundle",
+    "../object_ui:bundle",
+    "../platform:bundle",
+    "../protocol_client:bundle",
+    "../sdk:bundle",
+    "../sdk:bundle",
+    "../third_party/lit-html:bundle",
+    "../ui:bundle",
+    "../workspace:bundle",
+  ]
+
+  visibility = [
+    "../component_docs/computed_style_property",
+    "../component_docs/computed_style_trace",
+    "../component_docs/elements_breadcrumbs",
+    "../component_docs/layout_pane",
+    "../../test/unittests/front_end/elements",
+  ]
 }
 
 devtools_entrypoint("bundle") {
   entrypoint = "elements.js"
 
-  deps = [
-    ":elements",
-    ":elements-pre-built",
-  ]
+  is_legacy_javascript_entrypoint = [ "crbug.com/1011811" ]
+
+  deps = [ ":elements" ]
 }

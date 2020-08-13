@@ -353,40 +353,43 @@ const gatherMembersForInterface =
 
 const generateClosureForInterface =
     (state: WalkerState, interfaceName: string): string[] => {
-      const interfaceOrTypeAlias = findNodeForTypeReferenceName(state, interfaceName);
+      const typeReferenceNode = findNodeForTypeReferenceName(state, interfaceName);
 
-      if (!interfaceOrTypeAlias) {
-        throw new Error(`Could not find interface or type alias: ${interfaceName}`);
+      if (!typeReferenceNode) {
+        throw new Error(`Could not find definition for reference: ${interfaceName}`);
+      }
+
+      if (ts.isEnumDeclaration(typeReferenceNode)) {
+        return generateEnumOutput(typeReferenceNode);
       }
 
       const interfaceBits: string[] = ['/**'];
 
-      if (ts.isInterfaceDeclaration(interfaceOrTypeAlias)) {
+      if (ts.isInterfaceDeclaration(typeReferenceNode)) {
         interfaceBits.push('* @typedef {{');
-        const allMembersOfInterface = gatherMembersForInterface(state, interfaceOrTypeAlias);
+        const allMembersOfInterface = gatherMembersForInterface(state, typeReferenceNode);
         interfaceBits.push(...generateInterfaceMembers(allMembersOfInterface));
         interfaceBits.push('* }}');
         interfaceBits.push('*/');
-      } else if (ts.isTypeAliasDeclaration(interfaceOrTypeAlias) && ts.isUnionTypeNode(interfaceOrTypeAlias.type)) {
+      } else if (ts.isTypeAliasDeclaration(typeReferenceNode) && ts.isUnionTypeNode(typeReferenceNode.type)) {
         // e.g. type X = A|B, type Y = string|number, etc
-        const unionTypeConverted = interfaceOrTypeAlias.type.types.map(v => valueForTypeNode(v)).join('|');
+        const unionTypeConverted = typeReferenceNode.type.types.map(v => valueForTypeNode(v)).join('|');
         interfaceBits.push(`* @typedef {${unionTypeConverted}}`);
         interfaceBits.push('*/');
-      } else if (ts.isTypeAliasDeclaration(interfaceOrTypeAlias) && ts.isTypeLiteralNode(interfaceOrTypeAlias.type)) {
+      } else if (ts.isTypeAliasDeclaration(typeReferenceNode) && ts.isTypeLiteralNode(typeReferenceNode.type)) {
         // e.g. type X = { name: string; }
         interfaceBits.push('* @typedef {{');
-        interfaceBits.push(...generateInterfaceMembers(interfaceOrTypeAlias.type.members));
+        interfaceBits.push(...generateInterfaceMembers(typeReferenceNode.type.members));
         interfaceBits.push('* }}');
         interfaceBits.push('*/');
-      } else if (
-          ts.isTypeAliasDeclaration(interfaceOrTypeAlias) && ts.isIntersectionTypeNode(interfaceOrTypeAlias.type)) {
+      } else if (ts.isTypeAliasDeclaration(typeReferenceNode) && ts.isIntersectionTypeNode(typeReferenceNode.type)) {
         // e.g. type Foo = Bar & {...}
         /* Closure types don't support being extended, so in this case we define the type Foo
       * in Closure as all the members of Foo and all the members of Bar
       */
         interfaceBits.push('* @typedef {{');
         const allMembers: (ts.TypeNode|ts.TypeElement)[] = [];
-        interfaceOrTypeAlias.type.types.forEach(typePart => {
+        typeReferenceNode.type.types.forEach(typePart => {
           if (ts.isTypeLiteralNode(typePart)) {
             allMembers.push(...typePart.members);
           } else if (ts.isTypeReferenceNode(typePart)) {
@@ -430,7 +433,7 @@ const generateClosureForInterface =
         interfaceBits.push('* }}');
         interfaceBits.push('*/');
       } else {
-        throw new Error(`Unsupported type alias nested type: ${ts.SyntaxKind[interfaceOrTypeAlias.type.kind]}.`);
+        throw new Error(`Unsupported type alias nested type: ${ts.SyntaxKind[typeReferenceNode.type.kind]}.`);
       }
 
       interfaceBits.push('// @ts-ignore we export this for Closure not TS');
@@ -439,7 +442,7 @@ const generateClosureForInterface =
       return interfaceBits;
     };
 
-export const generateInterfaces = (state: WalkerState): Array<string[]> => {
+export const generateTypeReferences = (state: WalkerState): Array<string[]> => {
   const finalCode: Array<string[]> = [];
 
   state.typeReferencesToConvert.forEach(interfaceName => {
@@ -449,15 +452,56 @@ export const generateInterfaces = (state: WalkerState): Array<string[]> => {
   return finalCode;
 };
 
+const getEnumType = (node: ts.EnumDeclaration): 'string'|'number' => {
+  const firstMember = node.members[0];
+  const enumName = node.name.escapedText.toString();
+
+  if (!firstMember.initializer) {
+    throw new Error(`Enum ${enumName} has an unitialized member.`);
+  }
+
+  if (ts.isStringLiteral(firstMember.initializer)) {
+    return 'string';
+  }
+  if (ts.isNumericLiteral(firstMember.initializer)) {
+    return 'number';
+  }
+
+  throw new Error(`Enum ${enumName} has a member whose type is not string or number.`);
+};
+
+const generateEnumOutput = (enumDeclaration: ts.EnumDeclaration): string[] => {
+  const enumOutput: string[] = [];
+  const enumType = getEnumType(enumDeclaration);
+  enumOutput.push('/**');
+  enumOutput.push(`* @enum {${enumType}}`);
+  enumOutput.push('*/');
+  const enumName = enumDeclaration.name.escapedText.toString();
+  enumOutput.push('// @ts-ignore we export this for Closure not TS');
+  enumOutput.push(`export let ${enumName} = {`);
+  enumDeclaration.members.forEach(member => {
+    if (!ts.isIdentifier(member.name)) {
+      throw new Error(`Unexpected: member of enum ${enumName} does not have an identifier`);
+    }
+    const enumKey = member.name.escapedText.toString();
+    const enumValue = member.initializer && (member.initializer as ts.StringLiteral | ts.NumericLiteral).text;
+    const valueToOutput = enumType === 'string' ? `'${enumValue}'` : enumValue;
+    enumOutput.push(`  ${enumKey}: ${valueToOutput},`);
+  });
+  enumOutput.push('};');
+
+  return enumOutput;
+};
+
 export interface GeneratedCode {
-  interfaces: string[][];
+  types: string[][];
   closureClass: string[];
   creatorFunction: string[];
 }
 
 export const generateClosureBridge = (state: WalkerState): GeneratedCode => {
   const result: GeneratedCode = {
-    interfaces: generateInterfaces(state),
+    types: generateTypeReferences(state),
     closureClass: generateClosureClass(state),
     creatorFunction: generateCreatorFunction(state),
   };
