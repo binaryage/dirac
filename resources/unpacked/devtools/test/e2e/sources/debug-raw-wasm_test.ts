@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {describe, it} from 'mocha';
 import * as puppeteer from 'puppeteer';
 
-import {$, click, getBrowserAndPages, goToResource, step, waitFor} from '../../shared/helper.js';
-import {addBreakpointForLine, checkBreakpointDidNotActivate, checkBreakpointIsActive, checkBreakpointIsNotActive, clearSourceFilesAdded, getBreakpointDecorators, getNonBreakableLines, listenForSourceFilesAdded, openSourceCodeEditorForFile, openSourcesPanel, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, retrieveTopCallFrameWithoutResuming, SCOPE_LOCAL_VALUES_SELECTOR, SELECTED_THREAD_SELECTOR, sourceLineNumberSelector, stepThroughTheCode, TURNED_OFF_PAUSE_BUTTON_SELECTOR, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
+import {$, click, getBrowserAndPages, goToResource, step, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
+import {addBreakpointForLine, checkBreakpointDidNotActivate, checkBreakpointIsActive, checkBreakpointIsNotActive, clearSourceFilesAdded, getBreakpointDecorators, getNonBreakableLines, listenForSourceFilesAdded, openSourceCodeEditorForFile, openSourcesPanel, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, retrieveTopCallFrameWithoutResuming, SCOPE_LOCAL_VALUES_SELECTOR, SELECTED_THREAD_SELECTOR, sourceLineNumberSelector, stepThroughTheCode, TURNED_OFF_PAUSE_BUTTON_SELECTOR, waitForAdditionalSourceFiles, waitForSourceCodeLines} from '../helpers/sources-helpers.js';
 
 describe('Sources Tab', async function() {
   // The tests in this suite are particularly slow, as they perform a lot of actions
@@ -51,16 +51,23 @@ describe('Sources Tab', async function() {
       await openSourceCodeEditorForFile('add.wasm', 'wasm/call-to-add-wasm.html');
     });
 
+    const numberOfLines = 7;
+
+    await step('wait for all the source code to appear', async () => {
+      await waitForSourceCodeLines(numberOfLines);
+    });
     await step('add a breakpoint to line No.5', async () => {
       await addBreakpointForLine(frontend, 5);
     });
 
     await step('reload the page', async () => {
       await target.reload();
+      // FIXME(crbug/1112692): Refactor test to remove the timeout.
+      await timeout(100);
     });
 
     await step('wait for all the source code to appear', async () => {
-      await waitFor(await sourceLineNumberSelector(5));
+      await waitForSourceCodeLines(numberOfLines);
     });
 
     await checkBreakpointIsActive(5);
@@ -71,15 +78,17 @@ describe('Sources Tab', async function() {
     });
 
     await step('remove the breakpoint from the fifth line', async () => {
-      await frontend.click(await sourceLineNumberSelector(5));
+      await click(sourceLineNumberSelector(5));
     });
 
     await step('reload the page', async () => {
       await target.reload();
+      // FIXME(crbug/1112692): Refactor test to remove the timeout.
+      await timeout(100);
     });
 
     await step('wait for all the source code to appear', async () => {
-      await waitFor(await sourceLineNumberSelector(5));
+      await waitForSourceCodeLines(numberOfLines);
     });
 
     await checkBreakpointIsNotActive(5);
@@ -91,10 +100,12 @@ describe('Sources Tab', async function() {
 
     await step('reload the page', async () => {
       await target.reload();
+      // FIXME(crbug/1112692): Refactor test to remove the timeout.
+      await timeout(100);
     });
 
     await step('wait for all the source code to appear', async () => {
-      await waitFor(await sourceLineNumberSelector(6));
+      await waitForSourceCodeLines(numberOfLines);
     });
 
     await checkBreakpointIsActive(6);
@@ -129,16 +140,24 @@ describe('Sources Tab', async function() {
       await openSourceCodeEditorForFile('stepping-with-state.wasm', 'wasm/stepping-with-state.html');
     });
 
+    const numberOfLines = 32;
+
+    await step('wait for all the source code to appear', async () => {
+      await waitForSourceCodeLines(numberOfLines);
+    });
+
     await step('add a breakpoint to line No.23', async () => {
       await addBreakpointForLine(frontend, 23);
     });
 
     await step('reload the page', async () => {
       await target.reload();
+      // FIXME(crbug/1112692): Refactor test to remove the timeout.
+      await timeout(100);
     });
 
     await step('wait for all the source code to appear', async () => {
-      await waitFor(await sourceLineNumberSelector(23));
+      await waitForSourceCodeLines(numberOfLines);
     });
 
     await checkBreakpointIsActive(23);
@@ -156,15 +175,16 @@ describe('Sources Tab', async function() {
     await step('check that the variables in the scope view show the correct values', async () => {
       await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
       const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const local_scope_values = await localScopeView.evaluate(element => {
-        return (element as HTMLElement).innerText;
+      await waitForFunction(async () => {
+        const local_scope_values = await localScopeView.evaluate(element => {
+          return (element as HTMLElement).innerText;
+        });
+        return local_scope_values === '"": 42';
       });
-
-      assert.strictEqual(local_scope_values, '"": 42', 'local scope does not contain the correct values');
     });
 
     await step('remove the breakpoint from the 23rd line', async () => {
-      await frontend.click(await sourceLineNumberSelector(23));
+      await click(sourceLineNumberSelector(23));
     });
 
     await step('add a breakpoint to line No.8', async () => {
@@ -173,10 +193,12 @@ describe('Sources Tab', async function() {
 
     await step('reload the page', async () => {
       await target.reload();
+      // FIXME(crbug/1112692): Refactor test to remove the timeout.
+      await timeout(100);
     });
 
     await step('wait for all the source code to appear', async () => {
-      await waitFor(await sourceLineNumberSelector(8));
+      await waitForSourceCodeLines(numberOfLines);
     });
 
     await checkBreakpointIsActive(8);
@@ -194,11 +216,12 @@ describe('Sources Tab', async function() {
     await step('check that the variables in the scope view show the correct values', async () => {
       await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
       const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const local_scope_values = await localScopeView.evaluate(element => {
-        return (element as HTMLElement).innerText;
+      await waitForFunction(async () => {
+        const local_scope_values = await localScopeView.evaluate(element => {
+          return (element as HTMLElement).innerText;
+        });
+        return local_scope_values === '"": 50';
       });
-
-      assert.strictEqual(local_scope_values, '"": 50', 'lables do not contain the correct contents');
     });
 
     await step('resume script execution', async () => {
@@ -216,6 +239,8 @@ describe('Sources Tab', async function() {
       await openSourceCodeEditorForFile('stepping-with-state.wasm', 'wasm/stepping-with-state-and-threads.html');
     });
 
+    const numberOfLines = 32;
+
     await step('check that the main thread is selected', async () => {
       const selectedThreadElement = await waitFor(SELECTED_THREAD_SELECTOR);
       const selectedThreadName = await selectedThreadElement.evaluate(element => {
@@ -230,10 +255,12 @@ describe('Sources Tab', async function() {
 
     await step('reload the page', async () => {
       await target.reload();
+      // FIXME(crbug/1112692): Refactor test to remove the timeout.
+      await timeout(100);
     });
 
     await step('wait for all the source code to appear', async () => {
-      await waitFor(await sourceLineNumberSelector(23));
+      await waitForSourceCodeLines(numberOfLines);
     });
 
     await checkBreakpointIsActive(23);
@@ -251,15 +278,16 @@ describe('Sources Tab', async function() {
     await step('check that the variables in the scope view show the correct values', async () => {
       await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
       const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const local_scope_values = await localScopeView.evaluate(element => {
-        return (element as HTMLElement).innerText;
+      await waitForFunction(async () => {
+        const local_scope_values = await localScopeView.evaluate(element => {
+          return (element as HTMLElement).innerText;
+        });
+        return local_scope_values === '"": 42';
       });
-
-      assert.strictEqual(local_scope_values, '"": 42', 'lables do not contain the correct contents');
     });
 
     await step('remove the breakpoint from the 23rd line', async () => {
-      await frontend.click(await sourceLineNumberSelector(23));
+      await click(sourceLineNumberSelector(23));
     });
 
     await step('add a breakpoint to line No.8', async () => {
@@ -268,10 +296,12 @@ describe('Sources Tab', async function() {
 
     await step('reload the page', async () => {
       await target.reload();
+      // FIXME(crbug/1112692): Refactor test to remove the timeout.
+      await timeout(100);
     });
 
     await step('wait for all the source code to appear', async () => {
-      await waitFor(await sourceLineNumberSelector(8));
+      await waitForSourceCodeLines(numberOfLines);
     });
 
     await checkBreakpointIsActive(8);
@@ -297,15 +327,16 @@ describe('Sources Tab', async function() {
     await step('check that the variables in the scope view show the correct values', async () => {
       await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
       const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const local_scope_values = await localScopeView.evaluate(element => {
-        return (element as HTMLElement).innerText;
+      await waitForFunction(async () => {
+        const local_scope_values = await localScopeView.evaluate(element => {
+          return (element as HTMLElement).innerText;
+        });
+        return local_scope_values === '"": 50';
       });
-
-      assert.strictEqual(local_scope_values, '"": 50', 'lables do not contain the correct contents');
     });
 
     await step('remove the breakpoint from the 8th line', async () => {
-      await frontend.click(await sourceLineNumberSelector(8));
+      await click(sourceLineNumberSelector(8));
     });
 
     await step('resume script execution', async () => {
@@ -321,10 +352,12 @@ describe('Sources Tab', async function() {
 
     await step('reload the page', async () => {
       await target.reload();
+      // FIXME(crbug/1112692): Refactor test to remove the timeout.
+      await timeout(100);
     });
 
     await step('wait for all the source code to appear', async () => {
-      await waitFor(await sourceLineNumberSelector(30));
+      await waitForSourceCodeLines(numberOfLines);
     });
 
     await checkBreakpointIsActive(30);
@@ -351,15 +384,16 @@ describe('Sources Tab', async function() {
     await step('check that the variables in the scope view show the correct values', async () => {
       await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
       const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const local_scope_values = await localScopeView.evaluate(element => {
-        return (element as HTMLElement).innerText;
+      await waitForFunction(async () => {
+        const local_scope_values = await localScopeView.evaluate(element => {
+          return (element as HTMLElement).innerText;
+        });
+        return local_scope_values === '"": 42';
       });
-
-      assert.strictEqual(local_scope_values, '"": 42', 'lables do not contain the correct contents');
     });
 
     await step('remove the breakpoint from the 30th line', async () => {
-      await frontend.click(await sourceLineNumberSelector(30));
+      await click(sourceLineNumberSelector(30));
     });
 
     await step('add a breakpoint to line No.13', async () => {
@@ -368,10 +402,12 @@ describe('Sources Tab', async function() {
 
     await step('reload the page', async () => {
       await target.reload();
+      // FIXME(crbug/1112692): Refactor test to remove the timeout.
+      await timeout(100);
     });
 
     await step('wait for all the source code to appear', async () => {
-      await waitFor(await sourceLineNumberSelector(13));
+      await waitForSourceCodeLines(numberOfLines);
     });
 
     await checkBreakpointIsActive(13);
@@ -398,11 +434,12 @@ describe('Sources Tab', async function() {
     await step('check that the variables in the scope view show the correct values', async () => {
       await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
       const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const local_scope_values = await localScopeView.evaluate(element => {
-        return (element as HTMLElement).innerText;
+      await waitForFunction(async () => {
+        const local_scope_values = await localScopeView.evaluate(element => {
+          return (element as HTMLElement).innerText;
+        });
+        return local_scope_values === '"": 42';
       });
-
-      assert.strictEqual(local_scope_values, '"": 42', 'lables do not contain the correct contents');
     });
 
     await step('resume script execution', async () => {

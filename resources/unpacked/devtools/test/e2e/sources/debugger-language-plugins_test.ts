@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {describe, it} from 'mocha';
 
 import {click, enableExperiment, getBrowserAndPages, getResourcesPath, goToResource, waitFor} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
 import {addBreakpointForLine, getValuesForScope, listenForSourceFilesAdded, openFileInEditor, openFileInSourcesPanel, openSourcesPanel, PAUSE_ON_EXCEPTION_BUTTON, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
 
 
@@ -39,7 +39,6 @@ describe('The Debugger Language Plugins', async () => {
         const extensionInfo = {
           startPage: `${resourcePath}/sources/language_extensions.html`,
           name: 'TestExtension',
-          exposeExperimentalAPIs: true,
         };
         extensionServer._addExtension(extensionInfo);
 

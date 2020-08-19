@@ -57,16 +57,13 @@ export const nodeIsReadOnlyArrayInterfaceReference = (node: ts.Node): node is ts
       node.typeName.escapedText === 'ReadonlyArray';
 };
 
-/* takes a type and checks if it's either an array of interfaces or an interface
- * e.g, we're looking for: Array<Foo> or Foo
- * and not for primitives like string, number, etc
- *
- * This is so we gather a list of all user defined type references that we might need
- * to convert into Closure typedefs.
+/**
+ * Takes a Node and looks for any type references within that Node. This is done
+ * so that if an interface references another within its definition, that other
+ * interface is found and generated within the bridge.
  */
 const findTypeReferencesWithinNode = (node: ts.Node): Set<string> => {
   const foundInterfaces = new Set<string>();
-
   /*
    * If the Node is ReadOnly<X>, then we want to ditch the ReadOnly and recurse to
    * parse the inner type to check if that's an interface.
@@ -82,17 +79,21 @@ const findTypeReferencesWithinNode = (node: ts.Node): Set<string> => {
       ts.isIdentifier(node.elementType.typeName)) {
     foundInterfaces.add(node.elementType.typeName.escapedText.toString());
 
-  } else if (ts.isTypeReferenceNode(node)) {
-    if (!ts.isIdentifier(node.typeName)) {
-      /*
-      * This means that an interface is being referenced via a qualifier, e.g.:
-      * `Interfaces.Person` rather than `Person`.
-      * We don't support this - all interfaces must be referenced directly.
-      */
-      throw new Error(
-          'Found an interface that was referenced indirectly. You must reference interfaces directly, rather than via a qualifier. For example, `Person` rather than `Foo.Person`');
+  } else if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName)) {
+    if (node.typeName.escapedText === 'Map' || node.typeName.escapedText === 'Set') {
+      // Map<X, Y> or Set<X> - we need to check the type arguments for any references>
+      if (!node.typeArguments) {
+        throw new Error(`Found a ${node.typeName.escapedText} without type arguments.`);
+      }
+      const referencesWithinGenerics = node.typeArguments.flatMap(node => [...findTypeReferencesWithinNode(node)]);
+      referencesWithinGenerics.forEach(r => foundInterfaces.add(r));
+    } else {
+      foundInterfaces.add(node.typeName.escapedText.toString());
     }
-    foundInterfaces.add(node.typeName.escapedText.toString());
+  } else if (ts.isTypeReferenceNode(node) && ts.isQualifiedName(node.typeName)) {
+    // We will need only the left type to support enum member references (e.g., 'MyEnum.Member').
+    const left = node.typeName.left;
+    foundInterfaces.add((left as ts.Identifier).escapedText.toString());
   } else if (ts.isUnionTypeNode(node)) {
     /**
      * If the param is something like `x: Foo|null` we want to loop over each type
@@ -157,12 +158,22 @@ const walkNode = (node: ts.Node, startState?: WalkerState): WalkerState => {
             /* We skip custom element lifecycle methods. Whilst they are public,
             they are never called from user code, so the bridge file does not
             need to include them.*/
+
+            if (!member.type) {
+              throw new Error(`Public method ${methodName} needs an explicit return type annotation.`);
+            }
+
+            /* If the method returns an interface, we should include it as an
+             * interface to convert. Note that this has limitations: it will
+             * only work with type references, not if the type is defined
+             * literally in the return type annotation. This is an accepted
+             * restriction for now; we can revisit if it causes problems.
+             */
+            if (member.type && ts.isTypeReferenceNode(member.type) && ts.isIdentifier(member.type.typeName)) {
+              state.typeReferencesToConvert.add(member.type.typeName.escapedText.toString());
+            }
             state.publicMethods.add(member);
           }
-
-          // TODO: we should check the return type of the method - if
-          // that's an interface we should include it in the _bridge.js
-          // file.
 
           // now find its interfaces that we need to make public from the method parmeters
           member.parameters.forEach(param => {
@@ -202,8 +213,18 @@ const walkNode = (node: ts.Node, startState?: WalkerState): WalkerState => {
     }
 
   } else if (ts.isInterfaceDeclaration(node)) {
+    const interfaceName = node.name.escapedText.toString();
+    if (builtInTypeScriptTypes.has(interfaceName)) {
+      throw new Error(`Found interface ${
+          interfaceName} that conflicts with TypeScript's built-in type. Please choose a different name!`);
+    }
     state.foundInterfaces.add(node);
   } else if (ts.isTypeAliasDeclaration(node)) {
+    const typeName = node.name.escapedText.toString();
+    if (builtInTypeScriptTypes.has(typeName)) {
+      throw new Error(
+          `Found type ${typeName} that conflicts with TypeScript's built-in type. Please choose a different name!`);
+    }
     state.foundInterfaces.add(node);
   } else if (ts.isEnumDeclaration(node)) {
     const isConstEnum = node.modifiers && node.modifiers.some(modifier => modifier.kind === ts.SyntaxKind.ConstKeyword);
@@ -383,6 +404,24 @@ const populateTypeReferencesToConvert = (state: WalkerState): WalkerState => {
   return state;
 };
 
+
+// This is a list of types that TS + Closure understand that aren't defined by
+// the user and therefore we don't need to generate typedefs for them, and
+// just convert them into Closure Note that built-in types that take generics
+// are not in this list (e.g. Map, Set) because we special case parsing them
+// because of the generics.
+const builtInTypeScriptTypes = new Set([
+  'Object',
+  'Element',
+  'HTMLElement',
+  'HTMLDivElement',
+  'HTMLTextAreaElement',
+  'HTMLInputElement',
+  'HTMLSelectElement',
+  'HTMLOptionElement',
+  'HTMLCanvasElement',
+]);
+
 export const walkTree = (startNode: ts.SourceFile, resolvedFilePath: string): WalkerState => {
   let state = walkNode(startNode);
 
@@ -403,11 +442,6 @@ export const walkTree = (startNode: ts.SourceFile, resolvedFilePath: string): Wa
         }),
   ]);
 
-  // Some components may (rarely) use the TypeScript Object type
-  // But that's defined by TypeScript, not us, and maps directly to Closure's Object
-  // So we don't need to generate any typedefs for the `Object` type.
-  state.typeReferencesToConvert.delete('Object');
-
   const missingTypeReferences = Array.from(state.typeReferencesToConvert).filter(name => {
     return allFoundTypeReferencesNames.has(name) === false;
   });
@@ -418,6 +452,10 @@ export const walkTree = (startNode: ts.SourceFile, resolvedFilePath: string): Wa
   const importsToCheck = new Set<string>();
 
   missingTypeReferences.forEach(missingInterfaceName => {
+    if (builtInTypeScriptTypes.has(missingInterfaceName)) {
+      return;
+    }
+
     const importForMissingInterface = Array.from(state.imports).find(imp => imp.namedImports.has(missingInterfaceName));
 
     if (!importForMissingInterface) {
@@ -466,6 +504,10 @@ export const walkTree = (startNode: ts.SourceFile, resolvedFilePath: string): Wa
    */
 
   state = populateTypeReferencesToConvert(state);
+
+  // If we found any nested references that reference built-in TS types we can
+  // just delete them.
+  builtInTypeScriptTypes.forEach(builtIn => state.typeReferencesToConvert.delete(builtIn));
 
   return state;
 };

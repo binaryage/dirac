@@ -45,6 +45,11 @@ describe('valueForTypeNode', () => {
     assert.strictEqual(valueForTypeNode(undefinedNode), 'undefined');
   });
 
+  it('supports qualified types by taking the left type', () => {
+    const node = ts.createTypeReferenceNode(ts.createQualifiedName(ts.createIdentifier('MyEnum'), 'myMember'), []);
+    assert.strictEqual(valueForTypeNode(node), 'MyEnum');
+  });
+
   it('converts union types', () => {
     const stringNode = createNode(ts.SyntaxKind.StringKeyword);
     const numberNode = createNode(ts.SyntaxKind.NumberKeyword);
@@ -142,11 +147,75 @@ describe('valueForTypeNode', () => {
     });
   });
 
+  describe('converting Maps', () => {
+    it('converts maps of primitives', () => {
+      // Map<string, number>
+      const node = ts.createTypeReferenceNode(
+          ts.createIdentifier('Map'),
+          [
+            ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+            ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+          ],
+      );
+      assert.strictEqual(valueForTypeNode(node), 'Map<string, number>');
+    });
+
+    it('converts maps of type references', () => {
+      // Map<string, ExampleInterface>
+      const node = ts.createTypeReferenceNode(
+          ts.createIdentifier('Map'),
+          [
+            ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+            ts.createTypeReferenceNode(ts.createIdentifier('ExampleInterface')),
+          ],
+      );
+      assert.strictEqual(valueForTypeNode(node), 'Map<string, !ExampleInterface>');
+    });
+
+    it('converts maps with optional type reference values', () => {
+      const nullNode = createNode(ts.SyntaxKind.NullKeyword);
+      const typeRefNode = ts.createTypeReferenceNode(ts.createIdentifier('ExampleInterface'), []);
+      const returnUnionNode = ts.createUnionTypeNode([typeRefNode, nullNode]);
+
+      // Map<string, ExampleInterface | null>
+      const node = ts.createTypeReferenceNode(
+          ts.createIdentifier('Map'),
+          [
+            ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+            returnUnionNode,
+          ],
+      );
+      assert.strictEqual(valueForTypeNode(node), 'Map<string, !ExampleInterface|null>');
+    });
+  });
+
+  describe('converting Sets', () => {
+    it('can convert primitive sets', () => {
+      // Set<string>
+      const node = ts.createTypeReferenceNode(
+          ts.createIdentifier('Set'),
+          [
+            ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+          ],
+      );
+      assert.strictEqual(valueForTypeNode(node), 'Set<string>');
+    });
+
+    it('can convert sets of type references', () => {
+      // Set<ExampleInterface>
+      const node = ts.createTypeReferenceNode(
+          ts.createIdentifier('Set'),
+          [ts.createTypeReferenceNode(ts.createIdentifier('ExampleInterface'), [])],
+      );
+      assert.strictEqual(valueForTypeNode(node), 'Set<!ExampleInterface>');
+    });
+  });
+
   describe('converting functions', () => {
     it('converts functions with no parameters', () => {
       const returnTypeNode = createNode(ts.SyntaxKind.StringKeyword);
       const node = ts.createFunctionTypeNode([], [], returnTypeNode);
-      assert.strictEqual(valueForTypeNode(node), 'function(): string');
+      assert.strictEqual(valueForTypeNode(node), 'function():string');
     });
 
     it('converts a function with parameters', () => {
@@ -155,7 +224,7 @@ describe('valueForTypeNode', () => {
           [], [], undefined, ts.createIdentifier('foo'), undefined, createNode(ts.SyntaxKind.StringKeyword));
       const node = ts.createFunctionTypeNode([], [stringParam], returnTypeNode);
 
-      assert.strictEqual(valueForTypeNode(node), 'function(string): string');
+      assert.strictEqual(valueForTypeNode(node), 'function(string):string');
     });
 
     it('can convert functions that return primitives or undefined', () => {
@@ -166,7 +235,7 @@ describe('valueForTypeNode', () => {
       const stringParam = ts.createParameter(
           [], [], undefined, ts.createIdentifier('foo'), undefined, createNode(ts.SyntaxKind.StringKeyword));
       const node = ts.createFunctionTypeNode([], [stringParam], returnUnionNode);
-      assert.strictEqual(valueForTypeNode(node), 'function(string): (string|undefined)');
+      assert.strictEqual(valueForTypeNode(node), 'function(string):(string|undefined)');
     });
   });
 });

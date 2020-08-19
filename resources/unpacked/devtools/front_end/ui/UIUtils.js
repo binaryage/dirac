@@ -1257,10 +1257,10 @@ export function beautifyFunctionName(name) {
  * @param {function(!Event):*=} clickHandler
  * @param {string=} className
  * @param {boolean=} primary
- * @return {!Element}
+ * @return {!HTMLButtonElement}
  */
 export function createTextButton(text, clickHandler, className, primary) {
-  const element = document.createElement('button');
+  const element = /** @type {!HTMLButtonElement} */ (document.createElement('button'));
   if (className) {
     element.className = className;
   }

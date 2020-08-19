@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {describe, it} from 'mocha';
 
 import {$$, click, enableExperiment, goToResource} from '../../shared/helper.js';
-import {assertContentOfSelectedElementsNode, expandSelectedNodeRecursively, waitForElementsStyleSection} from '../helpers/elements-helpers.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
+import {expandSelectedNodeRecursively, waitForContentOfSelectedElementsNode, waitForElementsStyleSection} from '../helpers/elements-helpers.js';
 
 const INACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Enable grid mode"]';
 const ACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Disable grid mode"]';
 
 const prepareElementsTab = async () => {
   await waitForElementsStyleSection();
-  await assertContentOfSelectedElementsNode('<body>\u200B');
+  await waitForContentOfSelectedElementsNode('<body>\u200B');
   await expandSelectedNodeRecursively();
 };
 

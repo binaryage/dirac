@@ -109,12 +109,12 @@ export class ElementsPanel extends UI.Panel.Panel {
 
     crumbsContainer.id = 'elements-crumbs';
 
-    this._newBreadcrumbs = createElementsBreadcrumbs();
-    this._newBreadcrumbs.addEventListener('node-selected', event => {
+    this._breadcrumbs = createElementsBreadcrumbs();
+    this._breadcrumbs.addEventListener('node-selected', event => {
       this._crumbNodeSelected(/** @type {{data: *}} */ (event));
     });
 
-    crumbsContainer.appendChild(this._newBreadcrumbs);
+    crumbsContainer.appendChild(this._breadcrumbs);
 
     this._stylesWidget = new StylesSidebarPane();
     this._computedStyleWidget = new ComputedStyleWidget();
@@ -129,6 +129,8 @@ export class ElementsPanel extends UI.Panel.Panel {
     this._treeOutlines = new Set();
     /** @type {!Map<!ElementsTreeOutline, !Element>} */
     this._treeOutlineHeaders = new Map();
+    /** @type {!Map<!SDK.CSSModel.CSSModel, !SDK.CSSModel.CSSPropertyTracker>} */
+    this._gridStyleTrackerByCSSModel = new Map();
     SDK.SDKModel.TargetManager.instance().observeModels(SDK.DOMModel.DOMModel, this);
     SDK.SDKModel.TargetManager.instance().addEventListener(
         SDK.SDKModel.Events.NameChanged,
@@ -205,6 +207,8 @@ export class ElementsPanel extends UI.Panel.Panel {
     }
     treeOutline.wireToDOMModel(domModel);
 
+    this._setupStyleTracking(domModel.cssModel());
+
     // Perform attach if necessary.
     if (this.isShowing()) {
       this.wasShown();
@@ -228,6 +232,8 @@ export class ElementsPanel extends UI.Panel.Panel {
     }
     this._treeOutlineHeaders.delete(treeOutline);
     treeOutline.element.remove();
+
+    this._removeStyleTracking(domModel.cssModel());
   }
 
   /**
@@ -370,12 +376,12 @@ export class ElementsPanel extends UI.Panel.Panel {
         crumbs.push(legacyNodeToNewBreadcrumbsNode(current));
       }
 
-      this._newBreadcrumbs.data = {
+      this._breadcrumbs.data = {
         crumbs,
         selectedNode: legacyNodeToNewBreadcrumbsNode(selectedNode),
       };
     } else {
-      this._newBreadcrumbs.data = {crumbs: [], selectedNode: null};
+      this._breadcrumbs.data = {crumbs: [], selectedNode: null};
     }
 
     self.UI.context.setFlavor(SDK.DOMModel.DOMNode, selectedNode);
@@ -405,6 +411,8 @@ export class ElementsPanel extends UI.Panel.Panel {
   _documentUpdatedEvent(event) {
     const domModel = /** @type {!SDK.DOMModel.DOMModel} */ (event.data);
     this._documentUpdated(domModel);
+    this._removeStyleTracking(domModel.cssModel());
+    this._setupStyleTracking(domModel.cssModel());
   }
 
   /**
@@ -701,7 +709,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     /* If we don't have a selected node then we can tell the breadcrumbs that & bail. */
     const selectedNode = this.selectedDOMNode();
     if (!selectedNode) {
-      this._newBreadcrumbs.data = {
+      this._breadcrumbs.data = {
         crumbs: [],
         selectedNode: null,
       };
@@ -734,7 +742,7 @@ export class ElementsPanel extends UI.Panel.Panel {
       return replacement || crumb;
     });
 
-    this._newBreadcrumbs.data = {
+    this._breadcrumbs.data = {
       crumbs: newSetOfCrumbs,
       selectedNode: activeNode,
     };
@@ -980,6 +988,53 @@ export class ElementsPanel extends UI.Panel.Panel {
       this.sidebarPaneView.appendView(pane);
     }
   }
+
+  /**
+   * @param {!SDK.CSSModel.CSSModel} cssModel
+   */
+  _setupStyleTracking(cssModel) {
+    if (Root.Runtime.experiments.isEnabled('cssGridFeatures')) {
+      // Style tracking is conditional on enabling experimental Grid features
+      // because it's the only use case for now.
+      const gridStyleTracker = cssModel.createCSSPropertyTracker(TrackedCSSGridProperties);
+      gridStyleTracker.start();
+      this._gridStyleTrackerByCSSModel.set(cssModel, gridStyleTracker);
+      gridStyleTracker.addEventListener(
+          SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated, this._trackedCSSPropertiesUpdated, this);
+    }
+  }
+
+  /**
+   * @param {!SDK.CSSModel.CSSModel} cssModel
+   */
+  _removeStyleTracking(cssModel) {
+    const gridStyleTracker = this._gridStyleTrackerByCSSModel.get(cssModel);
+    if (!gridStyleTracker) {
+      return;
+    }
+
+    gridStyleTracker.stop();
+    this._gridStyleTrackerByCSSModel.delete(cssModel);
+    gridStyleTracker.removeEventListener(
+        SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated, this._trackedCSSPropertiesUpdated, this);
+  }
+
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
+  _trackedCSSPropertiesUpdated(event) {
+    const domNodes = /** @type {!Array<?SDK.DOMModel.DOMNode>} */ (event.data.domNodes);
+
+    for (const domNode of domNodes) {
+      if (!domNode) {
+        continue;
+      }
+      const treeElement = this._treeElementForNode(domNode);
+      if (treeElement) {
+        treeElement.updateStyleAdorners();
+      }
+    }
+  }
 }
 
 ElementsPanel._firstInspectElementCompletedForTest = function() {};
@@ -989,6 +1044,17 @@ export const _splitMode = {
   Vertical: Symbol('Vertical'),
   Horizontal: Symbol('Horizontal'),
 };
+
+const TrackedCSSGridProperties = [
+  {
+    name: 'display',
+    value: 'grid',
+  },
+  {
+    name: 'display',
+    value: 'inline-grid',
+  },
+];
 
 /**
  * @implements {UI.ContextMenu.Provider}

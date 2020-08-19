@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {describe, it} from 'mocha';
 
-import {$$, goToResource, waitFor} from '../../shared/helper.js';
+import {$$, goToResource, waitFor, waitForFunction} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
 import {openDeviceToolbar, reloadDockableFrontEnd, showMediaQueryInspector} from '../helpers/emulation-helpers.js';
 
 const MEDIA_INSPECTOR_MARKER_SELECTOR = '.media-inspector-marker';
@@ -21,7 +21,10 @@ describe('Media query inspector', async () => {
   });
 
   it('lists all the media queries', async () => {
-    const inspectorMarkers = await $$(MEDIA_INSPECTOR_MARKER_SELECTOR);
+    const inspectorMarkers = await waitForFunction(async () => {
+      const markers = await $$(MEDIA_INSPECTOR_MARKER_SELECTOR);
+      return markers.length >= 3 ? markers : undefined;
+    });
     const markersContent = await Promise.all(inspectorMarkers.map(node => {
       return node.evaluate(node => node.textContent);
     }));

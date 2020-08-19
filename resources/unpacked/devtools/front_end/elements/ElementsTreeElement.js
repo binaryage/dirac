@@ -80,12 +80,14 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
       this._adornerContainer = this.listItemElement.createChild('div', 'adorner-container hidden');
       /** @type {!Array<!Adorner>} */
       this._adorners = [];
+      /** @type {!Array<!Adorner>} */
+      this._styleAdorners = [];
       this._adornersThrottler = new Common.Throttler.Throttler(100);
 
       if (Root.Runtime.experiments.isEnabled('cssGridFeatures')) {
         // This flag check is put here because currently the only style adorner is Grid;
         // we will refactor this logic when we have more style-related adorners
-        this._updateStyleAdorners();
+        this.updateStyleAdorners();
       }
     }
 
@@ -1545,6 +1547,8 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     const tagNameElement =
         tagElement.createChild('span', isClosingTag ? 'webkit-html-close-tag-name' : 'webkit-html-tag-name');
     tagNameElement.textContent = (isClosingTag ? '/' : '') + tagName;
+    // Force screen readers to consider the tagname as one label, this avoids announcing <div id> as one word "divid".
+    UI.ARIAUtils.setAccessibleName(tagNameElement, tagName);
     if (!isClosingTag) {
       if (node.hasAttributes()) {
         const attributes = node.attributes();
@@ -1938,12 +1942,21 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     return Promise.resolve();
   }
 
-  async _updateStyleAdorners() {
+  async updateStyleAdorners() {
+    if (this._isClosingTag) {
+      return;
+    }
+
     const node = this.node();
     const nodeId = node.id;
     if (node.nodeType() === Node.COMMENT_NODE || nodeId === undefined) {
       return;
     }
+
+    for (const styleAdorner of this._styleAdorners) {
+      this.removeAdorner(styleAdorner);
+    }
+    this._styleAdorners = [];
 
     const styles = await node.domModel().cssModel().computedStylePromise(nodeId);
     if (!styles) {
@@ -1968,9 +1981,19 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         ariaLabelActive: ls`Disable grid mode`,
       });
 
+      this._styleAdorners.push(gridAdorner);
+
       node.domModel().overlayModel().addEventListener(SDK.OverlayModel.Events.PersistentGridOverlayCleared, () => {
         gridAdorner.toggle(false /* force inactive state */);
       });
+      node.domModel().overlayModel().addEventListener(
+          SDK.OverlayModel.Events.PersistentGridOverlayStateChanged, event => {
+            const {nodeId: eventNodeId, enabled} = event.data;
+            if (eventNodeId !== nodeId) {
+              return;
+            }
+            gridAdorner.toggle(enabled);
+          });
     }
   }
 }
