@@ -6,11 +6,14 @@
   <message name="IDS_DEVTOOLS_01abfc750a0c942167651c40d088531d" desc="Text in Background Service View of the Application panel">
     #
   </message>
+  <message name="IDS_DEVTOOLS_01fdf6a2a9189d68b1d8a1bd8da7778a" desc="Row title in the Frame Details view">
+    Cross-Origin Opener Policy
+  </message>
   <message name="IDS_DEVTOOLS_027a5c9fbe6caf85fd598a81eaf26492" desc="Manifest installability error in the Application panel">
     Page is not served from a secure origin
   </message>
   <message name="IDS_DEVTOOLS_03ea25886ec5efba7a20fbeb6c7070fa" desc="Manifest installability error in the Application panel">
-    The specified application platform is not supported on Android
+    The specified application platform is not supported on <ph name="LOCKED_1">Android</ph>
   </message>
   <message name="IDS_DEVTOOLS_05b2812ab435addb8ae4853ead93f1b3" desc="Text in Service Workers View of the Application panel">
     Received <ph name="NEW_DATE_VERSION_SCRIPTRESPONSETIME_________TOLOCALESTRING__">$1s<ex>7/3/2019, 3:38:37 PM</ex></ph>
@@ -60,6 +63,9 @@
   <message name="IDS_DEVTOOLS_1bea0f12b50db07ee7f2265b790417ff" desc="Text in App Manifest View of the Application panel">
     Installability
   </message>
+  <message name="IDS_DEVTOOLS_1dacfb77b471afe19dc1b591c8c9f0a3" desc="Manifest installability error in the Application panel">
+    Manifest contains &apos;<ph name="LOCKED_1">display_override</ph>&apos; field, and the first supported display mode must be one of &apos;<ph name="LOCKED_2">standalone</ph>&apos;, &apos;<ph name="LOCKED_3">fullscreen</ph>&apos;, or &apos;<ph name="LOCKED_4">minimal-ui</ph>&apos;
+  </message>
   <message name="IDS_DEVTOOLS_1e9cf6d18aa0124e44d013131c79b0c1" desc="Tooltip in Application Panel Sidebar of the Application panel">
     Version: <ph name="THIS__DATABASE_VERSION">$1s<ex>1.0</ex></ph> (empty)
   </message>
@@ -94,6 +100,9 @@ table is empty.
   <message name="IDS_DEVTOOLS_3472423ee4037c94e20d64b3aea8aa49" desc="Text in Service Workers View of the Application panel">
     <ph name="SCOPEURL">$1s<ex>example.com</ex></ph> - deleted
   </message>
+  <message name="IDS_DEVTOOLS_349e686330723975502e9ef4f939a5ac" desc="Label suffix in the Application Panel Frames section for windows which are already closed">
+    closed
+  </message>
   <message name="IDS_DEVTOOLS_34b6cd75171affba6957e308dcbd92be" desc="Text in Indexed DBViews of the Application panel">
     Version
   </message>
@@ -119,7 +128,7 @@ table is empty.
     <ph name="THIS__REGISTRATION_ERRORS_LENGTH">$1s<ex>3</ex></ph> registration errors
   </message>
   <message name="IDS_DEVTOOLS_3d7394095f1d2e18e2e09b736c5af485" desc="Manifest installability error in the Application panel">
-    Manifest specifies prefer_related_applications: true
+    Manifest specifies <ph name="LOCKED_1">prefer_related_applications</ph>: true
   </message>
   <message name="IDS_DEVTOOLS_3ea5d985e1b51235f5f4056921ea4f38" desc="Manifest installability error in the Application panel">
     Page is not loaded in the main frame
@@ -148,6 +157,9 @@ table is empty.
   <message name="IDS_DEVTOOLS_4f36f645368158bc46346b8902fc2566" desc="Text in Service Workers View of the Application panel">
     #<ph name="ACTIVE_ID">$1s<ex>1</ex></ph> activated and is <ph name="ACTIVE_RUNNINGSTATUS">$2s<ex>stopped</ex></ph>
   </message>
+  <message name="IDS_DEVTOOLS_4f3ade619e6f7281df9feb06ab0162ed" desc="Text in Frames View of the Application panel">
+    Window without title
+  </message>
   <message name="IDS_DEVTOOLS_50868c2251b0c3b64ca50052891aec4c" desc="Text in Service Workers View of the Application panel">
     Push data
   </message>
@@ -160,11 +172,17 @@ table is empty.
   <message name="IDS_DEVTOOLS_579fdc74b6520ab8906ecddf3e62d951" desc="Text in Application Panel Sidebar of the Application panel">
     Application Cache
   </message>
+  <message name="IDS_DEVTOOLS_5ae203f5b272a30e8cf0457d5677dd7e" desc="Text for a link that applies a filter to the network panel">
+    Show matching requests
+  </message>
   <message name="IDS_DEVTOOLS_5af7e09b8b3d8b201c0621de9815bcb0" desc="Manifest installability error in the Application panel">
     Downloaded icon was empty or corrupted
   </message>
   <message name="IDS_DEVTOOLS_5bb07b23ba5cd47d49a0a030556b21ba" desc="Text in Background Service View of the Application panel">
     Background Fetch
+  </message>
+  <message name="IDS_DEVTOOLS_5d0d3256a9b63b8093b6842a8e4a089b" desc="Title for unreachable URL field">
+    Unreachable URL
   </message>
   <message name="IDS_DEVTOOLS_5e76cbfe956a74b7dda68e1e2e0dd716" desc="Title for ad frame type field">
     Ad Status
@@ -231,6 +249,9 @@ table is empty.
   </message>
   <message name="IDS_DEVTOOLS_1a9c7bf3cdba253c6a3f5da142989bdb" desc="Description for ad frame type">
     This frame has been identified as the a child frame of an ad
+  </message>
+  <message name="IDS_DEVTOOLS_817f5e98888edb4bb357c3410879476c" desc="Section header in the Frame Details view">
+    Security &amp; Isolation
   </message>
   <message name="IDS_DEVTOOLS_820896cf2e3ec9d7731c43cdad4b8943" desc="Text in App Manifest View of the Application panel">
     Shortcut #<ph name="SHORTCUTINDEX">$1s<ex>1</ex></ph>
@@ -307,13 +328,16 @@ read the &quot;<ph name="THIS_TABLENAME">$1s<ex>database</ex></ph>&quot; table.
   </message>
   <message name="IDS_DEVTOOLS_a0394c82ef53a78ef470b18ecbf960b4" desc="Label for the primary icon loaded from the manifest">
     Primary icon
-as used by Chrome
+as used by <ph name="LOCKED_1">Chrome</ph>
   </message>
   <message name="IDS_DEVTOOLS_a049ac2b4afe0fb6e78656082858067e" desc="Text in Clear Storage View of the Application panel">
     Storage Usage
   </message>
   <message name="IDS_DEVTOOLS_a274f4d4670213a9045ce258c6c56b80" desc="Text in Background Service View of the Application panel">
     Notifications
+  </message>
+  <message name="IDS_DEVTOOLS_a355b60c9b21eeba5dbbf8c3dc767257" desc="Manifest installability error in the Application panel">
+    <ph name="LOCKED_1">prefer_related_applications</ph> is only supported on <ph name="LOCKED_2">Chrome</ph> Beta and Stable channels on <ph name="LOCKED_3">Android</ph>.
   </message>
   <message name="IDS_DEVTOOLS_a7d5ee58baead2f3bc229d3d9c047875" desc="Text in Service Workers View of the Application panel">
     Unregister <ph name="LOCKED_TERM">service worker</ph>
@@ -335,6 +359,9 @@ as used by Chrome
   </message>
   <message name="IDS_DEVTOOLS_ab6ee23f23d1d5f342588e64297efc1c" desc="Text in Application Panel Sidebar of the Application panel">
     Session Storage
+  </message>
+  <message name="IDS_DEVTOOLS_ac069aac2ab29611211e1ac00b4e361d" desc="Text in Frames View of the Application panel">
+    Opened Windows
   </message>
   <message name="IDS_DEVTOOLS_acb91a6bfd0644c5b90280f9ebf38774" desc="Text in Service Worker Cache Views of the Application panel">
     Response-Type
@@ -405,6 +432,9 @@ as used by Chrome
   <message name="IDS_DEVTOOLS_ca72bcf0fbdc4c621360d906f930a956" desc="Warning message for icons from the manifest">
     Actual height (<ph name="IMAGE_NATURALHEIGHT">$1s<ex>100</ex></ph>px) of icon <ph name="ICONURL">$2s<ex>https://example.com/icon.png</ex></ph> does not match specified height (<ph name="HEIGHT">$3s<ex>100</ex></ph>px)
   </message>
+  <message name="IDS_DEVTOOLS_caf1bc6193bddb09f022758b3610ff1a" desc="Title for a link that applies a filter to the network panel">
+    Requires network log, try reloading the inspected page if unavailable
+  </message>
   <message name="IDS_DEVTOOLS_cbd71dc96b9c7d3a0663a5546f3798b5" desc="Text wrapping a link pointing to more information on maskable icons in App Manifest view of the Application panel">
     Need help? Read our <ph name="DOCUMENTATIONLINK">$1s<ex>https://example.com/</ex></ph>.
   </message>
@@ -459,6 +489,9 @@ as used by Chrome
   <message name="IDS_DEVTOOLS_d9b14828b34925dfb6661e86caa12cbc" desc="Title for a link to the Elements panel">
     Click to reveal in Elements panel
   </message>
+  <message name="IDS_DEVTOOLS_d9f00792ca0927318989dd736f088617" desc="Label in opened window's details view whether window has access to its opener">
+    Access to opener
+  </message>
   <message name="IDS_DEVTOOLS_da131b6bd53f501c1323af4b198740d2" desc="Text in Background Service View of the Application panel">
     Push Messaging
   </message>
@@ -475,7 +508,7 @@ as used by Chrome
     Total entries: <ph name="STRING_METADATA_ENTRIESCOUNT_">$1s<ex>2</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_dce1121d5ec5434e70d2d809fd7828e1" desc="Manifest installability error in the Application panel">
-    Manifest &apos;display&apos; property must be one of &apos;standalone&apos;, &apos;fullscreen&apos;, or &apos;minimal-ui&apos;
+    Manifest &apos;<ph name="LOCKED_1">display</ph>&apos; property must be one of &apos;<ph name="LOCKED_2">standalone</ph>&apos;, &apos;<ph name="LOCKED_3">fullscreen</ph>&apos;, or &apos;<ph name="LOCKED_3">minimal-ui</ph>&apos;
   </message>
   <message name="IDS_DEVTOOLS_e00a7ac13697ba51e098449fd644935b" desc="Text in Background Service View of the Application panel">
     Show events from other domains
@@ -492,6 +525,9 @@ as used by Chrome
   <message name="IDS_DEVTOOLS_e498749f3c42246d50b15c81c101d988" desc="Text in Application Panel Sidebar of the Application panel">
     Application
   </message>
+  <message name="IDS_DEVTOOLS_e5155c66ce8e2bd39dfa50b62afb00c7" desc="Row title in the Frame Details view">
+    Cross-Origin Embedder Policy
+  </message>
   <message name="IDS_DEVTOOLS_e60593abb5603af48307343eb862d86a" desc="Text in DOMStorage Items View of the Application panel">
     DOM Storage
   </message>
@@ -505,7 +541,7 @@ as used by Chrome
     View Request
   </message>
   <message name="IDS_DEVTOOLS_ebfabf3434ab96d355274e76214e61ed" desc="Manifest installability error in the Application panel">
-    Manifest does not contain a &apos;name&apos; or &apos;short_name&apos; field
+    Manifest does not contain a &apos;<ph name="LOCKED_1">name</ph>&apos; or &apos;<ph name="LOCKED_2">short_name</ph>&apos; field
   </message>
   <message name="IDS_DEVTOOLS_ec1e074d56484165315c26a9baebaebd" desc="Text in Application Panel Sidebar of the Application panel">
     Web SQL
@@ -529,7 +565,7 @@ as used by Chrome
     stop
   </message>
   <message name="IDS_DEVTOOLS_f0134cf28b55123eff2dc62bd223d0dd" desc="Manifest installability error in the Application panel">
-    Could not check <ph name="LOCKED_TERM">service worker</ph> without a &apos;start_url&apos; field in the manifest
+    Could not check <ph name="LOCKED_TERM">service worker</ph> without a &apos;<ph name="LOCKED_1">start_url</ph>&apos; field in the manifest
   </message>
   <message name="IDS_DEVTOOLS_f18cd4b9f925d85b3a669adc015a9797" desc="Text used to show that data was retrieved from ServiceWorker Cache">
     <ph name="LOCKED_TERM">Service Worker</ph> Cache

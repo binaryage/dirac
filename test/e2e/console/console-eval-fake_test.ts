@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {describe, it} from 'mocha';
 
 import {click, getBrowserAndPages, pasteText, step} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
 import {CONSOLE_TAB_SELECTOR, focusConsolePrompt} from '../helpers/console-helpers.js';
 import {getCurrentConsoleMessages} from '../helpers/console-helpers.js';
 
@@ -35,6 +35,11 @@ describe('The Console Tab', async () => {
     await step('enter a code snippet', async () => {
       await pasteText('foo;');
       await frontend.keyboard.press('Enter');
+    });
+
+    // Wait for the console to be usable again.
+    await frontend.waitForFunction(() => {
+      return document.querySelectorAll('.console-user-command-result').length === 2;
     });
 
     await step('retrieve the console log', async () => {

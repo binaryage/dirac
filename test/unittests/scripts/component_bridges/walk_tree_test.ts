@@ -34,22 +34,13 @@ describe('walkTree', () => {
     assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Person', 'Dog', 'DogOwner']);
   });
 
-  it('errors if a user references an interface via a qualifier', () => {
-    const filePath = path.resolve(path.join(fixturesPath, 'component-with-external-interface-import-star.ts'));
-
-    const source = createTypeScriptSourceFromFilePath(filePath);
-    assert.throws(() => {
-      walkTree(source, filePath);
-    }, 'Found an interface that was referenced indirectly. You must reference interfaces directly, rather than via a qualifier. For example, `Person` rather than `Foo.Person`');
-  });
-
   it('errors loudly if it cannot find an interface', () => {
     const code = `class Breadcrumbs extends HTMLElement {
       private render() {
         console.log('render')
       }
 
-      public update(foo: MissingInterface) {
+      public update(foo: MissingInterface): void {
         console.log('update')
       }
     }
@@ -199,7 +190,7 @@ describe('walkTree', () => {
       assert.strictEqual(result.componentClass.name.escapedText.toString(), 'Breadcrumbs');
     });
 
-    it('finds any public functions on the class', () => {
+    it('errors if a public method does not have an explicit type annotation', () => {
       const code = `class Breadcrumbs extends HTMLElement {
 
         private render() {
@@ -207,6 +198,23 @@ describe('walkTree', () => {
         }
 
         public update() {
+          console.log('update')
+        }
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      assert.throws(
+          () => walkTree(source, 'test.ts'), 'Public method update needs an explicit return type annotation.');
+    });
+
+    it('finds any public functions on the class', () => {
+      const code = `class Breadcrumbs extends HTMLElement {
+
+        private render() {
+          console.log('render')
+        }
+
+        public update(): void {
           console.log('update')
         }
       }`;
@@ -223,6 +231,34 @@ describe('walkTree', () => {
       });
 
       assert.deepEqual(publicMethodNames, ['update']);
+    });
+
+    it('adds any return types to the list of type references to convert', () => {
+      const code = `interface Foo {
+        name: string;
+      }
+
+      class Breadcrumbs extends HTMLElement {
+        private render() {
+          console.log('render')
+        }
+
+        public update(): Foo {
+          return {
+            name: 'jack',
+          }
+        }
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      const publicMethodNames = Array.from(result.publicMethods, method => {
+        return (method.name as ts.Identifier).escapedText as string;
+      });
+
+      assert.deepEqual(publicMethodNames, ['update']);
+      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Foo']);
     });
 
     it('ignores any component lifecycle methods in the class', () => {
@@ -349,6 +385,46 @@ describe('walkTree', () => {
       assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Person']);
     });
 
+    it('finds interfaces nested within a Map generic type', () => {
+      const code = `interface Person {
+        friends: Map<string, Friend>
+      }
+
+      interface Friend {
+        name: string;
+      }
+
+      class Breadcrumbs extends HTMLElement {
+        public set data(data: { person: Person }) {
+        }
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Person', 'Friend']);
+    });
+
+    it('finds interfaces nested within a Set generic type', () => {
+      const code = `interface Person {
+        friends: Set<Friend>,
+      }
+
+      interface Friend {
+        name: string;
+      }
+
+      class Breadcrumbs extends HTMLElement {
+        public set data(data: { person: Person }) {
+        }
+      }`;
+
+      const source = createTypeScriptSourceFile(code);
+      const result = walkTree(source, 'test.ts');
+
+      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Person', 'Friend']);
+    });
+
 
     it('deals with setters that take an object and pulls out the interfaces', () => {
       const code = `interface Person { name: string }
@@ -421,7 +497,7 @@ describe('walkTree', () => {
           console.log('render')
         }
 
-        public update() {
+        public update(): void {
           console.log('update')
         }
       }
@@ -583,5 +659,27 @@ describe('walkTree', () => {
         walkTree(source, 'test.ts');
       }, 'Found enum SettingType whose members do not have manually defined values.');
     });
+  });
+
+  it('warns if it encounters an interface definition for a built-in type', () => {
+    const code = `interface Element {
+        name: string;
+      }`;
+
+    const source = createTypeScriptSourceFile(code);
+    assert.throws(() => {
+      walkTree(source, 'test.ts');
+    }, 'Found interface Element that conflicts with TypeScript\'s built-in type. Please choose a different name!');
+  });
+
+  it('warns if it encounters a type definition for a built-in type', () => {
+    const code = `type Element = {
+        name: string;
+      }`;
+
+    const source = createTypeScriptSourceFile(code);
+    assert.throws(() => {
+      walkTree(source, 'test.ts');
+    }, 'Found type Element that conflicts with TypeScript\'s built-in type. Please choose a different name!');
   });
 });

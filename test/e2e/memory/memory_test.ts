@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {describe, it} from 'mocha';
+import {assert} from 'chai';
 
+import {$$} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
 import {navigateToMemoryTab, takeHeapSnapshot, waitForHeapSnapshotData} from '../helpers/memory-helpers.js';
 
 describe('The Memory Panel', async () => {
@@ -17,5 +19,7 @@ describe('The Memory Panel', async () => {
     await waitForHeapSnapshotData();
     await takeHeapSnapshot();
     await waitForHeapSnapshotData();
+    const heapSnapShots = await $$('.heap-snapshot-sidebar-tree-item');
+    assert.strictEqual(heapSnapShots.length, 2);
   });
 });
