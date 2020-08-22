@@ -43,6 +43,7 @@ declare class AnchorBox {
   y: number;
   width: number;
   height: number;
+  contains(x: number, y: number): boolean;
   relativeToElement(element: Element): AnchorBox;
 }
 
@@ -109,6 +110,9 @@ interface Element {
   hasFocus(): boolean;
   positionAt(x: (number|undefined), y: (number|undefined), relativeTo?: Element): void;
   removeChildren(): void;
+  scrollIntoViewIfNeeded(): void;
+  totalOffsetTop(): number;
+  totalOffsetLeft(): number;
 }
 
 interface DocumentFragment {
@@ -124,9 +128,13 @@ interface Node {
   getComponentSelection(): Selection|null;
   hasSameShadowRoot(other: Node): boolean;
   isSelfOrAncestor(node: Node|null): boolean;
+  isSelfOrDescendant(node: Node|null): boolean;
   parentElementOrShadowHost(): Element|null;
   parentNodeOrShadowHost(): Node|null;
   traverseNextNode(stayWithin?: Node): Node|null;
+  enclosingNodeOrSelfWithClass(className: string, stayWithin?: Element): Element;
+  window(): Window;
+  hasSelection(): boolean;
 }
 
 declare function isEnterKey(event: Event): boolean;

@@ -35,6 +35,7 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 
 import {Action, Events as ActionEvents} from './Action.js';  // eslint-disable-line no-unused-vars
+import {ActionRegistry} from './ActionRegistry.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import {ContextMenu} from './ContextMenu.js';
 import {GlassPane, PointerEventsBehavior} from './GlassPane.js';
@@ -256,7 +257,7 @@ export class Toolbar {
    * @return {!ToolbarButton}
    */
   static createActionButtonForId(actionId, options = TOOLBAR_BUTTON_DEFAULT_OPTIONS) {
-    const action = self.UI.actionRegistry.action(actionId);
+    const action = ActionRegistry.instance().action(actionId);
     return Toolbar.createActionButton(/** @type {!Action} */ (action), options);
   }
 
@@ -446,14 +447,15 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {string} title
+   * @param {string | undefined} actionId
    */
-  setTitle(title) {
+  setTitle(title, actionId = undefined) {
     if (this._title === title) {
       return;
     }
     this._title = title;
     ARIAUtils.setAccessibleName(this.element, title);
-    Tooltip.install(this.element, title, undefined, {
+    Tooltip.install(this.element, title, actionId, {
       anchorTooltipAtElement: true,
     });
   }

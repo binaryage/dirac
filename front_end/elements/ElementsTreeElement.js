@@ -72,6 +72,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     if (this._node.nodeType() === Node.ELEMENT_NODE && !isClosingTag) {
       this._canAddAttributes = true;
     }
+    /** @type {?string} */
     this._searchQuery = null;
     this._expandedChildrenLimit = InitialChildrenLimit;
     this._decorationsThrottler = new Common.Throttler.Throttler(100);
@@ -88,6 +89,10 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         // This flag check is put here because currently the only style adorner is Grid;
         // we will refactor this logic when we have more style-related adorners
         this.updateStyleAdorners();
+      }
+      if (node.isAdFrameNode()) {
+        const adorner = this.adornText('Ad', AdornerCategories.Security);
+        adorner.title = ls`This frame was identified as an ad frame`;
       }
     }
 
@@ -636,7 +641,8 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     const deviceModeWrapperAction = new Emulation.DeviceModeWrapper.ActionDelegate();
     contextMenu.viewSection().appendItem(
         ls`Capture node screenshot`,
-        deviceModeWrapperAction.handleAction.bind(null, self.UI.context, 'emulation.capture-node-screenshot'));
+        deviceModeWrapperAction.handleAction.bind(
+            null, UI.Context.Context.instance(), 'emulation.capture-node-screenshot'));
   }
 
   _startEditing() {
@@ -1870,7 +1876,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
 
   _editAsHTML() {
     const promise = Common.Revealer.reveal(this.node());
-    promise.then(() => self.UI.actionRegistry.action('elements.edit-as-html').execute());
+    promise.then(() => UI.ActionRegistry.ActionRegistry.instance().action('elements.edit-as-html').execute());
   }
 
   // TODO: add unit tests for adorner-related methods after component and TypeScript works are done

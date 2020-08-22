@@ -67,7 +67,8 @@ export class BackgroundServiceView extends UI.Widget.VBox {
 
     /** @const {!UI.Action.Action} */
     this._recordAction =
-        /** @type {!UI.Action.Action} */ (self.UI.actionRegistry.action('background-service.toggle-recording'));
+        /** @type {!UI.Action.Action} */ (
+            UI.ActionRegistry.ActionRegistry.instance().action('background-service.toggle-recording'));
     /** @type {?UI.Toolbar.ToolbarButton} */
     this._recordButton = null;
 
@@ -184,7 +185,13 @@ export class BackgroundServiceView extends UI.Widget.VBox {
     }
 
     this._recordButton.setToggled(state.isRecording);
+    this._updateRecordButtonTooltip();
     this._showPreview(this._selectedEventNode);
+  }
+
+  _updateRecordButtonTooltip() {
+    const buttonTooltip = this._recordButton.toggled() ? ls`Stop recording events` : ls`Start recording events`;
+    this._recordButton.setTitle(buttonTooltip, 'background-service.toggle-recording');
   }
 
   /**

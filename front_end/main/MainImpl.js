@@ -299,7 +299,7 @@ export class MainImpl {
     self.Persistence.networkPersistenceManager = new Persistence.NetworkPersistenceManager.NetworkPersistenceManager(
         Workspace.Workspace.WorkspaceImpl.instance());
 
-    new ExecutionContextSelector(SDK.SDKModel.TargetManager.instance(), self.UI.context);
+    new ExecutionContextSelector(SDK.SDKModel.TargetManager.instance(), UI.Context.Context.instance());
     self.Bindings.blackboxManager = Bindings.BlackboxManager.BlackboxManager.instance({
       forceNew: true,
       debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
@@ -307,8 +307,10 @@ export class MainImpl {
 
     new PauseListener();
 
-    self.UI.actionRegistry = new UI.ActionRegistry.ActionRegistry();
-    self.UI.shortcutRegistry = new UI.ShortcutRegistry.ShortcutRegistry(self.UI.actionRegistry);
+    const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({forceNew: true});
+    // Required for legacy a11y layout tests
+    self.UI.actionRegistry = actionRegistryInstance;
+    self.UI.shortcutRegistry = new UI.ShortcutRegistry.ShortcutRegistry(actionRegistryInstance);
     UI.ShortcutsScreen.ShortcutsScreen.registerShortcuts();
     this._registerMessageSinkListener();
 
@@ -327,7 +329,7 @@ export class MainImpl {
     self.UI.dockController.initialize();
     app.presentUI(document);
 
-    const toggleSearchNodeAction = self.UI.actionRegistry.action('elements.toggle-element-search');
+    const toggleSearchNodeAction = UI.ActionRegistry.ActionRegistry.instance().action('elements.toggle-element-search');
     // TODO: we should not access actions from other modules.
     if (toggleSearchNodeAction) {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
@@ -810,7 +812,7 @@ export class PauseListener {
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
     const debuggerModel = /** @type {!SDK.DebuggerModel.DebuggerModel} */ (event.data);
     const debuggerPausedDetails = debuggerModel.debuggerPausedDetails();
-    self.UI.context.setFlavor(SDK.SDKModel.Target, debuggerModel.target());
+    UI.Context.Context.instance().setFlavor(SDK.SDKModel.Target, debuggerModel.target());
     Common.Revealer.reveal(debuggerPausedDetails);
   }
 }

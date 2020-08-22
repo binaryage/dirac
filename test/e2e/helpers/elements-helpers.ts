@@ -19,16 +19,13 @@ const SECTION_SUBTITLE_SELECTOR = '.styles-section-subtitle';
 const CLS_PANE_SELECTOR = '.styles-sidebar-toolbar-pane';
 const CLS_BUTTON_SELECTOR = '[aria-label="Element Classes"]';
 const CLS_INPUT_SELECTOR = '[aria-placeholder="Add new class"]';
-const MORE_TABS_SELECTOR = '[aria-label="More tabs"]';
 const LAYOUT_PANE_TAB_SELECTOR = '[aria-label="Layout"]';
-const INACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Enable grid mode"]';
-const ACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Disable grid mode"]';
+export const INACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Enable grid mode"]';
+export const ACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Disable grid mode"]';
 const ELEMENT_CHECKBOX_IN_LAYOUT_PANE_SELECTOR = '.elements input[type=checkbox]';
 
 export const openLayoutPane = async () => {
   await step('Open Layout pane', async () => {
-    await waitFor(MORE_TABS_SELECTOR);
-    await click(MORE_TABS_SELECTOR);
     await waitFor(LAYOUT_PANE_TAB_SELECTOR);
     await click(LAYOUT_PANE_TAB_SELECTOR);
   });
@@ -308,16 +305,19 @@ export async function editCSSProperty(selector: string, propertyName: string, ne
 }
 
 export const getBreadcrumbsTextContent = async () => {
-  const crumbs = await $$('li.crumb > a');
+  const crumbs = await $$('li.crumb > a > devtools-node-text');
 
-  const crumbsAsText: string[] =
-      await Promise.all(crumbs.map(node => node.evaluate(node => node.textContent as string)));
+  const crumbsAsText: string[] = await Promise.all(crumbs.map(node => node.evaluate(node => {
+    return Array.from(node.shadowRoot!.querySelectorAll('span')).map(span => span.textContent).join('');
+  })));
   return crumbsAsText;
 };
 
 export const getSelectedBreadcrumbTextContent = async () => {
-  const selectedCrumb = await waitFor('li.crumb.selected > a');
-  const text = selectedCrumb.evaluate(node => node.textContent as string);
+  const selectedCrumb = await waitFor('li.crumb.selected > a > devtools-node-text');
+  const text = selectedCrumb.evaluate(node => {
+    return Array.from(node.shadowRoot!.querySelectorAll('span')).map(span => span.textContent).join('');
+  });
   return text;
 };
 

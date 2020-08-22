@@ -7,6 +7,7 @@ import * as ComponentHelpers from '../component_helpers/component_helpers.js';
 import * as LitHtml from '../third_party/lit-html/lit-html.js';
 
 import {BooleanSetting, EnumSetting, LayoutElement, Setting, SettingType} from './LayoutPaneUtils.js';
+import {NodeText} from './NodeText.js';
 
 const {render, html} = LitHtml;
 const ls = Common.ls;
@@ -19,24 +20,6 @@ export class SettingChangedEvent extends Event {
   constructor(setting: string, value: string|boolean) {
     super('setting-changed', {});
     this.data = {setting, value};
-  }
-}
-
-export class OverlayChangedEvent extends Event {
-  data: {id: number, value: boolean};
-
-  constructor(id: number, value: boolean) {
-    super('overlay-changed', {});
-    this.data = {id, value};
-  }
-}
-
-export class ElementClickedEvent extends Event {
-  data: {id: number};
-
-  constructor(id: number) {
-    super('element-clicked', {});
-    this.data = {id};
   }
 }
 
@@ -62,6 +45,7 @@ export class LayoutPane extends HTMLElement {
     this.shadow.adoptedStyleSheets = [
       ...getStyleSheets('ui/inspectorCommon.css', {patchThemeSupport: true}),
       ...getStyleSheets('ui/inspectorSyntaxHighlight.css', {patchThemeSupport: true}),
+      ...getStyleSheets('elements/layoutPane.css'),
     ];
   }
 
@@ -75,96 +59,6 @@ export class LayoutPane extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
-      <style>
-        * {
-          box-sizing: border-box;
-          font-size: 12px;
-        }
-        .header {
-          align-items: center;
-          background-color: var(--toolbar-bg-color, #f3f3f3);
-          border-bottom: var(--divider-border, 1px solid #d0d0d0);
-          border-top: var(--divider-border, 1px solid #d0d0d0);
-          display: flex;
-          line-height: 1.6;
-          overflow: hidden;
-          padding: 0 5px;
-          white-space: nowrap;
-        }
-        .content-section {
-          padding: 16px;
-          border-bottom: var(--divider-border, 1px solid #d0d0d0);
-        }
-        .content-section-title {
-          font-size: 12px;
-          font-weight: 500;
-          line-height: 1.1;
-          margin: 0;
-          padding: 0;
-        }
-        .checkbox-settings {
-          margin-top: 8px;
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 5px;
-        }
-        .checkbox-label {
-          display: flex;
-          flex-direction: row;
-          align-items: start;
-        }
-        .checkbox-settings .checkbox-label {
-          margin-bottom: 8px;
-        }
-        .checkbox-settings .checkbox-label:last-child {
-          margin-bottom: 0;
-        }
-        .checkbox-label input {
-          margin: 0 6px 0 0;
-          padding: 0;
-        }
-        .select-settings {
-          margin-top: 16px;
-          display: grid;
-          grid-template-columns: repeat(auto-fill, 150px);
-          gap: 16px;
-        }
-        .select-label {
-          display: flex;
-          flex-direction: column;
-        }
-        .select-label span {
-          margin-bottom: 4px;
-        }
-        .elements {
-          margin-top: 12px;
-          color: var(--dom-tag-name-color);
-        }
-        .element {
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-        }
-        .element {
-          margin-bottom: 8px;
-        }
-        .element:last-child {
-          margin-bottom: 0;
-        }
-        .show-element {
-          margin: 0 0 0 8px;
-          padding: 0;
-          background: none;
-          border: none;
-          background-image: url(Images/ic_show_node_16x16.svg);
-          background-repeat: no-repeat;
-          width: 16px;
-          height: 16px;
-          display: block;
-          background-size: cover;
-          cursor: pointer;
-        }
-      </style>
       <details open>
         <summary class="header">
           ${ls`Grid`}
@@ -212,37 +106,34 @@ export class LayoutPane extends HTMLElement {
 
   private onElementToggle(element: LayoutElement, event: HTMLInputElementEvent) {
     event.preventDefault();
-    this.dispatchEvent(new OverlayChangedEvent(element.id, event.target.checked));
+    element.toggle(event.target.checked);
   }
 
   private onElementClick(element: LayoutElement, event: HTMLInputElementEvent) {
     event.preventDefault();
-    this.dispatchEvent(new ElementClickedEvent(element.id));
+    element.reveal();
   }
 
   private renderElement(element: LayoutElement) {
-    const name = this.buildElementName(element);
+    const nodeText = new NodeText();
+    nodeText.data = {
+      nodeId: element.domId,
+      nodeTitle: element.name,
+      nodeClasses: element.domClasses,
+    };
     const onElementToggle = this.onElementToggle.bind(this, element);
     const onElementClick = this.onElementClick.bind(this, element);
+    // Disabled until https://crbug.com/1079231 is fixed.
+    // clang-format off
     return html`<div class="element">
-      <label data-element="true" class="checkbox-label" title=${name}>
+      <label data-element="true" class="checkbox-label" title=${element.name}>
         <input data-input="true" type="checkbox" .checked=${element.enabled} @change=${onElementToggle} />
-        <span data-label="true">${name}</span>
-      </label>
-      <button @click=${onElementClick} title=${showElementButtonTitle} class="show-element">
-      </button>
-  </div>`;
-  }
-
-  private buildElementName(element: LayoutElement) {
-    const parts = [element.name];
-    if (element.domId) {
-      parts.push(`#${CSS.escape(element.domId)}`);
-    }
-    if (element.domClasses) {
-      parts.push(...element.domClasses.map(cls => `.${CSS.escape(cls)}`));
-    }
-    return parts.join('');
+        <span data-label="true">${nodeText}</span>
+        </label>
+        <button @click=${onElementClick} title=${showElementButtonTitle} class="show-element">
+        </button>
+    </div>`;
+    // clang-format on
   }
 
   private renderBooleanSetting(setting: BooleanSetting) {

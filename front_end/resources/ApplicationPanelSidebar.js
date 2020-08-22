@@ -914,7 +914,7 @@ export class BackgroundServiceTreeElement extends BaseStorageTreeElement {
       this._view = new BackgroundServiceView(this._serviceName, this._model);
     }
     this.showView(this._view);
-    self.UI.context.setFlavor(BackgroundServiceView, this._view);
+    UI.Context.Context.instance().setFlavor(BackgroundServiceView, this._view);
     return false;
   }
 }
@@ -2247,11 +2247,18 @@ export class FrameTreeElement extends BaseStorageTreeElement {
   /**
    * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
    */
+  getIconTypeForFrame(frame) {
+    if (frame.isTopFrame()) {
+      return frame.unreachableUrl() ? 'mediumicon-frame-blocked' : 'mediumicon-frame';
+    }
+    return frame.unreachableUrl() ? 'mediumicon-frame-embedded-blocked' : 'mediumicon-frame-embedded';
+  }
+
+  /**
+   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
+   */
   frameNavigated(frame) {
-    const iconType = frame.isTopFrame() ?
-        'mediumicon-frame' :
-        frame.unreachableUrl() ? 'mediumicon-frame-embedded-blocked' : 'mediumicon-frame-embedded';
-    const icon = UI.Icon.Icon.create(iconType);
+    const icon = UI.Icon.Icon.create(this.getIconTypeForFrame(frame));
     if (frame.unreachableUrl()) {
       icon.classList.add('red-icon');
     }
