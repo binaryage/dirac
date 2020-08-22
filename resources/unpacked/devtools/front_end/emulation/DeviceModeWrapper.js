@@ -27,7 +27,7 @@ export class DeviceModeWrapper extends UI.Widget.VBox {
     this._inspectedPagePlaceholder = inspectedPagePlaceholder;
     /** @type {?DeviceModeView} */
     this._deviceModeView = null;
-    this._toggleDeviceModeAction = self.UI.actionRegistry.action('emulation.toggle-device-mode');
+    this._toggleDeviceModeAction = UI.ActionRegistry.ActionRegistry.instance().action('emulation.toggle-device-mode');
     const model = self.singleton(DeviceModeModel);
     this._showDeviceModeSetting = model.enabledSetting();
     this._showDeviceModeSetting.setRequiresUserAction(!!Root.Runtime.queryParam('hasOtherClients'));
@@ -118,7 +118,7 @@ export class ActionDelegate {
           return DeviceModeView.wrapperInstance._captureScreenshot();
 
         case 'emulation.capture-node-screenshot': {
-          const node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
+          const node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
           if (!node) {
             return true;
           }

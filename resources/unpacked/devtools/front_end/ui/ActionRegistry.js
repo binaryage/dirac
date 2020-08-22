@@ -7,11 +7,29 @@ import * as Root from '../root/root.js';  // eslint-disable-line no-unused-vars
 import {Action} from './Action.js';
 import {Context} from './Context.js';  // eslint-disable-line no-unused-vars
 
+/** @type {!ActionRegistry} */
+let actionRegistryInstance;
+
 export class ActionRegistry {
+  /**
+   * @private
+   */
   constructor() {
     /** @type {!Map.<string, !Action>} */
     this._actionsById = new Map();
     this._registerActions();
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!actionRegistryInstance || forceNew) {
+      actionRegistryInstance = new ActionRegistry();
+    }
+
+    return actionRegistryInstance;
   }
 
   _registerActions() {
@@ -47,9 +65,7 @@ export class ActionRegistry {
    * @return {!Array.<!Action>}
    */
   availableActions() {
-    // @ts-ignore
-    // TODO(crbug.com/1058320): Replace self.UI.context global.
-    return this.applicableActions([...this._actionsById.keys()], self.UI.context);
+    return this.applicableActions([...this._actionsById.keys()], Context.instance());
   }
 
   /**

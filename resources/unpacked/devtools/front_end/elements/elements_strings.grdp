@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
+  <message name="IDS_DEVTOOLS_03937134cedab9078be39a77ee3a48a0" desc="Group toggle text in Computed Style Widget of the Elements panel">
+    Group
+  </message>
   <message name="IDS_DEVTOOLS_03f126ba6fa92a1218920ff632546eb1" desc="Title of a section in Layout sidebar pane">
     Grid overlays
   </message>
@@ -8,9 +11,6 @@
   </message>
   <message name="IDS_DEVTOOLS_068bc495b79facfaa7918369fa9909eb" desc="Text in Elements Tree Element of the Elements panel">
     Cut element
-  </message>
-  <message name="IDS_DEVTOOLS_07ac88884a74a656722bb8041d5c828e" desc="Deprecation message for the Properties subpane in the Elements panel">
-    This panel has been deprecated in favor of executing the following in the console:
   </message>
   <message name="IDS_DEVTOOLS_07f01edb2a05909a9c0d04031d7c43e1" desc="ARIA accessible name in Styles Sidebar Pane of the Elements panel">
     Filter Styles
@@ -156,9 +156,6 @@
   <message name="IDS_DEVTOOLS_605e072850e19521394f8bad7082acf4" desc="Text of a DOM element in Element State Pane Widget of the Elements panel">
     Force element state
   </message>
-  <message name="IDS_DEVTOOLS_685db349070d4d06c11a83153b7ed4c0" desc="Text that describes the console placeholder used to to reference the currently selected element in the DOM tree">
-    (<ph name="DOLLAR_ZERO"><ex>DollarSignZero</ex>$1s</ph> is a reference to the currently selected DOM node in the elements tree.)
-  </message>
   <message name="IDS_DEVTOOLS_686676f33cf19ca00788564f43b992cb" desc="ARIA accessible name in Computed Style Widget of the Elements panel">
     Filter Computed Styles
   </message>
@@ -173,6 +170,9 @@
   </message>
   <message name="IDS_DEVTOOLS_6ae2f9f803d108269a2cdb714b9851a1" desc="Text in Styles Sidebar Pane of the Elements panel">
     <ph name="NODE_NODENAMEINCORRECTCASE__">$1s<ex>html</ex></ph>[Attributes Style]
+  </message>
+  <message name="IDS_DEVTOOLS_6b293c33d0d28889ca822e472f1ad60f" desc="Title for Ad adorner">
+    This frame was identified as an ad frame
   </message>
   <message name="IDS_DEVTOOLS_6f3cab519fe7e8f3b7834cf882f9dfe6" desc="Text in Classes Pane Widget of the Elements panel">
     Element Classes

@@ -64,7 +64,8 @@ export class NetworkPanel extends UI.Panel.Panel {
     this._networkRecordFilmStripSetting =
         Common.Settings.Settings.instance().createSetting('networkRecordFilmStripSetting', false);
     this._toggleRecordAction =
-        /** @type {!UI.Action.Action }*/ (self.UI.actionRegistry.action('network.toggle-recording'));
+        /** @type {!UI.Action.Action }*/ (
+            UI.ActionRegistry.ActionRegistry.instance().action('network.toggle-recording'));
 
     /** @type {number|undefined} */
     this._pendingStopTimer;
@@ -158,7 +159,9 @@ export class NetworkPanel extends UI.Panel.Panel {
 
     this._closeButtonElement = createElement('div', 'dt-close-button');
     this._closeButtonElement.addEventListener(
-        'click', async () => await self.UI.actionRegistry.action('network.hide-request-details').execute(), false);
+        'click',
+        async () => await UI.ActionRegistry.ActionRegistry.instance().action('network.hide-request-details').execute(),
+        false);
     this._closeButtonElement.style.margin = '0 5px';
 
     this._networkLogShowOverviewSetting.addChangeListener(this._toggleShowOverview, this);
@@ -243,7 +246,7 @@ export class NetworkPanel extends UI.Panel.Panel {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   async _searchToggleClick(event) {
-    await self.UI.actionRegistry.action('network.search').execute();
+    await UI.ActionRegistry.ActionRegistry.instance().action('network.search').execute();
   }
 
   _setupToolbarButtons(splitWidget) {
@@ -470,7 +473,7 @@ export class NetworkPanel extends UI.Panel.Panel {
    * @override
    */
   wasShown() {
-    self.UI.context.setFlavor(NetworkPanel, this);
+    UI.Context.Context.instance().setFlavor(NetworkPanel, this);
 
     // Record the network tool load time after the panel has loaded.
     Host.userMetrics.panelLoaded('network', 'DevTools.Launch.Network');
@@ -480,7 +483,7 @@ export class NetworkPanel extends UI.Panel.Panel {
    * @override
    */
   willHide() {
-    self.UI.context.setFlavor(NetworkPanel, null);
+    UI.Context.Context.instance().setFlavor(NetworkPanel, null);
   }
 
   /**
@@ -860,7 +863,7 @@ export class ActionDelegate {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const panel = self.UI.context.flavor(NetworkPanel);
+    const panel = UI.Context.Context.instance().flavor(NetworkPanel);
     console.assert(panel && panel instanceof NetworkPanel);
     switch (actionId) {
       case 'network.toggle-recording': {

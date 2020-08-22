@@ -75,8 +75,8 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
     this._expandController =
         new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeExpandController(this._treeOutline);
 
-    self.UI.context.addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.update, this);
-    self.UI.context.addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this.update, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.update, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this.update, this);
     this._linkifier = new Components.Linkifier.Linkifier();
     this.update();
   }
@@ -137,6 +137,9 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
     this._emptyElement.textContent = Common.UIString.UIString('No watch expressions');
     this._emptyElement.tabIndex = -1;
     const watchExpressionStrings = this._watchExpressionsSetting.get();
+    if (watchExpressionStrings.length) {
+      this._emptyElement.classList.add('hidden');
+    }
     for (let i = 0; i < watchExpressionStrings.length; ++i) {
       const expression = watchExpressionStrings[i];
       if (!expression) {
@@ -153,7 +156,6 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
    * @return {!WatchExpression}
    */
   _createWatchExpression(expression) {
-    this._emptyElement.classList.add('hidden');
     this.contentElement.appendChild(this._treeOutline.element);
     const watchExpression = new WatchExpression(expression, this._expandController, this._linkifier);
     watchExpression.addEventListener(WatchExpression.Events.ExpressionUpdated, this._watchExpressionUpdated, this);
@@ -239,6 +241,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
   _addExpressionToWatch(expression) {
     this._createWatchExpression(expression);
     this._saveExpressions();
+    this.update();
   }
 
   /**
@@ -248,7 +251,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const frame = self.UI.context.flavor(UISourceCodeFrame);
+    const frame = UI.Context.Context.instance().flavor(UISourceCodeFrame);
     if (!frame) {
       return false;
     }
@@ -276,7 +279,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
           ls`Add property path to watch`, this._addPropertyPathToWatch.bind(this, target));
     }
 
-    const frame = self.UI.context.flavor(UISourceCodeFrame);
+    const frame = UI.Context.Context.instance().flavor(UISourceCodeFrame);
     if (!frame || frame.textEditor.selection().isEmpty()) {
       return;
     }
@@ -323,7 +326,7 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   update() {
-    const currentExecutionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const currentExecutionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     if (currentExecutionContext && this._expression) {
       currentExecutionContext
           .evaluate(
