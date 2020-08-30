@@ -83,6 +83,16 @@ export class UserMetrics {
   }
 
   /**
+   * @param {string} sidebarPaneName
+   */
+  sidebarPaneShown(sidebarPaneName) {
+    const code = SidebarPaneCodes[sidebarPaneName] || 0;
+    const size = Object.keys(SidebarPaneCodes).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.SidebarPaneShown, code, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.SidebarPaneShown, {value: code});
+  }
+
+  /**
    * @param {string} settingsViewId
    */
   settingsPanelShown(settingsViewId) {
@@ -262,9 +272,9 @@ export const Action = {
   FilmStripStartedRecording: 33,
   CoverageReportFiltered: 34,
   CoverageStartedPerBlock: 35,
-  SettingsOpenedFromGear: 36,
-  SettingsOpenedFromMenu: 37,
-  SettingsOpenedFromCommandMenu: 38,
+  'SettingsOpenedFromGear-deprecated': 36,
+  'SettingsOpenedFromMenu-deprecated': 37,
+  'SettingsOpenedFromCommandMenu-deprecated': 38,
   TabMovedToDrawer: 39,
   TabMovedToMainPanel: 40,
   CaptureCssOverviewClicked: 41,
@@ -320,6 +330,18 @@ export const PanelCodes = {
   'issues-pane': 37,
   'settings-keybinds': 38,
   'cssoverview': 39
+};
+
+/** @type {!Object<string, number>} */
+export const SidebarPaneCodes = {
+  'OtherSidebarPane': 0,
+  'Styles': 1,
+  'Computed': 2,
+  'elements.layout': 3,
+  'elements.eventListeners': 4,
+  'elements.domBreakpoints': 5,
+  'elements.domProperties': 6,
+  'accessibility.view': 7,
 };
 
 /** @type {!Object<string, number>} */
@@ -443,27 +465,15 @@ export const DualScreenDeviceEmulated = {
 
 /** @type {!Object<string, number>} */
 export const CSSGridSettings = {
-  'showGridBorder.none': 0,
-  'showGridBorder.dashed': 1,
-  'showGridBorder.solid': 2,
-  'showGridLines.none': 3,
-  'showGridLines.dashed': 4,
-  'showGridLines.solid': 5,
-  'showGridLines.extended-dashed': 6,
-  'showGridLines.extended-solid': 7,
-  'showGridLineNumbers.none': 8,
-  'showGridLineNumbers.positive': 9,
-  'showGridLineNumbers.negative': 10,
-  'showGridLineNumbers.both': 11,
-  'showGridGaps.none': 12,
-  'showGridGaps.row-gaps': 13,
-  'showGridGaps.column-gaps': 14,
-  'showGridGaps.both': 15,
-  'showGridAreas.false': 16,
-  'showGridAreas.true': 17,
-  'showGridLineNumbers.names': 18,
-  'showGridTrackSizes.false': 19,
-  'showGridTrackSizes.true': 20,
+  'showGridLineLabels.none': 0,
+  'showGridLineLabels.lineNumbers': 1,
+  'showGridLineLabels.lineNames': 2,
+  'extendGridLines.false': 3,
+  'extendGridLines.true': 4,
+  'showGridAreas.false': 5,
+  'showGridAreas.true': 6,
+  'showGridTrackSizes.false': 7,
+  'showGridTrackSizes.true': 8,
 };
 
 /**

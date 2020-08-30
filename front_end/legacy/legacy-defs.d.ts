@@ -20,6 +20,9 @@ interface Array<T> {
 // to TemplateStringsArray in TypeScript land
 type ITemplateArray = TemplateStringsArray
 
+// Type alias for the type that has been removed in Chrome 54.
+type FileError = Error;
+
 interface String {
   compareTo(other: string): number;
   trimEndWithMaxLength(maxLength: number): string;
@@ -30,6 +33,10 @@ interface String {
 
 interface NumberConstructor {
   withThousandsSeparator(num: number): string
+}
+
+interface Int32Array {
+  lowerBound(object: number, comparator?: {(a: number, b: number): number}, left?: number, right?: number): number;
 }
 
 declare let ls: (template: ITemplateArray, ...args: any[]) => string;
@@ -105,12 +112,13 @@ interface HTMLElement {
 }
 
 interface Element {
+  boxInWindow(targetWindow?: Window): AnchorBox;
   createChild(tagName: string, className?: string, content?: string): Element;
   createTextChild(text: string): Text;
   hasFocus(): boolean;
   positionAt(x: (number|undefined), y: (number|undefined), relativeTo?: Element): void;
   removeChildren(): void;
-  scrollIntoViewIfNeeded(): void;
+  scrollIntoViewIfNeeded(center?: boolean): void;
   totalOffsetTop(): number;
   totalOffsetLeft(): number;
 }
@@ -125,6 +133,7 @@ interface Event {
 }
 
 interface Node {
+  getComponentRoot(): Document|DocumentFragment|null;
   getComponentSelection(): Selection|null;
   hasSameShadowRoot(other: Node): boolean;
   isSelfOrAncestor(node: Node|null): boolean;
@@ -139,5 +148,14 @@ interface Node {
 
 declare function isEnterKey(event: Event): boolean;
 declare function isEnterOrSpaceKey(event: Event): boolean;
+declare function isEscKey(event: Event): boolean;
 declare function createPlainTextSearchRegex(query: string, flags?: string): RegExp;
 declare function onInvokeElement(element: Element, callback: (event: Event) => void): void;
+
+interface ServicePort {
+  setHandlers(messageHandler: (arg: string) => void, closeHandler: () => void): void;
+
+  send(message: string): Promise<boolean>;
+
+  close(): Promise<boolean>;
+}

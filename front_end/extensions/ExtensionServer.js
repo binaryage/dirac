@@ -54,12 +54,16 @@ const kAllowedOrigins = [
   'chrome://new-tab-page',
 ].map(url => (new URL(url)).origin);
 
+/** @type {?ExtensionServer} */
+let extensionServerInstance;
+
 /**
  * @unrestricted
  */
 export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @suppressGlobalPropertiesCheck
+   * @private
    */
   constructor() {
     super();
@@ -128,6 +132,18 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     /** @type {!Array<!LanguageExtensionEndpoint>} */
     this._languageExtensionEndpoints = [];
     this._initExtensions();
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!extensionServerInstance || forceNew) {
+      extensionServerInstance = new ExtensionServer();
+    }
+
+    return extensionServerInstance;
   }
 
   initializeExtensions() {
@@ -321,7 +337,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     const id = message.id;
     // The ids are generated on the client API side and must be unique, so the check below
     // shouldn't be hit unless someone is bypassing the API.
-    if (id in this._clientObjects || self.UI.inspectorView.hasPanel(id)) {
+    if (id in this._clientObjects || UI.InspectorView.InspectorView.instance().hasPanel(id)) {
       return this._status.E_EXISTS(id);
     }
 
@@ -331,7 +347,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     const panelView =
         new ExtensionServerPanelView(persistentId, message.title, new ExtensionPanel(this, persistentId, id, page));
     this._clientObjects[id] = panelView;
-    self.UI.inspectorView.addPanel(panelView);
+    UI.InspectorView.InspectorView.instance().addPanel(panelView);
     return this._status.OK();
   }
 
@@ -341,7 +357,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     if (panelView && panelView instanceof ExtensionServerPanelView) {
       panelViewId = panelView.viewId();
     }
-    self.UI.inspectorView.showPanel(panelViewId);
+    UI.InspectorView.InspectorView.instance().showPanel(panelViewId);
   }
 
   _onCreateToolbarButton(message, port) {
@@ -787,7 +803,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         const injectedAPI = self.buildExtensionAPIInjectedScript(
             /** @type {!{startPage: string, name: string, exposeExperimentalAPIs: boolean}} */ (extensionInfo),
             this._inspectedTabId, self.UI.themeSupport.themeName(), self.UI.shortcutRegistry.globalShortcutKeys(),
-            self.Extensions.extensionServer['_extensionAPITestHook']);
+            ExtensionServer.instance()['_extensionAPITestHook']);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.setInjectedScriptForOrigin(
             extensionOrigin, injectedAPI);
         const name = extensionInfo.name || `Extension ${extensionOrigin}`;

@@ -203,6 +203,7 @@ export class MainImpl {
       'backgroundServicesPaymentHandler',
       'customKeyboardShortcuts',
       'issuesPane',
+      'webauthnPane',
     ]);
 
     if (Host.InspectorFrontendHost.isUnderTest() &&
@@ -263,7 +264,7 @@ export class MainImpl {
     self.UI.shortcutsScreen.section(Common.UIString.UIString('Debugger'));
     self.UI.shortcutsScreen.section(Common.UIString.UIString('Console'));
 
-    self.Workspace.fileManager = new Workspace.FileManager.FileManager();
+    self.Workspace.fileManager = Workspace.FileManager.FileManager.instance({forceNew: true});
     self.Workspace.workspace = Workspace.Workspace.WorkspaceImpl.instance();
 
     self.Bindings.networkProjectManager = Bindings.NetworkProject.NetworkProjectManager.instance();
@@ -289,15 +290,16 @@ export class MainImpl {
       targetManager: SDK.SDKModel.TargetManager.instance(),
       debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
     });
-    self.Extensions.extensionServer = new Extensions.ExtensionServer.ExtensionServer();
+    self.Extensions.extensionServer = Extensions.ExtensionServer.ExtensionServer.instance({forceNew: true});
 
     new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(
         Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance(),
         Workspace.Workspace.WorkspaceImpl.instance());
     self.Persistence.persistence = new Persistence.Persistence.PersistenceImpl(
         Workspace.Workspace.WorkspaceImpl.instance(), Bindings.BreakpointManager.BreakpointManager.instance());
-    self.Persistence.networkPersistenceManager = new Persistence.NetworkPersistenceManager.NetworkPersistenceManager(
-        Workspace.Workspace.WorkspaceImpl.instance());
+    self.Persistence.networkPersistenceManager =
+        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance(
+            {forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance()});
 
     new ExecutionContextSelector(SDK.SDKModel.TargetManager.instance(), UI.Context.Context.instance());
     self.Bindings.blackboxManager = Bindings.BlackboxManager.BlackboxManager.instance({
@@ -341,7 +343,7 @@ export class MainImpl {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.RevealSourceLine, this._revealSourceLine, this);
 
-    self.UI.inspectorView.createToolbars();
+    UI.InspectorView.InspectorView.instance().createToolbars();
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
 
     const extensions = self.runtime.extensions(Common.QueryParamHandler.QueryParamHandler);
@@ -382,7 +384,7 @@ export class MainImpl {
   _lateInitialization() {
     MainImpl.time('Main._lateInitialization');
     this._registerShortcuts();
-    self.Extensions.extensionServer.initializeExtensions();
+    Extensions.ExtensionServer.ExtensionServer.instance().initializeExtensions();
     const extensions = self.runtime.extensions('late-initialization');
     const promises = [];
     for (const extension of extensions) {
@@ -551,7 +553,7 @@ export class MainImpl {
 
   _onSuspendStateChanged() {
     const suspended = SDK.SDKModel.TargetManager.instance().allTargetsSuspended();
-    self.UI.inspectorView.onSuspendStateChanged(suspended);
+    UI.InspectorView.InspectorView.instance().onSuspendStateChanged(suspended);
   }
 }
 
@@ -601,7 +603,7 @@ export class SearchActionDelegate {
   handleAction(context, actionId) {
     let searchableView = UI.SearchableView.SearchableView.fromElement(document.deepActiveElement());
     if (!searchableView) {
-      const currentPanel = self.UI.inspectorView.currentPanelDeprecated();
+      const currentPanel = UI.InspectorView.InspectorView.instance().currentPanelDeprecated();
       if (currentPanel) {
         searchableView = currentPanel.searchableView();
       }
@@ -714,12 +716,8 @@ export class MainMenuItem {
      * @suppressGlobalPropertiesCheck
      */
     function setDockSide(side) {
-      const hadKeyboardFocus = document.deepActiveElement().hasAttribute('data-keyboard-focus');
       self.UI.dockController.once(UI.DockController.Events.AfterDockSideChanged).then(() => {
         button.focus();
-        if (hadKeyboardFocus) {
-          UI.UIUtils.markAsFocusedByKeyboard(button);
-        }
       });
       self.UI.dockController.setDockSide(side);
       contextMenu.discard();
@@ -734,21 +732,13 @@ export class MainMenuItem {
 
     contextMenu.defaultSection().appendAction(
         'main.toggle-drawer',
-        self.UI.inspectorView.drawerVisible() ? Common.UIString.UIString('Hide console drawer') :
-                                                Common.UIString.UIString('Show console drawer'));
+        UI.InspectorView.InspectorView.instance().drawerVisible() ? Common.UIString.UIString('Hide console drawer') :
+                                                                    Common.UIString.UIString('Show console drawer'));
     contextMenu.appendItemsAtLocation('mainMenu');
     const moreTools = contextMenu.defaultSection().appendSubMenuItem(Common.UIString.UIString('More tools'));
     const extensions = self.runtime.extensions('view', undefined, true);
     for (const extension of extensions) {
       const descriptor = extension.descriptor();
-
-      if (descriptor['id'] === 'settings-default') {
-        moreTools.defaultSection().appendItem(extension.title(), () => {
-          Host.userMetrics.actionTaken(Host.UserMetrics.Action.SettingsOpenedFromMenu);
-          UI.ViewManager.ViewManager.instance().showView('preferences', /* userGesture */ true);
-        });
-        continue;
-      }
 
       if (descriptor['id'] === 'issues-pane') {
         moreTools.defaultSection().appendItem(extension.title(), () => {
@@ -782,8 +772,7 @@ export class MainMenuItem {
 export class SettingsButtonProvider {
   constructor() {
     const settingsActionId = 'settings.show';
-    this._settingsButton = UI.Toolbar.Toolbar.createActionButtonForId(
-        settingsActionId, {showLabel: false, userActionCode: Host.UserMetrics.Action.SettingsOpenedFromGear});
+    this._settingsButton = UI.Toolbar.Toolbar.createActionButtonForId(settingsActionId, {showLabel: false});
   }
 
   /**

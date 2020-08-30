@@ -815,6 +815,7 @@ export class ConsoleView extends UI.Widget.VBox {
     if (hadFocus) {
       this._prompt.focus();
     }
+    UI.ARIAUtils.alert(ls`Console cleared`, this._viewport.element);
   }
 
   /**
@@ -830,7 +831,8 @@ export class ConsoleView extends UI.Widget.VBox {
 
     const sourceElement = eventTarget.enclosingNodeOrSelfWithClass('console-message-wrapper');
     const consoleMessage = sourceElement ?
-        /** @type {!ConsoleViewMessage} */ (domElementToViewMessage.get(sourceElement)).consoleMessage() :
+        // @ts-expect-error We can't convert this to a Weakmap, as it comes from `ConsoleViewMessage` instead.
+        /** @type {!ConsoleViewMessage} */ (sourceElement.message).consoleMessage() :
         null;
 
     if (consoleMessage && consoleMessage.url) {
@@ -1586,7 +1588,8 @@ export class ConsoleCommand extends ConsoleViewMessage {
       const icon = UI.Icon.Icon.create('smallicon-user-command', 'command-result-icon');
       this._contentElement.appendChild(icon);
 
-      domElementToViewMessage.set(this._contentElement, this);
+      // @ts-expect-error We can't convert this to a Weakmap, as it comes from `ConsoleViewMessage` instead.
+      this._contentElement.message = this;
 
       this._formattedCommand = document.createElement('span');
       this._formattedCommand.classList.add('source-code');
@@ -1710,8 +1713,6 @@ export class ActionDelegate {
 const messagesSortedBySymbol = new WeakMap();
 /** @type {!WeakMap<!SDK.ConsoleModel.ConsoleMessage, !ConsoleViewMessage>} */
 const consoleMessageToViewMessage = new WeakMap();
-/** @type {!WeakMap<!Element, !ConsoleViewMessage>} */
-const domElementToViewMessage = new WeakMap();
 
 /**
  * The maximum length before strings are considered too long for syntax highlighting.

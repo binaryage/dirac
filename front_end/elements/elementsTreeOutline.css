@@ -37,10 +37,11 @@
   /** Keep margin-left & padding-left in sync with ElementsTreeElements.updateDecorators **/
   padding: 1px 0 0 14px;
   margin-left: -2px;
-  word-wrap: break-word;
+  word-break: normal;
   position: relative;
   min-height: 15px;
   line-height: 1.36;
+  min-width: 200px;
 }
 
 .elements-disclosure li.parent {
@@ -112,7 +113,7 @@
   margin-left: -12px;
 }
 
-.elements-disclosure .elements-tree-outline.hide-selection-when-blurred .selected:focus[data-keyboard-focus="true"] .highlight > * {
+.elements-disclosure .elements-tree-outline.hide-selection-when-blurred .selected:focus-visible .highlight > * {
   background: var(--focus-bg-color);
   border-radius: 2px;
   box-shadow: 0 0 0 2px var(--focus-bg-color);

@@ -9,6 +9,7 @@ import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as Timeline from '../timeline/timeline.js';
 import * as UI from '../ui/ui.js';
+import * as Workspace from '../workspace/workspace.js';
 
 const MaxLengthForLinks = 40;
 
@@ -44,7 +45,7 @@ export class LighthouseReportRenderer extends ReportRenderer {
 
     async function onViewTraceClick() {
       HostModule.userMetrics.actionTaken(Host.UserMetrics.Action.LighthouseViewTrace);
-      await self.UI.inspectorView.showPanel('timeline');
+      await UI.InspectorView.InspectorView.instance().showPanel('timeline');
       Timeline.TimelinePanel.TimelinePanel.instance().loadFromEvents(defaultPassTrace.traceEvents);
     }
   }
@@ -159,7 +160,7 @@ export class LighthouseReportUIFeatures extends ReportUIFeatures {
     const ext = blob.type.match('json') ? '.json' : '.html';
     const basename = `${sanitizedDomain}-${timestamp}${ext}`;
     const text = await blob.text();
-    self.Workspace.fileManager.save(basename, text, true /* forceSaveAs */);
+    Workspace.FileManager.FileManager.instance().save(basename, text, true /* forceSaveAs */);
   }
 
   async _print() {

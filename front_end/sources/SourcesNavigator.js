@@ -157,7 +157,7 @@ export class OverridesNavigatorView extends NavigatorView {
 
     this.contentElement.insertBefore(this._toolbar.element, this.contentElement.firstChild);
 
-    self.Persistence.networkPersistenceManager.addEventListener(
+    Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener(
         Persistence.NetworkPersistenceManager.Events.ProjectChanged, this._updateProjectAndUI, this);
     this.workspace().addEventListener(Workspace.Workspace.Events.ProjectAdded, this._onProjectAddOrRemoved, this);
     this.workspace().addEventListener(Workspace.Workspace.Events.ProjectRemoved, this._onProjectAddOrRemoved, this);
@@ -178,7 +178,7 @@ export class OverridesNavigatorView extends NavigatorView {
 
   _updateProjectAndUI() {
     this.reset();
-    const project = self.Persistence.networkPersistenceManager.project();
+    const project = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().project();
     if (project) {
       this.tryAddProject(project);
     }
@@ -187,7 +187,7 @@ export class OverridesNavigatorView extends NavigatorView {
 
   _updateUI() {
     this._toolbar.removeToolbarItems();
-    const project = self.Persistence.networkPersistenceManager.project();
+    const project = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().project();
     if (project) {
       const enableCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
           Common.Settings.Settings.instance().moduleSetting('persistenceNetworkOverridesEnabled'));
@@ -225,7 +225,7 @@ export class OverridesNavigatorView extends NavigatorView {
    * @return {boolean}
    */
   acceptProject(project) {
-    return project === self.Persistence.networkPersistenceManager.project();
+    return project === Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().project();
   }
 }
 
@@ -321,8 +321,8 @@ export class SnippetsNavigatorView extends NavigatorView {
   async _handleSaveAs(uiSourceCode) {
     uiSourceCode.commitWorkingCopy();
     const {content} = await uiSourceCode.requestContent();
-    self.Workspace.fileManager.save(uiSourceCode.url(), content || '', true);
-    self.Workspace.fileManager.close(uiSourceCode.url());
+    Workspace.FileManager.FileManager.instance().save(uiSourceCode.url(), content || '', true);
+    Workspace.FileManager.FileManager.instance().close(uiSourceCode.url());
   }
 }
 
