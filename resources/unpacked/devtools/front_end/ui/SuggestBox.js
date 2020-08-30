@@ -413,6 +413,9 @@ export class SuggestBox {
   *      subtitleRenderer: (function():!Element|undefined),
   *      selectionRange: ({startColumn: number, endColumn: number}|undefined),
   *      hideGhostText: (boolean|undefined)
+  *      prologue: (string|undefined)
+  *      epilogue: (string|undefined)
+  *      className: (string|undefined)
   * }}
   */
 // @ts-ignore typedef

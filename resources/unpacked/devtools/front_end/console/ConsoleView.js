@@ -1464,7 +1464,7 @@ export class ConsoleView extends UI.Widget.VBox {
 
     const sourceElement = eventTarget.enclosingNodeOrSelfWithClass('console-message-wrapper');
     const consoleMessage = sourceElement ?
-        // @ts-expect-error We can't convert this to a Weakmap, as it comes from `ConsoleViewMessage` instead.
+        // ts-expect-error We can't convert this to a Weakmap, as it comes from `ConsoleViewMessage` instead.
         /** @type {!ConsoleViewMessage} */ (sourceElement.message).consoleMessage() :
         null;
 
@@ -2256,7 +2256,7 @@ export class ConsoleCommand extends ConsoleViewMessage {
       const icon = UI.Icon.Icon.create('smallicon-user-command', 'command-result-icon');
       this._contentElement.appendChild(icon);
 
-      // @ts-expect-error We can't convert this to a Weakmap, as it comes from `ConsoleViewMessage` instead.
+      // ts-expect-error We can't convert this to a Weakmap, as it comes from `ConsoleViewMessage` instead.
       this._contentElement.message = this;
 
       this._formattedCommand = document.createElement('span');
@@ -2445,5 +2445,5 @@ const MaxLengthToIgnoreHighlighter = 10000;
 /**
  * @typedef {{messageIndex: number, matchIndex: number}}
  */
-// @ts-expect-error typedef
+// ts-expect-error typedef
 export let RegexMatchRange;
