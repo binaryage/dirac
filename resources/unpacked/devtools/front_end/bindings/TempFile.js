@@ -27,8 +27,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 
@@ -104,7 +102,7 @@ export class TempFile {
       outputStream.close();
       return Promise.resolve(/** @type {?FileError} */ (null));
     }
-    const reader = new ChunkedFileReader(/** @type {!Blob} */ (this._lastBlob), 10 * 1000 * 1000, progress);
+    const reader = new ChunkedFileReader(/** @type {!File} */ (this._lastBlob), 10 * 1000 * 1000, progress);
     return reader.read(outputStream).then(success => success ? null : reader.error());
   }
 
@@ -147,6 +145,9 @@ export class TempFileBackingStorage {
    */
   appendAccessibleString(string) {
     this._flush();
+    if (!this._file) {
+      return async () => null;
+    }
     const startOffset = this._file.size();
     this._strings.push(string);
     this._flush();

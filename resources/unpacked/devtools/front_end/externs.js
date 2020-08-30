@@ -1762,11 +1762,12 @@ InspectorFrontendHostAPI.EnumeratedHistogram = {
   ColorPickerFixedColor: 'DevTools.ColorPicker.FixedColor',
   PanelClosed: 'DevTools.PanelClosed',
   PanelShown: 'DevTools.PanelShown',
+  SidebarPaneShown: 'DevTools.SidebarPaneShown',
   KeyboardShortcutFired: 'DevTools.KeyboardShortcutFired',
   IssuesPanelOpenedFrom: 'DevTools.IssuesPanelOpenedFrom',
   KeybindSetSettingChanged: 'DevTools.KeybindSetSettingChanged',
   DualScreenDeviceEmulated: 'DevTools.DualScreenDeviceEmulated',
-  CSSGridSettings: 'DevTools.CSSGridSettings',
+  CSSGridSettings: 'DevTools.CSSGridSettings2',
   ExperimentEnabledAtLaunch: 'DevTools.ExperimentEnabledAtLaunch',
   ExperimentEnabled: 'DevTools.ExperimentEnabled',
   ExperimentDisabled: 'DevTools.ExperimentDisabled',
@@ -1778,7 +1779,7 @@ InspectorFrontendHostAPI.EnumeratedHistogram = {
 class ServicePort {
   /**
    * @param {function(string)} messageHandler
-   * @param {function(string)} closeHandler
+   * @param {function()} closeHandler
    */
   setHandlers(messageHandler, closeHandler) {
   }

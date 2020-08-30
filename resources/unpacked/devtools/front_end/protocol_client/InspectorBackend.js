@@ -650,6 +650,13 @@ export class TargetBase {
   // Agent accessors, keep alphabetically sorted.
 
   /**
+   * @return {!ProtocolProxyApi.ApplicationCacheApi}
+   */
+  applicationCacheAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @return {!ProtocolProxyApi.AuditsApi}
    */
   auditsAgent() {
@@ -692,6 +699,13 @@ export class TargetBase {
   }
 
   /**
+   * @return {!ProtocolProxyApi.LogApi}
+   */
+  logAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @return {!ProtocolProxyApi.MemoryApi}
    */
   memoryAgent() {
@@ -706,9 +720,23 @@ export class TargetBase {
   }
 
   /**
+   * @return {!ProtocolProxyApi.OverlayApi}
+   */
+  overlayAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @return {!ProtocolProxyApi.PageApi}
    */
   pageAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.ProfilerApi}
+   */
+  profilerAgent() {
     throw new Error('Implemented in InspectorBackend.js');
   }
 
@@ -748,6 +776,13 @@ export class TargetBase {
   }
 
   /**
+   * @return {!ProtocolProxyApi.TracingApi}
+   */
+  tracingAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @return {!ProtocolProxyApi.WebAuthnApi}
    */
   webAuthnAgent() {
@@ -756,6 +791,13 @@ export class TargetBase {
 
 
   // Dispatcher registration, keep alphabetically sorted.
+
+  /**
+   * @param {!ProtocolProxyApi.ApplicationCacheDispatcher} dispatcher
+   */
+  registerApplicationCacheDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
 
   /**
    * @param {!ProtocolProxyApi.AuditsDispatcher} dispatcher
@@ -786,6 +828,13 @@ export class TargetBase {
   }
 
   /**
+   * @param {!ProtocolProxyApi.LogDispatcher} dispatcher
+   */
+  registerLogDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @param {!ProtocolProxyApi.NetworkDispatcher} dispatcher
    */
   registerNetworkDispatcher(dispatcher) {
@@ -793,9 +842,23 @@ export class TargetBase {
   }
 
   /**
+   * @param {!ProtocolProxyApi.OverlayDispatcher} dispatcher
+   */
+  registerOverlayDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @param {!ProtocolProxyApi.PageDispatcher} dispatcher
    */
   registerPageDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @param {!ProtocolProxyApi.ProfilerDispatcher} dispatcher
+   */
+  registerProfilerDispatcher(dispatcher) {
     throw new Error('Implemented in InspectorBackend.js');
   }
 
@@ -817,6 +880,13 @@ export class TargetBase {
    * @param {!ProtocolProxyApi.TargetDispatcher} dispatcher
    */
   registerTargetDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @param {!ProtocolProxyApi.TracingDispatcher} dispatcher
+   */
+  registerTracingDispatcher(dispatcher) {
     throw new Error('Implemented in InspectorBackend.js');
   }
 }

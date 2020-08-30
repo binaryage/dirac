@@ -140,7 +140,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         .addChangeListener(this._showUAShadowDOMChanged.bind(this));
     SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.DOMModel.DOMModel, SDK.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
-    self.Extensions.extensionServer.addEventListener(
+    Extensions.ExtensionServer.ExtensionServer.instance().addEventListener(
         Extensions.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
 
     /**
@@ -507,6 +507,9 @@ export class ElementsPanel extends UI.Panel.Panel {
    * @param {boolean=} jumpBackwards
    */
   performSearch(searchConfig, shouldJump, jumpBackwards) {
+    if (!searchConfig) {
+      return;
+    }
     const query = searchConfig.query;
 
     const whitespaceTrimmedQuery = query.trim();
@@ -667,8 +670,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     if (!searchResult.node) {
       return;
     }
-    const treeOutline = ElementsTreeOutline.forDOMModel(searchResult.node.domModel());
-    const treeElement = treeOutline.findTreeElement(searchResult.node);
+    const treeElement = this._treeElementForNode(searchResult.node);
     if (treeElement) {
       treeElement.hideSearchHighlights();
     }
@@ -895,6 +897,8 @@ export class ElementsPanel extends UI.Panel.Panel {
     computedStylePanesWrapper.element.classList.add('style-panes-wrapper');
     this._computedStyleWidget.show(computedStylePanesWrapper.element);
 
+    let skippedInitialTabSelectedEvent = false;
+
     /**
      * @param {!Common.EventTarget.EventTargetEvent} event
      */
@@ -910,6 +914,14 @@ export class ElementsPanel extends UI.Panel.Panel {
             this._metricsWidget.show(matchedStylePanesWrapper.element);
           });
         }
+      }
+
+      if (skippedInitialTabSelectedEvent) {
+        // We don't log the initially selected sidebar pane to UMA because
+        // it will skew the histogram heavily toward the Styles pane
+        Host.userMetrics.sidebarPaneShown(tabId);
+      } else {
+        skippedInitialTabSelectedEvent = true;
       }
     };
 
@@ -934,7 +946,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     this._stylesViewToReveal = stylesView;
 
     this.sidebarPaneView.appendApplicableItems('elements-sidebar');
-    const extensionSidebarPanes = self.Extensions.extensionServer.sidebarPanes();
+    const extensionSidebarPanes = Extensions.ExtensionServer.ExtensionServer.instance().sidebarPanes();
     for (let i = 0; i < extensionSidebarPanes.length; ++i) {
       this._addExtensionSidebarPane(extensionSidebarPanes[i]);
     }
@@ -949,7 +961,8 @@ export class ElementsPanel extends UI.Panel.Panel {
 
     const position = Common.Settings.Settings.instance().moduleSetting('sidebarPosition').get();
     let splitMode = _splitMode.Horizontal;
-    if (position === 'right' || (position === 'auto' && self.UI.inspectorView.element.offsetWidth > 680)) {
+    if (position === 'right' ||
+        (position === 'auto' && UI.InspectorView.InspectorView.instance().element.offsetWidth > 680)) {
       splitMode = _splitMode.Vertical;
     }
     if (!this.sidebarPaneView) {

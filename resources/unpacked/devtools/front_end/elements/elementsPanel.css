@@ -34,7 +34,7 @@
 }
 
 .style-panes-wrapper {
-  overflow: hidden auto;
+  overflow: scroll;
 }
 
 .style-panes-wrapper > div:not(:first-child) {
@@ -44,10 +44,6 @@
 #elements-content:not(.elements-wrap) > div {
   display: inline-block;
   min-width: 100%;
-}
-
-#elements-content.elements-wrap {
-  overflow-x: hidden;
 }
 
 #elements-crumbs {
