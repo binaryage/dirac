@@ -201,6 +201,32 @@ export class UserMetrics {
   }
 
   /**
+   * @param {number} count The number of highlighted persistent grids
+   */
+  highlightedPersistentCssGridCount(count) {
+    const size = HighlightedPersistentCSSGridCount.length;
+
+    let code;
+    for (let i = 0; i < size; i++) {
+      const min = HighlightedPersistentCSSGridCount[i];
+      const max = HighlightedPersistentCSSGridCount[i + 1] || {threshold: Infinity};
+
+      if (count >= min.threshold && count < max.threshold) {
+        code = min.code;
+        break;
+      }
+    }
+
+    if (typeof code === 'undefined') {
+      return;
+    }
+
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+        EnumeratedHistogram.HighlightedPersistentCSSGridCount, code, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.HighlightedPersistentCSSGridCount, {value: code});
+  }
+
+  /**
    * @param {string} experimentId
    */
   experimentEnabledAtLaunch(experimentId) {
@@ -227,6 +253,16 @@ export class UserMetrics {
     const actionName = isEnabled ? EnumeratedHistogram.ExperimentEnabled : EnumeratedHistogram.ExperimentDisabled;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(actionName, experiment, size);
     Common.EventTarget.fireEvent(actionName, {value: experiment});
+  }
+
+  /**
+   * @param {boolean} isEnabled
+   */
+  computedStyleGrouping(isEnabled) {
+    const size = Object.keys(ComputedStyleGroupingState).length + 1;
+    const code = isEnabled ? ComputedStyleGroupingState.enabled : ComputedStyleGroupingState.disabled;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.ComputedStyleGrouping, code, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.ComputedStyleGrouping, {value: code});
   }
 }
 
@@ -476,6 +512,18 @@ export const CSSGridSettings = {
   'showGridTrackSizes.true': 8,
 };
 
+export const HighlightedPersistentCSSGridCount = [
+  {threshold: 0, code: 0},   // 0 highlighted grids
+  {threshold: 1, code: 1},   // 1 highlighted grid
+  {threshold: 2, code: 2},   // 2 highlighted grids
+  {threshold: 3, code: 3},   // 3 highlighted grids
+  {threshold: 4, code: 4},   // 4 highlighted grids
+  {threshold: 5, code: 5},   // 5 to 9 highlighted grids
+  {threshold: 10, code: 6},  // 10 to 19 highlighted grids
+  {threshold: 20, code: 7},  // 20 to 49 highlighted grids
+  {threshold: 50, code: 8},  // more than 50 highlighted grids
+];
+
 /**
  * This list should contain the currently active Devtools Experiments.
  * Therefore, it is possible that the id's will no longer be continuous
@@ -502,7 +550,6 @@ export const DevtoolsExperiments = {
   'liveHeapProfile': 11,
   'nativeHeapProfiler': 12,
   'protocolMonitor': 13,
-  'issuesPane': 14,
   'developerResourcesView': 15,
   'recordCoverageWithPerformanceTracing': 16,
   'samplingHeapProfilerTimeline': 17,
@@ -524,4 +571,10 @@ export const DevtoolsExperiments = {
   'cssGridFeatures': 33,
   'movableTabs': 34,
   '__lastValidEnumPosition': 34,
+};
+
+/** @type {!Object<string, number>} */
+export const ComputedStyleGroupingState = {
+  'enabled': 0,
+  'disabled': 1,
 };

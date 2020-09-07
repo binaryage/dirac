@@ -161,7 +161,6 @@ export class MainImpl {
     Root.Runtime.experiments.register('liveHeapProfile', 'Live heap profile', true);
     Root.Runtime.experiments.register('nativeHeapProfiler', 'Native memory sampling heap profiler', true);
     Root.Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
-    Root.Runtime.experiments.register('issuesPane', 'Issues Pane');
     Root.Runtime.experiments.register('developerResourcesView', 'Show developer resources view');
     Root.Runtime.experiments.register(
         'recordCoverageWithPerformanceTracing', 'Record coverage while performance tracing');
@@ -209,7 +208,6 @@ export class MainImpl {
       'backgroundServicesPushMessaging',
       'backgroundServicesPaymentHandler',
       'customKeyboardShortcuts',
-      'issuesPane',
       'webauthnPane',
     ]);
 

@@ -531,6 +531,7 @@ export class ConsoleMessage {
     this.scriptId = scriptId || null;
     this.workerId = workerId || null;
     this.skipHistory = false;
+    this.frameId = null;
 
     if (!this.executionContextId && this._runtimeModel) {
       if (this.scriptId) {
@@ -538,6 +539,11 @@ export class ConsoleMessage {
       } else if (this.stackTrace) {
         this.executionContextId = this._runtimeModel.executionContextForStackTrace(this.stackTrace);
       }
+    }
+
+    if (this.executionContextId && this._runtimeModel) {
+      const executionContext = this._runtimeModel.executionContext(this.executionContextId);
+      this.frameId = executionContext ? executionContext.frameId : null;
     }
 
     if (context) {

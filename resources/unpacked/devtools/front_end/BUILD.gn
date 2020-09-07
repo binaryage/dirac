@@ -12,6 +12,7 @@ group("front_end") {
     "accessibility:bundle",
     "animation:bundle",
     "bindings:bundle",
+    "browser_debugger:bundle",
     "browser_sdk:bundle",
     "changes:bundle",
     "client_variations:bundle",
@@ -27,6 +28,7 @@ group("front_end") {
     "coverage:bundle",
     "css_overview:bundle",
     "data_grid:bundle",
+    "developer_resources:bundle",
     "devices:bundle",
     "diff:bundle",
     "dom_extension:bundle",
@@ -38,6 +40,7 @@ group("front_end") {
     "formatter_worker:bundle",
     "har_importer:bundle",
     "heap_snapshot_model:bundle",
+    "heap_snapshot_worker:bundle",
     "help:bundle",
     "i18n:bundle",
     "inline_editor:bundle",
@@ -48,7 +51,9 @@ group("front_end") {
     "js_main:bundle",
     "layer_viewer:bundle",
     "layers:bundle",
+    "lighthouse:bundle",
     "main:bundle",
+    "media:bundle",
     "mobile_throttling:bundle",
     "network:bundle",
     "node_main:bundle",
@@ -70,6 +75,7 @@ group("front_end") {
     "snippets:bundle",
     "source_frame:bundle",
     "sources:bundle",
+    "test_runner:bundle",
     "text_editor:bundle",
     "text_utils:bundle",
     "theme_support:bundle",
@@ -78,7 +84,9 @@ group("front_end") {
     "timeline_model:bundle",
     "toolbox_bootstrap:bundle",
     "ui:bundle",
+    "wasmparser_worker:bundle",
     "web_audio:bundle",
+    "webauthn:bundle",
     "worker_main:bundle",
     "worker_service:bundle",
     "workspace:bundle",
@@ -88,6 +96,25 @@ group("front_end") {
   data_deps = [
     ":embedder-scripts",
     ":front_end_html_entrypoints",
+    ":legacy_css",
+  ]
+}
+
+group("legacy_css") {
+  public_deps = [
+    "cm:legacy_css",
+    "components:legacy_css",
+    "console:legacy_css",
+    "console_counters:legacy_css",
+    "data_grid:legacy_css",
+    "elements:legacy_css",
+    "emulation:legacy_css",
+    "help:legacy_css",
+    "inspector_main:legacy_css",
+    "mobile_throttling:legacy_css",
+    "object_ui:legacy_css",
+    "persistence:legacy_css",
+    "ui:legacy_css",
   ]
 }
 

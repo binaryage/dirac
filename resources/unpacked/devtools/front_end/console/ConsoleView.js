@@ -34,7 +34,6 @@ import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
@@ -364,14 +363,15 @@ export class ConsoleView extends UI.Widget.VBox {
     SDK.ConsoleModel.ConsoleModel.instance().addEventListener(
         SDK.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
     SDK.ConsoleModel.ConsoleModel.instance().messages().forEach(this._addConsoleMessage, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextCreated, this._executionContextCreated,
+        this);
 
-    if (Root.Runtime.experiments.isEnabled('issuesPane')) {
-      const issuesManager = BrowserSDK.IssuesManager.IssuesManager.instance();
-      issuesManager.addEventListener(
-          BrowserSDK.IssuesManager.Events.IssuesCountUpdated, this._onIssuesCountChanged.bind(this));
-      if (issuesManager.numberOfIssues()) {
-        this._onIssuesCountChanged();
-      }
+    const issuesManager = BrowserSDK.IssuesManager.IssuesManager.instance();
+    issuesManager.addEventListener(
+        BrowserSDK.IssuesManager.Events.IssuesCountUpdated, this._onIssuesCountChanged.bind(this));
+    if (issuesManager.numberOfIssues()) {
+      this._onIssuesCountChanged();
     }
   }
 
@@ -407,6 +407,7 @@ export class ConsoleView extends UI.Widget.VBox {
         fastHeight() {
           return this._cachedIssueBarHeight || 37;
         },
+        toExportString: () => ls`Some messages have been moved to the Issues panel.`,
         _cachedIssueBarHeight: 0
       };
       this._scheduleViewportRefresh();
@@ -563,6 +564,33 @@ export class ConsoleView extends UI.Widget.VBox {
   _executionContextChanged() {
     this._switchToLastPrompt();
     this._prompt.clearAutocomplete();
+  }
+
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
+  _executionContextCreated(event) {
+    const executionContext = event.data;
+    if (!executionContext.frameId) {
+      return;
+    }
+
+    const oldLength = this._consoleMessages.length;
+    this._consoleMessages = this._consoleMessages.filter(viewMessage => {
+      const consoleMessage = viewMessage.consoleMessage();
+      // If a message from the execution context reported already exists, remove
+      // it, as pre-existing messages from the execution context will be resent.
+      if (consoleMessage.frameId && consoleMessage.executionContextId &&
+          consoleMessage.executionContextId === executionContext.id &&
+          consoleMessage.frameId === executionContext.frameId) {
+        return false;
+      }
+      return true;
+    });
+    const messageRemoved = this._consoleMessages.length < oldLength;
+    if (messageRemoved) {
+      this._updateMessageList();
+    }
   }
 
   /**
@@ -1463,7 +1491,7 @@ export class ConsoleView extends UI.Widget.VBox {
     }
 
     const sourceElement = eventTarget.enclosingNodeOrSelfWithClass('console-message-wrapper');
-    const consoleMessage = sourceElement ?
+    const consoleMessage = (sourceElement && 'message' in sourceElement) ?
         // ts-expect-error We can't convert this to a Weakmap, as it comes from `ConsoleViewMessage` instead.
         /** @type {!ConsoleViewMessage} */ (sourceElement.message).consoleMessage() :
         null;

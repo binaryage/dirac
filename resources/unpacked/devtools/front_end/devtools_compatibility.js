@@ -372,9 +372,11 @@
     KeybindSetSettingChanged: 'DevTools.KeybindSetSettingChanged',
     DualScreenDeviceEmulated: 'DevTools.DualScreenDeviceEmulated',
     CSSGridSettings: 'DevTools.CSSGridSettings2',
+    HighlightedPersistentCSSGridCount: 'DevTools.HighlightedPersistentCSSGridCount',
     ExperimentEnabledAtLaunch: 'DevTools.ExperimentEnabledAtLaunch',
     ExperimentEnabled: 'DevTools.ExperimentEnabled',
     ExperimentDisabled: 'DevTools.ExperimentDisabled',
+    ComputedStyleGrouping: 'DevTools.ComputedStyleGrouping',
   };
 
   /**
@@ -1298,7 +1300,7 @@
       };
 
       Object.defineProperty(HTMLSlotElement.prototype, 'select', {
-        async set(selector) {
+        set(selector) {
           this.name = selector;
         }
       });

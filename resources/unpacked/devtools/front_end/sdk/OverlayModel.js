@@ -386,6 +386,17 @@ export class OverlayModel extends SDKModel {
     this._sourceOrderHighlighter.highlightSourceOrderInOverlay(node, sourceOrderConfig);
   }
 
+  /**
+   * @param {number} nodeId
+   * @return {string|null}
+   */
+  colorOfGridInPersistentOverlay(nodeId) {
+    if (!this._persistentGridHighlighter) {
+      return null;
+    }
+    return this._persistentGridHighlighter.colorOfGrid(nodeId).asString();
+  }
+
   hideSourceOrderInOverlay() {
     this._sourceOrderHighlighter.hideSourceOrderHighlight();
   }
@@ -730,7 +741,14 @@ class DefaultPersistentGridHighlighter {
    */
   constructor(model) {
     this._model = model;
+
+    /** @type {!Map<number, !Protocol.Overlay.GridHighlightConfig>} */
     this._gridHighlights = new Map();
+
+    /** @type {!Map<number, !Common.Color.Color>} */
+    this._gridColors = new Map();
+
+    this._colorGenerator = new OverlayColorGenerator();
 
     /** @type {!Common.Settings.Setting<*>} */
     this._showGridLineLabelsSetting = Common.Settings.Settings.instance().moduleSetting('showGridLineLabels');
@@ -746,6 +764,11 @@ class DefaultPersistentGridHighlighter {
     this._showGridTrackSizesSetting.addChangeListener(this._onSettingChange, this);
 
     this._logCurrentGridSettings();
+
+    // Debounce recording highlighted grids in order to avoid counting rapidly turning grids on and off.
+    this._recordHighlightedGridCount = debounce(this._doRecordHighlightedGridCount.bind(this), 1000);
+    /** @type {!Array<number>} */
+    this._previouslyRecordedGridCountNodeIds = [];
   }
 
   /**
@@ -787,22 +810,40 @@ class DefaultPersistentGridHighlighter {
     Host.userMetrics.cssGridSettings(`${setting.name}.${setting.get()}`);
   }
 
+  _doRecordHighlightedGridCount() {
+    const recordedNodeIds = [...this._gridHighlights.keys()];
+
+    // If only settings changed, but not the list of highlighted grids, bail out.
+    if (arraysEqual(recordedNodeIds, this._previouslyRecordedGridCountNodeIds)) {
+      return;
+    }
+
+    Host.userMetrics.highlightedPersistentCssGridCount(recordedNodeIds.length);
+
+    this._previouslyRecordedGridCountNodeIds = recordedNodeIds;
+  }
+
   /**
+   * @param {number} nodeId
    * @return {!Protocol.Overlay.GridHighlightConfig}
    */
-  _buildGridHighlightConfig() {
+  _buildGridHighlightConfig(nodeId) {
+    const mainColor = this.colorOfGrid(nodeId);
+    const gapBackground = mainColor.setAlpha(0.3);
+    const gapHatch = mainColor.setAlpha(0.8);
+
     const showGridExtensionLines = /** @type {boolean} */ (this._extendGridLinesSetting.get());
     const showPositiveLineNumbers = this._showGridLineLabelsSetting.get() === 'lineNumbers';
     const showNegativeLineNumbers = showPositiveLineNumbers;
     const showLineNames = this._showGridLineLabelsSetting.get() === 'lineNames';
     return {
-      rowGapColor: Common.Color.PageHighlight.GridRowGapBackground.toProtocolRGBA(),
-      rowHatchColor: Common.Color.PageHighlight.GridRowGapHatch.toProtocolRGBA(),
-      columnGapColor: Common.Color.PageHighlight.GridColumnGapBackground.toProtocolRGBA(),
-      columnHatchColor: Common.Color.PageHighlight.GridColumnGapHatch.toProtocolRGBA(),
+      rowGapColor: gapBackground.toProtocolRGBA(),
+      rowHatchColor: gapHatch.toProtocolRGBA(),
+      columnGapColor: gapBackground.toProtocolRGBA(),
+      columnHatchColor: gapHatch.toProtocolRGBA(),
       gridBorderDash: false,
-      rowLineColor: Common.Color.PageHighlight.GridRowLine.toProtocolRGBA(),
-      columnLineColor: Common.Color.PageHighlight.GridColumnLine.toProtocolRGBA(),
+      rowLineColor: mainColor.toProtocolRGBA(),
+      columnLineColor: mainColor.toProtocolRGBA(),
       rowLineDash: true,
       columnLineDash: true,
       showGridExtensionLines,
@@ -811,7 +852,7 @@ class DefaultPersistentGridHighlighter {
       showLineNames,
       showAreaNames: /** @type {boolean} */ (this._showGridAreasSetting.get()),
       showTrackSizes: /** @type {boolean} */ (this._showGridTrackSizesSetting.get()),
-      areaBorderColor: Common.Color.PageHighlight.GridAreaBorder.toProtocolRGBA(),
+      areaBorderColor: mainColor.toProtocolRGBA(),
     };
   }
 
@@ -820,7 +861,7 @@ class DefaultPersistentGridHighlighter {
    * @param {number} nodeId
    */
   highlightInOverlay(nodeId) {
-    this._gridHighlights.set(nodeId, this._buildGridHighlightConfig());
+    this._gridHighlights.set(nodeId, this._buildGridHighlightConfig(nodeId));
     this._updateHighlightsInOverlay();
   }
 
@@ -831,6 +872,20 @@ class DefaultPersistentGridHighlighter {
    */
   isHighlighted(nodeId) {
     return this._gridHighlights.has(nodeId);
+  }
+
+  /**
+   * @param {number} nodeId
+   * @return {!Common.Color.Color}
+   */
+  colorOfGrid(nodeId) {
+    let color = this._gridColors.get(nodeId);
+    if (!color) {
+      color = this._colorGenerator.next();
+      this._gridColors.set(nodeId, color);
+    }
+
+    return color;
   }
 
   /**
@@ -870,7 +925,7 @@ class DefaultPersistentGridHighlighter {
 
   _resetOverlay() {
     for (const nodeId of this._gridHighlights.keys()) {
-      this._gridHighlights.set(nodeId, this._buildGridHighlightConfig());
+      this._gridHighlights.set(nodeId, this._buildGridHighlightConfig(nodeId));
     }
     this._updateHighlightsInOverlay();
   }
@@ -885,10 +940,40 @@ class DefaultPersistentGridHighlighter {
       gridNodeHighlightConfigs.push({nodeId, gridHighlightConfig});
     }
     overlayModel.target().overlayAgent().invoke_setShowGridOverlays({gridNodeHighlightConfigs});
+
+    this._recordHighlightedGridCount();
   }
 }
 
 DefaultPersistentGridHighlighter.gridTelemetryLogged = false;
+
+class OverlayColorGenerator {
+  constructor() {
+    // The saturation and value values are set here to create nice looking colors.
+    // Only the hue is generated, so we end up with a range of colors that fit together well.
+    this.saturation = 0.8;
+    this.value = 0.7;
+
+    // A smaller increment runs the risk of generating colors that are too similar.
+    this.hueIncrements = 0.1;
+
+    this.hue = 0;
+  }
+
+  /**
+   * Generate the next color in the spectrum
+   * @return {!Common.Color.Color}
+   */
+  next() {
+    const color = Common.Color.Color.fromHSVA([this.hue, this.saturation, this.value, 1]);
+    this.hue += this.hueIncrements;
+    if (this.hue >= 1) {
+      this.hue = 0;
+    }
+
+    return color;
+  }
+}
 
 export class SourceOrderHighlighter {
   /**
@@ -920,3 +1005,41 @@ SDKModel.register(OverlayModel, Capability.DOM, true);
 /** @typedef {!{node: !DOMNode, selectorList: (string|undefined)} | !{deferredNode: DeferredDOMNode, selectorList: (string|undefined)} | !{object: !RemoteObject, selectorList: (string|undefined)} | !{clear: *}} */
 // @ts-ignore typedef
 export let HighlightData;
+
+/**
+ * Debounce utility function, ensures that the function passed in is only called once the function stops being called and the delay has expired.
+ * @param {!Function} func The function to debounce
+ * @param {number} delay The time to wait before calling the function
+ * @return {!Function} The debounced function
+ */
+const debounce = function(func, delay) {
+  let timer = 0;
+  const debounced = () => {
+    clearTimeout(timer);
+    // @ts-ignore typedef
+    timer = setTimeout(() => func(), delay);
+  };
+  return debounced;
+};
+
+/**
+ * Checks if 2 arrays are equal.
+ * @param {!Array<*>} a1 The first array
+ * @param {!Array<*>} a2 The second array
+ * @return {boolean}
+ */
+const arraysEqual = (a1, a2) => {
+  if (a1.length !== a2.length) {
+    return false;
+  }
+
+  a1 = [...a1].sort();
+  a2 = [...a2].sort();
+  for (let i = 0; i < a1.length; i++) {
+    if (a1[i] !== a2[i]) {
+      return false;
+    }
+  }
+
+  return true;
+};

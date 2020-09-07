@@ -153,15 +153,6 @@ Array.prototype.mergeOrdered = function(array, comparator) {};
  */
 Int32Array.prototype.lowerBound = function(object, comparator, left, right) {};
 
-// TODO(luoe): remove these BigInt and ArrayLike types once closure supports them.
-/**
- * @param {number|string} value
- */
-const BigInt = function(value) {};
-
-/** @typedef {*} */
-const bigint = null;
-
 /** @typedef {Array|NodeList|Arguments|{length: number}} */
 let ArrayLike;
 
@@ -1222,12 +1213,6 @@ const base64ToSize = function(content) {};
  */
 const unescapeCssString = function(input) {};
 
-/**
- * @constructor
- * @param {function(!Array<*>)} callback
- */
-const ResizeObserver = function(callback) {};
-
 
 // Lighthouse Report Renderer
 
@@ -1768,9 +1753,11 @@ InspectorFrontendHostAPI.EnumeratedHistogram = {
   KeybindSetSettingChanged: 'DevTools.KeybindSetSettingChanged',
   DualScreenDeviceEmulated: 'DevTools.DualScreenDeviceEmulated',
   CSSGridSettings: 'DevTools.CSSGridSettings2',
+  HighlightedPersistentCSSGridCount: 'DevTools.HighlightedPersistentCSSGridCount',
   ExperimentEnabledAtLaunch: 'DevTools.ExperimentEnabledAtLaunch',
   ExperimentEnabled: 'DevTools.ExperimentEnabled',
   ExperimentDisabled: 'DevTools.ExperimentDisabled',
+  ComputedStyleGrouping: 'DevTools.ComputedStyleGrouping',
 };
 
 /**

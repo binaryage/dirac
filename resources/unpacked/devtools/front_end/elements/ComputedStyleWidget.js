@@ -32,6 +32,7 @@
 
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
+import * as Host from '../host/host.js';
 import * as InlineEditor from '../inline_editor/inline_editor.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
@@ -173,8 +174,12 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     this._showInheritedComputedStylePropertiesSetting =
         Common.Settings.Settings.instance().createSetting('showInheritedComputedStyleProperties', false);
     this._showInheritedComputedStylePropertiesSetting.addChangeListener(this.update.bind(this));
+
     this._groupComputedStylesSetting = Common.Settings.Settings.instance().createSetting('groupComputedStyles', false);
-    this._groupComputedStylesSetting.addChangeListener(this.update.bind(this));
+    this._groupComputedStylesSetting.addChangeListener(event => {
+      Host.userMetrics.computedStyleGrouping(event.data);
+      this.update();
+    });
 
     const hbox = this.contentElement.createChild('div', 'hbox styles-sidebar-pane-toolbar');
     const filterContainerElement = hbox.createChild('div', 'styles-sidebar-pane-filter-box');
@@ -209,6 +214,9 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     this._groupLists = createComputedStyleGroupLists();
     this._groupLists.classList.add('monospace', 'computed-properties');
     this.contentElement.appendChild(this._groupLists);
+
+    /** @type {!WeakMap<!UI.TreeOutline.TreeElement, {name: string, value: string}>} */
+    this._propertyByTreeElement = new WeakMap();
 
     /** @type {!Set<string>} */
     this._expandedProperties = new Set();
@@ -395,7 +403,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
           };
 
           treeElement.title = propertyElement;
-          treeElement[_propertySymbol] = {name: propertyName, value: propertyValue};
+          this._propertyByTreeElement.set(treeElement, {name: propertyName, value: propertyValue});
           if (!this._propertiesOutline.selectedTreeElement) {
             treeElement.select(!hadFocus);
           }
@@ -506,11 +514,15 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
 
   _onTreeElementToggled(event) {
     const treeElement = /** @type {!UI.TreeOutline.TreeElement} */ (event.data);
-    const propertyName = treeElement[_propertySymbol].name;
+    const property = this._propertyByTreeElement.get(treeElement);
+    if (!property) {
+      return;
+    }
+
     if (treeElement.expanded) {
-      this._expandedProperties.add(propertyName);
+      this._expandedProperties.add(property.name);
     } else {
-      this._expandedProperties.delete(propertyName);
+      this._expandedProperties.delete(property.name);
     }
   }
 
@@ -612,7 +624,10 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     const children = this._propertiesOutline.rootElement().children();
     let hasMatch = false;
     for (const child of children) {
-      const property = child[_propertySymbol];
+      const property = this._propertyByTreeElement.get(child);
+      if (!property) {
+        continue;
+      }
       const matched = !regex || regex.test(property.name) || regex.test(property.value);
       child.hidden = !matched;
       hasMatch |= matched;
@@ -643,6 +658,4 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
 }
 
 const _maxLinkLength = 30;
-const _propertySymbol = Symbol('property');
-ComputedStyleWidget._propertySymbol = _propertySymbol;
 const _alwaysShownComputedProperties = new Set(['display', 'height', 'width']);
