@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';  // eslint-disable-line no-unused-vars
 import * as SDK from '../sdk/sdk.js';
@@ -29,6 +32,10 @@ export class ProtocolService extends Common.ObjectWrapper.ObjectWrapper {
     this._rawConnection = await childTargetManager.createParallelConnection(this._dispatchProtocolMessage.bind(this));
   }
 
+  getLocales() {
+    return navigator.languages;
+  }
+
   /**
    * @param {string} auditURL
    * @param {!Array<string>} categoryIDs
@@ -36,7 +43,8 @@ export class ProtocolService extends Common.ObjectWrapper.ObjectWrapper {
    * @return {!Promise<!ReportRenderer.RunnerResult>}
    */
   startLighthouse(auditURL, categoryIDs, flags) {
-    return this._send('start', {url: auditURL, categoryIDs, flags});
+    const locales = this.getLocales();
+    return this._send('start', {url: auditURL, categoryIDs, flags, locales});
   }
 
   /**
