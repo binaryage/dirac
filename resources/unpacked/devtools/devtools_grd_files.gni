@@ -11,11 +11,11 @@
 
 grd_files_release_sources = [
   # dirac - start
-  "front_end/dirac/dirac.js",
+#  "front_end/dirac/dirac.js",
 #  "front_end/dirac/parinfer.js",
 #  "front_end/dirac/parinfer-codemirror.js",
 #  "front_end/dirac/keysim.js",
-  "front_end/dirac_lazy/dirac_lazy_module.js",
+#  "front_end/dirac_lazy/dirac_lazy_module.js",
   # dirac - end
   "front_end/Images/accelerometer-back.svg",
   "front_end/Images/accelerometer-bottom.png",
