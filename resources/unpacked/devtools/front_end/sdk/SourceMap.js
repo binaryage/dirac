@@ -112,6 +112,7 @@ export class SourceMap {
    * @return {?SourceMapV3}
    */
   payload() {
+    return null;
   }
 }
 
