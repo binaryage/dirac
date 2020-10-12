@@ -2,18 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/python.gni")
+
 import("//third_party/blink/public/public_features.gni")
 import("./all_devtools_files.gni")
 import("./all_devtools_modules.gni")
 import("./devtools_grd_files.gni")
 import("./devtools_image_files.gni")
 import("./devtools_module_entrypoints.gni")
+import("./front_end/emulated_devices/optimized/optimized_images.gni")
 import("./scripts/build/ninja/vars.gni")
 
 devtools_test_files = [
-  "//third_party/axe-core/axe.js",
-  "front_end/accessibility_test_runner/AccessibilityPaneTestRunner.js",
+  "front_end/third_party/axe-core/axe.js",
+  "front_end/accessibility_test_runner/accessibility_test_runner.js",
   "front_end/accessibility_test_runner/module.json",
+  "front_end/bindings_test_runner/bindings_test_runner.js",
+  "front_end/application_test_runner/application_test_runner.js",
   "front_end/application_test_runner/AppcacheTestRunner.js",
   "front_end/application_test_runner/CacheStorageTestRunner.js",
   "front_end/application_test_runner/IndexedDBTestRunner.js",
@@ -21,9 +26,9 @@ devtools_test_files = [
   "front_end/application_test_runner/ResourcesTestRunner.js",
   "front_end/application_test_runner/ResourceTreeTestRunner.js",
   "front_end/application_test_runner/ServiceWorkersTestRunner.js",
-  "front_end/lighthouse_test_runner/LighthouseTestRunner.js",
+  "front_end/lighthouse_test_runner/lighthouse_test_runner.js",
   "front_end/lighthouse_test_runner/module.json",
-  "front_end/axe_core_test_runner/AxeCoreTestRunner.js",
+  "front_end/axe_core_test_runner/axe_core_test_runner.js",
   "front_end/axe_core_test_runner/module.json",
   "front_end/bindings_test_runner/AutomappingTestRunner.js",
   "front_end/bindings_test_runner/BindingsTestRunner.js",
@@ -31,41 +36,45 @@ devtools_test_files = [
   "front_end/bindings_test_runner/module.json",
   "front_end/bindings_test_runner/OverridesTestRunner.js",
   "front_end/bindings_test_runner/PersistenceTestRunner.js",
-  "front_end/console_test_runner/ConsoleTestRunner.js",
+  "front_end/console_test_runner/console_test_runner.js",
   "front_end/console_test_runner/module.json",
-  "front_end/coverage_test_runner/CoverageTestRunner.js",
+  "front_end/coverage_test_runner/coverage_test_runner.js",
   "front_end/coverage_test_runner/module.json",
   "front_end/cpu_profiler_test_runner/module.json",
-  "front_end/cpu_profiler_test_runner/ProfilerTestRunner.js",
-  "front_end/data_grid_test_runner/DataGridTestRunner.js",
+  "front_end/cpu_profiler_test_runner/cpu_profiler_test_runner.js",
+  "front_end/data_grid_test_runner/data_grid_test_runner.js",
   "front_end/data_grid_test_runner/module.json",
-  "front_end/device_mode_test_runner/DeviceModeTestRunner.js",
+  "front_end/device_mode_test_runner/device_mode_test_runner.js",
   "front_end/device_mode_test_runner/module.json",
+  "front_end/elements_test_runner/elements_test_runner.js",
   "front_end/elements_test_runner/EditDOMTestRunner.js",
   "front_end/elements_test_runner/ElementsPanelShadowSelectionOnRefreshTestRunner.js",
   "front_end/elements_test_runner/ElementsTestRunner.js",
   "front_end/elements_test_runner/module.json",
   "front_end/elements_test_runner/SetOuterHTMLTestRunner.js",
   "front_end/elements_test_runner/StylesUpdateLinksTestRunner.js",
+  "front_end/extensions_test_runner/extensions_test_runner.js",
   "front_end/extensions_test_runner/ExtensionsNetworkTestRunner.js",
   "front_end/extensions_test_runner/ExtensionsTestRunner.js",
   "front_end/extensions_test_runner/module.json",
-  "front_end/heap_profiler_test_runner/HeapProfilerTestRunner.js",
+  "front_end/heap_profiler_test_runner/heap_profiler_test_runner.js",
   "front_end/heap_profiler_test_runner/module.json",
   "front_end/integration_test_runner.html",
   "front_end/integration_test_runner.js",
   "front_end/integration_test_runner.json",
-  "front_end/layers_test_runner/LayersTestRunner.js",
+  "front_end/layers_test_runner/layers_test_runner.js",
   "front_end/layers_test_runner/module.json",
   "front_end/network_test_runner/module.json",
-  "front_end/network_test_runner/NetworkTestRunner.js",
+  "front_end/network_test_runner/network_test_runner.js",
+  "front_end/performance_test_runner/performance_test_runner.js",
   "front_end/performance_test_runner/module.json",
   "front_end/performance_test_runner/TimelineDataTestRunner.js",
   "front_end/performance_test_runner/TimelineTestRunner.js",
   "front_end/sdk_test_runner/module.json",
-  "front_end/sdk_test_runner/PageMockTestRunner.js",
+  "front_end/sdk_test_runner/sdk_test_runner.js",
   "front_end/security_test_runner/module.json",
-  "front_end/security_test_runner/SecurityTestRunner.js",
+  "front_end/security_test_runner/security_test_runner.js",
+  "front_end/sources_test_runner/sources_test_runner.js",
   "front_end/sources_test_runner/AutocompleteTestRunner.js",
   "front_end/sources_test_runner/DebuggerTestRunner.js",
   "front_end/sources_test_runner/EditorTestRunner.js",
@@ -81,57 +90,7 @@ devtools_embedder_scripts = [
   "front_end/Tests.js",
 ]
 
-devtools_emulated_devices_images = [
-  "front_end/emulated_devices/google-nexus-5-horizontal-default-1x.png",
-  "front_end/emulated_devices/google-nexus-5-horizontal-default-2x.png",
-  "front_end/emulated_devices/google-nexus-5-horizontal-keyboard-1x.png",
-  "front_end/emulated_devices/google-nexus-5-horizontal-keyboard-2x.png",
-  "front_end/emulated_devices/google-nexus-5-horizontal-navigation-1x.png",
-  "front_end/emulated_devices/google-nexus-5-horizontal-navigation-2x.png",
-  "front_end/emulated_devices/google-nexus-5-vertical-default-1x.png",
-  "front_end/emulated_devices/google-nexus-5-vertical-default-2x.png",
-  "front_end/emulated_devices/google-nexus-5-vertical-keyboard-1x.png",
-  "front_end/emulated_devices/google-nexus-5-vertical-keyboard-2x.png",
-  "front_end/emulated_devices/google-nexus-5-vertical-navigation-1x.png",
-  "front_end/emulated_devices/google-nexus-5-vertical-navigation-2x.png",
-  "front_end/emulated_devices/google-nexus-5x-horizontal-default-1x.png",
-  "front_end/emulated_devices/google-nexus-5x-horizontal-default-2x.png",
-  "front_end/emulated_devices/google-nexus-5x-horizontal-keyboard-1x.png",
-  "front_end/emulated_devices/google-nexus-5x-horizontal-keyboard-2x.png",
-  "front_end/emulated_devices/google-nexus-5x-horizontal-navigation-1x.png",
-  "front_end/emulated_devices/google-nexus-5x-horizontal-navigation-2x.png",
-  "front_end/emulated_devices/google-nexus-5x-vertical-default-1x.png",
-  "front_end/emulated_devices/google-nexus-5x-vertical-default-2x.png",
-  "front_end/emulated_devices/google-nexus-5x-vertical-keyboard-1x.png",
-  "front_end/emulated_devices/google-nexus-5x-vertical-keyboard-2x.png",
-  "front_end/emulated_devices/google-nexus-5x-vertical-navigation-1x.png",
-  "front_end/emulated_devices/google-nexus-5x-vertical-navigation-2x.png",
-  "front_end/emulated_devices/iPad-landscape.svg",
-  "front_end/emulated_devices/iPad-portrait.svg",
-  "front_end/emulated_devices/iPhone5-landscape.svg",
-  "front_end/emulated_devices/iPhone5-portrait.svg",
-  "front_end/emulated_devices/iPhone6-landscape.svg",
-  "front_end/emulated_devices/iPhone6-portrait.svg",
-  "front_end/emulated_devices/iPhone6Plus-landscape.svg",
-  "front_end/emulated_devices/iPhone6Plus-portrait.svg",
-  "front_end/emulated_devices/MotoG4-landscape.svg",
-  "front_end/emulated_devices/MotoG4-portrait.svg",
-  "front_end/emulated_devices/Nexus5X-landscape.svg",
-  "front_end/emulated_devices/Nexus5X-portrait.svg",
-  "front_end/emulated_devices/Nexus6P-landscape.svg",
-  "front_end/emulated_devices/Nexus6P-portrait.svg",
-]
-
-application_templates = [
-  "front_end/devtools_app.html",
-  "front_end/inspector.html",
-  "front_end/integration_test_runner.html",
-  "front_end/js_app.html",
-  "front_end/ndb_app.html",
-  "front_end/node_app.html",
-  "front_end/toolbox.html",
-  "front_end/worker_app.html",
-]
+application_templates = [ "front_end/entrypoint_template.html" ]
 
 generated_applications_html = [
   "$resources_out_dir/devtools_app.html",
@@ -207,14 +166,9 @@ generated_non_autostart_non_remote_modules = [
   "$resources_out_dir/timeline_model/timeline_model_module.js",
   "$resources_out_dir/timeline/timeline_module.js",
   "$resources_out_dir/web_audio/web_audio_module.js",
+  "$resources_out_dir/dirac_lazy/dirac_lazy_module.js",
   "$resources_out_dir/webauthn/webauthn_module.js",
   "$resources_out_dir/workspace_diff/workspace_diff_module.js",
-  "$resources_out_dir/dirac_lazy/dirac_lazy_module.js",
-]
-
-generated_remote_modules = [
-  "$resources_out_dir/lighthouse_worker/lighthouse_worker_module.js",
-  "$resources_out_dir/dagre_layout/dagre_layout_module.js",
   "$resources_out_dir/emulated_devices/emulated_devices_module.js",
 ]
 
@@ -271,7 +225,6 @@ devtools_applications = [
 
 devtools_frontend_resources_deps = [
   ":build_release_devtools",
-  ":copy_emulated_devices_images",
   ":devtools_extension_api",
   "front_end",
   "test",
@@ -292,12 +245,7 @@ group("devtools_frontend_resources") {
 }
 
 group("generate_devtools_inspector_overlay_resources") {
-  public_deps = [ "front_end/inspector_overlay:build_inspector_overlay" ]
-}
-
-copy("copy_emulated_devices_images") {
-  sources = devtools_emulated_devices_images
-  outputs = [ "$resources_out_dir/emulated_devices/{{source_file_part}}" ]
+  public_deps = [ "inspector_overlay:build_inspector_overlay" ]
 }
 
 action("generate_devtools_grd") {
@@ -311,6 +259,7 @@ action("generate_devtools_grd") {
       generated_non_autostart_non_remote_modules + devtools_embedder_scripts +
       generated_worker_bundles + generated_typescript_entrypoint_sources +
       generated_typescript_modules + generated_devtools_locale_files +
+      generated_emulated_device_images +
       [
         "$resources_out_dir/devtools_extension_api.js",
         "$resources_out_dir/sdk/wasm_source_map/pkg/wasm_source_map_bg.wasm",
@@ -388,7 +337,8 @@ if (!is_debug) {
   build_release_devtools_args += [ "--rollup" ]
 }
 
-action("build_release_devtools") {
+# TODO(crbug.com/1112471): Get this to work cleanly under Python3.
+python2_action("build_release_devtools") {
   script = "scripts/build/build_release_applications.py"
 
   helper_scripts = [
@@ -397,15 +347,18 @@ action("build_release_devtools") {
     "front_end/rollup.config.js",
   ]
 
-  deps = [ "front_end" ]
+  deps = [
+    "front_end",
+    "front_end:legacy_test-resources",
+  ]
 
   inputs = helper_scripts + all_devtools_files + devtools_test_files +
            application_templates + all_worker_entrypoints +
            front_end_devtools_module_entrypoint_sources
   outputs =
       generated_applications_js + generated_non_autostart_non_remote_modules +
-      generated_remote_modules + generated_test_modules +
-      generated_worker_bundles + generated_devtools_module_entrypoint_sources
+      generated_test_modules + generated_worker_bundles +
+      generated_devtools_module_entrypoint_sources
 
   args = devtools_applications + [
            "--input_path",

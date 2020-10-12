@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {Descriptor, KeyboardShortcut, Keys, Modifiers} from './KeyboardShortcut.js';  // eslint-disable-line no-unused-vars
+import {ShortcutRegistry} from './ShortcutRegistry.js';
 import {createDocumentationLink} from './UIUtils.js';
 import {Widget} from './Widget.js';
 
+/** @type {!ShortcutsScreen} */
+let shortcutsScreenInstance;
 
 export class ShortcutsScreen {
   constructor() {
@@ -46,9 +46,22 @@ export class ShortcutsScreen {
     this._sections = {};
   }
 
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   * @return {!ShortcutsScreen}
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!shortcutsScreenInstance || forceNew) {
+      shortcutsScreenInstance = new ShortcutsScreen();
+    }
+
+    return shortcutsScreenInstance;
+  }
+
   static registerShortcuts() {
     // Elements panel
-    const elementsSection = self.UI.shortcutsScreen.section(Common.UIString.UIString('Elements Panel'));
+    const elementsSection = ShortcutsScreen.instance().section(Common.UIString.UIString('Elements Panel'));
 
     const navigate = ElementsPanelShortcuts.NavigateUp.concat(ElementsPanelShortcuts.NavigateDown);
     elementsSection.addRelatedKeys(navigate, Common.UIString.UIString('Navigate elements'));
@@ -58,14 +71,14 @@ export class ShortcutsScreen {
 
     elementsSection.addAlternateKeys(ElementsPanelShortcuts.EditAttribute, Common.UIString.UIString('Edit attribute'));
     elementsSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('elements.hide-element'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('elements.hide-element'),
         Common.UIString.UIString('Hide element'));
     elementsSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('elements.edit-as-html'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('elements.edit-as-html'),
         Common.UIString.UIString('Toggle edit as HTML'));
 
     // Styles pane
-    const stylesPaneSection = self.UI.shortcutsScreen.section(Common.UIString.UIString('Styles Pane'));
+    const stylesPaneSection = ShortcutsScreen.instance().section(Common.UIString.UIString('Styles Pane'));
 
     const nextPreviousProperty = ElementsPanelShortcuts.NextProperty.concat(ElementsPanelShortcuts.PreviousProperty);
     stylesPaneSection.addRelatedKeys(nextPreviousProperty, Common.UIString.UIString('Next/previous property'));
@@ -91,10 +104,10 @@ export class ShortcutsScreen {
         ElementsPanelShortcuts.DecrementBy01, Common.UIString.UIString('Decrement by %f', 0.1));
 
     // Console
-    const consoleSection = self.UI.shortcutsScreen.section(Common.UIString.UIString('Console'));
+    const consoleSection = ShortcutsScreen.instance().section(Common.UIString.UIString('Console'));
 
     consoleSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('console.clear'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('console.clear'),
         Common.UIString.UIString('Clear console'));
     consoleSection.addRelatedKeys(
         ConsolePanelShortcuts.AcceptSuggestion, Common.UIString.UIString('Accept suggestion'));
@@ -111,24 +124,25 @@ export class ShortcutsScreen {
     consoleSection.addKey(ConsolePanelShortcuts.ExecuteCommand, Common.UIString.UIString('Execute command'));
 
     // Debugger
-    const debuggerSection = self.UI.shortcutsScreen.section(Common.UIString.UIString('Debugger'));
+    const debuggerSection = ShortcutsScreen.instance().section(Common.UIString.UIString('Debugger'));
 
     debuggerSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.toggle-pause'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('debugger.toggle-pause'),
         Common.UIString.UIString('Pause/ Continue'));
     debuggerSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.step-over'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('debugger.step-over'),
         Common.UIString.UIString('Step over'));
     debuggerSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.step-into'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('debugger.step-into'),
         Common.UIString.UIString('Step into'));
     debuggerSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.step-out'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('debugger.step-out'),
         Common.UIString.UIString('Step out'));
 
     const nextAndPrevFrameKeys =
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.next-call-frame')
-            .concat(self.UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.previous-call-frame'));
+        ShortcutRegistry.instance()
+            .shortcutDescriptorsForAction('debugger.next-call-frame')
+            .concat(ShortcutRegistry.instance().shortcutDescriptorsForAction('debugger.previous-call-frame'));
     debuggerSection.addRelatedKeys(nextAndPrevFrameKeys, Common.UIString.UIString('Next/previous call frame'));
 
     debuggerSection.addAlternateKeys(
@@ -136,34 +150,34 @@ export class ShortcutsScreen {
     debuggerSection.addAlternateKeys(
         SourcesPanelShortcuts.AddSelectionToWatch, Common.UIString.UIString('Add selection to watch'));
     debuggerSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.toggle-breakpoint'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('debugger.toggle-breakpoint'),
         Common.UIString.UIString('Toggle breakpoint'));
     debuggerSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.toggle-breakpoint-enabled'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('debugger.toggle-breakpoint-enabled'),
         Common.UIString.UIString('Toggle breakpoint enabled'));
     debuggerSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.toggle-breakpoints-active'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('debugger.toggle-breakpoints-active'),
         Common.UIString.UIString('Toggle all breakpoints'));
     debuggerSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.breakpoint-input-window'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('debugger.breakpoint-input-window'),
         ls`Open breakpoint editor`);
 
     // Editing
-    const editingSection = self.UI.shortcutsScreen.section(Common.UIString.UIString('Text Editor'));
+    const editingSection = ShortcutsScreen.instance().section(Common.UIString.UIString('Text Editor'));
 
     editingSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('sources.go-to-member'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('sources.go-to-member'),
         Common.UIString.UIString('Go to member'));
     editingSection.addAlternateKeys(
         SourcesPanelShortcuts.ToggleAutocompletion, Common.UIString.UIString('Autocompletion'));
     editingSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('sources.go-to-line'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('sources.go-to-line'),
         Common.UIString.UIString('Go to line'));
     editingSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('sources.jump-to-previous-location'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('sources.jump-to-previous-location'),
         Common.UIString.UIString('Jump to previous editing location'));
     editingSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('sources.jump-to-next-location'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('sources.jump-to-next-location'),
         Common.UIString.UIString('Jump to next editing location'));
     editingSection.addAlternateKeys(SourcesPanelShortcuts.ToggleComment, Common.UIString.UIString('Toggle comment'));
     editingSection.addAlternateKeys(
@@ -180,48 +194,50 @@ export class ShortcutsScreen {
     editingSection.addAlternateKeys(
         SourcesPanelShortcuts.GotoMatchingBracket, Common.UIString.UIString('Go to matching bracket'));
     editingSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('sources.close-editor-tab'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('sources.close-editor-tab'),
         Common.UIString.UIString('Close editor tab'));
     editingSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('sources.switch-file'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('sources.switch-file'),
         Common.UIString.UIString('Switch between files with the same name and different extensions.'));
 
     // Performance panel
-    const performanceSection = self.UI.shortcutsScreen.section(Common.UIString.UIString('Performance Panel'));
+    const performanceSection = ShortcutsScreen.instance().section(Common.UIString.UIString('Performance Panel'));
 
     performanceSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.toggle-recording'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('timeline.toggle-recording'),
         Common.UIString.UIString('Start/stop recording'));
     performanceSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.record-reload'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('timeline.record-reload'),
         Common.UIString.UIString('Record page reload'));
     performanceSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.save-to-file'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('timeline.save-to-file'),
         Common.UIString.UIString('Save profile'));
     performanceSection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.load-from-file'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('timeline.load-from-file'),
         Common.UIString.UIString('Load profile'));
     performanceSection.addRelatedKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.jump-to-previous-frame')
-            .concat(self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.jump-to-next-frame')),
+        ShortcutRegistry.instance()
+            .shortcutDescriptorsForAction('timeline.jump-to-previous-frame')
+            .concat(ShortcutRegistry.instance().shortcutDescriptorsForAction('timeline.jump-to-next-frame')),
         Common.UIString.UIString('Jump to previous/next frame'));
     performanceSection.addRelatedKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.show-history'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('timeline.show-history'),
         Common.UIString.UIString('Pick a recording from history'));
     performanceSection.addRelatedKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.previous-recording')
-            .concat(self.UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.next-recording')),
+        ShortcutRegistry.instance()
+            .shortcutDescriptorsForAction('timeline.previous-recording')
+            .concat(ShortcutRegistry.instance().shortcutDescriptorsForAction('timeline.next-recording')),
         Common.UIString.UIString('Show previous/next recording'));
 
     // Memory panel
-    const memorySection = self.UI.shortcutsScreen.section(Common.UIString.UIString('Memory Panel'));
+    const memorySection = ShortcutsScreen.instance().section(Common.UIString.UIString('Memory Panel'));
 
     memorySection.addAlternateKeys(
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('profiler.heap-toggle-recording'),
+        ShortcutRegistry.instance().shortcutDescriptorsForAction('profiler.heap-toggle-recording'),
         Common.UIString.UIString('Start/stop recording'));
 
     // Layers panel
-    const layersSection = self.UI.shortcutsScreen.section(Common.UIString.UIString('Layers Panel'));
+    const layersSection = ShortcutsScreen.instance().section(Common.UIString.UIString('Layers Panel'));
 
     layersSection.addAlternateKeys(LayersPanelShortcuts.ResetView, Common.UIString.UIString('Reset view'));
     layersSection.addAlternateKeys(LayersPanelShortcuts.PanMode, Common.UIString.UIString('Switch to pan mode'));
@@ -258,6 +274,12 @@ export class ShortcutsScreen {
     for (const section in this._sections) {
       orderedSections.push(this._sections[section]);
     }
+
+    /**
+     * @param {!ShortcutsSection} a
+     * @param {!ShortcutsSection} b
+     * @return {number}
+     */
     function compareSections(a, b) {
       return a.order - b.order;
     }
@@ -290,7 +312,8 @@ class ShortcutsSection {
    */
   constructor(name) {
     this.name = name;
-    this._lines = /** @type {!Array.<!{key: !Node, text: string}>} */ ([]);
+    /** @type {!Array.<!{key: !Node, text: string}>} */
+    this._lines = [];
     this.order = ++ShortcutsSection._sequenceNumber;
   }
 
@@ -372,19 +395,19 @@ class ShortcutsSection {
    * @return {!Element}
    */
   _createSpan(className, textContent) {
-    const node = createElement('span');
+    const node = document.createElement('span');
     node.className = className;
     node.textContent = textContent;
     return node;
   }
 
   /**
-   * @param {!Array.<!Element>} nodes
+   * @param {!Array.<!Element|!Node>} nodes
    * @param {!Element} delimiter
    * @return {!Node}
    */
   _joinNodes(nodes, delimiter) {
-    const result = createDocumentFragment();
+    const result = document.createDocumentFragment();
     for (let i = 0; i < nodes.length; ++i) {
       if (i > 0) {
         result.appendChild(delimiter.cloneNode(true));

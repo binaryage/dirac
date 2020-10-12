@@ -14,8 +14,12 @@ interface Window {
 interface Array<T> {
   peekLast(): T | undefined;
   intersectOrdered(array: T[], comparator: (a: T, b: T) => number): T[];
+  mergeOrdered(array: T[], comparator: (a: T, b: T) => number): T[];
   lowerBound<S>(object: S, comparator?: {(a: S, b: T): number}, left?: number, right?: number): number;
   upperBound<S>(object: S, comparator?: {(a: S, b: T): number}, left?: number, right?: number): number;
+  sortRange<T>(
+      comparator: (a: T, b: T) => number, leftBound: number, rightBound: number, sortWindowLeft: number,
+      sortWindowRight: number): T[];
 }
 
 // Type alias for the Closure-supported ITemplateArray which is equivalent
@@ -32,29 +36,29 @@ interface String {
   compareTo(other: string): number;
   trimEndWithMaxLength(maxLength: number): string;
   escapeForRegExp(): string;
-  filterRegex(query: string): RegExp;
   trimMiddle(maxLength: number): string;
 }
 
 interface NumberConstructor {
-  withThousandsSeparator(num: number): string
+  withThousandsSeparator(num: number): string;
+  toFixedIfFloating(value: string): string;
+  secondsToString(seconds: number, higherResolution?: boolean): string;
+  millisToString(ms: number, higherResolution?: boolean): string;
+  preciseMillisToString(ms: number, precision?: number): string;
 }
 
 interface Int32Array {
   lowerBound(object: number, comparator?: {(a: number, b: number): number}, left?: number, right?: number): number;
 }
 
-declare let ls: (template: ITemplateArray, ...args: any[]) => string;
-
-declare namespace Runtime {
-  const cachedResources: {[cachePath: string]: string};
-}
+declare let ls: (template: ITemplateArray|string, ...args: any[]) => string;
 
 declare class AnchorBox {
   x: number;
   y: number;
   width: number;
   height: number;
+  constructor(x: number, y: number, width: number, height: number);
   contains(x: number, y: number): boolean;
   relativeToElement(element: Element): AnchorBox;
 }
@@ -108,6 +112,7 @@ declare namespace Adb {
 }
 
 interface Document {
+  createElementWithClass(elementName: string, className?: string, customElementType?: string): Element;
   deepActiveElement(): Element|null;
 }
 
@@ -130,11 +135,14 @@ interface Element {
 
 interface DocumentFragment {
   createChild(tagName: string, className?: string, content?: string): Element;
+  createTextChild(text: string): Text;
 }
 
 interface Event {
   consume(preventDefault?: boolean): void;
   deepElementFromPoint(): Node|null;
+  handled: boolean|undefined;
+  isMetaOrCtrlForTest: boolean;
 }
 
 interface Node {
@@ -143,20 +151,25 @@ interface Node {
   getComponentSelection(): Selection|null;
   hasSameShadowRoot(other: Node): boolean;
   hasSelection(): boolean;
+  isAncestor(node: Node|null): boolean;
   isSelfOrAncestor(node: Node|null): boolean;
   isSelfOrDescendant(node: Node|null): boolean;
   parentElementOrShadowHost(): Element|null;
   parentNodeOrShadowHost(): Node|null;
   setTextContentTruncatedIfNeeded(text: any, placeholder?: string): boolean;
   traverseNextNode(stayWithin?: Node): Node|null;
+  deepTextContent(): string
   window(): Window;
+  childTextNodes(): Node[];
 }
 
+declare function base64ToSize(content: string|null): number;
 declare function isEnterKey(event: Event): boolean;
 declare function isEnterOrSpaceKey(event: Event): boolean;
 declare function isEscKey(event: Event): boolean;
 declare function createPlainTextSearchRegex(query: string, flags?: string): RegExp;
 declare function onInvokeElement(element: Element, callback: (event: Event) => void): void;
+declare function setImmediate(callback: (...args: any) => any): number;
 
 interface ServicePort {
   setHandlers(messageHandler: (arg: string) => void, closeHandler: () => void): void;
@@ -164,4 +177,9 @@ interface ServicePort {
   send(message: string): Promise<boolean>;
 
   close(): Promise<boolean>;
+}
+
+declare class diff_match_patch {
+  diff_main(text1: string, text2: string): Array<{0: number, 1: string}>;
+  diff_cleanupSemantic(diff: Array<{0: number, 1: string}>): void;
 }

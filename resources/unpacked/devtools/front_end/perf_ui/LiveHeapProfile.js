@@ -65,11 +65,10 @@ export class LiveHeapProfile {
       if (sessionId !== this._sessionId) {
         break;
       }
-      const lineLevelProfile = self.runtime.sharedInstance(Memory);
-      lineLevelProfile.reset();
+      Memory.instance().reset();
       for (let i = 0; i < profiles.length; ++i) {
         if (profiles[i]) {
-          lineLevelProfile.appendHeapProfile(profiles[i], models[i].target());
+          Memory.instance().appendHeapProfile(profiles[i], models[i].target());
         }
       }
       await Promise.race([
@@ -85,7 +84,7 @@ export class LiveHeapProfile {
     for (const model of SDK.SDKModel.TargetManager.instance().models(SDK.HeapProfilerModel.HeapProfilerModel)) {
       model.stopSampling();
     }
-    self.runtime.sharedInstance(Memory).reset();
+    Memory.instance().reset();
   }
 
   _stopProfiling() {

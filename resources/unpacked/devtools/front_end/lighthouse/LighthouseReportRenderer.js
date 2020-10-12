@@ -9,7 +9,9 @@ import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as HostModule from '../host/host.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
+import * as ThemeSupport from '../theme_support/theme_support.js';
 import * as Timeline from '../timeline/timeline.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -109,7 +111,7 @@ export class LighthouseReportRenderer extends ReportRenderer {
    * @param {!Element} el
    */
   static handleDarkMode(el) {
-    if (self.UI.themeSupport.themeName() === 'dark') {
+    if (ThemeSupport.ThemeSupport.instance().themeName() === 'dark') {
       el.classList.add('dark');
     }
   }
@@ -171,7 +173,7 @@ export class LighthouseReportUIFeatures extends ReportUIFeatures {
     const clonedReport = document.querySelector('.lh-root').cloneNode(true /* deep */);
     const printWindow = window.open('', '_blank', 'channelmode=1,status=1,resizable=1');
     const style = printWindow.document.createElement('style');
-    style.textContent = self.Runtime.cachedResources['third_party/lighthouse/report-assets/report.css'];
+    style.textContent = Root.Runtime.cachedResources.get('third_party/lighthouse/report-assets/report.css');
     printWindow.document.head.appendChild(style);
     printWindow.document.body.replaceWith(clonedReport);
     // Linkified nodes are shadow elements, which aren't exposed via `cloneNode`.

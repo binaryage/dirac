@@ -28,9 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Persistence from '../persistence/persistence.js';
@@ -272,7 +269,7 @@ export class SnippetsNavigatorView extends NavigatorView {
     const newButton =
         new UI.Toolbar.ToolbarButton(ls`New snippet`, 'largeicon-add', Common.UIString.UIString('New snippet'));
     newButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
-      this.create(self.Snippets.project, '');
+      this.create(Snippets.project, '');
     });
     toolbar.appendToolbarItem(newButton);
     this.contentElement.insertBefore(toolbar.element, this.contentElement.firstChild);
@@ -293,7 +290,7 @@ export class SnippetsNavigatorView extends NavigatorView {
    */
   handleContextMenu(event) {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
-    contextMenu.headerSection().appendItem(ls`Create new snippet`, () => this.create(self.Snippets.project, ''));
+    contextMenu.headerSection().appendItem(ls`Create new snippet`, () => this.create(Snippets.project, ''));
     contextMenu.show();
   }
 
@@ -339,7 +336,7 @@ export class ActionDelegate {
   handleAction(context, actionId) {
     switch (actionId) {
       case 'sources.create-snippet':
-        self.Snippets.project.createFile('', null, '').then(uiSourceCode => Common.Revealer.reveal(uiSourceCode));
+        Snippets.project.createFile('', null, '').then(uiSourceCode => Common.Revealer.reveal(uiSourceCode));
         return true;
       case 'sources.add-folder-to-workspace':
         Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem();

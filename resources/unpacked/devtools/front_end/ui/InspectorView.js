@@ -52,6 +52,9 @@ import {View, ViewLocation, ViewLocationResolver} from './View.js';  // eslint-d
 import {ViewManager} from './ViewManager.js';
 import {VBox, WidgetFocusRestorer} from './Widget.js';
 
+/** @type {!InspectorView} */
+let inspectorViewInstance;
+
 /**
  * @implements {ViewLocationResolver}
  * @unrestricted
@@ -130,10 +133,16 @@ export class InspectorView extends VBox {
   }
 
   /**
+   * @param {{forceNew: ?boolean}=} opts
    * @return {!InspectorView}
    */
-  static instance() {
-    return /** @type {!InspectorView} */ (self.runtime.sharedInstance(InspectorView));
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!inspectorViewInstance || forceNew) {
+      inspectorViewInstance = new InspectorView();
+    }
+
+    return inspectorViewInstance;
   }
 
   /**
@@ -411,8 +420,8 @@ export class InspectorView extends VBox {
           text: ls`Reload DevTools`,
           highlight: true,
           delegate: () => {
-            if (self.UI.dockController.canDock() &&
-                self.UI.dockController.dockSide() === DockController.State.Undocked) {
+            if (DockController.instance().canDock() &&
+                DockController.instance().dockSide() === DockController.State.Undocked) {
               Host.InspectorFrontendHost.InspectorFrontendHostInstance.setIsDocked(true, function() {});
             }
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.reattach(() => window.location.reload());
@@ -516,11 +525,6 @@ export class InspectorViewTabDelegate {
   onContextMenu(tabId, contextMenu) {
     // Special case for console, we don't show the movable context panel for this two tabs
     if (tabId === 'console' || tabId === 'console-view') {
-      return;
-    }
-
-    // Only show the context menu if the experiment is enabled
-    if (!Root.Runtime.experiments.isEnabled('movableTabs')) {
       return;
     }
 

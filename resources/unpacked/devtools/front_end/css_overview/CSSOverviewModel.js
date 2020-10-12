@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
+import * as ColorPicker from '../color_picker/color_picker.js';
 import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';
 
@@ -27,16 +25,20 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
     this._overlayAgent = target.overlayAgent();
   }
 
+  /**
+   * @param {number} node
+   */
   highlightNode(node) {
     const highlightConfig = {contentColor: Common.Color.PageHighlight.Content.toProtocolRGBA(), showInfo: true};
 
-    this._overlayAgent.invoke_hideHighlight({});
+    this._overlayAgent.invoke_hideHighlight();
     this._overlayAgent.invoke_highlightNode({backendNodeId: node, highlightConfig});
   }
 
   async getNodeStyleStats() {
     const backgroundColors = new Map();
     const textColors = new Map();
+    const textColorContrastIssues = new Map();
     const fillColors = new Map();
     const borderColors = new Map();
     const fontInfo = new Map();
@@ -70,6 +72,19 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
       ]
     };
 
+    /**
+     * @param {!Common.Color.Color} color
+     */
+    const formatColor = color => {
+      return color.hasAlpha() ? color.asString(Common.Color.Format.HEXA) : color.asString(Common.Color.Format.HEX);
+    };
+
+    /**
+     * @param {number} id
+     * @param {number} nodeId
+     * @param {!Map<string, !Set<number>>} target
+     * @return {!Common.Color.Color|undefined}
+     */
     const storeColor = (id, nodeId, target) => {
       if (id === -1) {
         return;
@@ -87,8 +102,10 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
       }
 
       // Format the color and use as the key.
-      const colorFormatted =
-          color.hasAlpha() ? color.asString(Common.Color.Format.HEXA) : color.asString(Common.Color.Format.HEX);
+      const colorFormatted = formatColor(color);
+      if (!colorFormatted) {
+        return;
+      }
 
       // Get the existing set of nodes with the color, or create a new set.
       const colorValues = target.get(colorFormatted) || new Set();
@@ -96,8 +113,13 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
 
       // Store.
       target.set(colorFormatted, colorValues);
+
+      return color;
     };
 
+    /**
+     * @param {string} nodeName
+     */
     const isSVGNode = nodeName => {
       const validNodes = new Set([
         'altglyph', 'circle', 'ellipse', 'path', 'polygon', 'polyline', 'rect', 'svg', 'text', 'textpath', 'tref',
@@ -106,17 +128,25 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
       return validNodes.has(nodeName.toLowerCase());
     };
 
+    /**
+     * @param {string} nodeName
+     */
     const isReplacedContent = nodeName => {
       const validNodes = new Set(['iframe', 'video', 'embed', 'img']);
       return validNodes.has(nodeName.toLowerCase());
     };
 
+    /**
+     * @param {string} nodeName
+     * @param {string} display
+     */
     const isTableElementWithDefaultStyles = (nodeName, display) => {
       const validNodes = new Set(['tr', 'td', 'thead', 'tbody']);
       return validNodes.has(nodeName.toLowerCase()) && display.startsWith('table');
     };
 
     let elementCount = 0;
+
     const {documents, strings} = await this._domSnapshotAgent.invoke_captureSnapshot(snapshotConfig);
     for (const {nodes, layout} of documents) {
       // Track the number of elements in the documents.
@@ -125,14 +155,17 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
       for (let idx = 0; idx < layout.styles.length; idx++) {
         const styles = layout.styles[idx];
         const nodeIdx = layout.nodeIndex[idx];
+        if (!nodes.backendNodeId || !nodes.nodeName) {
+          continue;
+        }
         const nodeId = nodes.backendNodeId[nodeIdx];
         const nodeName = nodes.nodeName[nodeIdx];
 
         const [backgroundColorIdx, textColorIdx, fillIdx, borderTopWidthIdx, borderTopColorIdx, borderBottomWidthIdx, borderBottomColorIdx, borderLeftWidthIdx, borderLeftColorIdx, borderRightWidthIdx, borderRightColorIdx, fontFamilyIdx, fontSizeIdx, fontWeightIdx, lineHeightIdx, positionIdx, topIdx, rightIdx, bottomIdx, leftIdx, displayIdx, widthIdx, heightIdx, verticalAlignIdx] =
             styles;
 
-        storeColor(backgroundColorIdx, nodeId, backgroundColors);
-        storeColor(textColorIdx, nodeId, textColors);
+        const backgroundColor = storeColor(backgroundColorIdx, nodeId, backgroundColors);
+        const textColor = storeColor(textColorIdx, nodeId, textColors);
 
         if (isSVGNode(strings[nodeName])) {
           storeColor(fillIdx, nodeId, fillColors);
@@ -203,6 +236,38 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
           fontInfo.set(fontFamily, fontFamilyInfo);
         }
 
+        if (backgroundColor && textColor && strings[nodeName] === '#text') {
+          const contrastInfo = new ColorPicker.ContrastInfo.ContrastInfo({
+            backgroundColors: [/** @type {string} */ (backgroundColor.asString(Common.Color.Format.HEXA))],
+            computedFontSize: fontSizeIdx !== -1 ? strings[fontSizeIdx] : '',
+            computedFontWeight: fontWeightIdx !== -1 ? strings[fontWeightIdx] : '',
+          });
+          contrastInfo.setColor(textColor);
+          const aaThreshold = contrastInfo.contrastRatioThreshold('aa') || 0;
+          const aaaThreshold = contrastInfo.contrastRatioThreshold('aaa') || 0;
+          const contrastRatio = contrastInfo.contrastRatio() || 0;
+          if (aaThreshold > contrastRatio || aaaThreshold > contrastRatio) {
+            const formattedTextColor = formatColor(textColor);
+            const formattedBackgroundColor = formatColor(backgroundColor);
+            const key = `${formattedTextColor}_${formattedBackgroundColor}`;
+            const issue = {
+              nodeId,
+              contrastRatio,
+              textColor,
+              backgroundColor,
+              thresholdsViolated: {
+                aa: aaThreshold > contrastRatio,
+                aaa: aaaThreshold > contrastRatio,
+              },
+            };
+            if (textColorContrastIssues.has(key)) {
+              textColorContrastIssues.get(key).push(issue);
+            } else {
+              textColorContrastIssues.set(key, [issue]);
+            }
+          }
+        }
+
         CSSOverviewUnusedDeclarations.checkForUnusedPositionValues(
             unusedDeclarations, nodeId, strings, positionIdx, topIdx, leftIdx, rightIdx, bottomIdx);
 
@@ -220,22 +285,34 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
       }
     }
 
-    return {backgroundColors, textColors, fillColors, borderColors, fontInfo, unusedDeclarations, elementCount};
+    return {
+      backgroundColors,
+      textColors,
+      textColorContrastIssues,
+      fillColors,
+      borderColors,
+      fontInfo,
+      unusedDeclarations,
+      elementCount
+    };
   }
 
+  /**
+   * @param {!Protocol.DOM.NodeId} nodeId
+   */
   getComputedStyleForNode(nodeId) {
-    return this._cssAgent.getComputedStyleForNode(nodeId);
+    return this._cssAgent.invoke_getComputedStyleForNode({nodeId});
   }
 
   async getMediaQueries() {
-    const queries = await this._cssAgent.getMediaQueries();
+    const queries = await this._cssAgent.invoke_getMediaQueries();
     const queryMap = new Map();
 
     if (!queries) {
       return queryMap;
     }
 
-    for (const query of queries) {
+    for (const query of queries.medias) {
       // Ignore media queries applied to stylesheets; instead only use declared media rules.
       if (query.source === 'linkedSheet') {
         continue;

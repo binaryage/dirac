@@ -33,6 +33,7 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as Root from '../root/root.js';
 
 import {Action, Events as ActionEvents} from './Action.js';  // eslint-disable-line no-unused-vars
 import {ActionRegistry} from './ActionRegistry.js';
@@ -400,7 +401,7 @@ export class Toolbar {
    * @return {!Promise<void>}
    */
   async appendItemsAtLocation(location) {
-    const extensions = self.runtime.extensions(Provider);
+    const extensions = Root.Runtime.Runtime.instance().extensions(Provider);
     const filtered = extensions.filter(e => e.descriptor()['location'] === location);
     const items = await Promise.all(filtered.map(extension => {
       const descriptor = extension.descriptor();
@@ -560,6 +561,10 @@ export class ToolbarButton extends ToolbarItem {
     }
     this.setText(text || '');
     this._title = '';
+  }
+
+  focus() {
+    this.element.focus();
   }
 
   /**
@@ -1009,7 +1014,7 @@ export class ToolbarComboBox extends ToolbarItem {
   }
 
   /**
-   * @return {?Element}
+   * @return {?HTMLOptionElement}
    */
   selectedOption() {
     if (this._selectElement.selectedIndex >= 0) {
@@ -1174,7 +1179,7 @@ export class ToolbarCheckbox extends ToolbarItem {
 
 export class ToolbarSettingCheckbox extends ToolbarCheckbox {
   /**
-   * @param {!Common.Settings.Setting<*>} setting
+   * @param {!Common.Settings.Setting<boolean>} setting
    * @param {string=} tooltip
    * @param {string=} alternateTitle
    */

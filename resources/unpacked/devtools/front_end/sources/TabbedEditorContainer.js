@@ -28,9 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as Extensions from '../extensions/extensions.js';
 import * as Persistence from '../persistence/persistence.js';
@@ -51,6 +48,7 @@ export class TabbedEditorContainerDelegate {
    * @return {!UI.Widget.Widget}
    */
   viewForFile(uiSourceCode) {
+    throw new Error('Not implemented yet');
   }
 
   /**
@@ -67,7 +65,7 @@ export class TabbedEditorContainerDelegate {
 export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!TabbedEditorContainerDelegate} delegate
-   * @param {!Common.Settings.Setting} setting
+   * @param {!Common.Settings.Setting<!Array<?>>} setting
    * @param {!Element} placeholderElement
    * @param {!Element=} focusedPlaceholderElement
    */
@@ -85,17 +83,23 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     this._tabbedPane.addEventListener(UI.TabbedPane.Events.TabClosed, this._tabClosed, this);
     this._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this._tabSelected, this);
 
-    self.Persistence.persistence.addEventListener(
+    Persistence.Persistence.PersistenceImpl.instance().addEventListener(
         Persistence.Persistence.Events.BindingCreated, this._onBindingCreated, this);
-    self.Persistence.persistence.addEventListener(
+    Persistence.Persistence.PersistenceImpl.instance().addEventListener(
         Persistence.Persistence.Events.BindingRemoved, this._onBindingRemoved, this);
 
     this._tabIds = new Map();
-    this._files = {};
+    /** @type {!Map<string, !Workspace.UISourceCode.UISourceCode>} */
+    this._files = new Map();
 
     this._previouslyViewedFilesSetting = setting;
     this._history = History.fromObject(this._previouslyViewedFilesSetting.get());
     this._uriToUISourceCode = new Map();
+
+    /** @type {?Workspace.UISourceCode.UISourceCode} */
+    this._currentFile;
+    /** @type {?UI.Widget.Widget} */
+    this._currentView;
   }
 
   /**
@@ -226,7 +230,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   _addViewListeners() {
-    if (!this._currentView || !this._currentView.textEditor) {
+    if (!this._currentView || !(this._currentView instanceof SourceFrame.SourceFrame.SourceFrameImpl)) {
       return;
     }
     this._currentView.textEditor.addEventListener(
@@ -236,7 +240,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   _removeViewListeners() {
-    if (!this._currentView || !this._currentView.textEditor) {
+    if (!this._currentView || !(this._currentView instanceof SourceFrame.SourceFrame.SourceFrameImpl)) {
       return;
     }
     this._currentView.textEditor.removeEventListener(
@@ -254,7 +258,9 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     }
     const lineNumber = /** @type {number} */ (event.data);
     this._scrollTimer = setTimeout(saveHistory.bind(this), 100);
-    this._history.updateScrollLineNumber(this._currentFile.url(), lineNumber);
+    if (this._currentFile) {
+      this._history.updateScrollLineNumber(this._currentFile.url(), lineNumber);
+    }
 
     /**
      * @this {TabbedEditorContainer}
@@ -269,10 +275,14 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
    */
   _selectionChanged(event) {
     const range = /** @type {!TextUtils.TextRange.TextRange} */ (event.data);
-    this._history.updateSelectionRange(this._currentFile.url(), range);
+    if (this._currentFile) {
+      this._history.updateSelectionRange(this._currentFile.url(), range);
+    }
     this._history.save(this._previouslyViewedFilesSetting);
 
-    Extensions.ExtensionServer.ExtensionServer.instance().sourceSelectionChanged(this._currentFile.url(), range);
+    if (this._currentFile) {
+      Extensions.ExtensionServer.ExtensionServer.instance().sourceSelectionChanged(this._currentFile.url(), range);
+    }
   }
 
   /**
@@ -280,7 +290,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
    * @param {boolean=} userGesture
    */
   _innerShowFile(uiSourceCode, userGesture) {
-    const binding = self.Persistence.persistence.binding(uiSourceCode);
+    const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
     uiSourceCode = binding ? binding.fileSystem : uiSourceCode;
     if (this._currentFile === uiSourceCode) {
       return;
@@ -324,10 +334,13 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {string} id
-   * @param {string} nextTabId
+   * @param {?string} nextTabId
    */
   _maybeCloseTab(id, nextTabId) {
-    const uiSourceCode = this._files[id];
+    const uiSourceCode = this._files.get(id);
+    if (!uiSourceCode) {
+      return false;
+    }
     const shouldPrompt = uiSourceCode.isDirty() && uiSourceCode.project().canSetFileContent();
     // FIXME: this should be replaced with common Save/Discard/Cancel dialog.
     if (!shouldPrompt ||
@@ -351,11 +364,13 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     const cleanTabs = [];
     for (let i = 0; i < ids.length; ++i) {
       const id = ids[i];
-      const uiSourceCode = this._files[id];
-      if (!forceCloseDirtyTabs && uiSourceCode.isDirty()) {
-        dirtyTabs.push(id);
-      } else {
-        cleanTabs.push(id);
+      const uiSourceCode = this._files.get(id);
+      if (uiSourceCode) {
+        if (!forceCloseDirtyTabs && uiSourceCode.isDirty()) {
+          dirtyTabs.push(id);
+        } else {
+          cleanTabs.push(id);
+        }
       }
     }
     if (dirtyTabs.length) {
@@ -375,7 +390,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    */
   _onContextMenu(tabId, contextMenu) {
-    const uiSourceCode = this._files[tabId];
+    const uiSourceCode = this._files.get(tabId);
     if (uiSourceCode) {
       contextMenu.appendApplicableItems(uiSourceCode);
     }
@@ -401,7 +416,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
   addUISourceCode(uiSourceCode) {
     const canonicalSourceCode = this._canonicalUISourceCode(uiSourceCode);
     const duplicated = canonicalSourceCode !== uiSourceCode;
-    const binding = self.Persistence.persistence.binding(canonicalSourceCode);
+    const binding = Persistence.Persistence.PersistenceImpl.instance().binding(canonicalSourceCode);
     uiSourceCode = binding ? binding.fileSystem : canonicalSourceCode;
 
     if (duplicated && uiSourceCode.project().type() !== Workspace.Workspace.projectTypes.FileSystem) {
@@ -483,7 +498,11 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
      * @this {TabbedEditorContainer}
      */
     function tabIdToURI(tabId) {
-      return this._files[tabId].url();
+      const tab = this._files.get(tabId);
+      if (!tab) {
+        return '';
+      }
+      return tab.url();
     }
 
     this._history.update(tabIds.map(tabIdToURI.bind(this)));
@@ -495,7 +514,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
    * @return {string}
    */
   _tooltipForFile(uiSourceCode) {
-    uiSourceCode = self.Persistence.persistence.network(uiSourceCode) || uiSourceCode;
+    uiSourceCode = Persistence.Persistence.PersistenceImpl.instance().network(uiSourceCode) || uiSourceCode;
     return uiSourceCode.url();
   }
 
@@ -513,7 +532,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
 
     const tabId = this._generateTabId();
     this._tabIds.set(uiSourceCode, tabId);
-    this._files[tabId] = uiSourceCode;
+    this._files.set(tabId, uiSourceCode);
 
     if (!replaceView) {
       const savedSelectionRange = this._history.selectionRange(uiSourceCode.url());
@@ -575,21 +594,23 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     const tabId = /** @type {string} */ (event.data.tabId);
     const userGesture = /** @type {boolean} */ (event.data.isUserGesture);
 
-    const uiSourceCode = this._files[tabId];
+    const uiSourceCode = this._files.get(tabId);
     if (this._currentFile === uiSourceCode) {
       this._removeViewListeners();
-      delete this._currentView;
-      delete this._currentFile;
+      this._currentView = null;
+      this._currentFile = null;
     }
     this._tabIds.delete(uiSourceCode);
-    delete this._files[tabId];
+    this._files.delete(tabId);
 
-    this._removeUISourceCodeListeners(uiSourceCode);
+    if (uiSourceCode) {
+      this._removeUISourceCodeListeners(uiSourceCode);
 
-    this.dispatchEventToListeners(Events.EditorClosed, uiSourceCode);
+      this.dispatchEventToListeners(Events.EditorClosed, uiSourceCode);
 
-    if (userGesture) {
-      this._editorClosedByUserAction(uiSourceCode);
+      if (userGesture) {
+        this._editorClosedByUserAction(uiSourceCode);
+      }
     }
   }
 
@@ -600,8 +621,10 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     const tabId = /** @type {string} */ (event.data.tabId);
     const userGesture = /** @type {boolean} */ (event.data.isUserGesture);
 
-    const uiSourceCode = this._files[tabId];
-    this._innerShowFile(uiSourceCode, userGesture);
+    const uiSourceCode = this._files.get(tabId);
+    if (uiSourceCode) {
+      this._innerShowFile(uiSourceCode, userGesture);
+    }
   }
 
   /**
@@ -639,7 +662,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
       if (uiSourceCode.loadError()) {
         icon = UI.Icon.Icon.create('smallicon-error');
         icon.title = ls`Unable to load this content.`;
-      } else if (self.Persistence.persistence.hasUnsavedCommittedChanges(uiSourceCode)) {
+      } else if (Persistence.Persistence.PersistenceImpl.instance().hasUnsavedCommittedChanges(uiSourceCode)) {
         icon = UI.Icon.Icon.create('smallicon-warning');
         icon.title = Common.UIString.UIString('Changes to this file were not saved to file system.');
       } else {
@@ -715,11 +738,11 @@ export class HistoryItem {
   }
 
   /**
-   * @param {!Object} serializedHistoryItem
+   * @param {?} serializedHistoryItem
    * @return {!HistoryItem}
    */
   static fromObject(serializedHistoryItem) {
-    const selectionRange = serializedHistoryItem.selectionRange ?
+    const selectionRange = 'selectionRange' in serializedHistoryItem ?
         TextUtils.TextRange.TextRange.fromObject(serializedHistoryItem.selectionRange) :
         undefined;
     return new HistoryItem(serializedHistoryItem.url, selectionRange, serializedHistoryItem.scrollLineNumber);
@@ -751,18 +774,20 @@ export class History {
    */
   constructor(items) {
     this._items = items;
+    /** @type {!Map<string, number>} */
+    this._itemsIndex = new Map();
     this._rebuildItemIndex();
   }
 
   /**
-   * @param {!Array.<!Object>} serializedHistory
+   * @param {!Array.<?>} serializedHistory
    * @return {!History}
    */
   static fromObject(serializedHistory) {
     const items = [];
     for (let i = 0; i < serializedHistory.length; ++i) {
       // crbug.com/876265 Old versions of DevTools don't have urls set in their localStorage
-      if (serializedHistory[i].url) {
+      if ('url' in serializedHistory[i] && serializedHistory[i].url) {
         items.push(HistoryItem.fromObject(serializedHistory[i]));
       }
     }
@@ -774,11 +799,14 @@ export class History {
    * @return {number}
    */
   index(url) {
-    return this._itemsIndex.has(url) ? /** @type {number} */ (this._itemsIndex.get(url)) : -1;
+    const index = this._itemsIndex.get(url);
+    if (index !== undefined) {
+      return index;
+    }
+    return -1;
   }
 
   _rebuildItemIndex() {
-    /** @type {!Map<string, number>} */
     this._itemsIndex = new Map();
     for (let i = 0; i < this._items.length; ++i) {
       console.assert(!this._itemsIndex.has(this._items[i].url));
@@ -861,7 +889,7 @@ export class History {
   }
 
   /**
-   * @param {!Common.Settings.Setting} setting
+   * @param {!Common.Settings.Setting<!Array<?>>} setting
    */
   save(setting) {
     setting.set(this._serializeToObject());

@@ -9,10 +9,12 @@ devtools_module("common") {
   sources = [
     "App.js",
     "AppProvider.js",
+    "Base64.js",
     "CharacterIdMap.js",
     "Color.js",
     "ColorUtils.js",
     "Console.js",
+    "Debouncer.js",
     "EventTarget.js",
     "JavaScriptMetaData.js",
     "Lazy.js",

@@ -28,9 +28,7 @@
     "marked",
     "network",
     "browser_sdk"
-  ],
-  "skip_rollup": true,
-  "modules": [
+  ],  "modules": [
     "issues.js",
     "issues-legacy.js",
     "IssuesPane.js",
@@ -40,6 +38,11 @@
     "MarkdownView_bridge.js"
   ],
   "resources": [
+    "descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md",
+    "descriptions/CoepCorpNotSameSite.md",
+    "descriptions/CoepCorpNotSameOriginAfterDefaultedToSameOriginByCoep.md",
+    "descriptions/CoepCorpNotSameOrigin.md",
+    "descriptions/CoepFrameResourceNeedsCoepHeader.md",
     "issuesPane.css",
     "issuesTree.css"
   ]

@@ -16,8 +16,11 @@ describe('Idle Emulation on Sensors panel', () => {
   });
 
   before(async () => {
-    await step('overriding permissions with \'notifications\'', async () => {
-      await overridePermissions(['notifications']);
+    await step('overriding permissions with \'idle-detection\'', async () => {
+      // IdleDetector switched permission from 'notifications' to
+      // 'idle-detection', but 'idle-detection' is not in the @types/puppeteer
+      // package, so `as 'notifications'` needed for TypeScript.
+      await overridePermissions(['idle-detection' as 'notifications']);
     });
   });
 

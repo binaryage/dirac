@@ -242,7 +242,6 @@ class GenericTrackMenu extends UI.TabbedPane.TabbedPane {
   }
 }
 
-
 class DecoderTrackMenu extends GenericTrackMenu {
   constructor(decoderName, informationalElement) {
     super(decoderName);
@@ -252,6 +251,24 @@ class DecoderTrackMenu extends GenericTrackMenu {
     const propertiesLocalized = Common.UIString.UIString('Properties');
     const hoverText = `${title} ${propertiesLocalized}`;
     this.appendTab('DecoderProperties', title, informationalElement, hoverText);
+  }
+}
+
+class NoTracksPlaceholderMenu extends UI.Widget.VBox {
+  constructor(wrapping, placeholder_text) {
+    super();
+    this._isPlaceholder = true;
+    this._wrapping = wrapping;
+    this._wrapping.appendTab('_placeholder', placeholder_text, new UI.Widget.VBox(), placeholder_text);
+    this._wrapping.show(this.contentElement);
+  }
+
+  addNewTab(trackNumber, element) {
+    if (this._isPlaceholder) {
+      this._wrapping.closeTab('_placeholder');
+      this._isPlaceholder = false;
+    }
+    this._wrapping.addNewTab(trackNumber, element);
   }
 }
 
@@ -279,7 +296,8 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
 
   _lazyCreateTrackTabs() {
     if (this._textTrackTabs === null) {
-      this._textTrackTabs = new GenericTrackMenu(ls`Text Track`);
+      const textTracks = new GenericTrackMenu(ls`Text track`);
+      this._textTrackTabs = new NoTracksPlaceholderMenu(textTracks, ls`No text tracks`);
       this._textTrackTabs.show(this.contentElement);
     }
     return this._textTrackTabs;
@@ -305,7 +323,7 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
   onProperty(property) {
     const renderer = this._attributeMap.get(property.name);
     if (!renderer) {
-      throw new Error(`PlayerProperty ${property.name} not supported.`);
+      throw new Error(`Player property "${property.name}" not supported.`);
     }
     renderer.updateData(property.name, property.value);
   }
@@ -352,7 +370,7 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
     this._mediaElements.push(resolution);
     this._attributeMap.set(PlayerPropertyKeys.kResolution, resolution);
 
-    const fileSize = new FormattedPropertyRenderer(ls`File Size`, this.formatFileSize);
+    const fileSize = new FormattedPropertyRenderer(ls`File size`, this.formatFileSize);
     this._mediaElements.push(fileSize);
     this._attributeMap.set(PlayerPropertyKeys.kTotalBytes, fileSize);
 
@@ -364,7 +382,7 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
     this._mediaElements.push(duration);
     this._attributeMap.set(PlayerPropertyKeys.kMaxDuration, duration);
 
-    const startTime = new PropertyRenderer(ls`Start Time`);
+    const startTime = new PropertyRenderer(ls`Start time`);
     this._mediaElements.push(startTime);
     this._attributeMap.set(PlayerPropertyKeys.kStartTime, startTime);
 
@@ -372,40 +390,40 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
     this._mediaElements.push(streaming);
     this._attributeMap.set(PlayerPropertyKeys.kIsStreaming, streaming);
 
-    const frameUrl = new PropertyRenderer(ls`Playback Frame URL`);
+    const frameUrl = new PropertyRenderer(ls`Playback frame URL`);
     this._mediaElements.push(frameUrl);
     this._attributeMap.set(PlayerPropertyKeys.kFrameUrl, frameUrl);
 
-    const frameTitle = new PropertyRenderer(ls`Playback Frame Title`);
+    const frameTitle = new PropertyRenderer(ls`Playback frame title`);
     this._mediaElements.push(frameTitle);
     this._attributeMap.set(PlayerPropertyKeys.kFrameTitle, frameTitle);
 
-    const singleOrigin = new PropertyRenderer(ls`Is Single Origin Playback`);
+    const singleOrigin = new PropertyRenderer(ls`Single-origin playback`);
     this._mediaElements.push(singleOrigin);
     this._attributeMap.set(PlayerPropertyKeys.kIsSingleOrigin, singleOrigin);
 
-    const rangeHeaders = new PropertyRenderer(ls`Range Header Support`);
+    const rangeHeaders = new PropertyRenderer(ls`Range header support`);
     this._mediaElements.push(rangeHeaders);
     this._attributeMap.set(PlayerPropertyKeys.kIsRangeHeaderSupported, rangeHeaders);
 
-    const frameRate = new PropertyRenderer(ls`Frame Rate`);
+    const frameRate = new PropertyRenderer(ls`Frame rate`);
     this._mediaElements.push(frameRate);
     this._attributeMap.set(PlayerPropertyKeys.kFramerate, frameRate);
 
-    const roughness = new PropertyRenderer(ls`Video Playback Roughness`);
+    const roughness = new PropertyRenderer(ls`Video playback roughness`);
     this._mediaElements.push(roughness);
     this._attributeMap.set(PlayerPropertyKeys.kVideoPlaybackRoughness, roughness);
 
     /* Video Decoder Properties */
-    const decoderName = new DefaultPropertyRenderer(ls`Decoder Name`, ls`No Decoder`);
+    const decoderName = new DefaultPropertyRenderer(ls`Decoder name`, ls`No decoder`);
     this._videoDecoderElements.push(decoderName);
     this._attributeMap.set(PlayerPropertyKeys.kVideoDecoderName, decoderName);
 
-    const videoPlatformDecoder = new PropertyRenderer(ls`Hardware Decoder`);
+    const videoPlatformDecoder = new PropertyRenderer(ls`Hardware decoder`);
     this._videoDecoderElements.push(videoPlatformDecoder);
     this._attributeMap.set(PlayerPropertyKeys.kIsPlatformVideoDecoder, videoPlatformDecoder);
 
-    const videoDDS = new PropertyRenderer(ls`Decrypting Demuxer`);
+    const videoDDS = new PropertyRenderer(ls`Decrypting demuxer`);
     this._videoDecoderElements.push(videoDDS);
     this._attributeMap.set(PlayerPropertyKeys.kIsVideoDecryptingDemuxerStream, videoDDS);
 
@@ -413,15 +431,15 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
     this._attributeMap.set(PlayerPropertyKeys.kVideoTracks, videoTrackManager);
 
     /* Audio Decoder Properties */
-    const audioDecoder = new DefaultPropertyRenderer(ls`Decoder Name`, ls`No Decoder`);
+    const audioDecoder = new DefaultPropertyRenderer(ls`Decoder name`, ls`No decoder`);
     this._audioDecoderElements.push(audioDecoder);
     this._attributeMap.set(PlayerPropertyKeys.kAudioDecoderName, audioDecoder);
 
-    const audioPlatformDecoder = new PropertyRenderer(ls`Hardware Decoder`);
+    const audioPlatformDecoder = new PropertyRenderer(ls`Hardware decoder`);
     this._audioDecoderElements.push(audioPlatformDecoder);
     this._attributeMap.set(PlayerPropertyKeys.kIsPlatformAudioDecoder, audioPlatformDecoder);
 
-    const audioDDS = new PropertyRenderer(ls`Decrypting Demuxer`);
+    const audioDDS = new PropertyRenderer(ls`Decrypting demuxer`);
     this._audioDecoderElements.push(audioDDS);
     this._attributeMap.set(PlayerPropertyKeys.kIsAudioDecryptingDemuxerStream, audioDDS);
 

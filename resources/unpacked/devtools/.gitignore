@@ -1,6 +1,7 @@
 .DS_Store
 .git_cl_description_backup
 .vscode
+*.ctc.json
 *.Makefile
 *.mk
 *.pyc
@@ -13,8 +14,8 @@
 *.xcodeproj*
 /.dev_profile
 /.test_cache
-/back_end/CXXDWARFSymbols/third_party/
 /front_end/protocol_externs.js
+/front_end/i18n/locales/en-XL.json
 /release
 /scripts/visualize_deps/out
 config.gypi
@@ -26,7 +27,6 @@ npm-debug.log
 /buildtools
 /out
 /third_party/*
-!/third_party/axe-core
 !/third_party/blink
 !/third_party/i18n
 !/third_party/pyjson5
@@ -37,4 +37,5 @@ test/perf/.generated
 test/unittests/scripts/component_bridges/gen/*
 test/unittests/scripts/component_bridges/fixtures/*_bridge.js
 !test/unittests/scripts/component_bridges/fixtures/manually-edited-bridge-component_bridge.js
-scripts/component_bridges/gen/*.js
+scripts/component_bridges/gen/
+!scripts/component_bridges/gen/.clang-format

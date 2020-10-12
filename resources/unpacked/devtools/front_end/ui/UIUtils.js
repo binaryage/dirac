@@ -35,7 +35,9 @@
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import * as TextUtils from '../text_utils/text_utils.js';
+import * as ThemeSupport from '../theme_support/theme_support.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {Dialog} from './Dialog.js';
@@ -806,7 +808,7 @@ export function highlightSearchResult(element, offset, length, domChanges) {
 /**
  * @param {!Element} element
  * @param {!Array.<!TextUtils.TextRange.SourceRange>} resultRanges
- * @param {!Array.<!Object>=} changes
+ * @param {!Array.<!HighlightChange>=} changes
  * @return {!Array.<!Element>}
  */
 export function highlightSearchResults(element, resultRanges, changes) {
@@ -835,7 +837,7 @@ export function runCSSAnimationOnce(element, className) {
  * @param {!Element} element
  * @param {!Array.<!TextUtils.TextRange.SourceRange>} resultRanges
  * @param {string} styleClass
- * @param {!Array.<!Object>=} changes
+ * @param {!Array.<!HighlightChange>=} changes
  * @return {!Array.<!Element>}
  */
 export function highlightRangesWithStyleClass(element, resultRanges, styleClass, changes) {
@@ -1195,10 +1197,10 @@ export function initializeUIUtils(document, themeSetting) {
   document.defaultView.addEventListener('blur', _windowBlurred.bind(UI, document), false);
   document.addEventListener('focus', focusChanged.bind(UI), true);
 
-  if (!self.UI.themeSupport) {
-    self.UI.themeSupport = new ThemeSupport(themeSetting);
+  if (!ThemeSupport.ThemeSupport.hasInstance()) {
+    ThemeSupport.ThemeSupport.instance({forceNew: true, setting: themeSetting});
   }
-  self.UI.themeSupport.applyTheme(document);
+  ThemeSupport.ThemeSupport.instance().applyTheme(document);
 
   const body = /** @type {!Element} */ (document.body);
   appendStyle(body, 'ui/inspectorStyle.css');
@@ -1243,7 +1245,7 @@ export function createTextButton(text, clickHandler, className, primary) {
 /**
  * @param {string=} className
  * @param {string=} type
- * @return {!Element}
+ * @return {!HTMLInputElement}
  */
 export function createInput(className, type) {
   const element = document.createElement('input');
@@ -1255,7 +1257,7 @@ export function createInput(className, type) {
   if (type) {
     element.type = type;
   }
-  return element;
+  return /** @type {!HTMLInputElement} */ (element);
 }
 
 /**
@@ -1409,9 +1411,9 @@ export class DevToolsIconLabel extends HTMLSpanElement {
   }
 }
 
-(function() {
 let labelId = 0;
-registerCustomElement('span', 'dt-radio', class extends HTMLSpanElement {
+
+class DevToolsRadioButton extends HTMLSpanElement {
   constructor() {
     super();
     this.radioElement = this.createChild('input', 'dt-radio-button');
@@ -1425,7 +1427,9 @@ registerCustomElement('span', 'dt-radio', class extends HTMLSpanElement {
     root.createChild('slot');
     this.addEventListener('click', radioClickHandler, false);
   }
-});
+}
+
+registerCustomElement('span', 'dt-radio', DevToolsRadioButton);
 
 /**
    * @param {!Event} event
@@ -1442,7 +1446,7 @@ function radioClickHandler(event) {
 
 registerCustomElement('span', 'dt-icon-label', DevToolsIconLabel);
 
-registerCustomElement('span', 'dt-slider', class extends HTMLSpanElement {
+class DevToolsSlider extends HTMLSpanElement {
   constructor() {
     super();
     const root = createShadowRootWithCoreStyles(this, 'ui/slider.css');
@@ -1466,9 +1470,11 @@ registerCustomElement('span', 'dt-slider', class extends HTMLSpanElement {
   get value() {
     return this.sliderElement.value;
   }
-});
+}
 
-registerCustomElement('span', 'dt-small-bubble', class extends HTMLSpanElement {
+registerCustomElement('span', 'dt-slider', DevToolsSlider);
+
+export class DevToolsSmallBubble extends HTMLSpanElement {
   constructor() {
     super();
     const root = createShadowRootWithCoreStyles(this, 'ui/smallBubble.css');
@@ -1484,9 +1490,11 @@ registerCustomElement('span', 'dt-small-bubble', class extends HTMLSpanElement {
   set type(type) {
     this._textElement.className = type;
   }
-});
+}
 
-registerCustomElement('div', 'dt-close-button', class extends HTMLDivElement {
+registerCustomElement('span', 'dt-small-bubble', DevToolsSmallBubble);
+
+export class DevToolsCloseButton extends HTMLDivElement {
   constructor() {
     super();
     const root = createShadowRootWithCoreStyles(this, 'ui/closeButton.css');
@@ -1534,8 +1542,9 @@ registerCustomElement('div', 'dt-close-button', class extends HTMLDivElement {
       this._buttonElement.tabIndex = -1;
     }
   }
-});
-})();
+}
+
+registerCustomElement('div', 'dt-close-button', DevToolsCloseButton);
 
 /**
  * @param {!Element} input
@@ -1695,300 +1704,6 @@ export function measureTextWidth(context, text) {
   }
   return width;
 }
-
-/**
- * @unrestricted
- */
-export class ThemeSupport {
-  /**
-   * @param {!Common.Settings.Setting<string>} setting
-   */
-  constructor(setting) {
-    const systemPreferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
-    this._themeName = setting.get() === 'systemPreferred' ? systemPreferredTheme : setting.get();
-    this._themableProperties = new Set([
-      'color', 'box-shadow', 'text-shadow', 'outline-color', 'background-image', 'background-color',
-      'border-left-color', 'border-right-color', 'border-top-color', 'border-bottom-color', '-webkit-border-image',
-      'fill', 'stroke'
-    ]);
-    /** @type {!Map<string, string>} */
-    this._cachedThemePatches = new Map();
-    this._setting = setting;
-    this._customSheets = new Set();
-    this._computedRoot = Common.Lazy.lazy(() => window.getComputedStyle(document.documentElement));
-  }
-
-  /**
-   * @param {string} variableName
-   * @returns {string}
-   */
-  getComputedValue(variableName) {
-    const computedRoot = this._computedRoot();
-
-    if (typeof computedRoot === 'symbol') {
-      throw new Error(`Computed value for property (${variableName}) could not be found on :root.`);
-    }
-
-    return computedRoot.getPropertyValue(variableName);
-  }
-
-  /**
-   * @return {boolean}
-   */
-  hasTheme() {
-    return this._themeName !== 'default';
-  }
-
-  /**
-   * @return {string}
-   */
-  themeName() {
-    return this._themeName;
-  }
-
-  /**
-   * @param {!Element|!ShadowRoot} element
-   */
-  injectHighlightStyleSheets(element) {
-    this._injectingStyleSheet = true;
-    appendStyle(element, 'ui/inspectorSyntaxHighlight.css');
-    if (this._themeName === 'dark') {
-      appendStyle(element, 'ui/inspectorSyntaxHighlightDark.css');
-    }
-    this._injectingStyleSheet = false;
-  }
-
-  /**
-   * @param {!Element|!ShadowRoot} element
-   */
-  injectCustomStyleSheets(element) {
-    for (const sheet of this._customSheets) {
-      const styleElement = createElement('style');
-      styleElement.textContent = sheet;
-      element.appendChild(styleElement);
-    }
-  }
-
-  /**
-   * @return {boolean}
-   */
-  isForcedColorsMode() {
-    return window.matchMedia('(forced-colors: active)').matches;
-  }
-
-  /**
-   * @param {string} sheetText
-   */
-  addCustomStylesheet(sheetText) {
-    this._customSheets.add(sheetText);
-  }
-
-  /**
-   * @param {!Document} document
-   */
-  applyTheme(document) {
-    if (!this.hasTheme() || this.isForcedColorsMode()) {
-      return;
-    }
-
-    if (this._themeName === 'dark') {
-      document.documentElement.classList.add('-theme-with-dark-background');
-    }
-
-    const styleSheets = document.styleSheets;
-    const result = [];
-    for (let i = 0; i < styleSheets.length; ++i) {
-      result.push(this._patchForTheme(styleSheets[i].href, styleSheets[i]));
-    }
-    result.push('/*# sourceURL=inspector.css.theme */');
-
-    const styleElement = createElement('style');
-    styleElement.textContent = result.join('\n');
-    document.head.appendChild(styleElement);
-  }
-
-  /**
-   * @param {string} id
-   * @param {string} text
-   * @return {string}
-   * @suppressGlobalPropertiesCheck
-   */
-  themeStyleSheet(id, text) {
-    if (!this.hasTheme() || this._injectingStyleSheet || this.isForcedColorsMode()) {
-      return '';
-    }
-
-    let patch = this._cachedThemePatches.get(id);
-    if (!patch) {
-      const styleElement = createElement('style');
-      styleElement.textContent = text;
-      document.body.appendChild(styleElement);
-      patch = this._patchForTheme(id, styleElement.sheet);
-      document.body.removeChild(styleElement);
-    }
-    return patch;
-  }
-
-  /**
-   * @param {string} id
-   * @param {!StyleSheet} styleSheet
-   * @return {string}
-   */
-  _patchForTheme(id, styleSheet) {
-    const cached = this._cachedThemePatches.get(id);
-    if (cached) {
-      return cached;
-    }
-
-    try {
-      const rules = styleSheet.cssRules;
-      const result = [];
-      for (let j = 0; j < rules.length; ++j) {
-        if (rules[j] instanceof CSSImportRule) {
-          result.push(this._patchForTheme(rules[j].styleSheet.href, rules[j].styleSheet));
-          continue;
-        }
-        const output = [];
-        const style = rules[j].style;
-        const selectorText = rules[j].selectorText;
-        for (let i = 0; style && i < style.length; ++i) {
-          this._patchProperty(selectorText, style, style[i], output);
-        }
-        if (output.length) {
-          result.push(rules[j].selectorText + '{' + output.join('') + '}');
-        }
-      }
-
-      const fullText = result.join('\n');
-      this._cachedThemePatches.set(id, fullText);
-      return fullText;
-    } catch (e) {
-      this._setting.set('default');
-      return '';
-    }
-  }
-
-  /**
-   * @param {string} selectorText
-   * @param {!CSSStyleDeclaration} style
-   * @param {string} name
-   * @param {!Array<string>} output
-   *
-   * Theming API is primarily targeted at making dark theme look good.
-   * - If rule has ".-theme-preserve" in selector, it won't be affected.
-   * - One can create specializations for dark themes via body.-theme-with-dark-background selector in host context.
-   */
-  _patchProperty(selectorText, style, name, output) {
-    if (!this._themableProperties.has(name)) {
-      return;
-    }
-
-    const value = style.getPropertyValue(name);
-    if (!value || value === 'none' || value === 'inherit' || value === 'initial' || value === 'transparent') {
-      return;
-    }
-    if (name === 'background-image' && value.indexOf('gradient') === -1) {
-      return;
-    }
-
-    // Don't operate on CSS variables.
-    if (/^var\(.*\)$/.test(value)) {
-      return;
-    }
-
-    if (selectorText.indexOf('-theme-') !== -1) {
-      return;
-    }
-
-    let colorUsage = ThemeSupport.ColorUsage.Unknown;
-    if (name.indexOf('background') === 0 || name.indexOf('border') === 0) {
-      colorUsage |= ThemeSupport.ColorUsage.Background;
-    }
-    if (name.indexOf('background') === -1) {
-      colorUsage |= ThemeSupport.ColorUsage.Foreground;
-    }
-
-    output.push(name);
-    output.push(':');
-    const items = value.replace(Common.Color.Regex, '\0$1\0').split('\0');
-    for (let i = 0; i < items.length; ++i) {
-      output.push(this.patchColorText(items[i], /** @type {!ThemeSupport.ColorUsage} */ (colorUsage)));
-    }
-    if (style.getPropertyPriority(name)) {
-      output.push(' !important');
-    }
-    output.push(';');
-  }
-
-  /**
-   * @param {string} text
-   * @param {!ThemeSupport.ColorUsage} colorUsage
-   * @return {string}
-   */
-  patchColorText(text, colorUsage) {
-    const color = Common.Color.Color.parse(text);
-    if (!color) {
-      return text;
-    }
-    const outColor = this.patchColor(color, colorUsage);
-    let outText = outColor.asString(null);
-    if (!outText) {
-      outText = outColor.asString(outColor.hasAlpha() ? Common.Color.Format.RGBA : Common.Color.Format.RGB);
-    }
-    return outText || text;
-  }
-
-  /**
-   * @param {!Common.Color.Color} color
-   * @param {!ThemeSupport.ColorUsage} colorUsage
-   * @return {!Common.Color.Color}
-   */
-  patchColor(color, colorUsage) {
-    const hsla = color.hsla();
-    this._patchHSLA(hsla, colorUsage);
-    const rgba = [];
-    Common.Color.Color.hsl2rgb(hsla, rgba);
-    return new Common.Color.Color(rgba, color.format());
-  }
-
-  /**
-   * @param {!Array<number>} hsla
-   * @param {!ThemeSupport.ColorUsage} colorUsage
-   */
-  _patchHSLA(hsla, colorUsage) {
-    const hue = hsla[0];
-    const sat = hsla[1];
-    let lit = hsla[2];
-    const alpha = hsla[3];
-
-    switch (this._themeName) {
-      case 'dark': {
-        const minCap = colorUsage & ThemeSupport.ColorUsage.Background ? 0.14 : 0;
-        const maxCap = colorUsage & ThemeSupport.ColorUsage.Foreground ? 0.9 : 1;
-        lit = 1 - lit;
-        if (lit < minCap * 2) {
-          lit = minCap + lit / 2;
-        } else if (lit > 2 * maxCap - 1) {
-          lit = maxCap - 1 / 2 + lit / 2;
-        }
-        break;
-      }
-    }
-    hsla[0] = Platform.NumberUtilities.clamp(hue, 0, 1);
-    hsla[1] = Platform.NumberUtilities.clamp(sat, 0, 1);
-    hsla[2] = Platform.NumberUtilities.clamp(lit, 0, 1);
-    hsla[3] = Platform.NumberUtilities.clamp(alpha, 0, 1);
-  }
-}
-
-/**
- * @enum {number}
- */
-ThemeSupport.ColorUsage = {
-  Unknown: 0,
-  Foreground: 1 << 0,
-  Background: 1 << 1,
-};
 
 /**
  * @param {string} article
@@ -2178,7 +1893,7 @@ Renderer.render = async function(object, options) {
   if (!object) {
     throw new Error('Can\'t render ' + object);
   }
-  const renderer = await self.runtime.extension(Renderer, object).instance();
+  const renderer = await Root.Runtime.Runtime.instance().extension(Renderer, object).instance();
   return renderer ? renderer.render(object, options || {}) : null;
 };
 
@@ -2207,3 +1922,28 @@ export function formatTimestamp(timestamp, full) {
 
 /** @typedef {!{title: (string|!Element|undefined), editable: (boolean|undefined) }} */
 export let Options;
+
+/** @typedef {{
+ *  node: !Element,
+ *  type: string,
+ *  oldText: string,
+ *  newText: string,
+ *  nextSibling: (Node|undefined),
+ *  parent: (Node|undefined),
+ * }}
+ */
+export let HighlightChange;
+
+
+/**
+ * @param {!Element} element
+ * @return {boolean}
+ */
+export const isScrolledToBottom = element => {
+  // This code works only for 0-width border.
+  // The scrollTop, clientHeight and scrollHeight are computed in double values internally.
+  // However, they are exposed to javascript differently, each being either rounded (via
+  // round, ceil or floor functions) or left intouch.
+  // This adds up a total error up to 2.
+  return Math.abs(element.scrollTop + element.clientHeight - element.scrollHeight) <= 2;
+};

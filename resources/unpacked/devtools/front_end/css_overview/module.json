@@ -15,7 +15,8 @@
     "ui",
     "sdk",
     "data_grid",
-    "extensions"
+    "extensions",
+    "color_picker"
   ],
   "modules": [
     "css_overview.js",
@@ -35,6 +36,5 @@
     "cssOverviewProcessingView.css",
     "cssOverviewCompletedView.css",
     "cssOverviewSidebarPanel.css"
-  ],
-  "skip_rollup": true
+  ]
 }

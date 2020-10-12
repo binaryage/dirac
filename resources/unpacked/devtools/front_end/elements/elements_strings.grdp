@@ -6,6 +6,9 @@
   <message name="IDS_DEVTOOLS_03f126ba6fa92a1218920ff632546eb1" desc="Title of a section in Layout sidebar pane">
     Grid overlays
   </message>
+  <message name="IDS_DEVTOOLS_07ce4da7e4f4195eddc2ef0daf773e46" desc="Message in the Layout panel informing users that no CSS Grid layouts were found on the page">
+    No grid layouts found on this page
+  </message>
   <message name="IDS_DEVTOOLS_05ffd37b74b38636b25349b7a8c1ebba" desc="ARIA label for Elements Tree adorners">
     Enable grid mode
   </message>
@@ -42,8 +45,8 @@
   <message name="IDS_DEVTOOLS_21c12abe8367dcbdf5d3fee56a4ae9d8" desc="Title of a setting under the Elements category in Settings">
     Show detailed inspect tooltip
   </message>
-  <message name="IDS_DEVTOOLS_22a11a2e07e4412afd106977262d7617" desc="Text in Elements Tree Element of the Elements panel">
-    Copy selector
+  <message name="IDS_DEVTOOLS_22a11a2e07e4412afd106977262d7617" desc="Text in Elements Tree Element of the Elements panel, copy should be used as a verb">
+    Copy <ph name="LOCKED_1">selector</ph>
   </message>
   <message name="IDS_DEVTOOLS_243bcfa8bb3e955a2c98c5815c2fe446" desc="Console warning when the user tries to reveal a deferred DOM Node that resolves as null.">
     The deferred DOM Node could not be resolved into a valid node.
@@ -69,8 +72,8 @@
   <message name="IDS_DEVTOOLS_2ce5967e3862c73a31059c4aa5847464" desc="Icon element title in Color Swatch Popover Icon of the Elements panel">
     Open shadow editor.
   </message>
-  <message name="IDS_DEVTOOLS_2de42fbb00305f8282310f1b3e10ce9a" desc="Text in Metrics Sidebar Pane of the Elements panel">
-    border
+  <message name="IDS_DEVTOOLS_2de42fbb00305f8282310f1b3e10ce9a" desc="Label of the border property on the styles box diagram, represent the property name.">
+     <ph name="LOCKED_1">border</ph>
   </message>
   <message name="IDS_DEVTOOLS_2dff19d6ed78c6ca35cb3beab7b5bf55" desc="Section title text content in Platform Fonts Widget of the Elements panel">
     Rendered Fonts
@@ -114,10 +117,10 @@
   <message name="IDS_DEVTOOLS_47210336f82b1488b69932b14038bdff" desc="Title of  in styles sidebar pane of the elements panel">
     Increment/decrement with mousewheel or up/down keys. <ph name="CMDORCTRL">$1s<ex>Ctrl</ex></ph>: ±100, Shift: ±10, Alt: ±0.1
   </message>
-  <message name="IDS_DEVTOOLS_4757fe07fd492a8be0ea6a760d683d6e" desc="Text in Metrics Sidebar Pane of the Elements panel">
-    position
+  <message name="IDS_DEVTOOLS_4757fe07fd492a8be0ea6a760d683d6e" desc="Label of the position property on the styles box diagram, represent the property name.">
+    <ph name="LOCKED_1">position</ph>
   </message>
-  <message name="IDS_DEVTOOLS_4a27b8d01ae86c80074e4c57be48f8c6" desc="Text in Elements Tree Element of the Elements panel">
+  <message name="IDS_DEVTOOLS_4a27b8d01ae86c80074e4c57be48f8c6" desc="Text in Elements Tree Element of the Elements panel, copy should be used as a verb">
     Copy styles
   </message>
   <message name="IDS_DEVTOOLS_4c1c7d945fcd04d68bd3b3f1d99a55a1" desc="Text in Elements Panel of the Elements panel">
@@ -150,7 +153,7 @@
   <message name="IDS_DEVTOOLS_5eeb03a9c080c299d4804ac765c818c2" desc="No matches element text content in Styles Sidebar Pane of the Elements panel">
     No matching selector or style
   </message>
-  <message name="IDS_DEVTOOLS_6053f828a109e7d9da3690a7416e4eec" desc="Text in Elements Tree Element of the Elements panel">
+  <message name="IDS_DEVTOOLS_6053f828a109e7d9da3690a7416e4eec" desc="Text in Elements Tree Element of the Elements panel, copy should be used as a verb">
     Copy XPath
   </message>
   <message name="IDS_DEVTOOLS_605e072850e19521394f8bad7082acf4" desc="Text of a DOM element in Element State Pane Widget of the Elements panel">
@@ -164,6 +167,9 @@
   </message>
   <message name="IDS_DEVTOOLS_69f83bbab45ca27c374e76d304ab76be" desc="Text in Elements Panel of the Elements panel">
     Find by string, selector, or XPath
+  </message>
+  <message name="IDS_DEVTOOLS_6a5e84f70fe7d0861c27908f1dec5c28" desc="Title of the Computed Styles sidebar toggle in the Styles pane">
+    Computed Styles sidebar
   </message>
   <message name="IDS_DEVTOOLS_6ac7142d0aa79d17f03677fac1249c98" desc="A context menu item in the Elements Tree Element of the Elements panel">
     Force state
@@ -184,7 +190,7 @@
     Disable DOM word wrap
   </message>
   <message name="IDS_DEVTOOLS_795630f9fe735d5c002f28f851d78fac" desc="Title of show framework listeners setting in event listeners widget of the elements panel">
-    Framework listeners
+    <ph name="LOCKED_1">Framework</ph> listeners
   </message>
   <message name="IDS_DEVTOOLS_7c90d60be6418bb4a858b3733b2560a8" desc="Text in Styles Sidebar Pane of the Elements panel">
     Unknown property name
@@ -219,14 +225,14 @@
   <message name="IDS_DEVTOOLS_92c2cabd05b5ccef986c062a504cbcfb" desc="Accessible label for Elements panel adorners (suffix badges in Elements Tree Outline)">
     adorner active
   </message>
-  <message name="IDS_DEVTOOLS_97d28fbc573f9f331f5b1886b5c1eeef" desc="Text in Elements Tree Element of the Elements panel">
+  <message name="IDS_DEVTOOLS_97d28fbc573f9f331f5b1886b5c1eeef" desc="Text in Elements Tree Element of the Elements panel, copy should be used as a verb">
     Copy full XPath
   </message>
   <message name="IDS_DEVTOOLS_9a0364b9e99bb480dd25e1f0284c8555" desc="Text in Metrics Sidebar Pane of the Elements panel">
     content
   </message>
   <message name="IDS_DEVTOOLS_a05fb8660778069f6d4a5c5b40a6dbc9" desc="Title of a setting under the Elements category in Settings">
-    Show user agent shadow DOM
+    Show <ph name="LOCKED_1">user agent shadow DOM</ph>
   </message>
   <message name="IDS_DEVTOOLS_a2f8f2d457d122dd0d135781187aef31" desc="Text in Styles Sidebar Pane of the Elements panel">
     Invalid property value
@@ -243,14 +249,17 @@
   <message name="IDS_DEVTOOLS_abdf882c25e08d9ba219fe33f17591fe" desc="Link text content in Elements Tree Outline of the Elements panel">
     reveal
   </message>
+  <message name="IDS_DEVTOOLS_ad4ac01e4a5688063dace5ba5d0f04de" desc="Tooltip text that appears when hovering over the largeicon add button in the Styles Sidebar Pane of the Elements panel">
+    Insert Style Rule Below
+  </message>
   <message name="IDS_DEVTOOLS_b0351810a5721f657b088608865849dd" desc="Text in Styles Sidebar Pane of the Elements panel">
     via inspector
   </message>
   <message name="IDS_DEVTOOLS_b28bafc65dea7e88bb2bbd14c3dcb4aa" desc="The warning text shown in Elements panel when font-variation-settings don't match allowed values">
     Value for setting “<ph name="ELEMENTSETTING_TAG">$1s<ex>wdth</ex></ph>” <ph name="ELEMENTSETTING_VALUE">$2s<ex>100</ex></ph> is outside the supported range [<ph name="FONTSETTING_MINVALUE">$3s<ex>10</ex></ph>, <ph name="FONTSETTING_MAXVALUE">$4s<ex>20</ex></ph>] for font-family “<ph name="FONT_GETFONTFAMILY__">$5s<ex>Arial</ex></ph>”.
   </message>
-  <message name="IDS_DEVTOOLS_b70cdb878a204fecf91c7dd1af312421" desc="Text in Metrics Sidebar Pane of the Elements panel">
-    padding
+  <message name="IDS_DEVTOOLS_b70cdb878a204fecf91c7dd1af312421" desc="Label of the padding property on the styles diagram, represent the property name.">
+    <ph name="LOCKED_1">padding</ph>
   </message>
   <message name="IDS_DEVTOOLS_b9740e9a829cf440e2e863124d53eba3" desc="Text in Color Swatch Popover Icon of the Elements panel">
     Shift + Click to change color format.
@@ -261,13 +270,13 @@
   <message name="IDS_DEVTOOLS_be9548cd999232697505d4ca2eed2a23" desc="The UI destination when right clicking an item that can be revealed">
     Elements panel
   </message>
-  <message name="IDS_DEVTOOLS_bf22eb56a74b42a33fecf10c831e9509" desc="Text in Elements Tree Element of the Elements panel">
+  <message name="IDS_DEVTOOLS_bf22eb56a74b42a33fecf10c831e9509" desc="Text in Elements Tree Element of the Elements panel, copy should be used as a verb">
     Copy outerHTML
   </message>
   <message name="IDS_DEVTOOLS_c3c20058cbdd08782b780612204daafd" desc="Title of an action in the elements tool to toggle element search">
     Select an element in the page to inspect it
   </message>
-  <message name="IDS_DEVTOOLS_c64955a6a59816d4e1206d600020a9fe" desc="Text in Elements Tree Element of the Elements panel">
+  <message name="IDS_DEVTOOLS_c64955a6a59816d4e1206d600020a9fe" desc="Text in Elements Tree Element of the Elements panel, copy should be used as a verb">
     Copy element
   </message>
   <message name="IDS_DEVTOOLS_c736f6b512801b5fe4670e5968ee7be7" desc="Text in Element State Pane Widget of the Elements panel">
@@ -285,8 +294,8 @@
   <message name="IDS_DEVTOOLS_d2303f7f6800bc01a1036c7fbd5bc0f0" desc="Text in Styles Sidebar Pane of the Elements panel">
     constructed stylesheet
   </message>
-  <message name="IDS_DEVTOOLS_d42f4851e770aa0f758b01388874f67b" desc="Text in Metrics Sidebar Pane of the Elements panel">
-    margin
+  <message name="IDS_DEVTOOLS_d42f4851e770aa0f758b01388874f67b" desc="Label of the margin property on the styles box diagram, represent the property name.">
+     <ph name="LOCKED_1">margin</ph>
   </message>
   <message name="IDS_DEVTOOLS_e24ee2487879116dcab772c0ac4fe341" desc="Text to focus on something">
     Focus

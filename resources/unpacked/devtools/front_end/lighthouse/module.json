@@ -9,16 +9,15 @@
       "className": "Lighthouse.LighthousePanel",
       "tags": "lighthouse, pwa"
     }
-  ],
-  "skip_rollup": true,
-  "dependencies": [
+  ],  "dependencies": [
     "components",
     "emulation",
     "timeline",
     "inspector_main",
     "sdk",
     "services",
-    "ui"
+    "ui",
+    "theme_support"
   ],
   "modules": [
     "../third_party/lighthouse/report-assets/report.js",

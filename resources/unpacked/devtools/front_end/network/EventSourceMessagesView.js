@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as DataGrid from '../data_grid/data_grid.js';
 import * as Host from '../host/host.js';
@@ -31,7 +28,13 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
       {id: 'time', title: Common.UIString.UIString('Time'), sortable: true, weight: 8}
     ]);
 
-    this._dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({displayName: ls`Event Source`, columns});
+    this._dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
+      displayName: ls`Event Source`,
+      columns,
+      editCallback: undefined,
+      deleteCallback: undefined,
+      refreshCallback: undefined
+    });
     this._dataGrid.setStriped(true);
     this._dataGrid.setStickToBottom(true);
     this._dataGrid.setRowContextMenuCallback(this._onRowContextMenu.bind(this));
@@ -76,7 +79,9 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
     if (!sortColumnId) {
       return;
     }
-    const comparator = Comparators[sortColumnId];
+    const comparator =
+        /** @type {undefined|function(!DataGrid.SortableDataGrid.SortableDataGridNode<!EventSourceMessageNode>, !DataGrid.SortableDataGrid.SortableDataGridNode<!EventSourceMessageNode>):number} */
+        (Comparators[sortColumnId]);
     if (!comparator) {
       return;
     }
@@ -85,7 +90,7 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
 
   /**
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
-   * @param {!DataGrid.DataGrid.DataGridNode<!EventSourceMessageNode>} node
+   * @param {!DataGrid.ViewportDataGrid.ViewportDataGridNode<!DataGrid.SortableDataGrid.SortableDataGridNode<!EventSourceMessageNode>>} node
    */
   _onRowContextMenu(contextMenu, node) {
     contextMenu.clipboardSection().appendItem(
@@ -97,6 +102,7 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
 
 /**
  * @unrestricted
+ * @extends {DataGrid.SortableDataGrid.SortableDataGridNode<EventSourceMessageNode>}
  */
 export class EventSourceMessageNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
   /**
@@ -106,7 +112,7 @@ export class EventSourceMessageNode extends DataGrid.SortableDataGrid.SortableDa
     const time = new Date(message.time * 1000);
     const timeText = ('0' + time.getHours()).substr(-2) + ':' + ('0' + time.getMinutes()).substr(-2) + ':' +
         ('0' + time.getSeconds()).substr(-2) + '.' + ('00' + time.getMilliseconds()).substr(-3);
-    const timeNode = createElement('div');
+    const timeNode = document.createElement('div');
     timeNode.createTextChild(timeText);
     timeNode.title = time.toLocaleString();
     super({id: message.eventId, type: message.eventName, data: message.data, time: timeNode});
@@ -115,20 +121,20 @@ export class EventSourceMessageNode extends DataGrid.SortableDataGrid.SortableDa
 }
 
 /**
- * @param {string} field
+ * @param {function(!SDK.NetworkRequest.EventSourceMessage):(number|string)} fieldGetter
  * @param {!EventSourceMessageNode} a
  * @param {!EventSourceMessageNode} b
  * @return {number}
  */
-export function EventSourceMessageNodeComparator(field, a, b) {
-  const aValue = a._message[field];
-  const bValue = b._message[field];
+export function EventSourceMessageNodeComparator(fieldGetter, a, b) {
+  const aValue = fieldGetter(a._message);
+  const bValue = fieldGetter(b._message);
   return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
 }
 
 /** @type {!Object.<string, function(!EventSourceMessageNode, !EventSourceMessageNode):number>} */
 export const Comparators = {
-  'id': EventSourceMessageNodeComparator.bind(null, 'eventId'),
-  'type': EventSourceMessageNodeComparator.bind(null, 'eventName'),
-  'time': EventSourceMessageNodeComparator.bind(null, 'time')
+  'id': EventSourceMessageNodeComparator.bind(null, message => message.eventId),
+  'type': EventSourceMessageNodeComparator.bind(null, message => message.eventName),
+  'time': EventSourceMessageNodeComparator.bind(null, message => message.time)
 };

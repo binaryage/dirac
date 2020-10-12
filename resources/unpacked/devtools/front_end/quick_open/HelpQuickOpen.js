@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+import * as Root from '../root/root.js';
 
 import {Provider} from './FilteredListWidget.js';
 import {QuickOpenImpl} from './QuickOpen.js';
@@ -13,7 +12,7 @@ export class HelpQuickOpen extends Provider {
     super();
     /** @type {!Array<{prefix: string, title: string}>} */
     this._providers = [];
-    self.runtime.extensions(Provider).forEach(this._addProvider.bind(this));
+    Root.Runtime.Runtime.instance().extensions(Provider).forEach(this._addProvider.bind(this));
   }
 
   /**
@@ -21,7 +20,7 @@ export class HelpQuickOpen extends Provider {
    */
   _addProvider(extension) {
     if (extension.title()) {
-      this._providers.push({prefix: extension.descriptor()['prefix'], title: extension.title()});
+      this._providers.push({prefix: extension.descriptor()['prefix'] || '', title: extension.title()});
     }
   }
 

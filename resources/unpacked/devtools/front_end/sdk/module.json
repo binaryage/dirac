@@ -589,7 +589,7 @@
     {
       "type": "setting",
       "category": "Network",
-      "title": "Enable request blocking",
+      "title": "Enable network request blocking",
       "settingName": "requestBlockingEnabled",
       "settingType": "boolean",
       "storageType": "session",
@@ -597,11 +597,11 @@
       "options": [
         {
           "value": true,
-          "title": "Enable request blocking"
+          "title": "Enable network request blocking"
         },
         {
           "value": false,
-          "title": "Disable request blocking"
+          "title": "Disable network request blocking"
         }
       ]
     },
@@ -625,9 +625,7 @@
         }
       ]
     }
-  ],
-  "skip_rollup": true,
-  "modules": [
+  ],  "modules": [
     "../generated/SupportedCSSProperties.js",
     "sdk.js",
     "sdk-legacy.js",
@@ -693,7 +691,8 @@
     "FilmStripModel.js",
     "ConsoleModel.js",
     "wasm_source_map/pkg/wasm_source_map.js",
-    "PageResourceLoader.js"
+    "PageResourceLoader.js",
+    "IOModel.js"
   ],
   "skip_compilation": [
     "wasm_source_map/pkg/wasm_source_map.js"

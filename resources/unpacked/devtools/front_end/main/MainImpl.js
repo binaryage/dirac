@@ -44,7 +44,9 @@ import * as Host from '../host/host.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Platform from '../platform/platform.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
+import * as ThemeSupport from '../theme_support/theme_support.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
 
@@ -85,8 +87,8 @@ export class MainImpl {
   async _loaded() {
     console.timeStamp('Main._loaded');
     await Runtime.appStarted;
-    Root.Runtime.setPlatform(Host.Platform.platform());
-    Root.Runtime.setL10nCallback(ls);
+    Root.Runtime.Runtime.setPlatform(Host.Platform.platform());
+    Root.Runtime.Runtime.setL10nCallback(ls);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.getPreferences(this._gotPreferences.bind(this));
   }
 
@@ -95,9 +97,6 @@ export class MainImpl {
    */
   _gotPreferences(prefs) {
     console.timeStamp('Main._gotPreferences');
-    if (Host.InspectorFrontendHost.isUnderTest(prefs)) {
-      self.runtime.useTestBase();
-    }
     // for dirac testing
     if (Root.Runtime.queryParam('reset_settings')) {
       console.info('DIRAC TESTING: clear devtools settings because reset_settings is present in url params');
@@ -118,7 +117,7 @@ export class MainImpl {
     if (Host.Platform.isCustomDevtoolsFrontend()) {
       storagePrefix = '__custom__';
     } else if (
-        !Root.Runtime.queryParam('can_dock') && !!Root.Runtime.queryParam('debugFrontend') &&
+        !Root.Runtime.Runtime.queryParam('can_dock') && !!Root.Runtime.Runtime.queryParam('debugFrontend') &&
         !Host.InspectorFrontendHost.isUnderTest()) {
       storagePrefix = '__bundled__';
     }
@@ -174,6 +173,7 @@ export class MainImpl {
     Root.Runtime.experiments.register('webauthnPane', 'WebAuthn Pane');
     Root.Runtime.experiments.register(
         'customKeyboardShortcuts', 'Enable custom keyboard shortcuts settings tab (requires reload)');
+    Root.Runtime.experiments.register('keyboardShortcutEditor', 'Enable keyboard shortcut editor', true);
 
     // Timeline
     Root.Runtime.experiments.register('timelineEventInitiators', 'Timeline: event initiators');
@@ -194,15 +194,15 @@ export class MainImpl {
         'cssGridFeatures',
         'Enable new CSS Grid debugging features (configuration options available in Layout sidebar pane in Elements after restart)');
 
-    // Layout personalization
-    Root.Runtime.experiments.register('movableTabs', 'Enable support to move tabs between panels');
-
+    Root.Runtime.experiments.enableExperimentsByDefault([
+      'cssGridFeatures',
+    ]);
     Root.Runtime.experiments.cleanUpStaleExperiments();
-    const enabledExperiments = Root.Runtime.queryParam('enabledExperiments');
+    const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');
     if (enabledExperiments) {
       Root.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(';'));
     }
-    Root.Runtime.experiments.setDefaultExperiments([
+    Root.Runtime.experiments.enableExperimentsTransiently([
       'backgroundServices',
       'backgroundServicesNotifications',
       'backgroundServicesPushMessaging',
@@ -212,7 +212,7 @@ export class MainImpl {
     ]);
 
     if (Host.InspectorFrontendHost.isUnderTest() &&
-        Root.Runtime.queryParam('test').includes('live-line-level-heap-profile.js')) {
+        Root.Runtime.Runtime.queryParam('test').includes('live-line-level-heap-profile.js')) {
       Root.Runtime.experiments.enableForTest('liveHeapProfile');
     }
 
@@ -250,7 +250,7 @@ export class MainImpl {
 
     this._addMainEventListeners(document);
 
-    const canDock = !!Root.Runtime.queryParam('can_dock');
+    const canDock = !!Root.Runtime.Runtime.queryParam('can_dock');
     self.UI.zoomManager = UI.ZoomManager.ZoomManager.instance(
         {forceNew: true, win: window, frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance});
     self.UI.inspectorView = UI.InspectorView.InspectorView.instance();
@@ -258,18 +258,18 @@ export class MainImpl {
     UI.ContextMenu.ContextMenu.installHandler(document);
     UI.Tooltip.Tooltip.installHandler(document);
     self.SDK.consoleModel = SDK.ConsoleModel.ConsoleModel.instance();
-    self.UI.dockController = new UI.DockController.DockController(canDock);
+    self.UI.dockController = UI.DockController.DockController.instance({forceNew: true, canDock});
     self.SDK.multitargetNetworkManager = SDK.NetworkManager.MultitargetNetworkManager.instance({forceNew: true});
-    self.SDK.domDebuggerManager = new SDK.DOMDebuggerModel.DOMDebuggerManager();
+    self.SDK.domDebuggerManager = SDK.DOMDebuggerModel.DOMDebuggerManager.instance({forceNew: true});
     SDK.SDKModel.TargetManager.instance().addEventListener(
         SDK.SDKModel.Events.SuspendStateChanged, this._onSuspendStateChanged.bind(this));
 
-    self.UI.shortcutsScreen = new UI.ShortcutsScreen.ShortcutsScreen();
+    self.UI.shortcutsScreen = UI.ShortcutsScreen.ShortcutsScreen.instance({forceNew: true});
     // set order of some sections explicitly
-    self.UI.shortcutsScreen.section(Common.UIString.UIString('Elements Panel'));
-    self.UI.shortcutsScreen.section(Common.UIString.UIString('Styles Pane'));
-    self.UI.shortcutsScreen.section(Common.UIString.UIString('Debugger'));
-    self.UI.shortcutsScreen.section(Common.UIString.UIString('Console'));
+    UI.ShortcutsScreen.ShortcutsScreen.instance().section(Common.UIString.UIString('Elements Panel'));
+    UI.ShortcutsScreen.ShortcutsScreen.instance().section(Common.UIString.UIString('Styles Pane'));
+    UI.ShortcutsScreen.ShortcutsScreen.instance().section(Common.UIString.UIString('Debugger'));
+    UI.ShortcutsScreen.ShortcutsScreen.instance().section(Common.UIString.UIString('Console'));
 
     self.Workspace.fileManager = Workspace.FileManager.FileManager.instance({forceNew: true});
     self.Workspace.workspace = Workspace.Workspace.WorkspaceImpl.instance();
@@ -302,8 +302,11 @@ export class MainImpl {
     new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(
         Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance(),
         Workspace.Workspace.WorkspaceImpl.instance());
-    self.Persistence.persistence = new Persistence.Persistence.PersistenceImpl(
-        Workspace.Workspace.WorkspaceImpl.instance(), Bindings.BreakpointManager.BreakpointManager.instance());
+    self.Persistence.persistence = Persistence.Persistence.PersistenceImpl.instance({
+      forceNew: true,
+      workspace: Workspace.Workspace.WorkspaceImpl.instance(),
+      breakpointManager: Bindings.BreakpointManager.BreakpointManager.instance()
+    });
     self.Persistence.networkPersistenceManager =
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance(
             {forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance()});
@@ -319,12 +322,13 @@ export class MainImpl {
     const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({forceNew: true});
     // Required for legacy a11y layout tests
     self.UI.actionRegistry = actionRegistryInstance;
-    self.UI.shortcutRegistry = new UI.ShortcutRegistry.ShortcutRegistry(actionRegistryInstance);
+    self.UI.shortcutRegistry =
+        UI.ShortcutRegistry.ShortcutRegistry.instance({forceNew: true, actionRegistry: actionRegistryInstance});
     UI.ShortcutsScreen.ShortcutsScreen.registerShortcuts();
     this._registerMessageSinkListener();
 
     MainImpl.timeEnd('Main._createAppUI');
-    this._showAppUI(await self.runtime.extension(Common.AppProvider.AppProvider).instance());
+    this._showAppUI(await Root.Runtime.Runtime.instance().extension(Common.AppProvider.AppProvider).instance());
   }
 
   /**
@@ -335,7 +339,7 @@ export class MainImpl {
     MainImpl.time('Main._showAppUI');
     const app = /** @type {!Common.AppProvider.AppProvider} */ (appProvider).createApp();
     // It is important to kick controller lifetime after apps are instantiated.
-    self.UI.dockController.initialize();
+    UI.DockController.DockController.instance().initialize();
     app.presentUI(document);
 
     const toggleSearchNodeAction = UI.ActionRegistry.ActionRegistry.instance().action('elements.toggle-element-search');
@@ -353,20 +357,15 @@ export class MainImpl {
     UI.InspectorView.InspectorView.instance().createToolbars();
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
 
-    const extensions = self.runtime.extensions(Common.QueryParamHandler.QueryParamHandler);
+    const extensions = Root.Runtime.Runtime.instance().extensions(Common.QueryParamHandler.QueryParamHandler);
     for (const extension of extensions) {
-      const value = Root.Runtime.queryParam(extension.descriptor()['name']);
+      const value = Root.Runtime.Runtime.queryParam(extension.descriptor()['name']);
       if (value !== null) {
-        extension.instance().then(handleQueryParam.bind(null, value));
+        extension.instance().then(handler => {
+          /** @type {!Common.QueryParamHandler.QueryParamHandler} */ (handler).handleQueryParam(
+              /** @type {string} */ (value));
+        });
       }
-    }
-
-    /**
-     * @param {string} value
-     * @param {!Common.QueryParamHandler.QueryParamHandler} handler
-     */
-    function handleQueryParam(value, handler) {
-      handler.handleQueryParam(value);
     }
 
     // Allow UI cycles to repaint prior to creating connection.
@@ -377,8 +376,8 @@ export class MainImpl {
 
   async _initializeTarget() {
     MainImpl.time('Main._initializeTarget');
-    const instances =
-        await Promise.all(self.runtime.extensions('early-initialization').map(extension => extension.instance()));
+    const instances = await Promise.all(
+        Root.Runtime.Runtime.instance().extensions('early-initialization').map(extension => extension.instance()));
     for (const instance of instances) {
       await /** @type {!Common.Runnable.Runnable} */ (instance).run();
     }
@@ -393,7 +392,7 @@ export class MainImpl {
     MainImpl.time('Main._lateInitialization');
     this._registerShortcuts();
     Extensions.ExtensionServer.ExtensionServer.instance().initializeExtensions();
-    const extensions = self.runtime.extensions('late-initialization');
+    const extensions = Root.Runtime.Runtime.instance().extensions('late-initialization');
     const promises = [];
     for (const extension of extensions) {
       const setting = extension.descriptor()['setting'];
@@ -472,7 +471,7 @@ export class MainImpl {
 
   _registerShortcuts() {
     const shortcut = UI.KeyboardShortcut.KeyboardShortcut;
-    const section = self.UI.shortcutsScreen.section(Common.UIString.UIString('All Panels'));
+    const section = UI.ShortcutsScreen.ShortcutsScreen.instance().section(Common.UIString.UIString('All Panels'));
     let keys = [
       shortcut.makeDescriptor('[', UI.KeyboardShortcut.Modifiers.CtrlOrMeta),
       shortcut.makeDescriptor(']', UI.KeyboardShortcut.Modifiers.CtrlOrMeta)
@@ -484,7 +483,7 @@ export class MainImpl {
         shortcut.makeDescriptor(UI.KeyboardShortcut.Keys.Tilde, UI.KeyboardShortcut.Modifiers.Ctrl),
         toggleConsoleLabel);
     section.addKey(shortcut.makeDescriptor(UI.KeyboardShortcut.Keys.Esc), Common.UIString.UIString('Toggle drawer'));
-    if (self.UI.dockController.canDock()) {
+    if (UI.DockController.DockController.instance().canDock()) {
       section.addKey(
           shortcut.makeDescriptor('M', UI.KeyboardShortcut.Modifiers.CtrlOrMeta | UI.KeyboardShortcut.Modifiers.Shift),
           Common.UIString.UIString('Toggle device mode'));
@@ -502,7 +501,7 @@ export class MainImpl {
     section.addKey(advancedSearchShortcut, Common.UIString.UIString('Search across all sources'));
 
     const inspectElementModeShortcuts =
-        self.UI.shortcutRegistry.shortcutDescriptorsForAction('elements.toggle-element-search');
+        UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutDescriptorsForAction('elements.toggle-element-search');
     if (inspectElementModeShortcuts.length) {
       section.addKey(inspectElementModeShortcuts[0], Common.UIString.UIString('Select node to inspect'));
     }
@@ -522,7 +521,7 @@ export class MainImpl {
 
   _postDocumentKeyDown(event) {
     if (!event.handled) {
-      self.UI.shortcutRegistry.handleShortcut(event);
+      UI.ShortcutRegistry.ShortcutRegistry.instance().handleShortcut(event);
     }
   }
 
@@ -655,20 +654,21 @@ export class MainMenuItem {
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    */
   _handleContextMenu(contextMenu) {
-    if (self.UI.dockController.canDock()) {
+    if (UI.DockController.DockController.instance().canDock()) {
       const dockItemElement = document.createElement('div');
       dockItemElement.classList.add('flex-centered');
       dockItemElement.classList.add('flex-auto');
       dockItemElement.tabIndex = -1;
       const titleElement = dockItemElement.createChild('span', 'flex-auto');
       titleElement.textContent = Common.UIString.UIString('Dock side');
-      const toggleDockSideShorcuts = self.UI.shortcutRegistry.shortcutsForAction('main.toggle-dock');
+      const toggleDockSideShorcuts =
+          UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('main.toggle-dock');
       titleElement.title = Common.UIString.UIString(
           'Placement of DevTools relative to the page. (%s to restore last position)',
           toggleDockSideShorcuts[0].title());
       dockItemElement.appendChild(titleElement);
       const dockItemToolbar = new UI.Toolbar.Toolbar('', dockItemElement);
-      if (Host.Platform.isMac() && !self.UI.themeSupport.hasTheme()) {
+      if (Host.Platform.isMac() && !ThemeSupport.ThemeSupport.instance().hasTheme()) {
         dockItemToolbar.makeBlueOnHover();
       }
       const undock =
@@ -689,10 +689,12 @@ export class MainMenuItem {
           UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, UI.DockController.State.DockedToRight));
       left.addEventListener(
           UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, UI.DockController.State.DockedToLeft));
-      undock.setToggled(self.UI.dockController.dockSide() === UI.DockController.State.Undocked);
-      bottom.setToggled(self.UI.dockController.dockSide() === UI.DockController.State.DockedToBottom);
-      right.setToggled(self.UI.dockController.dockSide() === UI.DockController.State.DockedToRight);
-      left.setToggled(self.UI.dockController.dockSide() === UI.DockController.State.DockedToLeft);
+      undock.setToggled(UI.DockController.DockController.instance().dockSide() === UI.DockController.State.Undocked);
+      bottom.setToggled(
+          UI.DockController.DockController.instance().dockSide() === UI.DockController.State.DockedToBottom);
+      right.setToggled(
+          UI.DockController.DockController.instance().dockSide() === UI.DockController.State.DockedToRight);
+      left.setToggled(UI.DockController.DockController.instance().dockSide() === UI.DockController.State.DockedToLeft);
       dockItemToolbar.appendToolbarItem(undock);
       dockItemToolbar.appendToolbarItem(left);
       dockItemToolbar.appendToolbarItem(bottom);
@@ -725,14 +727,14 @@ export class MainMenuItem {
      * @suppressGlobalPropertiesCheck
      */
     function setDockSide(side) {
-      self.UI.dockController.once(UI.DockController.Events.AfterDockSideChanged).then(() => {
+      UI.DockController.DockController.instance().once(UI.DockController.Events.AfterDockSideChanged).then(() => {
         button.focus();
       });
-      self.UI.dockController.setDockSide(side);
+      UI.DockController.DockController.instance().setDockSide(side);
       contextMenu.discard();
     }
 
-    if (self.UI.dockController.dockSide() === UI.DockController.State.Undocked &&
+    if (UI.DockController.DockController.instance().dockSide() === UI.DockController.State.Undocked &&
         SDK.SDKModel.TargetManager.instance().mainTarget() &&
         SDK.SDKModel.TargetManager.instance().mainTarget().type() === SDK.SDKModel.Type.Frame) {
       contextMenu.defaultSection().appendAction(
@@ -745,7 +747,7 @@ export class MainMenuItem {
                                                                     Common.UIString.UIString('Show console drawer'));
     contextMenu.appendItemsAtLocation('mainMenu');
     const moreTools = contextMenu.defaultSection().appendSubMenuItem(Common.UIString.UIString('More tools'));
-    const extensions = self.runtime.extensions('view', undefined, true);
+    const extensions = Root.Runtime.Runtime.instance().extensions('view', undefined, true);
     for (const extension of extensions) {
       const descriptor = extension.descriptor();
 

@@ -175,9 +175,15 @@ class JSDocChecker:
         known_css = {}
         match = re.search(INVALID_TYPE_REGEX, line)
         if match:
-            print_error('Type "%s" nullability not marked explicitly with "?" (nullable) or "!" (non-nullable)' % match.group(1),
-                        match.start(1))
-            self._error_found = True
+            problematic_type = match.group(1)
+            start_line = match.start(1)
+            # `typeof Type` is allowed and should not be marked with nulllable
+            match = re.search(re.compile('typeof %s' % problematic_type), line)
+            if not match:
+                print_error(
+                    'Type "%s" nullability not marked explicitly with "?" (nullable) or "!" (non-nullable)'
+                    % problematic_type, start_line)
+                self._error_found = True
 
         match = re.search(INVALID_NON_OBJECT_TYPE_REGEX, line)
         if match:
@@ -314,7 +320,6 @@ def check_conditional_dependencies(modules_by_name):
 def prepare_closure_frontend_compile(temp_devtools_path, descriptors, namespace_externs_path, protocol_externs_file):
     temp_frontend_path = path.join(temp_devtools_path, 'front_end')
     checker = dependency_preprocessor.DependencyPreprocessor(descriptors, temp_frontend_path, DEVTOOLS_FRONTEND_PATH)
-    checker.enforce_dependencies()
 
     command = common_closure_args + [
         '--externs',
@@ -365,7 +370,7 @@ def prepare_closure_frontend_compile(temp_devtools_path, descriptors, namespace_
                     'acorn-numeric-separator.mjs',
                     'acorn.mjs',
                     'ClientVariations.js',
-                    "i18n-bundle.js",
+                    'i18n.js',
                     'marked.esm.js',
                     'wasm_source_map.js',
             ]:

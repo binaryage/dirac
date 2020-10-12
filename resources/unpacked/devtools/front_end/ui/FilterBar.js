@@ -55,7 +55,6 @@ export class FilterBar extends HBox {
     this._enabled = true;
     this.element.classList.add('filter-bar');
 
-    // Note: go via self.Common for globally-namespaced singletons.
     this._stateSetting =
         Common.Settings.Settings.instance().createSetting('filterBar-' + name + '-toggled', !!visibleByDefault);
     this._filterButton =
@@ -515,11 +514,11 @@ export class CheckboxFilterUI extends Common.ObjectWrapper.ObjectWrapper {
    * @param {string} className
    * @param {string} title
    * @param {boolean=} activeWhenChecked
-   * @param {!Common.Settings.Setting<*>=} setting
+   * @param {!Common.Settings.Setting<boolean>=} setting
    */
   constructor(className, title, activeWhenChecked, setting) {
     super();
-    this._filterElement = document.createElement('div');
+    this._filterElement = /** @type {!HTMLDivElement} */ (document.createElement('div'));
     this._filterElement.classList.add('filter-checkbox-filter');
     this._activeWhenChecked = !!activeWhenChecked;
     this._label = CheckboxLabel.create(title);
@@ -557,7 +556,7 @@ export class CheckboxFilterUI extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @override
-   * @return {!Element}
+   * @return {!HTMLDivElement}
    */
   element() {
     return this._filterElement;

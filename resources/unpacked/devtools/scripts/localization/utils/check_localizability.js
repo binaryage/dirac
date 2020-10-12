@@ -177,6 +177,23 @@ function analyzeTaggedTemplateNode(node, filePath, code) {
   }
 }
 
+function analyzeGetLocalizedStringNode(node, filePath) {
+  // For example,
+  // node: i18n.i18n.getLocalizedString(str_, UIStrings.url)
+  // firstArg : str_
+  // secondArg : UIStrings.url
+  if (!node.arguments || node.arguments.length < 2) {
+    addError(`${localizationUtils.getRelativeFilePathFromSrc(filePath)}${
+        localizationUtils.getLocationMessage(node.loc)}: getLocalizedString call should have two arguments`);
+    return;
+  }
+  const firstArg = node.arguments[0];
+  if (firstArg.type !== espreeTypes.IDENTIFIER || firstArg.name !== 'str_') {
+    addError(`${localizationUtils.getRelativeFilePathFromSrc(filePath)}${
+        localizationUtils.getLocationMessage(node.loc)}: first argument should be 'str_'`);
+  }
+}
+
 function auditGrdpFile(filePath, fileContent) {
   function reportMissingPlaceholderExample(messageContent, lineNumber) {
     const phRegex = /<ph[^>]*name="([^"]*)">\$\d(s|d|\.\df)(?!<ex>)<\/ph>/gms;
@@ -214,6 +231,7 @@ function auditGrdpFile(filePath, fileContent) {
 
 module.exports = {
   analyzeCommonUIStringNode,
+  analyzeGetLocalizedStringNode,
   analyzeTaggedTemplateNode,
   auditGrdpFile,
   checkConcatenation,

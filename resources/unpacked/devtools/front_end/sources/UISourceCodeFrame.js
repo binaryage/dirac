@@ -28,12 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as Persistence from '../persistence/persistence.js';  // eslint-disable-line no-unused-vars
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
 import * as TextEditor from '../text_editor/text_editor.js';  // eslint-disable-line no-unused-vars
 import * as TextUtils from '../text_utils/text_utils.js';
@@ -66,14 +64,16 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     this._isSettingContent = false;
 
     /** @type {?Persistence.Persistence.PersistenceBinding} */
-    this._persistenceBinding = self.Persistence.persistence.binding(uiSourceCode);
+    this._persistenceBinding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
 
     /** @type {!Map<number, !RowMessageBucket>} */
     this._rowMessageBuckets = new Map();
     /** @type {!Set<string>} */
     this._typeDecorationsPending = new Set();
 
+    /** @type {!Array<!Common.EventTarget.EventDescriptor>} */
     this._uiSourceCodeEventListeners = [];
+    /** @type {!Array<!Common.EventTarget.EventDescriptor>} */
     this._messageAndDecorationListeners = [];
 
     this._boundOnBindingChanged = this._onBindingChanged.bind(this);
@@ -177,7 +177,8 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     Common.EventTarget.EventTarget.removeEventListeners(this._messageAndDecorationListeners);
     Common.EventTarget.EventTarget.removeEventListeners(this._uiSourceCodeEventListeners);
     this._uiSourceCode.removeWorkingCopyGetter();
-    self.Persistence.persistence.unsubscribeFromBindingEvent(this._uiSourceCode, this._boundOnBindingChanged);
+    Persistence.Persistence.PersistenceImpl.instance().unsubscribeFromBindingEvent(
+        this._uiSourceCode, this._boundOnBindingChanged);
   }
 
   _initializeUISourceCode() {
@@ -190,7 +191,8 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
           Workspace.UISourceCode.Events.TitleChanged, this._refreshHighlighterType, this)
     ];
 
-    self.Persistence.persistence.subscribeForBindingEvent(this._uiSourceCode, this._boundOnBindingChanged);
+    Persistence.Persistence.PersistenceImpl.instance().subscribeForBindingEvent(
+        this._uiSourceCode, this._boundOnBindingChanged);
     for (const message of this._allMessages()) {
       this._addMessageToSource(message);
     }
@@ -211,7 +213,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
   wasShown() {
     super.wasShown();
     // We need CodeMirrorTextEditor to be initialized prior to this call as it calls |cursorPositionToCoordinates| internally. @see crbug.com/506566
-    setImmediate(this._updateBucketDecorations.bind(this));
+    window.setTimeout(() => this._updateBucketDecorations(), 0);
     this.setEditable(this._canEditSource());
     for (const plugin of this._plugins) {
       plugin.wasShown();
@@ -231,7 +233,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
   }
 
   _refreshHighlighterType() {
-    const binding = self.Persistence.persistence.binding(this._uiSourceCode);
+    const binding = Persistence.Persistence.PersistenceImpl.instance().binding(this._uiSourceCode);
     const highlighterType = binding ? binding.network.mimeType() : this._uiSourceCode.mimeType();
     if (this.highlighterType() === highlighterType) {
       return;
@@ -254,7 +256,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     if (this._uiSourceCode.mimeType() === 'application/wasm') {
       return false;
     }
-    if (self.Persistence.persistence.binding(this._uiSourceCode)) {
+    if (Persistence.Persistence.PersistenceImpl.instance().binding(this._uiSourceCode)) {
       return true;
     }
     if (this._uiSourceCode.project().canSetFileContent()) {
@@ -369,7 +371,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
       return;
     }
 
-    const binding = self.Persistence.persistence.binding(this._uiSourceCode);
+    const binding = Persistence.Persistence.PersistenceImpl.instance().binding(this._uiSourceCode);
     const pluginUISourceCode = binding ? binding.network : this._uiSourceCode;
 
     // The order of these plugins matters for toolbar items
@@ -412,7 +414,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
   }
 
   _onBindingChanged() {
-    const binding = self.Persistence.persistence.binding(this._uiSourceCode);
+    const binding = Persistence.Persistence.PersistenceImpl.instance().binding(this._uiSourceCode);
     if (binding === this._persistenceBinding) {
       return;
     }
@@ -442,7 +444,10 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
 
   /**
    * @override
-   * @return {!Promise}
+   * @param {!UI.ContextMenu.ContextMenu} contextMenu
+   * @param {number} editorLineNumber
+   * @param {number} editorColumnNumber
+   * @return {!Promise<void>}
    */
   async populateTextAreaContextMenu(contextMenu, editorLineNumber, editorColumnNumber) {
     await super.populateTextAreaContextMenu(contextMenu, editorLineNumber, editorColumnNumber);
@@ -536,23 +541,32 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
 
   /**
    * @param {!Event} event
-   * @return {?UI.PopoverRequest}
+   * @return {?UI.PopoverHelper.PopoverRequest}
    */
   _getErrorPopoverContent(event) {
-    const element = event.target.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon') ||
-        event.target.enclosingNodeOrSelfWithClass('text-editor-line-decoration-wave');
+    const mouseEvent = /** @type {!MouseEvent} */ (event);
+    const eventTarget = /** @type {!HTMLElement} */ (mouseEvent.target);
+    const element = eventTarget.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon') ||
+        eventTarget.enclosingNodeOrSelfWithClass('text-editor-line-decoration-wave');
     if (!element) {
       return null;
     }
     const anchor = element.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon') ?
         element.boxInWindow() :
-        new AnchorBox(event.clientX, event.clientY, 1, 1);
+        new AnchorBox(mouseEvent.clientX, mouseEvent.clientY, 1, 1);
     return {
       box: anchor,
+      hide() {},
+      /**
+       * @param {!UI.GlassPane.GlassPane} popover
+       */
       show: popover => {
-        const messageBucket = element.enclosingNodeOrSelfWithClass('text-editor-line-decoration')._messageBucket;
-        const messagesOutline = messageBucket.messagesDescription();
-        popover.contentElement.appendChild(messagesOutline);
+        const messageBucket = elementToMessageBucket.get(
+            /** @type {!Element} */ (element.enclosingNodeOrSelfWithClass('text-editor-line-decoration')));
+        if (messageBucket) {
+          const messagesOutline = messageBucket.messagesDescription();
+          popover.contentElement.appendChild(messagesOutline);
+        }
         return Promise.resolve(true);
       }
     };
@@ -588,11 +602,13 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
       return;
     }
     this._typeDecorationsPending.add(type);
-    const decorator = await self.runtime.extensions(SourceFrame.SourceFrame.LineDecorator)
-                          .find(extension => extension.descriptor()['decoratorType'] === type)
-                          .instance();
+    const extension = /** @type {!Root.Runtime.Extension} */ (
+        Root.Runtime.Runtime.instance()
+            .extensions(SourceFrame.SourceFrame.LineDecorator)
+            .find(extension => extension.descriptor()['decoratorType'] === type));
+    const decorator = /** @type {!SourceFrame.SourceFrame.LineDecorator} */ (await extension.instance());
     this._typeDecorationsPending.delete(type);
-    this.textEditor.codeMirror().operation(() => {
+    /** @type {*} */ (this.textEditor.codeMirror()).operation(() => {
       decorator.decorate(
           this._persistenceBinding ? this._persistenceBinding.network : this.uiSourceCode(), this.textEditor, type);
     });
@@ -602,9 +618,9 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     if (!this.loaded) {
       return;
     }
-    for (const extension of self.runtime.extensions(SourceFrame.SourceFrame.LineDecorator)) {
+    for (const extension of Root.Runtime.Runtime.instance().extensions(SourceFrame.SourceFrame.LineDecorator)) {
       const type = extension.descriptor()['decoratorType'];
-      if (this._uiSourceCode.decorationsForType(type)) {
+      if (type !== null && this._uiSourceCode.decorationsForType(type)) {
         this._decorateTypeThrottled(type);
       }
     }
@@ -633,7 +649,7 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
    * @override
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    * @param {number} lineNumber
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async populateLineGutterContextMenu(contextMenu, lineNumber) {
     await super.populateLineGutterContextMenu(contextMenu, lineNumber);
@@ -643,17 +659,20 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
   }
 }
 
-export const iconClassPerLevel = {};
-iconClassPerLevel[Workspace.UISourceCode.Message.Level.Error] = 'smallicon-error';
-iconClassPerLevel[Workspace.UISourceCode.Message.Level.Warning] = 'smallicon-warning';
+/** @type {!Map<!Workspace.UISourceCode.Message.Level, string>} */
+const iconClassPerLevel = new Map();
+iconClassPerLevel.set(Workspace.UISourceCode.Message.Level.Error, 'smallicon-error');
+iconClassPerLevel.set(Workspace.UISourceCode.Message.Level.Warning, 'smallicon-warning');
 
-export const bubbleTypePerLevel = {};
-bubbleTypePerLevel[Workspace.UISourceCode.Message.Level.Error] = 'error';
-bubbleTypePerLevel[Workspace.UISourceCode.Message.Level.Warning] = 'warning';
+/** @type {!Map<!Workspace.UISourceCode.Message.Level, string>} */
+const bubbleTypePerLevel = new Map();
+bubbleTypePerLevel.set(Workspace.UISourceCode.Message.Level.Error, 'error');
+bubbleTypePerLevel.set(Workspace.UISourceCode.Message.Level.Warning, 'warning');
 
-export const lineClassPerLevel = {};
-lineClassPerLevel[Workspace.UISourceCode.Message.Level.Error] = 'text-editor-line-with-error';
-lineClassPerLevel[Workspace.UISourceCode.Message.Level.Warning] = 'text-editor-line-with-warning';
+/** @type {!Map<!Workspace.UISourceCode.Message.Level, string>} */
+const lineClassPerLevel = new Map();
+lineClassPerLevel.set(Workspace.UISourceCode.Message.Level.Error, 'text-editor-line-with-error');
+lineClassPerLevel.set(Workspace.UISourceCode.Message.Level.Warning, 'text-editor-line-with-warning');
 
 /**
  * @unrestricted
@@ -667,11 +686,14 @@ export class RowMessage {
     this._repeatCount = 1;
     this.element = document.createElement('div');
     this.element.classList.add('text-editor-row-message');
-    this._icon = this.element.createChild('label', '', 'dt-icon-label');
-    this._icon.type = iconClassPerLevel[message.level()];
+    /** @type {!UI.UIUtils.DevToolsIconLabel} */
+    this._icon = /** @type {?} */ (this.element.createChild('label', '', 'dt-icon-label'));
+    this._icon.type = /** @type {string} */ (iconClassPerLevel.get(message.level()));
+    /** @type {!UI.UIUtils.DevToolsSmallBubble} */
     this._repeatCountElement =
-        this.element.createChild('span', 'text-editor-row-message-repeat-count hidden', 'dt-small-bubble');
-    this._repeatCountElement.type = bubbleTypePerLevel[message.level()];
+        /** @type {?} */ (
+            this.element.createChild('span', 'text-editor-row-message-repeat-count hidden', 'dt-small-bubble'));
+    this._repeatCountElement.type = /** @type {string} */ (bubbleTypePerLevel.get(message.level()));
     const linesContainer = this.element.createChild('div');
     const lines = this._message.text().split('\n');
     for (let i = 0; i < lines.length; ++i) {
@@ -694,6 +716,9 @@ export class RowMessage {
     return this._repeatCount;
   }
 
+  /**
+   * @param {number} repeatCount
+   */
   setRepeatCount(repeatCount) {
     if (this._repeatCount === repeatCount) {
       return;
@@ -703,17 +728,20 @@ export class RowMessage {
   }
 
   _updateMessageRepeatCount() {
-    this._repeatCountElement.textContent = this._repeatCount;
+    this._repeatCountElement.textContent = String(this._repeatCount);
     const showRepeatCount = this._repeatCount > 1;
     this._repeatCountElement.classList.toggle('hidden', !showRepeatCount);
     this._icon.classList.toggle('hidden', showRepeatCount);
   }
 }
 
+/** @type {!WeakMap<!Element, !RowMessageBucket>} */
+const elementToMessageBucket = new WeakMap();
+
 export class RowMessageBucket {
   /**
    * @param {!UISourceCodeFrame} sourceFrame
-   * @param {!TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor} textEditor
+   * @param {!SourceFrame.SourcesTextEditor.SourcesTextEditor} textEditor
    * @param {number} editorLineNumber
    */
   constructor(sourceFrame, textEditor, editorLineNumber) {
@@ -722,9 +750,10 @@ export class RowMessageBucket {
     this._lineHandle = textEditor.textEditorPositionHandle(editorLineNumber, 0);
     this._decoration = document.createElement('div');
     this._decoration.classList.add('text-editor-line-decoration');
-    this._decoration._messageBucket = this;
+    elementToMessageBucket.set(this._decoration, this);
     this._wave = this._decoration.createChild('div', 'text-editor-line-decoration-wave');
-    this._icon = this._wave.createChild('span', 'text-editor-line-decoration-icon', 'dt-icon-label');
+    /** @type {!UI.UIUtils.DevToolsIconLabel} */
+    this._icon = /** @type {?} */ (this._wave.createChild('span', 'text-editor-line-decoration-icon', 'dt-icon-label'));
     /** @type {?number} */
     this._decorationStartColumn = null;
 
@@ -776,7 +805,8 @@ export class RowMessageBucket {
     }
     const editorLineNumber = position.lineNumber;
     if (this._level) {
-      this.textEditor.toggleLineClass(editorLineNumber, lineClassPerLevel[this._level], false);
+      this.textEditor.toggleLineClass(
+          editorLineNumber, /** @type {string} */ (lineClassPerLevel.get(this._level)), false);
     }
     if (this._decorationStartColumn !== null) {
       this.textEditor.removeDecoration(this._decoration, editorLineNumber);
@@ -846,31 +876,33 @@ export class RowMessageBucket {
       const {columnNumber: editorColumnNumber} =
           this._sourceFrame.uiLocationToEditorLocation(editorLineNumber, message.columnNumber());
       columnNumber = Math.min(columnNumber, editorColumnNumber);
-      if (!maxMessage || Workspace.UISourceCode.Message.messageLevelComparator(maxMessage, message) < 0) {
+      if (!maxMessage || messageLevelComparator(maxMessage, message) < 0) {
         maxMessage = message;
       }
     }
     this._updateWavePosition(editorLineNumber, columnNumber);
 
-    if (this._level === maxMessage.level()) {
+    if (!maxMessage || this._level === maxMessage.level()) {
       return;
     }
     if (this._level) {
-      this.textEditor.toggleLineClass(editorLineNumber, lineClassPerLevel[this._level], false);
+      this.textEditor.toggleLineClass(
+          editorLineNumber, /** @type {string} */ (lineClassPerLevel.get(this._level)), false);
       this._icon.type = '';
     }
     this._level = maxMessage.level();
     if (!this._level) {
       return;
     }
-    this.textEditor.toggleLineClass(editorLineNumber, lineClassPerLevel[this._level], true);
-    this._icon.type = iconClassPerLevel[this._level];
+    this.textEditor.toggleLineClass(editorLineNumber, /** @type {string} */ (lineClassPerLevel.get(this._level)), true);
+    this._icon.type = /** @type {string} */ (iconClassPerLevel.get(this._level));
   }
 }
 
-Workspace.UISourceCode.Message._messageLevelPriority = {
+/** @type {!Object<string, number>} */
+const MessageLevelPriority = {
   'Warning': 3,
-  'Error': 4
+  'Error': 4,
 };
 
 /**
@@ -878,10 +910,9 @@ Workspace.UISourceCode.Message._messageLevelPriority = {
  * @param {!Workspace.UISourceCode.Message} b
  * @return {number}
  */
-Workspace.UISourceCode.Message.messageLevelComparator = function(a, b) {
-  return Workspace.UISourceCode.Message._messageLevelPriority[a.level()] -
-      Workspace.UISourceCode.Message._messageLevelPriority[b.level()];
-};
+function messageLevelComparator(a, b) {
+  return MessageLevelPriority[a.level()] - MessageLevelPriority[b.level()];
+}
 
 /** @enum {symbol} */
 export const Events = {

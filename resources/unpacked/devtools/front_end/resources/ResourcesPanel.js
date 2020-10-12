@@ -18,7 +18,13 @@ import {DOMStorageItemsView} from './DOMStorageItemsView.js';
 import {DOMStorage} from './DOMStorageModel.js';  // eslint-disable-line no-unused-vars
 import {StorageItemsView} from './StorageItemsView.js';
 
+/** @type {!ResourcesPanel} */
+let resourcesPanelInstance;
+
 export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
+  /**
+   * @private
+   */
   constructor() {
     super('resources');
     this.registerRequiredCSS('resources/resourcesPanel.css');
@@ -54,10 +60,22 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
   }
 
   /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!resourcesPanelInstance || forceNew) {
+      resourcesPanelInstance = new ResourcesPanel();
+    }
+
+    return resourcesPanelInstance;
+  }
+
+  /**
    * @return {!ResourcesPanel}
    */
   static _instance() {
-    return /** @type {!ResourcesPanel} */ (self.runtime.sharedInstance(ResourcesPanel));
+    return ResourcesPanel.instance();
   }
 
   /**

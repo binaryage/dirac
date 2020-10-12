@@ -80,6 +80,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     this._parentDataDisplayDelegate = dataDisplayDelegate;
 
     this._searchableView = new UI.SearchableView.SearchableView(this);
+    this._searchableView.setPlaceholder(ls`Find`, ls`Find`);
     this._searchableView.show(this.element);
 
     this._splitWidget = new UI.SplitWidget.SplitWidget(false, true, 'heapSnapshotSplitViewState', 200, 200);
@@ -690,7 +691,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
 
   /**
    * @param {!Event} event
-   * @return {?UI.PopoverRequest}
+   * @return {?UI.PopoverHelper.PopoverRequest}
    */
   _getPopoverRequest(event) {
     const span = event.target.enclosingNodeOrSelfWithNodeName('span');
@@ -1775,6 +1776,7 @@ export class HeapSnapshotStatisticsView extends UI.Widget.VBox {
     super();
     this.element.classList.add('heap-snapshot-statistics-view');
     this._pieChart = PerfUI.PieChart.createPieChart();
+    this.setTotalAndRecords(0, []);
     this._pieChart.classList.add('heap-snapshot-stats-pie-chart');
     this.element.appendChild(this._pieChart);
   }

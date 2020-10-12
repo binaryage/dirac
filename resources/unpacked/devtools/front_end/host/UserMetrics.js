@@ -49,7 +49,7 @@ export class UserMetrics {
   colorFixed(contrastThreshold) {
     const code = ContrastThresholds[contrastThreshold];
     if (code === undefined) {
-      console.error(`Unknown contrast threshold: ${contrastThreshold}`);
+      console.warn(`Unknown contrast threshold: ${contrastThreshold}`);
       return;
     }
     const size = Object.keys(ContrastThresholds).length + 1;
@@ -178,6 +178,43 @@ export class UserMetrics {
   }
 
   /**
+   * @param {string | undefined} issueExpandedCategory
+   */
+  issuesPanelIssueExpanded(issueExpandedCategory) {
+    if (issueExpandedCategory === undefined) {
+      return;
+    }
+
+    const size = Object.keys(IssueExpanded).length + 1;
+    const issueExpanded = IssueExpanded[issueExpandedCategory];
+
+    if (issueExpanded === undefined) {
+      return;
+    }
+
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+        EnumeratedHistogram.IssuesPanelIssueExpanded, issueExpanded, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.IssuesPanelIssueExpanded, {value: issueExpanded});
+  }
+
+  /**
+   * @param {symbol} issueCategory
+   * @param {string} type
+   */
+  issuesPanelResourceOpened(issueCategory, type) {
+    const size = Object.keys(IssueResourceOpened).length + 1;
+    const key = issueCategory.description + type;
+    const value = IssueResourceOpened[key];
+
+    if (value === undefined) {
+      return;
+    }
+
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.IssuesPanelResourceOpened, value, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.IssuesPanelIssueExpanded, {value});
+  }
+
+  /**
    * @param {!DualScreenDeviceEmulated} emulationAction
    */
   dualScreenDeviceEmulated(emulationAction) {
@@ -264,6 +301,16 @@ export class UserMetrics {
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.ComputedStyleGrouping, code, size);
     Common.EventTarget.fireEvent(EnumeratedHistogram.ComputedStyleGrouping, {value: code});
   }
+
+  /**
+   * @param {!GridOverlayOpener} gridOverlayOpener
+   */
+  gridOverlayOpenedFrom(gridOverlayOpener) {
+    const size = Object.keys(GridOverlayOpener).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+        EnumeratedHistogram.GridOverlayOpenedFrom, gridOverlayOpener, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.GridOverlayOpenedFrom, {value: gridOverlayOpener});
+  }
 }
 
 // Codes below are used to collect UMA histograms in the Chromium port.
@@ -316,6 +363,10 @@ export const Action = {
   CaptureCssOverviewClicked: 41,
   VirtualAuthenticatorEnvironmentEnabled: 42,
   SourceOrderViewActivated: 43,
+  UserShortcutAdded: 44,
+  ShortcutRemoved: 45,
+  ShortcutModified: 46,
+  CustomPropertyLinkClicked: 47,
 };
 
 /** @type {!Object<string, number>} */
@@ -569,12 +620,40 @@ export const DevtoolsExperiments = {
   'wasmDWARFDebugging': 31,
   'dualScreenSupport': 32,
   'cssGridFeatures': 33,
-  'movableTabs': 34,
-  '__lastValidEnumPosition': 34,
+  'keyboardShortcutEditor': 35,
+  '__lastValidEnumPosition': 35,
 };
 
 /** @type {!Object<string, number>} */
 export const ComputedStyleGroupingState = {
   'enabled': 0,
   'disabled': 1,
+};
+
+/** @type {!Object<string, number>} */
+export const IssueExpanded = {
+  CrossOriginEmbedderPolicy: 0,
+  MixedContent: 1,
+  SameSiteCookie: 2,
+  HeavyAd: 3,
+  ContentSecurityPolicy: 4,
+  Other: 5
+};
+
+/** @type {!Object<string, number>} */
+export const IssueResourceOpened = {
+  CrossOriginEmbedderPolicyRequest: 0,
+  CrossOriginEmbedderPolicyElement: 1,
+  MixedContentRequest: 2,
+  SameSiteCookieCookie: 3,
+  SameSiteCookieRequest: 4,
+  HeavyAdElement: 5,
+  ContentSecurityPolicyDirective: 6,
+  ContentSecurityPolicyElement: 7
+};
+
+/** @enum {number} */
+export const GridOverlayOpener = {
+  Adorner: 0,
+  LayoutPane: 1,
 };

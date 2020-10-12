@@ -177,6 +177,19 @@ export const $textContent = async (textContent: string, root?: puppeteer.JSHandl
   return element;
 };
 
+/**
+ * Search for all elements based on their textContent
+ *
+ * @param textContent The text content to search for.
+ * @param root The root of the search.
+ */
+export const $$textContent = async (textContent: string, root?: puppeteer.JSHandle) => {
+  const {frontend} = getBrowserAndPages();
+  const rootElement = root ? root as puppeteer.ElementHandle : frontend;
+  const element = await rootElement.$$('pierceShadowText/' + textContent);
+  return element;
+};
+
 export const timeout = (duration: number) => new Promise(resolve => setTimeout(resolve, duration));
 
 export const waitFor = async (selector: string, root?: puppeteer.JSHandle, asyncScope = new AsyncScope()) => {
@@ -201,6 +214,18 @@ export const waitForElementWithTextContent =
       return asyncScope.exec(() => waitForFunction(async () => {
                                const elem = await $textContent(textContent, root);
                                return elem || undefined;
+                             }, asyncScope));
+    };
+
+export const waitForElementsWithTextContent =
+    (textContent: string, root?: puppeteer.JSHandle, asyncScope = new AsyncScope()) => {
+      return asyncScope.exec(() => waitForFunction(async () => {
+                               const elems = await $$textContent(textContent, root);
+                               if (elems && elems.length) {
+                                 return elems;
+                               }
+
+                               return undefined;
                              }, asyncScope));
     };
 
@@ -296,6 +321,79 @@ export const step = async (description: string, step: Function) => {
       throw error;
     }
   }
+};
+
+export const waitForAnimationFrame = async () => {
+  const {target} = getBrowserAndPages();
+
+  await target.waitForFunction(() => {
+    return new Promise(resolve => {
+      requestAnimationFrame(resolve);
+    });
+  });
+};
+
+export const activeElement = async () => {
+  const {target} = getBrowserAndPages();
+
+  await waitForAnimationFrame();
+
+  return target.evaluateHandle(() => {
+    let activeElement = document.activeElement;
+
+    while (activeElement && activeElement.shadowRoot) {
+      activeElement = activeElement.shadowRoot.activeElement;
+    }
+
+    return activeElement;
+  });
+};
+
+export const activeElementTextContent = async () => {
+  const element = await activeElement();
+  return element.evaluate(node => node.textContent);
+};
+
+export const tabForward = async () => {
+  const {target} = getBrowserAndPages();
+
+  await target.keyboard.press('Tab');
+};
+
+export const tabBackward = async () => {
+  const {target} = getBrowserAndPages();
+
+  await target.keyboard.down('Shift');
+  await target.keyboard.press('Tab');
+  await target.keyboard.up('Shift');
+};
+
+export const selectTextFromNodeToNode = async (
+    from: puppeteer.JSHandle|Promise<puppeteer.JSHandle>, to: puppeteer.JSHandle|Promise<puppeteer.JSHandle>,
+    direction: 'up'|'down') => {
+  const {target} = getBrowserAndPages();
+
+  // The clipboard api does not allow you to copy, unless the tab is focused.
+  await target.bringToFront();
+
+  return target.evaluate(async (from, to, direction) => {
+    const selection = from.getRootNode().getSelection();
+    const range = document.createRange();
+    if (direction === 'down') {
+      range.setStartBefore(from);
+      range.setEndAfter(to);
+    } else {
+      range.setStartBefore(to);
+      range.setEndAfter(from);
+    }
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    document.execCommand('copy');
+
+    return navigator.clipboard.readText();
+  }, await from, await to, direction);
 };
 
 export const closePanelTab = async (panelTabSelector: string) => {

@@ -28,9 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 export const HeapSnapshotProgressEvent = {
   Update: 'ProgressUpdate',
   BrokenSnapshot: 'BrokenSnapshot'
@@ -196,7 +193,7 @@ export class AggregateForDiff {
   constructor() {
     /** @type {!Array.<number>} */
     this.indexes = [];
-    /** @type {!Array.<string>} */
+    /** @type {!Array.<number>} */
     this.ids = [];
     /** @type {!Array.<number>} */
     this.selfSizes = [];
@@ -220,6 +217,10 @@ export class Diff {
     this.deletedIndexes = [];
     /** @type {!Array.<number>} */
     this.addedIndexes = [];
+    /** @type {number} */
+    this.countDelta;
+    /** @type {number} */
+    this.sizeDelta;
   }
 }
 

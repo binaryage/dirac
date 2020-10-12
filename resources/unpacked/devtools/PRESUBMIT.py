@@ -189,13 +189,16 @@ def _CheckDevToolsStyleJS(input_api, output_api):
 
     front_end_directory = input_api.os_path.join(
         input_api.PresubmitLocalPath(), 'front_end')
+    inspector_overlay_directory = input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'inspector_overlay')
     test_directory = input_api.os_path.join(input_api.PresubmitLocalPath(),
                                             'test')
     scripts_directory = input_api.os_path.join(input_api.PresubmitLocalPath(),
                                                'scripts')
 
     default_linted_directories = [
-        front_end_directory, test_directory, scripts_directory
+        front_end_directory, test_directory, scripts_directory,
+        inspector_overlay_directory
     ]
 
     eslint_related_files = [
@@ -234,7 +237,11 @@ def _CheckDevToolsStyleCSS(input_api, output_api):
 
     front_end_directory = input_api.os_path.join(
         input_api.PresubmitLocalPath(), 'front_end')
-    default_linted_directories = [front_end_directory]
+    inspector_overlay_directory = input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'inspector_overlay')
+    default_linted_directories = [
+        front_end_directory, inspector_overlay_directory
+    ]
 
     scripts_directory = input_api.os_path.join(input_api.PresubmitLocalPath(),
                                                'scripts')
@@ -333,6 +340,30 @@ def _CheckGeneratedFiles(input_api, output_api):
     return _ExecuteSubProcess(input_api, output_api, generate_protocol_resources_path, [], results)
 
 
+def _CollectStrings(input_api, output_api):
+    devtools_root = input_api.PresubmitLocalPath()
+    devtools_front_end = input_api.os_path.join(devtools_root, 'front_end')
+    affected_front_end_files = _getAffectedFiles(input_api,
+                                                 [devtools_front_end], ['D'],
+                                                 ['.js'])
+    if len(affected_front_end_files) == 0:
+        return [
+            output_api.PresubmitNotifyResult(
+                'No affected files to run collect-strings')
+        ]
+
+    results = [
+        output_api.PresubmitNotifyResult('Collecting strings from front_end:')
+    ]
+    script_path = input_api.os_path.join(devtools_root, 'third_party', 'i18n',
+                                         'collect-strings.js')
+    results.extend(_checkWithNodeScript(input_api, output_api, script_path))
+    results.append(
+        output_api.PresubmitNotifyResult(
+            'Please commit en-US.json if changes are generated.'))
+    return results
+
+
 def _CheckNoUncheckedFiles(input_api, output_api):
     results = []
     process = input_api.subprocess.Popen(['git', 'diff', '--exit-code'],
@@ -396,17 +427,28 @@ def _CheckComponentBridgesUpToDate(input_api, output_api):
     return results
 
 
+def _RunCannedChecks(input_api, output_api):
+    results = []
+    results.extend(
+        input_api.canned_checks.CheckOwnersFormat(input_api, output_api))
+    results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
+    results.extend(
+        input_api.canned_checks.CheckChangeHasNoCrAndHasOnlyOneEol(
+            input_api, output_api))
+    results.extend(
+        input_api.canned_checks.CheckChangeHasNoStrayWhitespace(
+            input_api, output_api))
+    results.extend(
+        input_api.canned_checks.CheckGenderNeutral(input_api, output_api))
+    return results
+
+
 def _CommonChecks(input_api, output_api):
     """Checks common to both upload and commit."""
     results = []
     results.extend(
         input_api.canned_checks.CheckAuthorizedAuthor(
             input_api, output_api, bot_allowlist=[AUTOROLL_ACCOUNT]))
-    results.extend(input_api.canned_checks.CheckOwnersFormat(input_api, output_api))
-    results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
-    results.extend(input_api.canned_checks.CheckChangeHasNoCrAndHasOnlyOneEol(input_api, output_api))
-    results.extend(input_api.canned_checks.CheckChangeHasNoStrayWhitespace(input_api, output_api))
-    results.extend(input_api.canned_checks.CheckGenderNeutral(input_api, output_api))
     results.extend(_CheckBuildGN(input_api, output_api))
     results.extend(_CheckExperimentTelemetry(input_api, output_api))
     results.extend(_CheckGeneratedFiles(input_api, output_api))
@@ -417,6 +459,16 @@ def _CommonChecks(input_api, output_api):
     results.extend(_CheckOptimizeSVGHashes(input_api, output_api))
     results.extend(_CheckChangesAreExclusiveToDirectory(input_api, output_api))
     results.extend(_CheckComponentBridgesUpToDate(input_api, output_api))
+    # Run the canned checks from `depot_tools` after the custom DevTools checks.
+    # The canned checks for example check that lines have line endings. The
+    # DevTools presubmit checks automatically fix these issues. If we would run
+    # the canned checks before the DevTools checks, they would erroneously conclude
+    # that there are issues in the code. Since the canned checks are allowed to be
+    # ignored, a confusing message is shown that asks if the failed presubmit can
+    # be continued regardless. By fixing the issues before we reach the canned checks,
+    # we don't show the message to suppress these errors, which would otherwise be
+    # causing CQ to fail.
+    results.extend(_RunCannedChecks(input_api, output_api))
     results.extend(_CheckNoUncheckedFiles(input_api, output_api))
     results.extend(_CheckForTooLargeFiles(input_api, output_api))
     return results
@@ -426,6 +478,8 @@ def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CommonChecks(input_api, output_api))
     results.extend(_CheckDevtoolsLocalization(input_api, output_api))
+    # Run collectStrings after localization check that cleans up unused strings
+    results.extend(_CollectStrings(input_api, output_api))
     return results
 
 
@@ -433,6 +487,8 @@ def CheckChangeOnCommit(input_api, output_api):
     results = []
     results.extend(_CommonChecks(input_api, output_api))
     results.extend(_CheckDevtoolsLocalization(input_api, output_api, True))
+    # Run collectStrings after localization check that cleans up unused strings
+    results.extend(_CollectStrings(input_api, output_api))
     results.extend(input_api.canned_checks.CheckChangeHasDescription(input_api, output_api))
     return results
 
@@ -511,6 +567,10 @@ def _getFilesToLint(input_api, output_api, lint_config_files,
         files_to_lint = _getAffectedFiles(input_api,
                                           default_linted_directories, ['D'],
                                           accepted_endings)
+
+        # Exclude front_end/third_party files.
+        files_to_lint = filter(lambda path: "third_party" not in path,
+                               files_to_lint)
 
         if len(files_to_lint) is 0:
             results.append(

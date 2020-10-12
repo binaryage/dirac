@@ -6,10 +6,12 @@ import * as Platform from '../platform/platform.js';
 
 import * as App from './App.js';
 import * as AppProvider from './AppProvider.js';
+import * as Base64 from './Base64.js';
 import * as CharacterIdMap from './CharacterIdMap.js';
 import * as Color from './Color.js';
 import * as ColorUtils from './ColorUtils.js';
 import * as Console from './Console.js';
+import * as Debouncer from './Debouncer.js';
 import * as EventTarget from './EventTarget.js';
 import * as JavaScriptMetaData from './JavaScriptMetaData.js';
 import * as Lazy from './Lazy.js';
@@ -48,10 +50,12 @@ export let settings;
 export {
   App,
   AppProvider,
+  Base64,
   CharacterIdMap,
   Color,
   ColorUtils,
   Console,
+  Debouncer,
   EventTarget,
   JavaScriptMetaData,
   Lazy,

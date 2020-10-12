@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -21,7 +18,8 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
 
     /** @type {!Map<string, !Item>} */
     this._categories = new Map();
-    const categories = self.SDK.domDebuggerManager.eventListenerBreakpoints().map(breakpoint => breakpoint.category());
+    const categories = SDK.DOMDebuggerModel.DOMDebuggerManager.instance().eventListenerBreakpoints().map(
+        breakpoint => breakpoint.category());
     categories.sort();
     for (const category of categories) {
       if (!this._categories.has(category)) {
@@ -30,12 +28,14 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
     }
     if (categories.length > 0) {
       const firstCategory = this._categories.get(categories[0]);
-      firstCategory.element.select();
+      if (firstCategory) {
+        firstCategory.element.select();
+      }
     }
 
     /** @type {!Map<!SDK.DOMDebuggerModel.EventListenerBreakpoint, !Item>} */
     this._breakpoints = new Map();
-    for (const breakpoint of self.SDK.domDebuggerManager.eventListenerBreakpoints()) {
+    for (const breakpoint of SDK.DOMDebuggerModel.DOMDebuggerManager.instance().eventListenerBreakpoints()) {
       this._createBreakpoint(breakpoint);
     }
 
@@ -64,7 +64,10 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
     const treeElement = new UI.TreeOutline.TreeElement(labelNode);
     treeElement.listItemElement.addEventListener('keydown', event => {
       if (event.key === ' ') {
-        this._categories.get(name).checkbox.click();
+        const category = this._categories.get(name);
+        if (category) {
+          category.checkbox.click();
+        }
         event.consume(true);
       }
     });
@@ -87,15 +90,20 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
     const treeElement = new UI.TreeOutline.TreeElement(labelNode);
     treeElement.listItemElement.addEventListener('keydown', event => {
       if (event.key === ' ') {
-        this._breakpoints.get(breakpoint).checkbox.click();
+        const breakpointToClick = this._breakpoints.get(breakpoint);
+        if (breakpointToClick) {
+          breakpointToClick.checkbox.click();
+        }
         event.consume(true);
       }
     });
     labelNode.checkboxElement.addEventListener('focus', () => treeElement.listItemElement.focus());
     UI.ARIAUtils.setChecked(treeElement.listItemElement, false);
     treeElement.listItemElement.createChild('div', 'breakpoint-hit-marker');
-    this._categories.get(breakpoint.category()).element.appendChild(treeElement);
-
+    const category = this._categories.get(breakpoint.category());
+    if (category) {
+      category.element.appendChild(treeElement);
+    }
     this._breakpoints.set(breakpoint, {element: treeElement, checkbox: labelNode.checkboxElement});
   }
 
@@ -113,17 +121,23 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
       return;
     }
 
-    const breakpoint =
-        self.SDK.domDebuggerManager.resolveEventListenerBreakpoint(/** @type {!Object} */ (details.auxData));
+    const breakpoint = SDK.DOMDebuggerModel.DOMDebuggerManager.instance().resolveEventListenerBreakpoint(
+        /** @type {!{eventName: string, targetName: string}} */ (details.auxData));
     if (!breakpoint) {
       return;
     }
 
     UI.ViewManager.ViewManager.instance().showView('sources.eventListenerBreakpoints');
-    this._categories.get(breakpoint.category()).element.expand();
-    this._highlightedElement = this._breakpoints.get(breakpoint).element.listItemElement;
-    UI.ARIAUtils.setDescription(this._highlightedElement, ls`breakpoint hit`);
-    this._highlightedElement.classList.add('breakpoint-hit');
+    const category = this._categories.get(breakpoint.category());
+    if (category) {
+      category.element.expand();
+    }
+    const matchingBreakpoint = this._breakpoints.get(breakpoint);
+    if (matchingBreakpoint) {
+      this._highlightedElement = matchingBreakpoint.element.listItemElement;
+      UI.ARIAUtils.setDescription(this._highlightedElement, ls`breakpoint hit`);
+      this._highlightedElement.classList.add('breakpoint-hit');
+    }
   }
 
   /**
@@ -131,13 +145,20 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
    */
   _categoryCheckboxClicked(category) {
     const item = this._categories.get(category);
+    if (!item) {
+      return;
+    }
+
     const enabled = item.checkbox.checked;
     UI.ARIAUtils.setChecked(item.element.listItemElement, enabled);
 
     for (const breakpoint of this._breakpoints.keys()) {
       if (breakpoint.category() === category) {
         breakpoint.setEnabled(enabled);
-        this._breakpoints.get(breakpoint).checkbox.checked = enabled;
+        const matchingBreakpoint = this._breakpoints.get(breakpoint);
+        if (matchingBreakpoint) {
+          matchingBreakpoint.checkbox.checked = enabled;
+        }
       }
     }
   }
@@ -147,6 +168,10 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
    */
   _breakpointCheckboxClicked(breakpoint) {
     const item = this._breakpoints.get(breakpoint);
+    if (!item) {
+      return;
+    }
+
     breakpoint.setEnabled(item.checkbox.checked);
     UI.ARIAUtils.setChecked(item.element.listItemElement, item.checkbox.checked);
 
@@ -163,6 +188,9 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
     }
 
     const category = this._categories.get(breakpoint.category());
+    if (!category) {
+      return;
+    }
     category.checkbox.checked = hasEnabled;
     category.checkbox.indeterminate = hasEnabled && hasDisabled;
     if (category.checkbox.indeterminate) {
@@ -173,5 +201,6 @@ export class EventListenerBreakpointsSidebarPane extends UI.Widget.VBox {
   }
 }
 
-/** @typedef {!{element: !UI.TreeOutline.TreeElement, checkbox: !Element}} */
+/** @typedef {!{element: !UI.TreeOutline.TreeElement, checkbox: !HTMLInputElement}} */
+// @ts-ignore typedef
 export let Item;

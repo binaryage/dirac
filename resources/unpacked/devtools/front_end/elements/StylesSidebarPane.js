@@ -81,6 +81,8 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     this._pendingWidget = null;
     /** @type {?UI.Toolbar.ToolbarToggle} */
     this._pendingWidgetToggle = null;
+    /** @type {?UI.Toolbar.Toolbar} */
+    this._toolbar = null;
     this._toolbarPaneElement = this._createStylesSidebarToolbar();
     this._computedStyleModel = new ComputedStyleModel();
 
@@ -95,8 +97,10 @@ export class StylesSidebarPane extends ElementsSidebarPane {
 
     this._swatchPopoverHelper = new InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper();
     this._linkifier = new Components.Linkifier.Linkifier(_maxLinkLength, /* useLinkDecorator */ true);
-    /** @type {?StylePropertyHighlighter} */
-    this._decorator = null;
+    /** @type {!StylePropertyHighlighter} */
+    this._decorator = new StylePropertyHighlighter(this);
+    /** @type {?SDK.CSSProperty.CSSProperty} */
+    this._lastRevealedProperty = null;
     this._userOperation = false;
     this._isEditingStyle = false;
     /** @type {?RegExp} */
@@ -254,9 +258,13 @@ export class StylesSidebarPane extends ElementsSidebarPane {
    * @param {!SDK.CSSProperty.CSSProperty} cssProperty
    */
   revealProperty(cssProperty) {
-    this._decorator = new StylePropertyHighlighter(this, cssProperty);
-    this._decorator.perform();
+    this._decorator.highlightProperty(cssProperty);
+    this._lastRevealedProperty = cssProperty;
     this.update();
+  }
+
+  jumpToProperty(propertyName) {
+    this._decorator.findAndHighlightPropertyName(propertyName);
   }
 
   forceUpdate() {
@@ -643,9 +651,9 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     }
 
     this._nodeStylesUpdatedForTest(/** @type {!SDK.DOMModel.DOMNode} */ (node), true);
-    if (this._decorator) {
-      this._decorator.perform();
-      this._decorator = null;
+    if (this._lastRevealedProperty) {
+      this._decorator.highlightProperty(this._lastRevealedProperty);
+      this._lastRevealedProperty = null;
     }
 
     // Record the elements tool load time after the sidepane has loaded.
@@ -841,6 +849,7 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     const toolbar = new UI.Toolbar.Toolbar('styles-pane-toolbar', hbox);
     toolbar.makeToggledGray();
     toolbar.appendItemsAtLocation('styles-sidebarpane-toolbar');
+    this._toolbar = toolbar;
     const toolbarPaneContainer = container.createChild('div', 'styles-sidebar-toolbar-pane-container');
     const toolbarPaneContent = toolbarPaneContainer.createChild('div', 'styles-sidebar-toolbar-pane');
 
@@ -865,6 +874,15 @@ export class StylesSidebarPane extends ElementsSidebarPane {
 
     if (widget && toggle) {
       toggle.setToggled(true);
+    }
+  }
+
+  /**
+   * @param {!UI.Toolbar.ToolbarItem} item
+   */
+  appendToolbarItem(item) {
+    if (this._toolbar) {
+      this._toolbar.appendToolbarItem(item);
     }
   }
 
@@ -1097,6 +1115,16 @@ export class StylePropertiesSection {
     const closeBrace = this._innerElement.createChild('div', 'sidebar-pane-closing-brace');
     closeBrace.textContent = '}';
 
+    if (this._style.parentRule) {
+      const newRuleButton =
+          new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Insert Style Rule Below'), 'largeicon-add');
+      newRuleButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._onNewRuleClick, this);
+      newRuleButton.element.tabIndex = -1;
+      const expandToolbar = new UI.Toolbar.Toolbar('sidebar-pane-section-toolbar', this._innerElement);
+      expandToolbar.appendToolbarItem(newRuleButton);
+      UI.ARIAUtils.markAsHidden(expandToolbar.element);
+    }
+
     this._selectorElement.addEventListener('click', this._handleSelectorClick.bind(this), false);
     this.element.addEventListener('mousedown', this._handleEmptySpaceMouseDown.bind(this), false);
     this.element.addEventListener('click', this._handleEmptySpaceClick.bind(this), false);
@@ -1154,7 +1182,7 @@ export class StylePropertiesSection {
     const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
 
     if (header && header.isMutable) {
-      const label = header.isInline ? '<style>' : Common.UIString.UIString('constructed stylesheet');
+      const label = header.isConstructed ? Common.UIString.UIString('constructed stylesheet') : '<style>';
       if (header.ownerNode) {
         const link = linkifyDeferredNodeReference(header.ownerNode);
         link.textContent = label;
@@ -1416,6 +1444,17 @@ export class StylePropertiesSection {
     } while (curElement && !curElement._section);
 
     return curElement ? curElement._section : null;
+  }
+
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
+  _onNewRuleClick(event) {
+    event.data.consume();
+    const rule = this._style.parentRule;
+    const range =
+        TextUtils.TextRange.TextRange.createFromLocation(rule.style.range.endLine, rule.style.range.endColumn + 1);
+    this._parentPane._addBlankSection(this, /** @type {string} */ (rule.styleSheetId), range);
   }
 
   /**
@@ -1857,11 +1896,9 @@ export class StylePropertiesSection {
   }
 
   /**
-   * @param {!Element} editor
-   * @param {!Event} blurEvent
    * @return {boolean}
    */
-  _editingMediaBlurHandler(editor, blurEvent) {
+  _editingMediaBlurHandler() {
     return true;
   }
 

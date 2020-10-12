@@ -361,6 +361,13 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
+   * @return {string}
+   */
+  securityOrigin() {
+    return this._parsedURL.securityOrigin();
+  }
+
+  /**
    * @param {!Protocol.Network.SecurityDetails} securityDetails
    */
   setSecurityDetails(securityDetails) {
@@ -1576,6 +1583,14 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
    */
   blockedResponseCookies() {
     return this._blockedResponseCookies;
+  }
+
+  /**
+   * @return {boolean}
+   */
+  redirectSourceSignedExchangeInfoHasNoErrors() {
+    return !!this._redirectSource && !!this._redirectSource._signedExchangeInfo &&
+        !this._redirectSource._signedExchangeInfo.errors;
   }
 }
 

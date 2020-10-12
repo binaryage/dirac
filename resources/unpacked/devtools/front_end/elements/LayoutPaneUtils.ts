@@ -37,4 +37,7 @@ export interface LayoutElement {
   enabled: boolean;
   reveal: () => void;
   toggle: (value: boolean) => void;
+  setColor: (value: string) => void;
+  highlight: () => void;
+  hideHighlight: () => void;
 }

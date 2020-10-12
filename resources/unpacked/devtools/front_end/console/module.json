@@ -158,7 +158,7 @@
     {
       "type": "setting",
       "category": "Console",
-      "title": "Group similar",
+      "title": "Group similar messages in console",
       "settingName": "consoleGroupSimilar",
       "settingType": "boolean",
       "defaultValue": true,
@@ -251,6 +251,5 @@
     "dirac-codemirror.css",
     "dirac-theme.css",
     "dirac-prompt.css"
-  ],
-  "skip_rollup": true
+  ]
 }

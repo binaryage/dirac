@@ -632,6 +632,16 @@ export namespace ProtocolMapping {
      */
     'Accessibility.getFullAXTree': {paramsType: []; returnType: Protocol.Accessibility.GetFullAXTreeResponse;};
     /**
+     * Query a DOM node's accessibility subtree for accessible name and role.
+     * This command computes the name and role for all nodes in the subtree, including those that are
+     * ignored for accessibility, and returns those that mactch the specified name and role. If no DOM
+     * node is specified, or the DOM node does not exist, the command returns an error. If neither
+     * `accessibleName` or `role` is specified, it returns all the accessibility nodes in the subtree.
+     */
+    'Accessibility.queryAXTree': {
+      paramsType: [Protocol.Accessibility.QueryAXTreeRequest?]; returnType: Protocol.Accessibility.QueryAXTreeResponse;
+    };
+    /**
      * Disables animation domain notifications.
      */
     'Animation.disable': {paramsType: []; returnType: void;};
@@ -1796,6 +1806,10 @@ export namespace ProtocolMapping {
      */
     'Network.setExtraHTTPHeaders': {paramsType: [Protocol.Network.SetExtraHTTPHeadersRequest]; returnType: void;};
     /**
+     * Specifies whether to sned a debug header to all outgoing requests.
+     */
+    'Network.setAttachDebugHeader': {paramsType: [Protocol.Network.SetAttachDebugHeaderRequest]; returnType: void;};
+    /**
      * Sets the requests to intercept that match the provided patterns and optionally resource types.
      * Deprecated, please use Fetch.enable instead.
      */
@@ -1810,6 +1824,13 @@ export namespace ProtocolMapping {
     'Network.getSecurityIsolationStatus': {
       paramsType: [Protocol.Network.GetSecurityIsolationStatusRequest?];
       returnType: Protocol.Network.GetSecurityIsolationStatusResponse;
+    };
+    /**
+     * Fetches the resource and returns the content.
+     */
+    'Network.loadNetworkResource': {
+      paramsType: [Protocol.Network.LoadNetworkResourceRequest];
+      returnType: Protocol.Network.LoadNetworkResourceResponse;
     };
     /**
      * Disables domain notifications.
@@ -2753,6 +2774,18 @@ export namespace ProtocolMapping {
      */
     'Profiler.takeTypeProfile': {paramsType: []; returnType: Protocol.Profiler.TakeTypeProfileResponse;};
     /**
+     * Enable counters collection.
+     */
+    'Profiler.enableCounters': {paramsType: []; returnType: void;};
+    /**
+     * Disable counters collection.
+     */
+    'Profiler.disableCounters': {paramsType: []; returnType: void;};
+    /**
+     * Retrieve counters.
+     */
+    'Profiler.getCounters': {paramsType: []; returnType: Protocol.Profiler.GetCountersResponse;};
+    /**
      * Enable run time call stats collection.
      */
     'Profiler.enableRuntimeCallStats': {paramsType: []; returnType: void;};
@@ -2857,8 +2890,6 @@ export namespace ProtocolMapping {
      * If executionContextId is empty, adds binding with the given name on the
      * global objects of all inspected contexts, including those created later,
      * bindings survive reloads.
-     * If executionContextId is specified, adds binding only on global object of
-     * given execution context.
      * Binding function takes exactly one argument, this argument should be string,
      * in case of any other input, function throws an exception.
      * Each binding function call produces Runtime.bindingCalled notification.

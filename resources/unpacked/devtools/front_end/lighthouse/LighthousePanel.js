@@ -8,6 +8,7 @@
 import * as Common from '../common/common.js';
 import * as Emulation from '../emulation/emulation.js';  // eslint-disable-line no-unused-vars
 import * as HostModule from '../host/host.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -32,6 +33,7 @@ export class LighthousePanel extends UI.Panel.Panel {
     this._startView = new StartView(this._controller);
     this._statusView = new StatusView(this._controller);
 
+    this._warningText = null;
     this._unauditableExplanation = null;
     this._cachedRenderedReports = new Map();
 
@@ -40,6 +42,7 @@ export class LighthousePanel extends UI.Panel.Panel {
         this._handleDrop.bind(this));
 
     this._controller.addEventListener(Events.PageAuditabilityChanged, this._refreshStartAuditUI.bind(this));
+    this._controller.addEventListener(Events.PageWarningsChanged, this._refreshWarningsUI.bind(this));
     this._controller.addEventListener(Events.AuditProgressChanged, this._refreshStatusUI.bind(this));
     this._controller.addEventListener(Events.RequestLighthouseStart, event => {
       this._startLighthouse(event);
@@ -53,6 +56,23 @@ export class LighthousePanel extends UI.Panel.Panel {
     this._renderStartView();
 
     this._controller.recomputePageAuditability();
+  }
+
+  static getEvents() {
+    return Events;
+  }
+
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} evt
+   */
+  _refreshWarningsUI(evt) {
+    // PageWarningsChanged fires multiple times during an audit, which we want to ignore.
+    if (this._isLHAttached) {
+      return;
+    }
+
+    this._warningText = evt.data.warning;
+    this._startView.setWarningText(evt.data.warning);
   }
 
   /**
@@ -148,6 +168,7 @@ export class LighthousePanel extends UI.Panel.Panel {
     if (!this._unauditableExplanation) {
       this._startView.focusStartButton();
     }
+    this._startView.setWarningText(this._warningText);
 
     this._newButton.setEnabled(false);
     this._refreshToolbarUI();
@@ -198,7 +219,7 @@ export class LighthousePanel extends UI.Panel.Panel {
     const dom = new DOM(/** @type {!Document} */ (this._auditResultsElement.ownerDocument));
     const renderer = new LighthouseReportRenderer(dom);
 
-    const templatesHTML = self.Runtime.cachedResources['third_party/lighthouse/report-assets/templates.html'];
+    const templatesHTML = Root.Runtime.cachedResources.get('third_party/lighthouse/report-assets/templates.html');
     const templatesDOM = new DOMParser().parseFromString(templatesHTML, 'text/html');
     if (!templatesDOM) {
       return;

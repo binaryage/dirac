@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Network from '../network/network.js';
 import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
@@ -19,27 +20,26 @@ export class FrameDetailsView extends UI.ThrottledWidget.ThrottledWidget {
    */
   constructor(frame) {
     super();
+    this.registerRequiredCSS('resources/frameDetailsReportView.css');
     this._frame = frame;
+    this.contentElement.classList.add('frame-details-container');
+
     this._reportView = new UI.ReportView.ReportView(frame.displayName());
     this._reportView.registerRequiredCSS('resources/frameDetailsReportView.css');
     this._reportView.show(this.contentElement);
+    this._reportView.element.classList.add('frame-details-report-container');
 
     this._generalSection = this._reportView.appendSection(ls`Document`);
     this._urlFieldValue = this._generalSection.appendField(ls`URL`);
+    this._urlStringElement = this._urlFieldValue.createChild('div', 'text-ellipsis');
     this._unreachableURL = this._generalSection.appendField(ls`Unreachable URL`);
-    this._originFieldValue = this._generalSection.appendField(ls`Origin`);
-
-    const ownerElementLinkContainer = this._generalSection.appendField(ls`Owner Element`);
-    this._ownerElementLink = ownerElementLinkContainer.createChild('div', 'report-field-value-link devtools-link');
-    this._ownerElementLink.title = ls`Click to reveal in Elements panel`;
+    const originFieldValue = this._generalSection.appendField(ls`Origin`);
+    this._originStringElement = originFieldValue.createChild('div', 'text-ellipsis');
+    this._ownerFieldValue = this._generalSection.appendField(ls`Owner Element`);
     /** @type {?SDK.DOMModel.DOMNode} */
     this._ownerDomNode = null;
-    this._ownerElementLink.addEventListener('click', () => {
-      if (this._ownerDomNode) {
-        Common.Revealer.reveal(this._ownerDomNode);
-      }
-    });
     this._adStatus = this._generalSection.appendField(ls`Ad Status`);
+
     this._isolationSection = this._reportView.appendSection(ls`Security & Isolation`);
     this._secureContext = this._isolationSection.appendField(ls`Secure Context`);
     this._coepPolicy = this._isolationSection.appendField(ls`Cross-Origin Embedder Policy`);
@@ -52,44 +52,98 @@ export class FrameDetailsView extends UI.ThrottledWidget.ThrottledWidget {
    * @return {!Promise<?>}
    */
   async doUpdate() {
-    this._urlFieldValue.textContent = this._frame.url;
+    this._urlFieldValue.removeChildren();
+    this._urlStringElement.textContent = this._frame.url;
+    this._urlStringElement.title = this._frame.url;
+    this._urlFieldValue.appendChild(this._urlStringElement);
     if (!this._frame.unreachableUrl()) {
-      const revealSources = UI.Icon.Icon.create('mediumicon-sources-panel', 'icon-link devtools-link');
-      this._urlFieldValue.appendChild(revealSources);
-      revealSources.title = ls`Click to reveal in Sources panel`;
-      revealSources.addEventListener('click', () => {
-        const sourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(this._frame.url);
-        Common.Revealer.reveal(sourceCode);
-      });
+      const sourceCode = this.uiSourceCodeForFrame(this._frame);
+      const revealSource = FrameDetailsView.linkifyIcon(
+          'mediumicon-sources-panel', ls`Click to reveal in Sources panel`, () => Common.Revealer.reveal(sourceCode));
+      this._urlFieldValue.appendChild(revealSource);
     }
     FrameDetailsView.maybeAppendLinkToRequest(this._urlFieldValue, this._frame.resourceForURL(this._frame.url));
     this._maybeAppendLinkForUnreachableUrl();
     if (this._frame.securityOrigin && this._frame.securityOrigin !== '://') {
-      this._originFieldValue.textContent = this._frame.securityOrigin;
+      this._originStringElement.textContent = this._frame.securityOrigin;
+      this._originStringElement.title = this._frame.securityOrigin;
       this._generalSection.setFieldVisible(ls`Origin`, true);
     } else {
       this._generalSection.setFieldVisible(ls`Origin`, false);
     }
     this._ownerDomNode = await this._frame.getOwnerDOMNodeOrDocument();
     this._updateAdStatus();
+    this._ownerFieldValue.removeChildren();
     if (this._ownerDomNode) {
-      this._ownerElementLink.textContent = `<${this._ownerDomNode.nodeName().toLocaleLowerCase()}>`;
-      const icon = UI.Icon.Icon.create('mediumicon-elements-panel', 'icon-link devtools-link');
-      this._ownerElementLink.appendChild(icon);
-    } else {
-      this._ownerElementLink.removeChildren();
+      const revealElement = FrameDetailsView.linkifyIcon(
+          'mediumicon-elements-panel', ls`Click to reveal in Elements panel`,
+          () => Common.Revealer.reveal(this._ownerDomNode));
+      const elementLabel = document.createElement('span');
+      elementLabel.textContent = `<${this._ownerDomNode.nodeName().toLocaleLowerCase()}>`;
+      revealElement.insertBefore(elementLabel, revealElement.firstChild);
+      this._ownerFieldValue.appendChild(revealElement);
     }
     await this._updateCoopCoepStatus();
     this._updateContextStatus();
   }
 
+  /**
+   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
+   * @return {?Workspace.UISourceCode.UISourceCode}
+   */
+  uiSourceCodeForFrame(frame) {
+    for (const project of Workspace.Workspace.WorkspaceImpl.instance().projects()) {
+      const projectTarget = Bindings.NetworkProject.NetworkProject.getTargetForProject(project);
+      if (projectTarget && projectTarget === frame.resourceTreeModel().target()) {
+        const uiSourceCode = project.uiSourceCodeForURL(frame.url);
+        if (uiSourceCode) {
+          return uiSourceCode;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   *
+   * @param {!HTMLElement} field
+   * @param {function((!Protocol.Network.CrossOriginEmbedderPolicyValue|!Protocol.Network.CrossOriginOpenerPolicyValue)):boolean} isEnabled
+   * @param {!Protocol.Network.CrossOriginEmbedderPolicyStatus|!Protocol.Network.CrossOriginOpenerPolicyStatus} info
+   */
+  static fillCrossOriginPolicy(field, isEnabled, info) {
+    const enabled = isEnabled(info.value);
+    field.textContent = enabled ? info.value : info.reportOnlyValue;
+    if (!enabled && isEnabled(info.reportOnlyValue)) {
+      const reportOnly = document.createElement('span');
+      reportOnly.classList.add('inline-comment');
+      reportOnly.textContent = 'report-only';
+      field.appendChild(reportOnly);
+    }
+    const endpoint = enabled ? info.reportingEndpoint : info.reportOnlyReportingEndpoint;
+    if (endpoint) {
+      const reportingEndpointPrefix = field.createChild('span', 'inline-name');
+      reportingEndpointPrefix.textContent = ls`reporting to`;
+      const reportingEndpointName = field.createChild('span');
+      reportingEndpointName.textContent = endpoint;
+    }
+  }
+
   async _updateCoopCoepStatus() {
-    const info = await this._frame.resourceTreeModel()
-                     .target()
-                     .model(SDK.NetworkManager.NetworkManager)
-                     .getSecurityIsolationStatus(this._frame.id);
-    this._coepPolicy.textContent = info.coep.value;
-    this._coopPolicy.textContent = info.coop.value;
+    const model = this._frame.resourceTreeModel().target().model(SDK.NetworkManager.NetworkManager);
+    const info = model && await model.getSecurityIsolationStatus(this._frame.id);
+    if (!info) {
+      return;
+    }
+    /**
+    * @param {!Protocol.Network.CrossOriginEmbedderPolicyValue|!Protocol.Network.CrossOriginOpenerPolicyValue} value
+    */
+    const coepIsEnabled = value => value !== Protocol.Network.CrossOriginEmbedderPolicyValue.None;
+    FrameDetailsView.fillCrossOriginPolicy(this._coepPolicy, coepIsEnabled, info.coep);
+    /**
+    * @param {!Protocol.Network.CrossOriginEmbedderPolicyValue|!Protocol.Network.CrossOriginOpenerPolicyValue} value
+    */
+    const coopIsEnabled = value => value !== Protocol.Network.CrossOriginOpenerPolicyValue.UnsafeNone;
+    FrameDetailsView.fillCrossOriginPolicy(this._coopPolicy, coopIsEnabled, info.coop);
   }
 
   /**
@@ -119,9 +173,31 @@ export class FrameDetailsView extends UI.ThrottledWidget.ThrottledWidget {
     this._secureContext.textContent = booleanToYesNo(this._frame.isSecureContext());
     const secureContextExplanation = this._explanationFromSecureContextType(this._frame.getSecureContextType());
     if (secureContextExplanation) {
-      const secureContextType = this._secureContext.createChild('span', 'more-info');
+      const secureContextType = this._secureContext.createChild('span');
       secureContextType.textContent = secureContextExplanation;
     }
+  }
+
+  /**
+   * @param {string} iconType
+   * @param {string} title
+   * @param {function():(void|!Promise<void>)} eventHandler
+   * @return {!Element}
+   */
+  static linkifyIcon(iconType, title, eventHandler) {
+    const icon = UI.Icon.Icon.create(iconType, 'icon-link devtools-link');
+    const span = document.createElement('span');
+    span.title = title;
+    span.classList.add('devtools-link');
+    span.tabIndex = 0;
+    span.appendChild(icon);
+    span.addEventListener('click', () => eventHandler());
+    span.addEventListener('keydown', event => {
+      if (isEnterKey(event)) {
+        eventHandler();
+      }
+    });
+    return span;
   }
 
   /**
@@ -131,12 +207,10 @@ export class FrameDetailsView extends UI.ThrottledWidget.ThrottledWidget {
   static maybeAppendLinkToRequest(element, resource) {
     if (resource && resource.request) {
       const request = resource.request;
-      const revealRequest = UI.Icon.Icon.create('mediumicon-network-panel', 'icon-link devtools-link');
+      const revealRequest = FrameDetailsView.linkifyIcon(
+          'mediumicon-network-panel', ls`Click to reveal in Network panel`,
+          () => Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, Network.NetworkItemView.Tabs.Headers));
       element.appendChild(revealRequest);
-      revealRequest.title = ls`Click to reveal in Network panel`;
-      revealRequest.addEventListener('click', () => {
-        Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, Network.NetworkItemView.Tabs.Headers);
-      });
     }
   }
 
@@ -151,22 +225,21 @@ export class FrameDetailsView extends UI.ThrottledWidget.ThrottledWidget {
     if (!unreachableUrl) {
       return;
     }
-    const revealRequest = UI.Icon.Icon.create('mediumicon-network-panel', 'icon-link devtools-link');
-    this._unreachableURL.appendChild(revealRequest);
-    revealRequest.title = ls`Click to reveal in Network panel (might require page reload)`;
 
-    revealRequest.addEventListener('click', () => {
-      Network.NetworkPanel.NetworkPanel.revealAndFilter([
-        {
-          filterType: 'domain',
-          filterValue: unreachableUrl.domain(),
-        },
-        {
-          filterType: null,
-          filterValue: unreachableUrl.path,
-        }
-      ]);
-    });
+    const revealRequest = FrameDetailsView.linkifyIcon(
+        'mediumicon-network-panel', ls`Click to reveal in Network panel (might require page reload)`, () => {
+          Network.NetworkPanel.NetworkPanel.revealAndFilter([
+            {
+              filterType: 'domain',
+              filterValue: unreachableUrl.domain(),
+            },
+            {
+              filterType: null,
+              filterValue: unreachableUrl.path,
+            }
+          ]);
+        });
+    this._unreachableURL.appendChild(revealRequest);
   }
 
   _updateAdStatus() {

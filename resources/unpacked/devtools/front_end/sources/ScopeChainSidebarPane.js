@@ -24,9 +24,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
@@ -49,7 +46,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
     this._expandController =
         new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeExpandController(this._treeOutline);
     this._linkifier = new Components.Linkifier.Linkifier();
-    this._infoElement = createElement('div');
+    this._infoElement = document.createElement('div');
     this._infoElement.className = 'gray-info-message';
     this._infoElement.textContent = ls`Not paused`;
     this._infoElement.tabIndex = -1;
@@ -77,6 +74,10 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
     }
   }
 
+  /**
+   * @param {!SDK.DebuggerModel.CallFrame} callFrame
+   * @return {!Array<!SDK.DebuggerModel.ScopeChainEntry>}
+   */
   _getScopeChain(callFrame) {
     return callFrame.sourceScopeChain || callFrame.scopeChain();
   }
@@ -129,7 +130,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!SDK.DebuggerModel.Scope} scope
+   * @param {!SDK.DebuggerModel.ScopeChainEntry} scope
    * @param {!Array.<!SDK.RemoteObject.RemoteObjectProperty>} extraProperties
    * @return {!ObjectUI.ObjectPropertiesSection.RootElement}
    */
@@ -148,14 +149,22 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
         title = ls`Closure`;
       }
     }
+    /** @type {?string} */
     let subtitle = scope.description();
     if (!title || title === subtitle) {
-      subtitle = undefined;
+      subtitle = null;
     }
+    const icon = scope.icon();
 
     const titleElement = document.createElement('div');
     titleElement.classList.add('scope-chain-sidebar-pane-section-header');
     titleElement.classList.add('tree-element-title');
+    if (icon) {
+      const iconElement = document.createElement('img');
+      iconElement.classList.add('scope-chain-sidebar-pane-section-icon');
+      iconElement.src = icon;
+      titleElement.appendChild(iconElement);
+    }
     titleElement.createChild('div', 'scope-chain-sidebar-pane-section-subtitle').textContent = subtitle;
     titleElement.createChild('div', 'scope-chain-sidebar-pane-section-title').textContent = title;
 
@@ -171,9 +180,9 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!SDK.DebuggerModel.Scope} scope
-   * @param {?SDK.DebuggerModel.DebuggerPausedDetails} details
-   * @param {?SDK.DebuggerModel.CallFrame} callFrame
+   * @param {!SDK.DebuggerModel.ScopeChainEntry} scope
+   * @param {!SDK.DebuggerModel.DebuggerPausedDetails} details
+   * @param {!SDK.DebuggerModel.CallFrame} callFrame
    * @param {?SDK.RemoteObject.RemoteObject} thisObject
    * @param {boolean} isFirstScope
    * @return {!Array.<!SDK.RemoteObject.RemoteObjectProperty>}

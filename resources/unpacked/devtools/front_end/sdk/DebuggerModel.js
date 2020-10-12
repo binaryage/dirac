@@ -53,7 +53,8 @@ export function sortAndMergeRanges(locationRanges) {
   for (let i = 1; i < locationRanges.length; ++i) {
     const current = locationRanges[i];
     if (prev.overlap(current)) {
-      prev = new LocationRange(prev.scriptId, prev.start, current.end);
+      const largerEnd = prev.end.compareTo(current.end) > 0 ? prev.end : current.end;
+      prev = new LocationRange(prev.scriptId, prev.start, largerEnd);
     } else {
       merged.push(prev);
       prev = current;
@@ -645,20 +646,34 @@ export class DebuggerModel extends SDKModel {
    * @return {!Promise<boolean>}
    */
   async _setDebuggerPausedDetails(debuggerPausedDetails) {
-    this._isPausing = false;
-    this._debuggerPausedDetails = debuggerPausedDetails;
     if (debuggerPausedDetails) {
-      if (this._beforePausedCallback) {
-        if (!this._beforePausedCallback.call(null, debuggerPausedDetails)) {
-          return false;
-        }
-      }
       // @ts-ignore
       const pluginManager = Bindings.DebuggerWorkspaceBinding.instance().getLanguagePluginManager(this);
       if (pluginManager) {
+        /** @type {!Array<!CallFrame>} */
+        const newFrames = [];
         for (const callFrame of debuggerPausedDetails.callFrames) {
+          const functionInfos = await pluginManager.getFunctionInfo(callFrame);
+          if (functionInfos) {
+            for (let i = 0; i < functionInfos.frames.length; i++) {
+              newFrames.push(callFrame.createVirtualCallFrame(i, functionInfos.frames[i].name));
+            }
+          } else {
+            // Leave unchanged.
+            newFrames.push(callFrame);
+          }
+        }
+        for (const callFrame of newFrames) {
           // @ts-ignore
           callFrame.sourceScopeChain = await pluginManager.resolveScopeChain(callFrame);
+        }
+        debuggerPausedDetails.callFrames = newFrames;
+      }
+      this._isPausing = false;
+      this._debuggerPausedDetails = debuggerPausedDetails;
+      if (this._beforePausedCallback) {
+        if (!this._beforePausedCallback.call(null, debuggerPausedDetails)) {
+          return false;
         }
       }
       // If we resolved a location in auto-stepping callback, reset the
@@ -667,6 +682,8 @@ export class DebuggerModel extends SDKModel {
       this.dispatchEventToListeners(Events.DebuggerPaused, this);
       this.setSelectedCallFrame(debuggerPausedDetails.callFrames[0]);
     } else {
+      this._isPausing = false;
+      this._debuggerPausedDetails = null;
       this.setSelectedCallFrame(null);
     }
     return true;
@@ -1287,21 +1304,24 @@ export class Location {
    * @param {string} scriptId
    * @param {number} lineNumber
    * @param {number=} columnNumber
+   * @param {number=} inlineFrameIndex
    */
-  constructor(debuggerModel, scriptId, lineNumber, columnNumber) {
+  constructor(debuggerModel, scriptId, lineNumber, columnNumber, inlineFrameIndex) {
     this.debuggerModel = debuggerModel;
     this.scriptId = scriptId;
     this.lineNumber = lineNumber;
     this.columnNumber = columnNumber || 0;
+    this.inlineFrameIndex = inlineFrameIndex || 0;
   }
 
   /**
    * @param {!DebuggerModel} debuggerModel
    * @param {!Protocol.Debugger.Location} payload
+   * @param {number=} inlineFrameIndex
    * @return {!Location}
    */
-  static fromPayload(debuggerModel, payload) {
-    return new Location(debuggerModel, payload.scriptId, payload.lineNumber, payload.columnNumber);
+  static fromPayload(debuggerModel, payload, inlineFrameIndex) {
+    return new Location(debuggerModel, payload.scriptId, payload.lineNumber, payload.columnNumber, inlineFrameIndex);
   }
 
   /**
@@ -1480,17 +1500,21 @@ export class CallFrame {
    * @param {!DebuggerModel} debuggerModel
    * @param {!Script} script
    * @param {!Protocol.Debugger.CallFrame} payload
+   * @param {number=} inlineFrameIndex
+   * @param {string=} functionName
    */
-  constructor(debuggerModel, script, payload) {
+  constructor(debuggerModel, script, payload, inlineFrameIndex, functionName) {
     this.debuggerModel = debuggerModel;
-    /** @type {?Array<!RemoteObjectImpl>} */
+    /** @type {?Array<!ScopeChainEntry>} */
     this.sourceScopeChain = null;
     this._script = script;
     this._payload = payload;
-    this._location = Location.fromPayload(debuggerModel, payload.location);
+    this._location = Location.fromPayload(debuggerModel, payload.location, inlineFrameIndex);
     /** @type {!Array<!Scope>} */
     this._scopeChain = [];
     this._localScope = null;
+    this._inlineFrameIndex = inlineFrameIndex || 0;
+    this._functionName = functionName || payload.functionName;
     for (let i = 0; i < payload.scopeChain.length; ++i) {
       const scope = new Scope(this, i);
       this._scopeChain.push(scope);
@@ -1523,6 +1547,14 @@ export class CallFrame {
   }
 
   /**
+   * @param {number=} inlineFrameIndex
+   * @param {string=} functionName
+   */
+  createVirtualCallFrame(inlineFrameIndex, functionName) {
+    return new CallFrame(this.debuggerModel, this._script, this._payload, inlineFrameIndex, functionName);
+  }
+
+  /**
    * @return {!Script}
    */
   get script() {
@@ -1534,6 +1566,13 @@ export class CallFrame {
    */
   get id() {
     return this._payload.callFrameId;
+  }
+
+  /**
+   * @return {number}
+   */
+  get inlineFrameIndex() {
+    return this._inlineFrameIndex;
   }
 
   /**
@@ -1590,7 +1629,7 @@ export class CallFrame {
    * @return {string}
    */
   get functionName() {
-    return this._payload.functionName;
+    return this._functionName;
   }
 
   /**
@@ -1648,6 +1687,78 @@ export class CallFrame {
   }
 }
 
+/**
+ * @interface
+ */
+export class ScopeChainEntry {
+  /**
+   * @return {!CallFrame}
+   */
+  callFrame() {
+    throw new Error('not implemented');
+  }
+
+  /**
+   * @return {string}
+   */
+  type() {
+    throw new Error('not implemented');
+  }
+
+  /**
+   * @return {string}
+   */
+  typeName() {
+    throw new Error('not implemented');
+  }
+
+
+  /**
+   * @return {string|undefined}
+   */
+  name() {
+    throw new Error('not implemented');
+  }
+
+  /**
+   * @return {?Location}
+   */
+  startLocation() {
+    throw new Error('not implemented');
+  }
+
+  /**
+   * @return {?Location}
+   */
+  endLocation() {
+    throw new Error('not implemented');
+  }
+
+  /**
+   * @return {!RemoteObject}
+   */
+  object() {
+    throw new Error('not implemented');
+  }
+
+  /**
+   * @return {string}
+   */
+  description() {
+    throw new Error('not implemented');
+  }
+
+  /**
+   * @return {string|undefined}
+   */
+  icon() {
+    throw new Error('not implemented');
+  }
+}
+
+/**
+ * @implements {ScopeChainEntry}
+ */
 export class Scope {
   /**
    * @param {!CallFrame} callFrame
@@ -1668,6 +1779,7 @@ export class Scope {
   }
 
   /**
+   * @override
    * @return {!CallFrame}
    */
   callFrame() {
@@ -1675,6 +1787,7 @@ export class Scope {
   }
 
   /**
+   * @override
    * @return {string}
    */
   type() {
@@ -1682,6 +1795,7 @@ export class Scope {
   }
 
   /**
+   * @override
    * @return {string}
    */
   typeName() {
@@ -1710,6 +1824,7 @@ export class Scope {
 
 
   /**
+   * @override
    * @return {string|undefined}
    */
   name() {
@@ -1717,6 +1832,7 @@ export class Scope {
   }
 
   /**
+   * @override
    * @return {?Location}
    */
   startLocation() {
@@ -1724,6 +1840,7 @@ export class Scope {
   }
 
   /**
+   * @override
    * @return {?Location}
    */
   endLocation() {
@@ -1731,6 +1848,7 @@ export class Scope {
   }
 
   /**
+   * @override
    * @return {!RemoteObject}
    */
   object() {
@@ -1752,12 +1870,20 @@ export class Scope {
   }
 
   /**
+   * @override
    * @return {string}
    */
   description() {
     const declarativeScope =
         this._type !== Protocol.Debugger.ScopeType.With && this._type !== Protocol.Debugger.ScopeType.Global;
     return declarativeScope ? '' : (this._payload.object.description || '');
+  }
+
+  /**
+   * @override
+   */
+  icon() {
+    return undefined;
   }
 }
 

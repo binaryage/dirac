@@ -61,6 +61,8 @@ export class Dialog extends GlassPane {
     /** @type {?Document} */
     this._targetDocument;
     this._targetDocumentKeyDownHandler = this._onKeyDown.bind(this);
+    /** @type {?function(!Event)} */
+    this._escapeKeyCallback = null;
   }
 
   /**
@@ -72,7 +74,7 @@ export class Dialog extends GlassPane {
 
   /**
    * @override
-   * @param {!Document|!Element=} where
+   * @param {(!Document|!Element)=} where
    */
   show(where) {
     const document = /** @type {!Document} */ (
@@ -109,6 +111,13 @@ export class Dialog extends GlassPane {
    */
   setCloseOnEscape(close) {
     this._closeOnEscape = close;
+  }
+
+  /**
+   * @param {function(!Event)} callback
+   */
+  setEscapeKeyCallback(callback) {
+    this._escapeKeyCallback = callback;
   }
 
   addCloseButton() {
@@ -193,9 +202,19 @@ export class Dialog extends GlassPane {
    * @param {!Event} event
    */
   _onKeyDown(event) {
-    if (this._closeOnEscape && event.keyCode === Keys.Esc.code && KeyboardShortcut.hasNoModifiers(event)) {
-      event.consume(true);
-      this.hide();
+    if (event.keyCode === Keys.Esc.code && KeyboardShortcut.hasNoModifiers(event)) {
+      if (this._escapeKeyCallback) {
+        this._escapeKeyCallback(event);
+      }
+
+      if (event.handled) {
+        return;
+      }
+
+      if (this._closeOnEscape) {
+        event.consume(true);
+        this.hide();
+      }
     }
   }
 }

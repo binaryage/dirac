@@ -6,12 +6,22 @@ import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as Components from '../components/components.js';
 import * as Elements from '../elements/elements.js';
+import * as Host from '../host/host.js';
 import * as Network from '../network/network.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
 import {AggregatedIssue, Events as IssueAggregatorEvents, IssueAggregator} from './IssueAggregator.js';  // eslint-disable-line no-unused-vars
 import {createIssueDescriptionFromMarkdown} from './MarkdownIssueDescription.js';
+
+/** @enum {string} */
+const AffectedItem = {
+  Cookie: 'Cookie',
+  Directive: 'Directive',
+  Element: 'Element',
+  Request: 'Request',
+  Source: 'Source'
+};
 
 /**
  * @param {string} path
@@ -189,9 +199,10 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
 
   /**
    * @param {!Protocol.Page.FrameId} frameId
+   * @param {!SDK.Issue.Issue} issue
    * @returns {!HTMLElement}
    */
-  _createFrameCell(frameId) {
+  _createFrameCell(frameId, issue) {
     const frame = this._resolveFrameId(frameId);
     const url = frame && (frame.unreachableUrl() || frame.url) || ls`unknown`;
 
@@ -201,6 +212,7 @@ class AffectedResourcesView extends UI.TreeOutline.TreeElement {
       const icon = UI.Icon.Icon.create('mediumicon-elements-panel', 'icon');
       icon.classList.add('link');
       icon.onclick = async () => {
+        Host.userMetrics.issuesPanelResourceOpened(issue.getCategory(), AffectedItem.Element);
         const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
         if (frame) {
           const ownerNode = await frame.getOwnerDOMNodeOrDocument();
@@ -277,6 +289,10 @@ class AffectedElementsView extends AffectedResourcesView {
     this._issue = issue;
   }
 
+  _sendTelmetry() {
+    Host.userMetrics.issuesPanelResourceOpened(this._issue.getCategory(), AffectedItem.Element);
+  }
+
   /**
    * @param {!Iterable<!SDK.Issue.AffectedElement>} affectedElements
    */
@@ -297,6 +313,12 @@ class AffectedElementsView extends AffectedResourcesView {
     const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(mainTarget, backendNodeId);
     const anchorElement = await Common.Linkifier.Linkifier.linkify(deferredDOMNode);
     anchorElement.textContent = nodeName;
+    anchorElement.addEventListener('click', this._sendTelmetry);
+    anchorElement.addEventListener('keydown', event => {
+      if (isEnterKey(event)) {
+        this._sendTelmetry();
+      }
+    });
     const cellElement = document.createElement('td');
     cellElement.classList.add('affected-resource-element', 'devtools-link');
     cellElement.appendChild(anchorElement);
@@ -413,26 +435,24 @@ class AffectedDirectivesView extends AffectedResourcesView {
    * @param {!SDK.IssuesModel.IssuesModel} model
    */
   _appendBlockedElement(element, nodeId, model) {
-    const violatingNode = document.createElement('td');
-    violatingNode.classList.add('affected-resource-csp-info-node');
-
+    const elementsPanelLinkComponent = Elements.ElementsPanelLink.createElementsPanelLink();
     if (nodeId) {
       const violatingNodeId = nodeId;
-      const icon = UI.Icon.Icon.create('largeicon-node-search', 'icon');
-      icon.classList.add('element-reveal-icon');
+      UI.Tooltip.Tooltip.install(
+          elementsPanelLinkComponent, ls`Click to reveal the violating DOM node in the Elements panel`);
 
-      icon.onclick = () => {
+      /** @type {function(!Event=):void} */
+      const onElementRevealIconClick = () => {
         const target = model.getTargetIfNotDisposed();
         if (target) {
+          Host.userMetrics.issuesPanelResourceOpened(this._issue.getCategory(), AffectedItem.Element);
           const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(target, violatingNodeId);
           Common.Revealer.reveal(deferredDOMNode);
         }
       };
 
-      UI.Tooltip.Tooltip.install(icon, ls`Click to reveal the violating DOM node in the Elements panel`);
-      violatingNode.appendChild(icon);
-
-      violatingNode.onmouseenter = () => {
+      /** @type {function(!Event=):void} */
+      const onElementRevealIconMouseEnter = () => {
         const target = model.getTargetIfNotDisposed();
         if (target) {
           const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(target, violatingNodeId);
@@ -441,8 +461,19 @@ class AffectedDirectivesView extends AffectedResourcesView {
           }
         }
       };
-      violatingNode.onmouseleave = () => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+
+      /** @type {function(!Event=):void} */
+      const onElementRevealIconMouseLeave = () => {
+        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+      };
+
+      elementsPanelLinkComponent
+          .data = {onElementRevealIconClick, onElementRevealIconMouseEnter, onElementRevealIconMouseLeave};
     }
+
+    const violatingNode = document.createElement('td');
+    violatingNode.classList.add('affected-resource-csp-info-node');
+    violatingNode.appendChild(elementsPanelLinkComponent);
     element.appendChild(violatingNode);
   }
 
@@ -455,6 +486,7 @@ class AffectedDirectivesView extends AffectedResourcesView {
     sourceCodeLocation.classList.add('affected-source-location');
     if (sourceLocation) {
       const maxLengthForDisplayedURLs = 40;  // Same as console messages.
+      // TODO(crbug.com/1108503): Add some mechanism to be able to add telemetry to this element.
       const linkifier = new Components.Linkifier.Linkifier(maxLengthForDisplayedURLs);
       const sourceAnchor = linkifier.linkifyScriptLocation(
           /* target */ null,
@@ -584,6 +616,7 @@ class AffectedCookiesView extends AffectedResourcesView {
     const name = document.createElement('td');
     if (hasAssociatedRequest) {
       name.appendChild(UI.UIUtils.createTextButton(cookie.name, () => {
+        Host.userMetrics.issuesPanelResourceOpened(this._issue.getCategory(), AffectedItem.Cookie);
         Network.NetworkPanel.NetworkPanel.revealAndFilter([
           {
             filterType: 'cookie-domain',
@@ -654,6 +687,7 @@ class AffectedRequestsView extends AffectedResourcesView {
     const nameElement = document.createElement('td');
     const tab = issueTypeToNetworkHeaderMap.get(this._issue.getCategory()) || Network.NetworkItemView.Tabs.Headers;
     nameElement.appendChild(UI.UIUtils.createTextButton(nameText, () => {
+      Host.userMetrics.issuesPanelResourceOpened(this._issue.getCategory(), AffectedItem.Request);
       Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, tab);
     }, 'link-style devtools-link'));
     const element = document.createElement('tr');
@@ -710,6 +744,11 @@ class AffectedSourcesView extends AffectedResourcesView {
     //                         to support source maps and formatted scripts.
     const linkifierURLOptions =
         /** @type {!Components.Linkifier.LinkifyURLOptions} */ ({columnNumber, lineNumber, tabStop: true});
+    // An element created with linkifyURL can subscribe to the events
+    // 'click' neither 'keydown' if that key is the 'Enter' key.
+    // Also, this element has a context menu, so we should be able to
+    // track when the user use the context menu too.
+    // TODO(crbug.com/1108503): Add some mechanism to be able to add telemetry to this element.
     const anchorElement = Components.Linkifier.Linkifier.linkifyURL(url, linkifierURLOptions);
     cellElement.appendChild(anchorElement);
     const rowElement = document.createElement('tr');
@@ -792,6 +831,7 @@ class AffectedMixedContentView extends AffectedResourcesView {
       const request = maybeRequest;  // re-assignment to make type checker happy
       const tab = issueTypeToNetworkHeaderMap.get(this._issue.getCategory()) || Network.NetworkItemView.Tabs.Headers;
       name.appendChild(UI.UIUtils.createTextButton(filename, () => {
+        Host.userMetrics.issuesPanelResourceOpened(this._issue.getCategory(), AffectedItem.Request);
         Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, tab);
       }, 'link-style devtools-link'));
     } else {
@@ -908,7 +948,7 @@ class AffectedHeavyAdView extends AffectedResourcesView {
     element.appendChild(status);
 
     const frameId = heavyAd.frame.frameId;
-    const frameUrl = this._createFrameCell(frameId);
+    const frameUrl = this._createFrameCell(frameId, this._issue);
     element.appendChild(frameUrl);
 
     this._affectedResources.appendChild(element);
@@ -976,14 +1016,14 @@ class AffectedBlockedByResponseView extends AffectedResourcesView {
     element.appendChild(requestCell);
 
     if (details.parentFrame) {
-      const frameUrl = this._createFrameCell(details.parentFrame.frameId);
+      const frameUrl = this._createFrameCell(details.parentFrame.frameId, this._issue);
       element.appendChild(frameUrl);
     } else {
       element.appendChild(document.createElement('td'));
     }
 
     if (details.blockedFrame) {
-      const frameUrl = this._createFrameCell(details.blockedFrame.frameId);
+      const frameUrl = this._createFrameCell(details.blockedFrame.frameId, this._issue);
       element.appendChild(frameUrl);
     } else {
       element.appendChild(document.createElement('td'));
@@ -1001,6 +1041,52 @@ class AffectedBlockedByResponseView extends AffectedResourcesView {
   }
 }
 
+/** @type {!Map<!SDK.Issue.IssueCategory, string>} */
+export const IssueCategoryNames = new Map([
+  [SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy, ls`Cross Origin Embedder Policy`],
+  [SDK.Issue.IssueCategory.MixedContent, ls`Mixed Content`],
+  [SDK.Issue.IssueCategory.SameSiteCookie, ls`SameSite Cookie`], [SDK.Issue.IssueCategory.HeavyAd, ls`Heavy Ads`],
+  [SDK.Issue.IssueCategory.ContentSecurityPolicy, ls`Content Security Policy`],
+  [SDK.Issue.IssueCategory.Other, ls`Other`]
+]);
+
+class IssueCategoryView extends UI.TreeOutline.TreeElement {
+  /**
+   * @param {!SDK.Issue.IssueCategory} category
+   */
+  constructor(category) {
+    super();
+    this._category = category;
+    /** @type {!Array<!AggregatedIssue>} */
+    this._issues = [];
+
+    this.toggleOnClick = true;
+    this.listItemElement.classList.add('issue-category');
+  }
+
+  getCategoryName() {
+    return IssueCategoryNames.get(this._category) || ls`Other`;
+  }
+
+  /**
+   * @override
+   */
+  onattach() {
+    this._appendHeader();
+  }
+
+  _appendHeader() {
+    const header = document.createElement('div');
+    header.classList.add('header');
+
+    const title = document.createElement('div');
+    title.classList.add('title');
+    title.textContent = this.getCategoryName();
+    header.appendChild(title);
+
+    this.listItemElement.appendChild(header);
+  }
+}
 
 class IssueView extends UI.TreeOutline.TreeElement {
   /**
@@ -1086,6 +1172,10 @@ class IssueView extends UI.TreeOutline.TreeElement {
    * @override
    */
   onexpand() {
+    const issueCategory = this._issue.getCategory().description;
+
+    Host.userMetrics.issuesPanelIssueExpanded(issueCategory);
+
     if (!this._hasBeenExpandedBefore) {
       this._hasBeenExpandedBefore = true;
       for (const view of this._affectedResourceViews) {
@@ -1140,8 +1230,10 @@ class IssueView extends UI.TreeOutline.TreeElement {
 
     const linkList = linkWrapper.listItemElement.createChild('ul', 'link-list');
     for (const description of this._description.links) {
+      // TODO(crbug.com/1108501): Allow x-link elements to subscribe to the events 'click' and 'keydown' if the key
+      //       is the 'Enter' key, or add some mechanism that allows to add telemetry to this element.
       const link = UI.XLink.XLink.create(description.link, ls`Learn more: ${description.linkTitle}`, 'link');
-      const linkIcon = UI.Icon.Icon.create('largeicon-link', 'link-icon');
+      const linkIcon = UI.Icon.Icon.create('largeicon-link', 'link');
       link.prepend(linkIcon);
 
       const linkListItem = linkList.createChild('li');
@@ -1168,13 +1260,20 @@ class IssueView extends UI.TreeOutline.TreeElement {
   }
 }
 
+/** @return {!Common.Settings.Setting<boolean>} */
+export function getGroupIssuesByCategorySetting() {
+  return Common.Settings.Settings.instance().createSetting('groupIssuesByCategory', false);
+}
+
 export class IssuesPaneImpl extends UI.Widget.VBox {
   constructor() {
     super(true);
     this.registerRequiredCSS('issues/issuesPane.css');
     this.contentElement.classList.add('issues-pane');
 
+    this._categoryViews = new Map();
     this._issueViews = new Map();
+    this._showThirdPartyCheckbox = null;
 
     const {toolbarContainer, updateToolbarIssuesCount} = this._createToolbars();
     this._issuesToolbarContainer = toolbarContainer;
@@ -1219,12 +1318,22 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     new UI.Toolbar.Toolbar('issues-toolbar-left', toolbarContainer);
     const rightToolbar = new UI.Toolbar.Toolbar('issues-toolbar-right', toolbarContainer);
 
-    // TODO(crbug.com/1011811): Remove cast once closure is gone. Closure requires an upcast to 'any' from 'boolean'.
-    const thirdPartySetting = /** @type {!Common.Settings.Setting<*>} */ (SDK.Issue.getShowThirdPartyIssuesSetting());
-    const showThirdPartyCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
+    const groupByCategorySetting = getGroupIssuesByCategorySetting();
+    const groupByCategoryCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
+        groupByCategorySetting, ls`Group displayed issues under associated categories`, ls`Group by category`);
+    // Hide the option to toggle category grouping for now.
+    groupByCategoryCheckbox.setVisible(false);
+    rightToolbar.appendToolbarItem(groupByCategoryCheckbox);
+    groupByCategorySetting.addChangeListener(() => {
+      this._fullUpdate();
+    });
+
+    const thirdPartySetting = SDK.Issue.getShowThirdPartyIssuesSetting();
+    this._showThirdPartyCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
         thirdPartySetting, ls`Include cookie Issues caused by third-party sites`,
         ls`Include third-party cookie issues`);
-    rightToolbar.appendToolbarItem(showThirdPartyCheckbox);
+    rightToolbar.appendToolbarItem(this._showThirdPartyCheckbox);
+    this.setDefaultFocusedElement(this._showThirdPartyCheckbox.inputElement);
 
     rightToolbar.appendSeparator();
     const toolbarWarnings = document.createElement('div');
@@ -1271,7 +1380,8 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
       }
       const view = new IssueView(this, issue, /** @type {!SDK.Issue.IssueDescription} */ (description));
       this._issueViews.set(issue.code(), view);
-      this._issuesTree.appendChild(view, (a, b) => {
+      const parent = this._getIssueViewParent(issue);
+      parent.appendChild(view, (a, b) => {
         if (a instanceof IssueView && b instanceof IssueView) {
           return a.getIssueTitle().localeCompare(b.getIssueTitle());
         }
@@ -1283,11 +1393,45 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     this._updateCounts();
   }
 
-  _fullUpdate() {
-    for (const view of this._issueViews.values()) {
-      this._issuesTree.removeChild(view);
+  /**
+   * @param {!AggregatedIssue} issue
+   * @returns {!UI.TreeOutline.TreeOutline | !UI.TreeOutline.TreeElement}
+   */
+  _getIssueViewParent(issue) {
+    if (!getGroupIssuesByCategorySetting().get()) {
+      return this._issuesTree;
     }
-    this._issueViews.clear();
+
+    const category = issue.getCategory();
+    const view = this._categoryViews.get(category);
+    if (view) {
+      return view;
+    }
+
+    const newView = new IssueCategoryView(category);
+    this._issuesTree.appendChild(newView, (a, b) => {
+      if (a instanceof IssueCategoryView && b instanceof IssueCategoryView) {
+        return a.getCategoryName().localeCompare(b.getCategoryName());
+      }
+      return 0;
+    });
+    this._categoryViews.set(category, newView);
+    return newView;
+  }
+
+  /**
+   * @param {!Map<*, !UI.TreeOutline.TreeElement>} views
+   */
+  _clearViews(views) {
+    for (const view of views.values()) {
+      view.parent.removeChild(view);
+    }
+    views.clear();
+  }
+
+  _fullUpdate() {
+    this._clearViews(this._categoryViews);
+    this._clearViews(this._issueViews);
     if (this._aggregator) {
       for (const issue of this._aggregator.aggregatedIssues()) {
         this._updateIssueView(issue);
@@ -1309,8 +1453,16 @@ export class IssuesPaneImpl extends UI.Widget.VBox {
     if (issuesCount > 0) {
       this._issuesTree.element.hidden = false;
       this._noIssuesMessageDiv.style.display = 'none';
+      const firstChild = this._issuesTree.firstChild();
+      if (firstChild) {
+        firstChild.select(/** omitFocus= */ true);
+        this.setDefaultFocusedElement(firstChild.listItemElement);
+      }
     } else {
       this._issuesTree.element.hidden = true;
+      if (this._showThirdPartyCheckbox) {
+        this.setDefaultFocusedElement(this._showThirdPartyCheckbox.inputElement);
+      }
       // We alreay know that issesCount is zero here.
       const hasOnlyThirdPartyIssues = this._issuesManager.numberOfAllStoredIssues() > 0;
       this._noIssuesMessageDiv.textContent =

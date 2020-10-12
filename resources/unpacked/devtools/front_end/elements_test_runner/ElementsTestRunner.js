@@ -6,6 +6,7 @@
  * @fileoverview using private properties isn't a Closure violation in tests.
  * @suppress {accessControls}
  */
+self.ElementsTestRunner = self.ElementsTestRunner || {};
 
 /**
  * @param {string} idValue
@@ -184,7 +185,8 @@ ElementsTestRunner.dumpComputedStyle = async function(doNotAutoExpand, printInne
       continue;
     }
 
-    for (const trace of treeElement.title.querySelectorAll('devtools-computed-style-trace')) {
+    for (const traceTreeElement of treeElement.children()) {
+      const trace = traceTreeElement.title;
       let dumpText = '';
 
       if (trace.shadowRoot.querySelector('.computed-style-trace.inactive')) {
@@ -266,7 +268,7 @@ ElementsTestRunner.expandedNodeWithId = function(idValue) {
   return result;
 };
 
-function waitForStylesRebuild(matchFunction, callback, requireRebuild) {
+globalThis.waitForStylesRebuild = function(matchFunction, callback, requireRebuild) {
   (function sniff(node, rebuild) {
     if ((rebuild || !requireRebuild) && node && matchFunction(node)) {
       callback();
@@ -275,7 +277,7 @@ function waitForStylesRebuild(matchFunction, callback, requireRebuild) {
 
     TestRunner.addSniffer(Elements.StylesSidebarPane.prototype, '_nodeStylesUpdatedForTest', sniff);
   })(null);
-}
+};
 
 ElementsTestRunner.waitForStyles = function(idValue, callback, requireRebuild) {
   callback = TestRunner.safeWrap(callback);
@@ -284,7 +286,7 @@ ElementsTestRunner.waitForStyles = function(idValue, callback, requireRebuild) {
     return node.getAttribute('id') === idValue;
   }
 
-  waitForStylesRebuild(nodeWithId, callback, requireRebuild);
+  globalThis.waitForStylesRebuild(nodeWithId, callback, requireRebuild);
 };
 
 ElementsTestRunner.waitForStyleCommitted = function(next) {
@@ -301,7 +303,7 @@ ElementsTestRunner.waitForStylesForClass = function(classValue, callback, requir
     return classAttr && classAttr.indexOf(classValue) > -1;
   }
 
-  waitForStylesRebuild(nodeWithClass, callback, requireRebuild);
+  globalThis.waitForStylesRebuild(nodeWithClass, callback, requireRebuild);
 };
 
 ElementsTestRunner.waitForSelectorCommitted = function(callback) {
@@ -342,7 +344,7 @@ ElementsTestRunner.selectNodeAndWaitForStylesPromise = function(idValue) {
 ElementsTestRunner.selectPseudoElementAndWaitForStyles = function(parentId, pseudoType, callback) {
   callback = TestRunner.safeWrap(callback);
   let targetNode;
-  waitForStylesRebuild(isPseudoElement, stylesUpdated, true);
+  globalThis.waitForStylesRebuild(isPseudoElement, stylesUpdated, true);
   ElementsTestRunner.findNode(isPseudoElement, nodeFound);
 
   function nodeFound(node) {

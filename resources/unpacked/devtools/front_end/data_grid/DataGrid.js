@@ -1712,6 +1712,9 @@ export class DataGridNode extends Common.ObjectWrapper.ObjectWrapper {
    */
   createCells(element) {
     element.removeChildren();
+    if (!this.dataGrid) {
+      return;
+    }
     const columnsArray = this.dataGrid.visibleColumnsArray;
     const accessibleTextArray = [];
     // Add depth if node is part of a tree
@@ -1726,7 +1729,7 @@ export class DataGridNode extends Common.ObjectWrapper.ObjectWrapper {
       accessibleTextArray.push(`${localizedTitle}: ${this.cellAccessibleTextMap.get(column.id) || cell.textContent}`);
     }
     this.nodeAccessibleText = accessibleTextArray.join(', ');
-    element.appendChild(this._createTDWithClass('corner'));
+    element.appendChild(this.createTDWithClass('corner'));
   }
 
   /**
@@ -1947,10 +1950,11 @@ export class DataGridNode extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
+   * @protected
    * @param {string} className
    * @return {!HTMLElement}
    */
-  _createTDWithClass(className) {
+  createTDWithClass(className) {
     const cell = /** @type {!HTMLElement} */ (document.createElement('td'));
     if (className) {
       cell.className = className;
@@ -1967,7 +1971,7 @@ export class DataGridNode extends Common.ObjectWrapper.ObjectWrapper {
    * @return {!HTMLElement}
    */
   createTD(columnId) {
-    const cell = this._createTDWithClass(columnId + '-column');
+    const cell = this.createTDWithClass(columnId + '-column');
     cell[DataGrid._columnIdSymbol] = columnId;
 
     const alignment = this.dataGrid._columns[columnId].align;
@@ -2550,8 +2554,8 @@ export class DataGridWidget extends UI.Widget.VBox {
  * @typedef {{
  *   displayName: string,
  *   columns: !Array.<!ColumnDescriptor>,
- *   editCallback: (function(!Object, string, *, *)|undefined),
- *   deleteCallback: (function(!Object)|undefined|function(string)),
+ *   editCallback: (function(*, string, *, *)|undefined),
+ *   deleteCallback: (function(*)|undefined|function(string)),
  *   refreshCallback: (function()|undefined)
  * }}
  */
@@ -2565,6 +2569,7 @@ export let Parameters;
  *   sortable: boolean,
  *   sort: (?Order|undefined),
  *   align: (?Align|undefined),
+ *   width: (string|undefined),
  *   fixedWidth: (boolean|undefined),
  *   editable: (boolean|undefined),
  *   nonSelectable: (boolean|undefined),

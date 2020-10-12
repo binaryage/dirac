@@ -93,8 +93,10 @@ export function defineCommonExtensionSymbols(apiPrivate) {
     RemoveRawModule: 'removeRawModule',
     SourceLocationToRawLocation: 'sourceLocationToRawLocation',
     RawLocationToSourceLocation: 'rawLocationToSourceLocation',
+    GetScopeInfo: 'getScopeInfo',
     ListVariablesInScope: 'listVariablesInScope',
-    EvaluateVariable: 'evaluateVariable'
+    EvaluateVariable: 'evaluateVariable',
+    GetFunctionInfo: 'getFunctionInfo'
   };
 }
 
@@ -399,10 +401,14 @@ self.injectedExtensionAPI = function(
             return plugin.sourceLocationToRawLocation(parameters.sourceLocation);
           case languageExtensionPluginCommands.RawLocationToSourceLocation:
             return plugin.rawLocationToSourceLocation(parameters.rawLocation);
+          case languageExtensionPluginCommands.GetScopeInfo:
+            return plugin.getScopeInfo(parameters.type);
           case languageExtensionPluginCommands.ListVariablesInScope:
             return plugin.listVariablesInScope(parameters.rawLocation);
           case languageExtensionPluginCommands.EvaluateVariable:
             return plugin.evaluateVariable(parameters.name, parameters.location);
+          case languageExtensionPluginCommands.GetFunctionInfo:
+            return plugin.getFunctionInfo(parameters.rawLocation);
         }
         throw new Error(`Unknown language plugin method ${method}`);
       }

@@ -67,12 +67,12 @@ describe('valueForTypeNode', () => {
       assert.strictEqual(valueForTypeNode(unionNode), '?string');
     });
 
-    it('converts null unions with an interface into !X | null', () => {
+    it('converts null unions with an interface into ?X', () => {
       const interfaceNode = ts.createTypeReferenceNode(ts.createIdentifier('ExampleInterface'), []);
       const nullLiteral = createNullLiteral();
 
       const unionNode = ts.createUnionTypeNode([interfaceNode, nullLiteral]);
-      assert.strictEqual(valueForTypeNode(unionNode), '!ExampleInterface|null');
+      assert.strictEqual(valueForTypeNode(unionNode), '?ExampleInterface');
     });
 
     it('converts null unions into ?X if they are a func param', () => {
@@ -119,7 +119,7 @@ describe('valueForTypeNode', () => {
       const node = ts.createTypeLiteralNode([
         ts.createPropertySignature(undefined, 'x', undefined, unionNode, undefined),
       ]);
-      assert.strictEqual(valueForTypeNode(node), '{x: !ExampleInterface|null}');
+      assert.strictEqual(valueForTypeNode(node), '{x: ?ExampleInterface}');
     });
 
     it('converts union types of type refs and null correctly when in function parameters', () => {
@@ -236,6 +236,40 @@ describe('valueForTypeNode', () => {
           [], [], undefined, ts.createIdentifier('foo'), undefined, createNode(ts.SyntaxKind.StringKeyword));
       const node = ts.createFunctionTypeNode([], [stringParam], returnUnionNode);
       assert.strictEqual(valueForTypeNode(node), 'function(string):(string|undefined)');
+    });
+
+    it('correctly deals with optional type reference parameters', () => {
+      const stringNode = createNode(ts.SyntaxKind.StringKeyword);
+      const typeReferenceNode = ts.createTypeReferenceNode(ts.createIdentifier('ExampleInterface'), []);
+      const functionParam = ts.createParameter(
+          [], [], undefined, ts.createIdentifier('foo'), ts.createToken(ts.SyntaxKind.QuestionToken),
+          typeReferenceNode);
+
+      // function(foo?: ExampleInterface):string
+      const node = ts.createFunctionTypeNode([], [functionParam], stringNode);
+      assert.strictEqual(valueForTypeNode(node), 'function(!ExampleInterface=):string');
+    });
+
+    it('correctly deals with required type reference parameters', () => {
+      const stringNode = createNode(ts.SyntaxKind.StringKeyword);
+      const typeReferenceNode = ts.createTypeReferenceNode(ts.createIdentifier('ExampleInterface'), []);
+      const functionParam =
+          ts.createParameter([], [], undefined, ts.createIdentifier('foo'), undefined, typeReferenceNode);
+
+      // function(foo: ExampleInterface):string
+      const node = ts.createFunctionTypeNode([], [functionParam], stringNode);
+      assert.strictEqual(valueForTypeNode(node), 'function(!ExampleInterface):string');
+    });
+
+    it('correctly deals with optional primitive parameters', () => {
+      const returnTypeNode = createNode(ts.SyntaxKind.StringKeyword);
+      const stringParam = ts.createParameter(
+          [], [], undefined, ts.createIdentifier('foo'), ts.createToken(ts.SyntaxKind.QuestionToken),
+          createNode(ts.SyntaxKind.StringKeyword));
+      const node = ts.createFunctionTypeNode([], [stringParam], returnTypeNode);
+
+      // function(foo?: string):string
+      assert.strictEqual(valueForTypeNode(node), 'function(string=):string');
     });
   });
 });

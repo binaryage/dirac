@@ -19,7 +19,8 @@ const espreeTypes = {
   MEMBER_EXPR: 'MemberExpression',
   NEW_EXPR: 'NewExpression',
   TAGGED_TEMP_EXPR: 'TaggedTemplateExpression',
-  TEMP_LITERAL: 'TemplateLiteral'
+  TEMP_LITERAL: 'TemplateLiteral',
+  VARIABLE_DECLARATOR: 'VariableDeclarator'
 };
 
 
@@ -34,10 +35,10 @@ const excludeDirs = [
   'langpacks',
   'node_modules',
   'lighthouse_worker',
-  'front_end/third_party',
-  'front_end/dagre_layout',
-  'front_end/javascript_metadata',
-  'front_end/generated',
+  `front_end${path.sep}third_party`,
+  `front_end${path.sep}dagre_layout`,
+  `front_end${path.sep}javascript_metadata`,
+  `front_end${path.sep}generated`,
 ];
 
 const cppSpecialCharactersMap = {
@@ -48,14 +49,19 @@ const cppSpecialCharactersMap = {
 const IDSPrefix = 'IDS_DEVTOOLS_';
 
 const SRC_PATH = path.resolve(__dirname, '..', '..', '..');
-const GRD_PATH = path.resolve(SRC_PATH, 'front_end', 'langpacks', 'devtools_ui_strings.grd');
-const SHARED_STRINGS_PATH = path.resolve(SRC_PATH, 'front_end', 'langpacks', 'shared_strings.grdp');
+const FRONT_END_PATH = path.resolve(SRC_PATH, 'front_end');
+const GRD_PATH = path.resolve(FRONT_END_PATH, 'langpacks', 'devtools_ui_strings.grd');
+const SHARED_STRINGS_PATH = path.resolve(FRONT_END_PATH, 'langpacks', 'shared_strings.grdp');
 const NODE_MODULES_PATH = path.resolve(SRC_PATH, 'node_modules');
 const escodegen = require(path.resolve(NODE_MODULES_PATH, 'escodegen'));
 const espree = require(path.resolve(NODE_MODULES_PATH, '@typescript-eslint', 'parser'));
 
 function getRelativeFilePathFromSrc(filePath) {
   return path.relative(SRC_PATH, filePath);
+}
+
+function getRelativeFilePathFromFrontEnd(filePath) {
+  return path.relative(FRONT_END_PATH, filePath);
 }
 
 function shouldParseDirectory(directoryName) {
@@ -122,6 +128,18 @@ function isNodelsTaggedTemplateExpression(node) {
       node.quasi !== undefined && node.quasi.type !== undefined && node.quasi.type === espreeTypes.TEMP_LITERAL;
 }
 
+function isNodeGetLocalizedStringCall(node) {
+  return isNodeCallOnNestedObject(node, 'i18n', 'i18n', 'getLocalizedString');
+}
+
+function isNodeGetFormatLocalizedStringCall(node) {
+  return isNodeCallOnNestedObject(node, 'i18n', 'i18n', 'getFormatLocalizedString');
+}
+
+function isNodeDeclaresUIStrings(node) {
+  return (node.type === espreeTypes.VARIABLE_DECLARATOR && node.id && node.id.name === 'UIStrings');
+}
+
 /**
  * Verify callee of objectName.propertyName(), e.g. Common.UIString().
  */
@@ -143,28 +161,45 @@ function verifyIdentifier(node, name) {
   return node !== undefined && node.type === espreeTypes.IDENTIFIER && node.name === name;
 }
 
-function getLocalizationCase(node) {
+function getLocalizationCaseAndVersion(node) {
   if (isNodeCommonUIStringCall(node)) {
-    return 'Common.UIString';
+    return {locCase: 'Common.UIString', locVersion: 1};
   }
   if (isNodeCommonUIStringFormat(node)) {
-    return 'Common.UIStringFormat';
+    return {locCase: 'Common.UIStringFormat', locVersion: 1};
   }
   if (isNodelsTaggedTemplateExpression(node)) {
-    return 'Tagged Template';
+    return {locCase: 'Tagged Template', locVersion: 1};
   }
   if (isNodeUIformatLocalized(node)) {
-    return 'UI.formatLocalized';
+    return {locCase: 'UI.formatLocalized', locVersion: 1};
   }
   if (isNodePlatformUIStringCall(node) || isNodeUIStringDirectCall(node)) {
-    return 'Platform.UIString';
+    return {locCase: 'Platform.UIString', locVersion: 1};
   }
-  return null;
+  if (isNodeGetLocalizedStringCall(node)) {
+    return {locCase: 'i18n.i18n.getLocalizedString', locVersion: 2};
+  }
+  if (isNodeGetFormatLocalizedStringCall(node)) {
+    return {locCase: 'i18n.i18n.getFormatLocalizedString', locVersion: 2};
+  }
+  if (isNodeDeclaresUIStrings(node)) {
+    return {locCase: 'UIStrings', locVersion: 2};
+  }
+  return {locCase: null, locVersion: null};
 }
 
 function isLocalizationCall(node) {
   return isNodeCommonUIStringCall(node) || isNodelsTaggedTemplateExpression(node) || isNodeUIformatLocalized(node) ||
       isNodePlatformUIStringCall(node) || isNodeUIStringDirectCall(node);
+}
+
+/**
+ * A helper function for localization V2 APIs unit tests.
+ */
+function isLocalizationV2Call(node) {
+  return isNodeDeclaresUIStrings(node) || isNodeGetFormatLocalizedStringCall(node) ||
+      isNodeGetLocalizedStringCall(node);
 }
 
 /**
@@ -387,13 +422,15 @@ module.exports = {
   getChildDirectoriesFromDirectory,
   getFilesFromDirectory,
   getIDSKey,
-  getLocalizationCase,
+  getLocalizationCaseAndVersion,
   getLocationMessage,
+  getRelativeFilePathFromFrontEnd,
   getRelativeFilePathFromSrc,
   getRelativeGrdpPath,
   GRD_PATH,
   IDSPrefix,
   isLocalizationCall,
+  isLocalizationV2Call,
   lineNumberOfIndex,
   modifyStringIntoGRDFormat,
   parseFileContent,

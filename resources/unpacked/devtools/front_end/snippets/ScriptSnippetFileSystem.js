@@ -220,6 +220,9 @@ export async function evaluateScriptSnippet(uiSourceCode) {
   }
 
   const scripts = executionContext.debuggerModel.scriptsForSourceURL(url);
+  if (scripts.length < 1) {
+    return;
+  }
   const scriptId = scripts[scripts.length - 1].scriptId;
   SDK.ConsoleModel.ConsoleModel.instance().addMessage(new SDK.ConsoleModel.ConsoleMessage(
       runtimeModel, SDK.ConsoleModel.MessageSource.JS, SDK.ConsoleModel.MessageLevel.Info, '',
@@ -246,3 +249,11 @@ export function isSnippetsProject(project) {
 
 Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addPlatformFileSystem(
     'snippet://', new SnippetFileSystem());
+
+/** @type {!Workspace.Workspace.Project} */
+export const project =
+    (Workspace.Workspace.WorkspaceImpl.instance()
+         .projectsForType(Workspace.Workspace.projectTypes.FileSystem)
+         .find(
+             project => Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) ===
+                 'snippets'));

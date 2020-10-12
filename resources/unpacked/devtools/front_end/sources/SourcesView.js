@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Platform from '../platform/platform.js';
 import * as QuickOpen from '../quick_open/quick_open.js';
+import * as Root from '../root/root.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -33,6 +31,10 @@ export class SourcesView extends UI.Widget.VBox {
     this.element.id = 'sources-panel-sources-view';
     this.setMinimumAndPreferredSizes(88, 52, 150, 100);
 
+    /** @type {!Array.<{element: !HTMLElement, handler: !Function}>} */
+    this._placeholderOptionArray = [];
+    this._selectedIndex = 0;
+
     const workspace = Workspace.Workspace.WorkspaceImpl.instance();
 
     this._searchableView = new UI.SearchableView.SearchableView(this, 'sourcesViewSearchConfig');
@@ -53,17 +55,12 @@ export class SourcesView extends UI.Widget.VBox {
 
     this._toolbarContainerElement = this.element.createChild('div', 'sources-toolbar');
     if (!Root.Runtime.experiments.isEnabled('sourcesPrettyPrint')) {
-      this._toolbarEditorActions = new UI.Toolbar.Toolbar('', this._toolbarContainerElement);
-      self.runtime.allInstances(EditorAction).then(appendButtonsForExtensions.bind(this));
-    }
-    /**
-     * @param {!Array.<!EditorAction>} actions
-     * @this {SourcesView}
-     */
-    function appendButtonsForExtensions(actions) {
-      for (let i = 0; i < actions.length; ++i) {
-        this._toolbarEditorActions.appendToolbarItem(actions[i].button(this));
-      }
+      const toolbarEditorActions = new UI.Toolbar.Toolbar('', this._toolbarContainerElement);
+      Root.Runtime.Runtime.instance().allInstances(EditorAction).then(actions => {
+        for (const action of /** @type {!Array<!EditorAction>} */ (actions)) {
+          toolbarEditorActions.appendToolbarItem(action.button(this));
+        }
+      });
     }
     this._scriptViewToolbar = new UI.Toolbar.Toolbar('', this._toolbarContainerElement);
     this._scriptViewToolbar.element.style.flex = 'auto';
@@ -88,22 +85,22 @@ export class SourcesView extends UI.Widget.VBox {
         return;
       }
 
-      let unsavedSourceCodes = [];
+      /** @type {!Array<!Workspace.UISourceCode.UISourceCode>} */
+      const unsavedSourceCodes = [];
       const projects =
           Workspace.Workspace.WorkspaceImpl.instance().projectsForType(Workspace.Workspace.projectTypes.FileSystem);
-      for (let i = 0; i < projects.length; ++i) {
-        unsavedSourceCodes =
-            unsavedSourceCodes.concat(projects[i].uiSourceCodes().filter(sourceCode => sourceCode.isDirty()));
+      for (const project of projects) {
+        unsavedSourceCodes.push(...project.uiSourceCodes().filter(sourceCode => sourceCode.isDirty()));
       }
 
       if (!unsavedSourceCodes.length) {
         return;
       }
 
-      event.returnValue = Common.UIString.UIString('DevTools have unsaved changes that will be permanently lost.');
+      event.returnValue = true;
       UI.ViewManager.ViewManager.instance().showView('sources');
-      for (let i = 0; i < unsavedSourceCodes.length; ++i) {
-        Common.Revealer.reveal(unsavedSourceCodes[i]);
+      for (const sourceCode of unsavedSourceCodes) {
+        Common.Revealer.reveal(sourceCode);
       }
     }
 
@@ -111,7 +108,8 @@ export class SourcesView extends UI.Widget.VBox {
       window.addEventListener('beforeunload', handleBeforeUnload, true);
     }
 
-    this._shortcuts = {};
+    /** @type {!Map<number, function():boolean>} */
+    this._shortcuts = new Map();
     this.element.addEventListener('keydown', this._handleKeyDown.bind(this), false);
   }
 
@@ -119,7 +117,6 @@ export class SourcesView extends UI.Widget.VBox {
    * @return {!Element}
    */
   _placeholderElement() {
-    /** @type {!Array.<{element: !Element, handler: !Function}>} */
     this._placeholderOptionArray = [];
 
     const shortcuts = [
@@ -136,10 +133,10 @@ export class SourcesView extends UI.Widget.VBox {
 
     for (let i = 0; i < shortcuts.length; i++) {
       const shortcut = shortcuts[i];
-      const shortcutKeyText = self.UI.shortcutRegistry.shortcutTitleForAction(shortcut.actionId);
+      const shortcutKeyText = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction(shortcut.actionId);
       const listItemElement = list.createChild('div');
       UI.ARIAUtils.markAsListitem(listItemElement);
-      const row = listItemElement.createChild('div', 'tabbed-pane-placeholder-row');
+      const row = /** @type {!HTMLElement} */ (listItemElement.createChild('div', 'tabbed-pane-placeholder-row'));
       row.tabIndex = -1;
       UI.ARIAUtils.markAsButton(row);
       if (shortcutKeyText) {
@@ -149,8 +146,14 @@ export class SourcesView extends UI.Widget.VBox {
         row.createChild('div', 'tabbed-pane-no-shortcut').textContent = shortcut.description;
       }
       const action = UI.ActionRegistry.ActionRegistry.instance().action(shortcut.actionId);
-      const actionHandler = action.execute.bind(action);
-      this._placeholderOptionArray.push({element: row, handler: actionHandler});
+      if (action) {
+        this._placeholderOptionArray.push({
+          element: row,
+          handler() {
+            action.execute();
+          }
+        });
+      }
     }
 
     const firstElement = this._placeholderOptionArray[0].element;
@@ -169,15 +172,16 @@ export class SourcesView extends UI.Widget.VBox {
    * @param {!Event} event
    */
   _placeholderOnKeyDown(event) {
-    if (isEnterOrSpaceKey(event)) {
-      this._placeholderOptionArray[this._selectedIndex].handler.call();
+    const keyboardEvent = /** @type {!KeyboardEvent} */ (event);
+    if (isEnterOrSpaceKey(keyboardEvent)) {
+      this._placeholderOptionArray[this._selectedIndex].handler();
       return;
     }
 
     let offset = 0;
-    if (event.key === 'ArrowDown') {
+    if (keyboardEvent.key === 'ArrowDown') {
       offset = 1;
-    } else if (event.key === 'ArrowUp') {
+    } else if (keyboardEvent.key === 'ArrowUp') {
       offset = -1;
     }
 
@@ -244,13 +248,16 @@ export class SourcesView extends UI.Widget.VBox {
    */
   _registerShortcuts(keys, handler) {
     for (let i = 0; i < keys.length; ++i) {
-      this._shortcuts[keys[i].key] = handler;
+      this._shortcuts.set(keys[i].key, handler);
     }
   }
 
+  /**
+   * @param {!Event} event
+   */
   _handleKeyDown(event) {
-    const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(event);
-    const handler = this._shortcuts[shortcutKey];
+    const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(/** @type {!KeyboardEvent} */ (event));
+    const handler = this._shortcuts.get(shortcutKey);
     if (handler && handler()) {
       event.consume(true);
     }
@@ -356,6 +363,9 @@ export class SourcesView extends UI.Widget.VBox {
     this._editorContainer.addUISourceCode(uiSourceCode);
   }
 
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
   _uiSourceCodeRemoved(event) {
     const uiSourceCode = /** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data);
     this._removeUISourceCodes([uiSourceCode]);
@@ -372,6 +382,9 @@ export class SourcesView extends UI.Widget.VBox {
     }
   }
 
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
   _projectRemoved(event) {
     const project = event.data;
     const uiSourceCodes = project.uiSourceCodes();
@@ -381,7 +394,7 @@ export class SourcesView extends UI.Widget.VBox {
   _updateScriptViewToolbarItems() {
     const view = this.visibleView();
     if (view instanceof UI.View.SimpleView) {
-      (/** @type {?UI.View.SimpleView} */ (view)).toolbarItems().then(items => {
+      view.toolbarItems().then(items => {
         this._scriptViewToolbar.removeToolbarItems();
         items.map(item => this._scriptViewToolbar.appendToolbarItem(item));
       });
@@ -403,8 +416,9 @@ export class SourcesView extends UI.Widget.VBox {
       currentSourceFrame.revealPosition(lineNumber, columnNumber, !omitHighlight);
     }
     this._historyManager.pushNewState();
-    if (!omitFocus) {
-      this.visibleView().focus();
+    const visibleView = this.visibleView();
+    if (!omitFocus && visibleView) {
+      visibleView.focus();
     }
   }
 
@@ -572,7 +586,7 @@ export class SourcesView extends UI.Widget.VBox {
       return;
     }
 
-    if (this._searchView !== this.currentSourceFrame()) {
+    if (this._searchConfig && this._searchView !== this.currentSourceFrame()) {
       this.performSearch(this._searchConfig, true);
       return;
     }
@@ -588,7 +602,7 @@ export class SourcesView extends UI.Widget.VBox {
       return;
     }
 
-    if (this._searchView !== this.currentSourceFrame()) {
+    if (this._searchConfig && this._searchView !== this.currentSourceFrame()) {
       this.performSearch(this._searchConfig, true);
       if (this._searchView) {
         this._searchView.jumpToLastSearchResult();
@@ -623,7 +637,7 @@ export class SourcesView extends UI.Widget.VBox {
   replaceSelectionWith(searchConfig, replacement) {
     const sourceFrame = this.currentSourceFrame();
     if (!sourceFrame) {
-      console.assert(sourceFrame);
+      console.assert(!!sourceFrame);
       return;
     }
     sourceFrame.replaceSelectionWith(searchConfig, replacement);
@@ -637,7 +651,7 @@ export class SourcesView extends UI.Widget.VBox {
   replaceAllWith(searchConfig, replacement) {
     const sourceFrame = this.currentSourceFrame();
     if (!sourceFrame) {
-      console.assert(sourceFrame);
+      console.assert(!!sourceFrame);
       return;
     }
     sourceFrame.replaceAllWith(searchConfig, replacement);
@@ -695,7 +709,9 @@ export class EditorAction {
    * @param {!SourcesView} sourcesView
    * @return {!UI.Toolbar.ToolbarButton}
    */
-  button(sourcesView) {}
+  button(sourcesView) {
+    throw new Error('Not implemented yet');
+  }
 }
 
 /**
@@ -747,6 +763,9 @@ export class SwitchFileActionDelegate {
    */
   handleAction(context, actionId) {
     const sourcesView = UI.Context.Context.instance().flavor(SourcesView);
+    if (!sourcesView) {
+      return false;
+    }
     const currentUISourceCode = sourcesView.currentUISourceCode();
     if (!currentUISourceCode) {
       return false;

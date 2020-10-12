@@ -13,11 +13,17 @@ import * as UI from '../ui/ui.js';
 
 import {Events, PageSecurityState, PageVisibleSecurityState, SecurityModel, SecurityStyleExplanation, SummaryMessages,} from './SecurityModel.js';  // eslint-disable-line no-unused-vars
 
+/** @type {!SecurityPanel} */
+let securityPanelInstance;
+
 /**
  * @implements {SDK.SDKModel.SDKModelObserver<!SecurityModel>}
  * @unrestricted
  */
 export class SecurityPanel extends UI.Panel.PanelWithSidebar {
+  /**
+   * @private
+   */
   constructor() {
     super('security');
 
@@ -45,11 +51,22 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
   }
 
   /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!securityPanelInstance || forceNew) {
+      securityPanelInstance = new SecurityPanel();
+    }
+
+    return securityPanelInstance;
+  }
+
+  /**
    * @return {!SecurityPanel}
    */
   static _instance() {
-    return (
-        /** @type {!SecurityPanel} */ (self.runtime.sharedInstance(SecurityPanel)));
+    return SecurityPanel.instance();
   }
 
   /**
