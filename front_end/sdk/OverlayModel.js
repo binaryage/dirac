@@ -84,8 +84,6 @@ export class OverlayModel extends SDKModel {
       this._wireAgentToSettings();
     }
 
-    this._isPersistentGridModeOn = false;
-
     /** @type {?DefaultPersistentGridHighlighter} */
     this._persistentGridHighlighter = null;
     if (this._gridFeaturesExperimentEnabled) {
@@ -120,7 +118,7 @@ export class OverlayModel extends SDKModel {
   static highlightObjectAsDOMNode(object) {
     const domModel = object.runtimeModel().target().model(DOMModel);
     if (domModel) {
-      domModel.overlayModel().highlightInOverlay({object});
+      domModel.overlayModel().highlightInOverlay({object, selectorList: undefined});
     }
   }
 
@@ -222,7 +220,7 @@ export class OverlayModel extends SDKModel {
     if (this._showHitTestBordersSetting.get()) {
       this._overlayAgent.invoke_setShowHitTestBorders({show: true});
     }
-    if (this._debuggerModel.isPaused()) {
+    if (this._debuggerModel && this._debuggerModel.isPaused()) {
       this._updatePausedInDebuggerMessage();
     }
     await this._overlayAgent.invoke_setShowViewportSizeOnResize({show: this._showViewportSizeOnResize});
@@ -260,18 +258,11 @@ export class OverlayModel extends SDKModel {
     this._overlayAgent.invoke_setShowViewportSizeOnResize({show});
   }
 
-  /**
-   * @param {boolean} isPersistentGridModeOn
-   */
-  setPersistentGridMode(isPersistentGridModeOn) {
-    this._isPersistentGridModeOn = isPersistentGridModeOn;
-  }
-
   _updatePausedInDebuggerMessage() {
     if (this.target().suspended()) {
       return;
     }
-    const message = this._debuggerModel.isPaused() &&
+    const message = this._debuggerModel && this._debuggerModel.isPaused() &&
             !Common.Settings.Settings.instance().moduleSetting('disablePausedStateOverlay').get() ?
         Common.UIString.UIString('Paused in debugger') :
         undefined;
@@ -295,10 +286,6 @@ export class OverlayModel extends SDKModel {
     this._inspectModeEnabled = mode !== Protocol.Overlay.InspectMode.None;
     this.dispatchEventToListeners(Events.InspectModeWillBeToggled, this);
     this._highlighter.setInspectMode(mode, this._buildHighlightConfig('all', showDetailedTooltip));
-    if (this._inspectModeEnabled && this._gridFeaturesExperimentEnabled && this._persistentGridHighlighter) {
-      this._persistentGridHighlighter.hideAllInOverlay();
-      this.dispatchEventToListeners(Events.PersistentGridOverlayCleared);
-    }
   }
 
   /**
@@ -314,11 +301,6 @@ export class OverlayModel extends SDKModel {
    * @param {boolean=} showInfo
    */
   highlightInOverlay(data, mode, showInfo) {
-    if (this._isPersistentGridModeOn) {
-      // TODO: Currently the backend doesn't support normal highlights when
-      // the persistent highlight is turned on: https://crbug.com/1109224.
-      return;
-    }
     if (this._sourceOrderModeActive) {
       // Return early if the source order is currently being shown the in the
       // overlay, so that it is not cleared by the highlight
@@ -345,12 +327,14 @@ export class OverlayModel extends SDKModel {
 
   /**
    * @param {number} nodeId
+   * @param {!Host.UserMetrics.GridOverlayOpener} gridOverlayOpener
    */
-  highlightGridInPersistentOverlay(nodeId) {
+  highlightGridInPersistentOverlay(nodeId, gridOverlayOpener) {
     if (!this._persistentGridHighlighter) {
       return;
     }
     this._persistentGridHighlighter.highlightInOverlay(nodeId);
+    Host.userMetrics.gridOverlayOpenedFrom(gridOverlayOpener);
     this.dispatchEventToListeners(Events.PersistentGridOverlayStateChanged, {nodeId, enabled: true});
   }
 
@@ -394,7 +378,23 @@ export class OverlayModel extends SDKModel {
     if (!this._persistentGridHighlighter) {
       return null;
     }
-    return this._persistentGridHighlighter.colorOfGrid(nodeId).asString();
+    return this._persistentGridHighlighter.colorOfGrid(nodeId).asString(Common.Color.Format.HEX);
+  }
+
+  /**
+   * @param {number} nodeId
+   * @param {string} colorStr
+   */
+  setColorOfGridInPersistentOverlay(nodeId, colorStr) {
+    if (!this._persistentGridHighlighter) {
+      return;
+    }
+    const color = Common.Color.Color.parse(colorStr);
+    if (!color) {
+      return;
+    }
+    this._persistentGridHighlighter.setColorOfGrid(nodeId, color);
+    this._persistentGridHighlighter._resetOverlay();
   }
 
   hideSourceOrderInOverlay() {
@@ -766,7 +766,7 @@ class DefaultPersistentGridHighlighter {
     this._logCurrentGridSettings();
 
     // Debounce recording highlighted grids in order to avoid counting rapidly turning grids on and off.
-    this._recordHighlightedGridCount = debounce(this._doRecordHighlightedGridCount.bind(this), 1000);
+    this._recordHighlightedGridCount = Common.Debouncer.debounce(this._doRecordHighlightedGridCount.bind(this), 1000);
     /** @type {!Array<number>} */
     this._previouslyRecordedGridCountNodeIds = [];
   }
@@ -829,6 +829,7 @@ class DefaultPersistentGridHighlighter {
    */
   _buildGridHighlightConfig(nodeId) {
     const mainColor = this.colorOfGrid(nodeId);
+    const background = mainColor.setAlpha(0.1);
     const gapBackground = mainColor.setAlpha(0.3);
     const gapHatch = mainColor.setAlpha(0.8);
 
@@ -841,6 +842,7 @@ class DefaultPersistentGridHighlighter {
       rowHatchColor: gapHatch.toProtocolRGBA(),
       columnGapColor: gapBackground.toProtocolRGBA(),
       columnHatchColor: gapHatch.toProtocolRGBA(),
+      gridBorderColor: mainColor.toProtocolRGBA(),
       gridBorderDash: false,
       rowLineColor: mainColor.toProtocolRGBA(),
       columnLineColor: mainColor.toProtocolRGBA(),
@@ -853,6 +855,7 @@ class DefaultPersistentGridHighlighter {
       showAreaNames: /** @type {boolean} */ (this._showGridAreasSetting.get()),
       showTrackSizes: /** @type {boolean} */ (this._showGridTrackSizesSetting.get()),
       areaBorderColor: mainColor.toProtocolRGBA(),
+      gridBackgroundColor: background.toProtocolRGBA(),
     };
   }
 
@@ -886,6 +889,14 @@ class DefaultPersistentGridHighlighter {
     }
 
     return color;
+  }
+
+  /**
+   * @param {number} nodeId
+   * @param {!Common.Color.Color} color
+   */
+  setColorOfGrid(nodeId, color) {
+    this._gridColors.set(nodeId, color);
   }
 
   /**
@@ -932,7 +943,6 @@ class DefaultPersistentGridHighlighter {
 
   _updateHighlightsInOverlay() {
     const hasGridNodesToHighlight = this._gridHighlights.size > 0;
-    this._model.setPersistentGridMode(hasGridNodesToHighlight);
     this._model.setShowViewportSizeOnResize(!hasGridNodesToHighlight);
     const overlayModel = this._model;
     const gridNodeHighlightConfigs = [];
@@ -940,24 +950,41 @@ class DefaultPersistentGridHighlighter {
       gridNodeHighlightConfigs.push({nodeId, gridHighlightConfig});
     }
     overlayModel.target().overlayAgent().invoke_setShowGridOverlays({gridNodeHighlightConfigs});
-
     this._recordHighlightedGridCount();
   }
 }
 
 DefaultPersistentGridHighlighter.gridTelemetryLogged = false;
 
+/**
+ * Used to cycle through a list of predetermined colors for the grid overlay.
+ * This helps users differentiate between overlays when several are shown at the
+ * same time.
+ */
 class OverlayColorGenerator {
   constructor() {
-    // The saturation and value values are set here to create nice looking colors.
-    // Only the hue is generated, so we end up with a range of colors that fit together well.
-    this.saturation = 0.8;
-    this.value = 0.7;
-
-    // A smaller increment runs the risk of generating colors that are too similar.
-    this.hueIncrements = 0.1;
-
-    this.hue = 0;
+    this._colors = [
+      // F59794
+      new Common.Color.Color([0.9607843137254902, 0.592156862745098, 0.5803921568627451, 1], Common.Color.Format.RGBA),
+      // F0BF4C
+      new Common.Color.Color([0.9411764705882353, 0.7490196078431373, 0.2980392156862745, 1], Common.Color.Format.RGBA),
+      // D4ED31
+      new Common.Color.Color(
+          [0.8313725490196079, 0.9294117647058824, 0.19215686274509805, 1], Common.Color.Format.RGBA),
+      // 9EEB47
+      new Common.Color.Color([0.6196078431372549, 0.9215686274509803, 0.2784313725490196, 1], Common.Color.Format.RGBA),
+      // 5BD1D7
+      new Common.Color.Color([0.3568627450980392, 0.8196078431372549, 0.8431372549019608, 1], Common.Color.Format.RGBA),
+      // BCCEFB
+      new Common.Color.Color([0.7372549019607844, 0.807843137254902, 0.984313725490196, 1], Common.Color.Format.RGBA),
+      // C6BEEE
+      new Common.Color.Color([0.7764705882352941, 0.7450980392156863, 0.9333333333333333, 1], Common.Color.Format.RGBA),
+      // D094EA
+      new Common.Color.Color([0.8156862745098039, 0.5803921568627451, 0.9176470588235294, 1], Common.Color.Format.RGBA),
+      // EB94CF
+      new Common.Color.Color([0.9215686274509803, 0.5803921568627451, 0.8117647058823529, 1], Common.Color.Format.RGBA),
+    ];
+    this._index = 0;
   }
 
   /**
@@ -965,10 +992,10 @@ class OverlayColorGenerator {
    * @return {!Common.Color.Color}
    */
   next() {
-    const color = Common.Color.Color.fromHSVA([this.hue, this.saturation, this.value, 1]);
-    this.hue += this.hueIncrements;
-    if (this.hue >= 1) {
-      this.hue = 0;
+    const color = this._colors[this._index];
+    this._index++;
+    if (this._index >= this._colors.length) {
+      this._index = 0;
     }
 
     return color;
@@ -1005,22 +1032,6 @@ SDKModel.register(OverlayModel, Capability.DOM, true);
 /** @typedef {!{node: !DOMNode, selectorList: (string|undefined)} | !{deferredNode: DeferredDOMNode, selectorList: (string|undefined)} | !{object: !RemoteObject, selectorList: (string|undefined)} | !{clear: *}} */
 // @ts-ignore typedef
 export let HighlightData;
-
-/**
- * Debounce utility function, ensures that the function passed in is only called once the function stops being called and the delay has expired.
- * @param {!Function} func The function to debounce
- * @param {number} delay The time to wait before calling the function
- * @return {!Function} The debounced function
- */
-const debounce = function(func, delay) {
-  let timer = 0;
-  const debounced = () => {
-    clearTimeout(timer);
-    // @ts-ignore typedef
-    timer = setTimeout(() => func(), delay);
-  };
-  return debounced;
-};
 
 /**
  * Checks if 2 arrays are equal.

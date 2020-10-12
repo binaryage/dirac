@@ -34,13 +34,20 @@
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as Host from '../host/host.js';
+import * as Root from '../root/root.js';
 import * as UI from '../ui/ui.js';
+
+/** @type {!SettingsScreen} */
+let settingsScreenInstance;
 
 /**
  * @implements {UI.View.ViewLocationResolver}
  * @unrestricted
  */
 export class SettingsScreen extends UI.Widget.VBox {
+  /**
+   * @private
+   */
   constructor() {
     super(true);
     this.registerRequiredCSS('settings/settingsScreen.css');
@@ -65,8 +72,12 @@ export class SettingsScreen extends UI.Widget.VBox {
 
     if (!Root.Runtime.experiments.isEnabled('customKeyboardShortcuts')) {
       const shortcutsView = new UI.View.SimpleView(ls`Shortcuts`);
-      self.UI.shortcutsScreen.createShortcutsTabView().show(shortcutsView.element);
+      UI.ShortcutsScreen.ShortcutsScreen.instance().createShortcutsTabView().show(shortcutsView.element);
       this._tabbedLocation.appendView(shortcutsView);
+    } else {
+      UI.ViewManager.ViewManager.instance().view('keybinds').widget().then(widget => {
+        this._keybindsTab = widget;
+      });
     }
     tabbedPane.show(this.contentElement);
     tabbedPane.selectTab('preferences');
@@ -75,11 +86,22 @@ export class SettingsScreen extends UI.Widget.VBox {
   }
 
   /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!settingsScreenInstance || forceNew) {
+      settingsScreenInstance = new SettingsScreen();
+    }
+
+    return settingsScreenInstance;
+  }
+
+  /**
    * @return {!SettingsScreen}
    */
   static _revealSettingsScreen() {
-    /** @type {!SettingsScreen} */
-    const settingsScreen = self.runtime.sharedInstance(SettingsScreen);
+    const settingsScreen = SettingsScreen.instance();
     if (settingsScreen.isShowing()) {
       return settingsScreen;
     }
@@ -92,6 +114,7 @@ export class SettingsScreen extends UI.Widget.VBox {
     dialog.setPointerEventsBehavior(UI.GlassPane.PointerEventsBehavior.PierceGlassPane);
     dialog.setOutsideTabIndexBehavior(UI.Dialog.OutsideTabIndexBehavior.PreserveMainViewTabIndex);
     settingsScreen.show(dialog.contentElement);
+    dialog.setEscapeKeyCallback(settingsScreen._onEscapeKeyPressed.bind(settingsScreen));
     dialog.show();
 
     return settingsScreen;
@@ -160,6 +183,15 @@ export class SettingsScreen extends UI.Widget.VBox {
 
     Host.userMetrics.settingsPanelShown(tabId);
   }
+
+  /**
+   * @param {!Event} event
+   */
+  _onEscapeKeyPressed(event) {
+    if (this._tabbedLocation.tabbedPane().selectedTabId === 'keybinds' && this._keybindsTab) {
+      this._keybindsTab.onEscapeKeyPressed(event);
+    }
+  }
 }
 
 /**
@@ -217,8 +249,8 @@ export class GenericSettingsTab extends SettingsTab {
     for (const sectionName of explicitSectionOrder) {
       this._createSectionElement(sectionName);
     }
-    self.runtime.extensions('setting').forEach(this._addSetting.bind(this));
-    self.runtime.extensions(UI.SettingsUI.SettingUI).forEach(this._addSettingUI.bind(this));
+    Root.Runtime.Runtime.instance().extensions('setting').forEach(this._addSetting.bind(this));
+    Root.Runtime.Runtime.instance().extensions(UI.SettingsUI.SettingUI).forEach(this._addSettingUI.bind(this));
 
     this._appendSection().appendChild(
         UI.UIUtils.createTextButton(Common.UIString.UIString('Restore defaults and reload'), restoreAndReload));
@@ -319,7 +351,8 @@ export class ExperimentsSettingsTab extends SettingsTab {
     const stableExperiments = experiments.filter(e => !e.unstable);
     if (stableExperiments.length) {
       const experimentsSection = this._appendSection();
-      const warningMessage = Common.UIString.UIString('These experiments could be dangerous and may require restart.');
+      const warningMessage = Common.UIString.UIString(
+          'These experiments could be unstable or unreliable and may require you to restart DevTools.');
       experimentsSection.appendChild(this._createExperimentsWarningSubsection(warningMessage));
       for (const experiment of stableExperiments) {
         experimentsSection.appendChild(this._createExperimentCheckbox(experiment));
@@ -417,9 +450,9 @@ export class Revealer {
     const setting = /** @type {!Common.Settings.Setting} */ (object);
     let success = false;
 
-    self.runtime.extensions('setting').forEach(revealModuleSetting);
-    self.runtime.extensions(UI.SettingsUI.SettingUI).forEach(revealSettingUI);
-    self.runtime.extensions('view').forEach(revealSettingsView);
+    Root.Runtime.Runtime.instance().extensions('setting').forEach(revealModuleSetting);
+    Root.Runtime.Runtime.instance().extensions(UI.SettingsUI.SettingUI).forEach(revealSettingUI);
+    Root.Runtime.Runtime.instance().extensions('view').forEach(revealSettingsView);
 
     return success ? Promise.resolve() : Promise.reject();
 

@@ -9,7 +9,12 @@ ts_library("helpers") {
   sources = [
     "DOMHelpers.ts",
     "InspectorOverlayHelpers.ts",
+    "MutationHelpers.ts",
+    "MutationHelpers_test.ts",
   ]
 
-  deps = [ "../../../../front_end/inspector_overlay" ]
+  deps = [
+    "../../../../front_end/third_party/lit-html:bundle",
+    "../../../../inspector_overlay",
+  ]
 }

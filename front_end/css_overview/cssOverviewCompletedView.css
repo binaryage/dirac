@@ -13,9 +13,11 @@
 
 .overview-completed-view .summary ul,
 .overview-completed-view .colors ul {
+  display: flex;
+  flex-wrap: wrap;
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 
 .overview-completed-view .summary ul {
@@ -26,8 +28,8 @@
 
 .overview-completed-view .colors ul li {
   display: inline-block;
-  padding: 0;
   margin: 0 0 16px 0;
+  padding: 0 8px 0 0;
 }
 
 .overview-completed-view .summary ul li {
@@ -287,4 +289,78 @@
 
 .overview-completed-view .font-family:first-of-type {
   padding-top: 0;
+}
+
+.contrast-warning {
+  display: flex;
+  align-items: baseline;
+}
+
+.contrast-warning .threshold-label {
+  font-weight: normal;
+  width: 25px;
+}
+
+.contrast-warning [is=ui-icon] {
+  margin-left: 5px;
+}
+
+.contrast-preview {
+  padding: 0 5px;
+}
+
+.contrast-container-in-grid {
+  display: flex;
+  align-items: baseline;
+}
+
+.contrast-container-in-grid > * {
+  margin-right: 5px;
+}
+
+[is=ui-icon].smallicon-checkmark-square {
+  background-color: #00b06f;
+}
+
+[is=ui-icon].smallicon-no {
+  background-color: red;
+}
+
+.data .nodeId-column {
+  align-items: center;
+  display: flex;
+  height: 20px;
+}
+
+.show-element {
+  margin: 0 0 0 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  -webkit-mask-image: url(Images/ic_show_node_16x16.svg);
+  background-color: #333;
+  width: 16px;
+  height: 16px;
+  display: none;
+  cursor: pointer;
+  flex: none;
+}
+
+.show-element:focus,
+.show-element:hover {
+  background-color: #6e6e6e;
+}
+
+.nodeId-column:focus-within .show-element,
+.nodeId-column:hover .show-element {
+  display: inline-block;
+}
+
+:host-context(.-theme-with-dark-background) .show-element {
+  background-color: rgb(204 204 204);
+}
+
+:host-context(.-theme-with-dark-background) .show-element:focus,
+:host-context(.-theme-with-dark-background) .show-element:hover {
+  background-color: #6e6e6e;
 }

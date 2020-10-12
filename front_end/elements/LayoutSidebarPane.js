@@ -6,6 +6,7 @@
 // TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -28,14 +29,26 @@ const gridNodesToElements = nodes => {
       enabled: node.domModel().overlayModel().isHighlightedGridInPersistentOverlay(node.id),
       reveal: () => {
         ElementsPanel.instance().revealAndSelectNode(node, true, true);
+        node.scrollIntoView();
+      },
+      highlight: () => {
+        node.highlight();
+      },
+      hideHighlight: () => {
+        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
       },
       toggle: value => {
         if (value) {
-          node.domModel().overlayModel().highlightGridInPersistentOverlay(node.id);
+          node.domModel().overlayModel().highlightGridInPersistentOverlay(
+              node.id, Host.UserMetrics.GridOverlayOpener.LayoutPane);
         } else {
           node.domModel().overlayModel().hideGridInPersistentOverlay(node.id);
         }
-      }
+      },
+      setColor(value) {
+        this.color = value;
+        node.domModel().overlayModel().setColorOfGridInPersistentOverlay(node.id, value);
+      },
     };
   });
 };
@@ -96,10 +109,10 @@ export class LayoutSidebarPane extends UI.ThrottledWidget.ThrottledWidget {
           return {
             type: descriptor.settingType,
             name: descriptor.settingName,
-            title: descriptor.title,
+            title: ls(descriptor.title),
             value: setting.get(),
             options: descriptor.options.map(opt => ({
-                                              title: opt.text,
+                                              title: ls(opt.title),
                                               value: opt.value,
                                             }))
           };

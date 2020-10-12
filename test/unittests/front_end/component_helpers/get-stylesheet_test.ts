@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as ThemeSupport from '../../../../front_end/theme_support/theme_support.js';
 import * as ComponentHelpers from '../../../../front_end/component_helpers/component_helpers.js';
 const {assert} = chai;
 
@@ -20,20 +21,12 @@ describe('ComponentHelpers', () => {
     });
 
     describe('patching stylesheets', () => {
-      before(() => {
-        // @ts-ignore we're only faking the minimal UI interface for test
-        self.UI = {
-          themeSupport: {
-            themeStyleSheet() {
-              return 'p { color: red; }';
-            },
-          },
+      beforeEach(() => {
+        // Patch theme support to return a patch in all cases, necessary for testing these
+        // particular set of behaviors.
+        ThemeSupport.ThemeSupport.instance().themeStyleSheet = () => {
+          return 'p { color: red; }';
         };
-      });
-
-      after(() => {
-        // @ts-ignore the test needs to tidy up after itself
-        self.UI = undefined;
       });
 
       it('returns the original and the patched stylesheet if there is a themed stylesheet and the option is set',

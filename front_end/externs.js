@@ -550,7 +550,7 @@ CodeMirror.cmpPos = function(pos1, pos2) {};
 
 /**
  * @constructor
- * @param {(!Array<string>|string)} line
+ * @param {string} line
  * @param {number=} index
  */
 CodeMirror.StringStream = function(line, index) {
@@ -859,31 +859,10 @@ const mod = function(m, n) {};
 
 /**
  * @param {string} query
- * @param {boolean} caseSensitive
- * @param {boolean} isRegex
- * @return {!RegExp}
- */
-const createSearchRegex = function(query, caseSensitive, isRegex) {};
-
-/**
- * @param {string} query
  * @param {string=} flags
  * @return {!RegExp}
  */
 const createPlainTextSearchRegex = function(query, flags) {};
-
-/**
- * @param {number} spacesCount
- * @return {string}
- */
-const spacesPadding = function(spacesCount) {};
-
-/**
- * @param {number} value
- * @param {number} symbolsCount
- * @return {string}
- */
-const numberToStringWithSpacesPadding = function(value, symbolsCount) {};
 
 /**
  * @param {*} value
@@ -1440,7 +1419,10 @@ InspectorFrontendHostAPI.LoadNetworkResourceResult;
 
 /**
  * Enum for recordEnumeratedHistogram
- * Warning: There are three definitions of this enum in the DevTools code base, keep them in sync.
+ * Warning: There are two other definitions of this enum in the DevTools code
+ * base, keep them in sync:
+ * front_end/devtools_compatibility.js
+ * front_end/host/InspectorFrontendHostAPI.js
  * @readonly
  * @enum {string}
  */
@@ -1451,7 +1433,9 @@ InspectorFrontendHostAPI.EnumeratedHistogram = {
   PanelShown: 'DevTools.PanelShown',
   SidebarPaneShown: 'DevTools.SidebarPaneShown',
   KeyboardShortcutFired: 'DevTools.KeyboardShortcutFired',
+  IssuesPanelIssueExpanded: 'DevTools.IssuesPanelIssueExpanded',
   IssuesPanelOpenedFrom: 'DevTools.IssuesPanelOpenedFrom',
+  IssuesPanelResourceOpened: 'DevTools.IssuesPanelResourceOpened',
   KeybindSetSettingChanged: 'DevTools.KeybindSetSettingChanged',
   DualScreenDeviceEmulated: 'DevTools.DualScreenDeviceEmulated',
   CSSGridSettings: 'DevTools.CSSGridSettings2',
@@ -1460,6 +1444,7 @@ InspectorFrontendHostAPI.EnumeratedHistogram = {
   ExperimentEnabled: 'DevTools.ExperimentEnabled',
   ExperimentDisabled: 'DevTools.ExperimentDisabled',
   ComputedStyleGrouping: 'DevTools.ComputedStyleGrouping',
+  GridOverlayOpenedFrom: 'DevTools.GridOverlayOpenedFrom',
 };
 
 /**

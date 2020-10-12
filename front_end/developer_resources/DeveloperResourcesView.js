@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
@@ -26,6 +23,12 @@ export class DeveloperResourcesView extends UI.Widget.VBox {
         new UI.Toolbar.ToolbarInput(ls`Enter text to search the URL and Error columns`, accessiblePlaceholder, 1);
     this._filterInput.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this._onFilterChanged, this);
     toolbar.appendToolbarItem(this._filterInput);
+
+    const loadThroughTarget = SDK.PageResourceLoader.getLoadThroughTargetSetting();
+    const loadThroughTargetCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
+        loadThroughTarget, ls`Load HTTP(S) developer resources through the inspected target`,
+        ls`Enable loading through target`);
+    toolbar.appendToolbarItem(loadThroughTargetCheckbox);
 
     this._coverageResultsElement = this.contentElement.createChild('div', 'developer-resource-view-results');
     this._listView = new DeveloperResourcesListView(this._isVisible.bind(this));

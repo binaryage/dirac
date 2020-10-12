@@ -124,6 +124,9 @@ describe('LayoutPane', () => {
           enabled: false,
           reveal: () => {},
           toggle: () => {},
+          setColor: () => {},
+          highlight: () => {},
+          hideHighlight: () => {},
         },
         {
           id: 2,
@@ -133,6 +136,9 @@ describe('LayoutPane', () => {
           enabled: false,
           reveal: () => {},
           toggle: () => {},
+          setColor: () => {},
+          highlight: () => {},
+          hideHighlight: () => {},
         },
         {
           id: 3,
@@ -141,6 +147,9 @@ describe('LayoutPane', () => {
           enabled: false,
           reveal: () => {},
           toggle: () => {},
+          setColor: () => {},
+          highlight: () => {},
+          hideHighlight: () => {},
         },
       ],
       settings: [],
@@ -168,6 +177,9 @@ describe('LayoutPane', () => {
             called++;
             assert.strictEqual(value, true);
           },
+          setColor: () => {},
+          highlight: () => {},
+          hideHighlight: () => {},
         },
       ],
       settings: [],
@@ -195,6 +207,9 @@ describe('LayoutPane', () => {
             called++;
           },
           toggle: () => {},
+          setColor: () => {},
+          highlight: () => {},
+          hideHighlight: () => {},
         },
       ],
       settings: [],

@@ -292,6 +292,37 @@ declare namespace Protocol {
     export interface GetFullAXTreeResponse extends ProtocolResponseWithError {
       nodes: AXNode[];
     }
+
+    export interface QueryAXTreeRequest {
+      /**
+       * Identifier of the node for the root to query.
+       */
+      nodeId?: DOM.NodeId;
+      /**
+       * Identifier of the backend node for the root to query.
+       */
+      backendNodeId?: DOM.BackendNodeId;
+      /**
+       * JavaScript object id of the node wrapper for the root to query.
+       */
+      objectId?: Runtime.RemoteObjectId;
+      /**
+       * Find nodes with this computed name.
+       */
+      accessibleName?: string;
+      /**
+       * Find nodes with this computed role.
+       */
+      role?: string;
+    }
+
+    export interface QueryAXTreeResponse extends ProtocolResponseWithError {
+      /**
+       * A list of `Accessibility.AXNode` matching the specified attributes,
+       * including nodes that are ignored for accessibility.
+       */
+      nodes: AXNode[];
+    }
   }
 
   export namespace Animation {
@@ -1148,10 +1179,6 @@ declare namespace Protocol {
        */
       userVisibleOnly?: boolean;
       /**
-       * For "wake-lock" permission, must specify type as either "screen" or "system".
-       */
-      type?: string;
-      /**
        * For "clipboard" permission, may specify allowWithoutSanitization.
        */
       allowWithoutSanitization?: boolean;
@@ -1525,10 +1552,14 @@ declare namespace Protocol {
       /**
        * Whether this stylesheet is mutable. Inline stylesheets become mutable
        * after they have been modified via CSSOM API.
-       * <link> element's stylesheets are never mutable. Constructed stylesheets
-       * (new CSSStyleSheet()) are mutable immediately after creation.
+       * <link> element's stylesheets become mutable only if DevTools modifies them.
+       * Constructed stylesheets (new CSSStyleSheet()) are mutable immediately after creation.
        */
       isMutable: boolean;
+      /**
+       * Whether this stylesheet is a constructed stylesheet (created using new CSSStyleSheet()).
+       */
+      isConstructed: boolean;
       /**
        * Line offset of the stylesheet within the resource (zero based).
        */
@@ -6753,6 +6784,11 @@ declare namespace Protocol {
        * module) (0-based).
        */
       lineNumber?: number;
+      /**
+       * Initiator column number, set for Parser type or for Script type (when script is importing
+       * module) (0-based).
+       */
+      columnNumber?: number;
     }
 
     /**
@@ -7134,6 +7170,9 @@ declare namespace Protocol {
 
     export interface CrossOriginOpenerPolicyStatus {
       value: CrossOriginOpenerPolicyValue;
+      reportOnlyValue: CrossOriginOpenerPolicyValue;
+      reportingEndpoint?: string;
+      reportOnlyReportingEndpoint?: string;
     }
 
     export enum CrossOriginEmbedderPolicyValue {
@@ -7143,11 +7182,44 @@ declare namespace Protocol {
 
     export interface CrossOriginEmbedderPolicyStatus {
       value: CrossOriginEmbedderPolicyValue;
+      reportOnlyValue: CrossOriginEmbedderPolicyValue;
+      reportingEndpoint?: string;
+      reportOnlyReportingEndpoint?: string;
     }
 
     export interface SecurityIsolationStatus {
       coop: CrossOriginOpenerPolicyStatus;
       coep: CrossOriginEmbedderPolicyStatus;
+    }
+
+    /**
+     * An object providing the result of a network resource load.
+     */
+    export interface LoadNetworkResourcePageResult {
+      success: boolean;
+      /**
+       * Optional values used for error reporting.
+       */
+      netError?: number;
+      netErrorName?: string;
+      httpStatusCode?: number;
+      /**
+       * If successful, one of the following two fields holds the result.
+       */
+      stream?: IO.StreamHandle;
+      /**
+       * Response headers.
+       */
+      headers?: Network.Headers;
+    }
+
+    /**
+     * An options object that may be extended later to better support CORS,
+     * CORB and streaming.
+     */
+    export interface LoadNetworkResourceOptions {
+      disableCache: boolean;
+      includeCredentials: boolean;
     }
 
     export interface CanClearBrowserCacheResponse extends ProtocolResponseWithError {
@@ -7459,7 +7531,7 @@ declare namespace Protocol {
 
     export interface SetCookieResponse extends ProtocolResponseWithError {
       /**
-       * True if successfully set cookie.
+       * Always set to true. If an error occurs, the response indicates protocol error.
        */
       success: boolean;
     }
@@ -7487,6 +7559,13 @@ declare namespace Protocol {
        * Map with extra HTTP headers.
        */
       headers: Headers;
+    }
+
+    export interface SetAttachDebugHeaderRequest {
+      /**
+       * Whether to send a debug header.
+       */
+      enabled: boolean;
     }
 
     export interface SetRequestInterceptionRequest {
@@ -7525,6 +7604,25 @@ declare namespace Protocol {
 
     export interface GetSecurityIsolationStatusResponse extends ProtocolResponseWithError {
       status: SecurityIsolationStatus;
+    }
+
+    export interface LoadNetworkResourceRequest {
+      /**
+       * Frame id to get the resource for.
+       */
+      frameId: Page.FrameId;
+      /**
+       * URL of the resource to get content for.
+       */
+      url: string;
+      /**
+       * Options for the request.
+       */
+      options: LoadNetworkResourceOptions;
+    }
+
+    export interface LoadNetworkResourceResponse extends ProtocolResponseWithError {
+      resource: LoadNetworkResourcePageResult;
     }
 
     /**
@@ -8086,6 +8184,10 @@ declare namespace Protocol {
        * The named grid areas border color (Default: transparent).
        */
       areaBorderColor?: DOM.RGBA;
+      /**
+       * The grid container background color (Default: transparent).
+       */
+      gridBackgroundColor?: DOM.RGBA;
     }
 
     /**
@@ -10852,9 +10954,13 @@ declare namespace Protocol {
        */
       openerId?: TargetID;
       /**
-       * Whether the opened window has access to the originating window.
+       * Whether the target has access to the originating window.
        */
       canAccessOpener: boolean;
+      /**
+       * Frame id of originating window (is only set if target has an opener).
+       */
+      openerFrameId?: Page.FrameId;
       browserContextId?: Browser.BrowserContextID;
     }
 
@@ -10896,6 +11002,9 @@ declare namespace Protocol {
     }
 
     export interface CloseTargetResponse extends ProtocolResponseWithError {
+      /**
+       * Always set to true. If an error occurs, the response indicates protocol error.
+       */
       success: boolean;
     }
 
@@ -11750,7 +11859,7 @@ declare namespace Protocol {
     }
 
     /**
-     * Protocol object for AudioListner
+     * Protocol object for AudioListener
      */
     export interface AudioListener {
       listenerId: GraphObjectId;
@@ -11935,6 +12044,12 @@ declare namespace Protocol {
        * Defaults to false.
        */
       hasUserVerification?: boolean;
+      /**
+       * If set to true, the authenticator will support the largeBlob extension.
+       * https://w3c.github.io/webauthn#largeBlob
+       * Defaults to false.
+       */
+      hasLargeBlob?: boolean;
       /**
        * If set to true, tests of user presence will succeed immediately.
        * Otherwise, they will not be resolved. Defaults to true.
@@ -13456,6 +13571,24 @@ declare namespace Protocol {
       value: integer;
     }
 
+    /**
+     * Runtime call counter information.
+     */
+    export interface RuntimeCallCounterInfo {
+      /**
+       * Counter name.
+       */
+      name: string;
+      /**
+       * Counter value.
+       */
+      value: number;
+      /**
+       * Counter time in seconds.
+       */
+      time: number;
+    }
+
     export interface GetBestEffortCoverageResponse extends ProtocolResponseWithError {
       /**
        * Coverage data for the current isolate.
@@ -13517,11 +13650,18 @@ declare namespace Protocol {
       result: ScriptTypeProfile[];
     }
 
-    export interface GetRuntimeCallStatsResponse extends ProtocolResponseWithError {
+    export interface GetCountersResponse extends ProtocolResponseWithError {
       /**
-       * Collected counter information.
+       * Collected counters information.
        */
       result: CounterInfo[];
+    }
+
+    export interface GetRuntimeCallStatsResponse extends ProtocolResponseWithError {
+      /**
+       * Collected runtime call counter information.
+       */
+      result: RuntimeCallCounterInfo[];
     }
 
     export interface ConsoleProfileFinishedEvent {
@@ -14423,7 +14563,21 @@ declare namespace Protocol {
 
     export interface AddBindingRequest {
       name: string;
+      /**
+       * If specified, the binding would only be exposed to the specified
+       * execution context. If omitted and `executionContextName` is not set,
+       * the binding is exposed to all execution contexts of the target.
+       * This parameter is mutually exclusive with `executionContextName`.
+       */
       executionContextId?: ExecutionContextId;
+      /**
+       * If specified, the binding is exposed to the executionContext with
+       * matching name, even for contexts created after the binding is added.
+       * See also `ExecutionContext.name` and `worldName` parameter to
+       * `Page.addScriptToEvaluateOnNewDocument`.
+       * This parameter is mutually exclusive with `executionContextId`.
+       */
+      executionContextName?: string;
     }
 
     export interface RemoveBindingRequest {

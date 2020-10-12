@@ -39,6 +39,7 @@ import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as PerfUI from '../perf_ui/perf_ui.js';
 import * as Platform from '../platform/platform.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TimelineModel from '../timeline_model/timeline_model.js';
 import * as UI from '../ui/ui.js';
@@ -52,6 +53,9 @@ import {TimelineLoader} from './TimelineLoader.js';
 import {TimelineUIUtils} from './TimelineUIUtils.js';
 import {UIDevtoolsController} from './UIDevtoolsController.js';
 import {UIDevtoolsUtils} from './UIDevtoolsUtils.js';
+
+/** @type {!TimelinePanel} */
+let timelinePanelInstance;
 
 /**
  * @implements {Client}
@@ -155,10 +159,16 @@ export class TimelinePanel extends UI.Panel.Panel {
   }
 
   /**
+   * @param {{forceNew: ?boolean}=} opts
    * @return {!TimelinePanel}
    */
-  static instance() {
-    return /** @type {!TimelinePanel} */ (self.runtime.sharedInstance(TimelinePanel));
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!timelinePanelInstance || forceNew) {
+      timelinePanelInstance = new TimelinePanel();
+    }
+
+    return timelinePanelInstance;
   }
 
   /**
@@ -667,7 +677,7 @@ export class TimelinePanel extends UI.Panel.Panel {
   }
 
   _reset() {
-    self.runtime.sharedInstance(PerfUI.LineLevelProfile.Performance).reset();
+    PerfUI.LineLevelProfile.Performance.instance().reset();
     this._setModel(null);
   }
 
@@ -704,10 +714,9 @@ export class TimelinePanel extends UI.Panel.Panel {
       this._overviewPane.setNavStartTimes(model.timelineModel().navStartTimes());
       this._overviewPane.setBounds(
           model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime());
-      const lineLevelProfile = self.runtime.sharedInstance(PerfUI.LineLevelProfile.Performance);
-      lineLevelProfile.reset();
+      PerfUI.LineLevelProfile.Performance.instance().reset();
       for (const profile of model.timelineModel().cpuProfiles()) {
-        lineLevelProfile.appendCPUProfile(profile);
+        PerfUI.LineLevelProfile.Performance.instance().appendCPUProfile(profile);
       }
       this._setMarkers(model.timelineModel());
       this._flameChart.setSelection(null);
@@ -768,10 +777,11 @@ export class TimelinePanel extends UI.Panel.Panel {
         'https://developers.google.com/web/tools/chrome-devtools/evaluate-performance/',
         Common.UIString.UIString('Learn\xa0more'));
 
-    const recordKey =
-        encloseWithTag('b', self.UI.shortcutRegistry.shortcutsForAction('timeline.toggle-recording')[0].title());
-    const reloadKey =
-        encloseWithTag('b', self.UI.shortcutRegistry.shortcutsForAction('timeline.record-reload')[0].title());
+    const recordKey = encloseWithTag(
+        'b',
+        UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('timeline.toggle-recording')[0].title());
+    const reloadKey = encloseWithTag(
+        'b', UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('timeline.record-reload')[0].title());
     const navigateNode = encloseWithTag('b', Common.UIString.UIString('WASD'));
 
     this._landingPage = new UI.Widget.VBox();

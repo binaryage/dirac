@@ -11,9 +11,9 @@
       "experiment": "webauthnPane"
     }
   ],
-  "skip_rollup": true,
   "dependencies": [
     "common",
+    "data_grid",
     "platform",
     "ui",
     "host"

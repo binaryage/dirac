@@ -11,8 +11,6 @@ devtools_module("elements") {
     "Adorner.js",
     "ClassesPaneWidget.js",
     "ColorSwatchPopoverIcon.js",
-    "ComputedStyleGroupLists.ts",
-    "ComputedStyleGroupLists_bridge.js",
     "ComputedStyleModel.js",
     "ComputedStyleProperty.ts",
     "ComputedStyleProperty_bridge.js",
@@ -26,6 +24,8 @@ devtools_module("elements") {
     "ElementsBreadcrumbsUtils.ts",
     "ElementsBreadcrumbs_bridge.js",
     "ElementsPanel.js",
+    "ElementsPanelLink.ts",
+    "ElementsPanelLink_bridge.js",
     "ElementsSidebarPane.js",
     "ElementsTreeElement.js",
     "ElementsTreeElementHighlighter.js",
@@ -53,7 +53,6 @@ devtools_module("elements") {
     "../bindings:bundle",
     "../color_picker:bundle",
     "../common:bundle",
-    "../component_helpers:bundle",
     "../components:bundle",
     "../emulation:bundle",
     "../event_listeners:bundle",
@@ -65,16 +64,17 @@ devtools_module("elements") {
     "../object_ui:bundle",
     "../platform:bundle",
     "../protocol_client:bundle",
+    "../root:bundle",
     "../sdk:bundle",
-    "../sdk:bundle",
+    "../text_editor:bundle",
     "../third_party/lit-html:bundle",
     "../ui:bundle",
     "../workspace:bundle",
   ]
 
   visibility = [
-    "../component_docs/*",
     "../../test/unittests/front_end/elements",
+    "../component_docs/*",
   ]
 }
 

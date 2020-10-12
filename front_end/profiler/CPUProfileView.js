@@ -61,9 +61,8 @@ export class CPUProfileView extends ProfileView {
    */
   wasShown() {
     super.wasShown();
-    const lineLevelProfile = self.runtime.sharedInstance(PerfUI.LineLevelProfile.Performance);
-    lineLevelProfile.reset();
-    lineLevelProfile.appendCPUProfile(this._profileHeader.profileModel());
+    PerfUI.LineLevelProfile.Performance.instance().reset();
+    PerfUI.LineLevelProfile.Performance.instance().appendCPUProfile(this._profileHeader.profileModel());
   }
 
   /**

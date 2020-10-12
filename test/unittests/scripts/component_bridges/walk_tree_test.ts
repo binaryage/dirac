@@ -76,6 +76,74 @@ describe('walkTree', () => {
     assert.deepEqual(foundInterfaceNames, ['Person', 'Dog']);
   });
 
+  describe('it enforces the .data as X pattern in lit-html html calls', () => {
+    it('errors with LitHtml.html`` if the .data object has no "as X" declared', () => {
+      const code = 'LitHtml.html\`<node-text .data=${{title: \'Jack\'}}></node-text>\`';
+
+      const source = createTypeScriptSourceFile(code);
+      assert.throws(() => {
+        walkTree(source, 'test.ts');
+      }, 'Error: found a lit-html .data= without an `as X` typecast.');
+    });
+
+    it('errors with just html`` if the .data object has no "as X" declared', () => {
+      const code = 'html\`<node-text .data=${{title: \'Jack\'}}></node-text>\`';
+
+      const source = createTypeScriptSourceFile(code);
+      assert.throws(() => {
+        walkTree(source, 'test.ts');
+      }, 'Error: found a lit-html .data= without an `as X` typecast.');
+    });
+
+    it('errors if the data is type cast to an object literal', () => {
+      const code = 'html\`<node-text .data=${{title: \'Jack\'} as { title: string }}}></node-text>\`';
+
+      const source = createTypeScriptSourceFile(code);
+      assert.throws(() => {
+        walkTree(source, 'test.ts');
+      }, 'Error: found a lit-html .data= with an object literal typecast.');
+    });
+
+
+    it('finds the error in a larger template', () => {
+      const code = 'html\`<p>${foo}</p><node-text .data=${{title: \'Jack\'}}></node-text><p>${foo}</p>\`';
+
+      const source = createTypeScriptSourceFile(code);
+      assert.throws(() => {
+        walkTree(source, 'test.ts');
+      }, 'Error: found a lit-html .data= without an `as X` typecast.');
+    });
+
+    it('checks all .data calls and finds errors correctly', () => {
+      const code =
+          'html\`<p>${foo}</p><node-text .data=${{title: \'Jack\'} as X}></node-text><p>${foo}</p><node-text .data=${{title: \'Jack\'}}></node-text>\`';
+
+      const source = createTypeScriptSourceFile(code);
+      assert.throws(() => {
+        walkTree(source, 'test.ts');
+      }, 'Error: found a lit-html .data= without an `as X` typecast.');
+    });
+
+    it('does not error if the .data= is properly type cast', () => {
+      const code = 'LitHtml.html\`<node-text .data=${{title: \'Jack\'} as Data}></node-text>\`';
+
+      const source = createTypeScriptSourceFile(code);
+      assert.doesNotThrow(() => {
+        walkTree(source, 'test.ts');
+      });
+    });
+
+    it('ignores any tagged templates that are not html or LitHtml.html', () => {
+      const code = 'SomeOtherHtmlThing.foo\`<node-text .data=${{title: \'Jack\'}}></node-text>\`';
+
+      const source = createTypeScriptSourceFile(code);
+      assert.doesNotThrow(() => {
+        walkTree(source, 'test.ts');
+      });
+    });
+  });
+
+
   describe('nested interfaces', () => {
     it('correctly identifies interfaces that reference other interfaces', () => {
       const code = `interface WebVitalsTimelineTask {
@@ -88,14 +156,19 @@ describe('walkTree', () => {
         longTasks: WebVitalsTimelineTask;
       }
 
+      interface Data {
+        timeline: WebVitalsTimelineData
+      }
+
       class WebVitals extends HTMLElement {
-        set data(data: {timeline: WebVitalsTimelineData}) {}
+        set data(data: Data) {}
       }`;
 
       const source = createTypeScriptSourceFile(code);
       const result = walkTree(source, 'test.ts');
 
-      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['WebVitalsTimelineData', 'WebVitalsTimelineTask']);
+      assert.deepEqual(
+          Array.from(result.typeReferencesToConvert), ['Data', 'WebVitalsTimelineData', 'WebVitalsTimelineTask']);
     });
 
     it('correctly identifies interfaces that reference arrays of other interfaces', () => {
@@ -109,14 +182,19 @@ describe('walkTree', () => {
         longTasks: WebVitalsTimelineTask[];
       }
 
+      interface Data {
+        timeline: WebVitalsTimelineData
+      }
+
       class WebVitals extends HTMLElement {
-        set data(data: {timeline: WebVitalsTimelineData}) {}
+        set data(data: Data) {}
       }`;
 
       const source = createTypeScriptSourceFile(code);
       const result = walkTree(source, 'test.ts');
 
-      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['WebVitalsTimelineData', 'WebVitalsTimelineTask']);
+      assert.deepEqual(
+          Array.from(result.typeReferencesToConvert), ['Data', 'WebVitalsTimelineData', 'WebVitalsTimelineTask']);
     });
 
     it('correctly identifies interfaces that reference interfaces in nested object literals', () => {
@@ -132,14 +210,19 @@ describe('walkTree', () => {
         }
       }
 
+      interface Data {
+        timeline: WebVitalsTimelineData
+      }
+
       class WebVitals extends HTMLElement {
-        set data(data: {timeline: WebVitalsTimelineData}) {}
+        set data(data: Data) {}
       }`;
 
       const source = createTypeScriptSourceFile(code);
       const result = walkTree(source, 'test.ts');
 
-      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['WebVitalsTimelineData', 'WebVitalsTimelineTask']);
+      assert.deepEqual(
+          Array.from(result.typeReferencesToConvert), ['Data', 'WebVitalsTimelineData', 'WebVitalsTimelineTask']);
     });
 
     it('correctly identifies interfaces that are deeply nested', () => {
@@ -157,14 +240,19 @@ describe('walkTree', () => {
         longTasks: LongTask[]
       }
 
+      interface Data {
+        timeline: WebVitalsTimelineData
+      }
+
       class WebVitals extends HTMLElement {
-        set data(data: {timeline: WebVitalsTimelineData}) {}
+        set data(data: Data) {}
       }`;
 
       const source = createTypeScriptSourceFile(code);
       const result = walkTree(source, 'test.ts');
 
-      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['WebVitalsTimelineData', 'LongTask', 'Timing']);
+      assert.deepEqual(
+          Array.from(result.typeReferencesToConvert), ['Data', 'WebVitalsTimelineData', 'LongTask', 'Timing']);
     });
   });
 
@@ -394,15 +482,19 @@ describe('walkTree', () => {
         name: string;
       }
 
+      interface Data {
+        person: Person
+      }
+
       class Breadcrumbs extends HTMLElement {
-        public set data(data: { person: Person }) {
+        public set data(data: Data) {
         }
       }`;
 
       const source = createTypeScriptSourceFile(code);
       const result = walkTree(source, 'test.ts');
 
-      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Person', 'Friend']);
+      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Data', 'Person', 'Friend']);
     });
 
     it('finds interfaces nested within a Set generic type', () => {
@@ -414,19 +506,23 @@ describe('walkTree', () => {
         name: string;
       }
 
+      interface Data {
+        person: Person;
+      }
+
       class Breadcrumbs extends HTMLElement {
-        public set data(data: { person: Person }) {
+        public set data(data: Data) {
         }
       }`;
 
       const source = createTypeScriptSourceFile(code);
       const result = walkTree(source, 'test.ts');
 
-      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Person', 'Friend']);
+      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Data', 'Person', 'Friend']);
     });
 
 
-    it('deals with setters that take an object and pulls out the interfaces', () => {
+    it('errors when it finds a setter whose argument is not a type reference', () => {
       const code = `interface Person { name: string }
 
       interface Dog {
@@ -439,23 +535,14 @@ describe('walkTree', () => {
           console.log('render')
         }
 
-        public set data(data: {x: Person, y: Dog) {
+        public set data(data: {x: Person, y: Dog}) {
         }
       }`;
 
       const source = createTypeScriptSourceFile(code);
-      const result = walkTree(source, 'test.ts');
-
-      if (!result.componentClass) {
-        assert.fail('No component class was found');
-      }
-
-      const setterNames = Array.from(result.setters, method => {
-        return (method.name as ts.Identifier).escapedText as string;
-      });
-
-      assert.deepEqual(setterNames, ['data']);
-      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Person', 'Dog']);
+      assert.throws(() => {
+        walkTree(source, 'test.ts');
+      }, 'Setter data has an argument whose type is not a direct type reference.');
     });
 
     it('can deal with setters taking optional arguments', () => {
@@ -465,13 +552,18 @@ describe('walkTree', () => {
         name: string
       }
 
+      interface Data {
+        x: Person|null,
+        y: Dog,
+      }
+
       class Breadcrumbs extends HTMLElement {
 
         private render() {
           console.log('render')
         }
 
-        public set data(data: {x: Person|null, y: Dog}) {
+        public set data(data: Data) {
         }
       }`;
 
@@ -487,7 +579,7 @@ describe('walkTree', () => {
       });
 
       assert.deepEqual(setterNames, ['data']);
-      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Person', 'Dog']);
+      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Data', 'Person', 'Dog']);
     });
 
     it('finds the custom elements define call', () => {
@@ -534,14 +626,18 @@ describe('walkTree', () => {
         y = 'y'
       }
 
+      interface Data {
+        x: Name
+      }
+
       class Breadcrumbs extends HTMLElement {
-        public set data(data: {x: Name}) {
+        public set data(data: Data) {
         }
       }`;
 
       const source = createTypeScriptSourceFile(code);
       const result = walkTree(source, 'test.ts');
-      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Name']);
+      assert.deepEqual(Array.from(result.typeReferencesToConvert), ['Data', 'Name']);
     });
 
     it('correctly finds enums within an interface', () => {
@@ -555,7 +651,7 @@ describe('walkTree', () => {
       }
 
       class Breadcrumbs extends HTMLElement {
-        public set data(data: {x: Person}) {
+        public set data(data: Person) {
         }
       }`;
 
@@ -579,7 +675,7 @@ describe('walkTree', () => {
       }
 
       class Breadcrumbs extends HTMLElement {
-        public set data(data: {x: Person}) {
+        public set data(data: Person) {
         }
       }`;
 
@@ -603,7 +699,7 @@ describe('walkTree', () => {
       }
 
       class Breadcrumbs extends HTMLElement {
-        public set data(data: {x: Person}) {
+        public set data(data: Person) {
         }
       }`;
 
@@ -627,7 +723,7 @@ describe('walkTree', () => {
       }
 
       class Breadcrumbs extends HTMLElement {
-        public set data(data: {x: Person}) {
+        public set data(data: Person) {
         }
       }`;
 

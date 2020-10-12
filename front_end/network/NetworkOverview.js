@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as PerfUI from '../perf_ui/perf_ui.js';
 import * as SDK from '../sdk/sdk.js';
+import * as ThemeSupport from '../theme_support/theme_support.js';
 
 import {NetworkLogView} from './NetworkLogView.js';
 import {NetworkTimeBoundary} from './NetworkTimeCalculator.js';
@@ -26,6 +24,7 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
     this._numBands = 1;
     /** @type {boolean} */
     this._updateScheduled = false;
+    /** @type {?SDK.NetworkRequest.NetworkRequest} */
     this._highlightedRequest = null;
 
     SDK.SDKModel.TargetManager.instance().addModelListener(
@@ -34,9 +33,25 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.DOMContentLoaded,
         this._domContentLoadedEventFired, this);
 
+    /** @type {!Array.<number>} */
+    this._loadEvents;
+    /** @type {!Array.<number>} */
+    this._domContentLoadedEvents;
+    /** @type {number} */
+    this._nextBand;
+    /** @type {!Map.<string, number>} */
+    this._bandMap;
+    /** @type {!Array.<!SDK.NetworkRequest.NetworkRequest>} */
+    this._requestsList;
+    /** @type {!Set.<!SDK.NetworkRequest.NetworkRequest>} */
+    this._requestsSet;
+    /** @type {number} */
+    this._span;
+
     this.reset();
   }
 
+  /** @param {?SDK.NetworkRequest.NetworkRequest} request */
   setHighlightedRequest(request) {
     this._highlightedRequest = request;
     this.scheduleUpdate();
@@ -121,6 +136,14 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
 
   /**
    * @override
+   * @return {!PerfUI.TimelineOverviewPane.TimelineOverviewCalculator}
+   */
+  calculator() {
+    return /** @type {!PerfUI.TimelineOverviewPane.TimelineOverviewCalculator} */ (super.calculator());
+  }
+
+  /**
+   * @override
    */
   onResize() {
     const width = this.element.offsetWidth;
@@ -139,21 +162,14 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
     /** @type {?SDK.FilmStripModel.FilmStripModel} */
     this._filmStripModel = null;
 
-    /** @type {number} */
     this._span = 1;
     /** @type {?NetworkTimeBoundary} */
     this._lastBoundary = null;
-    /** @type {number} */
     this._nextBand = 0;
-    /** @type {!Map.<string, number>} */
     this._bandMap = new Map();
-    /** @type {!Array.<!SDK.NetworkRequest.NetworkRequest>} */
     this._requestsList = [];
-    /** @type {!Set.<!SDK.NetworkRequest.NetworkRequest>} */
     this._requestsSet = new Set();
-    /** @type {!Array.<number>} */
     this._loadEvents = [];
-    /** @type {!Array.<number>} */
     this._domContentLoadedEvents = [];
 
     // Clear screen.
@@ -191,14 +207,15 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
     }
 
     const context = this.context();
-    const linesByType = {};
+    /** @type {!Map<string, !Array<number>>} */
+    const linesByType = new Map();
     const paddingTop = _padding;
 
     /**
      * @param {string} type
      */
     function drawLines(type) {
-      const lines = linesByType[type];
+      const lines = linesByType.get(type);
       if (!lines) {
         return;
       }
@@ -225,10 +242,10 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
      * @param {number} end
      */
     function addLine(type, y, start, end) {
-      let lines = linesByType[type];
+      let lines = linesByType.get(type);
       if (!lines) {
         lines = [];
-        linesByType[type] = lines;
+        linesByType.set(type, lines);
       }
       lines.push(y, start, end);
     }
@@ -275,7 +292,7 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
       const y = ((band === -1) ? 0 : (band % this._numBands + 1)) * _bandHeight + paddingTop;
       const timeRanges = RequestTimingView.calculateRequestTimeRanges(request, this.calculator().minimumBoundary());
 
-      context.fillStyle = self.UI.themeSupport.getComputedValue('--selection-bg-color');
+      context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--selection-bg-color');
 
       const start = timeRanges[0].start * 1000;
       const end = timeRanges[0].end * 1000;
@@ -322,7 +339,7 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
     if (this._selectedFilmStripTime !== -1) {
       context.lineWidth = 2;
       context.beginPath();
-      context.strokeStyle = self.UI.themeSupport.getComputedValue('--network-frame-divider-color');
+      context.strokeStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--network-frame-divider-color');
       const x = Math.round(calculator.computePosition(this._selectedFilmStripTime));
       context.moveTo(x, 0);
       context.lineTo(x, height);

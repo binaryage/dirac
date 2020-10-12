@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
+import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 
 import {Action} from './Action.js';                  // eslint-disable-line no-unused-vars
 import {ActionRegistry} from './ActionRegistry.js';  // eslint-disable-line no-unused-vars
@@ -15,6 +14,8 @@ import {Dialog} from './Dialog.js';
 import {Descriptor, KeyboardShortcut, Modifiers, Type} from './KeyboardShortcut.js';  // eslint-disable-line no-unused-vars
 import {isEditing} from './UIUtils.js';
 
+/** @type {!ShortcutRegistry} */
+let shortcutRegistryInstance;
 
 export class ShortcutRegistry {
   /**
@@ -22,8 +23,6 @@ export class ShortcutRegistry {
    */
   constructor(actionRegistry) {
     this._actionRegistry = actionRegistry;
-    /** @type {!Platform.Multimap.<number, !KeyboardShortcut>} */
-    this._keyToShortcut = new Platform.Multimap();
     /** @type {!Platform.Multimap.<string, !KeyboardShortcut>} */
     this._actionToShortcut = new Platform.Multimap();
     this._keyMap = new ShortcutTreeNode(0, 0);
@@ -35,17 +34,36 @@ export class ShortcutRegistry {
     this._consumePrefix = null;
     /** @type {!Set.<string>} */
     this._devToolsDefaultShortcutActions = new Set();
-    const keybindSetSetting = self.Common.settings.moduleSetting('activeKeybindSet');
+    /** @type {!Platform.Multimap.<string, !KeyboardShortcut>} */
+    this._disabledDefaultShortcutsForAction = new Platform.Multimap();
+    this._keybindSetSetting = Common.Settings.Settings.instance().moduleSetting('activeKeybindSet');
     if (!Root.Runtime.experiments.isEnabled('customKeyboardShortcuts') &&
-        keybindSetSetting.get() !== DefaultShortcutSetting) {
-      keybindSetSetting.set(DefaultShortcutSetting);
+        this._keybindSetSetting.get() !== DefaultShortcutSetting) {
+      this._keybindSetSetting.set(DefaultShortcutSetting);
     }
-    keybindSetSetting.addChangeListener(event => {
+    this._keybindSetSetting.addChangeListener(event => {
       Host.userMetrics.keybindSetSettingChanged(event.data);
       this._registerBindings();
     });
+    this._userShortcutsSetting = Common.Settings.Settings.instance().moduleSetting('userShortcuts');
+    this._userShortcutsSetting.addChangeListener(this._registerBindings, this);
 
     this._registerBindings();
+  }
+
+  /**
+   * @param {{forceNew: ?boolean, actionRegistry: ?ActionRegistry}} opts
+   */
+  static instance(opts = {forceNew: null, actionRegistry: null}) {
+    const {forceNew, actionRegistry} = opts;
+    if (!shortcutRegistryInstance || forceNew) {
+      if (!actionRegistry) {
+        throw new Error('Missing actionRegistry for shortcutRegistry');
+      }
+      shortcutRegistryInstance = new ShortcutRegistry(actionRegistry);
+    }
+
+    return shortcutRegistryInstance;
   }
 
   /**
@@ -54,6 +72,7 @@ export class ShortcutRegistry {
    * @return {!Array.<!Action>}
    */
   _applicableActions(key, handlers = {}) {
+    /** @type {!Array<string>} */
     let actions = [];
     const keyMap = this._activePrefixKey || this._keyMap;
     const keyNode = keyMap.getNode(key);
@@ -80,6 +99,21 @@ export class ShortcutRegistry {
    */
   shortcutsForAction(action) {
     return [...this._actionToShortcut.get(action)];
+  }
+
+  /**
+   * @param {!Array.<!Descriptor>} descriptors
+   */
+  actionsForDescriptors(descriptors) {
+    /** @type {?ShortcutTreeNode} */
+    let keyMapNode = this._keyMap;
+    for (const {key} of descriptors) {
+      if (!keyMapNode) {
+        return [];
+      }
+      keyMapNode = keyMapNode.getNode(key);
+    }
+    return keyMapNode ? keyMapNode.actions() : [];
   }
 
   /**
@@ -125,10 +159,10 @@ export class ShortcutRegistry {
    * @return {string|undefined}
    */
   shortcutTitleForAction(actionId) {
-    const shortcuts = this._actionToShortcut.get(actionId);
-    if (shortcuts.size) {
-      return shortcuts.firstValue().title();
+    for (const shortcut of this._actionToShortcut.get(actionId)) {
+      return shortcut.title();
     }
+    return undefined;
   }
 
   /**
@@ -162,12 +196,9 @@ export class ShortcutRegistry {
 
     element.addEventListener('keydown', event => {
       const key = KeyboardShortcut.makeKeyFromEvent(/** @type {!KeyboardEvent} */ (event));
-      let keyMap = allowlistKeyMap;
-      if (this._activePrefixKey) {
-        keyMap = keyMap.getNode(this._activePrefixKey.key());
-        if (!keyMap) {
-          return;
-        }
+      const keyMap = this._activePrefixKey ? allowlistKeyMap.getNode(this._activePrefixKey.key()) : allowlistKeyMap;
+      if (!keyMap) {
+        return;
       }
       if (keyMap.getNode(key)) {
         this.handleShortcut(/** @type {!KeyboardEvent} */ (event), handlers);
@@ -216,7 +247,7 @@ export class ShortcutRegistry {
         this._activePrefixTimeout = null;
         await maybeExecuteActionForKey.call(this);
       };
-      this._activePrefixTimeout = setTimeout(this._consumePrefix, KeyTimeout);
+      this._activePrefixTimeout = window.setTimeout(this._consumePrefix, KeyTimeout);
     } else {
       await maybeExecuteActionForKey.call(this);
     }
@@ -298,18 +329,91 @@ export class ShortcutRegistry {
   /**
    * @param {!KeyboardShortcut} shortcut
    */
+  registerUserShortcut(shortcut) {
+    for (const otherShortcut of this._disabledDefaultShortcutsForAction.get(shortcut.action)) {
+      if (otherShortcut.descriptorsMatch(shortcut.descriptors) &&
+          otherShortcut.hasKeybindSet(this._keybindSetSetting.get())) {
+        // this user shortcut is the same as a disabled default shortcut,
+        // so we should just enable the default
+        this.removeShortcut(otherShortcut);
+        return;
+      }
+    }
+    for (const otherShortcut of this._actionToShortcut.get(shortcut.action)) {
+      if (otherShortcut.descriptorsMatch(shortcut.descriptors) &&
+          otherShortcut.hasKeybindSet(this._keybindSetSetting.get())) {
+        // don't allow duplicate shortcuts
+        return;
+      }
+    }
+    this._addShortcutToSetting(shortcut);
+  }
+
+  /**
+    * @param {!KeyboardShortcut} shortcut
+    */
+  removeShortcut(shortcut) {
+    if (shortcut.type === Type.DefaultShortcut || shortcut.type === Type.KeybindSetShortcut) {
+      this._addShortcutToSetting(shortcut.changeType(Type.DisabledDefault));
+    } else {
+      this._removeShortcutFromSetting(shortcut);
+    }
+  }
+
+  /**
+   * @param {!KeyboardShortcut} shortcut
+   */
+  _addShortcutToSetting(shortcut) {
+    const userShortcuts = this._userShortcutsSetting.get();
+    userShortcuts.push(shortcut);
+    this._userShortcutsSetting.set(userShortcuts);
+  }
+
+  /**
+   * @param {!KeyboardShortcut} shortcut
+   */
+  _removeShortcutFromSetting(shortcut) {
+    const userShortcuts = this._userShortcutsSetting.get();
+    const index = userShortcuts.findIndex(shortcut.equals, shortcut);
+    if (index !== -1) {
+      userShortcuts.splice(index, 1);
+      this._userShortcutsSetting.set(userShortcuts);
+    }
+  }
+
+  /**
+   * @param {!KeyboardShortcut} shortcut
+   */
   _registerShortcut(shortcut) {
     this._actionToShortcut.set(shortcut.action, shortcut);
     this._keyMap.addKeyMapping(shortcut.descriptors.map(descriptor => descriptor.key), shortcut.action);
   }
 
   _registerBindings() {
-    this._keyToShortcut.clear();
     this._actionToShortcut.clear();
     this._keyMap.clear();
-    const keybindSet = self.Common.settings.moduleSetting('activeKeybindSet').get();
-    const extensions = self.runtime.extensions('action');
+    const keybindSet = this._keybindSetSetting.get();
+    const extensions = Root.Runtime.Runtime.instance().extensions('action');
+    this._disabledDefaultShortcutsForAction.clear();
+    this._devToolsDefaultShortcutActions.clear();
+    /** @type {!Array<!{keyCode: number, modifiers: number}>} */
     const forwardedKeys = [];
+    if (Root.Runtime.experiments.isEnabled('keyboardShortcutEditor')) {
+      /** @type {!Array<!{action: string, descriptors: !Array.<!Descriptor>, type: !Type}>} */
+      const userShortcuts = this._userShortcutsSetting.get();
+      for (const userShortcut of userShortcuts) {
+        const shortcut = KeyboardShortcut.createShortcutFromSettingObject(userShortcut);
+        if (shortcut.type === Type.DisabledDefault) {
+          this._disabledDefaultShortcutsForAction.set(shortcut.action, shortcut);
+        } else {
+          if (ForwardedActions.has(shortcut.action)) {
+            forwardedKeys.push(
+                ...shortcut.descriptors.map(descriptor => KeyboardShortcut.keyCodeAndModifiersFromKey(descriptor.key)));
+          }
+          this._registerShortcut(shortcut);
+        }
+      }
+    }
     extensions.forEach(registerExtension, this);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.setWhitelistedShortcuts(JSON.stringify(forwardedKeys));
 
@@ -329,6 +433,12 @@ export class ShortcutRegistry {
         const shortcutDescriptors = keys.map(KeyboardShortcut.makeDescriptorFromBindingShortcut);
         if (shortcutDescriptors.length > 0) {
           const actionId = /** @type {string} */ (descriptor.actionId);
+
+          if (this._isDisabledDefault(shortcutDescriptors, actionId)) {
+            this._devToolsDefaultShortcutActions.add(actionId);
+            continue;
+          }
+
           if (ForwardedActions.has(actionId)) {
             forwardedKeys.push(
                 ...shortcutDescriptors.map(shortcut => KeyboardShortcut.keyCodeAndModifiersFromKey(shortcut.key)));
@@ -373,6 +483,20 @@ export class ShortcutRegistry {
       }
       return keybindSets.includes(keybindSet);
     }
+  }
+
+  /**
+   * @param {!Array<!{key: number, name: string}>} shortcutDescriptors
+   * @param {string} action
+   */
+  _isDisabledDefault(shortcutDescriptors, action) {
+    const disabledDefaults = this._disabledDefaultShortcutsForAction.get(action);
+    for (const disabledDefault of disabledDefaults) {
+      if (disabledDefault.descriptorsMatch(shortcutDescriptors)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 

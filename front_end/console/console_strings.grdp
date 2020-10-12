@@ -123,6 +123,9 @@
   <message name="IDS_DEVTOOLS_650140bd73628d283d870d4648ae3324" desc="Text in Console View of the Console panel">
     Find string in logs
   </message>
+  <message name="IDS_DEVTOOLS_66da1ec20aa268f70f4c11ab95c0cd4f" desc="Screen reader label for delete button on a blank live expression">
+    Remove blank expression
+  </message>
   <message name="IDS_DEVTOOLS_6775864ce3df150aabbf2d60eb12f513" desc="Text in Console Pin Pane of the Console panel">
     Live expression editor
   </message>
@@ -160,7 +163,7 @@
     Expression
   </message>
   <message name="IDS_DEVTOOLS_a3eb3c95c4cb8e06fd3682c1f0d70bc0" desc="Tooltip text that appears on the setting when hovering over it in Console View of the Console panel">
-    Only show messages from the current context (top, iframe, worker, extension)
+    Only show messages from the current context (<ph name="LOCKED_1">top</ph>, <ph name="LOCKED_2">iframe</ph>, <ph name="LOCKED_3">worker</ph>, extension)
   </message>
   <message name="IDS_DEVTOOLS_a5e4febd4637e35098ee6e8f493ca390" desc="Text in Console Sidebar of the Console panel to show that there is 1 message">
     1 message
@@ -179,6 +182,9 @@
   </message>
   <message name="IDS_DEVTOOLS_ad410611ff249a09acdba47cc8505186" desc="Text in Console Sidebar of the Console panel to show that there is no verbose messages">
     No verbose
+  </message>
+  <message name="IDS_DEVTOOLS_b04636e6c6acb60fabadde4cb82ae619" desc="Screen reader label for delete button on a non-blank live expression">
+    Remove expression: <ph name="EXPRESSION">$1s<ex>document</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_b184e7a44bed11a41d9c104529010e23" desc="Text in Console View of the Console panel">
     <ph name="THIS__LEVELLABELS_NAME_">$1s<ex>Warnings</ex></ph> only
@@ -203,9 +209,6 @@
   </message>
   <message name="IDS_DEVTOOLS_c9818b2c0890a205d294a2b31354f8b4" desc="Text in Console View of the Console panel">
     All levels
-  </message>
-  <message name="IDS_DEVTOOLS_ca3c4b269c23985d3c1204c203ad84d8" desc="Tooltip text that appears on the setting when hovering over it in Console View of the Console panel">
-    Group similar
   </message>
   <message name="IDS_DEVTOOLS_ca6ceb8e597abb1298b84b1aaadc229b" desc="Title of a setting under the Console category that can be invoked through the Command Menu">
     Show timestamps
@@ -232,7 +235,7 @@
     ''' M&lt;XX&gt;
   </message>
   <message name="IDS_DEVTOOLS_d7746aa6b562c73487a4015eef3244e9" desc="Text in Console Context Selector of the Console panel">
-    IFrame
+    <ph name="LOCKED_1">IFrame</ph>
   </message>
   <message name="IDS_DEVTOOLS_d779282283c011149d163edbcd5e5f11" desc="Side effect label title in Console Pin Pane of the Console panel">
     Evaluate, allowing side effects

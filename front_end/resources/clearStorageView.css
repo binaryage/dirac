@@ -7,6 +7,7 @@
 .report-row {
   display: flex;
   align-items: center;
+  white-space: normal;
 }
 
 .clear-storage-button .report-row {
@@ -25,4 +26,12 @@
 
 .usage-breakdown-row {
   min-width: fit-content;
+}
+
+.clear-storage-container {
+  overflow: auto;
+}
+
+.clear-storage-header {
+  min-width: 400px;
 }

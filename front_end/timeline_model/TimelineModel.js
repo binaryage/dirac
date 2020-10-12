@@ -142,6 +142,13 @@ export class TimelineModelImpl {
    * @param {!SDK.TracingModel.Event} event
    * @return {boolean}
    */
+  isUserTimingEvent(event) {
+    return event.categoriesString === TimelineModelImpl.Category.UserTiming;
+  }
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {boolean}
+   */
   isParseHTMLEvent(event) {
     return event.name === RecordType.ParseHTML;
   }
@@ -238,8 +245,17 @@ export class TimelineModelImpl {
 
     // Remove LayoutShift events from the main thread list of events because they are
     // represented in the experience track. This is done prior to the main thread being processed for its own events.
-    const layoutShiftEvents =
-        tracingModel.extractEventsFromThreadByName('Renderer', 'CrRendererMain', RecordType.LayoutShift);
+    const layoutShiftEvents = [];
+    for (const process of tracingModel.sortedProcesses()) {
+      if (process.name() !== 'Renderer') {
+        continue;
+      }
+
+      for (const thread of process.sortedThreads()) {
+        const shifts = thread.removeEventsByName(RecordType.LayoutShift);
+        layoutShiftEvents.push(...shifts);
+      }
+    }
 
     this._processSyncBrowserEvents(tracingModel);
     if (this._browserFrameTracking) {

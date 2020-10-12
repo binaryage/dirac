@@ -20,6 +20,7 @@ const usageMessage = `A helper script to bundle the i18n.js library.
   This will generate an unminified or a minified (if --minify is present)
   i18n-bundle.js that exports a module called i18n.`;
 const prependHeaders = '// lighthouse.i18n 1.0.0, created with rollup.\n';
+const prependWarn = '// DO NOT MODIFY: Generated with buildi18nBundle.js.\n';
 
 async function main() {
   const args = yargs.parse(process.argv);
@@ -62,13 +63,13 @@ async function main() {
  */
 async function bundleI18n(shouldMinify, outputPath, i18nPath) {
   console.log('i18n Bundler: Bundling i18n...');
-  const normalizedOutputPath = path.normalize(path.join(outputPath, 'i18n-bundle.js'));
+  const normalizedOutputPath = path.normalize(path.join(outputPath, 'i18n.js'));
   const options = {
     input: i18nPath,
     output: {
       file: normalizedOutputPath,
       format: 'esm',
-      banner: prependHeaders,
+      banner: (prependHeaders + prependWarn),
     },
     plugins: [commonjs()]
   };

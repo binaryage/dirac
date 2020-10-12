@@ -2,19 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
+import * as Persistence from '../persistence/persistence.js';
 import * as QuickOpen from '../quick_open/quick_open.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
 
 import {FilePathScoreFunction} from './FilePathScoreFunction.js';
 
-/**
- * @unrestricted
- */
 export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidget.Provider {
   constructor() {
     super();
@@ -22,6 +17,12 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
     this._queryLineNumberAndColumnNumber = '';
     this._defaultScores = null;
     this._scorer = new FilePathScoreFunction('');
+
+    /** @type {!Array.<!Workspace.UISourceCode.UISourceCode>} */
+    this._uiSourceCodes = [];
+
+    /** @type {string} */
+    this._query;
   }
 
   /**
@@ -37,7 +38,6 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
    * @param {!Workspace.Workspace.Project=} skipProject
    */
   _populate(skipProject) {
-    /** @type {!Array.<!Workspace.UISourceCode.UISourceCode>} */
     this._uiSourceCodes = [];
     const projects = Workspace.Workspace.WorkspaceImpl.instance().projects().filter(this.filterProject.bind(this));
     for (let i = 0; i < projects.length; ++i) {
@@ -54,7 +54,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
    * @return {boolean}
    */
   _filterUISourceCode(uiSourceCode) {
-    const binding = self.Persistence.persistence.binding(uiSourceCode);
+    const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
     return !binding || binding.fileSystem === uiSourceCode;
   }
 
@@ -121,7 +121,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
 
     let multiplier = 10;
     if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.FileSystem &&
-        !self.Persistence.persistence.binding(uiSourceCode)) {
+        !Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode)) {
       multiplier = 5;
     }
 
@@ -140,6 +140,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
     query = this.rewriteQuery(query);
     const uiSourceCode = this._uiSourceCodes[itemIndex];
     const fullDisplayName = uiSourceCode.fullDisplayName();
+    /** @type {!Array<number>} */
     const indexes = [];
     new FilePathScoreFunction(query).score(fullDisplayName, indexes);
     const fileNameIndex = fullDisplayName.lastIndexOf('/');
@@ -148,7 +149,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
     subtitleElement.classList.add('monospace');
     titleElement.textContent = uiSourceCode.displayName() + (this._queryLineNumberAndColumnNumber || '');
     this._renderSubtitleElement(subtitleElement, fullDisplayName);
-    subtitleElement.title = fullDisplayName;
+    /** @type {!HTMLElement} */ (subtitleElement).title = fullDisplayName;
     const ranges = [];
     for (let i = 0; i < indexes.length; ++i) {
       ranges.push({offset: indexes[i], length: 1});
@@ -178,7 +179,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
     first.textContent = text.substring(0, splitPosition);
     const second = element.createChild('div', 'second-part');
     second.textContent = text.substring(splitPosition);
-    element.title = text;
+    /** @type {!HTMLElement} */ (element).title = text;
   }
 
   /**

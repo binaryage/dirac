@@ -104,10 +104,6 @@ def main():
 
     if (opts.deps is not None):
         tsconfig['references'] = [{'path': src} for src in opts.deps]
-    tsconfig['compilerOptions']['declaration'] = True
-    tsconfig['compilerOptions']['composite'] = True
-    tsconfig['compilerOptions']['sourceMap'] = True
-    tsconfig['compilerOptions']['inlineSources'] = True
     tsconfig['compilerOptions']['module'] = opts.module
     if (not opts.verify_lib_check):
         tsconfig['compilerOptions']['skipLibCheck'] = True
@@ -117,9 +113,9 @@ def main():
     ] or []
     tsconfig['compilerOptions']['outDir'] = '.'
     tsconfig['compilerOptions']['tsBuildInfoFile'] = tsbuildinfo_name
-    tsconfig['compilerOptions']['lib'] = [
-        'esnext', opts.is_web_worker and 'webworker' or 'dom'
-    ]
+    tsconfig['compilerOptions']['lib'] = ['esnext'] + (
+        opts.is_web_worker and ['webworker', 'webworker.iterable']
+        or ['dom', 'dom.iterable'])
 
     with open(tsconfig_output_location, 'w') as generated_tsconfig:
         try:

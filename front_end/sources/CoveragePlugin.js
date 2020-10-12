@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Coverage from '../coverage/coverage.js';
 import * as Formatter from '../formatter/formatter.js';
 import * as SDK from '../sdk/sdk.js';
@@ -37,12 +34,14 @@ export class CoveragePlugin extends Plugin {
     const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
     if (mainTarget) {
       this._model = mainTarget.model(Coverage.CoverageModel.CoverageModel);
-      this._model.addEventListener(Coverage.CoverageModel.Events.CoverageReset, this._handleReset, this);
+      if (this._model) {
+        this._model.addEventListener(Coverage.CoverageModel.Events.CoverageReset, this._handleReset, this);
 
-      this._coverage = this._model.getCoverageForUrl(this._originalSourceCode.url());
-      if (this._coverage) {
-        this._coverage.addEventListener(
-            Coverage.CoverageModel.URLCoverageInfo.Events.SizesChanged, this._handleCoverageSizesChanged, this);
+        this._coverage = this._model.getCoverageForUrl(this._originalSourceCode.url());
+        if (this._coverage) {
+          this._coverage.addEventListener(
+              Coverage.CoverageModel.URLCoverageInfo.Events.SizesChanged, this._handleCoverageSizesChanged, this);
+        }
       }
     }
 

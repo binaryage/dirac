@@ -64,6 +64,60 @@ export class KeyboardShortcut {
   }
 
   /**
+   * @param {!Type} type
+   * @return {!KeyboardShortcut}
+   */
+  changeType(type) {
+    return new KeyboardShortcut(this.descriptors, this.action, type);
+  }
+
+  /**
+   * @param {!Array.<!Descriptor>} descriptors
+   * @return {!KeyboardShortcut}
+   */
+  changeKeys(descriptors) {
+    this.descriptors = descriptors;
+    return this;
+  }
+
+  /**
+   * @param {!Array.<!Descriptor>} descriptors
+   * @return {boolean}
+   */
+  descriptorsMatch(descriptors) {
+    if (descriptors.length !== this.descriptors.length) {
+      return false;
+    }
+    return descriptors.every((descriptor, index) => descriptor.key === this.descriptors[index].key);
+  }
+
+  /**
+   * @param {string} keybindSet
+   * @return {boolean}
+   */
+  hasKeybindSet(keybindSet) {
+    return !this.keybindSets || this.keybindSets.has(keybindSet);
+  }
+
+  /**
+   * @param {!KeyboardShortcut} shortcut
+   * @return {boolean}
+   */
+  equals(shortcut) {
+    return this.descriptorsMatch(shortcut.descriptors) && this.type === shortcut.type &&
+        this.action === shortcut.action;
+  }
+
+  /**
+   * @param {!{action: string, descriptors: !Array.<!Descriptor>, type: !Type}} settingObject
+   * @return {!KeyboardShortcut}
+   */
+  static createShortcutFromSettingObject(settingObject) {
+    return new KeyboardShortcut(settingObject.descriptors, settingObject.action, settingObject.type);
+  }
+
+
+  /**
    * Creates a number encoding keyCode in the lower 8 bits and modifiers mask in the higher 8 bits.
    * It is useful for matching pressed keys.
    *
@@ -142,26 +196,18 @@ export class KeyboardShortcut {
 
   /**
    * @param {string} shortcut
-   * @return {?Descriptor}
+   * @return {!Descriptor}
    */
   static makeDescriptorFromBindingShortcut(shortcut) {
-    const parts = shortcut.split(/\+(?!$)/);
+    const [keyString, ...modifierStrings] = shortcut.split(/\+(?!$)/).reverse();
     let modifiers = 0;
-    let keyString;
-    for (let i = 0; i < parts.length; ++i) {
-      if (typeof Modifiers[parts[i]] !== 'undefined') {
-        modifiers |= Modifiers[parts[i]];
-        continue;
-      }
+    for (const modifierString of modifierStrings) {
+      const modifier = Modifiers[modifierString];
       console.assert(
-          i === parts.length - 1, 'Only one key other than modifier is allowed in shortcut <' + shortcut + '>');
-      keyString = parts[i];
-      break;
+          typeof modifier !== 'undefined', `Only one key other than modifier is allowed in shortcut <${shortcut}>`);
+      modifiers |= modifier;
     }
-    console.assert(keyString, 'Modifiers-only shortcuts are not allowed (encountered <' + shortcut + '>)');
-    if (!keyString) {
-      return null;
-    }
+    console.assert(keyString, `Modifiers-only shortcuts are not allowed (encountered <${shortcut}>)`);
 
     const key = Keys[keyString] || KeyBindings[keyString];
     if (key && key.shiftKey) {
@@ -215,7 +261,9 @@ export class KeyboardShortcut {
    * @return {boolean}
    */
   static isModifier(key) {
-    return key === Keys.Shift.code || key === Keys.Ctrl.code || key === Keys.Alt.code || key === Keys.Meta.code;
+    const {keyCode} = KeyboardShortcut.keyCodeAndModifiersFromKey(key);
+    return keyCode === Keys.Shift.code || keyCode === Keys.Ctrl.code || keyCode === Keys.Alt.code ||
+        keyCode === Keys.Meta.code;
   }
 
   /**
@@ -243,6 +291,7 @@ export class KeyboardShortcut {
 
 /**
  * Constants for encoding modifier key set as a bit mask.
+ * @enum {number}
  * @see #_makeKeyFromCodeAndModifiers
  */
 export const Modifiers = {
@@ -251,14 +300,10 @@ export const Modifiers = {
   Ctrl: 2,
   Alt: 4,
   Meta: 8,  // Command key on Mac, Win key on other platforms.
-  get CtrlOrMeta() {
-    // "default" command/ctrl key for platform, Command on Mac, Ctrl on other platforms
-    return Host.Platform.isMac() ? this.Meta : this.Ctrl;
-  },
-  get ShiftOrOption() {
-    // Option on Mac, Shift on other platforms
-    return Host.Platform.isMac() ? this.Alt : this.Shift;
-  }
+  // "default" command/ctrl key for platform, Command on Mac, Ctrl on other platforms
+  CtrlOrMeta: Host.Platform.isMac() ? 8 /* Meta */ : 2 /* Ctrl */,
+  // Option on Mac, Shift on other platforms
+  ShiftOrOption: Host.Platform.isMac() ? 4 /* Alt */ : 1 /* Shift */,
 };
 
 /** @type {!Object.<string, !Key>} */
@@ -319,13 +364,13 @@ export const Keys = {
   },
 };
 
-/** @enum {symbol} */
+/** @enum {string} */
 export const Type = {
-  UserShortcut: Symbol('UserShortcut'),
-  DefaultShortcut: Symbol('DefaultShortcut'),
-  DisabledDefault: Symbol('DisabledDefault'),
-  UnsetShortcut: Symbol('UnsetShortcut'),
-  KeybindSetShortcut: Symbol('KeybindSetShortcut'),
+  UserShortcut: 'UserShortcut',
+  DefaultShortcut: 'DefaultShortcut',
+  DisabledDefault: 'DisabledDefault',
+  UnsetShortcut: 'UnsetShortcut',
+  KeybindSetShortcut: 'KeybindSetShortcut',
 };
 
 export const KeyBindings = {};

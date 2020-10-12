@@ -35,6 +35,7 @@ import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
 import * as TextEditor from '../text_editor/text_editor.js';
@@ -120,7 +121,7 @@ export class DebuggerPlugin extends Plugin {
         return true;
       }
     };
-    self.UI.shortcutRegistry.addShortcutListener(this._textEditor.element, shortcutHandlers);
+    UI.ShortcutRegistry.ShortcutRegistry.instance().addShortcutListener(this._textEditor.element, shortcutHandlers);
     this._boundKeyDown = /** @type {function(!Event)} */ (this._onKeyDown.bind(this));
     this._textEditor.element.addEventListener('keydown', this._boundKeyDown, true);
     this._boundKeyUp = /** @type {function(!Event)} */ (this._onKeyUp.bind(this));
@@ -469,12 +470,13 @@ export class DebuggerPlugin extends Plugin {
    * @return {boolean}
    */
   _isIdentifier(tokenType) {
-    return tokenType.startsWith('js-variable') || tokenType.startsWith('js-property') || tokenType === 'js-def';
+    return tokenType.startsWith('js-variable') || tokenType.startsWith('js-property') || tokenType === 'js-def' ||
+        tokenType === 'variable';
   }
 
   /**
    * @param {!MouseEvent} event
-   * @return {?UI.PopoverRequest}
+   * @return {?UI.PopoverHelper.PopoverRequest}
    */
   _getPopoverRequest(event) {
     if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
@@ -505,12 +507,6 @@ export class DebuggerPlugin extends Plugin {
       return null;
     }
 
-    // Block popover eager evaluation for Wasm frames for now. We don't have
-    // a way to Debug-Evaluate Wasm yet, and the logic below assumes JavaScript
-    // source code. See https://crbug.com/1063875 for details.
-    if (selectedCallFrame.script.isWasm()) {
-      return null;
-    }
 
     if (textSelection && !textSelection.isEmpty()) {
       if (textSelection.startLine !== textSelection.endLine || textSelection.startLine !== mouseLine ||
@@ -575,21 +571,43 @@ export class DebuggerPlugin extends Plugin {
     let objectPopoverHelper;
     let highlightDescriptor;
 
+    /*
+     * @param {string} evaluationText
+     * @param {!Workspace.UISourceCode.UISourceCode}
+     * @return {!Promise<?EvaluationResult>}
+     */
+    async function evaluate(uiSourceCode, evaluationText) {
+      if (selectedCallFrame.script.isWasm() && selectedCallFrame.sourceScopeChain) {
+        for (const scopeChain of selectedCallFrame.sourceScopeChain) {
+          const value = await /** @type {!Bindings.DebuggerLanguagePlugins.SourceScope}*/ (scopeChain)
+                            .getVariableValue(evaluationText);
+          if (value) {
+            return {object: value};
+          }
+        }
+
+        return null;
+      }
+
+      const resolvedText = await resolveExpression(
+          selectedCallFrame, evaluationText, uiSourceCode, editorLineNumber, startHighlight, endHighlight);
+      return await selectedCallFrame.evaluate({
+        expression: resolvedText || evaluationText,
+        objectGroup: 'popover',
+        includeCommandLineAPI: false,
+        silent: true,
+        returnByValue: false,
+        generatePreview: false
+      });
+    }
+
     return {
       box: anchorBox,
       show: async popover => {
         const evaluationText = this._textEditor.line(editorLineNumber).substring(startHighlight, endHighlight + 1);
-        const resolvedText = await resolveExpression(
-            selectedCallFrame, evaluationText, this._uiSourceCode, editorLineNumber, startHighlight, endHighlight);
-        const result = await selectedCallFrame.evaluate({
-          expression: resolvedText || evaluationText,
-          objectGroup: 'popover',
-          includeCommandLineAPI: false,
-          silent: true,
-          returnByValue: false,
-          generatePreview: false
-        });
-        if (!result.object || (result.object.type === 'object' && result.object.subtype === 'error')) {
+        const result = await evaluate(this._uiSourceCode, evaluationText);
+
+        if (!result || !result.object || (result.object.type === 'object' && result.object.subtype === 'error')) {
           return false;
         }
         objectPopoverHelper =
@@ -1615,7 +1633,7 @@ export class DebuggerPlugin extends Plugin {
         'Associated files should be added to the file tree. You can debug these resolved source files as regular JavaScript files.'));
     this._sourceMapInfobar.createDetailsRowMessage(Common.UIString.UIString(
         'Associated files are available via file tree or %s.',
-        self.UI.shortcutRegistry.shortcutTitleForAction('quickOpen.show')));
+        UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction('quickOpen.show')));
     this._sourceMapInfobar.setCloseCallback(() => {
       this._sourceMapInfobar = null;
     });
@@ -1628,7 +1646,7 @@ export class DebuggerPlugin extends Plugin {
       return;
     }
 
-    const editorActions = await self.runtime.allInstances(Sources.SourcesView.EditorAction);
+    const editorActions = await Root.Runtime.Runtime.instance().allInstances(Sources.SourcesView.EditorAction);
     let formatterCallback = null;
     for (const editorAction of editorActions) {
       if (editorAction instanceof Sources.ScriptFormatterEditorAction) {

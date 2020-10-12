@@ -357,7 +357,10 @@
 
   /**
    * Enum for recordPerformanceHistogram
-   * Warning: There are three definitions of this enum in the DevTools code base, keep them in sync.
+   * Warning: There are two other definitions of this enum in the DevTools code
+   * base, keep them in sync:
+   * front_end/extern.js
+   * front_end/host/InspectorFrontendHostAPI.js
    * @readonly
    * @enum {string}
    */
@@ -368,7 +371,9 @@
     PanelShown: 'DevTools.PanelShown',
     SidebarPaneShown: 'DevTools.SidebarPaneShown',
     KeyboardShortcutFired: 'DevTools.KeyboardShortcutFired',
+    IssuesPanelIssueExpanded: 'DevTools.IssuesPanelIssueExpanded',
     IssuesPanelOpenedFrom: 'DevTools.IssuesPanelOpenedFrom',
+    IssuesPanelResourceOpened: 'DevTools.IssuesPanelResourceOpened',
     KeybindSetSettingChanged: 'DevTools.KeybindSetSettingChanged',
     DualScreenDeviceEmulated: 'DevTools.DualScreenDeviceEmulated',
     CSSGridSettings: 'DevTools.CSSGridSettings2',
@@ -377,6 +382,7 @@
     ExperimentEnabled: 'DevTools.ExperimentEnabled',
     ExperimentDisabled: 'DevTools.ExperimentDisabled',
     ComputedStyleGrouping: 'DevTools.ComputedStyleGrouping',
+    GridOverlayOpenedFrom: 'DevTools.GridOverlayOpenedFrom',
   };
 
   /**

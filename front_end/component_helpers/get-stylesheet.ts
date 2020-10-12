@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import * as Root from '../root/root.js';
-import * as UI from '../ui/ui.js';
+import * as ThemeSupport from '../theme_support/theme_support.js';
 
 const sheetsCache = new Map<string, {sheets: CSSStyleSheet[], patchThemeSupport: boolean}>();
 
@@ -22,11 +22,7 @@ export function getStyleSheets(path: string, {patchThemeSupport = false} = {}): 
     return cachedResult.sheets;
   }
 
-  if (!self.Runtime) {
-    return [];
-  }
-
-  const content = self.Runtime.cachedResources[path] || '';
+  const content = Root.Runtime.cachedResources.get(path) || '';
   if (!content) {
     throw new Error(`${path} not preloaded.`);
   }
@@ -34,7 +30,7 @@ export function getStyleSheets(path: string, {patchThemeSupport = false} = {}): 
   const originalStylesheet = new CSSStyleSheet();
   originalStylesheet.replaceSync(content);
 
-  const themeStyleSheet = self.UI && (self.UI.themeSupport as UI.UIUtils.ThemeSupport).themeStyleSheet(path, content);
+  const themeStyleSheet = ThemeSupport.ThemeSupport.instance().themeStyleSheet(path, content);
   if (!patchThemeSupport || !themeStyleSheet) {
     sheetsCache.set(path, {patchThemeSupport, sheets: [originalStylesheet]});
     return [originalStylesheet];
@@ -46,29 +42,6 @@ export function getStyleSheets(path: string, {patchThemeSupport = false} = {}): 
   sheetsCache.set(path, {patchThemeSupport, sheets: [originalStylesheet, patchedStyleSheet]});
 
   return [originalStylesheet, patchedStyleSheet];
-}
-
-/**
- * The combination of these gives components a way to toggle styling for dark
- * mode. It's not enough to just just the media query because the user may have
- * their OS level set to light mode but have turned on the dark theme via
- * settings.
- *
- * See ElementsBreadcrumbs.ts for an example of how this is used.
- */
-export const DARK_MODE_CLASS = '.component-in-dark-mode';
-
-export function isInDarkMode() {
-  return document.documentElement.classList.contains('-theme-with-dark-background') ||
-      window.matchMedia('prefers-color-scheme: dark').matches;
-}
-
-export function applyDarkModeClassIfNeeded() {
-  if (isInDarkMode()) {
-    return DARK_MODE_CLASS.slice(1);
-  }
-
-  return '';
 }
 
 /*

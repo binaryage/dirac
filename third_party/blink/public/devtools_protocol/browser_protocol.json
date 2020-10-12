@@ -383,6 +383,53 @@
                             }
                         }
                     ]
+                },
+                {
+                    "name": "queryAXTree",
+                    "description": "Query a DOM node's accessibility subtree for accessible name and role.\nThis command computes the name and role for all nodes in the subtree, including those that are\nignored for accessibility, and returns those that mactch the specified name and role. If no DOM\nnode is specified, or the DOM node does not exist, the command returns an error. If neither\n`accessibleName` or `role` is specified, it returns all the accessibility nodes in the subtree.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "nodeId",
+                            "description": "Identifier of the node for the root to query.",
+                            "optional": true,
+                            "$ref": "DOM.NodeId"
+                        },
+                        {
+                            "name": "backendNodeId",
+                            "description": "Identifier of the backend node for the root to query.",
+                            "optional": true,
+                            "$ref": "DOM.BackendNodeId"
+                        },
+                        {
+                            "name": "objectId",
+                            "description": "JavaScript object id of the node wrapper for the root to query.",
+                            "optional": true,
+                            "$ref": "Runtime.RemoteObjectId"
+                        },
+                        {
+                            "name": "accessibleName",
+                            "description": "Find nodes with this computed name.",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "role",
+                            "description": "Find nodes with this computed role.",
+                            "optional": true,
+                            "type": "string"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "nodes",
+                            "description": "A list of `Accessibility.AXNode` matching the specified attributes,\nincluding nodes that are ignored for accessibility.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "AXNode"
+                            }
+                        }
+                    ]
                 }
             ]
         },
@@ -1671,12 +1718,6 @@
                             "type": "boolean"
                         },
                         {
-                            "name": "type",
-                            "description": "For \"wake-lock\" permission, must specify type as either \"screen\" or \"system\".",
-                            "optional": true,
-                            "type": "string"
-                        },
-                        {
                             "name": "allowWithoutSanitization",
                             "description": "For \"clipboard\" permission, may specify allowWithoutSanitization.",
                             "optional": true,
@@ -2216,7 +2257,12 @@
                         },
                         {
                             "name": "isMutable",
-                            "description": "Whether this stylesheet is mutable. Inline stylesheets become mutable\nafter they have been modified via CSSOM API.\n<link> element's stylesheets are never mutable. Constructed stylesheets\n(new CSSStyleSheet()) are mutable immediately after creation.",
+                            "description": "Whether this stylesheet is mutable. Inline stylesheets become mutable\nafter they have been modified via CSSOM API.\n<link> element's stylesheets become mutable only if DevTools modifies them.\nConstructed stylesheets (new CSSStyleSheet()) are mutable immediately after creation.",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "isConstructed",
+                            "description": "Whether this stylesheet is a constructed stylesheet (created using new CSSStyleSheet()).",
                             "type": "boolean"
                         },
                         {
@@ -9942,6 +9988,12 @@
                             "description": "Initiator line number, set for Parser type or for Script type (when script is importing\nmodule) (0-based).",
                             "optional": true,
                             "type": "number"
+                        },
+                        {
+                            "name": "columnNumber",
+                            "description": "Initiator column number, set for Parser type or for Script type (when script is importing\nmodule) (0-based).",
+                            "optional": true,
+                            "type": "number"
                         }
                     ]
                 },
@@ -10446,6 +10498,20 @@
                         {
                             "name": "value",
                             "$ref": "CrossOriginOpenerPolicyValue"
+                        },
+                        {
+                            "name": "reportOnlyValue",
+                            "$ref": "CrossOriginOpenerPolicyValue"
+                        },
+                        {
+                            "name": "reportingEndpoint",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "reportOnlyReportingEndpoint",
+                            "optional": true,
+                            "type": "string"
                         }
                     ]
                 },
@@ -10466,6 +10532,20 @@
                         {
                             "name": "value",
                             "$ref": "CrossOriginEmbedderPolicyValue"
+                        },
+                        {
+                            "name": "reportOnlyValue",
+                            "$ref": "CrossOriginEmbedderPolicyValue"
+                        },
+                        {
+                            "name": "reportingEndpoint",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "reportOnlyReportingEndpoint",
+                            "optional": true,
+                            "type": "string"
                         }
                     ]
                 },
@@ -10481,6 +10561,62 @@
                         {
                             "name": "coep",
                             "$ref": "CrossOriginEmbedderPolicyStatus"
+                        }
+                    ]
+                },
+                {
+                    "id": "LoadNetworkResourcePageResult",
+                    "description": "An object providing the result of a network resource load.",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "success",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "netError",
+                            "description": "Optional values used for error reporting.",
+                            "optional": true,
+                            "type": "number"
+                        },
+                        {
+                            "name": "netErrorName",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "httpStatusCode",
+                            "optional": true,
+                            "type": "number"
+                        },
+                        {
+                            "name": "stream",
+                            "description": "If successful, one of the following two fields holds the result.",
+                            "optional": true,
+                            "$ref": "IO.StreamHandle"
+                        },
+                        {
+                            "name": "headers",
+                            "description": "Response headers.",
+                            "optional": true,
+                            "$ref": "Network.Headers"
+                        }
+                    ]
+                },
+                {
+                    "id": "LoadNetworkResourceOptions",
+                    "description": "An options object that may be extended later to better support CORS,\nCORB and streaming.",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "disableCache",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "includeCredentials",
+                            "type": "boolean"
                         }
                     ]
                 }
@@ -10973,7 +11109,8 @@
                     "returns": [
                         {
                             "name": "success",
-                            "description": "True if successfully set cookie.",
+                            "description": "Always set to true. If an error occurs, the response indicates protocol error.",
+                            "deprecated": true,
                             "type": "boolean"
                         }
                     ]
@@ -11017,6 +11154,18 @@
                             "name": "headers",
                             "description": "Map with extra HTTP headers.",
                             "$ref": "Headers"
+                        }
+                    ]
+                },
+                {
+                    "name": "setAttachDebugHeader",
+                    "description": "Specifies whether to sned a debug header to all outgoing requests.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "enabled",
+                            "description": "Whether to send a debug header.",
+                            "type": "boolean"
                         }
                     ]
                 },
@@ -11083,6 +11232,34 @@
                         {
                             "name": "status",
                             "$ref": "SecurityIsolationStatus"
+                        }
+                    ]
+                },
+                {
+                    "name": "loadNetworkResource",
+                    "description": "Fetches the resource and returns the content.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "frameId",
+                            "description": "Frame id to get the resource for.",
+                            "$ref": "Page.FrameId"
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL of the resource to get content for.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "options",
+                            "description": "Options for the request.",
+                            "$ref": "LoadNetworkResourceOptions"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "resource",
+                            "$ref": "LoadNetworkResourcePageResult"
                         }
                     ]
                 }
@@ -11787,6 +11964,12 @@
                         {
                             "name": "areaBorderColor",
                             "description": "The named grid areas border color (Default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "gridBackgroundColor",
+                            "description": "The grid container background color (Default: transparent).",
                             "optional": true,
                             "$ref": "DOM.RGBA"
                         }
@@ -15901,9 +16084,16 @@
                         },
                         {
                             "name": "canAccessOpener",
-                            "description": "Whether the opened window has access to the originating window.",
+                            "description": "Whether the target has access to the originating window.",
                             "experimental": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "openerFrameId",
+                            "description": "Frame id of originating window (is only set if target has an opener).",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "Page.FrameId"
                         },
                         {
                             "name": "browserContextId",
@@ -15987,6 +16177,8 @@
                     "returns": [
                         {
                             "name": "success",
+                            "description": "Always set to true. If an error occurs, the response indicates protocol error.",
+                            "deprecated": true,
                             "type": "boolean"
                         }
                     ]
@@ -16686,7 +16878,6 @@
         {
             "domain": "Fetch",
             "description": "A domain for letting clients substitute browser's network layer with client code.",
-            "experimental": true,
             "dependencies": [
                 "Network",
                 "IO",
@@ -16701,7 +16892,6 @@
                 {
                     "id": "RequestStage",
                     "description": "Stages of the request to handle. Request will intercept before the request is\nsent. Response will intercept after the response is received (but before response\nbody is received.",
-                    "experimental": true,
                     "type": "string",
                     "enum": [
                         "Request",
@@ -16710,7 +16900,6 @@
                 },
                 {
                     "id": "RequestPattern",
-                    "experimental": true,
                     "type": "object",
                     "properties": [
                         {
@@ -16751,7 +16940,6 @@
                 {
                     "id": "AuthChallenge",
                     "description": "Authorization challenge for HTTP status code 401 or 407.",
-                    "experimental": true,
                     "type": "object",
                     "properties": [
                         {
@@ -16784,7 +16972,6 @@
                 {
                     "id": "AuthChallengeResponse",
                     "description": "Response to an AuthChallenge.",
-                    "experimental": true,
                     "type": "object",
                     "properties": [
                         {
@@ -17213,7 +17400,7 @@
                 },
                 {
                     "id": "AudioListener",
-                    "description": "Protocol object for AudioListner",
+                    "description": "Protocol object for AudioListener",
                     "type": "object",
                     "properties": [
                         {
@@ -17591,6 +17778,12 @@
                         {
                             "name": "hasUserVerification",
                             "description": "Defaults to false.",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "hasLargeBlob",
+                            "description": "If set to true, the authenticator will support the largeBlob extension.\nhttps://w3c.github.io/webauthn#largeBlob\nDefaults to false.",
                             "optional": true,
                             "type": "boolean"
                         },
@@ -19891,6 +20084,29 @@
                             "type": "integer"
                         }
                     ]
+                },
+                {
+                    "id": "RuntimeCallCounterInfo",
+                    "description": "Runtime call counter information.",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "name",
+                            "description": "Counter name.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "value",
+                            "description": "Counter value.",
+                            "type": "number"
+                        },
+                        {
+                            "name": "time",
+                            "description": "Counter time in seconds.",
+                            "type": "number"
+                        }
+                    ]
                 }
             ],
             "commands": [
@@ -20018,6 +20234,31 @@
                     ]
                 },
                 {
+                    "name": "enableCounters",
+                    "description": "Enable counters collection.",
+                    "experimental": true
+                },
+                {
+                    "name": "disableCounters",
+                    "description": "Disable counters collection.",
+                    "experimental": true
+                },
+                {
+                    "name": "getCounters",
+                    "description": "Retrieve counters.",
+                    "experimental": true,
+                    "returns": [
+                        {
+                            "name": "result",
+                            "description": "Collected counters information.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "CounterInfo"
+                            }
+                        }
+                    ]
+                },
+                {
                     "name": "enableRuntimeCallStats",
                     "description": "Enable run time call stats collection.",
                     "experimental": true
@@ -20034,10 +20275,10 @@
                     "returns": [
                         {
                             "name": "result",
-                            "description": "Collected counter information.",
+                            "description": "Collected runtime call counter information.",
                             "type": "array",
                             "items": {
-                                "$ref": "CounterInfo"
+                                "$ref": "RuntimeCallCounterInfo"
                             }
                         }
                     ]
@@ -21277,7 +21518,7 @@
                 },
                 {
                     "name": "addBinding",
-                    "description": "If executionContextId is empty, adds binding with the given name on the\nglobal objects of all inspected contexts, including those created later,\nbindings survive reloads.\nIf executionContextId is specified, adds binding only on global object of\ngiven execution context.\nBinding function takes exactly one argument, this argument should be string,\nin case of any other input, function throws an exception.\nEach binding function call produces Runtime.bindingCalled notification.",
+                    "description": "If executionContextId is empty, adds binding with the given name on the\nglobal objects of all inspected contexts, including those created later,\nbindings survive reloads.\nBinding function takes exactly one argument, this argument should be string,\nin case of any other input, function throws an exception.\nEach binding function call produces Runtime.bindingCalled notification.",
                     "experimental": true,
                     "parameters": [
                         {
@@ -21286,8 +21527,16 @@
                         },
                         {
                             "name": "executionContextId",
+                            "description": "If specified, the binding would only be exposed to the specified\nexecution context. If omitted and `executionContextName` is not set,\nthe binding is exposed to all execution contexts of the target.\nThis parameter is mutually exclusive with `executionContextName`.",
                             "optional": true,
                             "$ref": "ExecutionContextId"
+                        },
+                        {
+                            "name": "executionContextName",
+                            "description": "If specified, the binding is exposed to the executionContext with\nmatching name, even for contexts created after the binding is added.\nSee also `ExecutionContext.name` and `worldName` parameter to\n`Page.addScriptToEvaluateOnNewDocument`.\nThis parameter is mutually exclusive with `executionContextId`.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "string"
                         }
                     ]
                 },

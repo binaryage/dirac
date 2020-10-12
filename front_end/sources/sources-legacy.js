@@ -26,7 +26,6 @@ Sources.CSSPlugin.SwatchBookmark = SourcesModule.CSSPlugin.SwatchBookmark;
 /** @constructor */
 Sources.CallStackSidebarPane = SourcesModule.CallStackSidebarPane.CallStackSidebarPane;
 
-Sources.CallStackSidebarPane._debuggerCallFrameSymbol = SourcesModule.CallStackSidebarPane.debuggerCallFrameSymbol;
 Sources.CallStackSidebarPane._elementSymbol = SourcesModule.CallStackSidebarPane.elementSymbol;
 Sources.CallStackSidebarPane._defaultMaxAsyncStackChainDepth =
     SourcesModule.CallStackSidebarPane.defaultMaxAsyncStackChainDepth;
@@ -90,14 +89,8 @@ Sources.InplaceFormatterEditorAction = SourcesModule.InplaceFormatterEditorActio
 Sources.JavaScriptBreakpointsSidebarPane =
     SourcesModule.JavaScriptBreakpointsSidebarPane.JavaScriptBreakpointsSidebarPane;
 
-Sources.JavaScriptBreakpointsSidebarPane._locationSymbol =
-    SourcesModule.JavaScriptBreakpointsSidebarPane.locationSymbol;
-Sources.JavaScriptBreakpointsSidebarPane._checkboxLabelSymbol =
-    SourcesModule.JavaScriptBreakpointsSidebarPane.checkboxLabelSymbol;
-Sources.JavaScriptBreakpointsSidebarPane._snippetElementSymbol =
-    SourcesModule.JavaScriptBreakpointsSidebarPane.snippetElementSymbol;
-Sources.JavaScriptBreakpointsSidebarPane._breakpointLocationsSymbol =
-    SourcesModule.JavaScriptBreakpointsSidebarPane.breakpointLocationsSymbol;
+Sources.JavaScriptBreakpointsSidebarPane.retrieveLocationForElement =
+    SourcesModule.JavaScriptBreakpointsSidebarPane.retrieveLocationForElement;
 
 /** @constructor */
 Sources.JavaScriptCompilerPlugin = SourcesModule.JavaScriptCompilerPlugin.JavaScriptCompilerPlugin;
@@ -278,10 +271,6 @@ Sources.ThreadsSidebarPane = SourcesModule.ThreadsSidebarPane.ThreadsSidebarPane
 
 /** @constructor */
 Sources.UISourceCodeFrame = SourcesModule.UISourceCodeFrame.UISourceCodeFrame;
-
-Sources.UISourceCodeFrame._iconClassPerLevel = SourcesModule.UISourceCodeFrame.iconClassPerLevel;
-Sources.UISourceCodeFrame._bubbleTypePerLevel = SourcesModule.UISourceCodeFrame.bubbleTypePerLevel;
-Sources.UISourceCodeFrame._lineClassPerLevel = SourcesModule.UISourceCodeFrame.lineClassPerLevel;
 
 /** @constructor */
 Sources.UISourceCodeFrame.RowMessage = SourcesModule.UISourceCodeFrame.RowMessage;

@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as Host from '../host/host.js';
 import * as UI from '../ui/ui.js';
 
 import {DeviceModeWrapper} from './DeviceModeWrapper.js';
-import {Events, instance} from './InspectedPagePlaceholder.js';
+import {Events, InspectedPagePlaceholder, instance} from './InspectedPagePlaceholder.js';  // eslint-disable-line no-unused-vars
 
 /** @type {!AdvancedApp} */
 let _appInstance;
@@ -21,8 +18,25 @@ let _appInstance;
  */
 export class AdvancedApp {
   constructor() {
-    self.UI.dockController.addEventListener(
+    UI.DockController.DockController.instance().addEventListener(
         UI.DockController.Events.BeforeDockSideChanged, this._openToolboxWindow, this);
+
+    // These attributes are guaranteed to be initialised in presentUI that
+    // is invoked immediately after construction.
+    /**
+     * @type {!UI.SplitWidget.SplitWidget}
+     */
+    this._rootSplitWidget;
+
+    /**
+     * @type {!DeviceModeWrapper}
+     */
+    this._deviceModeView;
+
+    /**
+     * @type {!InspectedPagePlaceholder}
+     */
+    this._inspectedPagePlaceholder;
   }
 
   /**
@@ -44,18 +58,19 @@ export class AdvancedApp {
 
     this._rootSplitWidget = new UI.SplitWidget.SplitWidget(false, true, 'InspectorView.splitViewState', 555, 300, true);
     this._rootSplitWidget.show(rootView.element);
-    this._rootSplitWidget.setSidebarWidget(self.UI.inspectorView);
-    this._rootSplitWidget.setDefaultFocusedChild(self.UI.inspectorView);
+    this._rootSplitWidget.setSidebarWidget(UI.InspectorView.InspectorView.instance());
+    this._rootSplitWidget.setDefaultFocusedChild(UI.InspectorView.InspectorView.instance());
     UI.InspectorView.InspectorView.instance().setOwnerSplit(this._rootSplitWidget);
 
     this._inspectedPagePlaceholder = instance();
     this._inspectedPagePlaceholder.addEventListener(Events.Update, this._onSetInspectedPageBounds.bind(this), this);
     this._deviceModeView = new DeviceModeWrapper(this._inspectedPagePlaceholder);
 
-    self.UI.dockController.addEventListener(
+    UI.DockController.DockController.instance().addEventListener(
         UI.DockController.Events.BeforeDockSideChanged, this._onBeforeDockSideChange, this);
-    self.UI.dockController.addEventListener(UI.DockController.Events.DockSideChanged, this._onDockSideChange, this);
-    self.UI.dockController.addEventListener(
+    UI.DockController.DockController.instance().addEventListener(
+        UI.DockController.Events.DockSideChanged, this._onDockSideChange, this);
+    UI.DockController.DockController.instance().addEventListener(
         UI.DockController.Events.AfterDockSideChanged, this._onAfterDockSideChange, this);
     this._onDockSideChange();
 
@@ -124,7 +139,8 @@ export class AdvancedApp {
   _onDockSideChange(event) {
     this._updateDeviceModeView();
 
-    const toDockSide = event ? /** @type {string} */ (event.data.to) : self.UI.dockController.dockSide();
+    const toDockSide =
+        event ? /** @type {string} */ (event.data.to) : UI.DockController.DockController.instance().dockSide();
     if (toDockSide === UI.DockController.State.Undocked) {
       this._updateForUndocked();
     } else if (
@@ -157,7 +173,8 @@ export class AdvancedApp {
    * @param {string} dockSide
    */
   _updateForDocked(dockSide) {
-    this._rootSplitWidget.resizerElement().style.transform = dockSide === UI.DockController.State.DockedToRight ?
+    const resizerElement = /** @type {!HTMLElement} */ (this._rootSplitWidget.resizerElement());
+    resizerElement.style.transform = dockSide === UI.DockController.State.DockedToRight ?
         'translateX(2px)' :
         dockSide === UI.DockController.State.DockedToLeft ? 'translateX(-2px)' : '';
     this._rootSplitWidget.setVertical(
@@ -178,7 +195,7 @@ export class AdvancedApp {
   }
 
   _isDocked() {
-    return self.UI.dockController.dockSide() !== UI.DockController.State.Undocked;
+    return UI.DockController.DockController.instance().dockSide() !== UI.DockController.State.Undocked;
   }
 
   /**

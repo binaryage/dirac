@@ -7,6 +7,7 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as Root from '../root/root.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {ContextMenu} from './ContextMenu.js';  // eslint-disable-line no-unused-vars
@@ -38,7 +39,7 @@ export class ViewManager {
     this._locationOverrideSetting = Common.Settings.Settings.instance().createSetting('viewsLocationOverride', {});
     const preferredExtensionLocations = this._locationOverrideSetting.get();
 
-    for (const extension of self.runtime.extensions('view')) {
+    for (const extension of Root.Runtime.Runtime.instance().extensions('view')) {
       const descriptor = extension.descriptor();
       const descriptorId = descriptor['id'];
       this._views.set(descriptorId, new ProvidedView(extension));
@@ -185,8 +186,9 @@ export class ViewManager {
       return /** @type {!Promise<?_Location>} */ (Promise.resolve(null));
     }
 
-    const resolverExtensions =
-        self.runtime.extensions(ViewLocationResolver).filter(extension => extension.descriptor()['name'] === location);
+    const resolverExtensions = Root.Runtime.Runtime.instance()
+                                   .extensions(ViewLocationResolver)
+                                   .filter(extension => extension.descriptor()['name'] === location);
     if (!resolverExtensions.length) {
       throw new Error('Unresolved location: ' + location);
     }
@@ -484,17 +486,14 @@ export class _TabbedLocation extends _Location {
     this._tabbedPane.addEventListener(TabbedPaneEvents.TabSelected, this._tabSelected, this);
     this._tabbedPane.addEventListener(TabbedPaneEvents.TabClosed, this._tabClosed, this);
 
-    // Note: go via self.Common for globally-namespaced singletons.
     this._closeableTabSetting = Common.Settings.Settings.instance().createSetting('closeableTabs', {});
     // As we give tabs the capability to be closed we also need to add them to the setting so they are still open
     // until the user decide to close them
     this._setOrUpdateCloseableTabsSetting();
 
-    // Note: go via self.Common for globally-namespaced singletons.
     this._tabOrderSetting = Common.Settings.Settings.instance().createSetting(location + '-tabOrder', {});
     this._tabbedPane.addEventListener(TabbedPaneEvents.TabOrderChanged, this._persistTabOrder, this);
     if (restoreSelection) {
-      // Note: go via self.Common for globally-namespaced singletons.
       this._lastSelectedTabSetting = Common.Settings.Settings.instance().createSetting(location + '-selectedTab', '');
     }
     this._defaultTab = defaultTab;

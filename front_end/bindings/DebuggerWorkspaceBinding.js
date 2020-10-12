@@ -139,10 +139,13 @@ export class DebuggerWorkspaceBinding {
    * @param {!SDK.DebuggerModel.Location} rawLocation
    * @param {function(!LiveLocation)} updateDelegate
    * @param {!LiveLocationPool} locationPool
-   * @return {!Promise<!Location>}
+   * @return {!Promise<?Location>}
    */
   createLiveLocation(rawLocation, updateDelegate, locationPool) {
     const modelData = this._debuggerModelToData.get(rawLocation.script().debuggerModel);
+    if (!modelData) {
+      return Promise.resolve(null);
+    }
     const liveLocationPromise = modelData._createLiveLocation(rawLocation, updateDelegate, locationPool);
     this._recordLiveLocationChange(liveLocationPromise);
     return liveLocationPromise;
@@ -152,7 +155,7 @@ export class DebuggerWorkspaceBinding {
    * @param {!Array<!SDK.DebuggerModel.Location>} rawLocations
    * @param {function(!LiveLocation)} updateDelegate
    * @param {!LiveLocationPool} locationPool
-   * @return {!Promise<!Bindings.LiveLocation>}
+   * @return {!Promise<!LiveLocation>}
    */
   async createStackTraceTopFrameLiveLocation(rawLocations, updateDelegate, locationPool) {
     console.assert(rawLocations.length);
@@ -177,6 +180,9 @@ export class DebuggerWorkspaceBinding {
     const liveLocationPromise = this.createLiveLocation(location, updateDelegate, locationPool);
     this._recordLiveLocationChange(liveLocationPromise);
     const liveLocation = await liveLocationPromise;
+    if (!liveLocation) {
+      return null;
+    }
     this._registerCallFrameLiveLocation(debuggerModel, liveLocation);
     return liveLocation;
   }
@@ -469,6 +475,9 @@ class ModelData {
    */
   _beforePaused(debuggerPausedDetails) {
     const callFrame = debuggerPausedDetails.callFrames[0];
+    if (!callFrame) {
+      return false;
+    }
     if (callFrame.script.sourceMapURL !== SDK.SourceMap.WasmSourceMap.FAKE_URL &&
         !Root.Runtime.experiments.isEnabled('emptySourceMapAutoStepping')) {
       return true;

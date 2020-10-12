@@ -205,18 +205,14 @@ export class WebSocketConnection {
    * @return {!Promise<void>}
    */
   disconnect() {
-    /** @type {function():void} */
-    let fulfill;
-    const promise = new Promise(f => {
-      fulfill = f;
+    return new Promise(fulfill => {
+      this._close(() => {
+        if (this._onDisconnect) {
+          this._onDisconnect.call(null, 'force disconnect');
+        }
+        fulfill();
+      });
     });
-    this._close(() => {
-      if (this._onDisconnect) {
-        this._onDisconnect.call(null, 'force disconnect');
-      }
-      fulfill();
-    });
-    return promise;
   }
 }
 
@@ -341,7 +337,7 @@ export class ParallelConnection {
 }
 
 /**
- * @param {function():!Promise<undefined>} createMainTarget
+ * @param {function():!Promise<void>} createMainTarget
  * @param {function():void} websocketConnectionLost
  * @return {!Promise<void>}
  */

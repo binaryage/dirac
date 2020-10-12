@@ -7,6 +7,8 @@
 Utilities for the modular DevTools build.
 """
 
+from __future__ import print_function
+
 import collections
 from os import path
 import os
@@ -40,19 +42,8 @@ def load_and_parse_json(filename):
     try:
         return json.loads(read_file(filename))
     except:
-        print 'ERROR: Failed to parse %s' % filename
+        print('ERROR: Failed to parse %s' % filename)
         raise
-
-
-def concatenate_scripts(file_names, module_dir, output_dir, output):
-    for file_name in file_names:
-        output.write('/* %s */\n' % file_name)
-        file_path = path.join(module_dir, file_name)
-        if not path.isfile(file_path):
-            file_path = path.join(output_dir, path.basename(module_dir), file_name)
-        output.write(read_file(file_path))
-        output.write(';')
-
 
 class Descriptors:
 
@@ -76,7 +67,7 @@ class Descriptors:
         for name in self.sorted_modules():
             module = self.modules[name]
             skipped_files = set(module.get('skip_compilation', []))
-            for script in module.get('scripts', []) + module.get('modules', []):
+            for script in module.get('modules', []):
                 if script not in skipped_files:
                     files[path.normpath(path.join(self.application_dir, name, script))] = True
         return files.keys()
@@ -89,15 +80,6 @@ class Descriptors:
             for script in skipped_files:
                 files[path.join(name, script)] = True
         return files.keys()
-
-    def module_compiled_files(self, name):
-        files = []
-        module = self.modules.get(name)
-        skipped_files = set(module.get('skip_compilation', []))
-        for script in module.get('scripts', []):
-            if script not in skipped_files:
-                files.append(script)
-        return files
 
     def module_resources(self, name):
         return [name + '/' + resource for resource in self.modules[name].get('resources', [])]

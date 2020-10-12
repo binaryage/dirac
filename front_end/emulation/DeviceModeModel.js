@@ -477,16 +477,6 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
     this._calculateAndEmulate(false);
   }
 
-  reloadPage() {
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
-    if (mainTarget) {
-      const resourceModel = mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
-      if (resourceModel) {
-        resourceModel.reloadPage();
-      }
-    }
-  }
-
   /**
    * @return {number}
    */
@@ -805,7 +795,10 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
         mobile: this._isMobile(),
       };
 
-      deviceMetrics.displayFeature = this._getDisplayFeature();
+      const displayFeature = this._getDisplayFeature();
+      if (displayFeature) {
+        deviceMetrics.displayFeature = displayFeature;
+      }
 
       clip = {x: 0, y: 0, width: deviceMetrics.width, height: deviceMetrics.height, scale: 1};
 
@@ -820,13 +813,17 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
       await this._emulationModel.resetPageScaleFactor();
       await this._emulationModel.emulateDevice(deviceMetrics);
     }
-    const screenshot = await screenCaptureModel.captureScreenshot('png', 100, clip);
+    const screenshot =
+        await screenCaptureModel.captureScreenshot(Protocol.Page.CaptureScreenshotRequestFormat.Png, 100, clip);
     if (fullSize) {
       if (this._device) {
         const orientation = this._device.orientationByName(this._mode.orientation);
         deviceMetrics.width = orientation.width;
         deviceMetrics.height = orientation.height;
-        deviceMetrics.displayFeature = this._getDisplayFeature();
+        const dispFeature = this._getDisplayFeature();
+        if (dispFeature) {
+          deviceMetrics.displayFeature = dispFeature;
+        }
       } else {
         deviceMetrics.width = 0;
         deviceMetrics.height = 0;

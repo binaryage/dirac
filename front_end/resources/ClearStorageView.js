@@ -19,6 +19,8 @@ import {IndexedDBModel} from './IndexedDBModel.js';
 export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
   constructor() {
     super(true, 1000);
+    this.registerRequiredCSS('resources/clearStorageView.css');
+    this.contentElement.classList.add('clear-storage-container');
     const types = Protocol.Storage.StorageType;
     this._pieColors = new Map([
       [types.Appcache, 'rgb(110, 161, 226)'],        // blue
@@ -53,6 +55,7 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
     learnMoreRow.appendChild(learnMore);
     this._quotaUsage = null;
     this._pieChart = PerfUI.PieChart.createPieChart();
+    this._populatePieChart(0, []);
     const usageBreakdownRow = quota.appendRow();
     usageBreakdownRow.classList.add('usage-breakdown-row');
     usageBreakdownRow.appendChild(this._pieChart);
@@ -99,7 +102,8 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
       return;
     }
     this._target = target;
-    const securityOriginManager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
+    const securityOriginManager = /** @type {!SDK.SecurityOriginManager.SecurityOriginManager} */ (
+        target.model(SDK.SecurityOriginManager.SecurityOriginManager));
     this._updateOrigin(
         securityOriginManager.mainSecurityOrigin(), securityOriginManager.unreachableMainSecurityOrigin());
     securityOriginManager.addEventListener(
@@ -114,7 +118,8 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
     if (this._target !== target) {
       return;
     }
-    const securityOriginManager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
+    const securityOriginManager = /** @type {!SDK.SecurityOriginManager.SecurityOriginManager} */ (
+        target.model(SDK.SecurityOriginManager.SecurityOriginManager));
     securityOriginManager.removeEventListener(
         SDK.SecurityOriginManager.Events.MainSecurityOriginChanged, this._originChanged, this);
   }
@@ -130,7 +135,7 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
 
   /**
    * @param {string} mainOrigin
-   * @param {string} unreachableMainOrigin
+   * @param {?string} unreachableMainOrigin
    */
   _updateOrigin(mainOrigin, unreachableMainOrigin) {
     if (unreachableMainOrigin) {

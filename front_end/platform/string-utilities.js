@@ -470,3 +470,69 @@ export const removeURLFragment = inputStr => {
   url.hash = '';
   return url.toString();
 };
+
+/**
+ * @return {string}
+ */
+export const regexSpecialCharacters = function() {
+  return '^[]{}()\\.^$*+?|-,';
+};
+
+/**
+ * @param {string} query
+ * @return {!RegExp}
+ */
+export const filterRegex = function(query) {
+  const toEscape = regexSpecialCharacters();
+  let regexString = '';
+  for (let i = 0; i < query.length; ++i) {
+    let c = query.charAt(i);
+    if (toEscape.indexOf(c) !== -1) {
+      c = '\\' + c;
+    }
+    if (i) {
+      regexString += '[^\\0' + c + ']*';
+    }
+    regexString += c;
+  }
+  return new RegExp(regexString, 'i');
+};
+
+/**
+ * @param {string} query
+ * @param {boolean} caseSensitive
+ * @param {boolean} isRegex
+ * @return {!RegExp}
+ */
+export const createSearchRegex = function(query, caseSensitive, isRegex) {
+  const regexFlags = caseSensitive ? 'g' : 'gi';
+  let regexObject;
+
+  if (isRegex) {
+    try {
+      regexObject = new RegExp(query, regexFlags);
+    } catch (e) {
+      // Silent catch.
+    }
+  }
+
+  if (!regexObject) {
+    regexObject = self.createPlainTextSearchRegex(query, regexFlags);
+  }
+
+  return regexObject;
+};
+
+/**
+ * @param {string} a
+ * @param {string} b
+ * @return {number}
+ */
+export const caseInsensetiveComparator = function(a, b) {
+  a = a.toUpperCase();
+  b = b.toUpperCase();
+  if (a === b) {
+    return 0;
+  }
+  return a > b ? 1 : -1;
+};

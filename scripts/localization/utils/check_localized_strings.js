@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const writeFileAsync = fs.promises.writeFile;
 const renameFileAsync = fs.promises.rename;
+const ts = require('typescript');
 const localizationUtils = require('./localization_utils');
 const checkLocalizability = require('./check_localizability');
 const escodegen = localizationUtils.escodegen;
@@ -44,7 +45,7 @@ const frontendStrings = new Map();
 
 // Format
 // {
-//   IDS_KEY => a list of {
+//   IDS_KEY => []{
 //     actualIDSKey: string,  // the IDS key in the message tag
 //     description: string,
 //     grdpPath: string,
@@ -61,8 +62,50 @@ const frontendStrings = new Map();
 const IDSkeys = new Map();
 const fileToGRDPMap = new Map();
 
+// Format of V2 localizationCallsMap
+// { filePath => []{
+//      stringId: string,
+//      code: string,
+//      location: {
+//        start: {
+//          line: number, (1-based)
+//           column: number (0-based)
+//        },
+//        end: {
+//          line: number,
+//          column: number
+//        }
+//       },
+//      arguments: {}
+//     }
+// }
+const localizationCallsMap = new Map();
+
+// Format of uiStringsMap
+// { filePath => []{
+//       stringId: string,
+//       stringValue: string,
+//       location: {
+//         start: {
+//           line: number, (1-based)
+//            column: number (0-based)
+//         },
+//         end: {
+//           line: number,
+//           column: number
+//         }
+//       }
+//     }
+// }
+const uiStringsMap = new Map();
+
 const devtoolsFrontendPath = path.resolve(__dirname, '..', '..', '..', 'front_end');
 let devtoolsFrontendDirs;
+// During migration process, we will update this when a directory is migrated
+// e.g. const migratedDirsSet = new Set(['settings', 'console']);
+// TODO(crbug.com/941561): Remove once localization V1 is no longer used.
+const migratedDirsSet = new Set([]);
+const locV1CallsInMigratedFiles = new Set();
 
 /**
  * The following functions validate and update grd/grdp files.
@@ -195,7 +238,8 @@ function validateGrdpFile(dir, grdpFiles, grdFileContent, shouldAutoFix, renameF
  * Parse localizable resources.
  */
 async function parseLocalizableResourceMaps() {
-  if (frontendStrings.size === 0 && IDSkeys.size === 0) {
+  if ((frontendStrings.size === 0 && IDSkeys.size === 0) ||
+      (localizationCallsMap.size === 0 && uiStringsMap.size === 0)) {
     await parseLocalizableResourceMapsHelper();
   }
   return [frontendStrings, IDSkeys];
@@ -224,7 +268,8 @@ async function parseLocalizableResourceMapsHelper() {
 
 /**
  * The following functions parse localizable strings (wrapped in Common.UIString,
- * Common.UIStringFormat, UI.formatLocalized or ls``) from devtools frontend files.
+ * Common.UIStringFormat, UI.formatLocalized, ls``, i18n.getLocalizedString,
+ * i18n.getFormatLocalizedString) from devtools frontend files.
  */
 
 async function parseLocalizableStrings(devtoolsFiles) {
@@ -234,6 +279,11 @@ async function parseLocalizableStrings(devtoolsFiles) {
 
 async function parseLocalizableStringsFromFile(filePath) {
   const fileContent = await localizationUtils.parseFileContent(filePath);
+  if (hasUIStrings(fileContent)) {
+    const dirName = path.basename(path.dirname(filePath));
+    migratedDirsSet.add(dirName);
+  }
+
   if (path.basename(filePath) === 'module.json') {
     return parseLocalizableStringFromModuleJson(fileContent, filePath);
   }
@@ -255,6 +305,7 @@ async function parseLocalizableStringsFromFile(filePath) {
   }
 
   let ast;
+
   try {
     ast = espree.parse(fileContent, {ecmaVersion: 11, sourceType: 'module', range: true, loc: true});
   } catch (e) {
@@ -279,31 +330,41 @@ function parseLocalizableStringFromModuleJson(fileContent, filePath) {
   for (const extension of fileJSON.extensions) {
     for (const key in extension) {
       if (extensionStringKeys.includes(key)) {
-        addString(extension[key], extension[key], filePath);
+        handleModuleJsonString(extension[key], extension[key], filePath);
       } else if (key === 'device') {
-        addString(extension.device.title, extension.device.title, filePath);
+        handleModuleJsonString(extension.device.title, extension.device.title, filePath);
       } else if (key === 'options') {
         for (const option of extension.options) {
-          addString(option.title, option.title, filePath);
+          handleModuleJsonString(option.title, option.title, filePath);
           if (option.text !== undefined) {
-            addString(option.text, option.text, filePath);
+            handleModuleJsonString(option.text, option.text, filePath);
           }
         }
       } else if (key === 'defaultValue' && Array.isArray(extension[key])) {
         for (const defaultVal of extension[key]) {
           if (defaultVal.title) {
-            addString(defaultVal.title, defaultVal.title, filePath);
+            handleModuleJsonString(defaultVal.title, defaultVal.title, filePath);
           }
         }
       } else if (key === 'tags' && extension[key]) {
         const tagsList = extension[key].split(',');
         for (let tag of tagsList) {
           tag = tag.trim();
-          addString(tag, tag, filePath);
+          handleModuleJsonString(tag, tag, filePath);
         }
       }
     }
   }
+}
+
+function handleModuleJsonString(str, code, filePath) {
+  if (!isInMigratedDirectory(filePath)) {
+    // add string for Loc V1
+    addString(str, code, filePath);
+  }
+
+  // add to map for Loc V2
+  addToLocAPICallsMap(filePath, str, code);
 }
 
 function parseLocalizableStringFromNode(parentNode, node, filePath) {
@@ -326,26 +387,45 @@ function parseLocalizableStringFromNode(parentNode, node, filePath) {
     return;
   }
 
-  const locCase = localizationUtils.getLocalizationCase(node);
-  const code = escodegen.generate(node);
+  const {locCase, locVersion} = localizationUtils.getLocalizationCaseAndVersion(node);
+  if (locVersion === 1) {
+    // check if the V1 API call is in a directory that are already migrated to V2
+    checkMigratedDirectory(filePath);
+  }
+
   switch (locCase) {
     case 'Common.UIString':
     case 'Platform.UIString':
     case 'Common.UIStringFormat': {
-      checkLocalizability.analyzeCommonUIStringNode(node, filePath, code);
+      checkLocalizability.analyzeCommonUIStringNode(node, filePath, escodegen.generate(node));
       handleCommonUIString(node, filePath);
       break;
     }
     case 'UI.formatLocalized': {
-      checkLocalizability.analyzeCommonUIStringNode(node, filePath, code);
+      checkLocalizability.analyzeCommonUIStringNode(node, filePath, escodegen.generate(node));
       if (node.arguments !== undefined && node.arguments[1] !== undefined && node.arguments[1].elements !== undefined) {
         handleCommonUIString(node, filePath, node.arguments[1].elements);
       }
       break;
     }
     case 'Tagged Template': {
+      const code = escodegen.generate(node);
       checkLocalizability.analyzeTaggedTemplateNode(node, filePath, code);
       handleTemplateLiteral(node.quasi, code, filePath);
+      break;
+    }
+    case 'i18n.i18n.getLocalizedString':
+    case 'i18n.i18n.getFormatLocalizedString': {
+      checkLocalizability.analyzeGetLocalizedStringNode(node, filePath);
+      if (node.arguments !== undefined && node.arguments[1] !== undefined) {
+        handleGetLocalizedStringNode(filePath, node);
+      }
+      break;
+    }
+    case 'UIStrings': {
+      if (node.init && node.init.properties) {
+        handleUIStringsDeclarationNode(filePath, node);
+      }
       break;
     }
     default: {
@@ -402,6 +482,51 @@ function handleTemplateLiteral(node, code, filePath, argumentNodes) {
   addString(processedMsg, code, filePath, node.loc, argumentNodes);
 }
 
+/**
+ * Handle the node that declares `UIStrings`
+ */
+function handleUIStringsDeclarationNode(filePath, node) {
+  const stringEntryNodes = node.init.properties;
+  const stringEntryList = [];
+  for (const node of stringEntryNodes) {
+    if (node.key && node.value) {
+      stringEntryList.push({stringId: node.key.name, stringValue: node.value.value, location: node.loc});
+    }
+  }
+  uiStringsMap.set(filePath, stringEntryList);
+}
+
+/**
+ * Handle the node that is `i18n.getLocalizedString()` or `i18n.getFormatLocalizedString` call.
+ */
+function handleGetLocalizedStringNode(filePath, node) {
+  const stringIdNode = node.arguments[1];
+  const argumentNodes = node.arguments[2];
+  if (stringIdNode.property && stringIdNode.property.name && stringIdNode.property.type === espreeTypes.IDENTIFIER) {
+    addToLocAPICallsMap(filePath, stringIdNode.property.name, escodegen.generate(node), node.loc, argumentNodes);
+  }
+}
+
+/**
+ * Add the string that is called with Localization V2 API into the map for that file.
+ */
+function addToLocAPICallsMap(filePath, stringId, code, location, argumentNodes) {
+  const currentString = {stringId, code};
+  if (location) {
+    currentString.location = location;
+  }
+  if (argumentNodes) {
+    currentString.argumentNodes = argumentNodes;
+  }
+
+  if (localizationCallsMap.has(filePath)) {
+    const stringList = localizationCallsMap.get(filePath);
+    stringList.push(currentString);
+  } else {
+    localizationCallsMap.set(filePath, [currentString]);
+  }
+}
+
 function addString(str, code, filePath, location, argumentNodes) {
   const ids = localizationUtils.getIDSKey(str);
 
@@ -437,6 +562,46 @@ function addString(str, code, filePath, location, argumentNodes) {
   }
 
   frontendStrings.set(ids, currentString);
+}
+
+/**
+ * Check if the file is in a directory that has been migrated to V2
+ */
+function isInMigratedDirectory(filePath) {
+  const dirName = path.basename(path.dirname(filePath));
+  return migratedDirsSet.has(dirName);
+}
+
+/**
+ * Check if UIStrings presents in the file
+ */
+function hasUIStrings(content) {
+  const sourceFile = ts.createSourceFile('', content, ts.ScriptTarget.ESNext, true);
+  return (findUIStringsNode(sourceFile) !== null);
+}
+
+/**
+ * Take in an AST node and recursively look for UIStrings node, return the UIStrings node if found
+ */
+function findUIStringsNode(node) {
+  const nodesToVisit = [node];
+  while (nodesToVisit.length) {
+    const currentNode = nodesToVisit.shift();
+    if (currentNode.kind === ts.SyntaxKind.VariableDeclaration && currentNode.name.escapedText === 'UIStrings') {
+      return currentNode;
+    }
+    nodesToVisit.push(...currentNode.getChildren());
+  }
+  return null;
+}
+
+/**
+ * Add the file path if it's in a migrated directory
+ */
+function checkMigratedDirectory(filePath) {
+  if (isInMigratedDirectory(filePath)) {
+    locV1CallsInMigratedFiles.add(filePath);
+  }
 }
 
 /**
@@ -624,7 +789,8 @@ function getMessagesToAdd() {
 
   const difference = [];
   for (const [ids, frontendString] of frontendStrings) {
-    if (!IDSkeys.has(ids) || !messageExists(ids, frontendString.grdpPath)) {
+    if (!isInMigratedDirectory(frontendString.filepath) &&
+        (!IDSkeys.has(ids) || !messageExists(ids, frontendString.grdpPath))) {
       difference.push([ids, frontendString]);
     }
   }
@@ -711,7 +877,7 @@ function getLocalizabilityError() {
 }
 
 module.exports = {
-  parseLocalizableResourceMaps,
+  findUIStringsNode,
   getAndReportIDSKeysToModify,
   getAndReportResourcesToAdd,
   getAndReportResourcesToRemove,
@@ -720,5 +886,9 @@ module.exports = {
   getLongestDescription,
   getMessagesToAdd,
   getMessagesToRemove,
+  localizationCallsMap,
+  locV1CallsInMigratedFiles,
+  parseLocalizableResourceMaps,
+  uiStringsMap,
   validateGrdAndGrdpFiles,
 };

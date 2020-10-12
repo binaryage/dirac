@@ -34,7 +34,7 @@ function checkNonAutostartNonRemoteModules() {
     ];
   }
   const text = lines.join('\n');
-  const modules = manifestModules.filter(m => m.type !== 'autostart' && m.type !== 'remote').map(m => m.name);
+  const modules = manifestModules.filter(m => m.type !== 'autostart').map(m => m.name);
 
   const missingModules = modules.filter(m => !text.includes(`${m}/${m}_module.js`));
   if (missingModules.length) {
@@ -58,11 +58,9 @@ function checkNonAutostartNonRemoteModules() {
  */
 function checkAllDevToolsFiles() {
   return checkGNVariable('all_devtools_files', 'all_devtools_files', moduleJSON => {
-    const scripts = moduleJSON.scripts || [];
     const resources = moduleJSON.resources || [];
     return [
       'module.json',
-      ...scripts,
       ...resources,
     ];
   });
@@ -72,13 +70,8 @@ function checkDevtoolsModuleEntrypoints() {
   return checkGNVariable(
       'devtools_module_entrypoints', 'devtools_module_entrypoint_sources',
       (moduleJSON, folderName) => {
-        // TODO(crbug.com/1101738): Remove the exemption and change the variable to
-        // `generated_typescript_entrypoint_sources` instead.
-        if (moduleJSON.skip_rollup) {
-          return [];
-        }
         return (moduleJSON.modules || []).filter(fileName => {
-          return fileName === `${folderName}.js` || fileName === `${folderName}-legacy.js`;
+          return fileName === `${folderName}-legacy.js`;
         });
       },
       buildGNPath => filename => {

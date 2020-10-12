@@ -27,12 +27,12 @@ devtools_module("formatter_worker") {
     "../third_party/acorn-loose",
     "../third_party/codemirror",
   ]
-
-  is_web_worker = true
 }
 
 devtools_entrypoint("bundle") {
   entrypoint = "formatter_worker.ts"
+
+  is_web_worker = true
 
   deps = [ ":formatter_worker" ]
 }

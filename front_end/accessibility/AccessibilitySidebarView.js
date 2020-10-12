@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -92,24 +90,26 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
   /**
    * @override
    * @protected
-   * @return {!Promise.<?>}
+   * @return {!Promise.<void>}
    */
-  doUpdate() {
+  async doUpdate() {
     const node = this.node();
     this._axNodeSubPane.setNode(node);
     this._ariaSubPane.setNode(node);
     this._breadcrumbsSubPane.setNode(node);
-    if (this._sourceOrderViewerExperimentEnabled) {
+    if (this._sourceOrderViewerExperimentEnabled && this._sourceOrderSubPane) {
       this._sourceOrderSubPane.setNodeAsync(node);
     }
     if (!node) {
-      return Promise.resolve();
+      return;
     }
     const accessibilityModel = node.domModel().target().model(AccessibilityModel);
+    if (!accessibilityModel) {
+      return;
+    }
     accessibilityModel.clear();
-    return accessibilityModel.requestPartialAXTree(node).then(() => {
-      this.accessibilityNodeCallback(accessibilityModel.axNodeForDOMNode(node));
-    });
+    await accessibilityModel.requestPartialAXTree(node);
+    this.accessibilityNodeCallback(accessibilityModel.axNodeForDOMNode(node));
   }
 
   /**

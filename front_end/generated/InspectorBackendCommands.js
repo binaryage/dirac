@@ -109,6 +109,16 @@ export function registerCommands(inspectorBackend) {
       ],
       ['nodes']);
   inspectorBackend.registerCommand('Accessibility.getFullAXTree', [], ['nodes']);
+  inspectorBackend.registerCommand(
+      'Accessibility.queryAXTree',
+      [
+        {'name': 'nodeId', 'type': 'number', 'optional': true},
+        {'name': 'backendNodeId', 'type': 'number', 'optional': true},
+        {'name': 'objectId', 'type': 'string', 'optional': true},
+        {'name': 'accessibleName', 'type': 'string', 'optional': true},
+        {'name': 'role', 'type': 'string', 'optional': true}
+      ],
+      ['nodes']);
 
   // Animation.
   inspectorBackend.registerEnum(
@@ -1559,6 +1569,8 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerCommand(
       'Network.setExtraHTTPHeaders', [{'name': 'headers', 'type': 'object', 'optional': false}], []);
   inspectorBackend.registerCommand(
+      'Network.setAttachDebugHeader', [{'name': 'enabled', 'type': 'boolean', 'optional': false}], []);
+  inspectorBackend.registerCommand(
       'Network.setRequestInterception', [{'name': 'patterns', 'type': 'object', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Network.setUserAgentOverride',
@@ -1571,6 +1583,13 @@ export function registerCommands(inspectorBackend) {
       []);
   inspectorBackend.registerCommand(
       'Network.getSecurityIsolationStatus', [{'name': 'frameId', 'type': 'string', 'optional': true}], ['status']);
+  inspectorBackend.registerCommand(
+      'Network.loadNetworkResource',
+      [
+        {'name': 'frameId', 'type': 'string', 'optional': false}, {'name': 'url', 'type': 'string', 'optional': false},
+        {'name': 'options', 'type': 'object', 'optional': false}
+      ],
+      ['resource']);
 
   // Overlay.
   inspectorBackend.registerEnum('Overlay.ColorFormat', {Rgb: 'rgb', Hsl: 'hsl', Hex: 'hex'});
@@ -2644,6 +2663,9 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerCommand('Profiler.stopTypeProfile', [], []);
   inspectorBackend.registerCommand('Profiler.takePreciseCoverage', [], ['result', 'timestamp']);
   inspectorBackend.registerCommand('Profiler.takeTypeProfile', [], ['result']);
+  inspectorBackend.registerCommand('Profiler.enableCounters', [], []);
+  inspectorBackend.registerCommand('Profiler.disableCounters', [], []);
+  inspectorBackend.registerCommand('Profiler.getCounters', [], ['result']);
   inspectorBackend.registerCommand('Profiler.enableRuntimeCallStats', [], []);
   inspectorBackend.registerCommand('Profiler.disableRuntimeCallStats', [], []);
   inspectorBackend.registerCommand('Profiler.getRuntimeCallStats', [], ['result']);
@@ -2847,7 +2869,8 @@ export function registerCommands(inspectorBackend) {
       'Runtime.addBinding',
       [
         {'name': 'name', 'type': 'string', 'optional': false},
-        {'name': 'executionContextId', 'type': 'number', 'optional': true}
+        {'name': 'executionContextId', 'type': 'number', 'optional': true},
+        {'name': 'executionContextName', 'type': 'string', 'optional': true}
       ],
       []);
   inspectorBackend.registerCommand(

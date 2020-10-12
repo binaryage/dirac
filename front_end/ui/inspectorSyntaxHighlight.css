@@ -118,15 +118,20 @@
   /* Keep this in sync with view-source.css (.webkit-html-attribute-value) */
   color: rgb(26 26 166);
   unicode-bidi: -webkit-isolate;
+  word-break: break-all;
 }
 
 .devtools-link {
-  color: rgb(17 85 204);
+  color: var(--link-color);
   text-decoration: underline;
 }
 
 .devtools-link [is=ui-icon] {
   vertical-align: middle;
+}
+
+.devtools-link [is=ui-icon].icon-mask {
+  background-color: var(--link-color);
 }
 
 .devtools-link:focus-visible {
@@ -135,11 +140,6 @@
 
 .devtools-link:not(.devtools-link-prevent-click) {
   cursor: pointer;
-}
-
-.-theme-with-dark-background .devtools-link,
-:host-context(.-theme-with-dark-background) .devtools-link {
-  color: hsl(0deg 0% 67%);
 }
 
 /* Default CodeMirror Theme */

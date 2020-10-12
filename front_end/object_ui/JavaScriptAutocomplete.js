@@ -8,6 +8,7 @@
 import * as Common from '../common/common.js';
 import * as Formatter from '../formatter/formatter.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
@@ -91,7 +92,7 @@ export class JavaScriptAutocomplete {
       return (result && !result.exceptionDetails && result.object) ? result.object : null;
     }, functionCall.functionName);
     executionContext.runtimeModel.releaseObjectGroup('argumentsHint');
-    if (!args.length || (args.length === 1 && !args[0].length)) {
+    if (!args.length || (args.length === 1 && (!args[0] || !args[0].length))) {
       return null;
     }
     return {args, argumentIndex: functionCall.argumentIndex};
@@ -132,7 +133,8 @@ export class JavaScriptAutocomplete {
         return clippedArgs;
       }
     }
-    const javaScriptMetadata = await self.runtime.extension(Common.JavaScriptMetaData.JavaScriptMetaData).instance();
+    const javaScriptMetadata =
+        await Root.Runtime.Runtime.instance().extension(Common.JavaScriptMetaData.JavaScriptMetaData).instance();
 
     const name = /^function ([^(]*)\(/.exec(description)[1] || parsedFunctionName;
     if (!name) {
@@ -143,6 +145,9 @@ export class JavaScriptAutocomplete {
       return uniqueSignatures;
     }
     const receiverObj = await receiverObjGetter();
+    if (!receiverObj) {
+      return [];
+    }
     const className = receiverObj.className;
     if (javaScriptMetadata.signaturesForInstanceMethod(name, className)) {
       return javaScriptMetadata.signaturesForInstanceMethod(name, className);

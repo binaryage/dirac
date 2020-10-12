@@ -6,6 +6,7 @@
  * @fileoverview using private properties isn't a Closure violation in tests.
  * @suppress {accessControls}
  */
+self.BindingsTestRunner = self.BindingsTestRunner || {};
 
 BindingsTestRunner.cleanupURL = function(url) {
   if (!url.startsWith('debugger://')) {
@@ -46,9 +47,6 @@ BindingsTestRunner.dumpWorkspace = function(previousSnapshot) {
         isAdded[index++] = true;
       }
     }
-
-    const addedEntries = diff.filter(entry => entry[0] === Diff.Diff.Operation.Insert).map(entry => entry[1]);
-    addedLines = [].concat.apply([], addedEntries);
   }
 
   TestRunner.addResult(`Removed: ${removedLines.length} uiSourceCodes`);

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Root from '../root/root.js';
+
 /**
  * @interface
  */
@@ -42,7 +47,7 @@ class LighthouseService {  // eslint-disable-line
    * @return {!Promise<!ReportRenderer.RunnerResult>}
    */
   start(params) {
-    if (Root.Runtime.queryParam('isUnderTest')) {
+    if (Root.Runtime.Runtime.queryParam('isUnderTest')) {
       this._disableLoggingForTest();
       params.flags.maxWaitForLoad = 2 * 1000;
     }
@@ -90,8 +95,7 @@ class LighthouseService {  // eslint-disable-line
     // Try to load the locale data.
     const localeResource = `../third_party/lighthouse/locales/${locale}.json`;
     try {
-      // @ts-ignore self.runtime needs to be moved to ESModules so we can import this
-      const module = self.runtime.module('lighthouse_worker');
+      const module = Root.Runtime.Runtime.instance().module('lighthouse_worker');
       const localeDataText = await module.fetchResource(localeResource);
       const localeData = JSON.parse(localeDataText);
       self.registerLocaleData(locale, localeData);
@@ -163,11 +167,11 @@ class LighthouseService {  // eslint-disable-line
 }
 
 // Make lighthouse and traceviewer happy.
-global = self;
-global.isVinn = true;
-global.document = {};
-global.document.documentElement = {};
-global.document.documentElement.style = {
+globalThis.global = self;
+globalThis.global.isVinn = true;
+globalThis.global.document = {};
+globalThis.global.document.documentElement = {};
+globalThis.global.document.documentElement.style = {
   WebkitAppearance: 'WebkitAppearance'
 };
-global.LighthouseService = LighthouseService;
+globalThis.global.LighthouseService = LighthouseService;

@@ -127,6 +127,16 @@ declare namespace ProtocolProxyApi {
      * Fetches the entire accessibility tree
      */
     invoke_getFullAXTree(): Promise<Protocol.Accessibility.GetFullAXTreeResponse>;
+
+    /**
+     * Query a DOM node's accessibility subtree for accessible name and role.
+     * This command computes the name and role for all nodes in the subtree, including those that are
+     * ignored for accessibility, and returns those that mactch the specified name and role. If no DOM
+     * node is specified, or the DOM node does not exist, the command returns an error. If neither
+     * `accessibleName` or `role` is specified, it returns all the accessibility nodes in the subtree.
+     */
+    invoke_queryAXTree(params: Protocol.Accessibility.QueryAXTreeRequest):
+        Promise<Protocol.Accessibility.QueryAXTreeResponse>;
   }
   export interface AccessibilityDispatcher extends Protocol.Dispatcher {}
 
@@ -1770,6 +1780,12 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
+     * Specifies whether to sned a debug header to all outgoing requests.
+     */
+    invoke_setAttachDebugHeader(params: Protocol.Network.SetAttachDebugHeaderRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
      * Sets the requests to intercept that match the provided patterns and optionally resource types.
      * Deprecated, please use Fetch.enable instead.
      */
@@ -1787,6 +1803,12 @@ declare namespace ProtocolProxyApi {
      */
     invoke_getSecurityIsolationStatus(params: Protocol.Network.GetSecurityIsolationStatusRequest):
         Promise<Protocol.Network.GetSecurityIsolationStatusResponse>;
+
+    /**
+     * Fetches the resource and returns the content.
+     */
+    invoke_loadNetworkResource(params: Protocol.Network.LoadNetworkResourceRequest):
+        Promise<Protocol.Network.LoadNetworkResourceResponse>;
   }
   export interface NetworkDispatcher extends Protocol.Dispatcher {
     /**
@@ -3502,6 +3524,21 @@ declare namespace ProtocolProxyApi {
     invoke_takeTypeProfile(): Promise<Protocol.Profiler.TakeTypeProfileResponse>;
 
     /**
+     * Enable counters collection.
+     */
+    invoke_enableCounters(): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Disable counters collection.
+     */
+    invoke_disableCounters(): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Retrieve counters.
+     */
+    invoke_getCounters(): Promise<Protocol.Profiler.GetCountersResponse>;
+
+    /**
      * Enable run time call stats collection.
      */
     invoke_enableRuntimeCallStats(): Promise<Protocol.ProtocolResponseWithError>;
@@ -3643,8 +3680,6 @@ declare namespace ProtocolProxyApi {
      * If executionContextId is empty, adds binding with the given name on the
      * global objects of all inspected contexts, including those created later,
      * bindings survive reloads.
-     * If executionContextId is specified, adds binding only on global object of
-     * given execution context.
      * Binding function takes exactly one argument, this argument should be string,
      * in case of any other input, function throws an exception.
      * Each binding function call produces Runtime.bindingCalled notification.

@@ -158,7 +158,7 @@
     {
       "type": "setting",
       "category": "Console",
-      "title": "Group similar",
+      "title": "Group similar messages in console",
       "settingName": "consoleGroupSimilar",
       "settingType": "boolean",
       "defaultValue": true,
@@ -238,6 +238,5 @@
     "consolePrompt.css",
     "consoleSidebar.css",
     "consoleView.css"
-  ],
-  "skip_rollup": true
+  ]
 }

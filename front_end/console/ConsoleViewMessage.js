@@ -38,6 +38,7 @@ import * as ObjectUI from '../object_ui/object_ui.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
+import * as ThemeSupport from '../theme_support/theme_support.js';
 import * as UI from '../ui/ui.js';
 
 import {ConsoleViewportElement} from './ConsoleViewport.js';  // eslint-disable-line no-unused-vars
@@ -72,13 +73,13 @@ export class ConsoleViewMessage {
     this._traceExpanded = false;
     /** @type {?function(boolean)} */
     this._expandTrace = null;
-    /** @type {?Element} */
+    /** @type {?HTMLElement} */
     this._anchorElement = null;
   }
 
   /**
    * @override
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   element() {
     return this.toMessageElement();
@@ -138,10 +139,10 @@ export class ConsoleViewMessage {
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _buildTableMessage() {
-    const formattedMessage = document.createElement('span');
+    const formattedMessage = /** @type {!HTMLElement} */ (document.createElement('span'));
     formattedMessage.classList.add('source-code');
     this._anchorElement = this._buildMessageAnchor();
     if (this._anchorElement) {
@@ -225,7 +226,7 @@ export class ConsoleViewMessage {
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _buildMessage() {
     let messageElement;
@@ -244,8 +245,8 @@ export class ConsoleViewMessage {
           } else {
             messageElement.textContent = Common.UIString.UIString('Console was cleared');
           }
-          messageElement.title =
-              ls`Clear all messages with ${self.UI.shortcutRegistry.shortcutTitleForAction('console.clear')}`;
+          messageElement.title = ls`Clear all messages with ${
+              UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction('console.clear')}`;
           break;
         case SDK.ConsoleModel.MessageType.Dir: {
           const obj = this._message.parameters ? this._message.parameters[0] : undefined;
@@ -291,7 +292,7 @@ export class ConsoleViewMessage {
     }
     messageElement.classList.add('console-message-text');
 
-    const formattedMessage = document.createElement('span');
+    const formattedMessage = /** @type {!HTMLElement} */ (document.createElement('span'));
     formattedMessage.classList.add('source-code');
     this._anchorElement = this._buildMessageAnchor();
     if (this._anchorElement) {
@@ -302,14 +303,14 @@ export class ConsoleViewMessage {
   }
 
   /**
-   * @return {?Element}
+   * @return {?HTMLElement}
    */
   _formatAsNetworkRequest() {
     const request = SDK.NetworkLog.NetworkLog.requestForConsoleMessage(this._message);
     if (!request) {
       return null;
     }
-    const messageElement = createElement('span');
+    const messageElement = /** @type {!HTMLElement} */ (document.createElement('span'));
     if (this._message.level === SDK.ConsoleModel.MessageLevel.Error) {
       messageElement.createTextChild(request.requestMethod + ' ');
       const linkElement = Components.Linkifier.Linkifier.linkifyRevealable(request, request.url(), request.url());
@@ -346,7 +347,7 @@ export class ConsoleViewMessage {
   }
 
   /**
-   * @return {?Element}
+   * @return {?HTMLElement}
    */
   _buildMessageAnchor() {
     let anchorElement = null;
@@ -366,7 +367,7 @@ export class ConsoleViewMessage {
         element: anchorElement,
         forceSelect: () => anchorElement.focus(),
       });
-      const anchorWrapperElement = document.createElement('span');
+      const anchorWrapperElement = /** @type {!HTMLElement} */ (document.createElement('span'));
       anchorWrapperElement.classList.add('console-message-anchor');
       anchorWrapperElement.appendChild(anchorElement);
       anchorWrapperElement.createTextChild(' ');
@@ -376,10 +377,10 @@ export class ConsoleViewMessage {
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _buildMessageWithStackTrace() {
-    const toggleElement = document.createElement('div');
+    const toggleElement = /** @type {!HTMLElement} */ (document.createElement('div'));
     toggleElement.classList.add('console-message-stack-trace-toggle');
     const contentElement = toggleElement.createChild('div', 'console-message-stack-trace-wrapper');
 
@@ -433,7 +434,7 @@ export class ConsoleViewMessage {
    * @param {string} url
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {?Element}
+   * @return {?HTMLElement}
    */
   _linkifyLocation(url, lineNumber, columnNumber) {
     if (!this._message.runtimeModel()) {
@@ -445,7 +446,7 @@ export class ConsoleViewMessage {
 
   /**
    * @param {!Protocol.Runtime.StackTrace} stackTrace
-   * @return {?Element}
+   * @return {?HTMLElement}
    */
   _linkifyStackTraceTopFrame(stackTrace) {
     if (!this._message.runtimeModel()) {
@@ -459,7 +460,7 @@ export class ConsoleViewMessage {
    * @param {string} url
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {?Element}
+   * @return {?HTMLElement}
    */
   _linkifyScriptId(scriptId, url, lineNumber, columnNumber) {
     if (!this._message.runtimeModel()) {
@@ -489,11 +490,11 @@ export class ConsoleViewMessage {
 
   /**
    * @param {!Array.<!SDK.RemoteObject.RemoteObject|string>} rawParameters
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _format(rawParameters) {
     // This node is used like a Builder. Values are continually appended onto it.
-    const formattedResult = createElement('span');
+    const formattedResult = /** @type {!HTMLElement} */ (document.createElement('span'));
     if (this._messagePrefix) {
       formattedResult.createChild('span').textContent = this._messagePrefix;
     }
@@ -545,11 +546,11 @@ export class ConsoleViewMessage {
    * @param {!SDK.RemoteObject.RemoteObject} output
    * @param {boolean=} forceObjectFormat
    * @param {boolean=} includePreview
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _formatParameter(output, forceObjectFormat, includePreview) {
     if (output.customPreview()) {
-      return (new ObjectUI.CustomPreviewComponent.CustomPreviewComponent(output)).element;
+      return /** @type {!HTMLElement} */ ((new ObjectUI.CustomPreviewComponent.CustomPreviewComponent(output)).element);
     }
 
     const type = forceObjectFormat ? 'object' : (output.subtype || output.type);
@@ -604,15 +605,15 @@ export class ConsoleViewMessage {
 
   /**
    * @param {!SDK.RemoteObject.RemoteObject} obj
-   * @return {!Element}
+   * @return {!HTMLElement}
    * @suppress {accessControls}
    */
   _formatParameterAsValue(obj) {
-    const result = createElement('span');
+    const result = /** @type {!HTMLElement} */ (document.createElement('span'));
     const description = obj.description || '';
     if (description.length > Console.ConsoleViewMessage._MaxTokenizableStringLength) {
       const propertyValue = new ObjectUI.ObjectPropertiesSection.ExpandableTextPropertyValue(
-          createElement('span'), description, Console.ConsoleViewMessage._LongStringVisibleLength);
+          document.createElement('span'), description, Console.ConsoleViewMessage._LongStringVisibleLength);
       result.appendChild(propertyValue.element);
     } else {
       result.createTextChild(description);
@@ -626,10 +627,10 @@ export class ConsoleViewMessage {
   /**
    * @param {!SDK.RemoteObject.RemoteObject} obj
    * @param {boolean=} includePreview
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _formatParameterAsObject(obj, includePreview) {
-    const titleElement = document.createElement('span');
+    const titleElement = /** @type {!HTMLElement} */ (document.createElement('span'));
     titleElement.classList.add('console-object');
     if (includePreview && obj.preview) {
       titleElement.classList.add('console-object-preview');
@@ -667,10 +668,10 @@ export class ConsoleViewMessage {
   /**
    * @param {!SDK.RemoteObject.RemoteObject} func
    * @param {boolean=} includePreview
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _formatParameterAsFunction(func, includePreview) {
-    const result = createElement('span');
+    const result = /** @type {!HTMLElement} */ (document.createElement('span'));
     SDK.RemoteObject.RemoteFunction.objectAsFunction(func).targetFunction().then(formatTargetFunction.bind(this));
     return result;
 
@@ -679,7 +680,7 @@ export class ConsoleViewMessage {
      * @this {ConsoleViewMessage}
      */
     function formatTargetFunction(targetFunction) {
-      const functionElement = createElement('span');
+      const functionElement = document.createElement('span');
       const promise = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.formatObjectAsFunction(
           targetFunction, functionElement, true, includePreview);
       result.appendChild(functionElement);
@@ -708,7 +709,7 @@ export class ConsoleViewMessage {
   /**
    * @param {?SDK.RemoteObject.RemoteObject} object
    * @param {!Array.<!Protocol.Runtime.PropertyPreview>} propertyPath
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _renderPropertyPreviewOrAccessor(object, propertyPath) {
     const property = propertyPath.peekLast();
@@ -721,10 +722,10 @@ export class ConsoleViewMessage {
 
   /**
    * @param {!SDK.RemoteObject.RemoteObject} remoteObject
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _formatParameterAsNode(remoteObject) {
-    const result = createElement('span');
+    const result = /** @type {!HTMLElement} */ (document.createElement('span'));
 
     const domModel = remoteObject.runtimeModel().target().model(SDK.DOMModel.DOMModel);
     if (!domModel) {
@@ -758,13 +759,13 @@ export class ConsoleViewMessage {
 
   /**
    * @param {!SDK.RemoteObject.RemoteObject} output
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _formatParameterAsString(output) {
-    const span = createElement('span');
+    const span = /** @type {!HTMLElement} */ (document.createElement('span'));
     span.appendChild(this._linkifyStringAsFragment(output.description || ''));
 
-    const result = createElement('span');
+    const result = /** @type {!HTMLElement} */ (document.createElement('span'));
     result.createChild('span', 'object-value-string-quote').textContent = '"';
     result.appendChild(span);
     result.createChild('span', 'object-value-string-quote').textContent = '"';
@@ -773,10 +774,10 @@ export class ConsoleViewMessage {
 
   /**
    * @param {!SDK.RemoteObject.RemoteObject} output
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _formatParameterAsError(output) {
-    const result = createElement('span');
+    const result = /** @type {!HTMLElement} */ (document.createElement('span'));
     const errorSpan = this._tryFormatAsError(output.description || '');
     result.appendChild(errorSpan ? errorSpan : this._linkifyStringAsFragment(output.description || ''));
     return result;
@@ -784,7 +785,7 @@ export class ConsoleViewMessage {
 
   /**
    * @param {!SDK.RemoteObject.RemoteObject} output
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _formatAsArrayEntry(output) {
     return this._previewFormatter.renderPropertyPreview(output.type, output.subtype, output.description);
@@ -794,7 +795,7 @@ export class ConsoleViewMessage {
    * @param {?SDK.RemoteObject.RemoteObject} object
    * @param {!Array.<string>} propertyPath
    * @param {boolean} isArrayEntry
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _formatAsAccessorProperty(object, propertyPath, isArrayEntry) {
     const rootElement =
@@ -841,7 +842,7 @@ export class ConsoleViewMessage {
   /**
    * @param {string} format
    * @param {!Array.<!SDK.RemoteObject.RemoteObject>} parameters
-   * @param {!Element} formattedResult
+   * @param {!HTMLElement} formattedResult
    */
   _formatWithSubstitutionString(format, parameters, formattedResult) {
     const formatters = {};
@@ -850,7 +851,7 @@ export class ConsoleViewMessage {
      * @param {boolean} force
      * @param {boolean} includePreview
      * @param {!SDK.RemoteObject.RemoteObject} obj
-     * @return {!Element}
+     * @return {!HTMLElement}
      * @this {ConsoleViewMessage}
      */
     function parameterFormatter(force, includePreview, obj) {
@@ -885,7 +886,7 @@ export class ConsoleViewMessage {
     let currentStyle = null;
     function styleFormatter(obj) {
       currentStyle = {};
-      const buffer = createElement('span');
+      const buffer = document.createElement('span');
       buffer.setAttribute('style', obj.description);
       for (let i = 0; i < buffer.style.length; i++) {
         const property = buffer.style[i];
@@ -926,10 +927,10 @@ export class ConsoleViewMessage {
     formatters._ = bypassFormatter;
 
     /**
-     * @param {!Element} a
+     * @param {!HTMLElement} a
      * @param {*} b
      * @this {!ConsoleViewMessage}
-     * @return {!Element}
+     * @return {!HTMLElement}
      */
     function append(a, b) {
       if (b instanceof Node) {
@@ -947,27 +948,27 @@ export class ConsoleViewMessage {
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const lineFragment = this._linkifyStringAsFragment(line);
-        const wrapper = createElement('span');
+        const wrapper = /** @type {!HTMLElement} */ (document.createElement('span'));
         wrapper.style.setProperty('contain', 'paint');
         wrapper.style.setProperty('display', 'inline-block');
         wrapper.style.setProperty('max-width', '100%');
         wrapper.appendChild(lineFragment);
         applyCurrentStyle(wrapper);
         for (const child of wrapper.children) {
-          if (child.classList.contains('devtools-link')) {
+          if (child.classList.contains('devtools-link') && child instanceof HTMLElement) {
             this._applyForcedVisibleStyle(child);
           }
         }
         a.appendChild(wrapper);
         if (i < lines.length - 1) {
-          a.appendChild(createElement('br'));
+          a.appendChild(document.createElement('br'));
         }
       }
       return a;
     }
 
     /**
-     * @param {!Element} element
+     * @param {!HTMLElement} element
      */
     function applyCurrentStyle(element) {
       for (const key in currentStyle) {
@@ -980,14 +981,14 @@ export class ConsoleViewMessage {
   }
 
   /**
-   * @param {!Element} element
+   * @param {!HTMLElement} element
    */
   _applyForcedVisibleStyle(element) {
     element.style.setProperty('-webkit-text-stroke', '0', 'important');
     element.style.setProperty('text-decoration', 'underline', 'important');
 
-    const themedColor =
-        self.UI.themeSupport.patchColorText('rgb(33%, 33%, 33%)', UI.UIUtils.ThemeSupport.ColorUsage.Foreground);
+    const themedColor = ThemeSupport.ThemeSupport.instance().patchColorText(
+        'rgb(33%, 33%, 33%)', ThemeSupport.ThemeSupport.ColorUsage.Foreground);
     element.style.setProperty('color', themedColor, 'important');
 
     let backgroundColor = 'hsl(0, 0%, 100%)';
@@ -996,8 +997,8 @@ export class ConsoleViewMessage {
     } else if (this._message.level === SDK.ConsoleModel.MessageLevel.Warning || this._shouldRenderAsWarning()) {
       backgroundColor = 'hsl(50, 100%, 95%)';
     }
-    const themedBackgroundColor =
-        self.UI.themeSupport.patchColorText(backgroundColor, UI.UIUtils.ThemeSupport.ColorUsage.Background);
+    const themedBackgroundColor = ThemeSupport.ThemeSupport.instance().patchColorText(
+        backgroundColor, ThemeSupport.ThemeSupport.ColorUsage.Background);
     element.style.setProperty('background-color', themedBackgroundColor, 'important');
   }
 
@@ -1201,6 +1202,9 @@ export class ConsoleViewMessage {
     return this._selectableChildren[index];
   }
 
+  /**
+   * @override
+   */
   focusLastChildOrSelf() {
     if (this._element && !this._selectNearestVisibleChild(this._selectableChildren.length - 1, true /* backwards */)) {
       this._element.focus();
@@ -1208,14 +1212,32 @@ export class ConsoleViewMessage {
   }
 
   /**
-   * @return {!Element}
+   * @protected
+   * @param {!HTMLElement} element
+   */
+  setContentElement(element) {
+    console.assert(!this._contentElement, 'Cannot set content element twice');
+    this._contentElement = element;
+  }
+
+
+  /**
+   * @protected
+   * @return {?HTMLElement}
+   */
+  getContentElement() {
+    return this._contentElement;
+  }
+
+  /**
+   * @return {!HTMLElement}
    */
   contentElement() {
     if (this._contentElement) {
       return this._contentElement;
     }
 
-    const contentElement = document.createElement('div');
+    const contentElement = /** @type {!HTMLElement} */ (document.createElement('div'));
     contentElement.classList.add('console-message');
     if (this._messageLevelIcon) {
       contentElement.appendChild(this._messageLevelIcon);
@@ -1243,14 +1265,14 @@ export class ConsoleViewMessage {
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   toMessageElement() {
     if (this._element) {
       return this._element;
     }
 
-    this._element = createElement('div');
+    this._element = /** @type {!HTMLElement} */ (document.createElement('div'));
     this._element.tabIndex = -1;
     this._element.addEventListener('keydown', this._onKeyDown.bind(this));
     this.updateMessageElement();
@@ -1479,7 +1501,7 @@ export class ConsoleViewMessage {
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   searchHighlightNode(index) {
     return this._searchHighlightNodes[index];
@@ -1487,7 +1509,7 @@ export class ConsoleViewMessage {
 
   /**
    * @param {string} string
-   * @return {?Element}
+   * @return {?HTMLElement}
    */
   _tryFormatAsError(string) {
     /**
@@ -1570,7 +1592,7 @@ export class ConsoleViewMessage {
       return null;
     }
 
-    const formattedResult = createElement('span');
+    const formattedResult = /** @type {!HTMLElement} */ (document.createElement('span'));
     let start = 0;
     for (let i = 0; i < links.length; ++i) {
       formattedResult.appendChild(this._linkifyStringAsFragment(string.substring(start, links[i].positionLeft)));
@@ -1616,7 +1638,7 @@ export class ConsoleViewMessage {
   _linkifyWithCustomLinkifier(string, linkifier) {
     if (string.length > Console.ConsoleViewMessage._MaxTokenizableStringLength) {
       const propertyValue = new ObjectUI.ObjectPropertiesSection.ExpandableTextPropertyValue(
-          createElement('span'), string, Console.ConsoleViewMessage._LongStringVisibleLength);
+          document.createElement('span'), string, Console.ConsoleViewMessage._LongStringVisibleLength);
       const fragment = createDocumentFragment();
       fragment.appendChild(propertyValue.element);
       return fragment;
@@ -1785,7 +1807,7 @@ export class ConsoleGroupViewMessage extends ConsoleViewMessage {
 
   /**
    * @override
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   toMessageElement() {
     if (!this._element) {
