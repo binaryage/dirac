@@ -39,3 +39,4 @@ chromium-latest-linux/
 dirac.iml
 .venv
 /.cipd/
+.gclient_entries
