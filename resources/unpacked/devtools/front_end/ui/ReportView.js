@@ -146,11 +146,13 @@ export class Section extends VBox {
 
   /**
    * @param {string} title
+   * @param {string=} tooltip
    */
-  setTitle(title) {
+  setTitle(title, tooltip) {
     if (this._titleElement.textContent !== title) {
       this._titleElement.textContent = title;
     }
+    this._titleElement.title = tooltip || '';
     this._titleElement.classList.toggle('hidden', !this._titleElement.textContent);
   }
 
@@ -234,10 +236,10 @@ export class Section extends VBox {
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   appendRow() {
-    return this._fieldList.createChild('div', 'report-row');
+    return /** @type {!HTMLElement} */ (this._fieldList.createChild('div', 'report-row'));
   }
 
   /**

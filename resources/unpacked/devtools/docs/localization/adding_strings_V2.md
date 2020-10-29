@@ -29,19 +29,22 @@ Code example:
     addAnotherString: 'Another new string I want to add, with {PH1}',
   };
   const str_ = i18n.i18n.registerUIStrings('example.js', UIStrings);
+  const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
   ```
 
   ```javascript
   // in example.js file, where you want to call the string
 
-  const message1 = i18n.i18n.getLocalizedString(str_, UIStrings.addThisString);
+  const message1 = i18nString(UIStrings.addThisString);
   console.log(message1); // The new string I want to add
 
-  const message2 = i18n.i18n.getLocalizedString(str_, UIStrings.addAnotherString, {PH1: 'a placeholder'});
+  const message2 = i18nString(UIStrings.addAnotherString, {PH1: 'a placeholder'});
   console.log(message2); // Another new string I want to add, with a placeholder
   ```
 1. If there is already `UIStrings = {}` declared in the file, add your string to it.
-  If there isn't `UIStrings = {}` in the file, create one and add your string, also add the line `const str_ = i18n.i18n.registerUIStrings({the current fileName.js, relative to front_end}, UIStrings);` so the new UIStrings can be registered into `en-US.json`.
+  If there isn't `UIStrings = {}` in the file, create one and add your string, also register the new UIStrings into the `en-US.json` by adding:
+    1. `const str_ = i18n.i18n.registerUIStrings({the current fileName.js, relative to front_end}, UIStrings);`
+    1. `const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);`
 
 
 2. Add description and examples for placeholder(if any):
@@ -55,45 +58,45 @@ Code example:
    1. Do not assume word order by using concatenation. Use the whole string.
       ❌
       ```javascript
-      `Add` + `breakpoint`
+      'Add' + 'breakpoint'
       ```
       ✔️
       ```javascript
-      `Add breakpoint`
+      'Add breakpoint'
       ```
       or
       ❌
       ```javascript
-      let description = `first part`
+      let description = 'first part'
       if (condition)
-        description += ` second part`
+        description += ' second part'
       ```
       ✔️
       ```javascript
       let description
       if (condition)
-        description = `first part second part`
+        description = 'first part second part'
       else
-        description = `first part`
+        description = 'first part'
       ```
    2. Use placeholder over concatenation. This is so that the translators can adjust variable order based on what works in another language. For example:
       ❌
       ```javascript
-      `Check ` + title + ` for more information.`
+      'Check ' + title + ' for more information.'
       ```
       ✔️
       ```javascript
-      `Check {PH1} for more information.`, {PH1: title}
+      'Check {PH1} for more information.', {PH1: title}
       ```
    3. If your string contains <b>leading or trailing white space</b>, it's usually an indication that it's half of a sentence. This decreases localizability as it's essentially concatenating. Modify it so that it doesn't contain leading or trailing white space anymore if you can.
-   4. Check if there are something should not be localized (see [locked_terms](locked_terms_V2.md)) for more details.
+   4. <b>Backticks</b> are only used for the text that should not be localized. They cannot be escaped as part of the string. Check if there are something should not be localized (see [locked_terms](locked_terms_V2.md) for more details).
 
-      ❌
+      ❌ Not localized
 
       - Numbers: 1, 1.23, 1.2e3, etc.
       - Application data: error codes, enums, database names, rgba, urls, etc.
 
-      ✔️
+      ✔️ Can be localized
 
       - Words and sentences
       - Punctuation

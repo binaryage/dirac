@@ -518,7 +518,7 @@ export class ConsoleMessage {
     this.source = source;
     this.level = /** @type {?MessageLevel} */ (level);
     this.messageText = messageText;
-    this.type = type || MessageType.Log;
+    this._type = type || MessageType.Log;
     /** @type {string|undefined} */
     this.url = url || undefined;
     /** @type {number} */
@@ -558,6 +558,10 @@ export class ConsoleMessage {
     this._pageLoadSequenceNumber = undefined;
     /** @type {number|undefined} */
     this._exceptionId = undefined;
+  }
+
+  get type() {
+    return this._type;
   }
 
   /**

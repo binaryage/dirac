@@ -201,7 +201,7 @@ export class Linkifier {
    * @param {?SDK.SDKModel.Target} target
    * @param {?string} scriptId
    * @param {string} sourceURL
-   * @param {number} lineNumber
+   * @param {number|undefined} lineNumber
    * @param {!LinkifyOptions=} options
    * @return {?HTMLElement}
    */
@@ -231,10 +231,10 @@ export class Linkifier {
 
     let rawLocation;
     if (scriptId) {
-      rawLocation = debuggerModel.createRawLocationByScriptId(scriptId, lineNumber, columnNumber);
+      rawLocation = debuggerModel.createRawLocationByScriptId(scriptId, lineNumber || 0, columnNumber);
     }
     if (!rawLocation) {
-      rawLocation = debuggerModel.createRawLocationByURL(sourceURL, lineNumber, columnNumber);
+      rawLocation = debuggerModel.createRawLocationByURL(sourceURL, lineNumber || 0, columnNumber);
     }
 
     if (!rawLocation) {
@@ -282,7 +282,7 @@ export class Linkifier {
    * @param {?SDK.SDKModel.Target} target
    * @param {?string} scriptId
    * @param {string} sourceURL
-   * @param {number} lineNumber
+   * @param {number|undefined} lineNumber
    * @param {!LinkifyOptions=} options
    * @return {!HTMLElement}
    */
@@ -696,9 +696,9 @@ export class Linkifier {
     const hashSplit = TextUtils.TextUtils.Utils.splitStringByRegexes(string, [/[a-f0-9]{20,}/g]);
     for (const match of hashSplit) {
       if (match.regexIndex === -1) {
-        link.createTextChild(match.value);
+        UI.UIUtils.createTextChild(link, match.value);
       } else {
-        link.createTextChild(match.value.substring(0, 7));
+        UI.UIUtils.createTextChild(link, match.value.substring(0, 7));
         Linkifier._appendHiddenText(link, match.value.substring(7));
       }
     }
@@ -709,7 +709,7 @@ export class Linkifier {
    * @param {string} string
    */
   static _appendHiddenText(link, string) {
-    const ellipsisNode = link.createChild('span', 'devtools-link-ellipsis').createTextChild('…');
+    const ellipsisNode = UI.UIUtils.createTextChild(link.createChild('span', 'devtools-link-ellipsis'), '…');
     textByAnchor.set(ellipsisNode, string);
   }
 

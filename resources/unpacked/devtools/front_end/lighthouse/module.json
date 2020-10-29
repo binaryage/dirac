@@ -9,7 +9,8 @@
       "className": "Lighthouse.LighthousePanel",
       "tags": "lighthouse, pwa"
     }
-  ],  "dependencies": [
+  ],
+  "dependencies": [
     "components",
     "emulation",
     "timeline",

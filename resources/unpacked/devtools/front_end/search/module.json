@@ -1,7 +1,8 @@
 {
   "dependencies": [
     "components"
-  ],  "modules": [
+  ],
+  "modules": [
     "search.js",
     "search-legacy.js",
     "SearchView.js",

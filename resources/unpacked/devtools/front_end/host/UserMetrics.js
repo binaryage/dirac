@@ -211,7 +211,7 @@ export class UserMetrics {
     }
 
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.IssuesPanelResourceOpened, value, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.IssuesPanelIssueExpanded, {value});
+    Common.EventTarget.fireEvent(EnumeratedHistogram.IssuesPanelResourceOpened, {value});
   }
 
   /**
@@ -293,16 +293,6 @@ export class UserMetrics {
   }
 
   /**
-   * @param {boolean} isEnabled
-   */
-  computedStyleGrouping(isEnabled) {
-    const size = Object.keys(ComputedStyleGroupingState).length + 1;
-    const code = isEnabled ? ComputedStyleGroupingState.enabled : ComputedStyleGroupingState.disabled;
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.ComputedStyleGrouping, code, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.ComputedStyleGrouping, {value: code});
-  }
-
-  /**
    * @param {!GridOverlayOpener} gridOverlayOpener
    */
   gridOverlayOpenedFrom(gridOverlayOpener) {
@@ -367,6 +357,7 @@ export const Action = {
   ShortcutRemoved: 45,
   ShortcutModified: 46,
   CustomPropertyLinkClicked: 47,
+  CustomPropertyEdited: 48,
 };
 
 /** @type {!Object<string, number>} */
@@ -532,6 +523,10 @@ export const KeyboardShortcutAction = {
   'timeline.save-to-file': 90,
   'timeline.show-history': 91,
   'timeline.toggle-recording': 92,
+  'sources.increment-css': 93,
+  'sources.increment-css-by-ten': 94,
+  'sources.decrement-css': 95,
+  'sources.decrement-css-by-ten': 96,
 };
 
 /** @enum {number} */
@@ -599,7 +594,6 @@ export const DevtoolsExperiments = {
   'emptySourceMapAutoStepping': 9,
   'inputEventsOnTimelineOverview': 10,
   'liveHeapProfile': 11,
-  'nativeHeapProfiler': 12,
   'protocolMonitor': 13,
   'developerResourcesView': 15,
   'recordCoverageWithPerformanceTracing': 16,
@@ -609,7 +603,6 @@ export const DevtoolsExperiments = {
   'sourceOrderViewer': 20,
   'spotlight': 21,
   'webauthnPane': 22,
-  'customKeyboardShortcuts': 23,
   'timelineEventInitiators': 24,
   'timelineFlowEvents': 25,
   'timelineInvalidationTracking': 26,
@@ -621,13 +614,9 @@ export const DevtoolsExperiments = {
   'dualScreenSupport': 32,
   'cssGridFeatures': 33,
   'keyboardShortcutEditor': 35,
-  '__lastValidEnumPosition': 35,
-};
-
-/** @type {!Object<string, number>} */
-export const ComputedStyleGroupingState = {
-  'enabled': 0,
-  'disabled': 1,
+  'cssFlexboxFeatures': 36,
+  'showWebVitalsInPerformancePanel': 37,
+  '__lastValidEnumPosition': 37,
 };
 
 /** @type {!Object<string, number>} */

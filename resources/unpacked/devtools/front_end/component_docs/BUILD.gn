@@ -3,10 +3,14 @@
 # found in the LICENSE file.
 group("component_docs") {
   public_deps = [
+    "./color_swatch",
     "./computed_style_property",
     "./computed_style_trace",
     "./elements_breadcrumbs",
+    "./icon_component",
     "./layout_pane",
+    "./linear_memory_inspector",
     "./perf_piechart",
+    "./webvitals",
   ]
 }

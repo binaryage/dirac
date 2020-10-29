@@ -14,11 +14,6 @@ declare namespace Protocol {
     /** Returns an error message if the request failed. */
     getError(): string|undefined;
   }
-  export type UsesObjectNotation = true;
-  export interface Dispatcher {
-    /** This dispatcher requires objects as parameters, rather than multiple arguments */
-    usesObjectNotation(): UsesObjectNotation;
-  }
 
   export namespace Accessibility {
 
@@ -907,6 +902,7 @@ declare namespace Protocol {
        * Specific directive that is violated, causing the CSP issue.
        */
       violatedDirective: string;
+      isReportOnly: boolean;
       contentSecurityPolicyViolationType: ContentSecurityPolicyViolationType;
       frameAncestor?: AffectedFrame;
       sourceCodeLocation?: SourceCodeLocation;
@@ -1148,6 +1144,7 @@ declare namespace Protocol {
       ProtectedMediaIdentifier = 'protectedMediaIdentifier',
       Sensors = 'sensors',
       VideoCapture = 'videoCapture',
+      VideoCapturePanTiltZoom = 'videoCapturePanTiltZoom',
       IdleDetection = 'idleDetection',
       WakeLockScreen = 'wakeLockScreen',
       WakeLockSystem = 'wakeLockSystem',
@@ -1182,6 +1179,17 @@ declare namespace Protocol {
        * For "clipboard" permission, may specify allowWithoutSanitization.
        */
       allowWithoutSanitization?: boolean;
+      /**
+       * For "camera" permission, may specify panTiltZoom.
+       */
+      panTiltZoom?: boolean;
+    }
+
+    /**
+     * Browser command ids used by executeBrowserCommand.
+     */
+    export enum BrowserCommandId {
+      OpenTabSearch = 'openTabSearch',
     }
 
     /**
@@ -1407,6 +1415,10 @@ declare namespace Protocol {
        * Png encoded image.
        */
       image?: binary;
+    }
+
+    export interface ExecuteBrowserCommandRequest {
+      commandId: BrowserCommandId;
     }
   }
 
@@ -2550,6 +2562,7 @@ declare namespace Protocol {
       Marker = 'marker',
       Backdrop = 'backdrop',
       Selection = 'selection',
+      TargetText = 'target-text',
       FirstLineInherited = 'first-line-inherited',
       Scrollbar = 'scrollbar',
       ScrollbarThumb = 'scrollbar-thumb',
@@ -5292,6 +5305,22 @@ declare namespace Protocol {
        */
       force?: number;
       /**
+       * The normalized tangential pressure, which has a range of [-1,1] (default: 0).
+       */
+      tangentialPressure?: number;
+      /**
+       * The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0)
+       */
+      tiltX?: integer;
+      /**
+       * The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
+       */
+      tiltY?: integer;
+      /**
+       * The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).
+       */
+      twist?: integer;
+      /**
        * Identifier used to track touch sources between events, must be unique within an event.
        */
       id?: number;
@@ -5449,6 +5478,26 @@ declare namespace Protocol {
        * Number of times the mouse button was clicked (default: 0).
        */
       clickCount?: integer;
+      /**
+       * The normalized pressure, which has a range of [0,1] (default: 0).
+       */
+      force?: number;
+      /**
+       * The normalized tangential pressure, which has a range of [-1,1] (default: 0).
+       */
+      tangentialPressure?: number;
+      /**
+       * The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0).
+       */
+      tiltX?: integer;
+      /**
+       * The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
+       */
+      tiltY?: integer;
+      /**
+       * The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).
+       */
+      twist?: integer;
       /**
        * X delta in CSS pixels for mouse wheel event (default: 0).
        */
@@ -6439,6 +6488,11 @@ declare namespace Protocol {
        * Whether is loaded via link preload.
        */
       isLinkPreload?: boolean;
+      /**
+       * Set for requests when the TrustToken API is used. Contains the parameters
+       * passed by the developer (e.g. via "fetch") as understood by the backend.
+       */
+      trustTokenParams?: TrustTokenParams;
     }
 
     /**
@@ -6573,6 +6627,35 @@ declare namespace Protocol {
       HttpCache = 'http-cache',
       FallbackCode = 'fallback-code',
       Network = 'network',
+    }
+
+    export enum TrustTokenParamsRefreshPolicy {
+      UseCached = 'UseCached',
+      Refresh = 'Refresh',
+    }
+
+    /**
+     * Determines what type of Trust Token operation is executed and
+     * depending on the type, some additional parameters.
+     */
+    export interface TrustTokenParams {
+      type: TrustTokenOperationType;
+      /**
+       * Only set for "srr-token-redemption" type and determine whether
+       * to request a fresh SRR or use a still valid cached SRR.
+       */
+      refreshPolicy: TrustTokenParamsRefreshPolicy;
+      /**
+       * Origins of issuers from whom to request tokens or redemption
+       * records.
+       */
+      issuers?: string[];
+    }
+
+    export enum TrustTokenOperationType {
+      Issuance = 'Issuance',
+      Redemption = 'Redemption',
+      Signing = 'Signing',
     }
 
     /**
@@ -6857,6 +6940,9 @@ declare namespace Protocol {
       InvalidDomain = 'InvalidDomain',
       InvalidPrefix = 'InvalidPrefix',
       UnknownError = 'UnknownError',
+      SchemefulSameSiteStrict = 'SchemefulSameSiteStrict',
+      SchemefulSameSiteLax = 'SchemefulSameSiteLax',
+      SchemefulSameSiteUnspecifiedTreatedAsLax = 'SchemefulSameSiteUnspecifiedTreatedAsLax',
     }
 
     /**
@@ -6872,6 +6958,9 @@ declare namespace Protocol {
       SameSiteNoneInsecure = 'SameSiteNoneInsecure',
       UserPreferences = 'UserPreferences',
       UnknownError = 'UnknownError',
+      SchemefulSameSiteStrict = 'SchemefulSameSiteStrict',
+      SchemefulSameSiteLax = 'SchemefulSameSiteLax',
+      SchemefulSameSiteUnspecifiedTreatedAsLax = 'SchemefulSameSiteUnspecifiedTreatedAsLax',
     }
 
     /**
@@ -7561,9 +7650,9 @@ declare namespace Protocol {
       headers: Headers;
     }
 
-    export interface SetAttachDebugHeaderRequest {
+    export interface SetAttachDebugStackRequest {
       /**
-       * Whether to send a debug header.
+       * Whether to attach a page script stack for debugging purpose.
        */
       enabled: boolean;
     }
@@ -10620,9 +10709,30 @@ declare namespace Protocol {
        */
       quota: number;
       /**
+       * Whether or not the origin has an active storage quota override
+       */
+      overrideActive: boolean;
+      /**
        * Storage usage per type (bytes).
        */
       usageBreakdown: UsageForType[];
+    }
+
+    export interface OverrideQuotaForOriginRequest {
+      /**
+       * Security origin.
+       */
+      origin: string;
+      /**
+       * The quota size (in bytes) to override the original quota with.
+       * If this is called multiple times, the overriden quota will be equal to
+       * the quotaSize provided in the final call. If this is called without
+       * specifying a quotaSize, the quota will be reset to the default value for
+       * the specified origin. If this is called multiple times with different
+       * origins, the override will be maintained for each origin until it is
+       * disabled (called without a quotaSize).
+       */
+      quotaSize?: number;
     }
 
     export interface TrackCacheStorageForOriginRequest {
@@ -12025,6 +12135,11 @@ declare namespace Protocol {
       Ctap2 = 'ctap2',
     }
 
+    export enum Ctap2Version {
+      Ctap2_0 = 'ctap2_0',
+      Ctap2_1 = 'ctap2_1',
+    }
+
     export enum AuthenticatorTransport {
       Usb = 'usb',
       Nfc = 'nfc',
@@ -12035,6 +12150,10 @@ declare namespace Protocol {
 
     export interface VirtualAuthenticatorOptions {
       protocol: AuthenticatorProtocol;
+      /**
+       * Defaults to ctap2_0. Ignored if |protocol| == u2f.
+       */
+      ctap2Version?: Ctap2Version;
       transport: AuthenticatorTransport;
       /**
        * Defaults to false.
@@ -12085,6 +12204,11 @@ declare namespace Protocol {
        * See https://w3c.github.io/webauthn/#signature-counter
        */
       signCount: integer;
+      /**
+       * The large blob associated with the credential.
+       * See https://w3c.github.io/webauthn/#sctn-large-blob-extension
+       */
+      largeBlob?: binary;
     }
 
     export interface AddVirtualAuthenticatorRequest {

@@ -37,10 +37,6 @@ export class ShortcutRegistry {
     /** @type {!Platform.Multimap.<string, !KeyboardShortcut>} */
     this._disabledDefaultShortcutsForAction = new Platform.Multimap();
     this._keybindSetSetting = Common.Settings.Settings.instance().moduleSetting('activeKeybindSet');
-    if (!Root.Runtime.experiments.isEnabled('customKeyboardShortcuts') &&
-        this._keybindSetSetting.get() !== DefaultShortcutSetting) {
-      this._keybindSetSetting.set(DefaultShortcutSetting);
-    }
     this._keybindSetSetting.addChangeListener(event => {
       Host.userMetrics.keybindSetSettingChanged(event.data);
       this._registerBindings();
@@ -132,18 +128,6 @@ export class ShortcutRegistry {
   }
 
   /**
-   * @deprecated this function is obsolete and will be removed in the
-   * future along with the legacy shortcuts settings tab
-   * crbug.com/174309
-   *
-   * @param {string} actionId
-   * @return {!Array.<!Descriptor>}
-   */
-  shortcutDescriptorsForAction(actionId) {
-    return [...this._actionToShortcut.get(actionId)].map(shortcut => shortcut.descriptors[0]);
-  }
-
-  /**
    * @param {!Array.<string>} actionIds
    * @return {!Array.<number>}
    */
@@ -184,6 +168,7 @@ export class ShortcutRegistry {
   /**
    * @param {!Element} element
    * @param {!Object.<string, function():Promise.<boolean>>} handlers
+   * @return {function(!Event): void}
    */
   addShortcutListener(element, handlers) {
     // We only want keys for these specific actions to get handled this
@@ -194,7 +179,10 @@ export class ShortcutRegistry {
       allowlistKeyMap.addKeyMapping(shortcut.descriptors.map(descriptor => descriptor.key), shortcut.action);
     });
 
-    element.addEventListener('keydown', event => {
+    /**
+     * @param {!Event} event
+     */
+    const listener = event => {
       const key = KeyboardShortcut.makeKeyFromEvent(/** @type {!KeyboardEvent} */ (event));
       const keyMap = this._activePrefixKey ? allowlistKeyMap.getNode(this._activePrefixKey.key()) : allowlistKeyMap;
       if (!keyMap) {
@@ -203,7 +191,9 @@ export class ShortcutRegistry {
       if (keyMap.getNode(key)) {
         this.handleShortcut(/** @type {!KeyboardEvent} */ (event), handlers);
       }
-    });
+    };
+    element.addEventListener('keydown', listener);
+    return listener;
   }
 
   /**
@@ -358,6 +348,14 @@ export class ShortcutRegistry {
     } else {
       this._removeShortcutFromSetting(shortcut);
     }
+  }
+
+  /**
+   * @param {string} actionId
+   * @return {!Set.<!KeyboardShortcut>}
+   */
+  disabledDefaultsForAction(actionId) {
+    return this._disabledDefaultShortcutsForAction.get(actionId);
   }
 
   /**

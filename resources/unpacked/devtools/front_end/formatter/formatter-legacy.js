@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+
 import * as FormatterModule from './formatter.js';
 
 self.Formatter = self.Formatter || {};
@@ -23,6 +25,3 @@ Formatter.FormatterSourceMapping = FormatterModule.ScriptFormatter.FormatterSour
 
 /** @constructor */
 Formatter.SourceFormatter = FormatterModule.SourceFormatter.SourceFormatter;
-
-/** @type {!Formatter.SourceFormatter} */
-Formatter.sourceFormatter = FormatterModule.sourceFormatter;

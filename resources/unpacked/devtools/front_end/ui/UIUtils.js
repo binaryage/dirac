@@ -1219,6 +1219,27 @@ export function beautifyFunctionName(name) {
 }
 
 /**
+ * @param {!Element|!DocumentFragment} element
+ * @param {string} text
+ * @return {!Text}
+ */
+export const createTextChild = (element, text) => {
+  const textNode = element.ownerDocument.createTextNode(text);
+  element.appendChild(textNode);
+  return textNode;
+};
+
+/**
+ * @param {!Element|!DocumentFragment} element
+ * @param {...string} childrenText
+ */
+export const createTextChildren = (element, ...childrenText) => {
+  for (const child of childrenText) {
+    createTextChild(element, child);
+  }
+};
+
+/**
  * @param {string} text
  * @param {function(!Event):*=} clickHandler
  * @param {string=} className
@@ -1283,14 +1304,14 @@ export function createLabel(title, className, associatedControl) {
  * @param {string} name
  * @param {string} title
  * @param {boolean=} checked
- * @return {!Element}
+ * @return {!DevToolsRadioButton}
  */
 export function createRadioLabel(name, title, checked) {
   const element = createElement('span', 'dt-radio');
   element.radioElement.name = name;
   element.radioElement.checked = !!checked;
-  element.labelElement.createTextChild(title);
-  return element;
+  createTextChild(element.labelElement, title);
+  return /** @type {!DevToolsRadioButton} */ (element);
 }
 
 /**
@@ -1413,10 +1434,10 @@ export class DevToolsIconLabel extends HTMLSpanElement {
 
 let labelId = 0;
 
-class DevToolsRadioButton extends HTMLSpanElement {
+export class DevToolsRadioButton extends HTMLSpanElement {
   constructor() {
     super();
-    this.radioElement = this.createChild('input', 'dt-radio-button');
+    this.radioElement = /** @type {!HTMLInputElement} */ (this.createChild('input', 'dt-radio-button'));
     this.labelElement = this.createChild('label');
 
     const id = 'dt-radio-button-id' + (++labelId);

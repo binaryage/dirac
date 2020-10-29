@@ -313,11 +313,13 @@ export function registerCommands(inspectorBackend) {
     ProtectedMediaIdentifier: 'protectedMediaIdentifier',
     Sensors: 'sensors',
     VideoCapture: 'videoCapture',
+    VideoCapturePanTiltZoom: 'videoCapturePanTiltZoom',
     IdleDetection: 'idleDetection',
     WakeLockScreen: 'wakeLockScreen',
     WakeLockSystem: 'wakeLockSystem'
   });
   inspectorBackend.registerEnum('Browser.PermissionSetting', {Granted: 'granted', Denied: 'denied', Prompt: 'prompt'});
+  inspectorBackend.registerEnum('Browser.BrowserCommandId', {OpenTabSearch: 'openTabSearch'});
   inspectorBackend.registerCommand(
       'Browser.setPermission',
       [
@@ -380,6 +382,8 @@ export function registerCommands(inspectorBackend) {
         {'name': 'image', 'type': 'string', 'optional': true}
       ],
       []);
+  inspectorBackend.registerCommand(
+      'Browser.executeBrowserCommand', [{'name': 'commandId', 'type': 'string', 'optional': false}], []);
 
   // CSS.
   inspectorBackend.registerEnum(
@@ -537,6 +541,7 @@ export function registerCommands(inspectorBackend) {
     Marker: 'marker',
     Backdrop: 'backdrop',
     Selection: 'selection',
+    TargetText: 'target-text',
     FirstLineInherited: 'first-line-inherited',
     Scrollbar: 'scrollbar',
     ScrollbarThumb: 'scrollbar-thumb',
@@ -1136,7 +1141,11 @@ export function registerCommands(inspectorBackend) {
         {'name': 'timestamp', 'type': 'number', 'optional': true},
         {'name': 'button', 'type': 'string', 'optional': true}, {'name': 'buttons', 'type': 'number', 'optional': true},
         {'name': 'clickCount', 'type': 'number', 'optional': true},
-        {'name': 'deltaX', 'type': 'number', 'optional': true}, {'name': 'deltaY', 'type': 'number', 'optional': true},
+        {'name': 'force', 'type': 'number', 'optional': true},
+        {'name': 'tangentialPressure', 'type': 'number', 'optional': true},
+        {'name': 'tiltX', 'type': 'number', 'optional': true}, {'name': 'tiltY', 'type': 'number', 'optional': true},
+        {'name': 'twist', 'type': 'number', 'optional': true}, {'name': 'deltaX', 'type': 'number', 'optional': true},
+        {'name': 'deltaY', 'type': 'number', 'optional': true},
         {'name': 'pointerType', 'type': 'string', 'optional': true}
       ],
       []);
@@ -1390,6 +1399,9 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum(
       'Network.ServiceWorkerResponseSource',
       {CacheStorage: 'cache-storage', HttpCache: 'http-cache', FallbackCode: 'fallback-code', Network: 'network'});
+  inspectorBackend.registerEnum('Network.TrustTokenParamsRefreshPolicy', {UseCached: 'UseCached', Refresh: 'Refresh'});
+  inspectorBackend.registerEnum(
+      'Network.TrustTokenOperationType', {Issuance: 'Issuance', Redemption: 'Redemption', Signing: 'Signing'});
   inspectorBackend.registerEnum(
       'Network.InitiatorType',
       {Parser: 'parser', Script: 'script', Preload: 'preload', SignedExchange: 'SignedExchange', Other: 'other'});
@@ -1405,7 +1417,10 @@ export function registerCommands(inspectorBackend) {
     OverwriteSecure: 'OverwriteSecure',
     InvalidDomain: 'InvalidDomain',
     InvalidPrefix: 'InvalidPrefix',
-    UnknownError: 'UnknownError'
+    UnknownError: 'UnknownError',
+    SchemefulSameSiteStrict: 'SchemefulSameSiteStrict',
+    SchemefulSameSiteLax: 'SchemefulSameSiteLax',
+    SchemefulSameSiteUnspecifiedTreatedAsLax: 'SchemefulSameSiteUnspecifiedTreatedAsLax'
   });
   inspectorBackend.registerEnum('Network.CookieBlockedReason', {
     SecureOnly: 'SecureOnly',
@@ -1416,7 +1431,10 @@ export function registerCommands(inspectorBackend) {
     SameSiteUnspecifiedTreatedAsLax: 'SameSiteUnspecifiedTreatedAsLax',
     SameSiteNoneInsecure: 'SameSiteNoneInsecure',
     UserPreferences: 'UserPreferences',
-    UnknownError: 'UnknownError'
+    UnknownError: 'UnknownError',
+    SchemefulSameSiteStrict: 'SchemefulSameSiteStrict',
+    SchemefulSameSiteLax: 'SchemefulSameSiteLax',
+    SchemefulSameSiteUnspecifiedTreatedAsLax: 'SchemefulSameSiteUnspecifiedTreatedAsLax'
   });
   inspectorBackend.registerEnum('Network.AuthChallengeSource', {Server: 'Server', Proxy: 'Proxy'});
   inspectorBackend.registerEnum(
@@ -1569,7 +1587,7 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerCommand(
       'Network.setExtraHTTPHeaders', [{'name': 'headers', 'type': 'object', 'optional': false}], []);
   inspectorBackend.registerCommand(
-      'Network.setAttachDebugHeader', [{'name': 'enabled', 'type': 'boolean', 'optional': false}], []);
+      'Network.setAttachDebugStack', [{'name': 'enabled', 'type': 'boolean', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Network.setRequestInterception', [{'name': 'patterns', 'type': 'object', 'optional': false}], []);
   inspectorBackend.registerCommand(
@@ -2127,7 +2145,14 @@ export function registerCommands(inspectorBackend) {
       'Storage.clearCookies', [{'name': 'browserContextId', 'type': 'string', 'optional': true}], []);
   inspectorBackend.registerCommand(
       'Storage.getUsageAndQuota', [{'name': 'origin', 'type': 'string', 'optional': false}],
-      ['usage', 'quota', 'usageBreakdown']);
+      ['usage', 'quota', 'overrideActive', 'usageBreakdown']);
+  inspectorBackend.registerCommand(
+      'Storage.overrideQuotaForOrigin',
+      [
+        {'name': 'origin', 'type': 'string', 'optional': false},
+        {'name': 'quotaSize', 'type': 'number', 'optional': true}
+      ],
+      []);
   inspectorBackend.registerCommand(
       'Storage.trackCacheStorageForOrigin', [{'name': 'origin', 'type': 'string', 'optional': false}], []);
   inspectorBackend.registerCommand(
@@ -2356,6 +2381,7 @@ export function registerCommands(inspectorBackend) {
 
   // WebAuthn.
   inspectorBackend.registerEnum('WebAuthn.AuthenticatorProtocol', {U2f: 'u2f', Ctap2: 'ctap2'});
+  inspectorBackend.registerEnum('WebAuthn.Ctap2Version', {Ctap2_0: 'ctap2_0', Ctap2_1: 'ctap2_1'});
   inspectorBackend.registerEnum(
       'WebAuthn.AuthenticatorTransport', {Usb: 'usb', Nfc: 'nfc', Ble: 'ble', Cable: 'cable', Internal: 'internal'});
   inspectorBackend.registerCommand('WebAuthn.enable', [], []);

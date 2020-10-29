@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+
 import * as ConsoleModule from './console.js';
 
 self.Console = self.Console || {};
@@ -68,14 +70,20 @@ Console.ConsoleGroup = ConsoleModule.ConsoleView.ConsoleGroup;
 Console.ConsoleViewMessage = ConsoleModule.ConsoleViewMessage.ConsoleViewMessage;
 
 /**
+ * @type {function(number):void}
+ */
+Console.ConsoleViewMessage.setMaxTokenizableStringLength =
+    ConsoleModule.ConsoleViewMessage.setMaxTokenizableStringLength;
+
+/**
+ * @type {function(number):void}
+ */
+Console.ConsoleViewMessage.setLongStringVisibleLength = ConsoleModule.ConsoleViewMessage.setLongStringVisibleLength;
+
+/**
  * @constructor
  */
 Console.ConsoleGroupViewMessage = ConsoleModule.ConsoleViewMessage.ConsoleGroupViewMessage;
-
-/** @suppress {accessControls} */
-Console.ConsoleViewMessage._MaxTokenizableStringLength = ConsoleModule.ConsoleViewMessage._MaxTokenizableStringLength;
-/** @suppress {accessControls} */
-Console.ConsoleViewMessage._LongStringVisibleLength = ConsoleModule.ConsoleViewMessage._LongStringVisibleLength;
 
 /**
  * @constructor

@@ -3,7 +3,8 @@
     "bindings",
     "platform",
     "ui"
-  ],  "modules": [
+  ],
+  "modules": [
     "components.js",
     "components-legacy.js",
     "JSPresentationUtils.js",

@@ -254,6 +254,7 @@ export class ARIAAttributePrompt extends UI.TextPrompt.TextPrompt {
                                                                               subtitleRenderer: undefined,
                                                                               selectionRange: undefined,
                                                                               hideGhostText: undefined,
+                                                                              iconElement: undefined,
                                                                             })));
   }
 }

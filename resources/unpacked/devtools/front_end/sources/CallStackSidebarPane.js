@@ -246,6 +246,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     if (item.isAsyncHeader) {
       element.classList.add('async-header');
     } else {
+      titleElement.title = item.title;
       const linkElement = element.createChild('div', 'call-frame-location');
       linkElement.textContent = item.linkText.trimMiddle(30);
       linkElement.title = item.linkText;

@@ -144,6 +144,10 @@ p {
   width: 2px;
 }
 
+devtools-icon.breaking-change {
+  margin: 5px 7px 0 7px;
+}
+
 .message {
   line-height: 20px;
   font-size: 14px;
@@ -220,11 +224,6 @@ p {
   padding-right: 5px;
   position: relative;
   top: -1px;
-}
-
-.link-list li {
-  display: list-item;
-  margin-top: 4px;
 }
 
 .resolutions-list li {
@@ -325,6 +324,10 @@ ul > li.plain-enum::before {
   color: red;
 }
 
+.affected-resource-report-only-status {
+  color: var(--issue-warning);
+}
+
 .affected-resource-cookie-info {
   color: var(--issue-gray);
   padding: 2px;
@@ -412,4 +415,22 @@ ul > li.plain-enum::before {
   color: var(--issue-gray);
   padding: 2px;
   text-align: left;
+}
+
+.devtools-link {
+  padding-top: 4px;
+}
+
+devtools-icon.link-icon {
+  width: 28px;
+  height: 24px;
+  text-align: center;
+  vertical-align: sub;
+}
+
+devtools-icon.elements-panel,
+devtools-icon.network-panel {
+  margin-right: 0.5ex;
+  vertical-align: sub;
+  height: 14px;
 }

@@ -10,6 +10,7 @@ export interface INameResolver {
     getTableName(index: number, isRef: boolean): string;
     getMemoryName(index: number, isRef: boolean): string;
     getGlobalName(index: number, isRef: boolean): string;
+    getElementName(index: number, isRef: boolean): string;
     getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
     getVariableName(funcIndex: number, index: number, isRef: boolean): string;
     getLabel(index: number): string;
@@ -19,28 +20,17 @@ export declare class DefaultNameResolver implements INameResolver {
     getTableName(index: number, isRef: boolean): string;
     getMemoryName(index: number, isRef: boolean): string;
     getGlobalName(index: number, isRef: boolean): string;
+    getElementName(index: number, isRef: boolean): string;
     getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
     getVariableName(funcIndex: number, index: number, isRef: boolean): string;
     getLabel(index: number): string;
-}
-export declare class DevToolsNameResolver extends DefaultNameResolver {
-    private readonly _functionNames;
-    private readonly _localNames;
-    private readonly _memoryNames;
-    private readonly _tableNames;
-    private readonly _globalNames;
-    constructor(functionNames: string[], localNames: string[][], memoryNames: string[], tableNames: string[], globalNames: string[]);
-    getTableName(index: number, isRef: boolean): string;
-    getMemoryName(index: number, isRef: boolean): string;
-    getGlobalName(index: number, isRef: boolean): string;
-    getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
-    getVariableName(funcIndex: number, index: number, isRef: boolean): string;
 }
 export declare class NumericNameResolver implements INameResolver {
     getTypeName(index: number, isRef: boolean): string;
     getTableName(index: number, isRef: boolean): string;
     getMemoryName(index: number, isRef: boolean): string;
     getGlobalName(index: number, isRef: boolean): string;
+    getElementName(index: number, isRef: boolean): string;
     getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
     getVariableName(funcIndex: number, index: number, isRef: boolean): string;
     getLabel(index: number): string;
@@ -71,7 +61,8 @@ export declare class WasmDisassembler {
     private _globalCount;
     private _memoryCount;
     private _tableCount;
-    private _initExpression;
+    private _elementCount;
+    private _expression;
     private _backrefLabels;
     private _labelIndex;
     private _indent;
@@ -85,6 +76,7 @@ export declare class WasmDisassembler {
     private _labelMode;
     private _functionBodyOffsets;
     private _currentFunctionBodyOffset;
+    private _currentSectionId;
     private _logFirstInstruction;
     constructor();
     private _reset;
@@ -105,6 +97,7 @@ export declare class WasmDisassembler {
     private printFuncType;
     private printBlockType;
     private printString;
+    private printExpression;
     private useLabel;
     private printOperator;
     private printImportSource;
@@ -114,17 +107,39 @@ export declare class WasmDisassembler {
     getResult(): IDisassemblerResult;
     disassembleChunk(reader: BinaryReader, offsetInModule?: number): boolean;
 }
+declare class NameSectionNameResolver extends DefaultNameResolver {
+    protected readonly _functionNames: string[];
+    protected readonly _localNames: string[][];
+    protected readonly _typeNames: string[];
+    protected readonly _tableNames: string[];
+    protected readonly _memoryNames: string[];
+    protected readonly _globalNames: string[];
+    constructor(functionNames: string[], localNames: string[][], typeNames: string[], tableNames: string[], memoryNames: string[], globalNames: string[]);
+    getTypeName(index: number, isRef: boolean): string;
+    getTableName(index: number, isRef: boolean): string;
+    getMemoryName(index: number, isRef: boolean): string;
+    getGlobalName(index: number, isRef: boolean): string;
+    getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
+    getVariableName(funcIndex: number, index: number, isRef: boolean): string;
+}
 export declare class NameSectionReader {
     private _done;
     private _functionsCount;
     private _functionImportsCount;
     private _functionNames;
     private _functionLocalNames;
+    private _typeNames;
+    private _tableNames;
+    private _memoryNames;
+    private _globalNames;
     private _hasNames;
-    constructor();
     read(reader: BinaryReader): boolean;
     hasValidNames(): boolean;
     getNameResolver(): INameResolver;
+}
+export declare class DevToolsNameResolver extends NameSectionNameResolver {
+    constructor(functionNames: string[], localNames: string[][], typeNames: string[], tableNames: string[], memoryNames: string[], globalNames: string[]);
+    getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
 }
 export declare class DevToolsNameGenerator {
     private _done;
@@ -135,6 +150,7 @@ export declare class DevToolsNameGenerator {
     private _functionNames;
     private _functionLocalNames;
     private _memoryNames;
+    private _typeNames;
     private _tableNames;
     private _globalNames;
     private _functionExportNames;
@@ -147,3 +163,4 @@ export declare class DevToolsNameGenerator {
     getExportMetadata(): IExportMetadata;
     getNameResolver(): INameResolver;
 }
+export {};

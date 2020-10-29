@@ -12,12 +12,18 @@ import * as UI from '../ui/ui.js';
 
 import {EmulatedDevice, Horizontal, HorizontalSpanned, Mode, Vertical, VerticalSpanned} from './EmulatedDevices.js';  // eslint-disable-line no-unused-vars
 
+/** @type {!DeviceModeModel} */
+let deviceModeModelInstance;
+
 /**
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.EmulationModel.EmulationModel>}
  * @extends {Common.ObjectWrapper.ObjectWrapper}
  * @unrestricted
  */
 export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
+  /**
+   * @private
+   */
   constructor() {
     super();
     this._screenRect = new UI.Geometry.Rect(0, 0, 1, 1);
@@ -84,6 +90,14 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
     /** @type {?function()} */
     this._onModelAvailable = null;
     SDK.SDKModel.TargetManager.instance().observeModels(SDK.EmulationModel.EmulationModel, this);
+  }
+
+  static instance(opts = {forceNew: null}) {
+    if (!deviceModeModelInstance || opts.forceNew) {
+      deviceModeModelInstance = new DeviceModeModel();
+    }
+
+    return deviceModeModelInstance;
   }
 
   /**

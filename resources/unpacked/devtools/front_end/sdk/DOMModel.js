@@ -54,6 +54,12 @@ export class DOMNode {
    */
   constructor(domModel) {
     this._domModel = domModel;
+
+    /**
+     * Node ID is always set by this._init.
+     * @type {number}
+     */
+    this.id;
   }
 
   /**
@@ -1837,13 +1843,6 @@ class DOMDispatcher {
    */
   constructor(domModel) {
     this._domModel = domModel;
-  }
-
-  /**
-   * @return {!Protocol.UsesObjectNotation}
-   */
-  usesObjectNotation() {
-    return true;
   }
 
   /**

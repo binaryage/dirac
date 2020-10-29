@@ -58,7 +58,6 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
       if (targetPinElement) {
         const targetPin = elementToConsolePin.get(targetPinElement);
         if (targetPin) {
-          contextMenu.editSection().appendItem(ls`Edit expression`, targetPin.focus.bind(targetPin));
           contextMenu.editSection().appendItem(ls`Remove expression`, this._removePin.bind(this, targetPin));
           targetPin.appendToContextMenu(contextMenu);
         }
@@ -338,7 +337,7 @@ export class ConsolePin extends Common.ObjectWrapper.ObjectWrapper {
       } else if (previewText) {
         this._pinPreview.appendChild(preview);
       } else if (!isEditing) {
-        this._pinPreview.createTextChild(ls`not available`);
+        UI.UIUtils.createTextChild(this._pinPreview, ls`not available`);
       }
       this._pinPreview.title = previewText;
     }

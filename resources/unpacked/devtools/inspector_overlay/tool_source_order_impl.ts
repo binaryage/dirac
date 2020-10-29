@@ -42,18 +42,14 @@ interface SourceOrderHighlight {
 }
 
 export class SourceOrderOverlay extends Overlay {
-  private sourceOrderContainer = document.createElement('div');
+  private sourceOrderContainer!: HTMLElement;
 
   reset(resetData: ResetData) {
     super.reset(resetData);
-    if (this.sourceOrderContainer) {
-      this.sourceOrderContainer.textContent = '';
-    }
+    this.sourceOrderContainer.textContent = '';
   }
 
-  setPlatform(platform: string) {
-    super.setPlatform(platform);
-
+  install() {
     this.document.body.classList.add('fill');
 
     const canvas = this.document.createElement('canvas');
@@ -67,6 +63,14 @@ export class SourceOrderOverlay extends Overlay {
     this.sourceOrderContainer = sourceOrderContainer;
 
     this.setCanvas(canvas);
+
+    super.install();
+  }
+
+  uninstall() {
+    this.document.body.classList.remove('fill');
+    this.document.body.innerHTML = '';
+    super.uninstall();
   }
 
   drawSourceOrder(highlight: SourceOrderHighlight) {

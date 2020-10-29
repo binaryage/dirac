@@ -36,6 +36,10 @@
   content: ")";
 }
 
+.report-field .inline-span {
+  padding-left: 1ex;
+}
+
 .report-field-value-link {
   display: inline-block;
 }
@@ -50,7 +54,7 @@
 }
 
 .frame-details-report-container {
-  min-width: 500px;
+  min-width: 550px;
 }
 
 .text-ellipsis {
