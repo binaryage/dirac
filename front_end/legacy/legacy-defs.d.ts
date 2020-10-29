@@ -39,6 +39,10 @@ interface String {
   trimMiddle(maxLength: number): string;
 }
 
+interface RegExp {
+  __fromRegExpQuery: boolean;
+}
+
 interface NumberConstructor {
   withThousandsSeparator(num: number): string;
   toFixedIfFloating(value: string): string;
@@ -124,18 +128,17 @@ interface HTMLElement {
 interface Element {
   boxInWindow(targetWindow?: Window): AnchorBox;
   createChild(tagName: string, className?: string, content?: string): Element;
-  createTextChild(text: string): Text;
   hasFocus(): boolean;
   positionAt(x: (number|undefined), y: (number|undefined), relativeTo?: Element): void;
   removeChildren(): void;
   scrollIntoViewIfNeeded(center?: boolean): void;
+  selectionLeftOffset(): (number|null);
   totalOffsetTop(): number;
   totalOffsetLeft(): number;
 }
 
 interface DocumentFragment {
   createChild(tagName: string, className?: string, content?: string): Element;
-  createTextChild(text: string): Text;
 }
 
 interface Event {
@@ -147,11 +150,13 @@ interface Event {
 
 interface Node {
   enclosingNodeOrSelfWithClass(className: string, stayWithin?: Element): Element;
+  enclosingNodeOrSelfWithNodeName(nodeName: string): Node|null;
   getComponentRoot(): Document|DocumentFragment|null;
   getComponentSelection(): Selection|null;
   hasSameShadowRoot(other: Node): boolean;
   hasSelection(): boolean;
   isAncestor(node: Node|null): boolean;
+  isDescendant(node: Node|null): boolean;
   isSelfOrAncestor(node: Node|null): boolean;
   isSelfOrDescendant(node: Node|null): boolean;
   parentElementOrShadowHost(): Element|null;

@@ -85,7 +85,8 @@ export class ConsoleContextSelector {
    */
   titleFor(executionContext) {
     const target = executionContext.target();
-    let label = executionContext.label() ? target.decorateLabel(executionContext.label()) : '';
+    const maybeLabel = executionContext.label();
+    let label = maybeLabel ? target.decorateLabel(maybeLabel) : '';
     if (executionContext.frameId) {
       const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
       const frame = resourceTreeModel && resourceTreeModel.frameForId(executionContext.frameId);
@@ -241,9 +242,9 @@ export class ConsoleContextSelector {
     const element = document.createElement('div');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(element, 'console/consoleContextSelector.css');
     const title = shadowRoot.createChild('div', 'title');
-    title.createTextChild(this.titleFor(item).trimEndWithMaxLength(100));
+    UI.UIUtils.createTextChild(title, this.titleFor(item).trimEndWithMaxLength(100));
     const subTitle = shadowRoot.createChild('div', 'subtitle');
-    subTitle.createTextChild(this._subtitleFor(item));
+    UI.UIUtils.createTextChild(subTitle, this._subtitleFor(item));
     element.style.paddingLeft = (8 + this._depthFor(item) * 15) + 'px';
     return element;
   }

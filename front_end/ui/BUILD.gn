@@ -44,7 +44,6 @@ devtools_module("ui") {
     "SegmentedButton.js",
     "SettingsUI.js",
     "ShortcutRegistry.js",
-    "ShortcutsScreen.js",
     "SoftContextMenu.js",
     "SoftDropDown.js",
     "SplitWidget.js",
@@ -127,4 +126,10 @@ devtools_entrypoint("bundle") {
   entrypoint = "ui.js"
 
   deps = [ ":ui" ]
+}
+
+devtools_entrypoint("legacy") {
+  entrypoint = "ui-legacy.js"
+
+  deps = [ ":bundle" ]
 }

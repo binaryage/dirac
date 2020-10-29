@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as UI from '../ui/ui.js';
 
@@ -21,7 +18,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
     this.registerRequiredCSS('persistence/workspaceSettingsTab.css');
 
     const header = this.element.createChild('header');
-    header.createChild('h1').createTextChild(Common.UIString.UIString('Workspace'));
+    UI.UIUtils.createTextChild(header.createChild('h1'), Common.UIString.UIString('Workspace'));
 
     this.containerElement = this.element.createChild('div', 'settings-container-wrapper')
                                 .createChild('div', 'settings-tab settings-content settings-container');
@@ -37,7 +34,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
     this.containerElement.appendChild(folderExcludePatternInput);
 
     const div = this.containerElement.createChild('div', 'settings-info-message');
-    div.createTextChild(Common.UIString.UIString('Mappings are inferred automatically.'));
+    UI.UIUtils.createTextChild(div, Common.UIString.UIString('Mappings are inferred automatically.'));
 
     this._fileSystemsListContainer = this.containerElement.createChild('div', '');
 
@@ -61,7 +58,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
    * @return {!Element}
    */
   _createFolderExcludePatternInput() {
-    const p = createElement('p');
+    const p = document.createElement('p');
     const labelElement = p.createChild('label');
     labelElement.textContent = ls`Folder exclude pattern`;
     const inputElement = UI.UIUtils.createInput('', 'text');
@@ -86,7 +83,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
       } catch (e) {
       }
       const valid = !!regex;
-      return {valid};
+      return {valid, errorMessage: undefined};
     }
   }
 

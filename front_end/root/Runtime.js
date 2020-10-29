@@ -575,8 +575,22 @@ export class RuntimeExtensionDescriptor {
     /** @type {string|null} */
     this.location;
 
+    /** @type {?string} */
+    this.title;
+
     /** @type {!Array<!Option>|undefined} */
     this.options;
+
+    /** @type {!Array<string>|undefined} */
+    this.settings;
+
+    // This is an EmulatedDevice, but typing it as such introduces a
+    // circular dep between emulation and root.
+    /** @type {?} */
+    this.device;
+
+    /** @type {string|null} */
+    this.viewId;
   }
 }
 

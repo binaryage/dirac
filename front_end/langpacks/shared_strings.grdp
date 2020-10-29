@@ -103,12 +103,6 @@
   <message name="IDS_DEVTOOLS_29296fcb28eb4edf5d0049b6cac7bbd1" desc="Text for a percentage value">
     <ph name="SCALE">$1.0f<ex>13.0</ex></ph>%%
   </message>
-  <message name="IDS_DEVTOOLS_29e9d8e295b1d5b3002d2d3d5baa4c37" desc="Text for keyboard shortcuts">
-    Shortcuts
-  </message>
-  <message name="IDS_DEVTOOLS_2ab5656e27a0ed871c8de44368f807c6" desc="Title of the styles side pane in Elements panel">
-    Styles Pane
-  </message>
   <message name="IDS_DEVTOOLS_2ae207ddfe5cd256a768769d93a879e5" desc="Title of the paint profiler, old name of the performance pane">
     Paint Profiler
   </message>
@@ -202,9 +196,6 @@
   <message name="IDS_DEVTOOLS_49ee3087348e8d44e1feda1917443987" desc="Text for the name of something">
     Name
   </message>
-  <message name="IDS_DEVTOOLS_4b50fa6fd1a6a30c9b16f71dd2600574" desc="Text in the Shortcuts page to explain a keyboard shortcut (jump to next editing location in text editor)">
-    Jump to next editing location
-  </message>
   <message name="IDS_DEVTOOLS_4bd7c2ff07dcc66801a9368957d4bff8" desc="Text for the initiator of something">
     Initiator
   </message>
@@ -213,9 +204,6 @@
   </message>
   <message name="IDS_DEVTOOLS_4cc6684df7b4a92b1dec6fce3264fac8" desc="Text describing global shortcuts and settings that are available throughout the DevTools">
     Global
-  </message>
-  <message name="IDS_DEVTOOLS_4cf8e5f6ffbb182b5d480cbabae6a028" desc="Text to modify the attribute of an item">
-    Edit attribute
   </message>
   <message name="IDS_DEVTOOLS_4cfa6c981549e990fe2344e4c805405e" desc="Text to find an item">
     Find
@@ -229,9 +217,6 @@
   <message name="IDS_DEVTOOLS_502996d9790340c5fd7b86a5b93b1c9f" desc="Text to show the priority of an item">
     Priority
   </message>
-  <message name="IDS_DEVTOOLS_5134111907df828fc575c69e22480c1e" desc="Text to hide an element">
-    Hide element
-  </message>
   <message name="IDS_DEVTOOLS_51360304ea03557e79bdf5ff9cd2e234" desc="Text for the issuer of an item">
     Issuer
   </message>
@@ -240,9 +225,6 @@
   </message>
   <message name="IDS_DEVTOOLS_529a032eab49b8ddc6f49f8bcc086607" desc="Prev button title in Film Strip View of the Performance panel">
     Previous frame
-  </message>
-  <message name="IDS_DEVTOOLS_52b3bc5e77aa070243c36cd40a4d6b6d" desc="Text for autocompletion">
-    Autocompletion
   </message>
   <message name="IDS_DEVTOOLS_52ebc26c2921d5b84fc670dff9891821" desc="Text in the Shortcuts page to explain a keyboard shortcut (zoom out)">
     Zoom out
@@ -261,12 +243,6 @@
   </message>
   <message name="IDS_DEVTOOLS_59cc7cb8dfb2491cc5dfe8ebc546d797" desc="Text to pretty print a file">
     Pretty print
-  </message>
-  <message name="IDS_DEVTOOLS_5a0a64ecca63ba9a006b6397cbdc2b8c" desc="Text to go to a given line">
-    Go to line
-  </message>
-  <message name="IDS_DEVTOOLS_5b6cf869265c13af8566f192b4ab3d2a" desc="Text for the documentation of something">
-    Documentation
   </message>
   <message name="IDS_DEVTOOLS_5de39fa1bce4bbf9232597a2120bc4d4" desc="Text to open the cubic bezier editor">
     Open cubic bezier editor.
@@ -340,12 +316,6 @@
   <message name="IDS_DEVTOOLS_76c3e002d3c052bd6a909366a8dc3845" desc="Text that appears on a button for the manifest resource type filter.">
     Manifest
   </message>
-  <message name="IDS_DEVTOOLS_76f8c7ad696be0b330b46afe79ac279d" desc="Text in the Shortcuts page to explain a keyboard shortcut (start/stop recording performance)">
-    Start/stop recording
-  </message>
-  <message name="IDS_DEVTOOLS_787ae37366b7a8c53f381abfd315c647" desc="Text that refers to the Elements Panel">
-    Elements Panel
-  </message>
   <message name="IDS_DEVTOOLS_7a1920d61156abc05a60135aefe8bc67" desc="A context menu item in the Console View of the Console panel">
     Default
   </message>
@@ -397,9 +367,6 @@
   <message name="IDS_DEVTOOLS_888a77f5ac0748b6c8001822417df8b6" desc="Text for security or network protocol">
     Protocol
   </message>
-  <message name="IDS_DEVTOOLS_89345110b204ed302eddff2ddbd0f4d9" desc="Text in the Shortcuts page to explain a keyboard shortcut (enable toggle breakpoint shortcut in debugger)">
-    Toggle breakpoint enabled
-  </message>
   <message name="IDS_DEVTOOLS_8d9da4bc0e49a50e09ac9f7e56789d39" desc="Text to indicate the network connectivity is offline">
     Offline
   </message>
@@ -450,9 +417,6 @@
   </message>
   <message name="IDS_DEVTOOLS_997a8c473db4f81c5fb3d5900030d44d" desc="Text that shows there is no recording">
     (no recordings)
-  </message>
-  <message name="IDS_DEVTOOLS_9aae9fe27dbf2db0ad90762b5b59d3a7" desc="Text to clear the console">
-    Clear console
   </message>
   <message name="IDS_DEVTOOLS_9d8c209e49e328528c39c273798e98c9" desc="Text to save content as a specific file type">
     Save as...
@@ -550,9 +514,6 @@
   <message name="IDS_DEVTOOLS_b66b856833f34a841b51c7207dbc601f" desc="Text in Application Panel Sidebar of the Application panel">
     IndexedDB
   </message>
-  <message name="IDS_DEVTOOLS_b7ad6a024765bbfbff22dedf9afe0d17" desc="Text in the Shortcuts page to explain a keyboard shortcut (jump to previous editing location in text editor)">
-    Jump to previous editing location
-  </message>
   <message name="IDS_DEVTOOLS_b94d8a074eddd267702810179875737f" desc="Text that refers to the debugger">
     Debugger
   </message>
@@ -636,9 +597,6 @@
   </message>
   <message name="IDS_DEVTOOLS_dc30bc0c7914db5918da4263fce93ad2" desc="Text to clear content">
     Clear
-  </message>
-  <message name="IDS_DEVTOOLS_dd92c3884d43902407a4c2f0d8cc0eb1" desc="Text in the Shortcuts page to explain a keyboard shortcut (toggle breakpoint in debugger)">
-    Toggle breakpoint
   </message>
   <message name="IDS_DEVTOOLS_ddcf50c29294d4414f3f7c1bbc892cb5" desc="A title of the 'Resources' action category">
     Resources

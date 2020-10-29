@@ -35,13 +35,17 @@ import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as Host from '../host/host.js';
 import * as InlineEditor from '../inline_editor/inline_editor.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 
 import {ComputedStyleModel} from './ComputedStyleModel.js';
+import {CSSAngleRegex} from './CSSAngleRegex.js';
+import {findIcon} from './CSSPropertyIconResolver.js';
 import {linkifyDeferredNodeReference} from './DOMLinkifier.js';
 import {ElementsSidebarPane} from './ElementsSidebarPane.js';
+import * as Icon from './Icon_bridge.js';
 import {ImagePreviewPopover} from './ImagePreviewPopover.js';
 import {StylePropertyHighlighter} from './StylePropertyHighlighter.js';
 import {StylePropertyTreeElement} from './StylePropertyTreeElement.js';
@@ -987,7 +991,7 @@ export class SectionBlock {
   static async _createInheritedNodeBlock(node) {
     const separatorElement = createElement('div');
     separatorElement.className = 'sidebar-separator';
-    separatorElement.createTextChild(ls`Inherited from${' '}`);
+    UI.UIUtils.createTextChild(separatorElement, ls`Inherited from${' '}`);
     const link = await Common.Linkifier.Linkifier.linkify(node, {preventKeyboardFocus: true});
     separatorElement.appendChild(link);
     return new SectionBlock(separatorElement);
@@ -1181,7 +1185,7 @@ export class StylePropertiesSection {
 
     const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
 
-    if (header && header.isMutable) {
+    if (header && header.isMutable && !header.isViaInspector()) {
       const label = header.isConstructed ? Common.UIString.UIString('constructed stylesheet') : '<style>';
       if (header.ownerNode) {
         const link = linkifyDeferredNodeReference(header.ownerNode);
@@ -1716,7 +1720,7 @@ export class StylePropertiesSection {
     const fragment = createDocumentFragment();
     for (let i = 0; i < selectors.length; ++i) {
       if (i) {
-        fragment.createTextChild(', ');
+        UI.UIUtils.createTextChild(fragment, ', ');
       }
       fragment.appendChild(this._createSelectorElement(selectors[i], matchingSelectors[i], i));
     }
@@ -2429,6 +2433,11 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
       }
     }
 
+    /**
+     * Computed styles cache populated by cssFlexboxFeatures experiment.
+     * @type {?Map<string, string>}
+     */
+    this._selectedNodeComputedStyles = null;
     this._treeElement = treeElement;
     this._isEditingName = isEditingName;
     this._cssVariables = treeElement.matchedStyles().availableCSSVariables(treeElement.property.ownerStyle);
@@ -2567,7 +2576,7 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
    * @param {boolean=} force
    * @return {!Promise<!UI.SuggestBox.Suggestions>}
    */
-  _buildPropertyCompletions(expression, query, force) {
+  async _buildPropertyCompletions(expression, query, force) {
     const lowerQuery = query.toLowerCase();
     const editingVariable = !this._isEditingName && expression.trim().endsWith('var(');
     if (!query && !force && !editingVariable && (this._isEditingName || expression)) {
@@ -2600,11 +2609,12 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         }
       }
     }
-    results.forEach(result => {
+
+    for (const result of results) {
       if (editingVariable) {
         result.title = result.text;
         result.text += ')';
-        return;
+        continue;
       }
       const valuePreset = SDK.CSSMetadata.cssMetadata().getValuePreset(this._treeElement.name, result.text);
       if (!this._isEditingName && valuePreset) {
@@ -2612,7 +2622,42 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         result.text = valuePreset.text;
         result.selectionRange = {startColumn: valuePreset.startColumn, endColumn: valuePreset.endColumn};
       }
-    });
+    }
+
+    if (Root.Runtime.experiments.isEnabled('cssFlexboxFeatures')) {
+      const node = this._treeElement.node();
+
+      const getComputedStyle = async () => {
+        if (!this._selectedNodeComputedStyles) {
+          this._selectedNodeComputedStyles = await node.domModel().cssModel().computedStylePromise(node.id);
+        }
+        return this._selectedNodeComputedStyles;
+      };
+
+      for (const result of results) {
+        const iconInfo = findIcon(
+            this._isEditingName ? result.text : `${this._treeElement.property.name}: ${result.text}`,
+            await getComputedStyle());
+        if (!iconInfo) {
+          continue;
+        }
+        const icon = Icon.createIcon();
+        const width = '12.5px';
+        const height = '12.5px';
+        icon.data = {
+          iconName: iconInfo.iconName,
+          width,
+          height,
+          color: 'black',
+        };
+        icon.style.transform =
+            `rotate(${iconInfo.rotate}deg) scale(${iconInfo.scaleX * 1.1}, ${iconInfo.scaleY * 1.1})`;
+        icon.style.maxHeight = height;
+        icon.style.maxWidth = width;
+        result.iconElement = icon;
+      }
+    }
+
     if (this._isColorAware && !this._isEditingName) {
       results.sort((a, b) => {
         if (!!a.subtitleRenderer === !!b.subtitleRenderer) {
@@ -2658,9 +2703,8 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
      * @return {!Element}
      */
     function swatchRenderer(color) {
-      const swatch = InlineEditor.ColorSwatch.ColorSwatch.create();
-      swatch.hideText(true);
-      swatch.setColor(color);
+      const swatch = InlineEditor.ColorSwatch.createColorSwatch();
+      swatch.renderColor(color);
       swatch.style.pointerEvents = 'none';
       return swatch;
     }
@@ -2689,6 +2733,8 @@ export class StylesSidebarPropertyRenderer {
     this._gridHandler = null;
     /** @type {?function(string):!Node} */
     this._varHandler = createTextNode;
+    /** @type {?function(string):!Node} */
+    this._angleHandler = null;
   }
 
   /**
@@ -2724,6 +2770,13 @@ export class StylesSidebarPropertyRenderer {
    */
   setVarHandler(handler) {
     this._varHandler = handler;
+  }
+
+  /**
+   * @param {function(string):!Node} handler
+   */
+  setAngleHandler(handler) {
+    this._angleHandler = handler;
   }
 
   /**
@@ -2776,6 +2829,11 @@ export class StylesSidebarPropertyRenderer {
       regexes.push(Common.Color.Regex);
       processors.push(this._colorHandler);
     }
+    if (this._angleHandler && metadata.isAngleAwareProperty(this._propertyName)) {
+      // TODO(changhaohan): crbug.com/1138628 refactor this to handle unitless 0 cases
+      regexes.push(CSSAngleRegex);
+      processors.push(this._angleHandler);
+    }
     const results = TextUtils.TextUtils.Utils.splitStringByRegexes(this._propertyValue, regexes);
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
@@ -2798,7 +2856,7 @@ export class StylesSidebarPropertyRenderer {
       url = url.substring(1, url.length - 1);
     }
     const container = createDocumentFragment();
-    container.createTextChild('url(');
+    UI.UIUtils.createTextChild(container, 'url(');
     let hrefUrl = null;
     if (this._rule && this._rule.resourceURL()) {
       hrefUrl = Common.ParsedURL.ParsedURL.completeURL(this._rule.resourceURL(), url);
@@ -2817,7 +2875,7 @@ export class StylesSidebarPropertyRenderer {
         }),
         hrefUrl || url);
     container.appendChild(link);
-    container.createTextChild(')');
+    UI.UIUtils.createTextChild(container, ')');
     return container;
   }
 }

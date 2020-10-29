@@ -7,7 +7,7 @@ import * as Host from '../host/host.js';
 import * as UI from '../ui/ui.js';
 
 import {DeviceModeWrapper} from './DeviceModeWrapper.js';
-import {Events, InspectedPagePlaceholder, instance} from './InspectedPagePlaceholder.js';  // eslint-disable-line no-unused-vars
+import {Events, InspectedPagePlaceholder} from './InspectedPagePlaceholder.js';  // eslint-disable-line no-unused-vars
 
 /** @type {!AdvancedApp} */
 let _appInstance;
@@ -62,9 +62,10 @@ export class AdvancedApp {
     this._rootSplitWidget.setDefaultFocusedChild(UI.InspectorView.InspectorView.instance());
     UI.InspectorView.InspectorView.instance().setOwnerSplit(this._rootSplitWidget);
 
-    this._inspectedPagePlaceholder = instance();
+    this._inspectedPagePlaceholder = InspectedPagePlaceholder.instance();
     this._inspectedPagePlaceholder.addEventListener(Events.Update, this._onSetInspectedPageBounds.bind(this), this);
-    this._deviceModeView = new DeviceModeWrapper(this._inspectedPagePlaceholder);
+    this._deviceModeView =
+        DeviceModeWrapper.instance({inspectedPagePlaceholder: this._inspectedPagePlaceholder, forceNew: false});
 
     UI.DockController.DockController.instance().addEventListener(
         UI.DockController.Events.BeforeDockSideChanged, this._onBeforeDockSideChange, this);

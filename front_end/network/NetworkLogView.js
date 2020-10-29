@@ -1124,7 +1124,9 @@ export class NetworkLogView extends UI.Widget.VBox {
    * @return {!Array<!NetworkNode>}
    */
   flatNodesList() {
-    return /** @type {!Array<!NetworkNode>} */ (this._dataGrid.rootNode().flatChildren());
+    /** @type {!DataGrid.ViewportDataGrid.ViewportDataGridNode<!DataGrid.SortableDataGrid.SortableDataGridNode<!NetworkNode>>} */
+    const rootNode = (this._dataGrid.rootNode());
+    return /** @type {!Array<!NetworkNode>} */ (rootNode.flatChildren());
   }
 
   _onDataGridFocus() {
@@ -2098,7 +2100,7 @@ export class NetworkLogView extends UI.Widget.VBox {
       ignoredHeaders.add('content-length');
       inferredMethod = 'POST';
     } else if (formData) {
-      data.push('--data-binary ' + escapeString(formData));
+      data.push('--data-raw ' + escapeString(formData));
       ignoredHeaders.add('content-length');
       inferredMethod = 'POST';
     }

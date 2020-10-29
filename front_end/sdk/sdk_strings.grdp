@@ -12,9 +12,6 @@
   <message name="IDS_DEVTOOLS_044b149f2d31de7a7f43518045f61642" desc="Title of a media query that can be emulated via the Rendering drawer">
     prefers-reduced-data: reduce
   </message>
-  <message name="IDS_DEVTOOLS_04a8e1d4d35de0097dba4846b17f1c97" desc="Title for CSP inline issue link">
-    Learn more: Content Security Policy - Inline Code
-  </message>
   <message name="IDS_DEVTOOLS_05dfd3a2f7eebfad702620a4a7e182eb" desc="Tooltip to explain why a cookie was blocked">
     This Set-Cookie was blocked because it had the &quot;SameSite=Strict&quot; attribute but came from a cross-site response which was not the response to a top-level navigation.
   </message>
@@ -45,10 +42,6 @@
   </message>
   <message name="IDS_DEVTOOLS_09cdd6a7321c64bae05b8cca859f1461" desc="Title of a setting under the Network category that can be invoked through the Command Menu">
     Enable cache
-  </message>
-  <message name="IDS_DEVTOOLS_0bdfd7da77f6e82ca62e5246f1462ffc" desc="Part of message for CSP Issues of eval violation type">
-    To solve this issue, avoid using <ph name="LOCKED_1">|eval()|</ph>, <ph name="LOCKED_1">|new Function()|</ph>, <ph name="LOCKED_1">|setTimeout([string], ...)|</ph> and
-         <ph name="LOCKED_1">|setInterval([string], ...)|</ph> for evaluating strings.
   </message>
   <message name="IDS_DEVTOOLS_0c94f752d037fd8475e98b0711b543a6" desc="Label for the link for SameSiteCookies Issues">
     SameSite cookies explained
@@ -85,6 +78,9 @@
   <message name="IDS_DEVTOOLS_17ef39d79c395cc2274bf685b1d70b2c" desc="Name of a color vision deficiency that can be emulated via the Rendering drawer">
     Achromatopsia
   </message>
+  <message name="IDS_DEVTOOLS_1802bfd2aff1089bead71f8ad11c716f" desc="Tooltip to explain why a cookie was blocked due to Schemeful Same-Site">
+    This cookie was blocked because it had the &quot;SameSite=Lax&quot; attribute but the request was cross-site and was not initiated by a top-level navigation. This request is considered cross-site because the URL has a different scheme than the current site.
+  </message>
   <message name="IDS_DEVTOOLS_18253f5cc6e0814eb6f9bc2fb560ce82" desc="The kind of resolution for a mixed content issue">
     automatically upgraded
   </message>
@@ -97,19 +93,8 @@
   <message name="IDS_DEVTOOLS_1985576209a186984f171efd81e91e3d" desc="Text in Network Log">
     &lt;anonymous&gt;
   </message>
-  <message name="IDS_DEVTOOLS_1afebac41b13cf486a322ed28cf14d8d" desc="Title for the CSP eval link">
-    Learn more: Content Security Policy - Eval
-  </message>
-  <message name="IDS_DEVTOOLS_1b6164cca79eeac4716c6b056dae437a" desc="Suggestion for resolution of MixedContentIssue">
-    To resolve this issue load all resources over a secure HTTPS connection.
-  </message>
   <message name="IDS_DEVTOOLS_1ccfb518c1eb59a48fa9b2c578073557" desc="Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel">
     redundant
-  </message>
-  <message name="IDS_DEVTOOLS_1da61856ced14822c6b3724836a62ba4" desc="Part of message for CSP Issues of url violation type">
-    To solve this, carefully check that all of the blocked resources listed below are trustworthy; if they are,
-     include their sources in the content security policy of your site. You can set a policy as a HTTP header (recommended),
-     or via an HTML <ph name="LOCKED_1">|&lt;meta&gt;|</ph> tag.
   </message>
   <message name="IDS_DEVTOOLS_1df61a3acc3068952591f72d4f410ccf" desc="Title of a setting that turns off the grid extension lines">
     Do not extend grid lines
@@ -129,10 +114,6 @@
   <message name="IDS_DEVTOOLS_2187e1021a911b3807cc1bea2eb1a9ca" desc="Text for a stack, the programming concept">
     Stack
   </message>
-  <message name="IDS_DEVTOOLS_2232bbac4a5c0de1b731b9a4018d0ff9" desc="Part of message for CSP Issues of eval violation type">
-    The Content Security Policy (CSP) prevents the evaluation of arbitrary strings as JavaScript to make it
-         more difficult for an attacker to inject unathorized code on your site.
-  </message>
   <message name="IDS_DEVTOOLS_22af645d1859cb5ca6da0c484f1f37ea" desc="Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel">
     new
   </message>
@@ -144,6 +125,9 @@
   </message>
   <message name="IDS_DEVTOOLS_242dd6b02f1ff7db7cbba7f7226abb4a" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Do not emulate CSS prefers-color-scheme
+  </message>
+  <message name="IDS_DEVTOOLS_266bd94230e7c7d11ab8b04c755f99c0" desc="Tooltip to explain why a cookie was blocked due to Schemeful Same-Site">
+    This Set-Cookie was blocked because it had the &quot;SameSite=Strict&quot; attribute but came from a cross-site response which was not the response to a top-level navigation. This response is considered cross-site because the URL has a different scheme than the current site.
   </message>
   <message name="IDS_DEVTOOLS_28e486be4b3bad598b6e9eaa34ebec76" desc="Text in Network Manager">
     Set-Cookie header is ignored in response from url: <ph name="RESPONSE_URL">$1s<ex>https://example.com</ex></ph>. Cookie length should be less than or equal to 4096 characters.
@@ -157,13 +141,6 @@
   <message name="IDS_DEVTOOLS_2d4f58197f03de72c0472189fd18c162" desc="Title of a setting under the Rendering drawer">
     Emulate vision deficiencies
   </message>
-  <message name="IDS_DEVTOOLS_2e14ec7819d8f48f0b3a0bcc2092ef29" desc="Part of issue message for CSP inline issues">
-    ⚠️ Allowing inline execution comes at the risk of script injection via injection of HTML script elements.
-     If you absolutely must, you can allow inline script and styles by:
-  </message>
-  <message name="IDS_DEVTOOLS_301c6a898ab412749bfb0e72381d91d2" desc="Title for the MixedContentIssue issue code">
-    Mixed content: load all resources via HTTPS to improve the security of your site
-  </message>
   <message name="IDS_DEVTOOLS_323d4eb70b252acb4a04eaf9e0882597" desc="Title for a group of cities">
     Geolocation
   </message>
@@ -175,9 +152,6 @@
   </message>
   <message name="IDS_DEVTOOLS_35d4892bb81c31af26ec7047ef5c8872" desc="Resolution for SameSiteCookie issue">
     Specify <ph name="LOCKED_1">|SameSite=Strict|</ph> or <ph name="LOCKED_1">|SameSite=Lax|</ph> if the cookie should not be set by cross-site requests
-  </message>
-  <message name="IDS_DEVTOOLS_3619cc1e0acf34096d9a1e5738129a80" desc="Part of message for CSP Issues of url violation type">
-    Content Security Policy of your site blocks some resources because their origin is not included in the content security policy header
   </message>
   <message name="IDS_DEVTOOLS_3ac7af4285bb17e9dbc72fdd675dd2be" desc="Title of a setting that turns on grid track size labels">
     Show track sizes
@@ -214,32 +188,11 @@
   <message name="IDS_DEVTOOLS_47ff9951b01a6b094431ff82dc68e266" desc="The kind of resolution for a mixed content issue">
     warned
   </message>
-  <message name="IDS_DEVTOOLS_490431c2edef7d40dc90533f02fd98cf" desc="Part of the issue message for CSP url issues">
-    The Content Security Policy (CSP) improves the security of your site by defining a list of trusted sources and
-     instructs the browser to only execute or render resources from this list. Some resources on your site can&apos;t be accessed
-     because their origin is not listed in the CSP.
-  </message>
   <message name="IDS_DEVTOOLS_4c2e5ad7006ec9cf040895d1b3465798" desc="Title of a setting that turns on grid line name labels">
     Show line names
   </message>
   <message name="IDS_DEVTOOLS_4cbb2bdce4db02a995cdd7a237a63d69" desc="Title of a setting under the Grid category that turns CSS Grid Area highlighting on">
     Show grid named areas
-  </message>
-  <message name="IDS_DEVTOOLS_565b655df6db4b7fea71e9a712bac937" desc="Part of the issue message for CSP eval issues">
-    Content Security Policy of your site blocks the use of <ph name="LOCKED_1">&apos;eval&apos;</ph> in JavaScript
-  </message>
-  <message name="IDS_DEVTOOLS_5988f13c0976ce6b6edbc4d667f1bb7a" desc="Part of issue message for CSP inline issues">
-    Content Security Policy blocks inline execution of scripts and stylesheets
-  </message>
-  <message name="IDS_DEVTOOLS_5e9e1cf450fbfb602580e1340d053c83" desc="Part of message for CSP Issues of eval violation type">
-    ⚠️ Allowing string evaluation comes at the risk of inline script injection.
-  </message>
-  <message name="IDS_DEVTOOLS_5f79b423012732acbb8c6ea2e44d30a9" desc="Part of message for CSP Issues of eval violation type">
-    If you absolutely must: you can enable string evaluation by adding <ph name="LOCKED_1">|unsafe-eval|</ph> as an allowed source
-         in a <ph name="LOCKED_1">|script-src|</ph> directive.
-  </message>
-  <message name="IDS_DEVTOOLS_643c3520c9c703130943711a07b86dc8" desc="Part of message for CSP Issues of inline violation type">
-    To solve this, move all inline scripts (e.g. <ph name="LOCKED_1">|onclick=[JS code]|</ph>) and styles into external files.
   </message>
   <message name="IDS_DEVTOOLS_68379f916c7ed8dd3ab30adaa20635fe" desc="Title of a setting that turns on grid line number labels">
     Show line numbers
@@ -247,8 +200,8 @@
   <message name="IDS_DEVTOOLS_6e434cf220a5334cfb7c8b8944686adf" desc="Title for CSS Grid tooling option">
     Show grid track sizes
   </message>
-  <message name="IDS_DEVTOOLS_62c98a40c9549eded0914ba9f5de51ce" desc="Bullet point about resolving CSP inline violations">
-    adding the hash or nonce of the inline script to your CSP header.
+  <message name="IDS_DEVTOOLS_70bb729781edf4d84d0d9448ea286e19" desc="Tooltip to explain why a cookie was blocked due to Schemeful Same-Site">
+    This Set-Cookie was blocked because it had the &quot;SameSite=Lax&quot; attribute but came from a cross-site response which was not the response to a top-level navigation. This response is considered cross-site because the URL has a different scheme than the current site.
   </message>
   <message name="IDS_DEVTOOLS_7aca5a3302ffbed606fd7701315b1c45" desc="Title of a setting that turns on grid extension lines">
     Extend grid lines
@@ -259,11 +212,17 @@
   <message name="IDS_DEVTOOLS_87d9ba4d9f1c832fff7132d0855229b4" desc="Resolution for a SameSiteCookie issue">
     Resolve this issue by migrating your site (as defined by the eTLD+1) entirely to HTTPS. It is also recommended to mark the cookie with the |Secure| attribute if that is not already the case.
   </message>
+  <message name="IDS_DEVTOOLS_880e498d5a62f26071be2f50f12deb4d" desc="Tooltip to explain why a cookie was blocked due to Schemeful Same-Site">
+    This cookie didn&apos;t specify a &quot;SameSite&quot; attribute when it was stored, was defaulted to &quot;SameSite=Lax&quot;, and was blocked because the request was cross-site and was not initiated by a top-level navigation. This request is considered cross-site because the URL has a different scheme than the current site.
+  </message>
   <message name="IDS_DEVTOOLS_9182eda0635ccdc88276ba9e013c5c1b" desc="Title of a Rendering setting that can be invoked through the Command Menu">
     Do not emulate a focused page
   </message>
   <message name="IDS_DEVTOOLS_9485d0acccd869b51a96f2b35fd0b620" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Do not emulate CSS prefers-reduced-data
+  </message>
+  <message name="IDS_DEVTOOLS_96a5cc95cb5e6812861254286a5764af" desc="Tooltip to explain why a cookie was blocked due to Schemeful Same-Site">
+    This Set-Cookie didn&apos;t specify a &quot;SameSite&quot; attribute, was defaulted to &quot;SameSite=Lax&quot;, and was blocked because it came from a cross-site response which was not the response to a top-level navigation. This response is considered cross-site because the URL has a different scheme than the current site.
   </message>
   <message name="IDS_DEVTOOLS_9915b8ef9885af8c4381daed280b5248" desc="Title for CSS Grid tooling option">
     Do not show grid track sizes
@@ -276,14 +235,20 @@
   <message name="IDS_DEVTOOLS_a56491b51306fc59e63d029cb33328ee" desc="Label for the link for Schemeful Same-Site Issues">
     How <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE">Schemeful Same-Site</ph> Works
   </message>
-  <message name="IDS_DEVTOOLS_a6c571c918bdd52968955c2cb28ddc84" desc="Bullet point about resolving CSP inline violations">
-    adding <ph name="LOCKED_1">|unsafe-inline|</ph> as a source to the CSP header
-  </message>
   <message name="IDS_DEVTOOLS_a9dbce0348c4df57c727ce7df2e7a8e6" desc="Title for CSP url link">
     Content Security Policy - Source Allowlists
   </message>
   <message name="IDS_DEVTOOLS_ad6cd0dc14b9f610f20d88d5596ead7b" desc="Title for a SameSiteCookie issue">
     Migrate entirely to HTTPS to allow cookies to be set by same-site subresources
+  </message>
+  <message name="IDS_DEVTOOLS_adebfaed8be7365a6da10b3a82308388" desc="Tooltip to explain why a cookie was blocked due to Schemeful Same-Site">
+    This cookie was blocked because it had the &quot;SameSite=Strict&quot; attribute but the request was cross-site. This includes top-level navigation requests initiated by other sites. This request is considered cross-site because the URL has a different scheme than the current site.
+  </message>
+  <message name="IDS_DEVTOOLS_ae356ff81a018e6d1469671482fe27b9" desc="Title for the CSP eval link">
+    Content Security Policy - Eval
+  </message>
+  <message name="IDS_DEVTOOLS_b36857343b1291522b00bfce8e3b347c" desc="Title for CSP inline issue link">
+    Content Security Policy - Inline Code
   </message>
   <message name="IDS_DEVTOOLS_b40b37431c71726db1bd4e1bc44cbfac" desc="Error message for canceled source map loads">
     Load canceled due to reload of inspected page
@@ -548,9 +513,6 @@
   <message name="IDS_DEVTOOLS_acd03ba2ec36eef79177aa99a71caf5e" desc="Resource limit for Heavy Ads issue description">
     Uses more than 4 megabytes of network bandwidth (Network limit)
   </message>
-  <message name="IDS_DEVTOOLS_ae40945c5cb26d80b9e396ea9e333ee9" desc="Message for the MixedContentIssue issue code">
-    Even though the initial HTML page is loaded over a secure HTTPS connection, some resources like images, stylesheets or scripts are being accessed over an insecure HTTP connection. Usage of insecure resources is restricted to strengthen the security of your entire site.
-  </message>
   <message name="IDS_DEVTOOLS_aec445acc1539341cf9a79c3a336131d" desc="Tooltip to explain why a cookie was blocked">
     This cookie was blocked due to user preferences.
   </message>
@@ -597,10 +559,6 @@
   </message>
   <message name="IDS_DEVTOOLS_beff15b1acf49b84bf1080cceb920ebf" desc="Title of a media query that can be emulated via the Rendering drawer">
     prefers-color-scheme: dark
-  </message>
-  <message name="IDS_DEVTOOLS_bfbdda72803f950364e1ff10adbc64f3" desc="Part of issue message for CSP inline issues">
-    The Content Security Policy (CSP) prevents cross-site scripting attacks by blocking inline execution of scripts
-     and style sheets.
   </message>
   <message name="IDS_DEVTOOLS_c2b67a1559b80b23f73dabb8bba0f534" desc="Title of a setting under the Rendering drawer that can be invoked through the Command Menu">
     Emulate tritanopia
@@ -671,10 +629,6 @@
     A cookie is being sent to <ph name="DESTINATION">$1s<ex>a secure</ex></ph> origin from <ph name="ORIGIN">$2s<ex>an insecure</ex></ph> context.
         Because this cookie is being sent across schemes on the same site, it will not be sent in a future version of Chrome.
         This behavior enhances the <ph name="LOCKED_1">|SameSite|</ph> attribute’s protection of user data from request forgery by network attackers.
-  </message>
-  <message name="IDS_DEVTOOLS_dc63af9ea86e7ce364eda357bd7d7dfe" desc="Part of explanatory text for CSP issue of URL violation type">
-    ⚠️ Never add a source you don&apos;t trust to your site&apos;s Content Security Policy. If you don&apos;t trust the source, consider
-     hosting resources on your own site instead.
   </message>
   <message name="IDS_DEVTOOLS_dcd9c13c4f8ae68ea7ae92edf9191264" desc="Text in Server Timing">
     Deprecated syntax found. Please use: &lt;name&gt;;dur=&lt;duration&gt;;desc=&lt;description&gt;

@@ -66,20 +66,6 @@ function checkAllDevToolsFiles() {
   });
 }
 
-function checkDevtoolsModuleEntrypoints() {
-  return checkGNVariable(
-      'devtools_module_entrypoints', 'devtools_module_entrypoint_sources',
-      (moduleJSON, folderName) => {
-        return (moduleJSON.modules || []).filter(fileName => {
-          return fileName === `${folderName}-legacy.js`;
-        });
-      },
-      buildGNPath => filename => {
-        const relativePath = path.normalize(`${buildGNPath}/${filename}`);
-        return `"${relativePath}",`;
-      });
-}
-
 function checkGNVariable(fileName, gnVariable, obtainFiles, obtainRelativePath) {
   const filePath = path.resolve(__dirname, '..', `${fileName}.gni`);
   const fileContent = fs.readFileSync(filePath, 'utf-8');
@@ -156,7 +142,6 @@ function main() {
   const errors = [
     ...checkNonAutostartNonRemoteModules(),
     ...checkAllDevToolsFiles(),
-    ...checkDevtoolsModuleEntrypoints(),
   ];
   if (errors.length) {
     console.log('DevTools BUILD.gn checker detected errors!');

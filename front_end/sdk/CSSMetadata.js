@@ -202,6 +202,15 @@ export class CSSMetadata {
   }
 
   /**
+ * @param {string} propertyName
+ * @return {boolean}
+ */
+  isAngleAwareProperty(propertyName) {
+    const lowerCasedName = propertyName.toLowerCase();
+    return _colorAwareProperties.has(lowerCasedName) || _valuePresets.has(lowerCasedName);
+  }
+
+  /**
    * @param {string} propertyName
    * @return {boolean}
    */
@@ -544,6 +553,7 @@ const _extraPropertyValues = {
   'overscroll-behavior': {values: ['contain']},
   'text-rendering': {values: ['optimizeSpeed', 'optimizeLegibility', 'geometricPrecision']},
   'text-align': {values: ['-webkit-auto', '-webkit-match-parent']},
+  'clip-path': {values: ['circle', 'ellipse', 'inset', 'polygon', 'url']},
   'color-interpolation': {values: ['sRGB', 'linearRGB']},
   'word-wrap': {values: ['normal', 'break-word']},
   'font-weight': {values: ['100', '200', '300', '400', '500', '600', '700', '800', '900']},

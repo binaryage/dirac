@@ -298,9 +298,11 @@ export declare const enum OperatorCode {
     v32x4_load_splat = 64777,
     v64x2_load_splat = 64778,
     v128_store = 64779,
+    v128_load32_zero = 65020,
+    v128_load64_zero = 65021,
     v128_const = 64780,
-    v8x16_shuffle = 64781,
-    v8x16_swizzle = 64782,
+    i8x16_shuffle = 64781,
+    i8x16_swizzle = 64782,
     i8x16_splat = 64783,
     i16x8_splat = 64784,
     i32x4_splat = 64785,
@@ -373,17 +375,18 @@ export declare const enum OperatorCode {
     i8x16_neg = 64865,
     i8x16_any_true = 64866,
     i8x16_all_true = 64867,
+    i8x16_bitmask = 64868,
     i8x16_narrow_i16x8_s = 64869,
     i8x16_narrow_i16x8_u = 64870,
     i8x16_shl = 64875,
     i8x16_shr_s = 64876,
     i8x16_shr_u = 64877,
     i8x16_add = 64878,
-    i8x16_add_saturate_s = 64879,
-    i8x16_add_saturate_u = 64880,
+    i8x16_add_sat_s = 64879,
+    i8x16_add_sat_u = 64880,
     i8x16_sub = 64881,
-    i8x16_sub_saturate_s = 64882,
-    i8x16_sub_saturate_u = 64883,
+    i8x16_sub_sat_s = 64882,
+    i8x16_sub_sat_u = 64883,
     i8x16_min_s = 64886,
     i8x16_min_u = 64887,
     i8x16_max_s = 64888,
@@ -393,6 +396,7 @@ export declare const enum OperatorCode {
     i16x8_neg = 64897,
     i16x8_any_true = 64898,
     i16x8_all_true = 64899,
+    i16x8_bitmask = 64900,
     i16x8_narrow_i32x4_s = 64901,
     i16x8_narrow_i32x4_u = 64902,
     i16x8_widen_low_i8x16_s = 64903,
@@ -403,11 +407,11 @@ export declare const enum OperatorCode {
     i16x8_shr_s = 64908,
     i16x8_shr_u = 64909,
     i16x8_add = 64910,
-    i16x8_add_saturate_s = 64911,
-    i16x8_add_saturate_u = 64912,
+    i16x8_add_sat_s = 64911,
+    i16x8_add_sat_u = 64912,
     i16x8_sub = 64913,
-    i16x8_sub_saturate_s = 64914,
-    i16x8_sub_saturate_u = 64915,
+    i16x8_sub_sat_s = 64914,
+    i16x8_sub_sat_u = 64915,
     i16x8_mul = 64917,
     i16x8_min_s = 64918,
     i16x8_min_u = 64919,
@@ -418,6 +422,7 @@ export declare const enum OperatorCode {
     i32x4_neg = 64929,
     i32x4_any_true = 64930,
     i32x4_all_true = 64931,
+    i32x4_bitmask = 64932,
     i32x4_widen_low_i16x8_s = 64935,
     i32x4_widen_high_i16x8_s = 64936,
     i32x4_widen_low_i16x8_u = 64937,
@@ -432,6 +437,7 @@ export declare const enum OperatorCode {
     i32x4_min_u = 64951,
     i32x4_max_s = 64952,
     i32x4_max_u = 64953,
+    i32x4_dot_i16x8_s = 64954,
     i64x2_neg = 64961,
     i64x2_shl = 64971,
     i64x2_shr_s = 64972,
@@ -448,6 +454,8 @@ export declare const enum OperatorCode {
     f32x4_div = 64999,
     f32x4_min = 65000,
     f32x4_max = 65001,
+    f32x4_pmin = 65002,
+    f32x4_pmax = 65003,
     f64x2_abs = 65004,
     f64x2_neg = 65005,
     f64x2_sqrt = 65007,
@@ -457,6 +465,8 @@ export declare const enum OperatorCode {
     f64x2_div = 65011,
     f64x2_min = 65012,
     f64x2_max = 65013,
+    f64x2_pmin = 65014,
+    f64x2_pmax = 65015,
     i32x4_trunc_sat_f32x4_s = 65016,
     i32x4_trunc_sat_f32x4_u = 65017,
     f32x4_convert_i32x4_s = 65018,
@@ -476,8 +486,8 @@ export declare const enum Type {
     f32 = -3,
     f64 = -4,
     v128 = -5,
-    anyfunc = -16,
-    anyref = -17,
+    funcref = -16,
+    externref = -17,
     func = -32,
     empty_block_type = -64
 }
@@ -497,7 +507,11 @@ export declare const enum LinkingType {
 export declare const enum NameType {
     Module = 0,
     Function = 1,
-    Local = 2
+    Local = 2,
+    Type = 4,
+    Table = 5,
+    Memory = 6,
+    Global = 7
 }
 export declare const enum BinaryReaderState {
     ERROR = -1,
@@ -539,14 +553,20 @@ export declare const enum BinaryReaderState {
     END_GLOBAL_SECTION_ENTRY = 40,
     RELOC_SECTION_HEADER = 41,
     RELOC_SECTION_ENTRY = 42,
-    SOURCE_MAPPING_URL = 43
+    SOURCE_MAPPING_URL = 43,
+    BEGIN_OFFSET_EXPRESSION_BODY = 44,
+    OFFSET_EXPRESSION_OPERATOR = 45,
+    END_OFFSET_EXPRESSION_BODY = 46
 }
-export declare const enum SegmentFlags {
-    IsPassive = 1,
-    HasTableIndex = 2,
-    FunctionsAsElements = 4
+export declare const enum DataMode {
+    Active = 0,
+    Passive = 1
 }
-export declare const NULL_FUNCTION_INDEX = 4294967295;
+export declare const enum ElementMode {
+    Active = 0,
+    Passive = 1,
+    Declarative = 2
+}
 export interface IModuleHeader {
     magicNumber: number;
     version: number;
@@ -571,15 +591,15 @@ export interface IGlobalVariable {
     type: IGlobalType;
 }
 export interface IElementSegment {
-    index: number;
+    mode: ElementMode;
+    tableIndex?: number;
 }
 export interface IElementSegmentBody {
-    elements: Uint32Array;
-    elementType: number;
-    asElements: boolean;
+    elementType: Type;
 }
 export interface IDataSegment {
-    index: number;
+    mode: DataMode;
+    memoryIndex?: number;
 }
 export interface IDataSegmentBody {
     data: Uint8Array;
@@ -616,6 +636,18 @@ export interface ILocalName {
 }
 export interface ILocalNameEntry extends INameEntry {
     funcs: ILocalName[];
+}
+export interface ITypeNameEntry extends INameEntry {
+    names: INaming[];
+}
+export interface ITableNameEntry extends INameEntry {
+    names: INaming[];
+}
+export interface IMemoryNameEntry extends INameEntry {
+    names: INaming[];
+}
+export interface IGlobalNameEntry extends INameEntry {
+    names: INaming[];
 }
 export interface ILinkingEntry {
     type: LinkingType;
@@ -663,6 +695,7 @@ export interface IMemoryAddress {
 export interface IOperatorInformation {
     code: OperatorCode;
     blockType?: number;
+    refType?: number;
     brDepth?: number;
     brTable?: Array<number>;
     funcIndex?: number;
@@ -694,26 +727,22 @@ export declare class BinaryReader {
     state: BinaryReaderState;
     result: BinaryReaderResult;
     error: Error;
-    get currentSection(): ISectionInformation;
-    get currentFunction(): IFunctionInformation;
     private _sectionEntriesLeft;
     private _sectionId;
     private _sectionRange;
     private _functionRange;
-    private _segmentFlags;
+    private _segmentType;
+    private _segmentEntriesLeft;
     get data(): Uint8Array;
     get position(): number;
     get length(): number;
-    constructor();
     setData(buffer: ArrayBuffer, pos: number, length: number, eof?: boolean): void;
     private hasBytes;
     hasMoreBytes(): boolean;
     private readUint8;
-    private readUint16;
     private readInt32;
     private readUint32;
     private peekInt32;
-    private peekUint32;
     private hasVarIntBytes;
     private readVarUint1;
     private readVarInt7;
@@ -723,6 +752,7 @@ export declare class BinaryReader {
     private readVarInt64;
     private readStringBytes;
     private readBytes;
+    private skipBytes;
     private hasStringBytes;
     private hasSectionPayload;
     private readFuncType;
@@ -742,8 +772,8 @@ export declare class BinaryReader {
     private readDataEntry;
     private readDataEntryBody;
     private readInitExpressionBody;
+    private readOffsetExpressionBody;
     private readMemoryImmediate;
-    private readLineIndex;
     private readNameMap;
     private readNameEntry;
     private readRelocHeader;

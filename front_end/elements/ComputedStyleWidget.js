@@ -29,7 +29,6 @@
 
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
-import * as Host from '../host/host.js';
 import * as InlineEditor from '../inline_editor/inline_editor.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
@@ -102,13 +101,9 @@ const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles,
  * @return {!Node}
  */
 const processColor = text => {
-  const color = Common.Color.Color.parse(text);
-  if (!color) {
-    return document.createTextNode(text);
-  }
-  const swatch = InlineEditor.ColorSwatch.ColorSwatch.create();
-  swatch.setColor(color);
-  swatch.setFormat(Common.Settings.detectColorFormat(color));
+  const swatch = InlineEditor.ColorSwatch.createColorSwatch();
+  swatch.renderColor(text, true);
+  swatch.createChild('span').textContent = text;
   return swatch;
 };
 
@@ -117,16 +112,10 @@ const processColor = text => {
  * @return {!Node}
  */
 const processComputedColor = text => {
-  const color = Common.Color.Color.parse(text);
-  if (!color) {
-    return document.createTextNode(text);
-  }
-  const swatch = InlineEditor.ColorSwatch.ColorSwatch.create();
-  // Computed styles don't provide the original format, so
-  // switch to RGB.
-  color.setFormat(Common.Color.Format.RGB);
-  swatch.setColor(color);
-  swatch.setFormat(Common.Color.Format.RGB);
+  const swatch = InlineEditor.ColorSwatch.createColorSwatch();
+  // Computed styles don't provide the original format, so switch to RGB.
+  swatch.renderColor(text, Common.Color.Format.RGB);
+  swatch.createChild('span').textContent = text;
   return swatch;
 };
 
@@ -172,8 +161,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     this._showInheritedComputedStylePropertiesSetting.addChangeListener(this.update.bind(this));
 
     this._groupComputedStylesSetting = Common.Settings.Settings.instance().createSetting('groupComputedStyles', false);
-    this._groupComputedStylesSetting.addChangeListener(event => {
-      Host.userMetrics.computedStyleGrouping(event.data);
+    this._groupComputedStylesSetting.addChangeListener(() => {
       this.update();
     });
 

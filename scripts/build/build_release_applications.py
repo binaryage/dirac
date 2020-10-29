@@ -58,13 +58,6 @@ def main(argv):
         builder = ReleaseBuilder(app, descriptors, input_path, output_path, use_rollup)
         builder.build_app()
 
-    def copy_file(file_name):
-        write_file(join(output_path, file_name), minify_js(read_file(join(input_path, file_name))))
-
-    copy_file('root.js')
-    copy_file('RuntimeInstantiator.js')
-
-
 
 def resource_source_url(url):
     return '\n/*# sourceURL=' + url + ' */'
@@ -131,9 +124,19 @@ class ReleaseBuilder(object):
                 # Resources are already baked into _module.
                 del module['resources']
                 if not module_type == 'autostart':
+                    # We load the entrypoint of a module no matter what.
+                    # Therefore, we don't need to declare any files for
+                    # the default case. However, if a module still has
+                    # a legacy file, the Runtime performs an array
+                    # contains check and will load that instead.
+                    module_files_to_load = []
+                    declared_module_files = module.get('modules', [])
+                    legacyFileName = name + '-legacy.js'
+                    if legacyFileName in declared_module_files:
+                        module_files_to_load += [legacyFileName]
                     # Non-autostart modules are vulcanized.
-                    module['modules'] = [name + '_module.js'] + module.get(
-                        'modules', [])
+                    module['modules'] = [name + '_module.js'
+                                         ] + module_files_to_load
             result.append(module)
         return json.dumps(result)
 
@@ -166,7 +169,6 @@ class ReleaseBuilder(object):
                 if len(non_autostart_deps):
                     bail_error(
                         'Non-autostart dependencies specified for the autostarted module "%s": %s' % (name, non_autostart_deps))
-                self._rollup_module(name, desc.get('modules', []))
             else:
                 non_autostart.add(name)
 
@@ -192,25 +194,9 @@ class ReleaseBuilder(object):
         if resources:
             output.write("import * as RootModule from '../root/root.js';")
             self._write_module_resources(resources, output)
-        if modules:
-            self._rollup_module(module_name, modules)
         output_file_path = concatenated_module_filename(module_name, self.output_dir)
         write_file(output_file_path, minify_js(output.getvalue()))
         output.close()
-
-    def _rollup_module(
-            self,
-            module_name,
-            modules,
-    ):
-        legacyFileName = module_name + '-legacy.js'
-        if legacyFileName in modules:
-            write_file(
-                join(self.output_dir, module_name, legacyFileName),
-                minify_js(
-                    read_file(
-                        join(self.application_dir, module_name,
-                             legacyFileName))))
 
 
 if __name__ == '__main__':

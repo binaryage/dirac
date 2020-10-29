@@ -5,10 +5,10 @@
 import {assert} from 'chai';
 import * as puppeteer from 'puppeteer';
 
-import {$, click, enableExperiment, getBrowserAndPages, goToResource, platform, reloadDevTools, waitFor} from '../../shared/helper.js';
+import {$, click, enableExperiment, getBrowserAndPages, goToResource, platform, reloadDevTools, scrollElementIntoView, waitFor} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {navigateToCssOverviewTab} from '../helpers/css-overview-helpers.js';
-import {expandSelectedNodeRecursively, focusElementsTree, INACTIVE_GRID_ADORNER_SELECTOR, navigateToSidePane, openLayoutPane, toggleElementCheckboxInLayoutPane, toggleGroupComputedProperties, waitForContentOfSelectedElementsNode, waitForElementsStyleSection} from '../helpers/elements-helpers.js';
+import {editCSSProperty, expandSelectedNodeRecursively, focusElementsTree, INACTIVE_GRID_ADORNER_SELECTOR, navigateToSidePane, openLayoutPane, toggleElementCheckboxInLayoutPane, waitForContentOfSelectedElementsNode, waitForElementsStyleSection} from '../helpers/elements-helpers.js';
 import {clickToggleButton, selectDualScreen, startEmulationWithDualScreenFlag} from '../helpers/emulation-helpers.js';
 import {closeSecurityTab, navigateToSecurityTab} from '../helpers/security-helpers.js';
 import {openPanelViaMoreTools, openSettingsTab} from '../helpers/settings-helpers.js';
@@ -44,7 +44,6 @@ declare global {
     __experimentDisabled: (evt: Event) => void;
     __experimentEnabled: (evt: Event) => void;
     __colorFixed: (evt: Event) => void;
-    __computedStyleGrouping: (evt: Event) => void;
     __issuesPanelIssueExpanded: (evt: Event) => void;
     __issuesPanelResourceOpened: (evt: Event) => void;
     __gridOverlayOpenedFrom: (evt: Event) => void;
@@ -116,11 +115,6 @@ async function beginCatchEvents(frontend: puppeteer.Page) {
       window.__caughtEvents.push({name: 'DevTools.ColorPicker.FixedColor', value: customEvt.detail.value});
     };
 
-    window.__computedStyleGrouping = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.ComputedStyleGrouping', value: customEvt.detail.value});
-    };
-
     window.__issuesPanelIssueExpanded = (evt: Event) => {
       const customEvt = evt as CustomEvent;
       window.__caughtEvents.push({name: 'DevTools.IssuesPanelIssueExpanded', value: customEvt.detail.value});
@@ -150,7 +144,6 @@ async function beginCatchEvents(frontend: puppeteer.Page) {
       window.addEventListener('DevTools.ExperimentDisabled', window.__experimentDisabled);
       window.addEventListener('DevTools.ExperimentEnabled', window.__experimentEnabled);
       window.addEventListener('DevTools.ColorPicker.FixedColor', window.__colorFixed);
-      window.addEventListener('DevTools.ComputedStyleGrouping', window.__computedStyleGrouping);
       window.addEventListener('DevTools.IssuesPanelIssueExpanded', window.__issuesPanelIssueExpanded);
       window.addEventListener('DevTools.IssuesPanelResourceOpened', window.__issuesPanelResourceOpened);
       window.addEventListener('DevTools.GridOverlayOpenedFrom', window.__gridOverlayOpenedFrom);
@@ -169,7 +162,6 @@ async function beginCatchEvents(frontend: puppeteer.Page) {
       window.removeEventListener('DevTools.ExperimentDisabled', window.__experimentDisabled);
       window.removeEventListener('DevTools.ExperimentEnabled', window.__experimentEnabled);
       window.removeEventListener('DevTools.ColorPicker.FixedColor', window.__colorFixed);
-      window.removeEventListener('DevTools.ComputedStyleGrouping', window.__computedStyleGrouping);
       window.removeEventListener('DevTools.IssuesPanelIssueExpanded', window.__issuesPanelIssueExpanded);
       window.removeEventListener('DevTools.IssuesPanelResourceOpened', window.__issuesPanelResourceOpened);
       window.removeEventListener('DevTools.GridOverlayOpenedFrom', window.__gridOverlayOpenedFrom);
@@ -365,9 +357,6 @@ describe('User Metrics', () => {
 
   it('dispatches an event when the keybindSet setting is changed', async () => {
     const {frontend} = getBrowserAndPages();
-    await enableExperiment('customKeyboardShortcuts');
-    // enableExperiment reloads the DevTools and removes our listeners
-    await beginCatchEvents(frontend);
 
     await frontend.keyboard.press('F1');
     await waitFor('.settings-window-main');
@@ -600,35 +589,6 @@ describe('User Metrics for sidebar panes', () => {
   });
 });
 
-describe('User Metrics for Computed Styles grouping', () => {
-  beforeEach(async () => {
-    const {frontend} = getBrowserAndPages();
-    await beginCatchEvents(frontend);
-  });
-
-  it('dispatch grouping state change when toggling', async () => {
-    await navigateToSidePane('Computed');
-    await toggleGroupComputedProperties();
-    await toggleGroupComputedProperties();
-
-    await assertEventsHaveBeenFired([
-      {
-        name: 'DevTools.ComputedStyleGrouping',
-        value: 0,  // enabled
-      },
-      {
-        name: 'DevTools.ComputedStyleGrouping',
-        value: 1,  // disabled
-      },
-    ]);
-  });
-
-  afterEach(async () => {
-    const {frontend} = getBrowserAndPages();
-    await endCatchEvents(frontend);
-  });
-});
-
 describe('User Metrics for Issue Panel', () => {
   beforeEach(async () => {
     await openPanelViaMoreTools('Issues');
@@ -646,6 +606,27 @@ describe('User Metrics for Issue Panel', () => {
       {
         name: 'DevTools.IssuesPanelIssueExpanded',
         value: 2,  // SameSiteCookie
+      },
+    ]);
+  });
+
+  it('dispatch events when a link to an element is click', async () => {
+    await goToResource('elements/element-reveal-inline-issue.html');
+    await waitFor('.issue');
+    await click('.issue');
+
+    await waitFor('.element-reveal-icon');
+    await scrollElementIntoView('.element-reveal-icon');
+    await click('.element-reveal-icon');
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.IssuesPanelIssueExpanded',
+        value: 4,  // ContentSecurityPolicy
+      },
+      {
+        name: 'DevTools.IssuesPanelResourceOpened',
+        value: 7,  // ContentSecurityPolicyElement
       },
     ]);
   });
@@ -720,6 +701,25 @@ describe('User Metrics for CSS custom properties in the Styles pane', () => {
       {
         name: 'DevTools.ActionTaken',
         value: 47,  // CustomPropertyLinkClicked
+      },
+    ]);
+
+    await endCatchEvents(frontend);
+  });
+
+  it('dispatch events when a custom property value is edited', async () => {
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+
+    await editCSSProperty('body, body', '--color', '#f06');
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.ActionTaken',
+        value: 14,  // StyleRuleEdited
+      },
+      {
+        name: 'DevTools.ActionTaken',
+        value: 48,  // CustomPropertyEdited
       },
     ]);
 

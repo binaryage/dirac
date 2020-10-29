@@ -1,3 +1,47 @@
+## [3.3.1](https://github.com/wasdk/wasmparser/compare/v3.3.0...v3.3.1) (2020-10-27)
+
+
+### Bug Fixes
+
+* update data section support ([1dc9f39](https://github.com/wasdk/wasmparser/commit/1dc9f392551153a7f2a45aac280b6af1552c8509))
+
+# [3.3.0](https://github.com/wasdk/wasmparser/compare/v3.2.1...v3.3.0) (2020-10-24)
+
+
+### Features
+
+* add support for i32x4.dot_i16x8_s ([ebd88d6](https://github.com/wasdk/wasmparser/commit/ebd88d65be345b55170c047231845d964123d46d))
+* add support for pmin/pmax ([2f03191](https://github.com/wasdk/wasmparser/commit/2f03191e3df7329d6a44b1de4192f1a1b724744e))
+* add support for v128.load32_zero and v128.load64_zero ([51f00f5](https://github.com/wasdk/wasmparser/commit/51f00f5d2b874198b6c057c0dbbe769a7eac1703))
+
+## [3.2.1](https://github.com/wasdk/wasmparser/compare/v3.2.0...v3.2.1) (2020-10-23)
+
+
+### Bug Fixes
+
+* print opcodes in errors in hexadecimal form ([687ba47](https://github.com/wasdk/wasmparser/commit/687ba47c0cafb5cec040d1bee7796d37f9627071))
+
+# [3.2.0](https://github.com/wasdk/wasmparser/compare/v3.1.3...v3.2.0) (2020-10-13)
+
+
+### Features
+
+* support some extended name subsections ([d3efc60](https://github.com/wasdk/wasmparser/commit/d3efc60a93326c09502d8bbace5d2d6231df03e3))
+
+## [3.1.3](https://github.com/wasdk/wasmparser/compare/v3.1.2...v3.1.3) (2020-10-12)
+
+
+### Bug Fixes
+
+* ignore unsupported "name" subsections ([652f0f7](https://github.com/wasdk/wasmparser/commit/652f0f7c79db00edcc21d9049bb73e4d41383740))
+
+## [3.1.2](https://github.com/wasdk/wasmparser/compare/v3.1.1...v3.1.2) (2020-08-26)
+
+
+### Bug Fixes
+
+* extensions have an leb128 opcode ([#77](https://github.com/wasdk/wasmparser/issues/77)) ([149816c](https://github.com/wasdk/wasmparser/commit/149816c5aa42f7c30bcced7d36742ad9984683fa))
+
 ## [3.1.1](https://github.com/wasdk/wasmparser/compare/v3.1.0...v3.1.1) (2020-08-19)
 
 

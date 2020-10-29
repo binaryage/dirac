@@ -291,22 +291,23 @@ export class DebuggerPlugin extends Plugin {
    * @override
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    * @param {number} editorLineNumber
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
-  populateLineGutterContextMenu(contextMenu, editorLineNumber) {
-    /**
-     * @this {DebuggerPlugin}
-     */
-    function populate(resolve, reject) {
-      const uiLocation = new Workspace.UISourceCode.UILocation(this._uiSourceCode, editorLineNumber, 0);
-      this._scriptsPanel.appendUILocationItems(contextMenu, uiLocation);
-      const breakpoints = this._lineBreakpointDecorations(editorLineNumber)
-                              .map(decoration => decoration.breakpoint)
-                              .filter(breakpoint => !!breakpoint);
-      if (!breakpoints.length) {
-        contextMenu.debugSection().appendItem(
-            Common.UIString.UIString('Add breakpoint'),
-            this._createNewBreakpoint.bind(this, editorLineNumber, '', true));
+  async populateLineGutterContextMenu(contextMenu, editorLineNumber) {
+    const uiLocation = new Workspace.UISourceCode.UILocation(this._uiSourceCode, editorLineNumber, 0);
+    this._scriptsPanel.appendUILocationItems(contextMenu, uiLocation);
+    const breakpoints = this._lineBreakpointDecorations(editorLineNumber)
+                            .map(decoration => decoration.breakpoint)
+                            .filter(breakpoint => !!breakpoint);
+    const hasOnlyJavaScript = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+                                  .scriptsForUISourceCode(this._uiSourceCode)
+                                  .every(script => script.isJavaScript());
+    if (!breakpoints.length) {
+      contextMenu.debugSection().appendItem(
+          Common.UIString.UIString('Add breakpoint'), this._createNewBreakpoint.bind(this, editorLineNumber, '', true));
+      // Conditional breakpoints, logpoints and 'Never pause here'
+      // are currently only available for JavaScript debugging.
+      if (hasOnlyJavaScript) {
         contextMenu.debugSection().appendItem(
             Common.UIString.UIString('Add conditional breakpoint…'),
             this._editBreakpointCondition.bind(this, editorLineNumber, null, null));
@@ -316,34 +317,33 @@ export class DebuggerPlugin extends Plugin {
         contextMenu.debugSection().appendItem(
             Common.UIString.UIString('Never pause here'),
             this._createNewBreakpoint.bind(this, editorLineNumber, 'false', true));
-      } else {
-        const hasOneBreakpoint = breakpoints.length === 1;
-        const removeTitle = hasOneBreakpoint ? Common.UIString.UIString('Remove breakpoint') :
-                                               Common.UIString.UIString('Remove all breakpoints in line');
-        contextMenu.debugSection().appendItem(removeTitle, () => breakpoints.map(breakpoint => breakpoint.remove()));
-        if (hasOneBreakpoint) {
-          contextMenu.debugSection().appendItem(
-              Common.UIString.UIString('Edit breakpoint…'),
-              this._editBreakpointCondition.bind(this, editorLineNumber, breakpoints[0], null));
-        }
-        const hasEnabled = breakpoints.some(breakpoint => breakpoint.enabled());
-        if (hasEnabled) {
-          const title = hasOneBreakpoint ? Common.UIString.UIString('Disable breakpoint') :
-                                           Common.UIString.UIString('Disable all breakpoints in line');
-          contextMenu.debugSection().appendItem(
-              title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(false)));
-        }
-        const hasDisabled = breakpoints.some(breakpoint => !breakpoint.enabled());
-        if (hasDisabled) {
-          const title = hasOneBreakpoint ? Common.UIString.UIString('Enable breakpoint') :
-                                           Common.UIString.UIString('Enable all breakpoints in line');
-          contextMenu.debugSection().appendItem(
-              title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(true)));
-        }
       }
-      resolve();
+    } else {
+      const hasOneBreakpoint = breakpoints.length === 1;
+      const removeTitle = hasOneBreakpoint ? Common.UIString.UIString('Remove breakpoint') :
+                                             Common.UIString.UIString('Remove all breakpoints in line');
+      contextMenu.debugSection().appendItem(removeTitle, () => breakpoints.map(breakpoint => breakpoint.remove()));
+      if (hasOneBreakpoint && hasOnlyJavaScript) {
+        // Editing breakpoints only make sense for conditional breakpoints
+        // and logpoints and both are currently only available for JavaScript
+        // debugging.
+        contextMenu.debugSection().appendItem(
+            Common.UIString.UIString('Edit breakpoint…'),
+            this._editBreakpointCondition.bind(this, editorLineNumber, breakpoints[0], null));
+      }
+      const hasEnabled = breakpoints.some(breakpoint => breakpoint.enabled());
+      if (hasEnabled) {
+        const title = hasOneBreakpoint ? Common.UIString.UIString('Disable breakpoint') :
+                                         Common.UIString.UIString('Disable all breakpoints in line');
+        contextMenu.debugSection().appendItem(title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(false)));
+      }
+      const hasDisabled = breakpoints.some(breakpoint => !breakpoint.enabled());
+      if (hasDisabled) {
+        const title = hasOneBreakpoint ? Common.UIString.UIString('Enable breakpoint') :
+                                         Common.UIString.UIString('Enable all breakpoints in line');
+        contextMenu.debugSection().appendItem(title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(true)));
+      }
     }
-    return new Promise(populate.bind(this));
   }
 
   /**
@@ -521,6 +521,17 @@ export class DebuggerPlugin extends Plugin {
       editorLineNumber = textSelection.startLine;
       startHighlight = textSelection.startColumn;
       endHighlight = textSelection.endColumn - 1;
+    } else if (this._uiSourceCode.mimeType() === 'application/wasm') {
+      const token = this._textEditor.tokenAtTextPosition(textPosition.startLine, textPosition.startColumn);
+      if (!token || token.type !== 'variable-2') {
+        return null;
+      }
+      const leftCorner = this._textEditor.cursorPositionToCoordinates(textPosition.startLine, token.startColumn);
+      const rightCorner = this._textEditor.cursorPositionToCoordinates(textPosition.startLine, token.endColumn - 1);
+      anchorBox = new AnchorBox(leftCorner.x, leftCorner.y, rightCorner.x - leftCorner.x, leftCorner.height);
+      editorLineNumber = textPosition.startLine;
+      startHighlight = token.startColumn;
+      endHighlight = token.endColumn - 1;
     } else {
       const token = this._textEditor.tokenAtTextPosition(textPosition.startLine, textPosition.startColumn);
       if (!token || !token.type) {
@@ -577,16 +588,18 @@ export class DebuggerPlugin extends Plugin {
      * @return {!Promise<?EvaluationResult>}
      */
     async function evaluate(uiSourceCode, evaluationText) {
-      if (selectedCallFrame.script.isWasm() && selectedCallFrame.sourceScopeChain) {
-        for (const scopeChain of selectedCallFrame.sourceScopeChain) {
-          const value = await /** @type {!Bindings.DebuggerLanguagePlugins.SourceScope}*/ (scopeChain)
-                            .getVariableValue(evaluationText);
-          if (value) {
-            return {object: value};
+      if (selectedCallFrame.script.isWasm()) {
+        const sourceScopeChain = await selectedCallFrame.sourceScopeChain;
+        if (sourceScopeChain) {
+          for (const scopeChain of sourceScopeChain) {
+            const object = await /** @type {!Bindings.DebuggerLanguagePlugins.SourceScope}*/ (scopeChain)
+                               .getVariableValue(evaluationText);
+            if (object) {
+              return {object};
+            }
           }
+          return null;
         }
-
-        return null;
       }
 
       const resolvedText = await resolveExpression(
@@ -637,7 +650,9 @@ export class DebuggerPlugin extends Plugin {
    * @param {!KeyboardEvent} event
    */
   async _onKeyDown(event) {
-    this._clearControlDown();
+    if (!event.ctrlKey || (!event.metaKey && Host.Platform.isMac())) {
+      this._clearControlDown();
+    }
 
     if (event.key === 'Escape') {
       if (this._popoverHelper.isPopoverVisible()) {
@@ -725,9 +740,6 @@ export class DebuggerPlugin extends Plugin {
    * @param {!Event} event
    */
   _onBlur(event) {
-    if (this._textEditor.element.isAncestor(/** @type {!Node} */ (event.target))) {
-      return;
-    }
     this._clearControlDown();
   }
 
@@ -842,7 +854,6 @@ export class DebuggerPlugin extends Plugin {
     function renderLocations(locations) {
       this._clearContinueToLocationsNoRestore();
       this._textEditor.hideExecutionLineBackground();
-      this._clearValueWidgets();
       this._continueToLocationDecorations = new Map();
       locations = locations.reverse();
       let previousCallLine = -1;
@@ -1123,11 +1134,11 @@ export class DebuggerPlugin extends Plugin {
           continue;
         }  // Only render name once in the given continuous block.
         if (renderedNameCount) {
-          widget.createTextChild(', ');
+          UI.UIUtils.createTextChild(widget, ', ');
         }
         const nameValuePair = widget.createChild('span');
         widget.__nameToToken.set(name, nameValuePair);
-        nameValuePair.createTextChild(name + ' = ');
+        UI.UIUtils.createTextChild(nameValuePair, name + ' = ');
         const value = valuesMap.get(name);
         const propertyCount = value.preview ? value.preview.properties.length : 0;
         const entryCount = value.preview && value.preview.entries ? value.preview.entries.length : 0;
@@ -1385,6 +1396,14 @@ export class DebuggerPlugin extends Plugin {
       return;
     }
     if (this._textEditor.hasLineClass(editorLocation.lineNumber, 'cm-non-breakable-line')) {
+      return;
+    }
+    if (!Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+             .scriptsForUISourceCode(this._uiSourceCode)
+             .every(script => script.isJavaScript())) {
+      // Editing breakpoints only make sense for conditional breakpoints
+      // and logpoints and both are currently only available for JavaScript
+      // debugging.
       return;
     }
     const location =

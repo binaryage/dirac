@@ -70,12 +70,9 @@ export class CSSPlugin extends Plugin {
         SourceFrame.SourcesTextEditor.Events.ScrollChanged, this._textEditorScrolled, this);
     this._textEditor.addEventListener(UI.TextEditor.Events.TextChanged, this._onTextChanged, this);
     this._updateSwatches(0, this._textEditor.linesCount - 1);
+    this._boundHandleKeyDown = null;
 
-    /** @type {!Map<number, function():boolean>} */
-    this._shortcuts = new Map();
     this._registerShortcuts();
-    this._boundHandleKeyDown = this._handleKeyDown.bind(this);
-    this._textEditor.element.addEventListener('keydown', this._boundHandleKeyDown, false);
   }
 
   /**
@@ -88,30 +85,13 @@ export class CSSPlugin extends Plugin {
   }
 
   _registerShortcuts() {
-    const shortcutKeys = UI.ShortcutsScreen.SourcesPanelShortcuts;
-    for (const descriptor of shortcutKeys.IncreaseCSSUnitByOne) {
-      this._shortcuts.set(descriptor.key, this._handleUnitModification.bind(this, 1));
-    }
-    for (const descriptor of shortcutKeys.DecreaseCSSUnitByOne) {
-      this._shortcuts.set(descriptor.key, this._handleUnitModification.bind(this, -1));
-    }
-    for (const descriptor of shortcutKeys.IncreaseCSSUnitByTen) {
-      this._shortcuts.set(descriptor.key, this._handleUnitModification.bind(this, 10));
-    }
-    for (const descriptor of shortcutKeys.DecreaseCSSUnitByTen) {
-      this._shortcuts.set(descriptor.key, this._handleUnitModification.bind(this, -10));
-    }
-  }
-
-  /**
-   * @param {!Event} event
-   */
-  _handleKeyDown(event) {
-    const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(/** @type {!KeyboardEvent} */ (event));
-    const handler = this._shortcuts.get(shortcutKey);
-    if (handler && handler()) {
-      event.consume(true);
-    }
+    this._boundHandleKeyDown =
+        UI.ShortcutRegistry.ShortcutRegistry.instance().addShortcutListener(this._textEditor.element, {
+          'sources.increment-css': this._handleUnitModification.bind(this, 1),
+          'sources.increment-css-by-ten': this._handleUnitModification.bind(this, 10),
+          'sources.decrement-css': this._handleUnitModification.bind(this, -1),
+          'sources.decrement-css-by-ten': this._handleUnitModification.bind(this, -10)
+        });
   }
 
   _textEditorScrolled() {
@@ -136,9 +116,9 @@ export class CSSPlugin extends Plugin {
 
   /**
    * @param {number} change
-   * @return {boolean}
+   * @return {!Promise.<boolean>}
    */
-  _handleUnitModification(change) {
+  async _handleUnitModification(change) {
     const selection = this._textEditor.selection().normalize();
     let token = this._textEditor.tokenAtTextPosition(selection.startLine, selection.startColumn);
     if (!token) {
@@ -230,30 +210,32 @@ export class CSSPlugin extends Plugin {
 
   /**
    * @param {string} text
-   * @return {?InlineEditor.ColorSwatch.ColorSwatch}
+   * @return {?HTMLElement}
    */
   _createColorSwatch(text) {
     const color = Common.Color.Color.parse(text);
     if (!color) {
       return null;
     }
-    const swatch = InlineEditor.ColorSwatch.ColorSwatch.create();
-    swatch.setColor(color);
-    swatch.iconElement().title = Common.UIString.UIString('Open color picker.');
-    swatch.iconElement().addEventListener('click', this._swatchIconClicked.bind(this, swatch), false);
-    swatch.hideText(true);
+    const swatch = InlineEditor.ColorSwatch.createColorSwatch();
+    swatch.renderColor(color, false, Common.UIString.UIString('Open color picker.'));
+    const value = swatch.createChild('span');
+    value.textContent = text;
+    value.setAttribute('hidden', 'true');
+
+    swatch.addEventListener('swatch-click', this._swatchIconClicked.bind(this, swatch), false);
     return swatch;
   }
 
   /**
    * @param {string} text
-   * @return {?InlineEditor.ColorSwatch.BezierSwatch}
+   * @return {?InlineEditor.Swatches.BezierSwatch}
    */
   _createBezierSwatch(text) {
     if (!UI.Geometry.CubicBezier.parse(text)) {
       return null;
     }
-    const swatch = InlineEditor.ColorSwatch.BezierSwatch.create();
+    const swatch = InlineEditor.Swatches.BezierSwatch.create();
     swatch.setBezierText(text);
     swatch.iconElement().title = Common.UIString.UIString('Open cubic bezier editor.');
     swatch.iconElement().addEventListener('click', this._swatchIconClicked.bind(this, swatch), false);
@@ -284,15 +266,15 @@ export class CSSPlugin extends Plugin {
     }
     this._currentSwatch = swatch;
 
-    if (swatch instanceof InlineEditor.ColorSwatch.ColorSwatch) {
-      this._showSpectrum(swatch);
-    } else if (swatch instanceof InlineEditor.ColorSwatch.BezierSwatch) {
+    if (swatch.localName === 'devtools-color-swatch') {
+      this._showSpectrum(/** @type {!InlineEditor.ColorSwatch.ColorSwatchClosureInterface} */ (swatch));
+    } else if (swatch instanceof InlineEditor.Swatches.BezierSwatch) {
       this._showBezierEditor(swatch);
     }
   }
 
   /**
-   * @param {!InlineEditor.ColorSwatch.ColorSwatch} swatch
+   * @param {!InlineEditor.ColorSwatch.ColorSwatchClosureInterface} swatch
    */
   _showSpectrum(swatch) {
     if (!this._spectrum) {
@@ -300,8 +282,8 @@ export class CSSPlugin extends Plugin {
       this._spectrum.addEventListener(ColorPicker.Spectrum.Events.SizeChanged, this._spectrumResized, this);
       this._spectrum.addEventListener(ColorPicker.Spectrum.Events.ColorChanged, this._spectrumChanged, this);
     }
-    this._spectrum.setColor(swatch.color(), swatch.format());
-    this._swatchPopoverHelper.show(this._spectrum, swatch.iconElement(), this._swatchPopoverHidden.bind(this));
+    this._spectrum.setColor(/** @type {!Common.Color.Color} */ (swatch.color), swatch.format || '');
+    this._swatchPopoverHelper.show(this._spectrum, swatch, this._swatchPopoverHidden.bind(this));
   }
 
   /**
@@ -320,14 +302,16 @@ export class CSSPlugin extends Plugin {
     if (!color || !this._currentSwatch) {
       return;
     }
-    if (this._currentSwatch instanceof InlineEditor.ColorSwatch.ColorSwatch) {
-      this._currentSwatch.setColor(color);
+
+    if (this._currentSwatch.localName === 'devtools-color-swatch') {
+      const swatch = /** @type {!InlineEditor.ColorSwatch.ColorSwatchClosureInterface} */ (this._currentSwatch);
+      swatch.renderColor(color);
     }
     this._changeSwatchText(colorString);
   }
 
   /**
-   * @param {!InlineEditor.ColorSwatch.BezierSwatch} swatch
+   * @param {!InlineEditor.Swatches.BezierSwatch} swatch
    */
   _showBezierEditor(swatch) {
     if (!this._bezierEditor) {
@@ -348,7 +332,7 @@ export class CSSPlugin extends Plugin {
    */
   _bezierChanged(event) {
     const bezierString = /** @type {string} */ (event.data);
-    if (this._currentSwatch instanceof InlineEditor.ColorSwatch.BezierSwatch) {
+    if (this._currentSwatch instanceof InlineEditor.Swatches.BezierSwatch) {
       this._currentSwatch.setBezierText(bezierString);
     }
     this._changeSwatchText(bezierString);
@@ -421,6 +405,7 @@ export class CSSPlugin extends Plugin {
         subtitleRenderer: undefined,
         selectionRange: undefined,
         hideGhostText: undefined,
+        iconElement: undefined,
       };
     }));
   }
@@ -471,7 +456,7 @@ export class CSSPlugin extends Plugin {
         SourceFrame.SourcesTextEditor.Events.ScrollChanged, this._textEditorScrolled, this);
     this._textEditor.removeEventListener(UI.TextEditor.Events.TextChanged, this._onTextChanged, this);
     this._textEditor.bookmarks(this._textEditor.fullRange(), SwatchBookmark).forEach(marker => marker.clear());
-    this._textEditor.element.removeEventListener('keydown', this._boundHandleKeyDown, false);
+    this._textEditor.element.removeEventListener('keydown', /** @type {!EventListener} */ (this._boundHandleKeyDown));
   }
 }
 

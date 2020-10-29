@@ -16,6 +16,7 @@ import {
   BinaryReader,
   BinaryReaderState,
   bytesToString,
+  ElementMode,
   ExternalKind,
   IDataSegmentBody,
   IElementSegment,
@@ -25,23 +26,25 @@ import {
   IFunctionInformation,
   IFunctionNameEntry,
   IFunctionType,
+  IGlobalNameEntry,
   IGlobalType,
   IGlobalVariable,
   IImportEntry,
   ILocalNameEntry,
   IMemoryAddress,
+  IMemoryNameEntry,
   IMemoryType,
   INameEntry,
-  INaming,
   Int64,
   IOperatorInformation,
   IResizableLimits,
   ISectionInformation,
   IStartEntry,
   isTypeIndex,
+  ITableNameEntry,
   ITableType,
+  ITypeNameEntry,
   NameType,
-  NULL_FUNCTION_INDEX,
   OperatorCode,
   OperatorCodeNames,
   SectionCode,
@@ -67,10 +70,10 @@ function typeToString(type: number): string {
       return "f64";
     case Type.v128:
       return "v128";
-    case Type.anyfunc:
-      return "anyfunc";
-    case Type.anyref:
-      return "anyref";
+    case Type.funcref:
+      return "funcref";
+    case Type.externref:
+      return "externref";
     default:
       throw new Error(`Unexpected type ${type}`);
   }
@@ -128,6 +131,16 @@ function memoryAddressToString(
   var defaultAlignFlags;
   switch (code) {
     case OperatorCode.v128_load:
+    case OperatorCode.i16x8_load8x8_s:
+    case OperatorCode.i16x8_load8x8_u:
+    case OperatorCode.i32x4_load16x4_s:
+    case OperatorCode.i32x4_load16x4_u:
+    case OperatorCode.i64x2_load32x2_s:
+    case OperatorCode.i64x2_load32x2_u:
+    case OperatorCode.v8x16_load_splat:
+    case OperatorCode.v16x8_load_splat:
+    case OperatorCode.v32x4_load_splat:
+    case OperatorCode.v64x2_load_splat:
     case OperatorCode.v128_store:
       defaultAlignFlags = 4;
       break;
@@ -145,6 +158,7 @@ function memoryAddressToString(
     case OperatorCode.i64_atomic_rmw_xor:
     case OperatorCode.i64_atomic_rmw_xchg:
     case OperatorCode.i64_atomic_rmw_cmpxchg:
+    case OperatorCode.v128_load64_zero:
       defaultAlignFlags = 3;
       break;
     case OperatorCode.i32_load:
@@ -174,6 +188,7 @@ function memoryAddressToString(
     case OperatorCode.i64_atomic_rmw32_xchg_u:
     case OperatorCode.i32_atomic_rmw_cmpxchg:
     case OperatorCode.i64_atomic_rmw32_cmpxchg_u:
+    case OperatorCode.v128_load32_zero:
       defaultAlignFlags = 2;
       break;
     case OperatorCode.i32_load16_s:
@@ -273,6 +288,7 @@ export interface INameResolver {
   getTableName(index: number, isRef: boolean): string;
   getMemoryName(index: number, isRef: boolean): string;
   getGlobalName(index: number, isRef: boolean): string;
+  getElementName(index: number, isRef: boolean): string;
   getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
   getVariableName(funcIndex: number, index: number, isRef: boolean): string;
   getLabel(index: number): string;
@@ -289,6 +305,9 @@ export class DefaultNameResolver implements INameResolver {
   }
   public getGlobalName(index: number, isRef: boolean): string {
     return "$global" + index;
+  }
+  public getElementName(index: number, isRef: boolean): string {
+    return `$elem${index}`;
   }
   public getFunctionName(
     index: number,
@@ -346,68 +365,6 @@ class DevToolsExportMetadata implements IExportMetadata {
   }
 }
 
-export class DevToolsNameResolver extends DefaultNameResolver {
-  private readonly _functionNames: string[];
-  private readonly _localNames: string[][];
-  private readonly _memoryNames: string[];
-  private readonly _tableNames: string[];
-  private readonly _globalNames: string[];
-
-  constructor(
-    functionNames: string[],
-    localNames: string[][],
-    memoryNames: string[],
-    tableNames: string[],
-    globalNames: string[]
-  ) {
-    super();
-    this._functionNames = functionNames;
-    this._localNames = localNames;
-    this._memoryNames = memoryNames;
-    this._tableNames = tableNames;
-    this._globalNames = globalNames;
-  }
-
-  public getTableName(index: number, isRef: boolean): string {
-    const name = this._tableNames[index];
-    if (!name) return super.getTableName(index, isRef);
-    return isRef ? `$${name}` : `$${name} (;${index};)`;
-  }
-
-  public getMemoryName(index: number, isRef: boolean): string {
-    const name = this._memoryNames[index];
-    if (!name) return super.getMemoryName(index, isRef);
-    return isRef ? `$${name}` : `$${name} (;${index};)`;
-  }
-
-  public getGlobalName(index: number, isRef: boolean): string {
-    const name = this._globalNames[index];
-    if (!name) return super.getGlobalName(index, isRef);
-    return isRef ? `$${name}` : `$${name} (;${index};)`;
-  }
-
-  public getFunctionName(
-    index: number,
-    isImport: boolean,
-    isRef: boolean
-  ): string {
-    const name = this._functionNames[index];
-    if (!name) return super.getFunctionName(index, isImport, isRef);
-    return isRef ? `$${name}` : `$${name} (;${index};)`;
-  }
-
-  public getVariableName(
-    funcIndex: number,
-    index: number,
-    isRef: boolean
-  ): string {
-    const name =
-      this._localNames[funcIndex] && this._localNames[funcIndex][index];
-    if (!name) return super.getVariableName(funcIndex, index, isRef);
-    return isRef ? `$${name}` : `$${name} (;${index};)`;
-  }
-}
-
 export class NumericNameResolver implements INameResolver {
   public getTypeName(index: number, isRef: boolean): string {
     return isRef ? "" + index : `(;${index};)`;
@@ -419,6 +376,9 @@ export class NumericNameResolver implements INameResolver {
     return isRef ? "" + index : `(;${index};)`;
   }
   public getGlobalName(index: number, isRef: boolean): string {
+    return isRef ? "" + index : `(;${index};)`;
+  }
+  public getElementName(index: number, isRef: boolean): string {
     return isRef ? "" + index : `(;${index};)`;
   }
   public getFunctionName(
@@ -470,7 +430,8 @@ export class WasmDisassembler {
   private _globalCount: number;
   private _memoryCount: number;
   private _tableCount: number;
-  private _initExpression: Array<IOperatorInformation>;
+  private _elementCount: number;
+  private _expression: Array<IOperatorInformation>;
   private _backrefLabels: Array<{
     line: number;
     position: number;
@@ -489,6 +450,7 @@ export class WasmDisassembler {
   private _labelMode: LabelMode;
   private _functionBodyOffsets: Array<IFunctionBodyOffset>;
   private _currentFunctionBodyOffset: IFunctionBodyOffset;
+  private _currentSectionId: SectionCode;
   private _logFirstInstruction: boolean;
   constructor() {
     this._lines = [];
@@ -503,6 +465,7 @@ export class WasmDisassembler {
     this._labelMode = LabelMode.WhenUsed;
     this._functionBodyOffsets = [];
     this._currentFunctionBodyOffset = null;
+    this._currentSectionId = SectionCode.Unknown;
     this._logFirstInstruction = false;
 
     this._reset();
@@ -515,11 +478,12 @@ export class WasmDisassembler {
     this._globalCount = 0;
     this._memoryCount = 0;
     this._tableCount = 0;
-    this._initExpression = [];
+    this._elementCount = 0;
+    this._expression = [];
     this._backrefLabels = null;
     this._labelIndex = 0;
   }
-  public get addOffsets() {
+  public get addOffsets(): boolean {
     return this._addOffsets;
   }
   public set addOffsets(value: boolean) {
@@ -527,7 +491,7 @@ export class WasmDisassembler {
       throw new Error("Cannot switch addOffsets during processing.");
     this._addOffsets = value;
   }
-  public get skipTypes() {
+  public get skipTypes(): boolean {
     return this._skipTypes;
   }
   public set skipTypes(skipTypes: boolean) {
@@ -535,7 +499,7 @@ export class WasmDisassembler {
       throw new Error("Cannot switch skipTypes during processing.");
     this._skipTypes = skipTypes;
   }
-  public get labelMode() {
+  public get labelMode(): LabelMode {
     return this._labelMode;
   }
   public set labelMode(value: LabelMode) {
@@ -543,7 +507,7 @@ export class WasmDisassembler {
       throw new Error("Cannot switch labelMode during processing.");
     this._labelMode = value;
   }
-  public get exportMetadata() {
+  public get exportMetadata(): IExportMetadata {
     return this._exportMetadata;
   }
   public set exportMetadata(exportMetadata: IExportMetadata) {
@@ -551,7 +515,7 @@ export class WasmDisassembler {
       throw new Error("Cannot switch exportMetadata during processing.");
     this._exportMetadata = exportMetadata;
   }
-  public get nameResolver() {
+  public get nameResolver(): INameResolver {
     return this._nameResolver;
   }
   public set nameResolver(resolver: INameResolver) {
@@ -631,6 +595,13 @@ export class WasmDisassembler {
     }
     this.appendBuffer('"');
   }
+  private printExpression(expression: IOperatorInformation[]): void {
+    for (const operator of expression) {
+      this.appendBuffer("(");
+      this.printOperator(operator);
+      this.appendBuffer(")");
+    }
+  }
   private useLabel(depth: number): string {
     if (!this._backrefLabels) {
       return "" + depth;
@@ -702,8 +673,21 @@ export class WasmDisassembler {
           this.appendBuffer(this.useLabel(operator.brTable[i]));
         }
         break;
+      case OperatorCode.ref_null:
+        switch (operator.refType) {
+          case Type.funcref:
+            this.appendBuffer(" func");
+            break;
+          case Type.externref:
+            this.appendBuffer(" extern");
+            break;
+          default:
+            throw new Error(`Unknown refedtype ${operator.refType}`);
+        }
+        break;
       case OperatorCode.call:
       case OperatorCode.return_call:
+      case OperatorCode.ref_func:
         var funcName = this._nameResolver.getFunctionName(
           operator.funcIndex,
           operator.funcIndex < this._importCount,
@@ -823,7 +807,19 @@ export class WasmDisassembler {
       case OperatorCode.i64_atomic_rmw16_cmpxchg_u:
       case OperatorCode.i64_atomic_rmw32_cmpxchg_u:
       case OperatorCode.v128_load:
+      case OperatorCode.i16x8_load8x8_s:
+      case OperatorCode.i16x8_load8x8_u:
+      case OperatorCode.i32x4_load16x4_s:
+      case OperatorCode.i32x4_load16x4_u:
+      case OperatorCode.i64x2_load32x2_s:
+      case OperatorCode.i64x2_load32x2_u:
+      case OperatorCode.v8x16_load_splat:
+      case OperatorCode.v16x8_load_splat:
+      case OperatorCode.v32x4_load_splat:
+      case OperatorCode.v64x2_load_splat:
       case OperatorCode.v128_store:
+      case OperatorCode.v128_load32_zero:
+      case OperatorCode.v128_load64_zero:
         var memoryAddress = memoryAddressToString(
           operator.memoryAddress,
           operator.code
@@ -851,7 +847,7 @@ export class WasmDisassembler {
       case OperatorCode.v128_const:
         this.appendBuffer(` i32x4 ${formatI32Array(operator.literal, 4)}`);
         break;
-      case OperatorCode.v8x16_shuffle:
+      case OperatorCode.i8x16_shuffle:
         this.appendBuffer(` ${formatI8Array(operator.lines, 16)}`);
         break;
       case OperatorCode.i8x16_extract_lane_s:
@@ -872,8 +868,14 @@ export class WasmDisassembler {
         break;
       case OperatorCode.memory_init:
       case OperatorCode.data_drop:
-      case OperatorCode.elem_drop:
         this.appendBuffer(` ${operator.segmentIndex}`);
+        break;
+      case OperatorCode.elem_drop:
+        const elementName = this._nameResolver.getElementName(
+          operator.segmentIndex,
+          true
+        );
+        this.appendBuffer(` ${elementName}`);
         break;
       case OperatorCode.table_set:
       case OperatorCode.table_get:
@@ -887,29 +889,33 @@ export class WasmDisassembler {
       }
       case OperatorCode.table_copy: {
         // Table index might be omitted and defaults to 0.
-        if (operator.tableIndex === 0 && operator.destinationIndex === 0) break;
-        const tableName = this._nameResolver.getTableName(
-          operator.tableIndex,
-          true
-        );
-        const destinationName = this._nameResolver.getTableName(
-          operator.destinationIndex,
-          true
-        );
-        this.appendBuffer(` ${destinationName} ${tableName}`);
+        if (operator.tableIndex !== 0 || operator.destinationIndex !== 0) {
+          const tableName = this._nameResolver.getTableName(
+            operator.tableIndex,
+            true
+          );
+          const destinationName = this._nameResolver.getTableName(
+            operator.destinationIndex,
+            true
+          );
+          this.appendBuffer(` ${destinationName} ${tableName}`);
+        }
         break;
       }
       case OperatorCode.table_init: {
         // Table index might be omitted and defaults to 0.
-        if (operator.tableIndex === 0) {
-          this.appendBuffer(` ${operator.segmentIndex}`);
-          break;
+        if (operator.tableIndex !== 0) {
+          const tableName = this._nameResolver.getTableName(
+            operator.tableIndex,
+            true
+          );
+          this.appendBuffer(` ${tableName}`);
         }
-        const tableName = this._nameResolver.getTableName(
-          operator.tableIndex,
+        const elementName = this._nameResolver.getElementName(
+          operator.segmentIndex,
           true
         );
-        this.appendBuffer(` ${operator.segmentIndex} ${tableName}`);
+        this.appendBuffer(` ${elementName}`);
         break;
       }
     }
@@ -1019,6 +1025,7 @@ export class WasmDisassembler {
           this.newLine();
           break;
         case BinaryReaderState.END_SECTION:
+          this._currentSectionId = SectionCode.Unknown;
           break;
         case BinaryReaderState.BEGIN_SECTION:
           var sectionInfo = <ISectionInformation>reader.result;
@@ -1034,6 +1041,7 @@ export class WasmDisassembler {
             case SectionCode.Data:
             case SectionCode.Table:
             case SectionCode.Element:
+              this._currentSectionId = sectionInfo.id;
               break; // reading known section;
             default:
               reader.skipSection();
@@ -1219,8 +1227,29 @@ export class WasmDisassembler {
           this.newLine();
           break;
         case BinaryReaderState.BEGIN_ELEMENT_SECTION_ENTRY:
-          var elementSegmentInfo = <IElementSegment>reader.result;
-          this.appendBuffer("  (elem ");
+          var elementSegment = <IElementSegment>reader.result;
+          var elementIndex = this._elementCount++;
+          var elementName = this._nameResolver.getElementName(
+            elementIndex,
+            false
+          );
+          this.appendBuffer(`  (elem ${elementName}`);
+          switch (elementSegment.mode) {
+            case ElementMode.Active:
+              if (elementSegment.tableIndex !== 0) {
+                const tableName = this._nameResolver.getTableName(
+                  elementSegment.tableIndex,
+                  false
+                );
+                this.appendBuffer(` (table ${tableName})`);
+              }
+              break;
+            case ElementMode.Passive:
+              break;
+            case ElementMode.Declarative:
+              this.appendBuffer(" declare");
+              break;
+          }
           break;
         case BinaryReaderState.END_ELEMENT_SECTION_ENTRY:
           this.appendBuffer(")");
@@ -1228,31 +1257,7 @@ export class WasmDisassembler {
           break;
         case BinaryReaderState.ELEMENT_SECTION_ENTRY_BODY:
           const elementSegmentBody = <IElementSegmentBody>reader.result;
-          if (elementSegmentBody.elementType != Type.unspecified) {
-            const typeName = typeToString(elementSegmentBody.elementType);
-            this.appendBuffer(` ${typeName}`);
-          }
-          elementSegmentBody.elements.forEach((funcIndex) => {
-            if (elementSegmentBody.asElements) {
-              if (funcIndex == NULL_FUNCTION_INDEX) {
-                this.appendBuffer(" (ref.null)");
-              } else {
-                const funcName = this._nameResolver.getFunctionName(
-                  funcIndex,
-                  funcIndex < this._importCount,
-                  true
-                );
-                this.appendBuffer(` (ref.func ${funcName})`);
-              }
-            } else {
-              const funcName = this._nameResolver.getFunctionName(
-                funcIndex,
-                funcIndex < this._importCount,
-                true
-              );
-              this.appendBuffer(` ${funcName}`);
-            }
-          });
+          this.appendBuffer(` ${typeToString(elementSegmentBody.elementType)}`);
           break;
         case BinaryReaderState.BEGIN_GLOBAL_SECTION_ENTRY:
           var globalInfo = <IGlobalVariable>reader.result;
@@ -1266,7 +1271,7 @@ export class WasmDisassembler {
               this.appendBuffer(` (export "${exportName}")`);
             }
           }
-          this.appendBuffer(` ${globalTypeToString(globalInfo.type)} `);
+          this.appendBuffer(` ${globalTypeToString(globalInfo.type)}`);
           break;
         case BinaryReaderState.END_GLOBAL_SECTION_ENTRY:
           this.appendBuffer(")");
@@ -1295,7 +1300,7 @@ export class WasmDisassembler {
           this.newLine();
           break;
         case BinaryReaderState.BEGIN_DATA_SECTION_ENTRY:
-          this.appendBuffer("  (data ");
+          this.appendBuffer("  (data");
           break;
         case BinaryReaderState.DATA_SECTION_ENTRY_BODY:
           var body = <IDataSegmentBody>reader.result;
@@ -1307,24 +1312,40 @@ export class WasmDisassembler {
           this.newLine();
           break;
         case BinaryReaderState.BEGIN_INIT_EXPRESSION_BODY:
+        case BinaryReaderState.BEGIN_OFFSET_EXPRESSION_BODY:
+          this._expression = [];
           break;
         case BinaryReaderState.INIT_EXPRESSION_OPERATOR:
-          this._initExpression.push(<IOperatorInformation>reader.result);
+        case BinaryReaderState.OFFSET_EXPRESSION_OPERATOR:
+          var operator = <IOperatorInformation>reader.result;
+          if (operator.code !== OperatorCode.end) {
+            this._expression.push(operator);
+          }
+          break;
+        case BinaryReaderState.END_OFFSET_EXPRESSION_BODY:
+          if (this._expression.length > 1) {
+            this.appendBuffer(" (offset ");
+            this.printExpression(this._expression);
+            this.appendBuffer(")");
+          } else {
+            this.appendBuffer(" ");
+            this.printExpression(this._expression);
+          }
+          this._expression = [];
           break;
         case BinaryReaderState.END_INIT_EXPRESSION_BODY:
-          this.appendBuffer("(");
-          // TODO fix printing when more that one operator is used.
-          this._initExpression.forEach((op, index) => {
-            if (op.code === OperatorCode.end) {
-              return; // do not print end
-            }
-            if (index > 0) {
-              this.appendBuffer(" ");
-            }
-            this.printOperator(op);
-          });
-          this.appendBuffer(")");
-          this._initExpression.length = 0;
+          if (
+            this._expression.length > 1 &&
+            this._currentSectionId === SectionCode.Element
+          ) {
+            this.appendBuffer(" (item ");
+            this.printExpression(this._expression);
+            this.appendBuffer(")");
+          } else {
+            this.appendBuffer(" ");
+            this.printExpression(this._expression);
+          }
+          this._expression = [];
           break;
         case BinaryReaderState.FUNCTION_SECTION_ENTRY:
           this._funcTypes.push((<IFunctionEntry>reader.result).typeIndex);
@@ -1428,22 +1449,69 @@ export class WasmDisassembler {
 const UNKNOWN_FUNCTION_PREFIX = "unknown";
 
 class NameSectionNameResolver extends DefaultNameResolver {
-  private _names: string[];
-  private _localNames: string[][];
+  protected readonly _functionNames: string[];
+  protected readonly _localNames: string[][];
+  protected readonly _typeNames: string[];
+  protected readonly _tableNames: string[];
+  protected readonly _memoryNames: string[];
+  protected readonly _globalNames: string[];
 
-  constructor(names: string[], localNames: string[][]) {
+  constructor(
+    functionNames: string[],
+    localNames: string[][],
+    typeNames: string[],
+    tableNames: string[],
+    memoryNames: string[],
+    globalNames: string[]
+  ) {
     super();
-    this._names = names;
+    this._functionNames = functionNames;
     this._localNames = localNames;
+    this._typeNames = typeNames;
+    this._tableNames = tableNames;
+    this._memoryNames = memoryNames;
+    this._globalNames = globalNames;
   }
 
-  getFunctionName(index: number, isImport: boolean, isRef: boolean): string {
-    const name = this._names[index];
+  public getTypeName(index: number, isRef: boolean): string {
+    const name = this._typeNames[index];
+    if (!name) return super.getTypeName(index, isRef);
+    return isRef ? `$${name}` : `$${name} (;${index};)`;
+  }
+
+  public getTableName(index: number, isRef: boolean): string {
+    const name = this._tableNames[index];
+    if (!name) return super.getTableName(index, isRef);
+    return isRef ? `$${name}` : `$${name} (;${index};)`;
+  }
+
+  public getMemoryName(index: number, isRef: boolean): string {
+    const name = this._memoryNames[index];
+    if (!name) return super.getMemoryName(index, isRef);
+    return isRef ? `$${name}` : `$${name} (;${index};)`;
+  }
+
+  public getGlobalName(index: number, isRef: boolean): string {
+    const name = this._globalNames[index];
+    if (!name) return super.getGlobalName(index, isRef);
+    return isRef ? `$${name}` : `$${name} (;${index};)`;
+  }
+
+  public getFunctionName(
+    index: number,
+    isImport: boolean,
+    isRef: boolean
+  ): string {
+    const name = this._functionNames[index];
     if (!name) return `$${UNKNOWN_FUNCTION_PREFIX}${index}`;
     return isRef ? `$${name}` : `$${name} (;${index};)`;
   }
 
-  getVariableName(funcIndex: number, index: number, isRef: boolean): string {
+  public getVariableName(
+    funcIndex: number,
+    index: number,
+    isRef: boolean
+  ): string {
     const name =
       this._localNames[funcIndex] && this._localNames[funcIndex][index];
     if (!name) return super.getVariableName(funcIndex, index, isRef);
@@ -1452,21 +1520,16 @@ class NameSectionNameResolver extends DefaultNameResolver {
 }
 
 export class NameSectionReader {
-  private _done: boolean;
-  private _functionsCount: number;
-  private _functionImportsCount: number;
-  private _functionNames: string[];
-  private _functionLocalNames: string[][];
-  private _hasNames: boolean;
-
-  constructor() {
-    this._done = false;
-    this._functionsCount = 0;
-    this._functionImportsCount = 0;
-    this._functionNames = null;
-    this._functionLocalNames = null;
-    this._hasNames = false;
-  }
+  private _done = false;
+  private _functionsCount = 0;
+  private _functionImportsCount = 0;
+  private _functionNames: string[] = null;
+  private _functionLocalNames: string[][] = null;
+  private _typeNames: string[] = null;
+  private _tableNames: string[] = null;
+  private _memoryNames: string[] = null;
+  private _globalNames: string[] = null;
+  private _hasNames = false;
 
   public read(reader: BinaryReader): boolean {
     if (this._done)
@@ -1489,6 +1552,10 @@ export class NameSectionReader {
           this._functionImportsCount = 0;
           this._functionNames = [];
           this._functionLocalNames = [];
+          this._typeNames = [];
+          this._tableNames = [];
+          this._memoryNames = [];
+          this._globalNames = [];
           this._hasNames = false;
           break;
         case BinaryReaderState.END_SECTION:
@@ -1518,22 +1585,44 @@ export class NameSectionReader {
           this._functionsCount++;
           break;
         case BinaryReaderState.NAME_SECTION_ENTRY:
-          var nameInfo = <INameEntry>reader.result;
+          const nameInfo = <INameEntry>reader.result;
           if (nameInfo.type === NameType.Function) {
-            var functionNameInfo = <IFunctionNameEntry>nameInfo;
-            functionNameInfo.names.forEach((naming: INaming) => {
-              this._functionNames[naming.index] = bytesToString(naming.name);
+            const { names } = <IFunctionNameEntry>nameInfo;
+            names.forEach(({ index, name }) => {
+              this._functionNames[index] = bytesToString(name);
             });
             this._hasNames = true;
           } else if (nameInfo.type === NameType.Local) {
-            var localNameInfo = <ILocalNameEntry>nameInfo;
-            localNameInfo.funcs.forEach((localName) => {
-              this._functionLocalNames[localName.index] = [];
-              localName.locals.forEach((naming: INaming) => {
-                this._functionLocalNames[localName.index][
-                  naming.index
-                ] = bytesToString(naming.name);
+            const { funcs } = <ILocalNameEntry>nameInfo;
+            funcs.forEach(({ index, locals }) => {
+              const localNames = (this._functionLocalNames[index] = []);
+              locals.forEach(({ index, name }) => {
+                localNames[index] = bytesToString(name);
               });
+            });
+            this._hasNames = true;
+          } else if (nameInfo.type === NameType.Type) {
+            const { names } = <ITypeNameEntry>nameInfo;
+            names.forEach(({ index, name }) => {
+              this._typeNames[index] = bytesToString(name);
+            });
+            this._hasNames = true;
+          } else if (nameInfo.type === NameType.Table) {
+            const { names } = <ITableNameEntry>nameInfo;
+            names.forEach(({ index, name }) => {
+              this._tableNames[index] = bytesToString(name);
+            });
+            this._hasNames = true;
+          } else if (nameInfo.type === NameType.Memory) {
+            const { names } = <IMemoryNameEntry>nameInfo;
+            names.forEach(({ index, name }) => {
+              this._memoryNames[index] = bytesToString(name);
+            });
+            this._hasNames = true;
+          } else if (nameInfo.type === NameType.Global) {
+            const { names } = <IGlobalNameEntry>nameInfo;
+            names.forEach(({ index, name }) => {
+              this._globalNames[index] = bytesToString(name);
             });
             this._hasNames = true;
           }
@@ -1575,7 +1664,44 @@ export class NameSectionReader {
       usedNameAt[name] = i;
     }
 
-    return new NameSectionNameResolver(functionNames, this._functionLocalNames);
+    return new NameSectionNameResolver(
+      functionNames,
+      this._functionLocalNames,
+      this._typeNames,
+      this._tableNames,
+      this._memoryNames,
+      this._globalNames
+    );
+  }
+}
+
+export class DevToolsNameResolver extends NameSectionNameResolver {
+  constructor(
+    functionNames: string[],
+    localNames: string[][],
+    typeNames: string[],
+    tableNames: string[],
+    memoryNames: string[],
+    globalNames: string[]
+  ) {
+    super(
+      functionNames,
+      localNames,
+      typeNames,
+      tableNames,
+      memoryNames,
+      globalNames
+    );
+  }
+
+  public getFunctionName(
+    index: number,
+    isImport: boolean,
+    isRef: boolean
+  ): string {
+    const name = this._functionNames[index];
+    if (!name) return isImport ? `$import${index}` : `$func${index}`;
+    return isRef ? `$${name}` : `$${name} (;${index};)`;
   }
 }
 
@@ -1589,6 +1715,7 @@ export class DevToolsNameGenerator {
   private _functionNames: string[] = null;
   private _functionLocalNames: string[][] = null;
   private _memoryNames: string[] = null;
+  private _typeNames: string[] = null;
   private _tableNames: string[] = null;
   private _globalNames: string[] = null;
 
@@ -1646,6 +1773,7 @@ export class DevToolsNameGenerator {
           this._functionNames = [];
           this._functionLocalNames = [];
           this._memoryNames = [];
+          this._typeNames = [];
           this._tableNames = [];
           this._globalNames = [];
           this._functionExportNames = [];
@@ -1716,26 +1844,54 @@ export class DevToolsNameGenerator {
           }
           break;
         case BinaryReaderState.NAME_SECTION_ENTRY:
-          var nameInfo = <INameEntry>reader.result;
+          const nameInfo = <INameEntry>reader.result;
           if (nameInfo.type === NameType.Function) {
-            var functionNameInfo = <IFunctionNameEntry>nameInfo;
-            functionNameInfo.names.forEach((naming: INaming) => {
+            const { names } = <IFunctionNameEntry>nameInfo;
+            names.forEach(({ index, name }) => {
               this._setName(
                 this._functionNames,
-                naming.index,
-                bytesToString(naming.name),
+                index,
+                bytesToString(name),
                 true
               );
             });
           } else if (nameInfo.type === NameType.Local) {
-            var localNameInfo = <ILocalNameEntry>nameInfo;
-            localNameInfo.funcs.forEach((localName) => {
-              this._functionLocalNames[localName.index] = [];
-              localName.locals.forEach((naming: INaming) => {
-                this._functionLocalNames[localName.index][
-                  naming.index
-                ] = bytesToString(naming.name);
+            const { funcs } = <ILocalNameEntry>nameInfo;
+            funcs.forEach(({ index, locals }) => {
+              const localNames = (this._functionLocalNames[index] = []);
+              locals.forEach(({ index, name }) => {
+                localNames[index] = bytesToString(name);
               });
+            });
+          } else if (nameInfo.type === NameType.Type) {
+            const { names } = <ITypeNameEntry>nameInfo;
+            names.forEach(({ index, name }) => {
+              this._setName(this._typeNames, index, bytesToString(name), true);
+            });
+          } else if (nameInfo.type === NameType.Table) {
+            const { names } = <ITableNameEntry>nameInfo;
+            names.forEach(({ index, name }) => {
+              this._setName(this._tableNames, index, bytesToString(name), true);
+            });
+          } else if (nameInfo.type === NameType.Memory) {
+            const { names } = <IMemoryNameEntry>nameInfo;
+            names.forEach(({ index, name }) => {
+              this._setName(
+                this._memoryNames,
+                index,
+                bytesToString(name),
+                true
+              );
+            });
+          } else if (nameInfo.type === NameType.Global) {
+            const { names } = <IGlobalNameEntry>nameInfo;
+            names.forEach(({ index, name }) => {
+              this._setName(
+                this._globalNames,
+                index,
+                bytesToString(name),
+                true
+              );
             });
           }
           break;
@@ -1818,8 +1974,9 @@ export class DevToolsNameGenerator {
     return new DevToolsNameResolver(
       this._functionNames,
       this._functionLocalNames,
-      this._memoryNames,
+      this._typeNames,
       this._tableNames,
+      this._memoryNames,
       this._globalNames
     );
   }

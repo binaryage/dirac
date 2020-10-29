@@ -111,7 +111,6 @@
       "id": "keybinds",
       "title": "Shortcuts",
       "order": 100,
-      "experiment": "customKeyboardShortcuts",
       "className": "Settings.KeybindsSettingsTab"
     },
     {
@@ -122,7 +121,8 @@
     }
   ],
   "dependencies": [
-    "components"
+    "components",
+    "i18n"
   ],
   "modules": [
     "settings.js",

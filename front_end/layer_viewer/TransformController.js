@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as UI from '../ui/ui.js';
@@ -14,17 +11,28 @@ import * as UI from '../ui/ui.js';
  */
 export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
   /**
-   * @param {!Element} element
+   * @param {!HTMLElement} element
    * @param {boolean=} disableRotate
    */
   constructor(element, disableRotate) {
     super();
-    this._shortcuts = {};
+    /**
+     * @type {!Modes}
+     */
+    this._mode;
+    this._scale = 1;
+    this._offsetX = 0;
+    this._offsetY = 0;
+    this._rotateX = 0;
+    this._rotateY = 0;
+    this._oldRotateX = 0;
+    this._oldRotateY = 0;
+    this._originX = 0;
+    this._originY = 0;
     this.element = element;
     this._registerShortcuts();
     UI.UIUtils.installDragHandle(
         element, this._onDragStart.bind(this), this._onDrag.bind(this), this._onDragEnd.bind(this), 'move', null);
-    element.addEventListener('keydown', this._onKeyDown.bind(this), false);
     element.addEventListener('mousewheel', this._onMouseWheel.bind(this), false);
     this._minScale = 0;
     this._maxScale = Infinity;
@@ -61,32 +69,28 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
     return this._controlPanelToolbar;
   }
 
-  _onKeyDown(event) {
-    const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKeyFromEventIgnoringModifiers(event);
-    const handler = this._shortcuts[shortcutKey];
-    if (handler && handler(event)) {
-      event.consume();
-    }
-  }
-
-  _addShortcuts(keys, handler) {
-    for (let i = 0; i < keys.length; ++i) {
-      this._shortcuts[keys[i].key] = handler;
-    }
-  }
-
   _registerShortcuts() {
-    this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.ResetView, this.resetAndNotify.bind(this));
-    this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.PanMode, this._setMode.bind(this, Modes.Pan));
-    this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.RotateMode, this._setMode.bind(this, Modes.Rotate));
     const zoomFactor = 1.1;
-    this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.ZoomIn, this._onKeyboardZoom.bind(this, zoomFactor));
-    this._addShortcuts(
-        UI.ShortcutsScreen.LayersPanelShortcuts.ZoomOut, this._onKeyboardZoom.bind(this, 1 / zoomFactor));
-    this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.Up, this._onKeyboardPanOrRotate.bind(this, 0, -1));
-    this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.Down, this._onKeyboardPanOrRotate.bind(this, 0, 1));
-    this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.Left, this._onKeyboardPanOrRotate.bind(this, -1, 0));
-    this._addShortcuts(UI.ShortcutsScreen.LayersPanelShortcuts.Right, this._onKeyboardPanOrRotate.bind(this, 1, 0));
+    UI.ShortcutRegistry.ShortcutRegistry.instance().addShortcutListener(this.element, {
+      'layers.reset-view': async () => {
+        this.resetAndNotify();
+        return true;
+      },
+      'layers.pan-mode': async () => {
+        this._setMode(Modes.Pan);
+        return true;
+      },
+      'layers.rotate-mode': async () => {
+        this._setMode(Modes.Rotate);
+        return true;
+      },
+      'layers.zoom-in': this._onKeyboardZoom.bind(this, zoomFactor),
+      'layers.zoom-out': this._onKeyboardZoom.bind(this, 1 / zoomFactor),
+      'layers.up': this._onKeyboardPanOrRotate.bind(this, 0, -1),
+      'layers.down': this._onKeyboardPanOrRotate.bind(this, 0, 1),
+      'layers.left': this._onKeyboardPanOrRotate.bind(this, -1, 0),
+      'layers.right': this._onKeyboardPanOrRotate.bind(this, 1, 0),
+    });
   }
 
   _postChangeEvent() {
@@ -222,16 +226,19 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {number} zoomFactor
+   * @return {!Promise.<boolean>}
    */
-  _onKeyboardZoom(zoomFactor) {
+  async _onKeyboardZoom(zoomFactor) {
     this._onScale(zoomFactor, this.element.clientWidth / 2, this.element.clientHeight / 2);
+    return true;
   }
 
   /**
    * @param {number} xMultiplier
    * @param {number} yMultiplier
+   * @return {!Promise.<boolean>}
    */
-  _onKeyboardPanOrRotate(xMultiplier, yMultiplier) {
+  async _onKeyboardPanOrRotate(xMultiplier, yMultiplier) {
     const panStepInPixels = 6;
     const rotateStepInDegrees = 5;
 
@@ -242,6 +249,7 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
     } else {
       this._onPan(xMultiplier * panStepInPixels, yMultiplier * panStepInPixels);
     }
+    return true;
   }
 
   /**
@@ -252,23 +260,26 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
     const zoomFactor = 1.1;
     /** @const */
     const mouseWheelZoomSpeed = 1 / 120;
-    const scaleFactor = Math.pow(zoomFactor, event.wheelDeltaY * mouseWheelZoomSpeed);
+    const mouseEvent = /** @type {*} */ (event);
+    const scaleFactor = Math.pow(zoomFactor, mouseEvent.wheelDeltaY * mouseWheelZoomSpeed);
     this._onScale(
-        scaleFactor, event.clientX - this.element.totalOffsetLeft(), event.clientY - this.element.totalOffsetTop());
+        scaleFactor, mouseEvent.clientX - this.element.totalOffsetLeft(),
+        mouseEvent.clientY - this.element.totalOffsetTop());
   }
 
   /**
    * @param {!Event} event
    */
   _onDrag(event) {
+    const {clientX, clientY} = /** @type {!MouseEvent} */ (event);
     if (this._mode === Modes.Rotate) {
       this._onRotate(
-          this._oldRotateX + (this._originY - event.clientY) / this.element.clientHeight * 180,
-          this._oldRotateY - (this._originX - event.clientX) / this.element.clientWidth * 180);
+          this._oldRotateX + (this._originY - clientY) / this.element.clientHeight * 180,
+          this._oldRotateY - (this._originX - clientX) / this.element.clientWidth * 180);
     } else {
-      this._onPan(event.clientX - this._originX, event.clientY - this._originY);
-      this._originX = event.clientX;
-      this._originY = event.clientY;
+      this._onPan(clientX - this._originX, clientY - this._originY);
+      this._originX = clientX;
+      this._originY = clientY;
     }
   }
 
@@ -285,10 +296,10 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   _onDragEnd() {
-    delete this._originX;
-    delete this._originY;
-    delete this._oldRotateX;
-    delete this._oldRotateY;
+    this._originX = 0;
+    this._originY = 0;
+    this._oldRotateX = 0;
+    this._oldRotateY = 0;
   }
 }
 

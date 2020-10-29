@@ -305,7 +305,7 @@ export class SessionRouter {
     this._pendingLongPollingMessageIds = new Set();
     this._domainToLogger = new Map();
 
-    /** @type {!Map<string, {target: !TargetBase, callbacks: !Map<number, !_Callback>, proxyConnection: (?Connection|undefined)}>} */
+    /** @type {!Map<string, {target: !TargetBase, callbacks: !Map<number, !_CallbackWithDebugInfo>, proxyConnection: (?Connection|undefined)}>} */
     this._sessions = new Map();
 
     /** @type {!Array<function():void>} */
@@ -353,7 +353,7 @@ export class SessionRouter {
       return;
     }
     for (const callback of session.callbacks.values()) {
-      SessionRouter.dispatchConnectionError(callback);
+      SessionRouter.dispatchUnregisterSessionError(callback);
     }
     this._sessions.delete(sessionId);
   }
@@ -423,7 +423,7 @@ export class SessionRouter {
     if (!session) {
       return;
     }
-    session.callbacks.set(messageId, callback);
+    session.callbacks.set(messageId, {callback, method});
     this._connection.sendRawMessage(JSON.stringify(messageObject));
   }
 
@@ -500,7 +500,7 @@ export class SessionRouter {
         return;
       }
 
-      callback(messageObject.error, messageObject.result);
+      callback.callback(messageObject.error, messageObject.result);
       --this._pendingResponsesCount;
       this._pendingLongPollingMessageIds.delete(messageObject.id);
 
@@ -560,10 +560,23 @@ export class SessionRouter {
 
   /**
    * @param {!_Callback} callback
+   * @param {string} method
    */
-  static dispatchConnectionError(callback) {
+  static dispatchConnectionError(callback, method) {
     const error = {
-      message: 'Connection is closed, can\'t dispatch pending call',
+      message: `Connection is closed, can\'t dispatch pending call to ${method}`,
+      code: _ConnectionClosedErrorCode,
+      data: null
+    };
+    setTimeout(() => callback(error, null), 0);
+  }
+
+  /**
+   * @param {!_CallbackWithDebugInfo} callbackWithDebugInfo
+   */
+  static dispatchUnregisterSessionError({callback, method}) {
+    const error = {
+      message: `Session is unregistering, can\'t dispatch pending call to ${method}`,
       code: _ConnectionClosedErrorCode,
       data: null
     };
@@ -691,6 +704,13 @@ export class TargetBase {
   }
 
   /**
+   * @return {!ProtocolProxyApi.BackgroundServiceApi}
+   */
+  backgroundServiceAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @return {!ProtocolProxyApi.CacheStorageApi}
    */
   cacheStorageAgent() {
@@ -701,6 +721,13 @@ export class TargetBase {
    * @return {!ProtocolProxyApi.CSSApi}
    */
   cssAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.DatabaseApi}
+   */
+  databaseAgent() {
     throw new Error('Implemented in InspectorBackend.js');
   }
 
@@ -733,9 +760,23 @@ export class TargetBase {
   }
 
   /**
+   * @return {!ProtocolProxyApi.DOMStorageApi}
+   */
+  domstorageAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @return {!ProtocolProxyApi.HeapProfilerApi}
    */
   heapProfilerAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.IndexedDBApi}
+   */
+  indexedDBAgent() {
     throw new Error('Implemented in InspectorBackend.js');
   }
 
@@ -750,6 +791,13 @@ export class TargetBase {
    * @return {!ProtocolProxyApi.IOApi}
    */
   ioAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @return {!ProtocolProxyApi.InspectorApi}
+   */
+  inspectorAgent() {
     throw new Error('Implemented in InspectorBackend.js');
   }
 
@@ -824,6 +872,13 @@ export class TargetBase {
   }
 
   /**
+   * @return {!ProtocolProxyApi.SecurityApi}
+   */
+  securityAgent() {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @return {!ProtocolProxyApi.ServiceWorkerApi}
    */
   serviceWorkerAgent() {
@@ -889,6 +944,27 @@ export class TargetBase {
   }
 
   /**
+   * @param {!ProtocolProxyApi.CSSDispatcher} dispatcher
+   */
+  registerCSSDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @param {!ProtocolProxyApi.DatabaseDispatcher} dispatcher
+   */
+  registerDatabaseDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @param {!ProtocolProxyApi.BackgroundServiceDispatcher} dispatcher
+   */
+  registerBackgroundServiceDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @param {!ProtocolProxyApi.DebuggerDispatcher} dispatcher
    */
   registerDebuggerDispatcher(dispatcher) {
@@ -903,12 +979,24 @@ export class TargetBase {
   }
 
   /**
+   * @param {!ProtocolProxyApi.DOMStorageDispatcher} dispatcher
+   */
+  registerDOMStorageDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @param {!ProtocolProxyApi.HeapProfilerDispatcher} dispatcher
    */
   registerHeapProfilerDispatcher(dispatcher) {
     throw new Error('Implemented in InspectorBackend.js');
   }
-
+  /**
+   * @param {!ProtocolProxyApi.InspectorDispatcher} dispatcher
+   */
+  registerInspectorDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
   /**
    * @param {!ProtocolProxyApi.LayerTreeDispatcher} dispatcher
    */
@@ -959,9 +1047,16 @@ export class TargetBase {
   }
 
   /**
-   * @param {!ProtocolProxyApi.StorageDispatcher} dispatcher
+   * @param {!ProtocolProxyApi.RuntimeDispatcher} dispatcher
    */
-  registerStorageDispatcher(dispatcher) {
+  registerRuntimeDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @param {!ProtocolProxyApi.SecurityDispatcher} dispatcher
+   */
+  registerSecurityDispatcher(dispatcher) {
     throw new Error('Implemented in InspectorBackend.js');
   }
 
@@ -969,6 +1064,13 @@ export class TargetBase {
    * @param {!ProtocolProxyApi.ServiceWorkerDispatcher} dispatcher
    */
   registerServiceWorkerDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
+   * @param {!ProtocolProxyApi.StorageDispatcher} dispatcher
+   */
+  registerStorageDispatcher(dispatcher) {
     throw new Error('Implemented in InspectorBackend.js');
   }
 
@@ -1134,7 +1236,7 @@ class _AgentPrototype {
       };
 
       if (!this._target._router) {
-        SessionRouter.dispatchConnectionError(callback);
+        SessionRouter.dispatchConnectionError(callback, method);
       } else {
         this._target._router.sendMessage(this._target._sessionId, this._domain, method, params, callback);
       }
@@ -1177,7 +1279,7 @@ class _AgentPrototype {
       };
 
       if (!this._target._router) {
-        SessionRouter.dispatchConnectionError(callback);
+        SessionRouter.dispatchConnectionError(callback, method);
       } else {
         this._target._router.sendMessage(this._target._sessionId, this._domain, method, request, callback);
       }
@@ -1226,23 +1328,13 @@ class _DispatcherPrototype {
       return;
     }
 
-    const params = [];
-    if (messageObject.params) {
-      const paramNames = this._eventArgs[messageObject.method];
-      for (let i = 0; i < paramNames.length; ++i) {
-        params.push(messageObject.params[paramNames[i]]);
-      }
-    }
+    const messageArgument = {...messageObject.params};
 
     for (let index = 0; index < this._dispatchers.length; ++index) {
       const dispatcher = this._dispatchers[index];
 
       if (functionName in dispatcher) {
-        if (dispatcher.usesObjectNotation && dispatcher.usesObjectNotation()) {
-          dispatcher[functionName].call(dispatcher, {...messageObject.params});
-        } else {
-          dispatcher[functionName].apply(dispatcher, params);
-        }
+        dispatcher[functionName].call(dispatcher, messageArgument);
       }
     }
   }
@@ -1254,5 +1346,12 @@ class _DispatcherPrototype {
  */
 // @ts-ignore typedef
 export let _Callback;
+
+/**
+ * Takes error and result.
+ * @typedef {!{callback: function(?Object, ?Object):void, method: string}}
+ */
+// @ts-ignore typedef
+export let _CallbackWithDebugInfo;
 
 export const inspectorBackend = new InspectorBackend();
