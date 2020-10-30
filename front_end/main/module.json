@@ -542,6 +542,7 @@
     "i18n",
     "platform",
     "sdk",
+    "dirac",
     "persistence"
   ],
   "modules": [

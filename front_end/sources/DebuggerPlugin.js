@@ -1061,13 +1061,29 @@ export class DebuggerPlugin extends Plugin {
       return;
     }
 
-    const valuesMap = new Map();
+    /**
+     * @param {string} name
+     * @param {number|string=} line
+     * @param {number|string=} column
+     * @return {string}
+     */
+    function getLocationId(name, line, column) {
+      line = line || '?';
+      column = column || '?';
+      return `${name}@${line}:${column}`;
+    }
+
+    const infoMap = new Map();
     for (const property of properties) {
-      valuesMap.set(property.name, property.value);
+      const locationId = getLocationId(property.name, property.originalNameLineNumber, property.originalNameColumnNumber);
+      infoMap.set(locationId, {
+        name: property.name,
+        value: property.value
+      });
     }
 
     /** @type {!Map.<number, !Set<string>>} */
-    const namesPerLine = new Map();
+    const infoIdsPerLine = new Map();
     let skipObjectProperty = false;
     const tokenizer = new TextEditor.CodeMirrorUtils.TokenizerFactory().createTokenizer('text/javascript');
     tokenizer(this._textEditor.line(fromLine).substring(fromColumn), processToken.bind(this, fromLine));
@@ -1084,31 +1100,41 @@ export class DebuggerPlugin extends Plugin {
      * @this {DebuggerPlugin}
      */
     function processToken(editorLineNumber, tokenValue, tokenType, column, newColumn) {
-      if (!skipObjectProperty && tokenType && this._isIdentifier(tokenType) && valuesMap.get(tokenValue)) {
-        let names = namesPerLine.get(editorLineNumber);
-        if (!names) {
-          names = new Set();
-          namesPerLine.set(editorLineNumber, names);
+      if (!skipObjectProperty && tokenType && this._isIdentifier(tokenType)) {
+        let exists = true;
+        let tokenLocationId = getLocationId(tokenValue, editorLineNumber, column);
+        if (!infoMap.has(tokenLocationId)) {
+          tokenLocationId = getLocationId(tokenValue); // a case without source-maps
+          if (!infoMap.has(tokenLocationId)) {
+            exists = false;
+          }
         }
-        names.add(tokenValue);
+        if (exists) {
+          let ids = infoIdsPerLine.get(editorLineNumber);
+          if (!ids) {
+            ids = new Set();
+            infoIdsPerLine.set(editorLineNumber, ids);
+          }
+          ids.add(tokenLocationId);
+        }
       }
       skipObjectProperty = tokenValue === '.';
     }
-    this._textEditor.operation(this._renderDecorations.bind(this, valuesMap, namesPerLine, fromLine, toLine));
+    this._textEditor.operation(this._renderDecorations.bind(this, infoMap, infoIdsPerLine, fromLine, toLine));
   }
 
   /**
-   * @param {!Map.<string,!SDK.RemoteObject.RemoteObject>} valuesMap
-   * @param {!Map.<number, !Set<string>>} namesPerLine
+   * @param {!Map.<string,!{name:string, value: !SDK.RemoteObject.RemoteObject}>} infoMap
+   * @param {!Map.<number, !Set<string>>} infoIdsPerLine
    * @param {number} fromLine
    * @param {number} toLine
    */
-  _renderDecorations(valuesMap, namesPerLine, fromLine, toLine) {
+  _renderDecorations(infoMap, infoIdsPerLine, fromLine, toLine) {
     const formatter = new ObjectUI.RemoteObjectPreviewFormatter.RemoteObjectPreviewFormatter();
     for (let i = fromLine; i < toLine; ++i) {
-      const names = namesPerLine.get(i);
+      const infoIds = infoIdsPerLine.get(i);
       const oldWidget = this._valueWidgets.get(i);
-      if (!names) {
+      if (!infoIds) {
         if (oldWidget) {
           this._valueWidgets.delete(i);
           this._textEditor.removeDecoration(oldWidget, i);
@@ -1126,27 +1152,31 @@ export class DebuggerPlugin extends Plugin {
       widget.__nameToToken = new Map();
 
       let renderedNameCount = 0;
-      for (const name of names) {
+      for (const infoId of infoIds) {
         if (renderedNameCount > 10) {
           break;
         }
-        if (namesPerLine.get(i - 1) && namesPerLine.get(i - 1).has(name)) {
-          continue;
-        }  // Only render name once in the given continuous block.
+        if (infoIdsPerLine.get(i - 1) && infoIdsPerLine.get(i - 1).has(infoId)) {
+          continue;  // Only render name once in the given continuous block.
+        }
         if (renderedNameCount) {
           UI.UIUtils.createTextChild(widget, ', ');
         }
         const nameValuePair = widget.createChild('span');
-        widget.__nameToToken.set(name, nameValuePair);
-        UI.UIUtils.createTextChild(nameValuePair, name + ' = ');
-        const value = valuesMap.get(name);
+        widget.__nameToToken.set(infoId, nameValuePair);
+        const info = infoMap.get(infoId);
+        UI.UIUtils.createTextChild(nameValuePair, info.name + ' = ');
+        const value = info.value;
         const propertyCount = value.preview ? value.preview.properties.length : 0;
         const entryCount = value.preview && value.preview.entries ? value.preview.entries.length : 0;
-        if (value.preview && propertyCount + entryCount < 10) {
+        if (dirac.hasInlineCFs && value.customPreview()) {
+          const customValueEl = (new ObjectUI.CustomPreviewComponent.CustomPreviewComponent(value)).element;
+          nameValuePair.appendChild(customValueEl);
+        } else if (value.preview && propertyCount + entryCount < 10) {
           formatter.appendObjectPreview(nameValuePair, value.preview, false /* isEntry */);
         } else {
           const propertyValue = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValue(
-              value, /* wasThrown */ false, /* showPreview */ false);
+            value, /* wasThrown */ false, /* showPreview */ false);
           nameValuePair.appendChild(propertyValue.element);
         }
         ++renderedNameCount;
@@ -1162,7 +1192,7 @@ export class DebuggerPlugin extends Plugin {
             widgetChanged = true;
             // value has changed, update it.
             UI.UIUtils.runCSSAnimationOnce(
-                /** @type {!Element} */ (widget.__nameToToken.get(name)), 'source-frame-value-update-highlight');
+              /** @type {!Element} */ (widget.__nameToToken.get(name)), 'source-frame-value-update-highlight');
           }
         }
         if (widgetChanged) {

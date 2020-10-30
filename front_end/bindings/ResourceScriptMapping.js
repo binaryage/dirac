@@ -298,6 +298,13 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
+   * @return {?SDK.Script.Script}
+   */
+  getScript() {
+    return this._script;
+  }
+
+  /**
    * @param {!Array.<!SDK.Script.Script>} scripts
    * @return {boolean}
    */

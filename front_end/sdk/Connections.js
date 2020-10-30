@@ -367,7 +367,7 @@ export function _createMainConnection(websocketConnectionLost) {
   const wsParam = Root.Runtime.Runtime.queryParam('ws');
   const wssParam = Root.Runtime.Runtime.queryParam('wss');
   if (wsParam || wssParam) {
-    const ws = wsParam ? `ws://${wsParam}` : `wss://${wssParam}`;
+    const ws = wsParam ? `ws://${decodeURIComponent(wsParam)}` : `wss://${decodeURIComponent(/** @type {string} */(wssParam))}`;
     return new WebSocketConnection(ws, websocketConnectionLost);
   }
   if (Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {

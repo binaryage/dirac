@@ -1,0 +1,131 @@
+.console-prompt-dirac-wrapper {
+    background-color: rgba(100, 255, 100, 0.08);
+}
+
+.dirac-flavor {
+    background-color: rgba(100, 255, 100, 0.08);
+}
+
+.dirac-flavor::before {
+    background-position: -20px -20px;
+    -webkit-filter: hue-rotate(280deg);
+}
+
+.console-dirac-markup {
+    line-height: 14px;
+}
+
+.console-message, .console-user-command {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+}
+
+.dirac-stderr > .console-message {
+    background-color: rgba(255, 0, 0, 0.15) !important;
+    margin-right: 24px;
+}
+
+.dirac-stdout > .console-message {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    margin-right: 24px;
+}
+
+.console-error-level {
+    background-color: hsl(0, 100%, 97%);
+}
+
+.console-warning-level {
+    background-color: hsl(50, 100%, 95%);
+}
+
+#console-prompt {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+}
+
+#console-prompt-dirac {
+    clear: right;
+    position: relative;
+    padding: 3px 22px 1px 0;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    margin-left: 24px;
+    min-height: 18px; /* Sync with ConsoleViewMessage.js */
+    width: 100%;
+}
+
+#console-prompt-dirac::before {
+    background-position: -80px 90px;
+    -webkit-filter: hue-rotate(280deg);
+}
+
+.inactive-prompt {
+    display: none;
+}
+
+.dirac-prompt-mode-status #cm-console-prompt-dirac {
+    display: none;
+}
+
+.dirac-prompt-mode-edit #console-status-dirac {
+    display: none;
+}
+
+#console-prompt-dirac::before {
+    position: absolute;
+    display: block;
+    content: "";
+    left: -17px;
+    top: 9px;
+    width: 10px;
+    height: 10px;
+    margin-top: -4px;
+    -webkit-user-select: none;
+    background-image: url(Images/smallIcons.svg);
+}
+
+#console-status-dirac .status-banner {
+    float: right;
+    color: #aaa;
+}
+
+#console-status-dirac .status-banner a {
+    color: #aaa;
+    text-decoration: underline;
+}
+
+#console-status-dirac .status-banner a:hover {
+    color: #999;
+    cursor: pointer !important;
+}
+
+#console-status-dirac .status-content {
+    font-style: italic;
+}
+
+#console-status-dirac.dirac-prompt-status-info .status-content,
+#console-status-dirac.dirac-prompt-status-info .status-content a {
+    color: #00f;
+}
+
+#console-status-dirac.dirac-prompt-status-error .status-content,
+#console-status-dirac.dirac-prompt-status-error .status-content a {
+    color: #f00;
+}
+
+.dirac-prompt-placeholder {
+}
+
+.dirac-prompt-namespace {
+    color: rgba(102, 200, 102, 0.6);
+}
+
+.dirac-prompt-compiler {
+    color: rgba(190, 109, 199, 0.6);
+}
+
+.dirac-prompt-compiler::before {
+    content: "\0000BB";
+    padding: 0px 10px;
+    color: rgba(153, 153, 153, 0.3);
+}

@@ -129,3 +129,102 @@
     color: HighlightText;
   }
 }
+
+/* dirac */
+
+.suggest-box-content-item.suggest-cljs {
+  display: block; /* flex was causing troubles for cljs suggestion items, see _updateWidth */
+}
+
+.suggest-box-content-item.suggest-cljs .prologue::after {
+  display: inline-block;
+  font-size: 8px;
+  min-width: 42px;
+  content: "";
+  -webkit-user-select: none;
+  position: relative;
+  margin-right: 6px;
+  color: #ccc;
+  text-align: right;
+}
+
+.suggest-box-content-item.suggest-cljs .prologue::before {
+  height: 6px;
+  width: 0px;
+  display: inline-block;
+  border-left: 3px solid #aed17d;
+  border-right: 3px solid #aed17d;
+  border-radius: 1px;
+  content: "";
+  -webkit-user-select: none;
+}
+
+.suggest-box-content-item.suggest-cljs-macro .prologue::before {
+  border-left-color: #d1585d;
+  border-right-color: #d1585d;
+}
+
+.suggest-box-content-item.suggest-cljs-pseudo .prologue::before {
+  border-left-color: #899fcb;
+  border-right-color: #899fcb;
+}
+
+.suggest-box-content-item.suggest-cljs-special .prologue::before {
+  border-left-color: #e6bf73;
+  border-right-color: #e6bf73;
+}
+
+.suggest-box-content-item.suggest-cljs-combined-ns-macro .prologue::before {
+  border-left-color: #d1585d;
+  border-right-color: #aed17d;
+}
+
+.suggest-box-content-item.suggest-cljs-ns .prologue::after {
+  content: "ns";
+}
+
+.suggest-box-content-item.suggest-cljs-core .prologue::after {
+  content: "core";
+}
+
+.suggest-box-content-item.suggest-cljs-in-ns .prologue::after {
+  content: "in-ns";
+}
+
+.suggest-box-content-item.suggest-cljs-scope .prologue::after {
+  content: "scope";
+}
+
+.suggest-box-content-item.suggest-cljs-qualified .prologue::after {
+  content: "/";
+}
+
+.suggest-box-content-item.suggest-cljs-ns-alias .prologue::after {
+  content: "alias";
+}
+
+.suggest-box-content-item.suggest-cljs-refer .prologue::after {
+  content: "refer";
+}
+
+.suggest-box-content-item.suggest-cljs-repl .prologue::after {
+  content: "repl";
+}
+
+.suggest-box-content-item.suggest-cljs-aliased .prefix {
+  color: #ccc;
+}
+
+.suggest-box-content-item.suggest-cljs-aliased .suffix {
+  color: #ccc;
+}
+
+.suggest-box-content-item .epilogue {
+  font-size: 8px;
+  display:inline-block;
+  color: #ccc;
+  padding: 0 4px;
+  float: right;
+  position: relative;
+  top: 3px;
+}

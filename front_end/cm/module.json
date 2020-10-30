@@ -12,7 +12,9 @@
     "../third_party/codemirror/package/addon/selection/mark-selection.js",
     "../third_party/codemirror/package/addon/fold/foldcode.js",
     "../third_party/codemirror/package/addon/fold/foldgutter.js",
-    "../third_party/codemirror/package/addon/fold/brace-fold.js"
+    "../third_party/codemirror/package/addon/fold/brace-fold.js",
+    "../third_party/codemirror/package/addon/runmode/runmode.js",
+    "../third_party/codemirror/package/addon/display/placeholder.js"
   ],
   "skip_compilation": [
     "codemirror.js",
@@ -27,7 +29,9 @@
     "../third_party/codemirror/package/addon/selection/mark-selection.js",
     "../third_party/codemirror/package/addon/fold/foldcode.js",
     "../third_party/codemirror/package/addon/fold/foldgutter.js",
-    "../third_party/codemirror/package/addon/fold/brace-fold.js"
+    "../third_party/codemirror/package/addon/fold/brace-fold.js",
+    "../third_party/codemirror/package/addon/runmode/runmode.js",
+    "../third_party/codemirror/package/addon/display/placeholder.js"
   ],  "resources": [
     "codemirror.css"
   ]

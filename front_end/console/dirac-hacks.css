@@ -1,0 +1,23 @@
+/* let's try to keep our css overrides here to avoid conflicts upstream */
+
+.console-message-text > * {
+    z-index: 10;
+    position: relative;
+}
+
+.console-message-url {
+    position: absolute;
+    right: 0;
+    z-index: 0;
+    opacity: 0.2;
+}
+
+.console-message-wrapper.console-adjacent-user-command-result {
+    border-bottom: 1px solid transparent;
+}
+
+.console-message-wrapper.console-warning-level,
+.console-message-wrapper.console-error-level {
+    border-top: none;
+    margin: 0;
+}

@@ -4,6 +4,20 @@
  * found in the LICENSE file.
  */
 
+.object-properties-section .name {
+    color: rgb(136, 19, 145);
+    flex-shrink: 0;
+}
+
+.object-properties-section .name.friendly-name .friendly-num {
+    color: #999;
+}
+
+.object-properties-section-separator {
+    flex-shrink: 0;
+    padding-right: 5px;
+}
+
 .object-properties-section-dimmed {
   opacity: 60%;
 }
@@ -17,6 +31,11 @@
 
 .object-properties-section li {
   user-select: text;
+    align-items: flex-start;
+}
+
+.object-properties-section li.after-cluster-boundary {
+   border-top: 1px dashed #eee;
 }
 
 .object-properties-section li::before {
@@ -56,8 +75,9 @@
 }
 
 .name-and-value {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* see https://github.com/binaryage/cljs-devtools/issues/52
+    overflow: hidden;
+    text-overflow: ellipsis;*/
   line-height: 16px;
 }
 

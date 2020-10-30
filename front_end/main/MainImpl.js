@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -111,6 +112,12 @@ export class MainImpl {
    */
   _gotPreferences(prefs) {
     console.timeStamp('Main._gotPreferences');
+    // for dirac testing
+    if (Root.Runtime.queryParam('reset_settings')) {
+      console.info('DIRAC TESTING: clear devtools settings because reset_settings is present in url params');
+      window.localStorage.clear(); // also wipe-out local storage to prevent tests flakiness
+      prefs = {};
+    }
     this._createSettings(prefs);
     this._createAppUI();
   }
@@ -233,6 +240,8 @@ export class MainImpl {
    * @suppressGlobalPropertiesCheck
    */
   async _createAppUI() {
+    await dirac.getReadyPromise();
+
     MainImpl.time('Main._createAppUI');
 
     self.UI.viewManager = UI.ViewManager.ViewManager.instance();
@@ -369,6 +378,7 @@ export class MainImpl {
     // Allow UI cycles to repaint prior to creating connection.
     setTimeout(this._initializeTarget.bind(this), 0);
     MainImpl.timeEnd('Main._showAppUI');
+    dirac.feedback('devtools ready');
   }
 
   async _initializeTarget() {
@@ -411,6 +421,7 @@ export class MainImpl {
     }
     this._lateInitDonePromise = Promise.all(promises);
     MainImpl.timeEnd('Main._lateInitialization');
+    dirac.notifyFrontendInitialized();
   }
 
   /**

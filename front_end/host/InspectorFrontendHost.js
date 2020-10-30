@@ -142,7 +142,29 @@ export class InspectorFrontendHostStub {
    * @suppressGlobalPropertiesCheck
    */
   inspectedURLChanged(url) {
-    document.title = Common.UIString.UIString('DevTools - %s', url.replace(/^https?:\/\//, ''));
+    // @ts-ignore
+    const dirac = window["dirac"];
+    if (!dirac.isIntercomReady()) {
+      // postpone this code, we use document.title for signalling of frontend loading completion, see inspector.js
+      const that = this;
+      setTimeout(function() { that.inspectedURLChanged(url); }, 500);
+      return;
+    }
+
+    const version = dirac.getVersion();
+    dirac.getRuntimeTag(
+      /**
+         * @suppressGlobalPropertiesCheck
+         * @param {string} tag
+         */
+      function(tag) {
+        if (!tag) {
+          tag = '[no runtime] ' + url;
+        }
+        document.title = 'Dirac v' + version + ' <-> ' + tag;
+      });
+    // this is just for a temporary display, we will update it when get_runtime_tag calls us back with full runtime info
+    document.title = 'Dirac v' + version + ' <-> ' + url;
   }
 
   /**

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /*
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
@@ -200,6 +201,14 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
     msg._pageLoadSequenceNumber = this._pageLoadSequenceNumber;
     if (msg.source === MessageSource.ConsoleAPI && msg.type === MessageType.Clear) {
       this._clearIfNecessary();
+    }
+
+    if (msg.parameters) {
+      const firstParam = msg.parameters[0];
+      if (firstParam && firstParam.value === '~~$DIRAC-MSG$~~') {
+        this.dispatchEventToListeners(SDK.ConsoleModel.Events.DiracMessage, msg);
+        return;
+      }
     }
 
     this._messages.push(msg);
@@ -477,6 +486,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper {
 /** @enum {symbol} */
 export const Events = {
   ConsoleCleared: Symbol('ConsoleCleared'),
+  DiracMessage: Symbol('DiracMessage'),
   MessageAdded: Symbol('MessageAdded'),
   MessageUpdated: Symbol('MessageUpdated'),
   CommandEvaluated: Symbol('CommandEvaluated')
@@ -523,6 +533,7 @@ export class ConsoleMessage {
     this.executionContextId = executionContextId || 0;
     this.scriptId = scriptId || null;
     this.workerId = workerId || null;
+    this.skipHistory = false;
     this.frameId = null;
 
     if (!this.executionContextId && this._runtimeModel) {
@@ -766,6 +777,8 @@ export const MessageType = {
   Result: 'result',
   Profile: 'profile',
   ProfileEnd: 'profileEnd',
+  DiracCommand: 'diracCommand',
+  DiracMarkup: 'diracMarkup',
   Command: 'command',
   System: 'system',
   QueryObjectResult: 'queryObjectResult'

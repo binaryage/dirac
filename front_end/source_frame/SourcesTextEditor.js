@@ -36,6 +36,9 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
 
     this._delegate = delegate;
 
+    if (dirac.hasInlineCFs) {
+      this.codeMirror().on('update', this._update.bind(this));
+    }
     this.codeMirror().on('cursorActivity', this._cursorActivity.bind(this));
     this.codeMirror().on('gutterClick', this._gutterClick.bind(this));
     this.codeMirror().on('scroll', this._scroll.bind(this));
@@ -574,6 +577,32 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
 
   _updateWhitespace() {
     this.setMimeType(this.mimeType());
+  }
+
+  _reverseZOrder(element, startIndex) {
+    if (!element) {
+      return;
+    }
+    const childNodes = element.childNodes;
+    if (!childNodes) {
+      return;
+    }
+    let zindex = startIndex + childNodes.length - 1;
+    for (let i = 0; i < childNodes.length; i++) {
+      const child = childNodes[i];
+      if (child) {
+        child.style.zIndex = zindex;
+      }
+      zindex--;
+    }
+  }
+
+  _update(codeMirror) {
+    const linesDiv = codeMirror.display.lineDiv;
+    // custom formatters can provide expandable decoration widgets,
+    // they expand below and overlay following lines
+    // for this to work nicely, we have to make sure that z-order of code mirror lines is descending
+    this._reverseZOrder(linesDiv, 1);
   }
 
   _updateCodeFolding() {

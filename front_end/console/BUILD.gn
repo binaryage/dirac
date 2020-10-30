@@ -12,6 +12,7 @@ devtools_module("console") {
     "ConsolePanel.js",
     "ConsolePinPane.js",
     "ConsolePrompt.js",
+    "ConsoleDiracPrompt.js",
     "ConsoleSidebar.js",
     "ConsoleView.js",
     "ConsoleViewMessage.js",

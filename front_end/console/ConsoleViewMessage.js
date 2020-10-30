@@ -881,6 +881,13 @@ export class ConsoleViewMessage {
       }
     }
 
+    function rawFormatter(obj) {
+      const rawElement = createElement('div');
+      rawElement.setAttribute('class', 'raw-console-output');
+      rawElement.innerHTML = obj.description || '';
+      return rawElement;
+    }
+
     /**
      * @param {string} property
      */
@@ -915,6 +922,8 @@ export class ConsoleViewMessage {
     formatters.O = parameterFormatter.bind(this, true /* force */, false /* includePreview */);
 
     formatters._ = bypassFormatter;
+
+    formatters.r = rawFormatter;
 
     /**
      * @param {!HTMLElement} a

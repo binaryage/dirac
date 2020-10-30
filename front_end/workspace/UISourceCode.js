@@ -150,6 +150,19 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
       } else {
         name = decodeURI(name);
       }
+      // @ts-ignore
+      if (dirac.hasCleanUrls) {
+        // strip all after ? in the name
+        const qmarkIndex = name.indexOf('?');
+        if (qmarkIndex != -1) {
+          name = name.substring(0, qmarkIndex);
+        }
+        // strip all after # in the name
+        const hashIndex = name.indexOf('#');
+        if (hashIndex != -1) {
+          name = name.substring(0, hashIndex);
+        }
+      }
     } catch (e) {
     }
     return skipTrim ? name : name.trimEndWithMaxLength(100);

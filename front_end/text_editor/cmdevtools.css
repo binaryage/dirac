@@ -567,17 +567,20 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
 
 .CodeMirror .text-editor-value-decoration {
   position: absolute;
-  bottom: 0;
+  top: -14px; /* we have to use top here for decoration widget to expand down */
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* see https://github.com/binaryage/dirac/commit/eda4dc29a69dbdb4992639f3834025a92fe8be3c#commitcomment-35607061
+    /* overflow: hidden; */
+  /* text-overflow: ellipsis; */
   max-width: 1000px;
-  opacity: 80%;
+  /* opacity: 80%; */ /* opacity does not play well with expandable widgets */
   background-color: #ffe3c7;
-  margin-left: 10px;
-  padding-left: 5px;
-  color: #222;
-  user-select: text;
+    margin-left: 10px;
+    padding-left: 5px;
+    color: #222;
+    user-select: text;
+    border-radius: 2px;
+    cursor: default;
 }
 
 .CodeMirror .cm-execution-line .text-editor-value-decoration {
@@ -605,6 +608,7 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
 .CodeMirror .CodeMirror-vscrollbar,
 .CodeMirror .CodeMirror-hscrollbar {
   transform: translateZ(0);
+  z-index: 2147483647; /* this is needed to appear above code lines, see _reverseZOrder */
 }
 
 .cm-trailing-whitespace {

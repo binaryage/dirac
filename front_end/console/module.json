@@ -212,12 +212,17 @@
   ],
   "dependencies": [
     "components",
+    "source_frame",
+    "dirac",
     "data_grid",
     "host",
     "object_ui",
     "sdk",
     "formatter",
     "browser_sdk"
+  ],
+  "scripts": [
+    "clojure-parinfer.js"
   ],
   "modules": [
     "console.js",
@@ -230,13 +235,21 @@
     "ConsoleViewMessage.js",
     "ConsolePrompt.js",
     "ConsoleView.js",
-    "ConsolePanel.js"
+    "ConsolePanel.js",
+    "ConsoleDiracPrompt.js"
+  ],
+  "skip_compilation": [
+    "clojure-parinfer.js"
   ],
   "resources": [
     "consoleContextSelector.css",
     "consolePinPane.css",
     "consolePrompt.css",
     "consoleSidebar.css",
-    "consoleView.css"
+    "consoleView.css",
+    "dirac-hacks.css",
+    "dirac-codemirror.css",
+    "dirac-theme.css",
+    "dirac-prompt.css"
   ]
 }

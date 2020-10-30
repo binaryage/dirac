@@ -322,6 +322,303 @@ diff_match_patch.prototype = {
   diff_cleanupSemantic(diff) {}
 };
 
+const dirac = {
+    /** @type {boolean} */
+    DEBUG_EVAL: true,
+    /** @type {boolean} */
+    hasFeature: true,
+    /** @type {boolean} */
+    hasREPL: true,
+    /** @type {boolean} */
+    hasParinfer: true,
+    /** @type {boolean} */
+    hasFriendlyLocals: true,
+    /** @type {boolean} */
+    hasClusteredLocals: true,
+    /** @type {boolean} */
+    hasInlineCFs: true,
+    /** @type {boolean} */
+    hasWelcomeMessage: true,
+    /** @type {boolean} */
+    hasCleanUrls: true,
+    /** @type {boolean} */
+    hasBeautifyFunctionNames: true,
+    /** @type {boolean} */
+    hasLinkActions: true,
+    /** @type {?Object.<string, dirac.NamespaceDescriptor>} */
+    namespacesCache: null,
+
+    /**
+     * @param {string} name
+     * @return {boolean}
+     */
+    getToggle:  function (name) {},
+
+    /**
+     * @param {string} name
+     * @param {*} value
+     */
+    setToggle: function (name, value) {},
+    /**
+     * @return {!Promise}
+     */
+    getReadyPromise: function () {},
+    /**
+    * @param {string} code
+    * @return {string}
+    */
+    codeAsString: function(code) {},
+    /**
+    * @param {string} string
+    * @return {string}
+    */
+    stringEscape: function(string) {},
+    /**
+    * @param {string} action
+    */
+    dispatchEventsForAction: function(action) {},
+    /**
+    * @param {Node} node
+    * @param {string} query
+    */
+    querySelectionAllDeep: function(node, query) {},
+    lookupCurrentContext: function() {},
+    /**
+    * @param {string} code
+    * @param {boolean} silent
+    * @param {?} callback
+    */
+    evalInCurrentContext: function(code, silent, callback) {},
+    /**
+    * @param {string} code
+    * @param {boolean} silent
+    * @param {?} callback
+    */
+    evalInDefaultContext: function(code, silent, callback) {},
+    /**
+    * @return {boolean}
+    */
+    hasCurrentContext: function() {},
+    /**
+    * @return {boolean}
+    */
+    hasDefaultContext: function() {},
+
+    /**
+     * @return {?}
+     */
+    getMainDebuggerModel: function() {},
+    /**
+     * @param {?} callback
+     * @return {boolean}
+     * @this {Object}
+     */
+    subscribeDebuggerEvents: function(callback) {},
+    /**
+     * @param {?} callback
+     * @return {boolean}
+     */
+    unsubscribeDebuggerEvents: function(callback) {},
+
+    /**
+    * @param {?} callFrame
+    * @return {!Promise<!dirac.ScopeInfo>}
+    */
+    extractScopeInfoFromScopeChainAsync: function(callFrame) {},
+    /**
+    * @param {string} namespaceName
+    * @return {!Promise<Array.<string>>}
+    */
+    extractNamespaceSymbolsAsync: function(namespaceName) {},
+    /**
+     * @param {string} namespaceName
+     * @return {!Promise<Array.<string>>}
+     */
+    extractMacroNamespaceSymbolsAsync: function(namespaceName) {},
+    /**
+    * @return {!Promise<!Object.<string, dirac.NamespaceDescriptor>>}
+    */
+    extractNamespacesAsync: function() {},
+
+    startListeningForWorkspaceChanges: function() {},
+    stopListeningForWorkspaceChanges: function() {},
+    /**
+    * @param {string=} namespaceName
+    */
+    invalidateNamespaceSymbolsCache: function(namespaceName) {},
+    invalidateNamespacesCache: function() {},
+
+    /**
+     * @param {Object.<string, dirac.NamespaceDescriptor>} namespaces
+     * @return {Array.<string>}
+     */
+    getMacroNamespaceNames: function(namespaces) {},
+
+    /**
+    * @param {!Object} action
+    */
+    registerDiracLinkAction: function(action) {},
+
+    /**
+     * @param {Array.<T>} coll
+     * @param {function(T):string=} keyFn
+     * @return {Array.<T>}
+     * @template T
+     */
+    deduplicate: function(coll, keyFn) {},
+
+    /**
+     * @param {Array.<T>} array
+     * @param {function(T, T):number} comparator
+     * @return {Array.<T>}
+     * @template T
+     */
+    stableSort: function(array, comparator) {},
+
+    /**
+     * @param {string=} namespaceName
+     * @return {?dirac.NamespaceDescriptor}
+     */
+    getNamespace: function(namespaceName) {},
+
+    /**
+     * @param {string} type
+     * @param {string} level
+     * @param {string} text
+     * @param {Array.<*>=} parameters
+     */
+    addConsoleMessageToMainTarget: function(type, level, text, parameters) {},
+
+    // -- these are dynamically added by dirac.implant namespace ------------------------------------------------------------
+
+    initConsole: function() {},
+    initRepl: function() {},
+    /**
+     * @param {string} panelId
+     */
+    notifyPanelSwitch: function(panelId) {},
+    notifyFrontendInitialized: function() {},
+    getVersion: function() {},
+    getRuntimeTag: function(f) {},
+    /**
+     * @param {Element} textAreaElement
+     * @param {boolean} useParinfer
+     * @return {!CodeMirror}
+     */
+    adoptPrompt: function(textAreaElement, useParinfer) {},
+    /**
+     * @param {number} requestId
+     * @param {string} code
+     * @param {dirac.ScopeInfo} scopeInfo
+     */
+    sendEvalRequest: function(requestId, code, scopeInfo) {},
+    /**
+     * @param {string} ns
+     * @param {string} ext
+     * @return {string}
+     */
+    nsToRelpath: function(ns, ext) {},
+
+    triggerInternalError: function() {},
+    triggerInternalErrorInPromise: function() {},
+    triggerInternalErrorAsErrorLog: function() {},
+    /**
+     * @param {string} name
+     * @return {string}
+     */
+    getFunctionName: function(name) {},
+
+    /**
+     * @param {string} name
+     * @return {string}
+     */
+    getFullFunctionName: function(name) {},
+
+    /**
+     * @return {!Promise.<!Array.<string>>}
+     */
+    getReplSpecialsAsync: function() {},
+
+    /**
+     * @param {string} source
+     * @return {?dirac.NamespaceDescriptor}
+     */
+    parseNsFromSource: function(source) {},
+
+  /**
+   * @return {boolean}
+   * */
+  isIntercomReady: function() {
+  },
+
+    reportNamespacesCacheMutation: function() {},
+
+    /**
+     * @param {string} text
+     */
+    feedback: function(text) {}
+};
+
+/**
+ * @typedef {{name:!string, identifier:?string}}
+ */
+dirac.ScopeFrameProp;
+
+/**
+ * @typedef {{title:?string, props:?Array.<!dirac.ScopeFrameProp>}}
+ */
+dirac.ScopeFrame;
+
+/**
+ * @typedef {{frames:!Array.<!dirac.ScopeFrame>}}
+ */
+dirac.ScopeInfo;
+
+/**
+ * @typedef {{
+ *        name:!string,
+ *        url:!string,
+ *        pseudo:?boolean,
+ *        namespaceAliases:?Object.<string, string>,
+ *        namespaceRefers:?Object.<string, string>,
+ *        macroNamespaceAliases:?Object.<string, string>,
+ *        macroRefers:?Object.<string, string>,
+ *        detectedMacroNamespaces:?Array.<string>
+ *     }}
+ */
+dirac.NamespaceDescriptor;
+
+const Keysim = {}
+
+/** @constructor */
+Keysim.Keyboard = function() {};
+Keysim.Keyboard.prototype = {
+  /**
+   * Fires the correct sequence of events on the given target as if the given
+   * action was undertaken by a human.
+   *
+   * @param {string} action e.g. "alt+shift+left" or "backspace"
+   * @param {Element} target
+   * @param {?function()} callback
+   */
+  dispatchEventsForAction: function (action, target, callback) {
+  },
+
+  /**
+   * Fires the correct sequence of events on the given target as if the given
+   * input had been typed by a human.
+   *
+   * @param {string} input
+   * @param {Element} target
+   * @param {?function()} callback
+   */
+  dispatchEventsForInput: function (input, target, callback) {
+  },
+};
+
+/** @type {Keysim.Keyboard} */
+Keysim.Keyboard.US_ENGLISH;
+
 /** @constructor */
 const Doc = function() {};
 Doc.prototype = {
@@ -482,7 +779,7 @@ CodeMirror.prototype = {
   undo: function() {},
   unlinkDoc: function(other) {}
 };
-/** @type {!{cursorDiv: Element, lineSpace: Element, gutters: Element}} */
+/** @type {!{cursorDiv: Element, lineDiv: Element, lineSpace: Element, gutters: Element}} */
 CodeMirror.prototype.display;
 /** @type {!{devtoolsAccessibleName: string, mode: string, lineWrapping: boolean}} */
 CodeMirror.prototype.options;
@@ -496,6 +793,7 @@ CodeMirror.getMode = function(options, spec) {};
 CodeMirror.overlayMode = function(mode1, mode2, squashSpans) {};
 CodeMirror.defineMode = function(modeName, modeConstructor) {};
 CodeMirror.startState = function(mode) {};
+CodeMirror.runMode = function(string, modespec, callback, options) {};
 CodeMirror.copyState = function(mode, state) {};
 CodeMirror.inputStyles = {};
 CodeMirror.inputStyles.textarea = class {

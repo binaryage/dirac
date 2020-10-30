@@ -31,6 +31,12 @@ devtools_pre_built("codemirror") {
     "package/addon/selection/active-line.js",
     "package/addon/selection/mark-selection.d.ts",
     "package/addon/selection/mark-selection.js",
+    # dirac - start
+    "package/addon/runmode/runmode.d.ts",
+    "package/addon/runmode/runmode.js",
+    "package/addon/display/placeholder.d.ts",
+    "package/addon/display/placeholder.js",
+    # dirac - end
     "package/lib/codemirror.d.ts",
     "package/lib/codemirror.js",
     "package/mode/clike/clike.d.ts",

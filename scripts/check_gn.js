@@ -42,7 +42,10 @@ function checkNonAutostartNonRemoteModules() {
   }
 
   // e.g. "$resources_out_dir/lighthouse/lighthouse_module.js" => "lighthouse"
-  const mapLineToModuleName = line => line.split('/')[2].split('_module')[0];
+  const mapLineToModuleName = line => {
+    const lineParts = line.split('/');
+    return lineParts[lineParts.length - 1].split('_module')[0];
+  };
 
   const extraneousModules = lines.map(mapLineToModuleName).filter(module => !modules.includes(module));
   if (extraneousModules.length) {

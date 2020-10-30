@@ -1,0 +1,16 @@
+{
+  "dependencies": [
+    "sources",
+    "components",
+    "dirac"
+  ],
+  "modules": [
+    "dirac_lazy.js"
+  ],
+  "scripts": [
+  ],
+  "skip_compilation": [
+  ],
+  "resources": [
+  ]
+}

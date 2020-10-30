@@ -128,14 +128,16 @@ export class SuggestBox {
    * @return {number}
    */
   _maxWidth(items) {
-    const kMaxWidth = 300;
+    const kMaxWidth = 100000; // dirac: do not limit max-width
     if (!items.length) {
       return kMaxWidth;
     }
     let maxItem;
     let maxLength = -Infinity;
     for (let i = 0; i < items.length; i++) {
-      const length = (items[i].title || items[i].text).length + (items[i].subtitle || '').length;
+      let length = (items[i].title || items[i].text).length + (items[i].subtitle || '').length;
+      const length2 = (items[i].epilogue || '').length;
+      length = 54 + 6.7 * length + 4.9 * length2; // dirac's suggestion items are more complex, this is a rough estimate
       if (length > maxLength) {
         maxLength = length;
         maxItem = items[i];
@@ -211,6 +213,9 @@ export class SuggestBox {
     const element = document.createElement('div');
     element.classList.add('suggest-box-content-item');
     element.classList.add('source-code');
+    if (item.className) {
+      element.classList.add.apply(element.classList, item.className.split(' '));
+    }
     if (item.iconType) {
       const icon = Icon.create(item.iconType, 'suggestion-icon');
       element.appendChild(icon);
@@ -219,18 +224,20 @@ export class SuggestBox {
       element.classList.add('secondary');
     }
     element.tabIndex = -1;
+    element.createChild('span', 'prologue').textContent = (item.prologue || '').trimEndWithMaxLength(50);
     const maxTextLength = 50 + query.length;
     const displayText = (item.title || item.text).trim().trimEndWithMaxLength(maxTextLength).replace(/\n/g, '\u21B5');
 
     const titleElement = element.createChild('span', 'suggestion-title');
     const index = displayText.toLowerCase().indexOf(query.toLowerCase());
     if (index > 0) {
-      titleElement.createChild('span').textContent = displayText.substring(0, index);
+      titleElement.createChild('span', 'pre-query').textContent = displayText.substring(0, index);
     }
     if (index > -1) {
       titleElement.createChild('span', 'query').textContent = displayText.substring(index, index + query.length);
     }
-    titleElement.createChild('span').textContent = displayText.substring(index > -1 ? index + query.length : 0);
+    titleElement.createChild('span', 'post-query').textContent = displayText.substring(index > -1 ? index + query.length : 0);
+    element.createChild('span', 'epilogue').textContent = (item.epilogue || '').trimEndWithMaxLength(50);
     titleElement.createChild('span', 'spacer');
     if (item.subtitleRenderer) {
       const subtitleElement = /** @type {!HTMLElement} */ (item.subtitleRenderer.call(null));
@@ -410,6 +417,9 @@ export class SuggestBox {
   *      selectionRange: ({startColumn: number, endColumn: number}|undefined),
   *      hideGhostText: (boolean|undefined),
   *      iconElement: (!HTMLElement|undefined),
+  *      prologue?: (string|undefined),
+  *      epilogue?: (string|undefined),
+  *      className?: (string|undefined),
   * }}
   */
 // @ts-ignore typedef

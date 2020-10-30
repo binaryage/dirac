@@ -107,6 +107,13 @@ export class SourceMap {
 
   dispose() {
   }
+
+  /**
+   * @return {?SourceMapV3}
+   */
+  payload() {
+    return null;
+  }
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -215,6 +222,7 @@ export class TextSourceMap {
    */
   constructor(compiledURL, sourceMappingURL, payload, initiator) {
     this._initiator = initiator;
+    this._payload = payload;
     /** @type {?SourceMapV3} */
     this._json = payload;
     this._compiledURL = compiledURL;
@@ -277,6 +285,14 @@ export class TextSourceMap {
    */
   url() {
     return this._sourceMappingURL;
+  }
+
+  /**
+   * @override
+   * @return {?SourceMapV3}
+   */
+  payload() {
+    return this._payload;
   }
 
   /**
@@ -714,6 +730,14 @@ export class WasmSourceMap {
    */
   url() {
     return WasmSourceMap.FAKE_URL;
+  }
+
+  /**
+   * @override
+   * @return {?SourceMapV3}
+   */
+  payload() {
+    return null;
   }
 
   /**

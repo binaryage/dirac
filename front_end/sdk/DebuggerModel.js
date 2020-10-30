@@ -301,7 +301,7 @@ export class DebuggerModel extends SDKModel {
   }
 
   _asyncStackTracesStateChanged() {
-    const maxAsyncStackChainDepth = 32;
+    const maxAsyncStackChainDepth = 256;
     const enabled =
         !Common.Settings.Settings.instance().moduleSetting('disableAsyncStackTraces').get() && this._debuggerEnabled;
     const maxDepth = enabled ? maxAsyncStackChainDepth : 0;

@@ -5,6 +5,21 @@
 import("./scripts/build/ninja/vars.gni")
 
 all_devtools_files = [
+  # dirac - start
+  "front_end/console/clojure-parinfer.js",
+  "front_end/console/dirac-hacks.css",
+  "front_end/console/dirac-codemirror.css",
+  "front_end/console/dirac-theme.css",
+  "front_end/console/dirac-prompt.css",
+  "front_end/dirac/module.json",
+  "front_end/dirac/parinfer.js",
+  "front_end/dirac/parinfer-codemirror.js",
+  "front_end/dirac/keysim.js",
+  "front_end/dirac/dirac.js",
+  "front_end/dirac/require-implant.js",
+  "front_end/dirac_lazy/module.json",
+  "front_end/dirac_lazy/dirac_lazy.js",
+  # dirac - end
   "front_end/shell.js",
   "front_end/accessibility_test_runner/accessibility_test_runner.js",
   "front_end/accessibility_test_runner/module.json",

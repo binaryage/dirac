@@ -124,11 +124,51 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
   }
 
   /**
+   * @return {number}
+   */
+  static PropertyCluster(property) {
+    // we want normal nice names to go first
+    // then all generated variable names with double underscores
+    // then all null values
+    // then all undefined values
+    try {
+      const value = property.value;
+      if (!value) {
+        return 3;
+      }
+      if (value.type === 'undefined') {
+        return 3;
+      }
+      if (value.subtype === 'null') {
+        return 2;
+      }
+      const name = property.name;
+      if (name.indexOf('__') != -1) {
+        return 1;
+      }
+      return 0;
+    } catch (e) {
+      return 4;
+    }
+  }
+
+  /**
    * @param {!SDK.RemoteObject.RemoteObjectProperty} propertyA
    * @param {!SDK.RemoteObject.RemoteObjectProperty} propertyB
    * @return {number}
    */
   static CompareProperties(propertyA, propertyB) {
+    if (dirac.hasClusteredLocals) {
+      const clusterA = ObjectUI.ObjectPropertiesSection.PropertyCluster(propertyA);
+      const clusterB = ObjectUI.ObjectPropertiesSection.PropertyCluster(propertyB);
+
+      if (clusterA > clusterB) {
+        return 1;
+      }
+      if (clusterA < clusterB) {
+        return -1;
+      }
+    }
     const a = propertyA.name;
     const b = propertyB.name;
     if (a === '__proto__') {
@@ -167,9 +207,19 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
   /**
    * @param {?string} name
    * @param {boolean=} isPrivate
+   * @param {string=} friendlyName
+   * @param {string=} friendlyNameNum
    * @return {!Element}
    */
-  static createNameElement(name, isPrivate) {
+  static createNameElement(name, isPrivate, friendlyName, friendlyNameNum) {
+    if (friendlyName) {
+      let numHtml = '';
+      if (friendlyNameNum) {
+        numHtml = UI.Fragment.html`<sub class="friendly-num">${friendlyNameNum}</sub>`;
+      }
+      return UI.Fragment.html`<span class="name friendly-name" title="${name}">${friendlyName}${numHtml}</span>`;
+    }
+
     if (name === null) {
       return UI.Fragment.html`<span class="name"></span>`;
     }
@@ -685,6 +735,24 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
       treeNode.appendChild(treeElement);
     }
 
+    /**
+     * @param {string} name
+     * @return {?string}
+     */
+    function getFriendlyName(name) {
+      const duIndex = name.indexOf('__');
+      if (duIndex != -1) {
+        return name.substring(0, duIndex);
+      }
+      const suMatch = name.match(/(.*?)_\d+$/);
+      if (suMatch) {
+        return suMatch[1];
+      }
+      return null;
+    }
+
+    const friendlyNamesTable = {};
+    let previousProperty = null;
     const tailProperties = [];
     let protoProperty = null;
     for (let i = 0; i < properties.length; ++i) {
@@ -693,10 +761,32 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
       if (!ObjectPropertiesSection._isDisplayableProperty(property, treeNode.property)) {
         continue;
       }
+
+      if (dirac.hasClusteredLocals) {
+        property._cluster = ObjectUI.ObjectPropertiesSection.PropertyCluster(property);
+        if (previousProperty && property._cluster != previousProperty._cluster) {
+          property._afterClusterBoundary = true;
+          previousProperty._beforeClusterBoundary = true;
+        }
+      }
+
+      if (dirac.hasFriendlyLocals) {
+        const friendlyName = getFriendlyName(property.name);
+        if (friendlyName) {
+          property._friendlyName = friendlyName;
+          let num = friendlyNamesTable[friendlyName];
+          if (!num) {num = 0;}
+          num += 1;
+          property._friendlyNameNum = num;
+          friendlyNamesTable[friendlyName] = num;
+        }
+      }
+
       if (property.name === '__proto__' && !property.isAccessorProperty()) {
         protoProperty = property;
         continue;
       }
+      previousProperty = property;
 
       if (property.isOwn && property.getter) {
         const getterProperty =
@@ -961,7 +1051,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
   }
 
   update() {
-    this.nameElement = ObjectPropertiesSection.createNameElement(this.property.name, this.property.private);
+    this.nameElement = ObjectPropertiesSection.createNameElement(this.property.name, this.property.private, this.property._friendlyName, this.property._friendlyNameNum);
     if (!this.property.enumerable) {
       this.nameElement.classList.add('object-properties-section-dimmed');
     }
@@ -990,6 +1080,16 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
       this.valueElement.title = Common.UIString.UIString('No property getter');
     }
 
+    if (this.property._cluster !== undefined) {
+      const clusterClass = 'cluster-' + this.property._cluster;
+      this.listItemElement.classList.add(clusterClass);
+    }
+    if (this.property._beforeClusterBoundary) {
+      this.listItemElement.classList.add('before-cluster-boundary');
+    }
+    if (this.property._afterClusterBoundary) {
+      this.listItemElement.classList.add('after-cluster-boundary');
+    }
     const valueText = this.valueElement.textContent;
     if (this.property.value && valueText && !this.property.wasThrown) {
       this.expandedValueElement = this._createExpandedValueElement(this.property.value);
@@ -1215,7 +1315,6 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     return this.nameElement.title;
   }
 }
-
 
 /**
  * @unrestricted

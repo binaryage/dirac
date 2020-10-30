@@ -1,3 +1,4 @@
+// @ts-nocheck
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
  *
@@ -827,6 +828,7 @@ export class Linkifier {
     }
     if (contentProvider) {
       const lineNumber = uiLocation ? uiLocation.lineNumber : info.lineNumber || 0;
+      const columnNumber = uiLocation ? uiLocation.columnNumber : info.columnNumber || 0;
       for (const title of linkHandlers.keys()) {
         const handler = linkHandlers.get(title);
         if (!handler) {
@@ -841,6 +843,15 @@ export class Linkifier {
           result.unshift(action);
         } else {
           result.push(action);
+        }
+      }
+      if (dirac.hasLinkActions) {
+        const diracAction = Components.Linkifier.diracLinkHandlerAction;
+        if (diracAction) {
+          result.unshift({
+            title: diracAction.title,
+            handler: diracAction.handler.bind(null, result, contentProvider.contentURL(), lineNumber, columnNumber)
+          });
         }
       }
     }
