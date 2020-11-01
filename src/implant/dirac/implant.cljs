@@ -127,7 +127,6 @@
     (.fire debouncer)))
 
 (defn mark-dirac-as-ready! []
-  (js/console.log "CMR")
   (ocall! (helpers/get-dirac-angel) "markAsReady"))
 
 ; -- dirac object augmentation ----------------------------------------------------------------------------------------------
