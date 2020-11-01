@@ -8,6 +8,10 @@ cd "$ROOT"
 
 set -x
 
-git pull
-./scripts/pull-devtools.sh
-./scripts/squash-and-merge-official-updates.sh
+die_if_dirty_working
+
+cd "$DEVTOOLS_FRONTEND_DIR"
+# assume:
+# git remote add official https://github.com/ChromeDevTools/devtools-frontend.git
+git fetch official
+git merge official/master

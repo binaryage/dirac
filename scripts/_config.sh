@@ -63,4 +63,6 @@ EXAMPLES_FIGMAIN_DEPS_FILE="examples/figwheel-main/deps.edn"
 DEPOT_DIR="$ROOT/devtools-frontend"
 DIRAC_MAIN_CLI_FILE="src/main/dirac/main/cli.clj"
 
+DEVTOOLS_FRONTEND_DIR="$ROOT/devtools-frontend"
+
 popd >/dev/null
