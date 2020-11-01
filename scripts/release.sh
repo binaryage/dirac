@@ -11,7 +11,7 @@ TMP_RELEASE_BUILD="$DEPOT_DIR/out/Default/resources/inspector"
 
 cd "$ROOT"
 
-set -x
+#set -x
 
 if [[ -z "$INCREMENTAL" ]]; then
   "$SCRIPTS/check-versions.sh"
