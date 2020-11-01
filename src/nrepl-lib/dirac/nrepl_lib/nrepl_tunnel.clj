@@ -93,7 +93,7 @@
        "\n"
        "Also double check Dirac installation instructions: " nrepl-setup-doc-url "."))
 
-(def ^:dynamic expected-nrepl-version "0.8.0")
+(def ^:dynamic expected-nrepl-version "0.8.3")
 (def ^:dynamic expected-nrepl-middleware-ops
   '(:add-middleware
      :clone
