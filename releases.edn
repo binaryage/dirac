@@ -4,6 +4,7 @@
  {; we match most recent Chromium version from the list below
   ; see https://github.com/binaryage/dirac/blob/master/src/home/dirac/home/chromium/mapping.clj
   ; ...
+  "88.0.4310" "1.7.0"
   "86.0.4221" "1.6.1"
   "86.0.4186" "1.6.0"
   "84.0.4145" "1.5.12"
