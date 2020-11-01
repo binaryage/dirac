@@ -17,9 +17,9 @@ automate #1      scrape! [:callstack-pane-functions]
 stdout           displayed 36 items:
                   * breakpoint-demo / dirac.tests.scenarios.breakpoint.core/breakpoint-demo
                   * breakpoint-demo-handler / dirac.tests.scenarios.breakpoint.core/breakpoint-demo-handler
-                  * λ
-                  * λ
-                  * λ
+                  * λ / λ
+                  * λ / λ
+                  * λ / λ
                   * apply / cljs.core/apply
                   * call-trigger! / dirac.automation.scenario/call-trigger!
                   * handle-notification! / dirac.automation.scenario/handle-notification!
@@ -30,17 +30,17 @@ stdout           displayed 36 items:
                   * marion$content-script$background$relay-message-to-page! / marion$content-script$background$relay-message-to-page!
                   * marion$content-script$background$process-message! / marion$content-script$background$process-message!
                   * switch__*gen-num*__auto__ / switch__*gen-num*__auto__
-                  * λ
+                  * λ / λ
                   * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
                   * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto--
                   * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
-                  * λ
-                  * λ
+                  * λ / λ
+                  * λ / λ
                   * process-messages / cljs.core.async.impl.dispatch/process-messages
                   * channel.port1.onmessage / channel.port1.onmessage
                   * postMessage (async)
-                  * λ
+                  * λ / λ
                   * goog.async.nextTick / goog.async.nextTick
                   * queue-dispatcher / cljs.core.async.impl.dispatch/queue-dispatcher
                   * run / cljs.core.async.impl.dispatch/run
@@ -50,7 +50,7 @@ stdout           displayed 36 items:
                   * put! / cljs.core.async/put!
                   * chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!² / chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!²
                   * chromex$protocols$chrome-port-state$put-message! / chromex$protocols$chrome-port-state$put-message!
-                  * λ
+                  * λ / λ
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
@@ -72,42 +72,42 @@ automate         trigger! [:pause-on-breakpoint]
 devtools #2      setCurrentPanel: sources
 automate #2      scrape! [:callstack-pane-functions]
 stdout           displayed 36 items:
-                  * dirac$tests$scenarios$breakpoint$core$breakpoint_demo
-                  * dirac$tests$scenarios$breakpoint$core$breakpoint_demo_handler
-                  * (anonymous)
-                  * (anonymous)
-                  * (anonymous)
-                  * cljs$core$apply
-                  * dirac$automation$scenario$call_trigger_BANG_
-                  * dirac$automation$scenario$handle_notification_BANG_
-                  * dirac$automation$notifications$process_notification_BANG_
-                  * dirac$automation$notifications$process_event_BANG_
+                  * dirac$tests$scenarios$breakpoint$core$breakpoint_demo / dirac$tests$scenarios$breakpoint$core$breakpoint_demo
+                  * dirac$tests$scenarios$breakpoint$core$breakpoint_demo_handler / dirac$tests$scenarios$breakpoint$core$breakpoint_demo_handler
+                  * (anonymous) / (anonymous)
+                  * (anonymous) / (anonymous)
+                  * (anonymous) / (anonymous)
+                  * cljs$core$apply / cljs$core$apply
+                  * dirac$automation$scenario$call_trigger_BANG_ / dirac$automation$scenario$call_trigger_BANG_
+                  * dirac$automation$scenario$handle_notification_BANG_ / dirac$automation$scenario$handle_notification_BANG_
+                  * dirac$automation$notifications$process_notification_BANG_ / dirac$automation$notifications$process_notification_BANG_
+                  * dirac$automation$notifications$process_event_BANG_ / dirac$automation$notifications$process_event_BANG_
                   * postMessage (async)
-                  * marion$content_script$page$send_message_BANG_
-                  * marion$content_script$background$relay_message_to_page_BANG_
-                  * marion$content_script$background$process_message_BANG_
-                  * switch__*gen-num*__auto__
-                  * (anonymous)
-                  * marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto____*gen-num*
-                  * marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto__
-                  * cljs$core$async$impl$ioc_helpers$run_state_machine
-                  * cljs$core$async$impl$ioc_helpers$run_state_machine_wrapped
-                  * (anonymous)
-                  * (anonymous)
-                  * cljs$core$async$impl$dispatch$process_messages
-                  * channel.port1.onmessage
+                  * marion$content_script$page$send_message_BANG_ / marion$content_script$page$send_message_BANG_
+                  * marion$content_script$background$relay_message_to_page_BANG_ / marion$content_script$background$relay_message_to_page_BANG_
+                  * marion$content_script$background$process_message_BANG_ / marion$content_script$background$process_message_BANG_
+                  * switch__*gen-num*__auto__ / switch__*gen-num*__auto__
+                  * (anonymous) / (anonymous)
+                  * marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto____*gen-num* / marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto____*gen-num*
+                  * marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto__ / marion$content_script$background$go_run_marion_content_script_message_loop_BANG__$_state_machine__*gen-num*__auto__
+                  * cljs$core$async$impl$ioc_helpers$run_state_machine / cljs$core$async$impl$ioc_helpers$run_state_machine
+                  * cljs$core$async$impl$ioc_helpers$run_state_machine_wrapped / cljs$core$async$impl$ioc_helpers$run_state_machine_wrapped
+                  * (anonymous) / (anonymous)
+                  * (anonymous) / (anonymous)
+                  * cljs$core$async$impl$dispatch$process_messages / cljs$core$async$impl$dispatch$process_messages
+                  * channel.port1.onmessage / channel.port1.onmessage
                   * postMessage (async)
-                  * (anonymous)
-                  * goog.async.nextTick
-                  * cljs$core$async$impl$dispatch$queue_dispatcher
-                  * cljs$core$async$impl$dispatch$run
-                  * cljs.core.async.impl.channels.ManyToManyChannel.cljs$core$async$impl$protocols$WritePort$put_BANG_$arity$3
-                  * cljs$core$async$impl$protocols$put_BANG_
-                  * cljs.core.async.put_BANG_.cljs$core$IFn$_invoke$arity$2
-                  * cljs$core$async$put_BANG_
-                  * chromex.chrome_port.ChromePort.chromex$protocols$chrome_port_state$IChromePortState$put_message_BANG_$arity$2
-                  * chromex$protocols$chrome_port_state$put_message_BANG_
-                  * (anonymous)
+                  * (anonymous) / (anonymous)
+                  * goog.async.nextTick / goog.async.nextTick
+                  * cljs$core$async$impl$dispatch$queue_dispatcher / cljs$core$async$impl$dispatch$queue_dispatcher
+                  * cljs$core$async$impl$dispatch$run / cljs$core$async$impl$dispatch$run
+                  * cljs.core.async.impl.channels.ManyToManyChannel.cljs$core$async$impl$protocols$WritePort$put_BANG_$arity$3 / cljs.core.async.impl.channels.ManyToManyChannel.cljs$core$async$impl$protocols$WritePort$put_BANG_$arity$3
+                  * cljs$core$async$impl$protocols$put_BANG_ / cljs$core$async$impl$protocols$put_BANG_
+                  * cljs.core.async.put_BANG_.cljs$core$IFn$_invoke$arity$2 / cljs.core.async.put_BANG_.cljs$core$IFn$_invoke$arity$2
+                  * cljs$core$async$put_BANG_ / cljs$core$async$put_BANG_
+                  * chromex.chrome_port.ChromePort.chromex$protocols$chrome_port_state$IChromePortState$put_message_BANG_$arity$2 / chromex.chrome_port.ChromePort.chromex$protocols$chrome_port_state$IChromePortState$put_message_BANG_$arity$2
+                  * chromex$protocols$chrome_port_state$put_message_BANG_ / chromex$protocols$chrome_port_state$put_message_BANG_
+                  * (anonymous) / (anonymous)
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
@@ -199,33 +199,33 @@ automate #4      scrape! [:callstack-pane-functions]
 stdout           displayed 71 items:
                   * break-here! / dirac.tests.scenarios.core-async/break-here!
                   * switch__*gen-num*__auto__ / switch__*gen-num*__auto__
-                  * λ
+                  * λ / λ
                   * break-async-$-state-machine--*gen-num*--auto----*gen-num* / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto----*gen-num*
                   * break-async-$-state-machine--*gen-num*--auto-- / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto--
                   * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
-                  * λ
-                  * λ
+                  * λ / λ
+                  * λ / λ
                   * process-messages / cljs.core.async.impl.dispatch/process-messages
                   * Promise.then (async)
                   * promise-based-set-immediate / dirac.automation.runtime/promise-based-set-immediate
                   * goog.async.nextTick / goog.async.nextTick
                   * queue-dispatcher / cljs.core.async.impl.dispatch/queue-dispatcher
                   * run / cljs.core.async.impl.dispatch/run
-                  * λ
+                  * λ / λ
                   * close! / cljs.core.async.impl.protocols/close!
-                  * λ
+                  * λ / λ
                   * setTimeout (async)
                   * queue-delay / cljs.core.async.impl.dispatch/queue-delay
                   * timeout / cljs.core.async.impl.timers/timeout
                   * timeout / cljs.core.async/timeout
                   * switch__*gen-num*__auto__ / switch__*gen-num*__auto__
-                  * λ
+                  * λ / λ
                   * break-async-$-state-machine--*gen-num*--auto----*gen-num* / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto----*gen-num*
                   * break-async-$-state-machine--*gen-num*--auto-- / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto--
                   * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
-                  * λ
+                  * λ / λ
                   * process-messages / cljs.core.async.impl.dispatch/process-messages
                   * Promise.then (async)
                   * promise-based-set-immediate / dirac.automation.runtime/promise-based-set-immediate
@@ -234,9 +234,9 @@ stdout           displayed 71 items:
                   * run / cljs.core.async.impl.dispatch/run
                   * break-async / dirac.tests.scenarios.core-async/break-async
                   * break-async-handler / dirac.tests.scenarios.core-async/break-async-handler
-                  * λ
-                  * λ
-                  * λ
+                  * λ / λ
+                  * λ / λ
+                  * λ / λ
                   * apply / cljs.core/apply
                   * call-trigger! / dirac.automation.scenario/call-trigger!
                   * handle-notification! / dirac.automation.scenario/handle-notification!
@@ -247,17 +247,17 @@ stdout           displayed 71 items:
                   * marion$content-script$background$relay-message-to-page! / marion$content-script$background$relay-message-to-page!
                   * marion$content-script$background$process-message! / marion$content-script$background$process-message!
                   * switch__*gen-num*__auto__ / switch__*gen-num*__auto__
-                  * λ
+                  * λ / λ
                   * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
                   * marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$go-run-marion-content-script-message-loop!-$-state-machine--*gen-num*--auto--
                   * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
-                  * λ
-                  * λ
+                  * λ / λ
+                  * λ / λ
                   * process-messages / cljs.core.async.impl.dispatch/process-messages
                   * channel.port1.onmessage / channel.port1.onmessage
                   * postMessage (async)
-                  * λ
+                  * λ / λ
                   * goog.async.nextTick / goog.async.nextTick
                   * queue-dispatcher / cljs.core.async.impl.dispatch/queue-dispatcher
                   * run / cljs.core.async.impl.dispatch/run
@@ -267,7 +267,7 @@ stdout           displayed 71 items:
                   * put! / cljs.core.async/put!
                   * chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!² / chromex$chrome-port$ChromePort$chromex$protocols$chrome-port-state$IChromePortState$put-message!²
                   * chromex$protocols$chrome-port-state$put-message! / chromex$protocols$chrome-port-state$put-message!
-                  * λ
+                  * λ / λ
 automate #4      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #4

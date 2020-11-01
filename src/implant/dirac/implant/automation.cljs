@@ -1,7 +1,7 @@
 (ns dirac.implant.automation
   (:require [cljs.reader :as reader]
             [dirac.implant.automation.scrapers :refer [scrape]]
-            [dirac.implant.helpers :refer [get-console-view get-dirac-api get-inspector-view get-url-params]]
+            [dirac.implant.helpers :refer [get-console-view get-dirac-angel get-inspector-view get-url-params]]
             [dirac.implant.logging :refer [error log warn]]
             [dirac.implant.options :as options]
             [dirac.settings :refer [get-automation-entry-point-key]]
@@ -84,7 +84,7 @@
 
 (defn dispatch-global-action! [action]
   {:pre [(string? action)]}
-  (let [dirac (get-dirac-api)]
+  (let [dirac (get-dirac-angel)]
     (ocall dirac "dispatchEventsForAction" action)))
 
 (defn enable-console-feedback! []
@@ -125,7 +125,7 @@
                   :unhandled-exception "triggerInternalError"
                   :unhandled-exception-in-promise "triggerInternalErrorInPromise"
                   :error-log "triggerInternalErrorAsErrorLog")
-        trigger-fn #(gcall+ ["dirac" fn-name])]
+        trigger-fn #(ocall+ (get-dirac-angel) fn-name)]
     (go-trigger-fn-and-wait! trigger-fn delay)))
 
 (defn get-frontend-url-params []

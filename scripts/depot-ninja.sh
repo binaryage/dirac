@@ -6,6 +6,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$DEPOT_DIR"
 
-gn --root=devtools-frontend gen out/Default
+gn gen out/Default
 
 autoninja -C out/Default

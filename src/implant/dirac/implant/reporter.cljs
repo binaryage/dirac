@@ -5,6 +5,7 @@
             [dirac.implant.info :as info]
             [dirac.implant.logging :refer [error log warn]]
             [dirac.implant.options :as options]
+            [dirac.implant.helpers :refer [get-dirac-angel]]
             [dirac.shared.utils :as utils]
             [oops.core :refer [gget gset! oapply ocall oget oset!]]))
 
@@ -31,11 +32,11 @@
                      "To inspect the problem in internal DevTools => https://goo.gl/0FkZ1o\n"
                      "Consider reporting the issue here: " issues-url)]
     (feedback/post! details)
-    (let [dirac-api (gget "dirac")]
-      (assert dirac-api)
-      (ocall dirac-api "addConsoleMessageToMainTarget" "startGroupCollapsed" "info" nil header)
-      (ocall dirac-api "addConsoleMessageToMainTarget" "log" "info" details)
-      (ocall dirac-api "addConsoleMessageToMainTarget" "endGroup" "info"))))
+    (let [dirac-angel (get-dirac-angel)]
+      (assert dirac-angel)
+      (ocall dirac-angel "addConsoleMessageToMainTarget" "startGroupCollapsed" "info" nil header)
+      (ocall dirac-angel "addConsoleMessageToMainTarget" "log" "info" details)
+      (ocall dirac-angel "addConsoleMessageToMainTarget" "endGroup" "info"))))
 
 ; -- handling global exceptions ---------------------------------------------------------------------------------------------
 

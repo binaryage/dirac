@@ -1,6 +1,7 @@
 (ns dirac.implant.feedback
   (:require [dirac.implant.logging :refer [error log warn]]
             [dirac.implant.options :as options]
+            [dirac.implant.helpers :refer [get-dirac-angel]]
             [dirac.settings :refer [get-dirac-intercom-key
                                     get-flush-pending-feedback-messages-key]]
             [oops.core :refer [gget gset! oapply ocall oget oget+ oset! oset!+]]))
@@ -25,7 +26,7 @@
 
 (defn post! [text]
   (when (options/should-automate?)
-    (let [debug? (gget "dirac.DEBUG_FEEDBACK")
+    (let [debug? (oget (get-dirac-angel) "toggles" "DEBUG_FEEDBACK")
           message #js {:type     "marion-deliver-feedback"
                        :envelope #js {:type       "feedback-from-devtools"
                                       :devtools   (options/get-devtools-id)

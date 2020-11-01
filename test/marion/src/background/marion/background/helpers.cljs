@@ -33,7 +33,7 @@
 (defn go-create-scenario-with-url! [url]
   {:pre [(string? url)]}
   (go
-    ; during development we may want to override standard "cascading" of new windows and position the window explicitely
+    ; during development we may want to override standard "cascading" of new windows and position the window explicitly
     (let [window-params (sugar/set-window-params-dimensions! #js {:url url}
                                                              (get-dirac-scenario-window-left)
                                                              (get-dirac-scenario-window-top)

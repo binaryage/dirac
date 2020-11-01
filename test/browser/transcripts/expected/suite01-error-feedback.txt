@@ -22,10 +22,10 @@ automate #1      trigger-internal-error-in-promise!
 devtools #1      <elided dirac version info line>
                  DevTools code has thrown an unhandled rejection (in promise):
                  Error: fake async error in promise
-                     at new $cljs$core$ExceptionInfo$$ (chrome-extension://<extension-id>/devtools/front_end/shell.js:***)
-                     at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$03$$ (chrome-extension://<extension-id>/devtools/front_end/shell.js:***)
-                     at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$02$$ (chrome-extension://<extension-id>/devtools/front_end/shell.js:***)
-                     at chrome-extension://<extension-id>/devtools/front_end/shell.js:***
+                     at new $cljs$core$ExceptionInfo$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
+                     at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$03$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
+                     at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$02$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
+                     at chrome-extension://<extension-id>/devtools/front_end/inspector.js:***
                  ---
                  To inspect the problem in internal DevTools => https://goo.gl/0FkZ1o
                  Consider reporting the issue here: https://github.com/binaryage/dirac/issues

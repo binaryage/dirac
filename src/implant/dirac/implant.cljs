@@ -15,7 +15,7 @@
             [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
             [dirac.shared.console :refer [log-to-console!]]
             [dirac.shared.utils :refer [runonce when-advanced-mode]]
-            [oops.core :refer [gcall! gget oapply ocall oget oset! oset!+]])
+            [oops.core :refer [gcall! gget oapply ocall ocall! oget oset! oset!+]])
   (:import goog.async.Debouncer))
 
 (defonce ^:dynamic *console-initialized* false)
@@ -127,11 +127,11 @@
     (.fire debouncer)))
 
 (defn mark-dirac-as-ready! []
-  (gcall! "dirac.markAsReady"))
+  (js/console.log "CMR")
+  (ocall! (helpers/get-dirac-angel) "markAsReady"))
 
 ; -- dirac object augmentation ----------------------------------------------------------------------------------------------
 
-; !!! don't forget to update externs.js when touching this !!!
 (def dirac-api-to-export
   {"feedback"                       post-feedback!
    "initConsole"                    init-console!
@@ -165,7 +165,7 @@
     (assert (not *console-initialized*))
     ; (log-to-console!)
     ;(install-devtools-if-needed!)
-    (enhance-dirac-object! (gget "dirac"))                                                                                    ; see front_end/dirac/dirac.js
+    (enhance-dirac-object! (oget (helpers/get-dirac-angel) "extension"))                                                      ; see front_end/dirac/dirac.js
     (when-advanced-mode
       (reporter/install!))
     (automation/install!)
@@ -181,6 +181,6 @@
   (js/console.log "initializing dirac implant...")
   (init-implant!))
 
-; this is for dev mode where implant is required later
-(if (gget "initDiracImplantAfterLoad")
-  (init-implant))
+;; this is for dev mode where implant is required later
+;(if (gget "initDiracImplantAfterLoad")
+;  (init-implant))

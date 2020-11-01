@@ -11,6 +11,7 @@
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
             [dirac.implant.version :as implant-version]
             [dirac.implant.weasel-client :as weasel-client]
+            [dirac.implant.helpers :refer [get-dirac-angel]]
             [dirac.shared.ws-client :as ws-client]
             [dirac.shared.async :refer [<! close! go go-channel go-wait put!]]
             [dirac.shared.utils :as utils]
@@ -129,7 +130,7 @@
         (eval/console-warn! msg)))))
 
 (defn hosted? []
-  (gget "dirac.hostedInExtension"))
+  (oget (get-dirac-angel) "hostedInExtension"))
 
 (def bootstrap-done-hooks-atom (atom []))
 

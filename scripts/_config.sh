@@ -62,7 +62,7 @@ DIRAC_CACHE_DIR="$DIRAC_WORKSPACE_DIR/.cache"
 TRAVIS_CHROMEDRIVER_VERSION=${TRAVIS_CHROMEDRIVER_VERSION:-VIA_CHROMIUM_DOWNLOAD_URL}
 EXAMPLES_LEININGEN_PROJECT_FILE="examples/leiningen/project.clj"
 EXAMPLES_FIGMAIN_DEPS_FILE="examples/figwheel-main/deps.edn"
-DEPOT_DIR="$DIRAC_WORKSPACE_DIR/.depot"
+DEPOT_DIR="$ROOT/devtools-frontend"
 DIRAC_MAIN_CLI_FILE="src/main/dirac/main/cli.clj"
 
 popd >/dev/null
