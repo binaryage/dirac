@@ -20,7 +20,7 @@ if [[ -z "$INCREMENTAL" ]]; then
   "$SCRIPTS/depot-sync.sh"
 fi
 
-IMPLANTED_JS="$RELEASE_BUILD/devtools/front_end/inspector.js"
+IMPLANTED_JS="$RELEASE_BUILD/devtools/front_end/shell.js"
 
 # make sure we rebuild the js file from scratch
 if [[ -f "$IMPLANTED_JS" ]]; then
