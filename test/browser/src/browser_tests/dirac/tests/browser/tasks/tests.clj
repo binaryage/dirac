@@ -37,6 +37,6 @@
     (execute-transcript-test! "clean-urls")
     (execute-transcript-test! "beautify-function-names"))
   (with-transcript-suite "suite03"
-    (execute-transcript-test! "issue-53")
+    ;(execute-transcript-test! "issue-53")
     (execute-transcript-test! "issue-55")
     (execute-transcript-test! "issue-74")))
