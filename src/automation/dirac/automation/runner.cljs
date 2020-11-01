@@ -54,7 +54,8 @@
 (defn init! []
   (init-normalize-checkbox!)
   (devtools/install!)
-  (when-not (helpers/automated-testing?)
+  (gstyle/setElementShown (get-control-panel-el) true)
+  #_(when-not (helpers/automated-testing?)
     (gstyle/setElementShown (get-control-panel-el) true)))
 
 (defn go-reset-extensions! []
