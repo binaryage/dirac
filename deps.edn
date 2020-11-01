@@ -1,26 +1,26 @@
 ; this is an experimental deps.end for dirac
 ; we use it from test/gpig project to refer to local dirac code
 ; currently I maintain it by hand when need to test/debug something
-{:deps  {org.clojure/clojure       {:mvn/version "1.10.1"}
-         org.clojure/clojurescript {:mvn/version "1.10.741"}
+{:deps  {org.clojure/clojure             {:mvn/version "1.10.1"}
+         org.clojure/clojurescript       {:mvn/version "1.10.814"}
 
-         org.clojure/core.async    {:mvn/version "1.0.567"}
-         org.clojure/tools.logging {:mvn/version "1.0.0"}
-         org.clojure/tools.cli     {:mvn/version "1.0.194"}
+         org.clojure/core.async          {:mvn/version "1.3.610"}
+         org.clojure/tools.logging       {:mvn/version "1.1.0"}
+         org.clojure/tools.cli           {:mvn/version "1.0.194"}
 
-         nrepl/nrepl               {:mvn/version "0.7.0"}
-         binaryage/env-config      {:mvn/version "0.2.2"}
-         http-kit                  {:mvn/version "2.3.0"}
-         version-clj               {:mvn/version "0.1.2"}
-         clansi                    {:mvn/version "1.0.0"}
-         funcool/cuerdas           {:mvn/version "2020.03.26-3"}
-         com.rpl/specter           {:mvn/version "1.1.3"}
-         progrock                  {:mvn/version "0.1.2"}
-         me.raynes/conch           {:mvn/version "0.8.0"}
-         clj-sub-command           {:mvn/version "0.5.1"}
-         ring/ring-core            {:mvn/version "1.8.0"}
-         ring/ring-defaults        {:mvn/version "0.3.2"}
-         binaryage/devtools        {:mvn/version "1.0.0"}}
+         nrepl/nrepl                     {:mvn/version "0.8.3"}
+         binaryage/env-config            {:mvn/version "0.2.2"}
+         http-kit/http-kit               {:mvn/version "2.5.0"}
+         version-clj/version-clj         {:mvn/version "0.1.2"}
+         clansi/clansi                   {:mvn/version "1.0.0"}
+         funcool/cuerdas                 {:mvn/version "2020.03.26-3"}
+         com.rpl/specter                 {:mvn/version "1.1.3"}
+         progrock/progrock               {:mvn/version "0.1.2"}
+         me.raynes/conch                 {:mvn/version "0.8.0"}
+         clj-sub-command/clj-sub-command {:mvn/version "0.6.0"}
+         ring/ring-core                  {:mvn/version "1.8.2"}
+         ring/ring-defaults              {:mvn/version "0.3.2"}
+         binaryage/devtools              {:mvn/version "1.0.2"}}
 
  :paths ["src/agent"
          "src/automation"
