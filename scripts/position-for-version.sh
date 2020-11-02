@@ -10,9 +10,11 @@ VERSION=$1
 
 if [[ -n "$VERSION" ]]; then
   OMAHA_URL="https://omahaproxy.appspot.com/deps.json?version=$VERSION"
+  set +e
   POSITION=$(curl -s "$OMAHA_URL"| python -mjson.tool | grep chromium_base_position | cut -d ":" -f 2 | sed "s/[ ,\"]//g")
+  set -e
 
-  if [[ "$POSITION" == "null" ]] || [[ -z "$POSITION" ]]; then
+  if [[ "$POSITION" = "null" || -z "$POSITION" || "$POSITION" = "No JSON object could be decoded\n" ]]; then
     echoerr "unable to determine chrome position for version '$VERSION', $OMAHA_URL returned null chromium_base_position"
     echoerr "this could happen when given version does not exist because of test/build failures"
     echoerr "use 'env OVERRIDE_CHROME_VERSION=version' to override broken version for this script"

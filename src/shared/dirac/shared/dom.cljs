@@ -14,8 +14,8 @@
   ([element selector] (ocall element "querySelectorAll" selector)))
 
 (defn query-selector-deep
-  ([selector] (query-selector-deep  (gget "document.body") selector))
-  ([node selector] (gcall "dirac.querySelectorAllDeep" node selector)))
+  ([selector] (query-selector-deep (gget "document.body") selector))
+  ([node selector] (gcall "diracAngel.querySelectorAllDeep" node selector)))
 
 (defn get-tag-name [el]
   (when-some [tag-name (oget el "?tagName")]

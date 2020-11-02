@@ -1,9 +1,0 @@
-{
-  "modules": [
-    "root-legacy.js",
-    "root.js",
-    "Runtime.js"
-  ],
-
-  "skip_rollup": true
-}

@@ -1,13 +1,13 @@
-(def devtools-version "1.0.0")
-(def dirac-version "1.6.1")
+(def devtools-version "1.0.2")
+(def dirac-version "1.7.1")
 (def figwheel-version "0.5.20")
 (defproject binaryage/dirac-lein "0.1.0-SNAPSHOT"
   :description "An example integration of Dirac DevTools with a Leiningen-based project"
   :url "https://github.com/binaryage/dirac"
 
   :dependencies [[org.clojure/clojure "1.10.1"]
-                 [org.clojure/clojurescript "1.10.764"]
-                 [nrepl/nrepl "0.7.0"]
+                 [org.clojure/clojurescript "1.10.773"]
+                 [nrepl/nrepl "0.8.3"]
                  [clojure-complete "0.2.5" :exclusions [org.clojure/clojure]]
                  [binaryage/devtools ~devtools-version]
                  [binaryage/dirac ~dirac-version]

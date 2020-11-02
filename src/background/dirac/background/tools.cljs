@@ -51,15 +51,26 @@
                            :type (if panel? "popup" "normal")}]
     ; during development we may want to override standard "cascading" of new windows and position the window explicitly
     (sugar/set-window-params-dimensions! window-params
-                                         (get-dirac-devtools-window-left) (get-dirac-devtools-window-top)
-                                         (get-dirac-devtools-window-width) (get-dirac-devtools-window-height))
+                                         (get-dirac-devtools-window-left)
+                                         (get-dirac-devtools-window-top)
+                                         (get-dirac-devtools-window-width)
+                                         (get-dirac-devtools-window-height))
     window-params))
+
+(defn go-reposition-dirac-window! [window-id]
+  (go
+    (<! (windows/update window-id (sugar/set-window-params-dimensions! #js {}
+                                                                       (get-dirac-devtools-window-left)
+                                                                       (get-dirac-devtools-window-top)
+                                                                       (get-dirac-devtools-window-width)
+                                                                       (get-dirac-devtools-window-height))))))
 
 (defn go-create-dirac-window! [panel?]
   (go
     (if-let [[window] (<! (windows/create (prepare-dirac-window-params panel?)))]
       (let [tabs (oget window "tabs")
             first-tab (aget tabs 0)]
+        (<! (go-reposition-dirac-window! (oget window "id")))
         (sugar/get-tab-id first-tab)))))
 
 (defn go-remove-window! [window-id]

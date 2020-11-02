@@ -4,6 +4,7 @@
             [cljs.tools.reader.edn :as edn]
             [clojure.string :as string]
             [dirac.implant.feedback :as feedback]
+            [dirac.implant.helpers :refer [get-dirac-angel]]
             [dirac.implant.logging :refer [error log warn]]
             [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
             [dirac.shared.utils :as utils]
@@ -41,12 +42,6 @@
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
-(defn get-dirac []
-  {:post [(object? %)]}
-  (if-some [dirac (gget "?dirac")]
-    dirac
-    (throw (ex-info (str "window.dirac not found") {}))))
-
 (defn format-reason [e]
   (cond
     (string? e) e
@@ -60,18 +55,18 @@
 (def supported-contexts #{:default :current})
 
 (defn code-as-string [code]
-  (if-some [eval-fn (oget (get-dirac) "?codeAsString")]
+  (if-some [eval-fn (oget (get-dirac-angel) "?codeAsString")]
     (eval-fn code)
     (error "window.dirac.codeAsString not found")))
 
 (defn get-main-debugger-model []
-  (ocall (get-dirac) "getMainDebuggerModel"))
+  (ocall (get-dirac-angel) "getMainDebuggerModel"))
 
 (defn subscribe-debugger-events! [f]
-  (ocall (get-dirac) "subscribeDebuggerEvents" f))
+  (ocall (get-dirac-angel) "subscribeDebuggerEvents" f))
 
 (defn unsubscribe-debugger-events! [f]
-  (ocall (get-dirac) "unsubscribeDebuggerEvents" f))
+  (ocall (get-dirac-angel) "unsubscribeDebuggerEvents" f))
 
 (defn get-dirac-has-context-fn [dirac context]
   (case context
@@ -91,7 +86,7 @@
 (defn eval-command-in-console! [context js-code]
   (let [context-name (get-context-name context)]
     (log (str "eval-command-in-console! [" context-name " context] > ") js-code)
-    (ocall (get-dirac) "evaluateCommandInConsole" context-name js-code)))
+    (ocall (get-dirac-angel) "evaluateCommandInConsole" context-name js-code)))
 
 (defn get-current-time []
   (.getTime (js/Date.)))
@@ -121,7 +116,7 @@
   (let [trial-delay (pref :context-availability-next-trial-waiting-time)
         time-limit (pref :context-availability-total-time-limit)
         silent? (or (nil? silent) (true? silent))                                                                             ; by default we execute silently]
-        dirac (get-dirac)
+        dirac (get-dirac-angel)
         has-context-fn (get-dirac-has-context-fn dirac context)
         eval-fn (get-dirac-eval-in-context-fn dirac context)
         callback-wrapper (fn [result-remote-object exception-details]

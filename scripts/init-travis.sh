@@ -81,29 +81,6 @@ fi
 # install latest chromium
 pushd "$TRAVIS_BUILD_DIR"
 
-if [[ -z "${TRAVIS_SKIP_DEPOT_BOOTSTRAP}" ]]; then
-  if [[ ! -d "$DEPOT_DIR" ]]; then
-    if [[ -n "$DIRAC_IN_DOCKER" ]]; then
-      export DIRAC_SKIP_INITIAL_DEPOT_SYNC=1
-    fi
-
-    "$SCRIPTS/depot-bootstrap.sh"
-
-    if [[ -n "$DIRAC_IN_DOCKER" ]]; then
-      # symlink to devtools sources causes problems in docker because it point to a different docker volume
-      # and some python scripts are trying to rename files which causes "invalid cross-device link"
-      # here we remove the symlink and always rsync the content
-      rm "$DEPOT_DIR/devtools-frontend"
-    fi
-  fi
-fi
-
-if [[ -n "$DIRAC_IN_DOCKER" ]]; then
-  if [[ -z "${TRAVIS_SKIP_DEPOT_FRONTEND_SYNC}" ]]; then
-    rsync -av "$ROOT/resources/unpacked/devtools/" "$DEPOT_DIR/devtools-frontend/"
-  fi
-fi
-
 # HACK: we rely on the fact that the tmp dir is mapped to host and persists
 mkdir -p "$DIRAC_CACHE_DIR"
 cd "$DIRAC_CACHE_DIR"

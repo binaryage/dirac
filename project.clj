@@ -14,9 +14,9 @@
   [['org.clojure/core.async "1.3.610"]
    ['org.clojure/tools.logging "1.1.0"]
    ['org.clojure/tools.cli "1.0.194"]
-   ['nrepl/nrepl "0.8.0"]
+   ['nrepl/nrepl "0.8.3"]
    ['binaryage/env-config "0.2.2"]
-   ['http-kit "2.4.0"]
+   ['http-kit "2.5.0"]
    ['version-clj "0.1.2"]
    ['clansi "1.0.0"]
    ['funcool/cuerdas "2020.03.26-3"]
@@ -24,7 +24,7 @@
    ['progrock "0.1.2"]
    ['me.raynes/conch "0.8.0"]
    ['clj-sub-command "0.6.0"]
-   ['ring/ring-core "1.8.1"]
+   ['ring/ring-core "1.8.2"]
    ['ring/ring-defaults "0.3.2"]
    ['binaryage/devtools "1.0.2"]])
 
@@ -32,7 +32,7 @@
   [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
    ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
    ['binaryage/oops "0.7.0" :scope "test"]
-   ['binaryage/chromex "0.9.1" :scope "test"]
+   ['binaryage/chromex "0.9.2" :scope "test"]
    ['environ "1.2.0" :scope "test"]
    ['cljs-http "0.1.46" :scope "test"]
    ['figwheel figwheel-version :scope "test"]
@@ -41,16 +41,16 @@
    ['rum-reforms "0.4.3" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['org.clojure/tools.namespace "1.0.0" :scope "test"]
-   ['org.clojure/tools.reader "1.3.2" :scope "test"]
+   ['org.clojure/tools.reader "1.3.3" :scope "test"]
    ['fipp "0.6.23" :scope "test"]
-   ['nubank/matcher-combinators "3.1.1" :scope "test"]
+   ['nubank/matcher-combinators "3.1.4" :scope "test"]
 
    ['clj-logging-config clj-logging-config-version :scope "test"]
    ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
 
    ['http.async.client "1.3.1" :scope "test"]
 
-   ['ring/ring-devel "1.8.1" :scope "test"]
+   ['ring/ring-devel "1.8.2" :scope "test"]
    ['clj-time "0.15.2" :scope "test"]
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
@@ -64,7 +64,7 @@
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.6.1"
+(defproject binaryage/dirac "1.7.1"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"

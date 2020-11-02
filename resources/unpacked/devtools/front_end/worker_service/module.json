@@ -1,6 +1,0 @@
-{
-  "modules": [
-    "ServiceDispatcher.js"
-  ],
-  "skip_rollup": true
-}

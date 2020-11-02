@@ -1,6 +1,7 @@
 (ns dirac.implant.link-handlers
   (:require [dirac.implant.intercom :as intercom]
             [dirac.implant.logging :refer [error info log warn]]
+            [dirac.implant.helpers :refer [get-dirac-angel]]
             [dirac.shared.async :refer [<! alts! close! go go-channel go-wait put!]]
             [oops.core :refer [gcall! gget gset! oapply ocall ocall! oget oset! oset!+]]))
 
@@ -42,8 +43,8 @@
       (ocall! next-action "handler"))))
 
 (defn register-open-via-nrepl-handler! []
-  (gcall! "dirac.registerDiracLinkAction" #js {:title   "Reveal via nREPL"
-                                               :handler handle-open-via-nrepl-link!}))
+  (ocall! (get-dirac-angel) "registerDiracLinkAction" #js {:title   "Reveal via nREPL"
+                                                           :handler handle-open-via-nrepl-link!}))
 
 ; -- installation -----------------------------------------------------------------------------------------------------------
 
