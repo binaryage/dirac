@@ -1,5 +1,5 @@
 sudo: true
-dist: bionic
+dist: focal
 language: clojure
 notifications:
   email:

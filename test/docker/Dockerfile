@@ -1,5 +1,5 @@
 # keep this in sync with travis: https://docs.travis-ci.com/user/ci-environment
-FROM ubuntu:eoan
+FROM ubuntu:focal
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get -y install --no-install-recommends \
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update && \
     apt install -y --no-install-recommends \
-    openjdk-13-jdk ca-certificates-java && \
+    openjdk-15-jdk ca-certificates-java && \
     java -version
 
 # dependencies needed by chrome/chromedriver
