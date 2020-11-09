@@ -10,7 +10,6 @@ extension        register devtools #1
 devtools #1      implant initialized
 devtools #1      setCurrentPanel: elements
 devtools #1      devtools ready
-devtools #1      namespacesCache is cool now
 automate #1      switch-to-console-panel!
 devtools #1      setCurrentPanel: console
 devtools #1      console initialized
@@ -110,7 +109,6 @@ extension        register devtools #2
 devtools #2      implant initialized
 devtools #2      setCurrentPanel: elements
 devtools #2      devtools ready
-devtools #2      namespacesCache is cool now
 automate #2      switch-to-console-panel!
 devtools #2      setCurrentPanel: console
 devtools #2      console initialized
@@ -148,7 +146,6 @@ extension        register devtools #3
 devtools #3      implant initialized
 devtools #3      setCurrentPanel: elements
 devtools #3      devtools ready
-devtools #3      namespacesCache is cool now
 automate #3      switch-to-console-panel!
 devtools #3      setCurrentPanel: console
 devtools #3      console initialized
@@ -213,7 +210,6 @@ extension        register devtools #4
 devtools #4      implant initialized
 devtools #4      setCurrentPanel: elements
 devtools #4      devtools ready
-devtools #4      namespacesCache is cool now
 automate #4      switch-to-console-panel!
 devtools #4      setCurrentPanel: console
 devtools #4      console initialized
@@ -271,7 +267,6 @@ extension        register devtools #5
 devtools #5      implant initialized
 devtools #5      setCurrentPanel: elements
 devtools #5      devtools ready
-devtools #5      namespacesCache is cool now
 automate #5      switch-to-console-panel!
 devtools #5      setCurrentPanel: console
 devtools #5      console initialized
@@ -317,7 +312,6 @@ extension        register devtools #6
 devtools #6      implant initialized
 devtools #6      setCurrentPanel: elements
 devtools #6      devtools ready
-devtools #6      namespacesCache is cool now
 automate #6      switch-to-console-panel!
 devtools #6      setCurrentPanel: console
 devtools #6      console initialized
@@ -338,7 +332,6 @@ extension        register devtools #7
 devtools #7      implant initialized
 devtools #7      setCurrentPanel: elements
 devtools #7      devtools ready
-devtools #7      namespacesCache is cool now
 automate #7      switch-to-console-panel!
 devtools #7      setCurrentPanel: console
 devtools #7      console initialized

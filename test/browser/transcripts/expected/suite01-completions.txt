@@ -9,7 +9,6 @@ extension        register devtools #1
 devtools #1      implant initialized
 devtools #1      setCurrentPanel: elements
 devtools #1      devtools ready
-devtools #1      namespacesCache is cool now
 automate #1      switch-to-console-panel!
 devtools #1      setCurrentPanel: console
 devtools #1      console initialized
@@ -248,5 +247,5 @@ automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         close-scenario! ["scenario-tab#1"]
-summary          Automated 94 actions with 1 check-points containing 18 assertions.
+summary          Automated 94 actions with 2 check-points containing 18 assertions.
                  0 failures, 0 errors.
