@@ -80,7 +80,7 @@
 
 (defn go-wait-for-devtools-ui [& [delay]]
   ; sometimes we have to give devtools UI some time to update
-  (go-wait (or delay 1000)))                                                                                                  ; TODO: should not be hard-coded FLAKY!
+  (go-wait (or delay 100)))                                                                                                  ; TODO: should not be hard-coded FLAKY!
 
 ; -- devtools-instance targeting actions ------------------------------------------------------------------------------------
 
@@ -147,7 +147,7 @@
 
 (defn ^:devtools go-print-prompt! [devtools-id]
   (go
-    (<! (go-wait 500))                                                                                                        ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 100))                                                                                                        ; TODO: should not be hard-coded FLAKY!
     (let [content (<! (go-get-prompt-representation devtools-id))]
       (assert (string? content))
       (println content)
