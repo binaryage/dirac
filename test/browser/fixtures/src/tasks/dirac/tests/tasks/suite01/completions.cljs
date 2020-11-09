@@ -8,6 +8,7 @@
   (with-scenario "completions"
     (with-devtools
       (chunkify
+        (<!* a/go-wait-for-namespace-cache)
         (<!* a/go-switch-to-console-panel!)
         (<!* a/go-switch-prompt-to-dirac!)
         (<!* a/go-wait-for-prompt-to-enter-edit-mode)

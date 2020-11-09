@@ -22,6 +22,8 @@
 (defonce ^:dynamic *implant-initialized* false)
 (defonce ^:dynamic *namespaces-cache-debouncer* nil)
 (defonce ^:dynamic *namespace-cache-cool* false)
+(defonce ^:dynamic *namespace-cache-ready-promise-resolver* nil)
+(defonce ^:dynamic *namespace-cache-ready-promise* (js/Promise. #(set! *namespace-cache-ready-promise-resolver* %)))
 
 ; -- public API -------------------------------------------------------------------------------------------------------------
 ; following functions will be exposed as helpers for devtools javascript code
@@ -108,7 +110,7 @@
 (defn namespaces-cache-changed! []
   (when-not *namespace-cache-cool*
     (set! *namespace-cache-cool* true)
-    (post-feedback! "namespacesCache is cool now"))
+    (*namespace-cache-ready-promise-resolver* true))
   ; callstack pane could render before we have namespaceCache fully populated
   ; this could cause dirac.implant.munging/ns-detector to miss some namespaces
   ; we cannot make ns-detector async, so we force (debounced) refresh when namespaces cache changes
@@ -128,6 +130,10 @@
 
 (defn mark-dirac-as-ready! []
   (ocall! (helpers/get-dirac-angel) "markAsReady"))
+
+(defn get-namespaces-cache-ready-promise []
+  (assert *namespace-cache-ready-promise-resolver*)
+  *namespace-cache-ready-promise*)
 
 ; -- dirac object augmentation ----------------------------------------------------------------------------------------------
 
@@ -150,7 +156,8 @@
    "getFullFunctionName"            get-full-function-name
    "getReplSpecialsAsync"           get-repl-specials-async
    "isIntercomReady"                is-intercom-ready
-   "reportNamespacesCacheMutation"  report-namespaces-cache-mutation!})
+   "reportNamespacesCacheMutation"  report-namespaces-cache-mutation!
+   "getNamespaceCacheReadyPromise"  get-namespaces-cache-ready-promise})
 
 (defn enhance-dirac-object! [dirac]
   (doseq [[name fn] dirac-api-to-export]
@@ -179,7 +186,3 @@
 (defn ^:export init-implant []
   (js/console.log "initializing dirac implant...")
   (init-implant!))
-
-;; this is for dev mode where implant is required later
-;(if (gget "initDiracImplantAfterLoad")
-;  (init-implant))

@@ -244,3 +244,6 @@
     (<! (go-wait 50))                                                                                                       ; TODO: should not be hard-coded FLAKY!
     (<! (go-trigger! :reload))
     (<! (go-wait 50))))                                                                                                     ; TODO: should not be hard-coded FLAKY!
+
+(defn ^:devtools go-wait-for-namespace-cache [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :wait-for-namespaces-cache}))

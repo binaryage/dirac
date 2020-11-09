@@ -131,6 +131,13 @@
 (defn get-frontend-url-params []
   (get-url-params))
 
+(defn go-wait-for-namespaces-cache []
+  (js/console.log "go-wait-for-namespaces-cache")
+  (let [cache-ready-promise (ocall (get-dirac-angel) "getNamespaceCacheReadyPromise")
+        cache-ready-channel (utils/turn-promise-into-channel cache-ready-promise)]
+    (go
+      (<! cache-ready-channel))))
+
 ; -- main dispatch ----------------------------------------------------------------------------------------------------------
 
 (defn dispatch-command! [command]
@@ -153,6 +160,7 @@
     :trigger-internal-error (go-trigger-internal-error! (:delay command) (:kind command))
     :get-frontend-url-params (get-frontend-url-params)
     :scrape (apply scrape (:scraper command) (:args command))
+    :wait-for-namespaces-cache (go-wait-for-namespaces-cache)
     (warn "received unknown automation command:" (pr-str command))))
 
 ; -- automation -------------------------------------------------------------------------------------------------------------
