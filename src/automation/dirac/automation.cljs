@@ -241,6 +241,6 @@
 (defn ^:devtools go-reload! []
   (go
     ; the timeouts are here to prevent "Cannot find context with specified id" V8 errors ?
-    (<! (go-wait 3000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 50))                                                                                                       ; TODO: should not be hard-coded FLAKY!
     (<! (go-trigger! :reload))
-    (<! (go-wait 3000))))                                                                                                     ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 50))))                                                                                                     ; TODO: should not be hard-coded FLAKY!
