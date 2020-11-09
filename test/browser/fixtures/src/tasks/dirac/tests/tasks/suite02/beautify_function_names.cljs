@@ -9,6 +9,7 @@
   (with-scenario "breakpoint"
     (testing "enabled :beautify-function-names feature"
       (with-devtools
+        (<!* a/go-wait-for-namespace-cache)
         (<!* a/go-trigger! :pause-on-breakpoint)
         (<!* a/go-wait-for-devtools-match "setCurrentPanel: sources")
         (<!* a/go-scrape! :callstack-pane-functions)
@@ -19,6 +20,7 @@
     (testing "disabled :beautify-function-names feature"
       (with-options {:beautify-function-names false}
         (with-devtools
+          (<!* a/go-wait-for-namespace-cache)
           (<!* a/go-trigger! :pause-on-breakpoint)
           (<!* a/go-wait-for-devtools-match "setCurrentPanel: sources")
           (<!* a/go-scrape! :callstack-pane-functions)
@@ -28,6 +30,7 @@
   (with-scenario "exception"
     (testing "trigger exception with non-trivial callstack"
       (with-devtools
+        (<!* a/go-wait-for-namespace-cache)
         (<!* a/go-switch-to-console-panel!)
         (<!* a/go-trigger! :cause-exception)
         (<!* a/go-wait-for-match "uncaught exception: Error: :invalid is not ISeqable")
@@ -36,6 +39,7 @@
   (with-scenario "core-async"
     (testing "core async stack traces"
       (with-devtools
+        (<!* a/go-wait-for-namespace-cache)
         (<!* a/go-trigger! :async)
         (<!* a/go-wait-for-devtools-match "setCurrentPanel: sources")
         (<!* a/go-wait-for-devtools-ui)

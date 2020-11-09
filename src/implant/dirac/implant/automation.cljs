@@ -136,7 +136,8 @@
   (let [cache-ready-promise (ocall (get-dirac-angel) "getNamespaceCacheReadyPromise")
         cache-ready-channel (utils/turn-promise-into-channel cache-ready-promise)]
     (go
-      (<! cache-ready-channel))))
+      (<! cache-ready-channel)
+      true)))
 
 ; -- main dispatch ----------------------------------------------------------------------------------------------------------
 
