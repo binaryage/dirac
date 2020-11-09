@@ -171,8 +171,8 @@
 (defn ^:devtools go-get-frontend-url-params [devtools-id]
   (verbs/go-automate-devtools! devtools-id {:action :get-frontend-url-params}))
 
-(def scraping-wait-times {:callstack-pane-locations 50
-                          :callstack-pane-functions 50})
+(def scraping-wait-times {:callstack-pane-locations 500
+                          :callstack-pane-functions 500})
 
 (defn ^:devtools go-scrape [devtools-id scraper-name & args]
   (go
