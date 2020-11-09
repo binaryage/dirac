@@ -171,9 +171,13 @@
 (defn ^:devtools go-get-frontend-url-params [devtools-id]
   (verbs/go-automate-devtools! devtools-id {:action :get-frontend-url-params}))
 
+(def scraping-wait-times {:callstack-pane-locations 50
+                          :callstack-pane-functions 50})
+
 (defn ^:devtools go-scrape [devtools-id scraper-name & args]
   (go
-    (<! (go-wait 1000))                                                                                                        ; TODO: should not be hard-coded FLAKY!
+    (if-some [wait-time (get scraping-wait-times scraper-name)]
+      (<! (go-wait wait-time)))
     (<! (verbs/go-automate-devtools! devtools-id {:action  :scrape
                                                   :scraper scraper-name
                                                   :args    args}))))
