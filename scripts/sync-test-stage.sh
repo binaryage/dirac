@@ -22,5 +22,5 @@ fi
 set -e
 
 echo "Syncing test stage from '$ROOT' to '$(portable_realpath "$TEST_STAGE")'..."
-rsync -a --delete --exclude-from="$DIRAC_TEST_STAGE_RSYNC_EXCLUDE_FILE" "$ROOT/" "$TEST_STAGE"
+rsync -a --info=progress2 --delete --exclude-from="$DIRAC_TEST_STAGE_RSYNC_EXCLUDE_FILE" "$ROOT/" "$TEST_STAGE"
 echo

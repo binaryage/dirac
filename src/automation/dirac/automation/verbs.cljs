@@ -32,8 +32,8 @@
 (defn go-wait-for-devtools-boot [devtools-id]
   (go
     (<! (go-wait-for-devtools-ready devtools-id))
-    (<! (go-wait-for-panel-switch devtools-id "elements"))                                                                    ; because we have reset all devtools settings, the first landed panel will be "elements"
-    (<! (go-wait-for-devtools-match devtools-id "namespacesCache is cool now"))))                                             ; we need namespaces cache to be fully populated to prevent flaky tests
+    ; because we have reset all devtools settings, the first landed panel will be "elements"
+    (<! (go-wait-for-panel-switch devtools-id "elements"))))
 
 (defn wait-for-devtools-unregistration [devtools-id]
   (go-wait-for-match (str "unregister devtools #" devtools-id)))

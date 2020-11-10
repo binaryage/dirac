@@ -21,4 +21,5 @@ fi
       --disable-infobars \
       --disable-default-apps \
       --user-data-dir="$DIRAC_USER_PROFILE2" \
+      --remote-debugging-port=9222 \
       "--custom-devtools-frontend=file://$ROOT/resources/release/devtools/front_end"

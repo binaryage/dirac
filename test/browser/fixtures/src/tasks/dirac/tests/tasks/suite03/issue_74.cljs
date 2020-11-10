@@ -17,6 +17,7 @@
 
         (testing "break on js-debugger, eval code in scope, resume"
           (<!* a/go-type-in-console! "(fn-with-breakpoint)")
+          (<!* a/go-wait-for-devtools-match "setCurrentPanel: sources")
           (<!* a/go-wait-for-devtools-ui)                                                                                     ; give devtools UI some time to pause on the breakpoint
           (<!* a/go-focus-best-console-prompt!)
           (<!* a/go-exec-and-match-in-console!

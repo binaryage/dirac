@@ -9,7 +9,6 @@ extension        register devtools #1
 devtools #1      implant initialized
 devtools #1      setCurrentPanel: elements
 devtools #1      devtools ready
-devtools #1      namespacesCache is cool now
 automate #1      switch-to-console-panel!
 devtools #1      setCurrentPanel: console
 devtools #1      console initialized
@@ -22,10 +21,10 @@ automate #1      trigger-internal-error-in-promise!
 devtools #1      <elided dirac version info line>
                  DevTools code has thrown an unhandled rejection (in promise):
                  Error: fake async error in promise
-                     at new $cljs$core$ExceptionInfo$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
-                     at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$03$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
-                     at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$02$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
-                     at chrome-extension://<extension-id>/devtools/front_end/inspector.js:***
+                     at new $cljs$core$ExceptionInfo$$ (chrome-extension://<extension-id>/devtools/front_end/shell.js:***)
+                     at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$03$$ (chrome-extension://<extension-id>/devtools/front_end/shell.js:***)
+                     at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$02$$ (chrome-extension://<extension-id>/devtools/front_end/shell.js:***)
+                     at chrome-extension://<extension-id>/devtools/front_end/shell.js:***
                  ---
                  To inspect the problem in internal DevTools => https://goo.gl/0FkZ1o
                  Consider reporting the issue here: https://github.com/binaryage/dirac/issues
@@ -54,7 +53,6 @@ extension        register devtools #2
 devtools #2      implant initialized
 devtools #2      setCurrentPanel: elements
 devtools #2      devtools ready
-devtools #2      namespacesCache is cool now
 automate #2      switch-to-console-panel!
 devtools #2      setCurrentPanel: console
 devtools #2      console initialized

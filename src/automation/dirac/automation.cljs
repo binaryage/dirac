@@ -80,7 +80,7 @@
 
 (defn go-wait-for-devtools-ui [& [delay]]
   ; sometimes we have to give devtools UI some time to update
-  (go-wait (or delay 1000)))                                                                                                  ; TODO: should not be hard-coded FLAKY!
+  (go-wait (or delay 100)))                                                                                                  ; TODO: should not be hard-coded FLAKY!
 
 ; -- devtools-instance targeting actions ------------------------------------------------------------------------------------
 
@@ -147,7 +147,7 @@
 
 (defn ^:devtools go-print-prompt! [devtools-id]
   (go
-    (<! (go-wait 500))                                                                                                        ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 100))                                                                                                        ; TODO: should not be hard-coded FLAKY!
     (let [content (<! (go-get-prompt-representation devtools-id))]
       (assert (string? content))
       (println content)
@@ -171,9 +171,13 @@
 (defn ^:devtools go-get-frontend-url-params [devtools-id]
   (verbs/go-automate-devtools! devtools-id {:action :get-frontend-url-params}))
 
+(def scraping-wait-times {:callstack-pane-locations 500
+                          :callstack-pane-functions 500})
+
 (defn ^:devtools go-scrape [devtools-id scraper-name & args]
   (go
-    (<! (go-wait 1000))                                                                                                        ; TODO: should not be hard-coded FLAKY!
+    (if-some [wait-time (get scraping-wait-times scraper-name)]
+      (<! (go-wait wait-time)))
     (<! (verbs/go-automate-devtools! devtools-id {:action  :scrape
                                                   :scraper scraper-name
                                                   :args    args}))))
@@ -237,6 +241,9 @@
 (defn ^:devtools go-reload! []
   (go
     ; the timeouts are here to prevent "Cannot find context with specified id" V8 errors ?
-    (<! (go-wait 3000))                                                                                                       ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 50))                                                                                                       ; TODO: should not be hard-coded FLAKY!
     (<! (go-trigger! :reload))
-    (<! (go-wait 3000))))                                                                                                     ; TODO: should not be hard-coded FLAKY!
+    (<! (go-wait 50))))                                                                                                     ; TODO: should not be hard-coded FLAKY!
+
+(defn ^:devtools go-wait-for-namespace-cache [devtools-id]
+  (verbs/go-automate-devtools! devtools-id {:action :wait-for-namespaces-cache}))

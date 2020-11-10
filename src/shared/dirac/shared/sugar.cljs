@@ -75,17 +75,14 @@
 
 ; -- tab --------------------------------------------------------------------------------------------------------------------
 
-(defn go-check-tab-exists? [tab-id]
-  (go
-    (with-muted-error-reporting
-      (if-some [[_tab] (<! (tabs/get tab-id))]
-        true
-        false))))
-
 (defn go-fetch-tab [tab-id]
   (go
     (let [[tab] (<! (tabs/get tab-id))]
       tab)))
+
+(defn go-check-tab-exists? [tab-id]
+  (go
+    (some? (<! (go-fetch-tab tab-id)))))
 
 (defn go-fetch-tab-window-id [tab-id]
   (go

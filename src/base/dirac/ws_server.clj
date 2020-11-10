@@ -129,7 +129,11 @@
   (pr-str msg))
 
 (defn unserialize-msg [unserialized-msg]
-  (read-string unserialized-msg))
+  (try
+    (read-string unserialized-msg)
+    (catch Exception e
+      (log/error (str "Unable to read message:\n" unserialized-msg))
+      (throw e))))
 
 ; -- request handling -------------------------------------------------------------------------------------------------------
 
