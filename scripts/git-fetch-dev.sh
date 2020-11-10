@@ -9,10 +9,14 @@ GIT_BRANCH=${2:-master}
 
 cd "$ROOT"
 git fetch "$GIT_ORIGIN"
-git reset --hard "$GIT_ORIGIN/$GIT_BRANCH"
-
-DEVTOOLS_SUBMODULE_COMMIT=$(git ls-tree HEAD | grep "devtools-frontend" | cut -d " " -f 3 | cut -d$'\t' -f 1)
+REMOTE_HEAD="$GIT_ORIGIN/$GIT_BRANCH"
+DEVTOOLS_SUBMODULE_COMMIT=$(git ls-tree "$REMOTE_HEAD" | grep "devtools-frontend" | cut -d " " -f 3 | cut -d$'\t' -f 1)
 
 cd devtools-frontend
 git fetch "$GIT_ORIGIN" HEAD
+
+cd "$ROOT"
+git reset --hard "$REMOTE_HEAD"
+
+cd devtools-frontend
 git checkout "$DEVTOOLS_SUBMODULE_COMMIT"
