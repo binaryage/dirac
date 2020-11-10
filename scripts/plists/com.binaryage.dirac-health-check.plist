@@ -14,19 +14,7 @@
         <array>
             <dict>
                 <key>Hour</key>
-                <integer>5</integer>
-                <key>Minute</key>
-                <integer>0</integer>
-            </dict>
-            <dict>
-                <key>Hour</key>
-                <integer>13</integer>
-                <key>Minute</key>
-                <integer>0</integer>
-            </dict>
-            <dict>
-                <key>Hour</key>
-                <integer>21</integer>
+                <integer>10</integer>
                 <key>Minute</key>
                 <integer>0</integer>
             </dict>
