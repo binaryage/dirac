@@ -117,6 +117,7 @@ fi
 DEPS="{:deps {\
   $DIRAC_CLI_DEPS_COORDINATE \
   org.clojure/clojurescript {:mvn/version \"RELEASE\"} \
+  org.clojure/data.json {:mvn/version \"2.4.0\"} \
   clj-logging-config/clj-logging-config {:mvn/version \"1.9.12\"} \
 }}"
 
